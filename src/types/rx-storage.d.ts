@@ -150,7 +150,7 @@ export type RxLocalDocumentData<
         _attachments: {};
 
         _deleted: boolean;
-        _rev?: string;
+        _rev: string;
 
         _meta: RxDocumentMeta;
     } & Data;

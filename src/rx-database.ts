@@ -30,7 +30,9 @@ import {
     randomCouchString,
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    getDefaultRevision,
+    createRevision
 } from './util';
 import {
     newRxError
@@ -165,6 +167,7 @@ export class RxDatabaseBase<
         const writeData: BulkWriteRow<InternalStoreDocumentData>[] = allDocs.map(doc => {
             const deletedDoc = flatClone(doc);
             deletedDoc._deleted = true;
+            deletedDoc._rev = createRevision(deletedDoc, doc);
             return {
                 previous: doc,
                 document: deletedDoc
@@ -206,7 +209,8 @@ export class RxDatabaseBase<
             throw newRxError('SNH', { name, schema });
         }
         const writeDoc = flatClone(doc);
-        writeDoc._deleted = true;
+        writeDoc._deleted = true
+        writeDoc._rev = createRevision(writeDoc, doc);
         await this.lockedRun(
             () => this.internalStore.bulkWrite([{
                 document: writeDoc,
@@ -304,16 +308,19 @@ export class RxDatabaseBase<
             // add to bulk-docs list
             const collectionName = _collectionNamePrimary(name as any, collectionCreators[name].schema);
             if (!internalDocByCollectionName[collectionName]) {
+                const docData = {
+                    collectionName,
+                    schemaHash: schemaHashByName[name],
+                    schema: collection.schema.normalized,
+                    version: collection.schema.version,
+                    _rev: getDefaultRevision(),
+                    _deleted: false,
+                    _meta: getDefaultRxDocumentMeta(),
+                    _attachments: {}
+                };
+                docData._rev = createRevision(docData);
                 bulkPutDocs.push({
-                    document: {
-                        collectionName,
-                        schemaHash: schemaHashByName[name],
-                        schema: collection.schema.normalized,
-                        version: collection.schema.version,
-                        _deleted: false,
-                        _meta: getDefaultRxDocumentMeta(),
-                        _attachments: {}
-                    }
+                    document: docData
                 });
             }
 
@@ -530,6 +537,7 @@ export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: R
                 value: storageToken,
                 _deleted: false,
                 _meta: getDefaultRxDocumentMeta(),
+                _rev: getDefaultRevision(),
                 _attachments: {}
 
             }
@@ -598,6 +606,7 @@ export async function _removeAllOfCollection(
                 doc => {
                     const writeDoc = flatClone(doc);
                     writeDoc._deleted = true;
+                    writeDoc._rev = createRevision(writeDoc, doc);
                     return rxDatabase.lockedRun(
                         () => writeSingle(
                             rxDatabase.internalStore,

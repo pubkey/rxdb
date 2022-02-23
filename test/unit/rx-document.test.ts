@@ -183,8 +183,12 @@ config.parallel('rx-document.test.js', () => {
                 });
                 c.database.destroy();
             });
-            it('should remove all revisions', async () => {
+            it('should remove when written multiple times before', async () => {
                 const c = await humansCollection.create(1);
+
+                const events: any = [];
+                c.$.subscribe(ev => events.push(ev));
+
                 const doc: any = await c.findOne().exec();
                 assert.ok(doc);
 
@@ -204,7 +208,18 @@ config.parallel('rx-document.test.js', () => {
                 const doc2: any = await c.findOne().exec();
                 assert.strictEqual(doc2.age, 100);
 
+                await wait(500);
+                console.log('#################################################');
+
                 await doc2.remove();
+
+                console.dir(events);
+
+                const aa = await c.storageInstance.query({
+                    selector: {}
+                });
+                console.dir(aa);
+
                 const doc3 = await c.findOne().exec();
                 assert.strictEqual(doc3, null);
 

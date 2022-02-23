@@ -6,11 +6,8 @@ import {
     Observable
 } from 'rxjs';
 import {
-    createRevision,
-    getHeightOfRevision,
     parseRevision,
     lastOfArray,
-    flatClone,
     now,
     randomCouchString,
     PROMISE_RESOLVE_VOID
@@ -114,7 +111,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     const documentInDb = docsInDb[docIndex];
                     if (!documentInDb) {
                         // insert new document
-                        const newRevision = '1-' + createRevision(writeRow.document);
                         /**
                          * It is possible to insert already deleted documents,
                          * this can happen on replication.
@@ -124,7 +120,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                             {},
                             writeRow.document,
                             {
-                                _rev: newRevision,
                                 _deleted: insertedIsDeleted,
                                 // TODO attachments are currently not working with lokijs
                                 _attachments: {} as any
@@ -136,7 +131,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         } else {
                             bulkPutDocs.push(writeDoc);
                             eventBulk.events.push({
-                                eventId: getDexieEventKey(false, id, newRevision),
+                                eventId: getDexieEventKey(false, id, writeRow.document._rev),
                                 documentId: id,
                                 change: {
                                     doc: writeDoc,
@@ -179,14 +174,11 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                             };
                             ret.error[id] = err;
                         } else {
-                            const newRevHeight = getHeightOfRevision(revInDb) + 1;
-                            const newRevision = newRevHeight + '-' + createRevision(writeRow.document);
                             const isDeleted = !!writeRow.document._deleted;
                             const writeDoc: any = Object.assign(
                                 {},
                                 writeRow.document,
                                 {
-                                    _rev: newRevision,
                                     _deleted: isDeleted,
                                     // TODO attachments are currently not working with lokijs
                                     _attachments: {}
@@ -224,16 +216,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 bulkPutDeletedDocs.push(writeDoc);
                                 bulkRemoveDocs.push(id);
 
-                                /**
-                                 * On delete, we send the 'new' rev in the previous property,
-                                 * to have the equal behavior as pouchdb.
-                                 */
-                                const previous = flatClone(writeRow.previous);
-                                previous._rev = newRevision;
                                 change = {
                                     id,
                                     operation: 'DELETE',
-                                    previous,
+                                    previous: writeRow.previous,
                                     doc: null
                                 };
                             }
@@ -241,7 +227,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 throw newRxError('SNH', { args: { writeRow } });
                             }
                             eventBulk.events.push({
-                                eventId: getDexieEventKey(false, id, newRevision),
+                                eventId: getDexieEventKey(false, id, writeRow.document._rev),
                                 documentId: id,
                                 change,
                                 startTime,

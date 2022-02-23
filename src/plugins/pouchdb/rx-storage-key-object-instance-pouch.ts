@@ -20,6 +20,7 @@ import {
     flatClone,
     getFromMapOrThrow,
     now,
+    parseRevision,
     PROMISE_RESOLVE_VOID,
     randomCouchString
 } from '../../util';
@@ -61,6 +62,29 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
     public async bulkWrite<D = any>(
         documentWrites: BulkWriteLocalRow<D>[]
     ): Promise<RxLocalStorageBulkWriteResponse<D>> {
+
+
+        // TODO remove this check
+        documentWrites.forEach(writeRow => {
+            if (!writeRow.document._rev) {
+                console.dir(writeRow);
+                throw new Error('local: rev missing');
+            }
+            if (!writeRow.document._rev.includes('-')) {
+                console.dir(writeRow);
+                throw new Error('local: invalid rev format');
+            }
+
+            if (writeRow.previous) {
+                const parsedPrev = parseRevision(writeRow.previous._rev);
+                const parsedNew = parseRevision(writeRow.document._rev);
+                if (parsedPrev.height >= parsedNew.height) {
+                    console.dir(writeRow);
+                    throw new Error('new revision must be higher then previous');
+                }
+            }
+        });
+
         if (documentWrites.length === 0) {
             throw newRxError('P2', {
                 args: {
@@ -82,6 +106,13 @@ export class RxStorageKeyObjectInstancePouch implements RxStorageKeyObjectInstan
             // if previous document exists, we have to send the previous revision to pouchdb.
             if (writeRow.previous) {
                 storeDocumentData._rev = writeRow.previous._rev;
+            } else {
+                /**
+                 * If no previous document exists, we MUST NOT send a revision to PouchDB.
+                 * We have to do this, because in PouchDB there is no way to do a bulkDocs()
+                 * with new_edits: false.
+                 */
+                delete (storeDocumentData as any)._rev;
             }
 
             return storeDocumentData;

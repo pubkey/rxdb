@@ -73,6 +73,7 @@ export async function storePasswordHashIntoDatabase(
             _id: pwHashDocumentId,
             value: pwHash,
             _attachments: {},
+            _rev: '', // will be overwritten by the storage wrapper
             _meta: getDefaultRxDocumentMeta(),
             _deleted: false
         };

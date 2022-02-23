@@ -2099,10 +2099,12 @@ config.parallel('rx-collection.test.js', () => {
             assert.strictEqual(updates[0].size, 0);
 
 
-            //  Simulate a write from a primitive replication
-            await collection.storageInstance.bulkAddRevisions(
+            //  Simulate a write
+            await collection.storageInstance.bulkWrite(
                 matchingIds
-                    .map(id => createObject(id))
+                    .map(id => ({
+                        document: createObject(id)
+                    }))
             );
 
             //  Now we should have 2 updates
@@ -2129,13 +2131,13 @@ config.parallel('rx-collection.test.js', () => {
             assert.strictEqual(updates[1].get('d')?.passportId, 'd');
 
             //  Let's try to update something different that should be ignored
-            await collection.storageInstance.bulkAddRevisions(
+            await collection.storageInstance.bulkWrite(
                 [
                     createObject('e'),
                     createObject('f'),
                     createObject('g'),
                     createObject('h')
-                ]
+                ].map(document => ({ document }))
             );
 
             //  Wait a bit to see if we catch anything

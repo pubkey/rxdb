@@ -13,10 +13,8 @@ import type {
     RxStorageKeyObjectInstance
 } from '../../types';
 import {
-    createRevision,
     flatClone,
     now,
-    parseRevision,
     randomCouchString
 } from '../../util';
 import {
@@ -75,9 +73,6 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
                     const id = writeDoc._id;
                     const docInDb = docsInDb[writeRowIdx];
                     const previous = writeRow.previous ? writeRow.previous : docInDb;
-                    const newRevHeight = previous ? parseRevision(previous._rev).height + 1 : 1;
-                    const newRevision = newRevHeight + '-' + createRevision(writeRow.document);
-                    writeDoc._rev = newRevision;
 
                     if (docInDb) {
                         if (
@@ -104,7 +99,7 @@ export class RxStorageKeyObjectInstanceDexie implements RxStorageKeyObjectInstan
                     successDocs.push({
                         writeRow,
                         previous,
-                        newRevision
+                        newRevision: writeRow.document._rev
                     });
                 });
 

@@ -13,6 +13,7 @@ import {
 } from '../rx-error';
 import {
     flatClone,
+    getDefaultRevision,
     getDefaultRxDocumentMeta,
     getFromObjectOrThrow
 } from '../util';
@@ -223,6 +224,7 @@ const RxLocalDocumentPrototype: any = {
         const writeData: RxDocumentWriteData<{ _id: string }> = {
             _id: this.id,
             _deleted: true,
+            _rev: getDefaultRevision(),
             _meta: getDefaultRxDocumentMeta(),
             _attachments: {}
         };
@@ -308,6 +310,7 @@ function insertLocal<DocData>(
                     _id: id,
                     _deleted: false,
                     _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
                     _attachments: {}
                 }
             );

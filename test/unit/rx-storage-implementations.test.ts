@@ -110,6 +110,7 @@ function getLocalWriteData(
             _id: randomString(10),
             value: 'barfoo',
             _deleted: false,
+            _rev: EXAMPLE_REVISION_1,
             _attachments: {},
             _meta: {
                 lwt: now()
@@ -290,33 +291,50 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 await wait(500);
                 console.log('---------------------- A  -1');
 
+                // make an insert
+                const insertData = {
+                    key: 'foobar',
+                    value: 'barfoo1',
+                    _deleted: false,
+                    _rev: EXAMPLE_REVISION_1,
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
+                };
                 const insertResponse = await storageInstance.bulkWrite(
                     [{
-                        document: {
-                            key: 'foobar',
-                            value: 'barfoo1',
-                            _deleted: false,
-                            _rev: EXAMPLE_REVISION_1,
-                            _attachments: {},
-                            _meta: {
-                                lwt: now()
-                            }
-                        }
+                        document: insertData
                     }]
                 );
                 assert.deepStrictEqual(insertResponse.error, {});
                 const first = getFromObjectOrThrow(insertResponse.success, 'foobar');
 
 
+                // make an update
+                const updateData = Object.assign({}, insertData, {
+                    value: 'barfoo2',
+                    _rev: EXAMPLE_REVISION_2
+                });
+                const updateResponse = await storageInstance.bulkWrite(
+                    [{
+                        previous: insertData,
+                        document: updateData
+                    }]
+                );
+                assert.deepStrictEqual(updateResponse.error, {});
+
+
                 await wait(500);
                 console.log('---------------------- A  -2');
 
+                // make the delete
                 const deleteResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: first,
+                        previous: updateData,
                         document: Object.assign({}, first, {
                             _deleted: true,
-                            _rev: EXAMPLE_REVISION_2
+                            _rev: EXAMPLE_REVISION_3
                         })
                     }]
                 );
@@ -1208,7 +1226,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             key: 'foobar',
                             value: 'barfoo2',
                             _deleted: true,
-                            _rev: EXAMPLE_REVISION_1,
+                            _rev: EXAMPLE_REVISION_2,
                             _attachments: {},
                             _meta: {
                                 lwt: now()
@@ -1769,6 +1787,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     type: 'text/plain'
                 };
 
+                writeData._rev = EXAMPLE_REVISION_2;
                 previous = await writeSingle<TestDocType>(
                     storageInstance,
                     {
@@ -1841,6 +1860,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _id: 'foobar',
                     value: 'barfoo',
                     _deleted: false,
+                    _rev: EXAMPLE_REVISION_1,
                     _attachments: {},
                     _meta: {
                         lwt: now()
@@ -1858,7 +1878,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 assert.strictEqual(Object.keys(writeResponse.error).length, 0);
                 const first = getFromObjectOrThrow(writeResponse.success, 'foobar');
+
+                /**
+                 * With PouchDB it is not possible to set the write-revision
+                 * of a local document.
+                 * So we cannot compare the revisions here.
+                 */
                 delete (first as any)._rev;
+                delete (writeData as any)._rev;
 
                 assert.deepStrictEqual(writeData, first);
 
@@ -1880,6 +1907,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             _id: 'foobar',
                             value: 'barfoo',
                             _deleted: false,
+                            _rev: EXAMPLE_REVISION_1,
                             _attachments: {},
                             _meta: {
                                 lwt: now()
@@ -1895,6 +1923,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             _id: 'foobar',
                             value: 'barfoo2',
                             _deleted: false,
+                            _rev: EXAMPLE_REVISION_2,
                             _attachments: {},
                             _meta: {
                                 lwt: now()
@@ -1924,6 +1953,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         _id: 'foobar',
                         value: 'barfoo',
                         _deleted: false,
+                        _rev: EXAMPLE_REVISION_1,
                         _attachments: {},
                         _meta: {
                             lwt: now()
@@ -1960,15 +1990,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _id: 'foobar',
                     value: 'barfoo',
                     _deleted: false,
-                    _rev: '1-0',
+                    _rev: EXAMPLE_REVISION_1,
                     _attachments: {},
                     _meta: {
                         lwt: now()
                     }
                 };
-
-                await wait(500);
-                console.log('---------------------------------');
 
                 const firstWriteResult = await storageInstance.bulkWrite(
                     [{
@@ -1977,6 +2004,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 );
                 console.log('firstWriteResult:');
                 console.log(JSON.stringify(firstWriteResult, null, 4));
+                assert.deepStrictEqual(firstWriteResult.error, {});
                 const writeDocResult = getFromObjectOrThrow(firstWriteResult.success, writeDoc._id);
                 writeDoc._rev = EXAMPLE_REVISION_2;
                 writeDoc.value = writeDoc.value + '2';
@@ -2014,6 +2042,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _id: 'foobar',
                     value: 'barfoo',
                     _deleted: false,
+                    _rev: EXAMPLE_REVISION_1,
                     _attachments: {},
                     _meta: {
                         lwt: now()
@@ -2050,6 +2079,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _id: id,
                     value: 'barfoo',
                     _deleted: false,
+                    _rev: EXAMPLE_REVISION_1,
                     _attachments: {},
                     _meta: {
                         lwt: now()
@@ -2069,7 +2099,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const deleteResponse = await storageInstance.bulkWrite(
                     [{
                         previous,
-                        document: writeData
+                        document: Object.assign(
+                            writeData,
+                            {
+                                _rev: EXAMPLE_REVISION_2
+                            }
+                        )
                     }]
                 );
                 getFromObjectOrThrow(deleteResponse.success, id);
@@ -2143,7 +2178,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const writeData = {
                     _id: 'foobar',
                     value: 'one',
-                    _rev: undefined as any,
+                    _rev: EXAMPLE_REVISION_1,
                     _deleted: false,
                     _attachments: {},
                     _meta: {
@@ -2203,6 +2238,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: {
                             _id: 'foobar',
                             value: 'barfoo',
+                            _rev: EXAMPLE_REVISION_1,
                             _deleted: false,
                             _attachments: {},
                             _meta: {

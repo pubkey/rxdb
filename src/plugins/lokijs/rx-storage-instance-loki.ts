@@ -6,8 +6,6 @@ import {
     Observable
 } from 'rxjs';
 import {
-    createRevision,
-    getHeightOfRevision,
     parseRevision,
     lastOfArray,
     flatClone,
@@ -148,8 +146,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
             if (!documentInDb) {
                 // insert new document
-                const newRevision = '1-' + createRevision(writeRow.document);
-
                 /**
                  * It is possible to insert already deleted documents,
                  * this can happen on replication.
@@ -160,7 +156,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     {},
                     writeRow.document,
                     {
-                        _rev: newRevision,
                         _deleted: insertedIsDeleted,
                         // TODO attachments are currently not working with lokijs
                         _attachments: {} as any
@@ -170,7 +165,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 if (!insertedIsDeleted) {
                     this.addChangeDocumentMeta(id);
                     eventBulk.events.push({
-                        eventId: getLokiEventKey(false, id, newRevision),
+                        eventId: getLokiEventKey(false, id, writeRow.document._rev),
                         documentId: id,
                         change: {
                             doc: writeDoc,
@@ -212,15 +207,12 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     };
                     ret.error[id] = err;
                 } else {
-                    const newRevHeight = getHeightOfRevision(revInDb) + 1;
-                    const newRevision = newRevHeight + '-' + createRevision(writeRow.document);
                     const isDeleted = !!writeRow.document._deleted;
                     const writeDoc: any = Object.assign(
                         {},
                         writeRow.document,
                         {
                             $loki: documentInDb.$loki,
-                            _rev: newRevision,
                             _deleted: isDeleted,
                             // TODO attachments are currently not working with lokijs
                             _attachments: {}
@@ -246,16 +238,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                             doc: stripLokiKey(writeDoc)
                         };
                     } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
-                        /**
-                         * On delete, we send the 'new' rev in the previous property,
-                         * to have the equal behavior as pouchdb.
-                         */
-                        const previous = flatClone(writeRow.previous);
-                        previous._rev = newRevision;
                         change = {
                             id,
                             operation: 'DELETE',
-                            previous,
+                            previous: writeRow.previous,
                             doc: null
                         };
                     }
@@ -263,7 +249,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         throw newRxError('SNH', { args: { writeRow } });
                     }
                     eventBulk.events.push({
-                        eventId: getLokiEventKey(false, id, newRevision),
+                        eventId: getLokiEventKey(false, id, writeRow.document._rev),
                         documentId: id,
                         change,
                         startTime,

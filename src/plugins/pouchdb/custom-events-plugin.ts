@@ -210,6 +210,51 @@ export function addCustomEventsPluginToPouch() {
         }
 
 
+        // if (
+        //     options.custom &&
+        //     options.custom.isDelete
+        // ) {
+        //     const ids = docs.map(doc => doc._id);
+        //     const viaChanges = await this.changes({
+        //         live: false,
+        //         since: 0,
+        //         doc_ids: ids,
+        //         style: 'all_docs'
+        //     });
+
+        //     const previousDocs: Map<string, any> = new Map();
+        //     await Promise.all(
+        //         viaChanges.results.map(async (result) => {
+        //             const firstDoc = await this.get(
+        //                 result.id,
+        //                 {
+        //                     rev: result.changes[0].rev,
+        //                     deleted: 'ok',
+        //                     revs: true,
+        //                     style: 'all_docs'
+        //                 }
+        //             );
+        //             previousDocs.set(firstDoc._id, firstDoc);
+        //         })
+        //     );
+        //     docs.forEach(doc => {
+        //         const id = doc._id;
+        //         const previous = previousDocs.get(id);
+        //         if (previous) {
+        //             const rev = parseRevision(doc._rev);
+
+        //             if (!previous._revisions) { previous._revisions = { ids: [] } }
+
+        //             doc._revisions = {
+        //                 start: rev.height,
+        //                 ids: previous._revisions.ids
+        //             };
+        //             doc._revisions.ids = [rev.hash];
+        //         }
+        //     });
+        // }
+
+
         /**
          * pouchdb calls this function again with transformed input.
          * This would lead to duplicate events. So we marks the deeper calls via the options
@@ -219,7 +264,7 @@ export function addCustomEventsPluginToPouch() {
         deeperOptions.isDeeper = true;
 
         console.log('--- docs after conflict check:');
-        console.dir(docs);
+        console.log(JSON.stringify(docs, null, 4));
 
 
         console.log('deeperOptions:');

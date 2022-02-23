@@ -247,6 +247,10 @@ export class RxQueryBase<
         const docsPromise = queryCollection<RxDocumentType>(this as any);
         return docsPromise.then(docs => {
             this._lastExecEnd = now();
+
+            console.log('_execOverDatabase:');
+            console.dir(docs);
+
             return docs;
         });
     }

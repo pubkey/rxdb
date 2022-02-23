@@ -16,11 +16,9 @@ import type {
     RxStorageKeyObjectInstance
 } from '../../types';
 import {
-    createRevision,
     ensureNotFalsy,
     flatClone,
     now,
-    parseRevision,
     randomCouchString
 } from '../../util';
 import {
@@ -99,10 +97,6 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
             const writeDoc = flatClone(writeRow.document);
             const docInDb = localState.collection.by('_id', id);
 
-            const prevDocToGetRevision = writeRow.previous ? writeRow.previous : docInDb;
-            const newRevHeight = prevDocToGetRevision ? parseRevision(prevDocToGetRevision._rev).height + 1 : 1;
-            const newRevision = newRevHeight + '-' + createRevision(writeRow.document);
-            writeDoc._rev = newRevision;
             if (docInDb) {
                 if (
                     !writeRow.previous ||
@@ -141,18 +135,11 @@ export class RxStorageKeyObjectInstanceLoki implements RxStorageKeyObjectInstanc
                 };
             } else if (writeRow.document._deleted) {
                 // was delete
-
-                // we need to add the new revision to the previous doc
-                // so that the eventkey is calculated correctly.
-                // Is this a hack? idk.
-                const previousDoc = flatClone(writeRow.previous);
-                previousDoc._rev = newRevision;
-
                 event = {
                     operation: 'DELETE',
                     doc: null,
                     id,
-                    previous: previousDoc
+                    previous: writeRow.previous
                 };
             } else {
                 // was update

@@ -16,7 +16,6 @@ import {
     clone,
     toPromise,
     flatClone,
-    getHeightOfRevision,
     createRevision,
     PROMISE_RESOLVE_VOID,
     PROMISE_RESOLVE_FALSE,
@@ -489,9 +488,7 @@ export async function _migrateDocuments(
              * data changed, increase revision height
              * so replicating instances use our new document data
              */
-            const newHeight = getHeightOfRevision(docData._rev) + 1;
-            const newRevision = newHeight + '-' + createRevision(migratedDocData);
-            migratedDocData._rev = newRevision;
+            migratedDocData._rev = createRevision(migratedDocData, docData);
         }
 
 

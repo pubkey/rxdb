@@ -54,6 +54,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 }
             ) as any;
             (pouch as any).primaryPath = '_id';
+            await pouch.info();
 
             const emitted: any[] = [];
             const sub = getCustomEventEmitterByPouch(pouch).subject.subscribe(ev => {
@@ -70,9 +71,15 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 }
             } as any);
 
-            await waitUntil(() => flattenEvents(emitted).length === 1);
+            await waitUntil(() => {
+                const events = flattenEvents(emitted);
+                if (events.length > 1) {
+                    throw new Error('too many events');
+                }
+                return events.length === 1;
+            });
 
-            const first = flattenEvents(emitted)[0];
+            const first: any = flattenEvents(emitted)[0];
             assert.deepStrictEqual(
                 first.change.operation,
                 'INSERT'

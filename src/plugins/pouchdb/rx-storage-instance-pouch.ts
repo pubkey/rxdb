@@ -36,6 +36,7 @@ import {
 import {
     flatClone,
     getFromMapOrThrow,
+    parseRevision,
     PROMISE_RESOLVE_VOID
 } from '../../util';
 import {
@@ -138,6 +139,28 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
+
+        // TODO remove this check
+        documentWrites.forEach(writeRow => {
+            if (!writeRow.document._rev) {
+                console.dir(writeRow);
+                throw new Error('rev missing');
+            }
+            if (!writeRow.document._rev.includes('-')) {
+                console.dir(writeRow);
+                throw new Error('invalid rev format');
+            }
+            if (writeRow.previous) {
+                const parsedPrev = parseRevision(writeRow.previous._rev);
+                const parsedNew = parseRevision(writeRow.document._rev);
+                if (parsedPrev.height >= parsedNew.height) {
+                    console.dir(writeRow);
+                    throw new Error('new revision must be higher then previous');
+                }
+            }
+        });
+
+
         if (documentWrites.length === 0) {
             throw newRxError('P2', {
                 args: {
@@ -187,6 +210,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 {
                     new_edits: false,
                     custom: {
+                        isDelete: false,
                         primaryPath: this.primaryPath,
                         writeRowById,
                         insertDocsById
@@ -209,6 +233,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 insertDocsDelete,
                 {
                     custom: {
+                        isDelete: true,
                         primaryPath: this.primaryPath,
                         writeRowById,
                         insertDocsById
