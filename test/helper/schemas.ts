@@ -3,7 +3,8 @@ import AsyncTestUtil from 'async-test-util';
 import {
     RxJsonSchema,
     toTypedRxJsonSchema,
-    ExtractDocumentTypeFromTypedRxJsonSchema
+    ExtractDocumentTypeFromTypedRxJsonSchema,
+    overwritable
 } from '../../';
 import {
     SimpleHumanV3DocumentType,
@@ -28,9 +29,8 @@ import {
     HumanWithCompositePrimary
 } from './schema-objects';
 
-import deepFreeze from 'deep-freeze';
 
-export const humanSchemaLiteral = deepFreeze({
+export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -62,7 +62,7 @@ export type HumanDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof 
 export const human: RxJsonSchema<HumanDocumentType> = humanSchemaLiteral;
 
 
-export const humanDefault: RxJsonSchema<HumanDocumentType> = deepFreeze({
+export const humanDefault: RxJsonSchema<HumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
     description: 'describes a human being',
@@ -91,7 +91,7 @@ export const humanDefault: RxJsonSchema<HumanDocumentType> = deepFreeze({
     required: ['passportId']
 });
 
-export const humanFinal: RxJsonSchema<HumanDocumentType> = deepFreeze({
+export const humanFinal: RxJsonSchema<HumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema with age set final',
     version: 0,
     keyCompression: true,
@@ -119,7 +119,7 @@ export const humanFinal: RxJsonSchema<HumanDocumentType> = deepFreeze({
     ]
 });
 
-export const simpleHuman: RxJsonSchema<SimpleHumanV3DocumentType> = deepFreeze({
+export const simpleHuman: RxJsonSchema<SimpleHumanV3DocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
     keyCompression: true,
@@ -141,7 +141,7 @@ export const simpleHuman: RxJsonSchema<SimpleHumanV3DocumentType> = deepFreeze({
     required: ['passportId', 'age']
 });
 
-export const simpleHumanV3: RxJsonSchema<SimpleHumanV3DocumentType> = deepFreeze({
+export const simpleHumanV3: RxJsonSchema<SimpleHumanV3DocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 3,
     keyCompression: true,
@@ -163,7 +163,7 @@ export const simpleHumanV3: RxJsonSchema<SimpleHumanV3DocumentType> = deepFreeze
     required: ['passportId', 'age']
 });
 
-export const humanAgeIndex: RxJsonSchema<HumanDocumentType> = deepFreeze({
+export const humanAgeIndex: RxJsonSchema<HumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
     keyCompression: true,
@@ -191,7 +191,7 @@ export const humanAgeIndex: RxJsonSchema<HumanDocumentType> = deepFreeze({
     indexes: ['age']
 });
 
-export const humanArrayIndex: RxJsonSchema<{ passportId: string; jobs: { name: string }[] }> = deepFreeze({
+export const humanArrayIndex: RxJsonSchema<{ passportId: string; jobs: { name: string }[] }> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
     keyCompression: true,
@@ -218,7 +218,7 @@ export const humanArrayIndex: RxJsonSchema<{ passportId: string; jobs: { name: s
     indexes: ['jobs.[].name']
 });
 
-export const humanSubIndex: RxJsonSchema<HumanWithSubOtherDocumentType> = deepFreeze({
+export const humanSubIndex: RxJsonSchema<HumanWithSubOtherDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
     description: 'describes a human being where other.age is index',
@@ -251,7 +251,7 @@ export const humanSubIndex: RxJsonSchema<HumanWithSubOtherDocumentType> = deepFr
  * each field is an index,
  * use this to slow down inserts in tests
  */
-export const humanWithAllIndex: RxJsonSchema<HumanDocumentType> = deepFreeze({
+export const humanWithAllIndex: RxJsonSchema<HumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -279,7 +279,7 @@ export const humanWithAllIndex: RxJsonSchema<HumanDocumentType> = deepFreeze({
     required: ['firstName', 'lastName']
 });
 
-export const nestedHuman: RxJsonSchema<NestedHumanDocumentType> = deepFreeze({
+export const nestedHuman: RxJsonSchema<NestedHumanDocumentType> = {
     title: 'human nested',
     version: 0,
     description: 'describes a human being with a nested field',
@@ -310,9 +310,9 @@ export const nestedHuman: RxJsonSchema<NestedHumanDocumentType> = deepFreeze({
     },
     required: ['firstName'],
     indexes: []
-});
+};
 
-export const deepNestedHuman: RxJsonSchema<DeepNestedHumanDocumentType> = deepFreeze({
+export const deepNestedHuman: RxJsonSchema<DeepNestedHumanDocumentType> = {
     title: 'deep human nested',
     version: 0,
     keyCompression: true,
@@ -346,9 +346,9 @@ export const deepNestedHuman: RxJsonSchema<DeepNestedHumanDocumentType> = deepFr
     },
     indexes: [],
     required: ['mainSkill']
-});
+};
 
-export const noIndexHuman: RxJsonSchema<NoIndexHumanDocumentType> = deepFreeze({
+export const noIndexHuman: RxJsonSchema<NoIndexHumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
     description: 'this schema has no index',
@@ -366,7 +366,7 @@ export const noIndexHuman: RxJsonSchema<NoIndexHumanDocumentType> = deepFreeze({
     required: ['lastName']
 });
 
-export const noStringIndex: RxJsonSchema<NostringIndexDocumentType> = deepFreeze({
+export const noStringIndex: RxJsonSchema<NostringIndexDocumentType> = overwritable.deepFreezeWhenDevMode({
     description: 'the index has no type:string',
     version: 0,
     keyCompression: true,
@@ -385,7 +385,7 @@ export const noStringIndex: RxJsonSchema<NostringIndexDocumentType> = deepFreeze
 });
 
 
-export const bigHuman: RxJsonSchema<BigHumanDocumentType> = deepFreeze({
+export const bigHuman: RxJsonSchema<BigHumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
     description: 'describes a human being with 2 indexes',
@@ -415,7 +415,7 @@ export const bigHuman: RxJsonSchema<BigHumanDocumentType> = deepFreeze({
     indexes: ['firstName', 'dnaHash']
 });
 
-export const encryptedHuman: RxJsonSchema<EncryptedHumanDocumentType> = deepFreeze({
+export const encryptedHuman: RxJsonSchema<EncryptedHumanDocumentType> = {
     title: 'human encrypted',
     version: 0,
     description: 'uses an encrypted field',
@@ -436,9 +436,9 @@ export const encryptedHuman: RxJsonSchema<EncryptedHumanDocumentType> = deepFree
     indexes: [],
     required: ['firstName', 'secret'],
     encrypted: ['secret']
-});
+};
 
-export const encryptedObjectHuman: RxJsonSchema<EncryptedObjectHumanDocumentType> = deepFreeze({
+export const encryptedObjectHuman: RxJsonSchema<EncryptedObjectHumanDocumentType> = {
     title: 'human encrypted',
     version: 0,
     keyCompression: true,
@@ -467,9 +467,9 @@ export const encryptedObjectHuman: RxJsonSchema<EncryptedObjectHumanDocumentType
     indexes: [],
     required: ['firstName', 'secret'],
     encrypted: ['secret']
-});
+};
 
-export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = deepFreeze({
+export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = {
     title: 'human encrypted',
     version: 0,
     keyCompression: true,
@@ -530,9 +530,9 @@ export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = 
         'deepSecret.darkhole.pw',
         'nestedSecret.darkhole.pw'
     ]
-});
+};
 
-export const notExistingIndex: RxJsonSchema<{ passportId: string; address: { street: string } }> = deepFreeze({
+export const notExistingIndex: RxJsonSchema<{ passportId: string; address: { street: string } }> = {
     title: 'index',
     version: 0,
     description: 'this schema has a specified index which does not exists',
@@ -554,9 +554,9 @@ export const notExistingIndex: RxJsonSchema<{ passportId: string; address: { str
         'passportId'
     ],
     indexes: ['address.apartment']
-});
+};
 
-export const compoundIndex: RxJsonSchema<CompoundIndexDocumentType> = deepFreeze({
+export const compoundIndex: RxJsonSchema<CompoundIndexDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'compund index',
     version: 0,
     description: 'this schema has a compoundIndex',
@@ -582,7 +582,7 @@ export const compoundIndex: RxJsonSchema<CompoundIndexDocumentType> = deepFreeze
     ]
 });
 
-export const compoundIndexNoString: RxJsonSchema<CompoundIndexNoStringDocumentType> = deepFreeze({
+export const compoundIndexNoString: RxJsonSchema<CompoundIndexNoStringDocumentType> = {
     title: 'compound index',
     version: 0,
     description: 'this schema has a compoundIndex',
@@ -603,9 +603,9 @@ export const compoundIndexNoString: RxJsonSchema<CompoundIndexNoStringDocumentTy
     indexes: [
         [10, 'passportCountry']
     ]
-} as RxJsonSchema<CompoundIndexNoStringDocumentType>);
+} as RxJsonSchema<CompoundIndexNoStringDocumentType>;
 
-export const wrongCompoundFormat: RxJsonSchema<CompoundIndexDocumentType> = deepFreeze({
+export const wrongCompoundFormat: RxJsonSchema<CompoundIndexDocumentType> = {
     title: 'compund index',
     version: 0,
     description: 'this schema has a compoundIndex',
@@ -629,7 +629,7 @@ export const wrongCompoundFormat: RxJsonSchema<CompoundIndexDocumentType> = deep
     compoundIndexes: [{
         foo: 'bar'
     }]
-} as RxJsonSchema<CompoundIndexDocumentType>);
+} as RxJsonSchema<CompoundIndexDocumentType>;
 
 export const empty: RxJsonSchema<any> = {
     title: 'empty schema',
@@ -644,7 +644,7 @@ export const empty: RxJsonSchema<any> = {
     required: ['id']
 };
 
-export const heroArray: RxJsonSchema<HeroArrayDocumentType> = deepFreeze({
+export const heroArray: RxJsonSchema<HeroArrayDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'hero schema',
     version: 0,
     keyCompression: true,
@@ -677,7 +677,7 @@ export const heroArray: RxJsonSchema<HeroArrayDocumentType> = deepFreeze({
     ]
 });
 
-export const simpleArrayHero: RxJsonSchema<SimpleHeroArrayDocumentType> = deepFreeze({
+export const simpleArrayHero: RxJsonSchema<SimpleHeroArrayDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'hero schema',
     version: 0,
     description: 'describes a hero with a string-array-field',
@@ -702,7 +702,7 @@ export const simpleArrayHero: RxJsonSchema<SimpleHeroArrayDocumentType> = deepFr
     ]
 });
 
-export const primaryHumanLiteral = deepFreeze({
+export const primaryHumanLiteral = overwritable.deepFreezeWhenDevMode({
     title: 'human schema with primary',
     version: 0,
     description: 'describes a human being with passsportID as primary',
@@ -732,7 +732,7 @@ const primaryHumanTypedSchema = toTypedRxJsonSchema(primaryHumanLiteral);
 export type PrimaryHumanDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof primaryHumanTypedSchema>;
 export const primaryHuman: RxJsonSchema<PrimaryHumanDocType> = primaryHumanLiteral;
 
-export const humanNormalizeSchema1Literal = deepFreeze({
+export const humanNormalizeSchema1Literal = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
     keyCompression: true,
@@ -757,7 +757,7 @@ const humanNormalizeSchema1Typed = toTypedRxJsonSchema(humanNormalizeSchema1Lite
 export type AgeHumanDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof humanNormalizeSchema1Typed>;
 export const humanNormalizeSchema1: RxJsonSchema<AgeHumanDocumentType> = humanNormalizeSchema1Literal;
 
-export const humanNormalizeSchema2: RxJsonSchema<AgeHumanDocumentType> = deepFreeze({
+export const humanNormalizeSchema2: RxJsonSchema<AgeHumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
     keyCompression: true,
@@ -779,7 +779,7 @@ export const humanNormalizeSchema2: RxJsonSchema<AgeHumanDocumentType> = deepFre
     required: ['age', 'passportId']
 });
 
-export const refHuman: RxJsonSchema<RefHumanDocumentType> = deepFreeze({
+export const refHuman: RxJsonSchema<RefHumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human related to other human',
     version: 0,
     keyCompression: true,
@@ -799,7 +799,7 @@ export const refHuman: RxJsonSchema<RefHumanDocumentType> = deepFreeze({
     ]
 });
 
-export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = deepFreeze({
+export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -843,9 +843,9 @@ export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = de
         'info'
     ],
     indexes: ['firstName']
-});
+};
 
-export const refHumanNested: RxJsonSchema<RefHumanNestedDocumentType> = deepFreeze({
+export const refHumanNested: RxJsonSchema<RefHumanNestedDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human related to other human',
     version: 0,
     keyCompression: true,
@@ -932,7 +932,7 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
     return ret;
 }
 
-export const point: RxJsonSchema<PointDocumentType> = deepFreeze({
+export const point: RxJsonSchema<PointDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'point schema',
     version: 0,
     description: 'describes coordinates in 2d space',
@@ -952,7 +952,7 @@ export const point: RxJsonSchema<PointDocumentType> = deepFreeze({
     required: ['x', 'y']
 });
 
-export const humanMinimal: RxJsonSchema<SimpleHumanV3DocumentType> = deepFreeze({
+export const humanMinimal: RxJsonSchema<SimpleHumanV3DocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -974,7 +974,7 @@ export const humanMinimal: RxJsonSchema<SimpleHumanV3DocumentType> = deepFreeze(
     required: ['passportId', 'age']
 });
 
-export const humanMinimalBroken: RxJsonSchema<{ passportId: string; broken: number }> = deepFreeze({
+export const humanMinimalBroken: RxJsonSchema<{ passportId: string; broken: number }> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -991,14 +991,14 @@ export const humanMinimalBroken: RxJsonSchema<{ passportId: string; broken: numb
     },
     indexes: [],
     required: ['passportId', 'broken']
-} as unknown as RxJsonSchema<any>);
+} as unknown as RxJsonSchema<any>;
 
 
 /**
  * used in the graphql-test
  * contains timestamp
  */
-export const humanWithTimestamp: RxJsonSchema<HumanWithTimestampDocumentType> = deepFreeze({
+export const humanWithTimestamp: RxJsonSchema<HumanWithTimestampDocumentType> = overwritable.deepFreezeWhenDevMode({
     version: 0,
     type: 'object',
     primaryKey: 'id',
@@ -1027,7 +1027,7 @@ export const humanWithTimestamp: RxJsonSchema<HumanWithTimestampDocumentType> = 
  * each field is an index,
  * use this to slow down inserts in tests
  */
-export const humanWithTimestampAllIndex: RxJsonSchema<HumanWithTimestampDocumentType> = deepFreeze({
+export const humanWithTimestampAllIndex: RxJsonSchema<HumanWithTimestampDocumentType> = overwritable.deepFreezeWhenDevMode({
     version: 0,
     type: 'object',
     primaryKey: 'id',
@@ -1058,7 +1058,7 @@ export const humanWithSimpleAndCompoundIndexes: RxJsonSchema<{
     age: number;
     createdAt: number;
     updatedAt: number;
-}> = deepFreeze({
+}> = overwritable.deepFreezeWhenDevMode({
     version: 0,
     primaryKey: 'id',
     type: 'object',
@@ -1087,7 +1087,7 @@ export const humanWithSimpleAndCompoundIndexes: RxJsonSchema<{
     required: ['id', 'name', 'age', 'updatedAt']
 });
 
-export const humanWithDeepNestedIndexes: RxJsonSchema<{ id: string; name: string; job: any }> = deepFreeze({
+export const humanWithDeepNestedIndexes: RxJsonSchema<{ id: string; name: string; job: any }> = overwritable.deepFreezeWhenDevMode({
     version: 0,
     primaryKey: 'id',
     type: 'object',
@@ -1132,7 +1132,7 @@ export const humanWithDeepNestedIndexes: RxJsonSchema<{ id: string; name: string
     indexes: ['name', 'job.name', 'job.manager.fullName', 'job.manager.previousJobs.[].name']
 });
 
-export const humanIdAndAgeIndex: RxJsonSchema<{ id: string; name: string; age: number; }> = deepFreeze({
+export const humanIdAndAgeIndex: RxJsonSchema<{ id: string; name: string; age: number; }> = overwritable.deepFreezeWhenDevMode({
     version: 0,
     description: 'uses a compound index with id as lowest level',
     primaryKey: 'id',
