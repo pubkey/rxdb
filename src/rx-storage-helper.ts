@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
-import { fillPrimaryKey } from './rx-schema';
+import { fillPrimaryKey } from './rx-schema-helper';
 import type {
     BulkWriteLocalRow,
     BulkWriteRow,
@@ -27,7 +27,7 @@ import type {
     RxStorageInstance,
     RxStorageKeyObjectInstance
 } from './types';
-import { firstPropertyValueOfObject, flatClone } from './util';
+import { clone, firstPropertyValueOfObject, flatClone } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 
@@ -216,6 +216,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         };
 
         runPluginHooks('preWriteToStorageInstance', hookParams);
+
         return hookParams.doc as any;
     }
 
@@ -229,7 +230,9 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             doc: data
         };
 
+
         runPluginHooks('postReadFromInstance', hookParams);
+
         return hookParams.doc;
     }
 
@@ -241,23 +244,24 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         options: storageInstance.options,
         bulkAddRevisions(documents) {
             const toStorageDocuments = documents.map(doc => transformDocumentDataFromRxDBToRxStorage(doc, true))
-            return database.lockedRun(
+            const ret = database.lockedRun(
                 () => storageInstance.bulkAddRevisions(
                     toStorageDocuments
                 )
             );
+            return ret;
         },
         bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
             const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows.map(row => {
                 return {
-                    document: transformDocumentDataFromRxDBToRxStorage(row.document, true),
                     previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(row.previous, false) : undefined,
+                    document: transformDocumentDataFromRxDBToRxStorage(row.document, true)
                 }
             });
 
             return database.lockedRun(
                 () => storageInstance.bulkWrite(
-                    toStorageWriteRows
+                    clone(toStorageWriteRows)
                 )
             ).then(writeResult => {
                 const ret: RxStorageBulkWriteResponse<RxDocType> = {
@@ -270,6 +274,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                 Object.entries(writeResult.success).forEach(([k, v]) => {
                     ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
                 });
+
                 return ret;
             });
         },

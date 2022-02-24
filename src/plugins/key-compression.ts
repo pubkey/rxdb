@@ -232,6 +232,7 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
                     return;
                 }
                 const state = getCompressionStateByRxJsonSchema(params.schema);
+                
                 params.doc = decompressObject(
                     state.table,
                     params.doc

@@ -40,6 +40,26 @@ config.parallel('encryption.test.ts', () => {
                 const decrypted = decryptString(encrypted, 'mypw');
                 assert.deepStrictEqual(decrypted, value);
             });
+            it('should encrypt and decrypt an extremly long string', () => {
+                const value = randomCouchString(5000);
+                const pwd = 'pwd';
+                const encrypted = encryptString(value, pwd);
+                const decrypted = decryptString(encrypted, pwd);
+                assert.notStrictEqual(value, encrypted);
+                assert.ok(encrypted.length > value.length);
+                assert.strictEqual(typeof encrypted, 'string');
+                assert.strictEqual(value, decrypted);
+            });
+            it('should encrypt and decrypt an extremly long password', () => {
+                const value = 'foobar';
+                const pwd = randomCouchString(5000);
+                const encrypted = encryptString(value, pwd);
+                const decrypted = decryptString(encrypted, pwd);
+                assert.notStrictEqual(value, encrypted);
+                assert.ok(encrypted.length > value.length);
+                assert.strictEqual(typeof encrypted, 'string');
+                assert.strictEqual(value, decrypted);
+            });
         });
     });
     describe('Collection.insert()', () => {

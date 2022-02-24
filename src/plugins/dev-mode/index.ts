@@ -34,8 +34,12 @@ import deepFreeze from 'deep-freeze';
  * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */
 export function deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T> {
-    // direct return if falsy
-    if (!obj) {
+    // direct return if not suitable for deepFreeze()
+    if (
+        !obj ||
+        typeof obj === 'string' ||
+        typeof obj === 'number'
+    ) {
         return obj as any;
     }
 

@@ -60,7 +60,7 @@ import { RxDocumentData } from '../../src/types';
 
 declare type WithDeleted<T> = T & { deleted: boolean };
 
-describe('replication-graphql.test.js', () => {
+describe('replication-graphql.test.ts', () => {
     // for port see karma.config.js
     const browserServerUrl = 'http://localhost:18000' + GRAPHQL_PATH;
 
@@ -1085,7 +1085,7 @@ describe('replication-graphql.test.js', () => {
                 await c.database.destroy();
             });
             it('should work with multiInstance', async () => {
-                if(config.isFastMode()){
+                if (config.isFastMode()) {
                     // TODO this test randomly fails in fast mode with lokijs storage.
                     return;
                 }
@@ -1922,8 +1922,7 @@ describe('replication-graphql.test.js', () => {
                         .map(d => collection.insert(d))
                 );
 
-                const testData = getTestData(0);
-                const server = await SpawnServer.spawn(testData);
+                const server = await SpawnServer.spawn(getTestData(0));
 
                 const replicationState = collection.syncGraphQL({
                     url: server.url,

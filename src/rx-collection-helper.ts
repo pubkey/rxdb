@@ -7,7 +7,7 @@ import type {
 } from './types';
 import { RxCollectionBase } from './rx-collection';
 import { getDefaultRxDocumentMeta } from './util';
-import { fillPrimaryKey } from './rx-schema';
+import { fillPrimaryKey } from './rx-schema-helper';
 
 /**
  * fills in the default data.

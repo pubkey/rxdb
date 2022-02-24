@@ -16,10 +16,13 @@ import objectPath from 'object-path';
 import type {
     RxPlugin,
     RxDatabase,
-    RxLocalDocumentData
+    RxLocalDocumentData,
+    RxDocumentData
 } from '../types';
 import {
     blobBufferUtil,
+    clone,
+    flatClone,
     getDefaultRxDocumentMeta,
     hash,
     PROMISE_RESOLVE_FALSE
@@ -88,6 +91,16 @@ export async function storePasswordHashIntoDatabase(
     }
 }
 
+
+function cloneWithoutAttachments<T>(data: RxDocumentData<T>): RxDocumentData<T> {
+    const attachments = data._attachments;
+    data = flatClone(data);
+    delete (data as any)._attachments;
+    data = clone(data);
+    data._attachments = attachments;
+    return data;
+}
+
 export const RxDBEncryptionPlugin: RxPlugin = {
     name: 'encryption',
     rxdb: true,
@@ -115,13 +128,17 @@ export const RxDBEncryptionPlugin: RxPlugin = {
         },
         preWriteToStorageInstance: {
             before: (args) => {
-                const docData = args.doc;
                 const password = args.database.password;
                 const schema = args.schema
-                if (!password || !schema.encrypted) {
-                    return docData;
+                if (
+                    !password ||
+                    !schema.encrypted ||
+                    schema.encrypted.length === 0
+                ) {
+                    return;
                 }
 
+                const docData = cloneWithoutAttachments(args.doc);
                 schema.encrypted
                     .forEach(path => {
                         const value = objectPath.get(docData, path);
@@ -133,16 +150,21 @@ export const RxDBEncryptionPlugin: RxPlugin = {
                         const encrypted = encryptString(stringValue, password);
                         objectPath.set(docData, path, encrypted);
                     });
+                args.doc = docData;
             }
         },
         postReadFromInstance: {
             after: (args) => {
-                const docData = args.doc;
                 const password = args.database.password;
                 const schema = args.schema
-                if (!password || !schema.encrypted) {
-                    return docData;
+                if (
+                    !password ||
+                    !schema.encrypted ||
+                    schema.encrypted.length === 0
+                ) {
+                    return;
                 }
+                const docData = cloneWithoutAttachments(args.doc);
                 schema.encrypted
                     .forEach(path => {
                         const value = objectPath.get(docData, path);
@@ -153,7 +175,7 @@ export const RxDBEncryptionPlugin: RxPlugin = {
                         const decryptedParsed = JSON.parse(decrypted);
                         objectPath.set(docData, path, decryptedParsed);
                     });
-                return docData;
+                args.doc = docData;
             }
         },
         preWriteAttachment: {
