@@ -5,9 +5,7 @@ import {
     RxStorageInstanceCreationParams
 } from './rx-storage';
 import type {
-    BlobBuffer,
     DeepReadonly,
-    RxAttachmentCreator,
     RxDatabase,
     RxJsonSchema
 } from '../types'
