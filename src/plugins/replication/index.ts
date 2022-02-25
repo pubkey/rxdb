@@ -376,6 +376,11 @@ export class RxReplicationStateBase<RxDocType> {
             });
         }
         if (bulkWriteData.length > 0) {
+            /**
+             * TODO only do a write to a document
+             * if the relevant data has been changed.
+             * Otherwise we can ignore the pulled document data.
+             */
             const bulkWriteResponse = await this.collection.storageInstance.bulkWrite(bulkWriteData);
             /**
              * If writing the pulled documents caused an conflict error,

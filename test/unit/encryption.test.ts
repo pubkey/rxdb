@@ -7,83 +7,58 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    createRxSchema,
     createRxDatabase,
     RxJsonSchema,
-    randomCouchString,
-    createCrypter,
+    randomCouchString
 } from '../../';
+
+import {
+    encryptString,
+    decryptString
+} from '../../plugins/encryption';
 
 import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
 
-config.parallel('encryption.test.js', () => {
-    describe('Crypter.js', () => {
-        it('create', () => {
-            const schema = createRxSchema(schemas.human);
-            const c = createCrypter('foobar', schema);
-            assert.strictEqual(c.constructor.name, 'Crypter');
-        });
-        describe('._encryptString()', () => {
+config.parallel('encryption.test.ts', () => {
+    describe('basics', () => {
+        describe('.encryptString()', () => {
             it('string', () => {
-                const schema = createRxSchema(schemas.human);
-                const c = createCrypter('mypw', schema);
                 const value = 'foobar';
-                const encrypted = c._encryptString(value);
+                const encrypted = encryptString(value, 'mypw');
                 assert.strictEqual(typeof encrypted, 'string');
                 assert.ok(!encrypted.includes(value));
                 assert.ok(encrypted.length > value.length);
             });
         });
-        describe('._decryptString()', () => {
+        describe('.decryptString()', () => {
             it('string', () => {
-                const schema = createRxSchema(schemas.human);
-                const c = createCrypter('mypw', schema);
                 const value = 'foobar';
-                const encrypted = c._encryptString(value);
-                const decrypted = c._decryptString(encrypted);
+                const encrypted = encryptString(value, 'mypw');
+                const decrypted = decryptString(encrypted, 'mypw');
                 assert.deepStrictEqual(decrypted, value);
             });
-        });
-
-        describe('.encrypt()', () => {
-            it('string', () => {
-                const schema = createRxSchema(schemas.encryptedHuman);
-                const c = createCrypter('mypw', schema);
-                const value = schemaObjects.encryptedHuman();
-                const encrypted = c.encrypt(value);
-                assert.notStrictEqual(encrypted.secret, value.secret);
-                assert.strictEqual(typeof encrypted.secret, 'string');
-                assert.strictEqual(value.passportId, encrypted.passportId);
+            it('should encrypt and decrypt an extremly long string', () => {
+                const value = randomCouchString(5000);
+                const pwd = 'pwd';
+                const encrypted = encryptString(value, pwd);
+                const decrypted = decryptString(encrypted, pwd);
+                assert.notStrictEqual(value, encrypted);
+                assert.ok(encrypted.length > value.length);
+                assert.strictEqual(typeof encrypted, 'string');
+                assert.strictEqual(value, decrypted);
             });
-            it('object', () => {
-                const schema = createRxSchema(schemas.encryptedObjectHuman);
-                const c = createCrypter('mypw', schema);
-                const value = schemaObjects.encryptedObjectHuman();
-                const encrypted = c.encrypt(value);
-                assert.notDeepStrictEqual(encrypted.secret, value.secret);
-                assert.strictEqual(typeof encrypted.secret, 'string');
-                assert.strictEqual(value.passportId, encrypted.passportId);
-            });
-        });
-        describe('.decrypt()', () => {
-            it('string', () => {
-                const schema = createRxSchema(schemas.encryptedHuman);
-                const c = createCrypter('mypw', schema);
-                const value = schemaObjects.encryptedHuman();
-                const encrypted = c.encrypt(value);
-                const decrypted = c.decrypt(encrypted);
-                assert.deepStrictEqual(decrypted, value);
-            });
-            it('object', () => {
-                const schema = createRxSchema(schemas.encryptedObjectHuman);
-                const c = createCrypter('mypw', schema);
-                const value = schemaObjects.encryptedObjectHuman();
-                const encrypted = c.encrypt(value);
-                const decrypted = c.decrypt(encrypted);
-                assert.deepStrictEqual(decrypted, value);
+            it('should encrypt and decrypt an extremly long password', () => {
+                const value = 'foobar';
+                const pwd = randomCouchString(5000);
+                const encrypted = encryptString(value, pwd);
+                const decrypted = decryptString(encrypted, pwd);
+                assert.notStrictEqual(value, encrypted);
+                assert.ok(encrypted.length > value.length);
+                assert.strictEqual(typeof encrypted, 'string');
+                assert.strictEqual(value, decrypted);
             });
         });
     });

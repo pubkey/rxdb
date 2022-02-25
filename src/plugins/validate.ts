@@ -64,24 +64,22 @@ const runAfterSchemaCreated = (rxSchema: RxSchema) => {
     });
 };
 
-export const rxdb = true;
-export const prototypes = {
-    /**
-     * set validate-function for the RxSchema.prototype
-     * @param prototype of RxSchema
-     */
-    RxSchema: (proto: any) => {
-        proto._getValidator = _getValidator;
-        proto.validate = validate;
-    }
-};
-export const hooks = {
-    createRxSchema: runAfterSchemaCreated
-};
-
 export const RxDBValidatePlugin: RxPlugin = {
     name: 'validate',
-    rxdb,
-    prototypes,
-    hooks
+    rxdb: true,
+    prototypes: {
+        /**
+         * set validate-function for the RxSchema.prototype
+         * @param prototype of RxSchema
+         */
+        RxSchema: (proto: any) => {
+            proto._getValidator = _getValidator;
+            proto.validate = validate;
+        }
+    },
+    hooks: {
+        createRxSchema: {
+            after: runAfterSchemaCreated
+        }
+    }
 };

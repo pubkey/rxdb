@@ -7,6 +7,7 @@ import type {
 } from './types';
 import { RxCollectionBase } from './rx-collection';
 import { getDefaultRxDocumentMeta } from './util';
+import { fillPrimaryKey } from './rx-schema-helper';
 
 /**
  * fills in the default data.
@@ -17,7 +18,11 @@ export function fillObjectDataBeforeInsert(
     data: any
 ): any {
     let useJson = collection.schema.fillObjectWithDefaults(data);
-    useJson = collection.schema.fillPrimaryKey(useJson);
+    useJson = fillPrimaryKey(
+        collection.schema.primaryPath,
+        collection.schema.jsonSchema,
+        useJson
+    );
     useJson._meta = getDefaultRxDocumentMeta();
     return useJson;
 }

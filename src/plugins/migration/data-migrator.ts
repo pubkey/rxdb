@@ -50,9 +50,6 @@ import {
     getPreviousVersions
 } from '../../rx-schema';
 import {
-    createCrypter
-} from '../../crypter';
-import {
     getMigrationStateByDatabase,
     MigrationStateWithCollection
 } from './migration-state';
@@ -221,8 +218,6 @@ export async function createOldCollection(
     dataMigrator: DataMigrator
 ): Promise<OldRxCollection> {
     const database = dataMigrator.newestCollection.database;
-    const schema = createRxSchema(schemaObj, false);
-
     const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
         databaseName: database.name,
         collectionName: dataMigrator.newestCollection.name,
@@ -244,14 +239,14 @@ export async function createOldCollection(
         newestCollection: dataMigrator.newestCollection,
         database,
         schema: createRxSchema(schemaObj, false),
-        storageInstance,
-        _crypter: createCrypter(
-            database.password,
-            schema
-        )
+        storageInstance
     };
 
-    ret.storageInstance = getWrappedStorageInstance(ret as any, storageInstance);
+    ret.storageInstance = getWrappedStorageInstance(
+        ret as any,
+        storageInstance,
+        schemaObj
+    );
 
     return ret;
 }

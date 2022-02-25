@@ -18,7 +18,11 @@
 - Added `doesBroadcastChangestream()` to `RxStorageStatics`
 - Fix (replication primitives) only drop pulled documents when a relevant document was changed locally.
 - Add `_meta` property to stored document data.
+
 - Attachments are now internally handled as string instead of `Blob` or `Buffer`
+- RxPlugin hooks now can be defined as running `before` or `after` other plugin hooks.
+- Removed the encrypted export from the json-import-export plugin. This was barely used and made everything more complex. All exports are no non-encrypted. If you need them encrypted, you can still run by encryption after the export is done.
+- Refactor the encryption plugin so no more plugin specific code is in the RxDB core.
 
 ### 11.6.0 (4 February 2022)
 

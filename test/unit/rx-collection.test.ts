@@ -2102,7 +2102,10 @@ config.parallel('rx-collection.test.js', () => {
             //  Simulate a write from a primitive replication
             await collection.storageInstance.bulkAddRevisions(
                 matchingIds
-                    .map(id => createObject(id))
+                    .map(id => {
+                        const saveMe = createObject(id);
+                        return saveMe;
+                    })
             );
 
             //  Now we should have 2 updates

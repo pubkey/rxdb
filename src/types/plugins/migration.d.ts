@@ -1,4 +1,3 @@
-import { Crypter } from '../../crypter';
 import { DataMigrator } from '../../plugins/migration';
 import { RxSchema } from '../../rx-schema';
 import { RxStorageInstance } from '../rx-storage.interface';
@@ -23,7 +22,6 @@ export interface OldRxCollection {
     schema: RxSchema;
     storageInstance: RxStorageInstance<any, any, any>,
     dataMigrator: DataMigrator;
-    _crypter: Crypter;
     newestCollection: RxCollection;
     database: RxDatabase;
     _migrate?: boolean;
