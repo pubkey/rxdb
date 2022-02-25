@@ -14,10 +14,10 @@ import {
     DEFAULT_COMPRESSION_FLAG,
     createCompressedJsonSchema
 } from 'jsonschema-key-compression';
-import { getPrimaryFieldOfPrimaryKey } from '../rx-schema';
 import {
     overwritable
 } from '../overwritable';
+import { getPrimaryFieldOfPrimaryKey } from '../rx-schema-helper';
 
 import type {
     RxPlugin,

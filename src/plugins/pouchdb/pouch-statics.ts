@@ -12,7 +12,7 @@ import {
     primarySwapPouchDbQuerySelector
 } from './pouchdb-helper';
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import { getSchemaByObjectPath } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import type {
     MangoQuery,
     MangoQuerySortDirection,
@@ -22,7 +22,6 @@ import type {
     RxJsonSchema,
     RxStorageStatics
 } from '../../types';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { overwritable } from '../../overwritable';
 import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
 

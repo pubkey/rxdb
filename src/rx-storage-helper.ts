@@ -6,8 +6,7 @@ import { map } from 'rxjs/operators';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema';
-import { fillPrimaryKey } from './rx-schema-helper';
+import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     BulkWriteLocalRow,
     BulkWriteRow,
@@ -187,9 +186,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
     rxJsonSchema: RxJsonSchema<RxDocType>
 ): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
     overwritable.deepFreezeWhenDevMode(rxJsonSchema);
-
     const primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
-
 
     function transformDocumentDataFromRxDBToRxStorage(
         data: RxDocumentData<RxDocType> | RxDocumentWriteData<RxDocType>,

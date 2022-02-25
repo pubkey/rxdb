@@ -3,6 +3,7 @@ import { newRxError } from './rx-error';
 import type {
     CompositePrimaryKey,
     JsonSchema,
+    PrimaryKey,
     RxDocumentData,
     RxJsonSchema,
     StringKeys
@@ -76,6 +77,16 @@ export function fillPrimaryKey<T>(
 
     (cloned as any)[primaryPath] = newPrimary;
     return cloned;
+}
+
+export function getPrimaryFieldOfPrimaryKey<RxDocType>(
+    primaryKey: PrimaryKey<RxDocType>
+): keyof RxDocType {
+    if (typeof primaryKey === 'string') {
+        return primaryKey as any;
+    } else {
+        return (primaryKey as CompositePrimaryKey<RxDocType>).key;
+    }
 }
 
 /**

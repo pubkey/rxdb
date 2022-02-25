@@ -21,10 +21,9 @@ import type {
     CompositePrimaryKey,
     DeepMutable,
     DeepReadonly, JsonSchema, MaybeReadonly,
-    PrimaryKey,
     RxJsonSchema
 } from './types';
-import { getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
+import { getComposedPrimaryKeyOfDocumentData, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 
 export class RxSchema<T = any> {
     public indexes: MaybeReadonly<string[]>[];
@@ -174,16 +173,6 @@ export function getIndexes<T = any>(
     jsonSchema: RxJsonSchema<T>
 ): MaybeReadonly<string[]>[] {
     return (jsonSchema.indexes || []).map(index => isMaybeReadonlyArray(index) ? index : [index]);
-}
-
-export function getPrimaryFieldOfPrimaryKey<RxDocType>(
-    primaryKey: PrimaryKey<RxDocType>
-): keyof RxDocType {
-    if (typeof primaryKey === 'string') {
-        return primaryKey as any;
-    } else {
-        return (primaryKey as CompositePrimaryKey<RxDocType>).key;
-    }
 }
 
 /**

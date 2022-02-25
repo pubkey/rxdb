@@ -54,7 +54,7 @@ import {
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
 import type { QueryMatcher } from 'event-reduce-js';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 
 let _queryCount = 0;
 const newQueryID = function (): number {

@@ -16,7 +16,6 @@ import {
     randomCouchString, isMaybeReadonlyArray
 } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
     RxStorageInstance,
     LokiSettings,
@@ -55,6 +54,7 @@ import type {
     Collection
 } from 'lokijs';
 import type { RxStorageLoki } from './rx-storage-lokijs';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 let instanceId = now();
 

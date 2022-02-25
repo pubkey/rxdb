@@ -16,7 +16,6 @@ import {
     PROMISE_RESOLVE_VOID
 } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
     RxStorageInstance,
     RxStorageChangeEvent,
@@ -41,6 +40,7 @@ import {
     getDocsInDb
 } from './dexie-helper';
 import { dexieQuery } from './query/dexie-query';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 let instanceId = now();
 

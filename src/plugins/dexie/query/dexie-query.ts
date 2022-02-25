@@ -1,4 +1,4 @@
-import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema';
+import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema-helper';
 import type { MangoQuery, PreparedQuery, RxJsonSchema, RxStorageQueryResult } from '../../../types';
 import { clone, ensureNotFalsy } from '../../../util';
 import { getPouchIndexDesignDocNameByIndex, POUCHDB_DESIGN_PREFIX, pouchSwapIdToPrimaryString } from '../../pouchdb';

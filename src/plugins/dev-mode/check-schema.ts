@@ -7,8 +7,7 @@ import objectPath from 'object-path';
 import {
     newRxError
 } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
-import { getSchemaByObjectPath } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import type {
     CompositePrimaryKey,
     JsonSchema,

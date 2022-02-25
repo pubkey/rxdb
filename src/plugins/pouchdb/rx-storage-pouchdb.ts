@@ -18,13 +18,13 @@ import {
 } from './pouch-db';
 import { newRxError } from '../../rx-error';
 
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import {
     getPouchIndexDesignDocNameByIndex,
     PouchStorageInternals
 } from './pouchdb-helper';
 import { RxStoragePouchStatics } from './pouch-statics';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
     public name: string = 'pouchdb';
     public statics = RxStoragePouchStatics;

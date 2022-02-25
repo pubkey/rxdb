@@ -2,7 +2,6 @@ import type {
     DeterministicSortComparator
 } from 'event-reduce-js';
 import mingo from 'mingo';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
     DexieStorageInternals,
     MangoQuery,
@@ -14,6 +13,7 @@ import { DexieSettings } from '../../types';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
 import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
