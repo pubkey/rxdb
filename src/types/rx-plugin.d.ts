@@ -118,7 +118,11 @@ export interface RxPlugin {
              * By mutating the attachmentData,
              * the hook can modify the output.
              */
-            attachmentData: RxAttachmentCreator
+            attachmentData: {
+                id: string;
+                type: string;
+                data: string;
+            }
         }>;
         postReadAttachment?: RxPluginHooks<{
             database: RxDatabase;
@@ -129,7 +133,7 @@ export interface RxPlugin {
              * By mutating the plainData,
              * the hook can modify the output.
              */
-            plainData: BlobBuffer;
+            plainData: string;
         }>;
         createRxQuery?: RxPluginHooks<RxQuery>;
         createRxDocument?: RxPluginHooks<any>;

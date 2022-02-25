@@ -2104,8 +2104,6 @@ config.parallel('rx-collection.test.js', () => {
                 matchingIds
                     .map(id => {
                         const saveMe = createObject(id);
-                        console.log('saveMe1:');
-                        console.dir(saveMe);
                         return saveMe;
                     })
             );

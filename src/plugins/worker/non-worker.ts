@@ -5,7 +5,6 @@ import type {
     RxStorage,
     RxStorageInstanceCreationParams,
     RxStorageInstance,
-    BlobBuffer,
     BulkWriteRow,
     ChangeStreamOnceOptions,
     RxDocumentData,
@@ -143,7 +142,7 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
             preparedQuery
         );
     }
-    getAttachmentData(documentId: string, attachmentId: string): Promise<BlobBuffer> {
+    getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
         return this.internals.worker.getAttachmentData(
             this.internals.instanceId,
             documentId,

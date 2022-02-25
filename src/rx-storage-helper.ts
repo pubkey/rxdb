@@ -258,7 +258,8 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                     document: transformDocumentDataFromRxDBToRxStorage(row.document, true)
                 }
             });
-
+            console.log(':toStorageWriteRows:');
+            console.log(JSON.stringify(toStorageWriteRows, null, 4));
             return database.lockedRun(
                 () => storageInstance.bulkWrite(
                     clone(toStorageWriteRows)

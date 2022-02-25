@@ -1,6 +1,7 @@
 import {
     map
 } from 'rxjs/operators';
+
 import {
     blobBufferUtil,
     flatClone
@@ -17,9 +18,7 @@ import type {
     RxAttachmentData,
     RxDocumentData,
     RxAttachmentCreator,
-    RxAttachmentWriteData,
-    RxStorageStatics,
-    RxAttachmentDataMeta
+    RxAttachmentWriteData
 } from '../types';
 import { writeSingle } from '../rx-storage-helper';
 import { runAsyncPluginHooks } from '../hooks';
@@ -109,11 +108,17 @@ export class RxAttachment {
             plainData
         };
         await runAsyncPluginHooks('postReadAttachment', hookInput);
-        return hookInput.plainData;
+        const ret = blobBufferUtil.createBlobBufferFromBase64(
+            hookInput.plainData,
+            this.type as any
+        );
+        return ret;
     }
 
-    getStringData(): Promise<string> {
-        return this.getData().then(bufferBlob => blobBufferUtil.toString(bufferBlob));
+    async getStringData(): Promise<string> {
+        const data = await this.getData();
+        const string = await blobBufferUtil.toString(data);
+        return string;
     }
 }
 
@@ -142,23 +147,34 @@ export async function putAttachment(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
+
+    const dataSize = blobBufferUtil.size(attachmentData.data);
+    const storageStatics = this.collection.database.storage.statics;
+    const dataString = await blobBufferUtil.tobase64String(attachmentData.data);
+
+    const hookAttachmentData = {
+        id: attachmentData.id,
+        type: attachmentData.type,
+        data: dataString
+    };
     await runAsyncPluginHooks('preWriteAttachment', {
         database: this.collection.database,
         schema: this.collection.schema.jsonSchema,
-        attachmentData
+        attachmentData: hookAttachmentData
     });
 
     const {
         id, data, type
-    } = attachmentData;
+    } = hookAttachmentData;
 
-    const statics = this.collection.database.storage.statics;
+
+    const newHash = await storageStatics.hash(data).then(hash => storageStatics.hashKey + '-' + hash);
+    const newDigest = storageStatics.hashKey + '-' + newHash;
+
     this._atomicQueue = this._atomicQueue
         .then(async () => {
             if (skipIfSame && this._data._attachments && this._data._attachments[id]) {
                 const currentMeta = this._data._attachments[id];
-                const newHash = await statics.hash(data);
-                const newDigest = statics.hashKey + '-' + newHash;
                 if (currentMeta.type === type && currentMeta.digest === newDigest) {
                     // skip because same data and same type
                     return this.getAttachment(id);
@@ -168,13 +184,9 @@ export async function putAttachment(
             const docWriteData: RxDocumentWriteData<{}> = flatClone(this._data);
             docWriteData._attachments = flatClone(docWriteData._attachments);
 
-            const meta = await getAttachmentDataMeta(
-                this.collection.database.storage.statics,
-                data
-            );
             docWriteData._attachments[id] = {
-                digest: meta.digest,
-                length: meta.length,
+                digest: newDigest,
+                length: dataSize,
                 type,
                 data: data
             };
@@ -266,7 +278,6 @@ export async function preMigrateDocument<RxDocType>(
 
                 let rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
 
-
                 const hookInput = {
                     database: data.oldCollection.database,
                     schema: data.oldCollection.schema.jsonSchema,
@@ -276,13 +287,9 @@ export async function preMigrateDocument<RxDocType>(
                 await runAsyncPluginHooks('postReadAttachment', hookInput);
                 rawAttachmentData = hookInput.plainData;
 
-                const meta = await getAttachmentDataMeta(
-                    data.oldCollection.database.storage.statics,
-                    rawAttachmentData
-                );
                 newAttachments[attachmentId] = {
-                    digest: meta.digest,
-                    length: meta.length,
+                    digest: attachment.digest,
+                    length: attachment.length,
                     type: attachment.type,
                     data: rawAttachmentData
                 };
@@ -304,19 +311,6 @@ export async function postMigrateDocument(_action: any): Promise<void> {
      */
     return;
 }
-
-export async function getAttachmentDataMeta(
-    storageStatics: RxStorageStatics,
-    data: BlobBuffer
-): Promise<RxAttachmentDataMeta> {
-    const hash = await storageStatics.hash(data);
-    const length = blobBufferUtil.size(data);
-    return {
-        digest: storageStatics.hashKey + '-' + hash,
-        length
-    }
-}
-
 
 export const RxDBAttachmentsPlugin: RxPlugin = {
     name: 'attachments',

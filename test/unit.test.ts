@@ -21,6 +21,7 @@ import './unit/replication-graphql.test.js'; // TODO move down
 import './unit/rx-database.test.js';
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
+import './unit/attachments.test.js'; // TODO move down
 import './unit/rx-query.test.js';
 import './unit/primary.test.js';
 import './unit/temporary-document.test.js';
@@ -28,13 +29,13 @@ import './unit/change-event-buffer.test.js';
 import './unit/cache-replacement-policy.test';
 import './unit/query-builder.test.js';
 import './unit/idle-queue.test.js';
+import './unit/local-documents.test.js'; // MOVE DOWN
 import './unit/event-reduce.test.js';
 import './unit/reactive-collection.test.js';
 import './unit/reactive-query.test.js';
 import './unit/reactive-document.test.js';
 import './unit/data-migration.test.js';
 import './unit/hooks.test.js';
-import './unit/attachments.test.js';
 import './unit/orm.test.js';
 import './unit/population.test.js';
 import './unit/backup.test.js';

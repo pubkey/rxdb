@@ -3,7 +3,6 @@
  * that is supposed to run inside of the worker.
  */
 import type {
-    BlobBuffer,
     BulkWriteLocalRow,
     BulkWriteRow,
     ChangeStreamOnceOptions,
@@ -48,7 +47,7 @@ export type InWorkerStorage = {
         instanceId: number,
         documentId: string,
         attachmentId: string
-    ): Promise<BlobBuffer>;
+    ): Promise<string>;
     getChangedDocuments(
         instanceId: number,
         options: ChangeStreamOnceOptions
@@ -126,7 +125,7 @@ export function wrappedRxStorage<T, D>(
             instanceId: number,
             documentId: string,
             attachmentId: string
-        ): Promise<BlobBuffer> {
+        ): Promise<string> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.getAttachmentData(
                 documentId,

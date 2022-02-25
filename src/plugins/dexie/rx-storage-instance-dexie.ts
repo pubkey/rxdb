@@ -25,7 +25,6 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageBulkWriteError,
     RxStorageQueryResult,
-    BlobBuffer,
     ChangeStreamOnceOptions,
     RxJsonSchema,
     RxStorageChangedDocumentMeta,
@@ -486,7 +485,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return this.changes$.asObservable();
     }
 
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<BlobBuffer> {
+    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
         throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
     }
 

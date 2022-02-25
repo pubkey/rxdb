@@ -37,9 +37,23 @@ export function encryptString(value: string, password: string): string {
     return encrypted.toString();
 }
 
-export function decryptString(cipherText: string, password: string): string {
+export function decryptString(cipherText: string, password: any): string {
+    /**
+     * Trying to decrypt non-strings
+     * will cause no errors and will be hard to debug.
+     * So instead we do this check here.
+     */
+    if (typeof cipherText !== 'string') {
+        throw newRxError('SNH', {
+            args: {
+                cipherText
+            }
+        });
+    }
+
     const decrypted = AES.decrypt(cipherText, password);
-    return decrypted.toString(cryptoEnc);
+    const ret = decrypted.toString(cryptoEnc);
+    return ret;
 }
 
 

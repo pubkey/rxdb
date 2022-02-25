@@ -7,7 +7,6 @@ import {
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
-    BlobBuffer,
     BulkWriteRow,
     ChangeStreamOnceOptions,
     EventBulk,
@@ -34,6 +33,7 @@ import {
     writeAttachmentsToAttachments
 } from './pouchdb-helper';
 import {
+    blobBufferUtil,
     flatClone,
     getFromMapOrThrow,
     PROMISE_RESOLVE_VOID
@@ -186,12 +186,23 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             return storeDocumentData;
         });
 
+
+
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
             custom: {
                 primaryPath: this.primaryPath,
                 writeRowById
             }
         } as any);
+
+
+        // TODO remove this
+        try {
+            const testDoc = await this.internals.pouch.get(insertDocs[0]._id);
+            console.log('testDoc:');
+            console.dir(testDoc);
+        } catch (err) { }
+
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
@@ -225,7 +236,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 }
             })
         );
-
         return ret;
     }
 
@@ -248,12 +258,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     async getAttachmentData(
         documentId: string,
         attachmentId: string
-    ): Promise<BlobBuffer> {
+    ): Promise<string> {
         const attachmentData = await this.internals.pouch.getAttachment(
             documentId,
             attachmentId
         );
-        return attachmentData;
+        return blobBufferUtil.tobase64String(attachmentData);
     }
 
     async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
