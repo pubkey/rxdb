@@ -11,7 +11,6 @@ import {
 import { flatClone, getDefaultRxDocumentMeta } from '../../util';
 import { newRxError } from '../../rx-error';
 import { wasLastWriteFromPullReplication } from './revision-flag';
-import { runPluginHooks } from '../../hooks';
 
 //
 // things for the push-checkpoint
@@ -162,7 +161,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             if (changedDocs.has(id)) {
                 return;
             }
-            let changedDoc = docs[id];
+            const changedDoc = docs[id];
             if (!changedDoc) {
                 throw newRxError('SNH', { args: { docs, docIds } });
             }
@@ -179,16 +178,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             ) {
                 return false;
             }
-
-            // TODO why do we have to run the hooks here? arent they run by the storage instance wrapper?
-            const hookParams = {
-                collection,
-                doc: changedDoc
-            };
-            runPluginHooks('postReadFromInstance', hookParams);
-
-            changedDoc = hookParams.doc;
-
             changedDocIds.add(id);
             changedDocs.set(id, {
                 id,

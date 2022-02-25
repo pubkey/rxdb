@@ -16,7 +16,6 @@ import type {
     RxStorageQueryResult
 } from './rx-storage';
 import type {
-    BlobBuffer,
     MangoQuery,
     MangoQuerySortPart,
     RxJsonSchema
@@ -275,7 +274,7 @@ export interface RxStorageInstance<
     getAttachmentData(
         documentId: string,
         attachmentId: string
-    ): Promise<BlobBuffer>;
+    ): Promise<string>;
 
     /**
      * Returns the ids of all documents that have been

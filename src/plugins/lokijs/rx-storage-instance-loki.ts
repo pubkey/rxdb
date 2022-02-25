@@ -26,7 +26,6 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageBulkWriteError,
     RxStorageQueryResult,
-    BlobBuffer,
     ChangeStreamOnceOptions,
     RxJsonSchema,
     MangoQuery,
@@ -425,7 +424,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             documents: foundDocuments
         };
     }
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<BlobBuffer> {
+    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
         throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
     }
     async getChangedDocuments(

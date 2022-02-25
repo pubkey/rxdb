@@ -1,5 +1,4 @@
 import deepEqual from 'fast-deep-equal';
-import objectPath from 'object-path';
 
 import {
     clone,
@@ -25,6 +24,7 @@ import type {
     PrimaryKey,
     RxJsonSchema
 } from './types';
+import { getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
 
 export class RxSchema<T = any> {
     public indexes: MaybeReadonly<string[]>[];
@@ -85,13 +85,6 @@ export class RxSchema<T = any> {
         } else {
             return false;
         }
-    }
-
-    /**
-     * get all encrypted paths
-     */
-    get encryptedPaths(): string[] {
-        return this.jsonSchema.encrypted || [];
     }
 
     /**
@@ -175,36 +168,6 @@ export class RxSchema<T = any> {
             documentData
         );
     }
-
-    fillPrimaryKey(
-        documentData: T
-    ): T {
-        const cloned = flatClone(documentData);
-        const newPrimary = getComposedPrimaryKeyOfDocumentData<T>(
-            this.jsonSchema,
-            documentData
-        );
-        const existingPrimary: string | undefined = documentData[this.primaryPath] as any;
-        if (
-            existingPrimary &&
-            existingPrimary !== newPrimary
-        ) {
-            throw newRxError(
-                'DOC19',
-                {
-                    args: {
-                        documentData,
-                        existingPrimary,
-                        newPrimary,
-                    },
-                    schema: this.jsonSchema
-                });
-        }
-
-        (cloned as any)[this.primaryPath] = newPrimary;
-        return cloned;
-    }
-
 }
 
 export function getIndexes<T = any>(
@@ -221,27 +184,6 @@ export function getPrimaryFieldOfPrimaryKey<RxDocType>(
     } else {
         return (primaryKey as CompositePrimaryKey<RxDocType>).key;
     }
-}
-
-/**
- * Returns the composed primaryKey of a document by its data.
- */
-export function getComposedPrimaryKeyOfDocumentData<RxDocType>(
-    jsonSchema: RxJsonSchema<RxDocType>,
-    documentData: Partial<RxDocType>
-): string {
-    if (typeof jsonSchema.primaryKey === 'string') {
-        return (documentData as any)[jsonSchema.primaryKey];
-    }
-
-    const compositePrimary: CompositePrimaryKey<RxDocType> = jsonSchema.primaryKey as any;
-    return compositePrimary.fields.map(field => {
-        const value = objectPath.get(documentData as any, field as string);
-        if (typeof value === 'undefined') {
-            throw newRxError('DOC18', { args: { field, documentData } });
-        }
-        return value;
-    }).join(compositePrimary.separator);
 }
 
 /**

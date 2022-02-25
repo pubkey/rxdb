@@ -215,7 +215,9 @@ config.parallel('plugin.test.js', () => {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    createRxDatabase
+                    createRxDatabase: {
+                        after: createRxDatabase
+                    }
                 }
             };
             addRxPlugin(plugin);
@@ -233,7 +235,9 @@ config.parallel('plugin.test.js', () => {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    createRxCollection
+                    createRxCollection: {
+                        after: createRxCollection
+                    }
                 }
             };
             addRxPlugin(plugin);
@@ -250,7 +254,9 @@ config.parallel('plugin.test.js', () => {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    createRxSchema
+                    createRxSchema: {
+                        after: createRxSchema
+                    }
                 }
             };
             addRxPlugin(plugin);
@@ -267,7 +273,9 @@ config.parallel('plugin.test.js', () => {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    createRxQuery
+                    createRxQuery: {
+                        after: createRxQuery
+                    }
                 }
             };
             addRxPlugin(plugin);
@@ -285,7 +293,9 @@ config.parallel('plugin.test.js', () => {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    createRxDocument
+                    createRxDocument: {
+                        after: createRxDocument
+                    }
                 }
             };
             addRxPlugin(plugin);
@@ -303,7 +313,9 @@ config.parallel('plugin.test.js', () => {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    postCreateRxDocument
+                    postCreateRxDocument: {
+                        after: postCreateRxDocument
+                    }
                 }
             };
             addRxPlugin(plugin);

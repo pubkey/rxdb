@@ -1,6 +1,3 @@
-/**
- * stores the hooks that where added by the plugins
- */
 
 /**
  * hook-functions that can be extended by the plugin
@@ -53,19 +50,18 @@ export const HOOKS: { [k: string]: any[] } = {
      * prepareQuery function of the storage engine.
      */
     prePrepareQuery: [],
-
     /**
      * Runs before the document data is send to the
      * bulkWrite of the storage instance
      */
     preWriteToStorageInstance: [],
-
     /**
      * Runs after the document data is ready from
      * the RxStorage instance.
      */
     postReadFromInstance: [],
-
+    preWriteAttachment: [],
+    postReadAttachment: [],
     createRxDocument: [],
     /**
      * runs after a RxDocument is created,

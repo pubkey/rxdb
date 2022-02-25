@@ -12,38 +12,49 @@ import {
     newRxError
 } from '../rx-error';
 
-import type {
-    Crypter
-} from '../crypter';
+import objectPath from 'object-path';
 import type {
     RxPlugin,
     RxDatabase,
-    RxLocalDocumentData
+    RxLocalDocumentData,
+    RxDocumentData
 } from '../types';
-import { getDefaultRxDocumentMeta, hash, PROMISE_RESOLVE_FALSE } from '../util';
+import {
+    blobBufferUtil,
+    clone,
+    flatClone,
+    getDefaultRxDocumentMeta,
+    hash,
+    PROMISE_RESOLVE_FALSE
+} from '../util';
 import { findLocalDocument } from '../rx-storage-helper';
 
-const minPassLength = 8;
+export const MINIMUM_PASSWORD_LENGTH: 8 = 8;
 
-export function encrypt(value: string, password: any): string {
+
+export function encryptString(value: string, password: string): string {
     const encrypted = AES.encrypt(value, password);
     return encrypted.toString();
 }
 
-export function decrypt(cipherText: string, password: any): string {
+export function decryptString(cipherText: string, password: any): string {
+    /**
+     * Trying to decrypt non-strings
+     * will cause no errors and will be hard to debug.
+     * So instead we do this check here.
+     */
+    if (typeof cipherText !== 'string') {
+        throw newRxError('SNH', {
+            args: {
+                cipherText
+            }
+        });
+    }
+
     const decrypted = AES.decrypt(cipherText, password);
-    return decrypted.toString(cryptoEnc);
+    const ret = decrypted.toString(cryptoEnc);
+    return ret;
 }
-
-const _encryptString = function (this: Crypter, value: string) {
-    return encrypt(value, this.password);
-};
-
-const _decryptString = function (this: Crypter, encryptedValue: string): string {
-    const decrypted = decrypt(encryptedValue, this.password);
-    return decrypted;
-};
-
 
 export type PasswordHashDocument = RxLocalDocumentData<{
     value: string;
@@ -93,42 +104,121 @@ export async function storePasswordHashIntoDatabase(
 }
 
 
-
-
-export const rxdb = true;
-export const prototypes = {
-    /**
-     * set crypto-functions for the Crypter.prototype
-     */
-    Crypter: (proto: any) => {
-        proto._encryptString = _encryptString;
-        proto._decryptString = _decryptString;
-    }
-};
-export const overwritable = {
-    validatePassword: function (password: any) {
-        if (password && typeof password !== 'string') {
-            throw newRxTypeError('EN1', {
-                password
-            });
-        }
-        if (password && password.length < minPassLength) {
-            throw newRxError('EN2', {
-                minPassLength,
-                password
-            });
-        }
-    }
-};
+function cloneWithoutAttachments<T>(data: RxDocumentData<T>): RxDocumentData<T> {
+    const attachments = data._attachments;
+    data = flatClone(data);
+    delete (data as any)._attachments;
+    data = clone(data);
+    data._attachments = attachments;
+    return data;
+}
 
 export const RxDBEncryptionPlugin: RxPlugin = {
     name: 'encryption',
-    rxdb,
-    prototypes,
-    overwritable,
+    rxdb: true,
+    prototypes: {},
+    overwritable: {
+        validatePassword: function (password: any) {
+            if (password && typeof password !== 'string') {
+                throw newRxTypeError('EN1', {
+                    password
+                });
+            }
+            if (password && password.length < MINIMUM_PASSWORD_LENGTH) {
+                throw newRxError('EN2', {
+                    minPassLength: MINIMUM_PASSWORD_LENGTH,
+                    password
+                });
+            }
+        }
+    },
     hooks: {
-        createRxDatabase: (db: RxDatabase) => {
-            return storePasswordHashIntoDatabase(db);
+        createRxDatabase: {
+            after: (db: RxDatabase) => {
+                return storePasswordHashIntoDatabase(db);
+            }
+        },
+        preWriteToStorageInstance: {
+            before: (args) => {
+                const password = args.database.password;
+                const schema = args.schema
+                if (
+                    !password ||
+                    !schema.encrypted ||
+                    schema.encrypted.length === 0
+                ) {
+                    return;
+                }
+
+                const docData = cloneWithoutAttachments(args.doc);
+                schema.encrypted
+                    .forEach(path => {
+                        const value = objectPath.get(docData, path);
+                        if (typeof value === 'undefined') {
+                            return;
+                        }
+
+                        const stringValue = JSON.stringify(value);
+                        const encrypted = encryptString(stringValue, password);
+                        objectPath.set(docData, path, encrypted);
+                    });
+                args.doc = docData;
+            }
+        },
+        postReadFromInstance: {
+            after: (args) => {
+                const password = args.database.password;
+                const schema = args.schema
+                if (
+                    !password ||
+                    !schema.encrypted ||
+                    schema.encrypted.length === 0
+                ) {
+                    return;
+                }
+                const docData = cloneWithoutAttachments(args.doc);
+                schema.encrypted
+                    .forEach(path => {
+                        const value = objectPath.get(docData, path);
+                        if (typeof value === 'undefined') {
+                            return;
+                        }
+                        const decrypted = decryptString(value, password);
+                        const decryptedParsed = JSON.parse(decrypted);
+                        objectPath.set(docData, path, decryptedParsed);
+                    });
+                args.doc = docData;
+            }
+        },
+        preWriteAttachment: {
+            after: async (args) => {
+                const password = args.database.password;
+                const schema = args.schema
+                if (
+                    password &&
+                    schema.attachments &&
+                    schema.attachments.encrypted
+                ) {
+                    const dataString = await blobBufferUtil.toString(args.attachmentData.data);
+                    const encrypted = encryptString(dataString, password);
+                    args.attachmentData.data = encrypted;
+                }
+            }
+        },
+        postReadAttachment: {
+            after: async (args) => {
+                const password = args.database.password;
+                const schema = args.schema
+                if (
+                    password &&
+                    schema.attachments &&
+                    schema.attachments.encrypted
+                ) {
+                    const dataString = await blobBufferUtil.toString(args.plainData);
+                    const decrypted = decryptString(dataString, password);
+                    args.plainData = decrypted;
+                }
+            }
         }
     }
 };

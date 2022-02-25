@@ -289,7 +289,6 @@ config.parallel('data-migration.test.js', () => {
 
                     assert.strictEqual(oldCol.schema.constructor.name, 'RxSchema');
                     assert.strictEqual(oldCol.version, 0);
-                    assert.strictEqual(oldCol._crypter.constructor.name, 'Crypter');
                     oldCollections.forEach(c => c.storageInstance.close());
                     col.database.destroy();
                 });

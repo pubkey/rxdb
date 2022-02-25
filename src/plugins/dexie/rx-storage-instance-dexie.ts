@@ -25,7 +25,6 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageBulkWriteError,
     RxStorageQueryResult,
-    BlobBuffer,
     ChangeStreamOnceOptions,
     RxJsonSchema,
     RxStorageChangedDocumentMeta,
@@ -126,7 +125,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                             {
                                 _rev: newRevision,
                                 _deleted: insertedIsDeleted,
-                                // TODO attachments are currently not working with lokijs
+                                // TODO attachments are currently not working with dexie.js
                                 _attachments: {} as any
                             }
                         );
@@ -149,6 +148,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 endTime: startTime
                             });
                         }
+
                         ret.success[id] = writeDoc;
                     } else {
                         // update existing document
@@ -485,7 +485,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return this.changes$.asObservable();
     }
 
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<BlobBuffer> {
+    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
         throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
     }
 

@@ -132,10 +132,6 @@ addRxPlugin(RxDBJsonDumpPlugin);
 ```javascript
 myDatabase.exportJSON()
   .then(json => console.dir(json));
-
-// decrypted dump
-myDatabase.exportJSON(true)
-  .then(json => console.dir(json));
 ```
 
 ### importJSON()
