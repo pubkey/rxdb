@@ -493,6 +493,7 @@ export const blobBufferUtil = {
         data: string,
         type: string
     ): BlobBuffer {
+
         let blobBuffer: any;
         if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer
@@ -515,6 +516,39 @@ export const blobBufferUtil = {
 
         return blobBuffer;
     },
+    /**
+     * depending if we are on node or browser,
+     * we have to use Buffer(node) or Blob(browser)
+     */
+    createBlobBufferFromBase64(
+        base64String: string,
+        type: string
+    ): BlobBuffer {
+
+        let blobBuffer: any;
+        if (isElectronRenderer) {
+            // if we are inside of electron-renderer, always use the node-buffer
+            return Buffer.from(
+                base64String,
+                'base64'
+            );
+        }
+
+        try {
+            // for browsers
+            blobBuffer = new Blob([base64String], {
+                type
+            } as any);
+        } catch (e) {
+            // for node
+            blobBuffer = Buffer.from(
+                base64String,
+                'base64'
+            );
+        }
+
+        return blobBuffer;
+    },
     isBlobBuffer(data: any): boolean {
         if ((typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) || data instanceof Blob) {
             return true;
@@ -530,6 +564,37 @@ export const blobBufferUtil = {
             // node
             return nextTick()
                 .then(() => blobBuffer.toString());
+        }
+        return new Promise(res => {
+            // browser
+            const reader = new FileReader();
+            reader.addEventListener('loadend', e => {
+                const text = (e.target as any).result;
+                res(text);
+            });
+
+            const blobBufferType = Object.prototype.toString.call(blobBuffer);
+
+            /**
+             * in the electron-renderer we have a typed array insteaf of a blob
+             * so we have to transform it.
+             * @link https://github.com/pubkey/rxdb/issues/1371
+             */
+            if (blobBufferType === '[object Uint8Array]') {
+                blobBuffer = new Blob([blobBuffer]);
+            }
+
+            reader.readAsText(blobBuffer as any);
+        });
+    },
+    tobase64String(blobBuffer: BlobBuffer | string): Promise<string> {
+        if (typeof blobBuffer === 'string') {
+            return Promise.resolve(blobBuffer);
+        }
+        if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
+            // node
+            return nextTick()
+                .then(() => blobBuffer.toString('base64'));
         }
         return new Promise(res => {
             // browser

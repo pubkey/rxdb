@@ -128,8 +128,12 @@ export function rxDocumentDataToPouchDocumentData<T>(
         Object.entries(doc._attachments).forEach(([key, value]) => {
             const useValue: RxAttachmentWriteData & RxAttachmentData = value as any;
             if (useValue.data) {
+                const asBlobBuffer = blobBufferUtil.createBlobBufferFromBase64(
+                    useValue.data,
+                    useValue.type
+                );
                 (pouchDoc as any)._attachments[key] = {
-                    data: useValue.data,
+                    data: asBlobBuffer,
                     content_type: useValue.type
                 };
             } else {
@@ -332,18 +336,17 @@ export async function writeAttachmentsToAttachments(
             if (!obj.type) {
                 throw newRxError('SNH', { args: { obj } });
             }
+            /**
+             * Is write attachment,
+             * so we have to remove the data to have a
+             * non-write attachment.
+             */
             if ((obj as RxAttachmentWriteData).data) {
-                const asWrite = (obj as RxAttachmentWriteData);
-                const [hash, asString] = await Promise.all([
-                    pouchHash(asWrite.data),
-                    blobBufferUtil.toString(asWrite.data)
-                ]);
-
-                const length = asString.length;
+                const asWriteAttachment = (obj as RxAttachmentWriteData);
                 ret[key] = {
-                    digest: POUCH_HASH_KEY + '-' + hash,
-                    length,
-                    type: asWrite.type
+                    digest: asWriteAttachment.digest,
+                    length: asWriteAttachment.length,
+                    type: asWriteAttachment.type
                 };
             } else {
                 ret[key] = obj as RxAttachmentData;

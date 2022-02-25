@@ -7,7 +7,6 @@ import {
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
-    BlobBuffer,
     BulkWriteRow,
     ChangeStreamOnceOptions,
     EventBulk,
@@ -34,6 +33,7 @@ import {
     writeAttachmentsToAttachments
 } from './pouchdb-helper';
 import {
+    blobBufferUtil,
     flatClone,
     getFromMapOrThrow,
     PROMISE_RESOLVE_VOID
@@ -225,7 +225,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 }
             })
         );
-
         return ret;
     }
 
@@ -248,12 +247,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     async getAttachmentData(
         documentId: string,
         attachmentId: string
-    ): Promise<BlobBuffer> {
+    ): Promise<string> {
         const attachmentData = await this.internals.pouch.getAttachment(
             documentId,
             attachmentId
         );
-        return attachmentData;
+        return blobBufferUtil.tobase64String(attachmentData);
     }
 
     async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {

@@ -6,13 +6,6 @@ import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    RxStoragePouchStatics,
-    PouchDB
-} from '../../plugins/pouchdb';
-import {
-    getAttachmentDataMeta
-} from '../../plugins/attachments';
-import {
     clone,
     createRxDatabase,
     randomCouchString,
@@ -34,47 +27,6 @@ config.parallel('attachments.test.ts', () => {
     if (!config.storage.hasAttachments) {
         return;
     }
-
-    describe('.getAttachmentDataMeta()', () => {
-        /**
-         * The PouchDB storage creates the attahcment meta by itself.
-         * So we have to ensure that RxDB creates the exact same values.
-         * All other storages rely on the meta data that is created by RxDB.
-         */
-        it('should create the same values on pouchdb storage', async () => {
-            const data = blobBufferUtil.createBlobBuffer(randomCouchString(100), 'text/plain');
-            const docId = 'foobar';
-            const attachmentId = 'myText';
-            const pouch = new PouchDB(
-                randomCouchString(10),
-                {
-                    adapter: 'memory'
-                }
-            );
-            await pouch.put({
-                _id: docId,
-                _attachments: {
-                    [attachmentId]: {
-                        content_type: 'text/plain',
-                        data
-                    }
-                }
-            });
-            const pouchDoc = await pouch.get(docId);
-            const pouchAttachment = pouchDoc._attachments[attachmentId];
-
-            const attachmentMeta = await getAttachmentDataMeta(
-                RxStoragePouchStatics,
-                data
-            );
-
-            assert.strictEqual(pouchAttachment.digest, attachmentMeta.digest);
-            assert.strictEqual(pouchAttachment.length, attachmentMeta.length);
-
-            pouch.destroy();
-        });
-    });
-
     describe('.putAttachment()', () => {
         it('should insert one attachment', async () => {
             const c = await humansCollection.createAttachments(1);
@@ -370,11 +322,12 @@ config.parallel('attachments.test.ts', () => {
                 type: 'text/plain'
             });
 
+            // the data stored in the storage must be encrypted
             const encryptedData = await doc.collection.storageInstance.internals.pouch.getAttachment(doc.primary, 'cat.txt');
-
             const dataString = await blobBufferUtil.toString(encryptedData);
             assert.notStrictEqual(dataString, 'foo bar aaa');
 
+            // getting the data again must be decrypted
             const data = await attachment.getStringData();
             assert.strictEqual(data, 'foo bar aaa');
 

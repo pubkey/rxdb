@@ -18,7 +18,7 @@
 - Added `doesBroadcastChangestream()` to `RxStorageStatics`
 - Fix (replication primitives) only drop pulled documents when a relevant document was changed locally.
 - Add `_meta` property to stored document data.
-
+- Attachments are now internally handled as string instead of `Blob` or `Buffer`
 
 ### 11.6.0 (4 February 2022)
 
