@@ -12,9 +12,6 @@ import type {
 } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { binaryMd5 } from 'pouchdb-md5';
-import type {
-    RxStorageKeyObjectInstancePouch
-} from './rx-storage-key-object-instance-pouch';
 import {
     blobBufferUtil,
     flatClone,
@@ -30,7 +27,7 @@ export type PouchStorageInternals = {
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
-export const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstancePouch | RxStorageInstancePouch<any>> = new Set();
+export const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageInstancePouch<any>> = new Set();
 
 /**
  * prefix of local pouchdb documents
