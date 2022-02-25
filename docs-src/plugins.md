@@ -41,8 +41,14 @@ const myPlugin = {
             /**
              * add a foo-property to each document. You can then call myDocument.foo (='bar')
              */
-            createRxDocument: function(doc) {
-                doc.foo = 'bar';
+            createRxDocument: {
+                /**
+                 * You can either add the hook running 'before' or 'after'
+                 * the hooks of other plugins.
+                 */
+                after: function(doc) {
+                    doc.foo = 'bar';
+                }
             }
         }
 };
