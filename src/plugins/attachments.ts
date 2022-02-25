@@ -1,6 +1,7 @@
 import {
     map
 } from 'rxjs/operators';
+
 import {
     blobBufferUtil,
     flatClone
@@ -17,9 +18,7 @@ import type {
     RxAttachmentData,
     RxDocumentData,
     RxAttachmentCreator,
-    RxAttachmentWriteData,
-    RxStorageStatics,
-    RxAttachmentDataMeta
+    RxAttachmentWriteData
 } from '../types';
 import type { RxSchema } from '../rx-schema';
 import { writeSingle } from '../rx-storage-helper';
@@ -97,24 +96,25 @@ export class RxAttachment {
      * returns the data for the attachment
      */
     async getData(): Promise<BlobBuffer> {
-        const plainData = await this.doc.collection.storageInstance.getAttachmentData(
+        let dataString = await this.doc.collection.storageInstance.getAttachmentData(
             this.doc.primary,
             this.id
         );
         if (shouldEncrypt(this.doc.collection.schema)) {
-            const dataString = await blobBufferUtil.toString(plainData);
-            const ret = blobBufferUtil.createBlobBuffer(
-                this.doc.collection._crypter._decryptString(dataString),
-                this.type as any
-            );
-            return ret;
-        } else {
-            return plainData;
+            dataString = this.doc.collection._crypter._decryptString(atob(dataString));
         }
+
+        const ret = blobBufferUtil.createBlobBufferFromBase64(
+            dataString,
+            this.type as any
+        );
+        return ret;
     }
 
-    getStringData(): Promise<string> {
-        return this.getData().then(bufferBlob => blobBufferUtil.toString(bufferBlob));
+    async getStringData(): Promise<string> {
+        const data = await this.getData();
+        const string = await blobBufferUtil.toString(data);
+        return string;
     }
 }
 
@@ -151,16 +151,21 @@ export async function putAttachment(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
+    const dataSize = blobBufferUtil.size(data);
+    const storageStatics = this.collection.database.storage.statics;
+    let dataString = await blobBufferUtil.tobase64String(data);
+
     /**
      * Then encryption plugin is only able to encrypt strings,
      * so unpack as string first.
      */
 
     if (shouldEncrypt(this.collection.schema)) {
-        const dataString = await blobBufferUtil.toString(data);
         const encrypted = this.collection._crypter._encryptString(dataString);
-        data = blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
+        dataString = btoa(encrypted);
     }
+
+    const dataDigest = await storageStatics.hash(data).then(hash => storageStatics.hashKey + '-' + hash);
 
     const statics = this.collection.database.storage.statics;
     this._atomicQueue = this._atomicQueue
@@ -178,15 +183,11 @@ export async function putAttachment(
             const docWriteData: RxDocumentWriteData<{}> = flatClone(this._data);
             docWriteData._attachments = flatClone(docWriteData._attachments);
 
-            const meta = await getAttachmentDataMeta(
-                this.collection.database.storage.statics,
-                data
-            );
             docWriteData._attachments[id] = {
-                digest: meta.digest,
-                length: meta.length,
+                digest: dataDigest,
+                length: dataSize,
                 type,
-                data: data
+                data: dataString
             };
 
             const writeRow = {
@@ -277,20 +278,12 @@ export async function preMigrateDocument<RxDocType>(
 
                 let rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
                 if (mustDecrypt) {
-                    rawAttachmentData = await blobBufferUtil.toString(rawAttachmentData)
-                        .then(dataString => blobBufferUtil.createBlobBuffer(
-                            data.oldCollection._crypter._decryptString(dataString),
-                            (attachment as RxAttachmentData).type as any
-                        ));
+                    rawAttachmentData = data.oldCollection._crypter._decryptString(rawAttachmentData);
                 }
 
-                const meta = await getAttachmentDataMeta(
-                    data.oldCollection.database.storage.statics,
-                    rawAttachmentData
-                );
                 newAttachments[attachmentId] = {
-                    digest: meta.digest,
-                    length: meta.length,
+                    digest: attachment.digest,
+                    length: attachment.length,
                     type: attachment.type,
                     data: rawAttachmentData
                 };
@@ -311,18 +304,6 @@ export async function postMigrateDocument(_action: any): Promise<void> {
      * we store the attachemnts data buffers directly in the document.
      */
     return;
-}
-
-export async function getAttachmentDataMeta(
-    storageStatics: RxStorageStatics,
-    data: BlobBuffer
-): Promise<RxAttachmentDataMeta> {
-    const hash = await storageStatics.hash(data);
-    const length = blobBufferUtil.size(data);
-    return {
-        digest: storageStatics.hashKey + '-' + hash,
-        length
-    }
 }
 
 export const rxdb = true;

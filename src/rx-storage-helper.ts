@@ -238,7 +238,6 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                     previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(collection, row.previous, false) : undefined,
                 }
             });
-
             return database.lockedRun(
                 () => storageInstance.bulkWrite(
                     toStorageWriteRows
