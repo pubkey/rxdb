@@ -1821,8 +1821,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     attachmentData,
                     'text/plain'
                 );
-                const dataString = await blobBufferUtil.tobase64String(dataBlobBuffer);
                 const attachmentHash = await statics.hash(dataBlobBuffer);
+                const dataString = await blobBufferUtil.tobase64String(dataBlobBuffer);
+                const dataLength = blobBufferUtil.size(dataBlobBuffer);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -1835,7 +1836,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     _attachments: {
                         foo: {
                             digest: statics.hashKey + '-' + attachmentHash,
-                            length: blobBufferUtil.size(dataBlobBuffer),
+                            length: dataLength,
                             data: dataString,
                             type: 'text/plain'
                         }
@@ -1865,6 +1866,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     )
                 );
+
                 assert.strictEqual(queryResult.documents[0]._attachments.foo.type, 'text/plain');
                 assert.strictEqual(queryResult.documents[0]._attachments.foo.length, attachmentData.length);
 

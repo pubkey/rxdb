@@ -155,6 +155,13 @@ describe('util.test.js', () => {
 
             assert.strictEqual(text, asString);
         });
+        it('.size() should return a deterministic value', () => {
+            const amount = 30;
+            const str = randomCouchString(amount);
+            const blobBuffer = blobBufferUtil.createBlobBuffer(str, 'plain/text');
+            const size = blobBufferUtil.size(blobBuffer);
+            assert.strictEqual(size, amount);
+        });
     });
     describe('.deepFreezeWhenDevMode()', () => {
         it('should not allow to mutate the object', () => {

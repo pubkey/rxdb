@@ -16,6 +16,7 @@ import type {
     RxStorageKeyObjectInstancePouch
 } from './rx-storage-key-object-instance-pouch';
 import {
+    blobBufferUtil,
     flatClone,
     getHeightOfRevision
 } from '../../util';
@@ -127,8 +128,12 @@ export function rxDocumentDataToPouchDocumentData<T>(
         Object.entries(doc._attachments).forEach(([key, value]) => {
             const useValue: RxAttachmentWriteData & RxAttachmentData = value as any;
             if (useValue.data) {
+                const asBlobBuffer = blobBufferUtil.createBlobBufferFromBase64(
+                    useValue.data,
+                    useValue.type
+                );
                 (pouchDoc as any)._attachments[key] = {
-                    data: useValue.data,
+                    data: asBlobBuffer,
                     content_type: useValue.type
                 };
             } else {
