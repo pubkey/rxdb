@@ -388,30 +388,9 @@ describe('rx-storage-lokijs.test.js', () => {
                     }
                 );
                 await storageInstance.query(preparedQuery);
-
                 await storageInstance.findDocumentsById([firstDocData.passportId], false);
 
-                const keyObjectStorageInstance = await storage.createKeyObjectStorageInstance({
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    multiInstance: false,
-                    options: {}
-                });
-
-                await keyObjectStorageInstance.bulkWrite([{
-                    document: {
-                        _id: 'foobar',
-                        _attachments: {},
-                        _meta: {
-                            lwt: now()
-                        },
-                        _deleted: false
-                    }
-                }]);
-                await keyObjectStorageInstance.findLocalDocumentsById(['foobar'], false);
-
                 await storageInstance.close();
-                await keyObjectStorageInstance.close();
 
                 // reset the global.setTimeout so the following tests work properly.
                 global.setTimeout = oldSetTimeout;

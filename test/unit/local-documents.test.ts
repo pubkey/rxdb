@@ -358,24 +358,33 @@ config.parallel('local-documents.test.js', () => {
                     schema: schemas.primaryHuman
                 }
             });
+
             const c2 = await db2.addCollections({
                 humans: {
                     schema: schemas.primaryHuman
                 }
             });
+
+            // insert on instance #1
             const doc1 = await c1.humans.insertLocal('foobar', {
                 foo: 'bar'
             });
+
+            const emitted: any[] = [];
+            const sub = c1.humans.getLocal$('foobar').subscribe((x: any) => {
+                emitted.push(x ? x.toJSON(true) : null);
+            });
+            await waitUntil(() => emitted.length === 1);
+
+
+            // update on instance #2
             const doc2 = await c2.humans.getLocal<TestDocType>('foobar');
             await doc1.atomicPatch({ foo: 'bar2' });
 
-            const emitted: any[] = [];
-            const sub = c2.humans.getLocal$('foobar').subscribe((x: any) => {
-                emitted.push(x);
-            });
-
             await waitUntil(() => doc2 && doc2.toJSON().foo === 'bar2');
-            await waitUntil(() => emitted.length >= 2);
+            await waitUntil(() => {
+                return emitted.length >= 2;
+            });
 
             sub.unsubscribe();
             db.destroy();

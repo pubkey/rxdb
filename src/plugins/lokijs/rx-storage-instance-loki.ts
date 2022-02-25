@@ -169,7 +169,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 if (!insertedIsDeleted) {
                     this.addChangeDocumentMeta(id);
                     eventBulk.events.push({
-                        eventId: getLokiEventKey(false, id, newRevision),
+                        eventId: getLokiEventKey(this, id, newRevision),
                         documentId: id,
                         change: {
                             doc: writeDoc,
@@ -262,7 +262,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         throw newRxError('SNH', { args: { writeRow } });
                     }
                     eventBulk.events.push({
-                        eventId: getLokiEventKey(false, id, newRevision),
+                        eventId: getLokiEventKey(this, id, newRevision),
                         documentId: id,
                         change,
                         startTime,
@@ -305,7 +305,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 localState.collection.insert(flatClone(docData));
                 eventBulk.events.push({
                     documentId: id,
-                    eventId: getLokiEventKey(false, id, docData._rev),
+                    eventId: getLokiEventKey(this, id, docData._rev),
                     change: {
                         doc: docData,
                         id,
@@ -362,7 +362,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     if (change) {
                         eventBulk.events.push({
                             documentId: id,
-                            eventId: getLokiEventKey(false, id, docData._rev),
+                            eventId: getLokiEventKey(this, id, docData._rev),
                             change,
                             startTime,
                             endTime: now()

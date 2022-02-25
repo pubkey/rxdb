@@ -135,7 +135,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         } else {
                             bulkPutDocs.push(writeDoc);
                             eventBulk.events.push({
-                                eventId: getDexieEventKey(false, id, newRevision),
+                                eventId: getDexieEventKey(this, id, newRevision),
                                 documentId: id,
                                 change: {
                                     doc: writeDoc,
@@ -241,7 +241,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 throw newRxError('SNH', { args: { writeRow } });
                             }
                             eventBulk.events.push({
-                                eventId: getDexieEventKey(false, id, newRevision),
+                                eventId: getDexieEventKey(this, id, newRevision),
                                 documentId: id,
                                 change,
                                 startTime,
@@ -308,7 +308,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
                         eventBulk.events.push({
                             documentId: id,
-                            eventId: getDexieEventKey(false, id, docData._rev),
+                            eventId: getDexieEventKey(this, id, docData._rev),
                             change: {
                                 doc: docData,
                                 id,
@@ -369,7 +369,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                             if (change) {
                                 eventBulk.events.push({
                                     documentId: id,
-                                    eventId: getDexieEventKey(false, id, docData._rev),
+                                    eventId: getDexieEventKey(this, id, docData._rev),
                                     change,
                                     startTime,
                                     // will be filled up before the event is pushed into the changestream

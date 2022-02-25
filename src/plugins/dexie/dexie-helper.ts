@@ -13,6 +13,7 @@ import { Dexie } from 'dexie';
 import { DexieSettings } from '../../types';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
+import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
@@ -188,12 +189,11 @@ export function getDexieStoreSchema(
 }
 
 export function getDexieEventKey(
-    isLocal: boolean,
+    storageInstance: RxStorageInstanceDexie<any>,
     primary: string,
     revision: string
 ): string {
-    const prefix = isLocal ? 'local' : 'non-local';
-    const eventKey = prefix + '|' + primary + '|' + revision;
+    const eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + primary + '|' + revision;
     return eventKey;
 }
 

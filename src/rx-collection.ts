@@ -127,7 +127,7 @@ export class RxCollectionBase<
      * Stores the local documents so that they are not deleted
      * when a migration runs.
      */
-    public localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions> = {} as any;
+    public localDocumentsStore: RxStorageInstance<RxLocalDocumentData, any, InstanceCreationOptions> = {} as any;
     public readonly timeouts: Set<ReturnType<typeof setTimeout>> = new Set();
 
     constructor(
@@ -135,7 +135,7 @@ export class RxCollectionBase<
         public name: string,
         public schema: RxSchema<RxDocumentType>,
         public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
-        public internalLocalDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>,
+        public internalLocalDocumentsStore: RxStorageInstance<RxLocalDocumentData, any, InstanceCreationOptions>,
 
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
         public migrationStrategies: KeyFunctionMap = {},
@@ -200,12 +200,14 @@ export class RxCollectionBase<
     private _onDestroyCall?: () => void;
     public async prepare(): Promise<void> {
         this.storageInstance = getWrappedStorageInstance(
-            this as any, this.internalStorageInstance,
+            this.database,
+            this.internalStorageInstance,
             this.schema.jsonSchema
         );
-        this.localDocumentsStore = getWrappedKeyObjectInstance(
-            this as any,
-            this.internalLocalDocumentsStore
+        this.localDocumentsStore = getWrappedStorageInstance(
+            this.database,
+            this.internalLocalDocumentsStore,
+            this.internalLocalDocumentsStore.schema
         );
 
         this._observable$ = this.database.eventBulks$.pipe(

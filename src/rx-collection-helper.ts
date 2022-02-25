@@ -1,13 +1,16 @@
 import type {
     RxCollection,
     RxDatabase,
+    RxLocalDocumentData,
     RxStorageInstance,
-    RxStorageInstanceCreationParams,
-    RxStorageKeyObjectInstance
+    RxStorageInstanceCreationParams
 } from './types';
 import { RxCollectionBase } from './rx-collection';
 import { getDefaultRxDocumentMeta } from './util';
-import { fillPrimaryKey } from './rx-schema-helper';
+import {
+    fillPrimaryKey,
+    getPseudoSchemaForVersion
+} from './rx-schema-helper';
 
 /**
  * fills in the default data.
@@ -41,7 +44,7 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
     instanceCreationOptions: InstanceCreationOptions
 ): Promise<{
     storageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>,
-    localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>
+    localDocumentsStore: RxStorageInstance<RxLocalDocumentData, Internals, InstanceCreationOptions>
 }> {
     storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
     const [
@@ -51,7 +54,7 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
         rxDatabase.storage.createStorageInstance<RxDocumentType>(
             storageInstanceCreationParams
         ),
-        rxDatabase.storage.createKeyObjectStorageInstance({
+        rxDatabase.storage.createStorageInstance<RxLocalDocumentData>({
             databaseName: rxDatabase.name,
             /**
              * Use a different collection name for the local documents instance
@@ -59,6 +62,7 @@ export async function createRxCollectionStorageInstances<RxDocumentType, Interna
              * after migration.
              */
             collectionName: getCollectionLocalInstanceName(collectionName),
+            schema: getPseudoSchemaForVersion(0, '_id'),
             options: instanceCreationOptions,
             multiInstance: rxDatabase.multiInstance
         })

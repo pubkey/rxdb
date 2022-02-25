@@ -8,7 +8,6 @@ import type {
     ChangeStreamOnceOptions,
     EventBulk,
     RxDocumentData,
-    RxKeyObjectStorageInstanceCreationParams,
     RxLocalDocumentData,
     RxLocalStorageBulkWriteResponse,
     RxStorage,
@@ -60,10 +59,6 @@ export type InWorkerStorage = {
     ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
     close(instanceId: number): Promise<void>;
     remove(instanceId: number): Promise<void>;
-
-    createKeyObjectStorageInstance(
-        params: RxKeyObjectStorageInstanceCreationParams<any>
-    ): Promise<number>;
     bulkWriteLocal<DocumentData>(
         instanceId: number,
         documentWrites: BulkWriteLocalRow<DocumentData>[]): Promise<RxLocalStorageBulkWriteResponse<DocumentData>>;
@@ -157,17 +152,7 @@ export function wrappedRxStorage<T, D>(
         remove(instanceId: number) {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.remove();
-        },
-
-        /**
-         * RxKeyObjectStorageInstance
-         */
-        async createKeyObjectStorageInstance(params) {
-            const instanceId = nextId++;
-            const instance = await args.storage.createKeyObjectStorageInstance(params);
-            instanceById.set(instanceId, instance);
-            return instanceId;
-        },
+        }, 
         bulkWriteLocal<DocumentData>(
             instanceId: number,
             documentWrites: BulkWriteLocalRow<DocumentData>[]

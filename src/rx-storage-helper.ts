@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema';
 import { fillPrimaryKey } from './rx-schema-helper';
 import type {
     BulkWriteLocalRow,
@@ -32,7 +33,8 @@ export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 
 /**
- * returns all NON-LOCAL documents
+ * Returns all non-deleted documents
+ * of the storage.
  */
 export async function getAllDocuments<RxDocType>(
     primaryKey: keyof RxDocType,
@@ -176,7 +178,7 @@ export function throwIfIsStorageWriteError<RxDocType>(
  */
 
 export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions>(
-    collection: RxCollection<RxDocType, {}, {}, InstanceCreationOptions>,
+    database: RxDatabase<{}, Internals, InstanceCreationOptions>,
     storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>,
     /**
      * The original RxJsonSchema
@@ -184,10 +186,10 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
      */
     rxJsonSchema: RxJsonSchema<RxDocType>
 ): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
-    const database = collection.database;
     overwritable.deepFreezeWhenDevMode(rxJsonSchema);
 
-    const primaryPath = collection.schema.primaryPath;
+    const primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
+
 
     function transformDocumentDataFromRxDBToRxStorage(
         data: RxDocumentData<RxDocType> | RxDocumentWriteData<RxDocType>,
@@ -210,7 +212,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         }
 
         const hookParams = {
-            database: collection.database,
+            database,
             primaryPath,
             schema: rxJsonSchema,
             doc: data
@@ -225,7 +227,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         data: any
     ): any {
         const hookParams = {
-            database: collection.database,
+            database,
             primaryPath,
             schema: rxJsonSchema,
             doc: data

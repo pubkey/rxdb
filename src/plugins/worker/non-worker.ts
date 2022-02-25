@@ -12,11 +12,6 @@ import type {
     RxStorageChangedDocumentMeta,
     RxStorageChangeEvent,
     RxStorageQueryResult,
-    RxStorageKeyObjectInstance,
-    BulkWriteLocalRow,
-    RxLocalDocumentData,
-    RxLocalStorageBulkWriteResponse,
-    RxKeyObjectStorageInstanceCreationParams,
     EventBulk,
     RxStorageStatics
 } from '../../types';
@@ -69,23 +64,6 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
                 rxStorage: this,
                 instanceId,
                 worker
-            },
-            params.options
-        );
-    }
-
-    public async createKeyObjectStorageInstance(
-        params: RxKeyObjectStorageInstanceCreationParams<any>
-    ): Promise<RxStorageKeyObjectInstanceWorker> {
-        const worker = await this.workerPromise;
-        const instanceId = await worker.createKeyObjectStorageInstance(params);
-        return new RxStorageKeyObjectInstanceWorker(
-            params.databaseName,
-            params.collectionName,
-            {
-                rxStorage: this,
-                worker,
-                instanceId
             },
             params.options
         );
@@ -156,62 +134,6 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
         );
     }
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>> {
-        return this.changes$.asObservable();
-    }
-    close(): Promise<void> {
-        this.subs.forEach(sub => sub.unsubscribe());
-        return this.internals.worker.close(
-            this.internals.instanceId
-        );
-    }
-    remove(): Promise<void> {
-        return this.internals.worker.remove(
-            this.internals.instanceId
-        );
-    }
-}
-
-
-export class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObjectInstance<WorkerStorageInternals, any> {
-
-    /**
-     * threads.js uses observable-fns instead of rxjs
-     * so we have to transform it.
-     */
-    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>>> = new Subject();
-    private subs: Subscription[] = [];
-
-    constructor(
-        public readonly databaseName: string,
-        public readonly collectionName: string,
-        public readonly internals: WorkerStorageInternals,
-        public readonly options: Readonly<any>
-    ) {
-        this.subs.push(
-            this.internals.worker.changeStream(
-                this.internals.instanceId
-            ).subscribe(ev => this.changes$.next(ev as any))
-        );
-    }
-    bulkWrite<DocumentData>(
-        documentWrites: BulkWriteLocalRow<DocumentData>[]
-    ): Promise<RxLocalStorageBulkWriteResponse<DocumentData>> {
-        return this.internals.worker.bulkWriteLocal(
-            this.internals.instanceId,
-            documentWrites
-        );
-    }
-    findLocalDocumentsById<DocumentData>(
-        ids: string[],
-        withDeleted: boolean
-    ): Promise<{ [documentId: string]: RxLocalDocumentData<DocumentData> }> {
-        return this.internals.worker.findLocalDocumentsById(
-            this.internals.instanceId,
-            ids,
-            withDeleted
-        );
-    }
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{ [key: string]: any; }>>>> {
         return this.changes$.asObservable();
     }
     close(): Promise<void> {

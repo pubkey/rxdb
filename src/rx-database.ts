@@ -58,7 +58,7 @@ import {
     findLocalDocument,
     getAllDocuments,
     getSingleDocument,
-    getWrappedKeyObjectInstance,
+    getWrappedStorageInstance,
     INTERNAL_STORAGE_NAME,
     RX_DATABASE_LOCAL_DOCS_STORAGE_NAME,
     storageChangeEventToRxChangeEvent,
@@ -495,6 +495,14 @@ export class RxDatabaseBase<
             .destroy()
             .then(() => removeRxDatabase(this.name, this.storage));
     }
+
+    get asRxDatabase(): RxDatabase<
+        {},
+        Internals,
+        InstanceCreationOptions
+    > {
+        return this as any;
+    }
 }
 
 /**
@@ -674,7 +682,11 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
 async function prepare<Internals, InstanceCreationOptions, Collections>(
     rxDatabase: RxDatabaseBase<Internals, InstanceCreationOptions, Collections>
 ): Promise<void> {
-    rxDatabase.localDocumentsStore = getWrappedKeyObjectInstance(rxDatabase as any, rxDatabase.internalLocalDocumentsStore);
+    rxDatabase.localDocumentsStore = getWrappedStorageInstance(
+        rxDatabase.asRxDatabase,
+        rxDatabase.internalLocalDocumentsStore,
+        rxDatabase.internalLocalDocumentsStore.schema
+    );
     rxDatabase.storageToken = await _ensureStorageTokenExists<Collections>(rxDatabase as any);
     const localDocsSub = rxDatabase.localDocumentsStore.changeStream()
         .subscribe(eventBulk => {

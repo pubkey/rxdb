@@ -243,7 +243,7 @@ export async function createOldCollection(
     };
 
     ret.storageInstance = getWrappedStorageInstance(
-        ret as any,
+        ret.database,
         storageInstance,
         schemaObj
     );

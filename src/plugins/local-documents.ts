@@ -22,10 +22,11 @@ import type {
     RxCollection,
     RxDatabase,
     RxDocument,
+    RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocumentData,
     RxPlugin,
-    RxStorageKeyObjectInstance
+    RxStorageInstance
 } from '../types';
 
 import {
@@ -94,7 +95,7 @@ export class RxLocalDocument extends RxDocumentParent {
     }
 }
 
-function _getKeyObjectStorageInstanceByParent(parent: any): RxStorageKeyObjectInstance<any, any> {
+function _getKeyObjectStorageInstanceByParent(parent: any): RxStorageInstance<RxLocalDocumentData, any, any> {
     if (isRxDatabase(parent)) {
         return (parent as RxDatabase<{}>).localDocumentsStore; // database
     } else {
@@ -200,7 +201,7 @@ const RxLocalDocumentPrototype: any = {
         return this;
     },
     _saveData(this: RxLocalDocument, newData: RxLocalDocumentData) {
-        const oldData: RxLocalDocumentData = this._dataSync$.getValue();
+        const oldData: RxDocumentData<RxLocalDocumentData> = this._dataSync$.getValue();
         const storageInstance = _getKeyObjectStorageInstanceByParent(this.parent);
         newData._id = this.id;
 

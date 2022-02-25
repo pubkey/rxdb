@@ -183,12 +183,11 @@ export function pouchStripLocalFlagFromPrimary(str: string): string {
 }
 
 export function getEventKey(
-    isLocal: boolean,
+    pouchDBInstance: PouchDBInstance,
     primary: string,
     revision: string
 ): string {
-    const prefix = isLocal ? 'local' : 'non-local';
-    const eventKey = prefix + '|' + primary + '|' + revision;
+    const eventKey = pouchDBInstance.name + '|' + primary + '|' + revision;
     return eventKey;
 }
 

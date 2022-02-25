@@ -15,7 +15,7 @@ import './unit/rx-storage-lokijs.test.js';
 import './unit/rx-storage-dexie.test.js';
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
-import './unit/attachments.test.js'; // TODO move down
+import './unit/local-documents.test.js'; // MOVE DOWN
 import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
 import './unit/replication-graphql.test.js'; // TODO move down
@@ -29,9 +29,9 @@ import './unit/change-event-buffer.test.js';
 import './unit/cache-replacement-policy.test';
 import './unit/query-builder.test.js';
 import './unit/idle-queue.test.js';
-import './unit/local-documents.test.js'; // MOVE DOWN
 import './unit/event-reduce.test.js';
 import './unit/reactive-collection.test.js';
+import './unit/attachments.test.js';
 import './unit/reactive-query.test.js';
 import './unit/reactive-document.test.js';
 import './unit/data-migration.test.js';
@@ -39,7 +39,6 @@ import './unit/hooks.test.js';
 import './unit/orm.test.js';
 import './unit/population.test.js';
 import './unit/backup.test.js';
-import './unit/local-documents.test.js';
 import './unit/leader-election.test.js';
 import './unit/replication.test.js';
 import './unit/replication-couchdb.test.js';

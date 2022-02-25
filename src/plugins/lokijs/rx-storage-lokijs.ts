@@ -10,7 +10,6 @@ import type {
     MangoQuery,
     RxDocumentWriteData,
     RxJsonSchema,
-    RxKeyObjectStorageInstanceCreationParams,
     RxStorage,
     RxStorageInstanceCreationParams,
     RxStorageStatics
@@ -23,10 +22,6 @@ import {
     createLokiStorageInstance,
     RxStorageInstanceLoki
 } from './rx-storage-instance-loki';
-import {
-    createLokiKeyObjectStorageInstance,
-    RxStorageKeyObjectInstanceLoki
-} from './rx-storage-key-object-instance-loki';
 import { getLokiSortComparator } from './lokijs-helper';
 import type { LeaderElector } from 'broadcast-channel';
 
@@ -141,17 +136,6 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
         params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
     ): Promise<RxStorageInstanceLoki<RxDocType>> {
         return createLokiStorageInstance(this, params, this.databaseSettings);
-    }
-
-    public createKeyObjectStorageInstance(
-        params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>
-    ): Promise<RxStorageKeyObjectInstanceLoki> {
-
-        // ensure we never mix up key-object data with normal storage documents.
-        const useParams = flatClone(params);
-        useParams.collectionName = params.collectionName + '-key-object';
-
-        return createLokiKeyObjectStorageInstance(this, params, this.databaseSettings);
     }
 }
 
