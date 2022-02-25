@@ -186,23 +186,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             return storeDocumentData;
         });
 
-
-
         const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
             custom: {
                 primaryPath: this.primaryPath,
                 writeRowById
             }
         } as any);
-
-
-        // TODO remove this
-        try {
-            const testDoc = await this.internals.pouch.get(insertDocs[0]._id);
-            console.log('testDoc:');
-            console.dir(testDoc);
-        } catch (err) { }
-
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},

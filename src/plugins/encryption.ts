@@ -203,7 +203,7 @@ export const RxDBEncryptionPlugin: RxPlugin = {
                 ) {
                     const dataString = await blobBufferUtil.toString(args.attachmentData.data);
                     const encrypted = encryptString(dataString, password);
-                    args.attachmentData.data = blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
+                    args.attachmentData.data = encrypted;
                 }
             }
         },
@@ -218,10 +218,7 @@ export const RxDBEncryptionPlugin: RxPlugin = {
                 ) {
                     const dataString = await blobBufferUtil.toString(args.plainData);
                     const decrypted = decryptString(dataString, password);
-                    args.plainData = blobBufferUtil.createBlobBuffer(
-                        decrypted,
-                        args.type
-                    );
+                    args.plainData = decrypted;
                 }
             }
         }

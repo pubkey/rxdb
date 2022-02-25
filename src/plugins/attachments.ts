@@ -167,9 +167,12 @@ export async function putAttachment(
         id, data, type
     } = hookAttachmentData;
 
-
-    const newHash = await storageStatics.hash(data).then(hash => storageStatics.hashKey + '-' + hash);
-    const newDigest = storageStatics.hashKey + '-' + newHash;
+    const newDigest = await storageStatics.hash(
+        blobBufferUtil.createBlobBufferFromBase64(
+            data,
+            type
+        )
+    ).then(hash => storageStatics.hashKey + '-' + hash);
 
     this._atomicQueue = this._atomicQueue
         .then(async () => {
@@ -188,7 +191,7 @@ export async function putAttachment(
                 digest: newDigest,
                 length: dataSize,
                 type,
-                data: data
+                data
             };
 
             const writeRow = {
