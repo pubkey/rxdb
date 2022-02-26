@@ -3,6 +3,8 @@ import type { RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstance } from 
 
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
+export const INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
+export const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 
 export const INTERNAL_STORE_SCHEMA: RxJsonSchema<InternalStoreDocType<any>> = {
     version: 0,
@@ -25,9 +27,9 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<InternalStoreDocType<any>> = {
         context: {
             type: 'string',
             enum: [
-                'collection',
-                'plugin-replication-primitives',
-                'plugin-encryption'
+                INTERNAL_CONTEXT_COLLECTION,
+                INTERNAL_CONTEXT_ENCRYPTION,
+                INTERNAL_CONTEXT_REPLICATION_PRIMITIVES
             ]
         },
         data: {

@@ -16,8 +16,8 @@ import objectPath from 'object-path';
 import type {
     RxPlugin,
     RxDatabase,
-    RxLocalDocumentData,
-    RxDocumentData
+    RxDocumentData,
+    RxDocumentWriteData
 } from '../types';
 import {
     blobBufferUtil,
@@ -27,7 +27,12 @@ import {
     hash,
     PROMISE_RESOLVE_FALSE
 } from '../util';
-import { findLocalDocument } from '../rx-storage-helper';
+import { getSingleDocument } from '../rx-storage-helper';
+import {
+    getPrimaryKeyOfInternalDocument,
+    InternalStoreDocType,
+    INTERNAL_CONTEXT_ENCRYPTION
+} from '../rx-database-internal-store';
 
 export const MINIMUM_PASSWORD_LENGTH: 8 = 8;
 
@@ -56,8 +61,9 @@ export function decryptString(cipherText: string, password: any): string {
     return ret;
 }
 
-export type PasswordHashDocument = RxLocalDocumentData<{
-    value: string;
+
+export type InternalStorePasswordDocType = InternalStoreDocType<{
+    hash: string;
 }>;
 
 /**
@@ -72,31 +78,38 @@ export async function storePasswordHashIntoDatabase(
         return PROMISE_RESOLVE_FALSE;
     }
     const pwHash = hash(rxDatabase.password);
-    const pwHashDocumentId = 'pwHash';
+    const pwHashDocumentKey = 'pwHash';
+    const pwHashDocumentId = getPrimaryKeyOfInternalDocument(
+        pwHashDocumentKey,
+        INTERNAL_CONTEXT_ENCRYPTION
+    );
 
-    const pwHashDoc = await findLocalDocument<PasswordHashDocument>(
-        rxDatabase.localDocumentsStore,
-        pwHashDocumentId,
-        false
+    const pwHashDoc = await getSingleDocument<InternalStorePasswordDocType>(
+        rxDatabase.internalStore,
+        pwHashDocumentId
     );
     if (!pwHashDoc) {
-        const docData: PasswordHashDocument = {
-            _id: pwHashDocumentId,
-            value: pwHash,
+        const docData: RxDocumentWriteData<InternalStorePasswordDocType> = {
+            id: pwHashDocumentId,
+            key: pwHashDocumentKey,
+            context: INTERNAL_CONTEXT_ENCRYPTION,
+            data: {
+                hash: pwHash
+            },
             _attachments: {},
             _meta: getDefaultRxDocumentMeta(),
             _deleted: false
         };
-        await rxDatabase.localDocumentsStore.bulkWrite([{
+        await rxDatabase.internalStore.bulkWrite([{
             document: docData
         }]);
         return true;
-    } else if (pwHash !== pwHashDoc.value) {
+    } else if (pwHash !== pwHashDoc.data.hash) {
         // different hash was already set by other instance
         await rxDatabase.destroy();
         throw newRxError('DB1', {
             passwordHash: hash(rxDatabase.password),
-            existingPasswordHash: pwHashDoc.value
+            existingPasswordHash: pwHashDoc.data.hash
         });
     } else {
         return true;

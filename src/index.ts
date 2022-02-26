@@ -17,6 +17,12 @@ export {
     dbCount,
     _collectionNamePrimary // used in tests
 } from './rx-database';
+export {
+    INTERNAL_CONTEXT_COLLECTION,
+    INTERNAL_CONTEXT_ENCRYPTION,
+    INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+    getPrimaryKeyOfInternalDocument
+} from './rx-database-internal-store';
 
 export {
     overwritable

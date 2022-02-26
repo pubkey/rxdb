@@ -16,6 +16,8 @@ import {
     randomCouchString,
     addRxPlugin,
     findLocalDocument,
+    getPrimaryKeyOfInternalDocument,
+    INTERNAL_CONTEXT_ENCRYPTION
 } from '../../';
 
 
@@ -24,12 +26,13 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 
 import { RxDBEncryptionPlugin } from '../../plugins/encryption';
+import { InternalStorePasswordDocType } from '../../src/plugins/encryption';
 addRxPlugin(RxDBEncryptionPlugin);
 
 config.parallel('rx-database.test.js', () => {
@@ -203,20 +206,28 @@ config.parallel('rx-database.test.js', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                const doc = await findLocalDocument<any>(db.localDocumentsStore, 'pwHash', false);
+                const doc = await findLocalDocument<InternalStorePasswordDocType>(
+                    db.internalStore,
+                    getPrimaryKeyOfInternalDocument(
+                        'pwHash',
+                        INTERNAL_CONTEXT_ENCRYPTION
+                    ), false);
                 if (!doc) {
                     throw new Error('error in test this should never happen ' + doc);
                 }
-                assert.strictEqual(typeof doc.value, 'string');
+                assert.strictEqual(typeof doc.data.hash, 'string');
                 const db2 = await createRxDatabase({
                     name,
                     storage: getRxStoragePouch('memory'),
                     password,
                     ignoreDuplicate: true
                 });
-                const doc2 = await findLocalDocument<any>(db.localDocumentsStore, 'pwHash', false);
+                const doc2 = await findLocalDocument<InternalStorePasswordDocType>(db.internalStore, getPrimaryKeyOfInternalDocument(
+                    'pwHash',
+                    INTERNAL_CONTEXT_ENCRYPTION
+                ), false);
                 assert.ok(doc2);
-                assert.strictEqual(typeof doc2.value, 'string');
+                assert.strictEqual(typeof doc2.data.hash, 'string');
 
                 db.destroy();
                 db2.destroy();

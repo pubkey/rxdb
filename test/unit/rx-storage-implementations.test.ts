@@ -38,7 +38,6 @@ import {
     PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
-    RxLocalDocumentData,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance
@@ -53,11 +52,6 @@ declare type MultiInstanceInstances = {
     a: RxStorageInstance<TestDocType, any, any>;
     b: RxStorageInstance<TestDocType, any, any>;
 };
-declare type MultiInstanceKeyObjectInstances = {
-    a: RxStorageKeyObjectInstance<any, any>;
-    b: RxStorageKeyObjectInstance<any, any>;
-};
-
 
 function getWriteData(
     ownParams: Partial<RxDocumentWriteData<TestDocType>> = {}
@@ -97,23 +91,6 @@ function getTestDataSchema(): RxJsonSchema<TestDocType> {
             'value'
         ]
     };
-}
-
-function getLocalWriteData(
-    ownParams: Partial<RxLocalDocumentData<{ value: string }>> = {}
-): RxLocalDocumentData<{ value: string }> {
-    return Object.assign(
-        {
-            _id: randomString(10),
-            value: 'barfoo',
-            _deleted: false,
-            _attachments: {},
-            _meta: {
-                lwt: now()
-            }
-        },
-        ownParams
-    );
 }
 
 function getNestedDocSchema() {
