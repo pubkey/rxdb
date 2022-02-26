@@ -11,8 +11,7 @@ import {
 
 import {
     getRxStorageLoki,
-    RxStorageInstanceLoki,
-    RxStorageKeyObjectInstanceLoki
+    RxStorageInstanceLoki
 } from '../../plugins/lokijs';
 
 import * as humansCollections from '../helper/humans-collection';
@@ -49,7 +48,7 @@ describe('rx-storage-lokijs.test.js', () => {
             assert.ok(doc);
 
             const storageInstance: RxStorageInstanceLoki<HumanDocumentType> = collection.storageInstance as any;
-            const localStorageInstance: RxStorageKeyObjectInstanceLoki = collection.localDocumentsStore as any;
+            const localStorageInstance: RxStorageInstanceLoki<any> = collection.localDocumentsStore as any;
 
             assert.ok(localStorageInstance.internals.leaderElector);
             assert.ok(storageInstance.internals.leaderElector);

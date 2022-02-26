@@ -72,14 +72,12 @@ export class RxReplicationStateBase<RxDocType> {
      */
     public pendingRetries = 0;
 
-    /**
-     * hash of the identifier, used to flag revisions
-     * and to identify which documents state came from the remote.
-     */
-    public replicationIdentifierHash: string;
-
     constructor(
-        public readonly replicationIdentifier: string,
+        /**
+         * hash of the identifier, used to flag revisions
+         * and to identify which documents state came from the remote.
+         */
+        public readonly replicationIdentifierHash: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly pull?: ReplicationPullOptions<RxDocType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
@@ -87,7 +85,7 @@ export class RxReplicationStateBase<RxDocType> {
         public liveInterval?: number,
         public retryTime?: number,
     ) {
-        this.replicationIdentifierHash = hash(this.replicationIdentifier);
+
 
         // stop the replication when the collection gets destroyed
         this.collection.onDestroy.then(() => {
@@ -247,7 +245,7 @@ export class RxReplicationStateBase<RxDocType> {
         if (this.isStopped()) {
             return Promise.resolve('ok');
         }
-        const latestDocument = await getLastPullDocument(this.collection, this.replicationIdentifier);
+        const latestDocument = await getLastPullDocument(this.collection, this.replicationIdentifierHash);
         let result: ReplicationPullHandlerResult<RxDocType>;
         try {
             result = await this.pull.handler(latestDocument);
@@ -303,7 +301,6 @@ export class RxReplicationStateBase<RxDocType> {
             }
             const localWritesInBetween = await getChangesSinceLastPushSequence<RxDocType>(
                 this.collection,
-                this.replicationIdentifier,
                 this.replicationIdentifierHash,
                 () => this.isStopped(),
                 1
@@ -407,10 +404,10 @@ export class RxReplicationStateBase<RxDocType> {
                 // console.log('RxGraphQLReplicationState._run(): no more docs and not live; complete = true');
             }
         } else {
-            const newLatestDocument = lastOfArray(pulledDocuments);
-            await setLastPullDocument(
+            const newLatestDocument: RxDocumentData<RxDocType> = lastOfArray(pulledDocuments) as any;
+            await setLastPullDocument<RxDocType>(
                 this.collection,
-                this.replicationIdentifier,
+                this.replicationIdentifierHash,
                 newLatestDocument
             );
 
@@ -442,7 +439,6 @@ export class RxReplicationStateBase<RxDocType> {
         const batchSize = this.push.batchSize ? this.push.batchSize : 5;
         const changesResult = await getChangesSinceLastPushSequence<RxDocType>(
             this.collection,
-            this.replicationIdentifier,
             this.replicationIdentifierHash,
             () => this.isStopped(),
             batchSize,
@@ -488,7 +484,7 @@ export class RxReplicationStateBase<RxDocType> {
         if (changesResult.hasChangesSinceLastSequence) {
             await setLastPushSequence(
                 this.collection,
-                this.replicationIdentifier,
+                this.replicationIdentifierHash,
                 changesResult.lastSequence
             );
         }
@@ -514,8 +510,18 @@ export function replicateRxCollection<RxDocType>(
         waitForLeadership
     }: ReplicationOptions<RxDocType>
 ): RxReplicationState<RxDocType> {
+
+
+    const replicationIdentifierHash = hash(
+        [
+            collection.database.name,
+            collection.name,
+            replicationIdentifier
+        ].join('|')
+    );
+
     const replicationState = new RxReplicationStateBase<RxDocType>(
-        replicationIdentifier,
+        replicationIdentifierHash,
         collection,
         pull,
         push,
