@@ -370,9 +370,9 @@ config.parallel('data-migration.test.js', () => {
                     assert.strictEqual(amountPlain, 10);
 
                     // check that internal doc exists
-                    let docId = _collectionNamePrimary(col.name, old.schema.jsonSchema);
+                    let docId = 'collection|' + _collectionNamePrimary(col.name, old.schema.jsonSchema);
                     let iDoc = await old.database.internalStore.internals.pouch.get(docId);
-                    assert.strictEqual(typeof iDoc.schemaHash, 'string');
+                    assert.strictEqual(typeof iDoc.data.schemaHash, 'string');
 
 
                     await deleteOldCollection(old);
@@ -386,7 +386,7 @@ config.parallel('data-migration.test.js', () => {
 
                     // check that internal doc deleted
                     let has = true;
-                    docId = _collectionNamePrimary(col.name, old.schema.jsonSchema);
+                    docId = 'collection|' + _collectionNamePrimary(col.name, old.schema.jsonSchema);
                     try {
                         iDoc = await old.database.internalStore.internals.pouch.get(docId);
                     } catch (e) {

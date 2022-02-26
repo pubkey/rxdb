@@ -24,7 +24,7 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -276,7 +276,7 @@ config.parallel('rx-database.test.js', () => {
 
                 db.destroy();
             });
-            it('the schema-object should be saved in the collectionsCollection', async () => {
+            it('the schema-object should be saved in the internal storage instance', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: getRxStoragePouch('memory')
@@ -286,9 +286,9 @@ config.parallel('rx-database.test.js', () => {
                         schema: schemas.human
                     }
                 });
-                const colDoc = await (db.internalStore.internals.pouch as any).get('human0-' + schemas.human.version);
+                const colDoc = await (db.internalStore.internals.pouch as any).get('collection|human0-' + schemas.human.version);
                 const compareSchema = createRxSchema(schemas.human);
-                assert.deepStrictEqual(compareSchema.normalized, colDoc.schema);
+                assert.deepStrictEqual(compareSchema.normalized, colDoc.data.schema);
                 db.destroy();
             });
             it('use encrypted db', async () => {
@@ -319,8 +319,8 @@ config.parallel('rx-database.test.js', () => {
                 const collection = collections.human;
                 const version = collection.schema.version;
                 assert.deepStrictEqual(version, 0);
-                const internalDoc = await (db.internalStore.internals.pouch as any).get('human-' + version);
-                assert.deepStrictEqual(internalDoc.version, version);
+                const internalDoc = await (db.internalStore.internals.pouch as any).get('collection|human-' + version);
+                assert.deepStrictEqual(internalDoc.data.version, version);
                 db.destroy();
             });
             it('create 2 times on same adapter', async () => {
@@ -377,7 +377,6 @@ config.parallel('rx-database.test.js', () => {
                     writeCount++;
                     return originalBulkWrite(...args);
                 }
-
 
                 await db2.addCollections({
                     [collectionName]: {
@@ -615,44 +614,6 @@ config.parallel('rx-database.test.js', () => {
             await db2.remove();
         });
     });
-    describe('.dangerousRemoveCollectionInfo()', () => {
-        it('should be possible to hard-overwrite the collections', async () => {
-            const name = randomCouchString(10);
-            const db = await createRxDatabase({
-                name,
-                storage: getRxStoragePouch('memory'),
-                password: 'fo222222obar'
-            });
-            const col = await db.addCollections({
-                human: {
-                    schema: schemas.simpleHuman
-                }
-            });
-            await col.human.insert({
-                passportId: 'foo',
-                age: '10'
-            });
-            await db.destroy();
-
-            const db2 = await createRxDatabase({
-                name,
-                storage: getRxStoragePouch('memory'),
-                password: 'fo222222obar'
-            });
-
-            await db2.dangerousRemoveCollectionInfo();
-
-            const col2 = await db2.addCollections({
-                human: {
-                    schema: schemas.humanAgeIndex
-                }
-            });
-            assert.ok(col2.human);
-
-            await db2.destroy();
-        });
-    });
-
     describe('ISSUES', () => {
         it('#677 wrong pouch-location when path as collection-name', () => {
             const pouchPathNormal = getPouchLocation(

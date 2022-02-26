@@ -20,7 +20,8 @@ import type {
     RxChangeEvent,
     RxDatabaseCreator,
     RxChangeEventBulk,
-    RxLocalDocumentData
+    RxLocalDocumentData,
+    RxDocumentData
 } from './types';
 
 import {
@@ -56,13 +57,11 @@ import {
 } from './rx-collection';
 import {
     findLocalDocument,
-    getAllDocuments,
     getSingleDocument,
     getWrappedStorageInstance,
     INTERNAL_STORAGE_NAME,
     RX_DATABASE_LOCAL_DOCS_STORAGE_NAME,
-    storageChangeEventToRxChangeEvent,
-    writeSingle
+    storageChangeEventToRxChangeEvent
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
 import { getPseudoSchemaForVersion } from './rx-schema-helper';
@@ -71,6 +70,14 @@ import {
     getCollectionLocalInstanceName
 } from './rx-collection-helper';
 import { ObliviousSet } from 'oblivious-set';
+import {
+    getAllCollectionDocuments,
+    getPrimaryKeyOfInternalDocument,
+    InternalStoreCollectionDocType,
+    InternalStoreDocType,
+    INTERNAL_CONTEXT_COLLECTION,
+    INTERNAL_STORE_SCHEMA
+} from './rx-database-internal-store';
 
 /**
  * stores the used database names
@@ -79,15 +86,6 @@ import { ObliviousSet } from 'oblivious-set';
 const USED_DATABASE_NAMES: Set<string> = new Set();
 
 let DB_COUNT = 0;
-
-// stores information about the collections
-export type InternalStoreDocumentData = {
-    // primary
-    collectionName: string;
-    schema: RxJsonSchema<any>;
-    schemaHash: string;
-    version: number;
-};
 
 export class RxDatabaseBase<
     Internals, InstanceCreationOptions,
@@ -111,7 +109,7 @@ export class RxDatabaseBase<
         /**
          * Stores information documents about the collections of the database
          */
-        public readonly internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
+        public readonly internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>,
         public readonly internalLocalDocumentsStore: RxStorageInstance<RxLocalDocumentData, Internals, InstanceCreationOptions>,
         /**
          * Set if multiInstance: true
@@ -156,24 +154,6 @@ export class RxDatabaseBase<
     public emittedEventBulkIds: ObliviousSet<string> = new ObliviousSet(60 * 1000);
 
     /**
-     * removes all internal collection-info
-     * only use this if you have to upgrade from a major rxdb-version
-     * do NEVER use this to change the schema of a collection
-     */
-    async dangerousRemoveCollectionInfo(): Promise<void> {
-        const allDocs = await getAllDocuments('collectionName', this.storage, this.internalStore);
-        const writeData: BulkWriteRow<InternalStoreDocumentData>[] = allDocs.map(doc => {
-            const deletedDoc = flatClone(doc);
-            deletedDoc._deleted = true;
-            return {
-                previous: doc,
-                document: deletedDoc
-            };
-        });
-        await this.internalStore.bulkWrite(writeData);
-    }
-
-    /**
      * This is the main handle-point for all change events
      * ChangeEvents created by this instance go:
      * RxDocument -> RxCollection -> RxDatabase.$emit -> MultiInstance
@@ -197,10 +177,12 @@ export class RxDatabaseBase<
      * removes the collection-doc from the internalStore
      */
     async removeCollectionDoc(name: string, schema: any): Promise<void> {
-        const docId = _collectionNamePrimary(name, schema);
         const doc = await getSingleDocument(
             this.internalStore,
-            docId
+            getPrimaryKeyOfInternalDocument(
+                _collectionNamePrimary(name, schema),
+                INTERNAL_CONTEXT_COLLECTION
+            )
         );
         if (!doc) {
             throw newRxError('SNH', { name, schema });
@@ -231,15 +213,18 @@ export class RxDatabaseBase<
                     .keys(collectionCreators)
                     .map(name => {
                         const schema: RxJsonSchema<any> = (collectionCreators as any)[name].schema;
-                        return _collectionNamePrimary(name, schema);
+                        return getPrimaryKeyOfInternalDocument(
+                            _collectionNamePrimary(name, schema),
+                            INTERNAL_CONTEXT_COLLECTION
+                        )
                     }),
                 false
             )
         );
 
         const internalDocByCollectionName: any = {};
-        Object.entries(collectionDocs).forEach(([key, doc]) => {
-            internalDocByCollectionName[key] = doc;
+        Object.entries(collectionDocs).forEach(([_id, doc]) => {
+            internalDocByCollectionName[doc.key] = doc;
         });
 
         const schemaHashByName: { [key in keyof CreatedCollections]: string } = {} as any;
@@ -247,7 +232,7 @@ export class RxDatabaseBase<
             Object.entries(collectionCreators)
                 .map(([name, args]) => {
                     const useName: keyof CreatedCollections = name as any;
-                    const internalDoc = internalDocByCollectionName[_collectionNamePrimary(name, collectionCreators[useName].schema)];
+                    const internalDoc: InternalStoreCollectionDocType = internalDocByCollectionName[_collectionNamePrimary(name, collectionCreators[useName].schema)];
                     const useArgs: RxCollectionCreator & { name: keyof CreatedCollections; } = flatClone(args) as any;
                     useArgs.name = useName;
                     const schema = createRxSchema((args as RxCollectionCreator).schema);
@@ -275,12 +260,12 @@ export class RxDatabaseBase<
                     }
 
                     // collection already exists but has different schema
-                    if (internalDoc && internalDoc.schemaHash !== schemaHashByName[useName]) {
+                    if (internalDoc && internalDoc.data.schemaHash !== schemaHashByName[useName]) {
                         throw newRxError('DB6', {
                             name: name,
-                            previousSchemaHash: internalDoc.schemaHash,
+                            previousSchemaHash: internalDoc.data.schemaHash,
                             schemaHash: schemaHashByName[useName],
-                            previousSchema: internalDoc.schema,
+                            previousSchema: internalDoc.data.schema,
                             schema: (args as RxCollectionCreator).schema
                         });
                     }
@@ -295,7 +280,7 @@ export class RxDatabaseBase<
                 })
         );
 
-        const bulkPutDocs: BulkWriteRow<InternalStoreDocumentData>[] = [];
+        const bulkPutDocs: BulkWriteRow<InternalStoreCollectionDocType>[] = [];
         const ret: { [key in keyof CreatedCollections]: RxCollection } = {} as any;
         collections.forEach(collection => {
             const name: keyof CreatedCollections = collection.name as any;
@@ -306,10 +291,17 @@ export class RxDatabaseBase<
             if (!internalDocByCollectionName[collectionName]) {
                 bulkPutDocs.push({
                     document: {
-                        collectionName,
-                        schemaHash: schemaHashByName[name],
-                        schema: collection.schema.normalized,
-                        version: collection.schema.version,
+                        id: getPrimaryKeyOfInternalDocument(
+                            collectionName,
+                            INTERNAL_CONTEXT_COLLECTION
+                        ),
+                        key: collectionName,
+                        context: INTERNAL_CONTEXT_COLLECTION,
+                        data: {
+                            schemaHash: schemaHashByName[name],
+                            schema: collection.schema.normalized,
+                            version: collection.schema.version,
+                        },
                         _deleted: false,
                         _meta: getDefaultRxDocumentMeta(),
                         _attachments: {}
@@ -352,14 +344,14 @@ export class RxDatabaseBase<
             .then(knownVersions => {
                 return Promise.all(
                     knownVersions
-                        .map(v => {
+                        .map(knownVersionDoc => {
                             return createRxCollectionStorageInstances<any, any, any>(
                                 collectionName,
                                 this as any,
                                 {
                                     databaseName: this.name,
                                     collectionName,
-                                    schema: getPseudoSchemaForVersion<InternalStoreDocumentData>(v, 'collectionName'),
+                                    schema: knownVersionDoc.data.schema,
                                     options: this.instanceCreationOptions,
                                     multiInstance: this.multiInstance
                                 },
@@ -591,33 +583,27 @@ export function _collectionNamePrimary(name: string, schema: RxJsonSchema<any>) 
 export async function _removeAllOfCollection(
     rxDatabase: RxDatabaseBase<any, any, any>,
     collectionName: string
-): Promise<number[]> {
+): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
     const docs = await rxDatabase.lockedRun(
-        () => getAllDocuments('collectionName', rxDatabase.storage, rxDatabase.internalStore)
+        () => getAllCollectionDocuments(rxDatabase.internalStore, rxDatabase.storage)
     );
     const relevantDocs = docs
         .filter((doc) => {
-            const name = doc.collectionName.split('-')[0];
+            const name = doc.key.split('-')[0];
             return name === collectionName;
         });
-    return Promise.all(
-        relevantDocs
-            .map(
-                doc => {
-                    const writeDoc = flatClone(doc);
-                    writeDoc._deleted = true;
-                    return rxDatabase.lockedRun(
-                        () => writeSingle(
-                            rxDatabase.internalStore,
-                            {
-                                previous: doc,
-                                document: writeDoc
-                            }
-                        )
-                    );
-                }
-            )
-    ).then(() => relevantDocs.map((doc: any) => doc.version));
+
+    const writeRows = relevantDocs.map(doc => {
+        const writeDoc = flatClone(doc);
+        writeDoc._deleted = true;
+        return {
+            previous: doc,
+            document: writeDoc
+        };
+    });
+    return rxDatabase.lockedRun(
+        () => rxDatabase.internalStore.bulkWrite(writeRows)
+    ).then(() => relevantDocs);
 }
 
 function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collections>): void {
@@ -647,14 +633,14 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
     options: InstanceCreationOptions,
     multiInstance: boolean
 ): Promise<{
-    internalStore: RxStorageInstance<InternalStoreDocumentData, Internals, InstanceCreationOptions>,
+    internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>,
     localDocumentsStore: RxStorageInstance<RxLocalDocumentData, Internals, InstanceCreationOptions>
 }> {
-    const internalStore = await storage.createStorageInstance<InternalStoreDocumentData>(
+    const internalStore = await storage.createStorageInstance<InternalStoreDocType>(
         {
             databaseName,
             collectionName: INTERNAL_STORAGE_NAME,
-            schema: getPseudoSchemaForVersion(0, 'collectionName'),
+            schema: INTERNAL_STORE_SCHEMA,
             options,
             multiInstance
         }
@@ -800,16 +786,20 @@ export async function removeRxDatabase(
         false
     );
 
-    const docs = await getAllDocuments('collectionName', storage, storageInstance.internalStore);
+    const collectionDocs = await getAllCollectionDocuments(
+        storageInstance.internalStore,
+        storage
+    );
+
     await Promise.all(
-        docs
+        collectionDocs
             .map(async (colDoc) => {
-                const id = colDoc.collectionName;
-                const schema = colDoc.schema;
-                const split = id.split('-');
+                const key = colDoc.key;
+                const schema = colDoc.data.schema;
+                const split = key.split('-');
                 const collectionName = split[0];
                 const [instance, localInstance] = await Promise.all([
-                    storage.createStorageInstance<InternalStoreDocumentData>(
+                    storage.createStorageInstance<any>(
                         {
                             databaseName,
                             collectionName,
