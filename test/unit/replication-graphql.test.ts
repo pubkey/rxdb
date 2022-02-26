@@ -1880,7 +1880,7 @@ describe('replication-graphql.test.ts', () => {
 
                 const originalSequence = await getLastPushSequence(
                     replicationState.collection,
-                    replicationState.replicationState.replicationIdentifier
+                    replicationState.replicationState.replicationIdentifierHash
                 );
 
                 // call .run() often
@@ -1890,7 +1890,7 @@ describe('replication-graphql.test.ts', () => {
 
                 const newSequence = await getLastPushSequence(
                     replicationState.collection,
-                    replicationState.replicationState.replicationIdentifier
+                    replicationState.replicationState.replicationIdentifierHash
                 );
                 assert.strictEqual(originalSequence, newSequence);
                 server.close();
@@ -2182,7 +2182,7 @@ describe('replication-graphql.test.ts', () => {
                 docData = clone(docData); // clone to make it mutateable
                 (docData as any).name = 'foobar';
 
-                await setLastPullDocument(c, endpointHash, docData);
+                await setLastPullDocument(c, endpointHash, docData as any);
                 await c.database.remove();
 
                 // recreate the same collection again
