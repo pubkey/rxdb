@@ -155,7 +155,8 @@ console.log(myDocument.deleted);
 
 ### toJSON()
 
-Returns the document's data as plain json object.
+Returns the document's data as plain json object. This will return an **immutable** object. To get something that can be modiefied, use `toMutableJSON()` instead.
+
 ```js
 const json = myDocument.toJSON();
 console.dir(json);
@@ -180,6 +181,16 @@ console.dir(json);
 */
 ```
 
+### toMutableJSON()
+
+Same as `toJSON()` but returns a deep cloned object that can be mutated afterwards.
+Remember that deep cloning is performance expensive and should only be done when necessary.
+
+
+```js
+const json = myDocument.toMutableJSON();
+json.firstName = 'Alice'; // The returned document can be mutated
+```
 
 ### set()
 **Only temporary documents**

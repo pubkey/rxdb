@@ -24,6 +24,7 @@
 - Removed the encrypted export from the json-import-export plugin. This was barely used and made everything more complex. All exports are no non-encrypted. If you need them encrypted, you can still run by encryption after the export is done.
 - Refactor the encryption plugin so no more plugin specific code is in the RxDB core.
 - Refactor local documents plugin to only create a storage instance for local documents when needed.
+- Added `RxDocument().toMutableJSON()`
 
 ### 11.6.0 (4 February 2022)
 

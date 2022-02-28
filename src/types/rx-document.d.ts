@@ -101,5 +101,9 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     toJSON(withRevAndAttachments: true): DeepReadonly<RxDocumentData<RxDocumentType>>;
     toJSON(withRevAndAttachments: false): DeepReadonly<RxDocumentType>;
 
+    toMutableJSON(): RxDocumentType;
+    toMutableJSON(withRevAndAttachments: true): RxDocumentData<RxDocumentType>;
+    toMutableJSON(withRevAndAttachments: false): RxDocumentType;
+
     destroy(): void;
 }

@@ -251,6 +251,9 @@ export const basePrototype = {
             return overwritable.deepFreezeWhenDevMode(this._data);
         }
     },
+    toMutableJSON(this: RxDocument, withMetaFields = false) {
+        return clone(this.toJSON(withMetaFields as any));
+    },
 
     /**
      * set data by objectPath
