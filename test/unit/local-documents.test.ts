@@ -195,8 +195,7 @@ config.parallel('local-documents.test.js', () => {
                     foo: 'bar'
                 });
                 assert.ok(doc);
-                assert.ok(doc.data);
-                assert.strictEqual(doc.data.foo, 'bar');
+                assert.strictEqual(doc.get('data').foo, 'bar');
                 c.database.destroy();
             });
             it('should update when exists', async () => {

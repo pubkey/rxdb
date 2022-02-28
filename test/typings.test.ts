@@ -651,8 +651,8 @@ describe('typings.test.js', function () {
                     throw new Error('local doc missing');
                 }
 
-                const x: string = typedLocalDoc.data.foo;
-                const x2: string = typedLocalDocUpsert.data.foo;
+                const x: string = typedLocalDoc.get('data').foo;
+                const x2: string = typedLocalDocUpsert.get('data').foo;
             });
             `;
             await transpileCode(code);

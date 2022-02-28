@@ -25,6 +25,4 @@ export type RxLocalDocumentData<
 export declare type RxLocalDocument<Parent, Data = any> = RxDocumentBase<RxLocalDocumentData<Data>> & {
     readonly parent: Parent;
     isLocal(): true;
-} & {
-    data: Data;
 };
