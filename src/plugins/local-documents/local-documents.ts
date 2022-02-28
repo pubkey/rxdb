@@ -167,7 +167,7 @@ export function getLocal$(this: RxCollection, id: string): Observable<RxLocalDoc
         }),
         filter(filterFlagged => filterFlagged.use),
         map(filterFlagged => {
-            return filterFlagged.doc;
+            return filterFlagged.doc as any;
         })
     );
 }
