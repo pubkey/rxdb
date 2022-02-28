@@ -82,6 +82,8 @@ const RxLocalDocumentPrototype: any = {
         return this.parent.$emit(changeEvent);
     },
     get(this: RxDocument, objPath: string) {
+        objPath = 'data.' + objPath;
+
         if (!this._data) {
             return undefined;
         }
@@ -95,40 +97,33 @@ const RxLocalDocumentPrototype: any = {
         valueObj = overwritable.deepFreezeWhenDevMode(valueObj);
         return valueObj;
     },
-    get$(this: RxDocument, path: string) {
-        if (path.includes('.item.')) {
+    get$(this: RxDocument, objPath: string) {
+        objPath = 'data.' + objPath;
+
+        if (objPath.includes('.item.')) {
             throw newRxError('LD3', {
-                path
+                objPath
             });
         }
-        if (path === this.primaryPath)
+        if (objPath === this.primaryPath) {
             throw newRxError('LD4');
+        }
 
         return this._dataSync$
             .pipe(
-                map(data => objectPath.get(data, path)),
+                map(data => objectPath.get(data, objPath)),
                 distinctUntilChanged()
             );
     },
-    set(this: RxDocument, objPath: string, value: any) {
-        if (!value) {
-            // object path not set, overwrite whole data
-            const data: any = flatClone(objPath);
-            data._rev = this._data._rev;
-            this._data = data;
-            return this;
-        }
-        if (objPath === '_id') {
-            throw newRxError('LD5', {
-                objPath,
-                value
-            });
-        }
-        if (Object.is(this.get(objPath), value)) {
-            return;
-        }
-        objectPath.set(this._data, objPath, value);
-        return this;
+    atomicPatch(patch: Partial<any>) {
+        return this.atomicUpdate((docData: any) => {
+            Object
+                .entries(patch)
+                .forEach(([k, v]) => {
+                    (docData as any).data[k] = v;
+                });
+            return docData;
+        });
     },
     async _saveData(this: RxLocalDocument<any>, newData: RxDocumentData<RxLocalDocumentData>) {
         const state = await getLocalDocStateByParent(this.parent);

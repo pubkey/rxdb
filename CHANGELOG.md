@@ -23,7 +23,7 @@
 - RxPlugin hooks now can be defined as running `before` or `after` other plugin hooks.
 - Removed the encrypted export from the json-import-export plugin. This was barely used and made everything more complex. All exports are no non-encrypted. If you need them encrypted, you can still run by encryption after the export is done.
 - Refactor the encryption plugin so no more plugin specific code is in the RxDB core.
-- Refactor local documents plugin to initial the storage lazy to improve startup time.
+- Refactor local documents plugin to only create a storage instance for local documents when needed.
 
 ### 11.6.0 (4 February 2022)
 

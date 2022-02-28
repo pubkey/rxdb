@@ -37,10 +37,7 @@ export async function insertLocal<DocData = any>(
     id: string,
     data: DocData
 ): Promise<RxLocalDocument<DocData>> {
-    console.log('- insertLocal()');
     const state = await getLocalDocStateByParent(this);
-    console.log('- insertLocal() got state');
-
 
     // create new one
     let docData: RxDocumentWriteData<RxLocalDocumentData<DocData>> = {
@@ -57,7 +54,6 @@ export async function insertLocal<DocData = any>(
             document: docData
         }
     ).then(res => {
-        console.log('- insertLocal() write single done');
         docData = flatClone(docData);
         docData._rev = res._rev;
         const newDoc = createRxLocalDocument(id, docData as any, this, state);
