@@ -10,7 +10,6 @@ import type {
 } from './types';
 import { getDefaultRxDocumentMeta, randomCouchString } from './util';
 
-
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 export const INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
@@ -60,7 +59,6 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<InternalStoreDocType<any>> = {
     additionalProperties: false
 };
 
-
 export type InternalStoreDocType<Data = any> = {
     id: string;
     key: string;
@@ -75,7 +73,6 @@ export type InternalStoreDocType<Data = any> = {
 export type InternalStoreStorageTokenDocType = InternalStoreDocType<{
     token: string;
 }>;
-
 
 /**
  * Stores information about the collections.
@@ -123,7 +120,6 @@ export async function getAllCollectionDocuments(
     return allDocs;
 }
 
-
 /**
  * to not confuse multiInstance-messages with other databases that have the same
  * name and adapter, but do not share state with this one (for example in-memory-instances),
@@ -135,51 +131,49 @@ export async function ensureStorageTokenExists<Collections = any>(rxDatabase: Rx
         STORAGE_TOKEN_DOCUMENT_KEY,
         INTERNAL_CONTEXT_STORAGE_TOKEN
     );
-    const storageTokenDoc = await getSingleDocument<InternalStoreStorageTokenDocType>(
-        rxDatabase.internalStore,
-        storageTokenDocumentId
-    );
-    if (!storageTokenDoc) {
-        const storageToken = randomCouchString(10);
-        try {
-            await writeSingle<InternalStoreStorageTokenDocType>(
-                rxDatabase.internalStore,
-                {
-                    document: {
-                        id: storageTokenDocumentId,
-                        context: INTERNAL_CONTEXT_STORAGE_TOKEN,
-                        key: STORAGE_TOKEN_DOCUMENT_KEY,
-                        data: {
-                            token: storageToken
-                        },
-                        _deleted: false,
-                        _meta: getDefaultRxDocumentMeta(),
-                        _attachments: {}
-                    }
-                }
-            );
-        } catch (err: RxStorageBulkWriteError<InternalStoreStorageTokenDocType> | any) {
-            /**
-             * If we get a 409 error,
-             * it means another instance already inserted the storage token.
-             * So we get that token from the database and return that one.
-             */
-            if (
-                err.isError &&
-                (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).status === 409
-            ) {
-                const useStorageTokenDoc = await getSingleDocument<InternalStoreStorageTokenDocType>(
-                    rxDatabase.internalStore,
-                    storageTokenDocumentId
-                );
-                if (useStorageTokenDoc) {
-                    return useStorageTokenDoc.data.token;
+
+    /**
+     * To have less read-write cycles,
+     * we just try to insert a new document
+     * and only fetch the existing one if a conflict happened.
+     */
+    const storageToken = randomCouchString(10);
+    try {
+        await writeSingle<InternalStoreStorageTokenDocType>(
+            rxDatabase.internalStore,
+            {
+                document: {
+                    id: storageTokenDocumentId,
+                    context: INTERNAL_CONTEXT_STORAGE_TOKEN,
+                    key: STORAGE_TOKEN_DOCUMENT_KEY,
+                    data: {
+                        token: storageToken
+                    },
+                    _deleted: false,
+                    _meta: getDefaultRxDocumentMeta(),
+                    _attachments: {}
                 }
             }
-            throw err;
-        }
+        );
         return storageToken;
-    } else {
-        return storageTokenDoc.data.token;
+    } catch (err: RxStorageBulkWriteError<InternalStoreStorageTokenDocType> | any) {
+        /**
+         * If we get a 409 error,
+         * it means another instance already inserted the storage token.
+         * So we get that token from the database and return that one.
+         */
+        if (
+            err.isError &&
+            (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).status === 409
+        ) {
+            const useStorageTokenDoc = await getSingleDocument<InternalStoreStorageTokenDocType>(
+                rxDatabase.internalStore,
+                storageTokenDocumentId
+            );
+            if (useStorageTokenDoc) {
+                return useStorageTokenDoc.data.token;
+            }
+        }
+        throw err;
     }
 }
