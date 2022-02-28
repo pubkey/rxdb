@@ -5,14 +5,12 @@ import {
     RxDumpCollectionAsAny
 } from './rx-collection';
 import {
-    RxLocalDocument
-} from './rx-document';
-import {
     RxDatabaseBase
 } from '../rx-database';
 import { Observable } from 'rxjs';
 import { RxStorage } from './rx-storage.interface';
 import { PouchDBExpressServerOptions } from './plugins/server';
+import { RxLocalDocument } from './plugins/local-documents';
 
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any> {
     storage: RxStorage<Internals, InstanceCreationOptions>,
@@ -23,6 +21,11 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
     eventReduce?: boolean;
     ignoreDuplicate?: boolean;
     options?: any;
+    /**
+     * Set this to true if you want to store local documents
+     * in the RxDatabase instance.
+     */
+    localDocuments?: boolean;
 }
 
 // options for the server-plugin

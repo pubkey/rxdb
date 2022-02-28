@@ -14,7 +14,10 @@ import {
     DEFAULT_COMPRESSION_FLAG,
     createCompressedJsonSchema
 } from 'jsonschema-key-compression';
-import { getPrimaryFieldOfPrimaryKey } from '../rx-schema';
+import {
+    overwritable
+} from '../overwritable';
+import { getPrimaryFieldOfPrimaryKey } from '../rx-schema-helper';
 
 import type {
     RxPlugin,
@@ -103,25 +106,28 @@ export function createCompressionState(
 }
 
 export function getCompressionStateByRxJsonSchema(
-    jsonSchema: RxJsonSchema<any>
+    schema: RxJsonSchema<any>
 ): CompressionState {
-    let state = COMPRESSION_STATE_BY_SCHEMA.get(jsonSchema);
+    let state = COMPRESSION_STATE_BY_SCHEMA.get(schema);
     if (!state) {
-        state = createCompressionState(jsonSchema);
-        COMPRESSION_STATE_BY_SCHEMA.set(jsonSchema, state);
+
+        /**
+         * Because we cache the state by the JsonSchema,
+         * it must be ausured that the given schema object never changes.
+         */
+        overwritable.deepFreezeWhenDevMode(schema);
+
+        state = createCompressionState(schema);
+        COMPRESSION_STATE_BY_SCHEMA.set(schema, state);
     }
     return state;
 }
 
-export const rxdb = true;
-export const prototypes = {};
-export const overwritable = {};
-
 export const RxDBKeyCompressionPlugin: RxPlugin = {
     name: 'key-compression',
-    rxdb,
-    prototypes,
-    overwritable,
+    rxdb: true,
+    prototypes: {},
+    overwritable: {},
     hooks: {
         /**
          * replace the keys of a query-obj with the compressed keys
@@ -232,7 +238,7 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
                     return;
                 }
                 const state = getCompressionStateByRxJsonSchema(params.schema);
-                
+
                 params.doc = decompressObject(
                     state.table,
                     params.doc

@@ -10,7 +10,7 @@ import type {
     RxGraphQLReplicationPushQueryBuilder
 } from '../../types';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 export function pullQueryBuilderFromRxSchema(
     collectionName: string,

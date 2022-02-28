@@ -17,6 +17,13 @@ export {
     dbCount,
     _collectionNamePrimary // used in tests
 } from './rx-database';
+export {
+    INTERNAL_CONTEXT_COLLECTION,
+    INTERNAL_CONTEXT_ENCRYPTION,
+    INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+    getPrimaryKeyOfInternalDocument,
+    STORAGE_TOKEN_DOCUMENT_KEY
+} from './rx-database-internal-store';
 
 export {
     overwritable
@@ -66,10 +73,8 @@ export {
 } from './rx-schema-helper';
 
 export {
-    findLocalDocument,
     getSingleDocument,
     getAllDocuments,
-    writeSingleLocal,
     writeSingle
 } from './rx-storage-helper';
 

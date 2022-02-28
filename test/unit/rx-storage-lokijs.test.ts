@@ -11,8 +11,7 @@ import {
 
 import {
     getRxStorageLoki,
-    RxStorageInstanceLoki,
-    RxStorageKeyObjectInstanceLoki
+    RxStorageInstanceLoki
 } from '../../plugins/lokijs';
 
 import * as humansCollections from '../helper/humans-collection';
@@ -49,9 +48,6 @@ describe('rx-storage-lokijs.test.js', () => {
             assert.ok(doc);
 
             const storageInstance: RxStorageInstanceLoki<HumanDocumentType> = collection.storageInstance as any;
-            const localStorageInstance: RxStorageKeyObjectInstanceLoki = collection.localDocumentsStore as any;
-
-            assert.ok(localStorageInstance.internals.leaderElector);
             assert.ok(storageInstance.internals.leaderElector);
 
             await collection.database.destroy();
@@ -79,9 +75,7 @@ describe('rx-storage-lokijs.test.js', () => {
 
             // the database storage of col2 should not have internal localState
             assert.ok(col1.database.internalStore.internals.localState);
-            assert.ok(col1.database.localDocumentsStore.internals.localState);
             assert.ok(!col2.database.internalStore.internals.localState);
-            assert.ok(!col2.database.localDocumentsStore.internals.localState);
 
             /**
              * Only col1 should be leader
@@ -127,6 +121,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 });
             }
 
+            console.log('--- 1');
 
             // wait until one is leader
             await waitUntil(() => {
@@ -140,6 +135,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 }
             }, 50 * 1000, 200);
 
+            console.log('--- 2');
             // add some collections after leader is elected
             await Promise.all(
                 new Array(amount).fill(0)
@@ -153,6 +149,7 @@ describe('rx-storage-lokijs.test.js', () => {
                         cols.push(col);
                     })
             );
+            console.log('--- 2.5');
 
             /**
              * Run some operations on non-leading instance
@@ -162,16 +159,19 @@ describe('rx-storage-lokijs.test.js', () => {
             if (!firstNonLeading) {
                 throw new Error('no non leading instance');
             }
+            console.log('--- 3');
             await firstNonLeading.insert({
                 passportId: randomCouchString(10),
                 firstName: 'foo',
                 lastName: 'bar',
                 age: 10,
             });
+            console.log('--- 3.5');
             await firstNonLeading.insertLocal(
                 randomCouchString(10),
                 { foo: 'bar' }
             );
+            console.log('--- 4');
 
 
             /**
@@ -181,11 +181,10 @@ describe('rx-storage-lokijs.test.js', () => {
             cols.forEach(col => {
                 const mustHaveLocal = col.storageInstance.internals.leaderElector.isLeader;
                 assert.strictEqual(mustHaveLocal, !!col.database.internalStore.internals.localState);
-                assert.strictEqual(mustHaveLocal, !!col.database.localDocumentsStore.internals.localState);
                 assert.strictEqual(mustHaveLocal, !!col.storageInstance.internals.localState);
-                assert.strictEqual(mustHaveLocal, !!col.localDocumentsStore.internals.localState);
             });
 
+            console.log('--- 5');
             cols.forEach(col => col.database.destroy());
         });
         it('listening to queries must work', async () => {
@@ -388,30 +387,9 @@ describe('rx-storage-lokijs.test.js', () => {
                     }
                 );
                 await storageInstance.query(preparedQuery);
-
                 await storageInstance.findDocumentsById([firstDocData.passportId], false);
 
-                const keyObjectStorageInstance = await storage.createKeyObjectStorageInstance({
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    multiInstance: false,
-                    options: {}
-                });
-
-                await keyObjectStorageInstance.bulkWrite([{
-                    document: {
-                        _id: 'foobar',
-                        _attachments: {},
-                        _meta: {
-                            lwt: now()
-                        },
-                        _deleted: false
-                    }
-                }]);
-                await keyObjectStorageInstance.findLocalDocumentsById(['foobar'], false);
-
                 await storageInstance.close();
-                await keyObjectStorageInstance.close();
 
                 // reset the global.setTimeout so the following tests work properly.
                 global.setTimeout = oldSetTimeout;

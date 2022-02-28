@@ -631,8 +631,8 @@ describe('typings.test.js', function () {
                     throw new Error('local doc missing');
                 }
 
-                const x: string = typedLocalDoc.foo;
-                const x2: string = typedLocalDocInsert.foo;
+                const x: string = typedLocalDoc.data.foo;
+                const x2: string = typedLocalDocInsert.data.foo;
             });
             `;
             await AsyncTestUtil.assertThrows(
@@ -651,18 +651,18 @@ describe('typings.test.js', function () {
                     throw new Error('local doc missing');
                 }
 
-                const x: string = typedLocalDoc.foo;
-                const x2: string = typedLocalDocUpsert.foo;
+                const x: string = typedLocalDoc.get('data').foo;
+                const x2: string = typedLocalDocUpsert.get('data').foo;
             });
             `;
             await transpileCode(code);
         });
-        it('should allow to access differnt property', async () => {
+        it('should allow to access different property', async () => {
             const code = codeBase + `
             (async() => {
                 const myDb: RxDatabase = {} as any;
                 const typedLocalDoc = await myDb.getLocal<{foo: string;}>('foobar');
-                const x: string = typedLocalDoc.bar;
+                const x: string = typedLocalDoc.data.bar;
             });
             `;
             await AsyncTestUtil.assertThrows(

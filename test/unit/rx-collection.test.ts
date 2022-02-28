@@ -1707,7 +1707,8 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const collections = await db.addCollections({
                         human: {
-                            schema: schemas.primaryHuman
+                            schema: schemas.primaryHuman,
+                            localDocuments: true
                         }
                     });
                     const collection = collections.human;
@@ -1718,7 +1719,8 @@ config.parallel('rx-collection.test.js', () => {
 
                     const collections2 = await db.addCollections({
                         human: {
-                            schema: schemas.primaryHuman
+                            schema: schemas.primaryHuman,
+                            localDocuments: true
                         }
                     });
                     const collection2 = collections2.human;

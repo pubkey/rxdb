@@ -5,7 +5,6 @@ import {
     Subscription
 } from 'rxjs';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
     BulkWriteRow,
     ChangeStreamOnceOptions,
@@ -41,6 +40,7 @@ import {
 import {
     getCustomEventEmitterByPouch
 } from './custom-events-plugin';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 
 let lastId = 0;

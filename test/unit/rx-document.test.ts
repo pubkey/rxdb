@@ -745,6 +745,15 @@ config.parallel('rx-document.test.js', () => {
             db.destroy();
         });
     });
+    describe('.toMutableJSON()', () => {
+        it('should be able to mutate the output', async () => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec(true);
+            const json = doc.toMutableJSON();
+            json.firstName = 'alice';
+            c.database.destroy();
+        });
+    });
     describe('pseudo-Proxy', () => {
         describe('get', () => {
             it('top-value', async () => {

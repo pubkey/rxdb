@@ -14,7 +14,3 @@ export class DocCache<T> {
         return this._map.delete(id);
     }
 }
-
-export function createDocCache<T = any>(): DocCache<T> {
-    return new DocCache();
-}

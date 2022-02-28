@@ -3,14 +3,10 @@
  * that is supposed to run inside of the worker.
  */
 import type {
-    BulkWriteLocalRow,
     BulkWriteRow,
     ChangeStreamOnceOptions,
     EventBulk,
     RxDocumentData,
-    RxKeyObjectStorageInstanceCreationParams,
-    RxLocalDocumentData,
-    RxLocalStorageBulkWriteResponse,
     RxStorage,
     RxStorageBulkWriteResponse,
     RxStorageChangedDocumentMeta,
@@ -60,18 +56,6 @@ export type InWorkerStorage = {
     ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
     close(instanceId: number): Promise<void>;
     remove(instanceId: number): Promise<void>;
-
-    createKeyObjectStorageInstance(
-        params: RxKeyObjectStorageInstanceCreationParams<any>
-    ): Promise<number>;
-    bulkWriteLocal<DocumentData>(
-        instanceId: number,
-        documentWrites: BulkWriteLocalRow<DocumentData>[]): Promise<RxLocalStorageBulkWriteResponse<DocumentData>>;
-    findLocalDocumentsById<DocumentData>(
-        instanceId: number,
-        ids: string[],
-        withDeleted: boolean
-    ): Promise<{ [documentId: string]: RxLocalDocumentData<DocumentData> }>;
 }
 
 export function wrappedRxStorage<T, D>(
@@ -157,31 +141,6 @@ export function wrappedRxStorage<T, D>(
         remove(instanceId: number) {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.remove();
-        },
-
-        /**
-         * RxKeyObjectStorageInstance
-         */
-        async createKeyObjectStorageInstance(params) {
-            const instanceId = nextId++;
-            const instance = await args.storage.createKeyObjectStorageInstance(params);
-            instanceById.set(instanceId, instance);
-            return instanceId;
-        },
-        bulkWriteLocal<DocumentData>(
-            instanceId: number,
-            documentWrites: BulkWriteLocalRow<DocumentData>[]
-        ): Promise<RxLocalStorageBulkWriteResponse<DocumentData>> {
-            const instance = getFromMapOrThrow(instanceById, instanceId);
-            return instance.bulkWrite(documentWrites);
-        },
-        findLocalDocumentsById<DocumentData>(
-            instanceId: number,
-            ids: string[],
-            withDeleted: boolean
-        ): Promise<{ [documentId: string]: RxLocalDocumentData<DocumentData> }> {
-            const instance = getFromMapOrThrow(instanceById, instanceId);
-            return instance.findLocalDocumentsById(ids, withDeleted);
         }
     }
     expose(exposeMe);

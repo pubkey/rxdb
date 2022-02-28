@@ -56,10 +56,9 @@ import {
 import { map } from 'rxjs/operators';
 import {
     getAllDocuments,
-    getSingleDocument,
     getWrappedStorageInstance
 } from '../../rx-storage-helper';
-import { InternalStoreDocumentData } from '../../rx-database';
+import { getPrimaryKeyOfInternalDocument, InternalStoreCollectionDocType, INTERNAL_CONTEXT_COLLECTION } from '../../rx-database-internal-store';
 
 export class DataMigrator {
 
@@ -243,7 +242,7 @@ export async function createOldCollection(
     };
 
     ret.storageInstance = getWrappedStorageInstance(
-        ret as any,
+        ret.database,
         storageInstance,
         schemaObj
     );
@@ -252,15 +251,20 @@ export async function createOldCollection(
 }
 
 
-export async function getOldCollectionDocs(
+export function getOldCollectionDocs(
     dataMigrator: DataMigrator
-): Promise<RxDocumentData<InternalStoreDocumentData>[]> {
-    return Promise.all(
-        getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
-            .map(v => getSingleDocument<InternalStoreDocumentData>(dataMigrator.database.internalStore, dataMigrator.name + '-' + v))
-            .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
-    )
-        .then(oldCollectionDocs => (oldCollectionDocs as any).filter((d: any) => !!d));
+): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
+
+    const collectionDocKeys = getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
+        .map(version => dataMigrator.name + '-' + version);
+
+    return dataMigrator.database.internalStore.findDocumentsById(
+        collectionDocKeys.map(key => getPrimaryKeyOfInternalDocument(
+            key,
+            INTERNAL_CONTEXT_COLLECTION
+        )),
+        false
+    ).then(docsObj => Object.values(docsObj));
 }
 
 /**
@@ -278,8 +282,8 @@ export async function _getOldCollections(
                     return null as any;
                 }
                 return createOldCollection(
-                    colDoc.schema.version,
-                    colDoc.schema,
+                    colDoc.data.schema.version,
+                    colDoc.data.schema,
                     dataMigrator
                 );
             })

@@ -12,9 +12,6 @@ import type {
 } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { binaryMd5 } from 'pouchdb-md5';
-import type {
-    RxStorageKeyObjectInstancePouch
-} from './rx-storage-key-object-instance-pouch';
 import {
     blobBufferUtil,
     flatClone,
@@ -30,7 +27,7 @@ export type PouchStorageInternals = {
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
-export const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstancePouch | RxStorageInstancePouch<any>> = new Set();
+export const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageInstancePouch<any>> = new Set();
 
 /**
  * prefix of local pouchdb documents
@@ -183,12 +180,11 @@ export function pouchStripLocalFlagFromPrimary(str: string): string {
 }
 
 export function getEventKey(
-    isLocal: boolean,
+    pouchDBInstance: PouchDBInstance,
     primary: string,
     revision: string
 ): string {
-    const prefix = isLocal ? 'local' : 'non-local';
-    const eventKey = prefix + '|' + primary + '|' + revision;
+    const eventKey = pouchDBInstance.name + '|' + primary + '|' + revision;
     return eventKey;
 }
 
@@ -374,37 +370,3 @@ export const RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted' as const;
 export type RxLocalDocumentDataWithCustomDeletedFlag<D> = RxLocalDocumentData<D> & {
     [k in typeof RXDB_POUCH_DELETED_FLAG]?: boolean;
 };
-
-export function localDocumentToPouch<D>(
-    docData: RxLocalDocumentData<D>
-): RxLocalDocumentDataWithCustomDeletedFlag<D> {
-    const ret: RxLocalDocumentDataWithCustomDeletedFlag<D> = flatClone(docData);
-
-    // add local prefix
-    ret._id = POUCHDB_LOCAL_PREFIX + ret._id;
-
-    // add custom deleted flag if document is deleted 
-    if (docData._deleted) {
-        ret._deleted = false;
-        ret[RXDB_POUCH_DELETED_FLAG] = true;
-    }
-
-    return ret;
-}
-
-export function localDocumentFromPouch<D>(
-    docData: RxLocalDocumentDataWithCustomDeletedFlag<D>
-): RxLocalDocumentData<D> {
-    const ret: RxLocalDocumentData<D> = flatClone(docData);
-
-    // strip local prefix
-    ret._id = ret._id.slice(POUCHDB_LOCAL_PREFIX_LENGTH);
-
-    if (docData[RXDB_POUCH_DELETED_FLAG]) {
-        ret._deleted = true;
-        delete (ret as any)[RXDB_POUCH_DELETED_FLAG];
-    }
-
-
-    return ret;
-}

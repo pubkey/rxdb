@@ -26,6 +26,11 @@ export const HOOKS: { [k: string]: any[] } = {
     */
     postDestroyRxCollection: [],
     /**
+     * Runs after a collection is removed.
+     * @async
+     */
+    postRemoveRxCollection: [],
+    /**
       * functions that get the json-schema as input
       * to do additionally checks/manipulation
       */
@@ -90,7 +95,12 @@ export const HOOKS: { [k: string]: any[] } = {
     /**
      * runs at the beginning of the destroy-process of a database
      */
-    preDestroyRxDatabase: []
+    preDestroyRxDatabase: [],
+    /**
+     * runs after a database has been removed
+     * @async
+     */
+    postRemoveRxDatabase: []
 };
 
 export function runPluginHooks(hookKey: string, obj: any) {

@@ -175,7 +175,7 @@ describe('replication.test.js', () => {
                     REPLICATION_IDENTIFIER_TEST,
                     1
                 );
-                assert.ok(ret._id.includes(REPLICATION_IDENTIFIER_TEST));
+                assert.ok(ret.id.includes(REPLICATION_IDENTIFIER_TEST));
                 c.database.destroy();
             });
             it('should be able to run multiple times', async () => {
@@ -249,7 +249,6 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(amount);
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -266,7 +265,6 @@ describe('replication.test.js', () => {
                 await oneDoc.atomicPatch({ age: 1 });
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -279,7 +277,6 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(amount);
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -298,7 +295,6 @@ describe('replication.test.js', () => {
                 await oneDoc.remove();
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -340,7 +336,6 @@ describe('replication.test.js', () => {
 
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -357,7 +352,6 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(amount);
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -396,7 +390,6 @@ describe('replication.test.js', () => {
                 assert.strictEqual(allDocs.length, amount + 1);
                 const changesResult = await getChangesSinceLastPushSequence(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -423,10 +416,10 @@ describe('replication.test.js', () => {
                 const docData = doc.toJSON(true);
                 const ret = await setLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     docData
                 );
-                assert.ok(ret._id.includes(REPLICATION_IDENTIFIER_TEST));
+                assert.ok(ret.id.includes(REPLICATION_IDENTIFIER_TEST_HASH));
                 c.database.destroy();
             });
             it('should be able to run multiple times', async () => {
@@ -435,15 +428,15 @@ describe('replication.test.js', () => {
                 const docData = doc.toJSON(true);
                 await setLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     docData
                 );
                 const ret = await setLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     docData
                 );
-                assert.ok(ret._id.includes(REPLICATION_IDENTIFIER_TEST));
+                assert.ok(ret.id.includes(REPLICATION_IDENTIFIER_TEST_HASH));
                 c.database.destroy();
             });
         });
@@ -452,7 +445,7 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const ret = await getLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST
+                    REPLICATION_IDENTIFIER_TEST_HASH
                 );
                 assert.strictEqual(ret, null);
                 c.database.destroy();
@@ -466,12 +459,12 @@ describe('replication.test.js', () => {
 
                 await setLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     docData
                 );
                 const ret = await getLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST
+                    REPLICATION_IDENTIFIER_TEST_HASH
                 );
                 if (!ret) {
                     throw new Error('last pull document missing');

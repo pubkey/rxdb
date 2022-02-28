@@ -387,9 +387,8 @@ export const RxDBReplicationCouchDBPlugin: RxPlugin = {
     },
     hooks: {
         createRxCollection: {
-            after: function (
-                collection: RxCollection
-            ) {
+            after: args => {
+                const collection = args.collection;
                 const pouch: PouchDBInstance | undefined = collection.storageInstance.internals.pouch;
                 if (pouch) {
                     INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);

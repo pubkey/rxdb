@@ -226,6 +226,7 @@ export function addCustomEventsPluginToPouch() {
                         };
 
                         const events = await eventEmitDataToStorageEvents(
+                            this,
                             '_id',
                             emitData
                         );
@@ -254,6 +255,7 @@ export function addCustomEventsPluginToPouch() {
 }
 
 export async function eventEmitDataToStorageEvents<RxDocType>(
+    pouchDBInstance: PouchDBInstance,
     primaryPath: string,
     emitData: EmitData
 ): Promise<RxStorageChangeEvent<RxDocumentData<RxDocType>>[]> {
@@ -349,6 +351,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                 }
 
                 const changeEvent = changeEventToNormal(
+                    pouchDBInstance,
                     primaryPath,
                     event,
                     emitData.startTime,
@@ -391,7 +394,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     primaryPath as any,
                     writeDoc
                 );
-                const changeEvent = changeEventToNormal(primaryPath, event);
+                const changeEvent = changeEventToNormal(pouchDBInstance, primaryPath, event);
                 ret.push(changeEvent);
             })
         );
@@ -469,6 +472,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                      */
                 } else {
                     const changeEvent = changeEventToNormal(
+                        pouchDBInstance,
                         emitData.writeOptions.custom.primaryPath,
                         event,
                         emitData.startTime,
@@ -485,6 +489,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
 }
 
 export function changeEventToNormal<RxDocType>(
+    pouchDBInstance: PouchDBInstance,
     primaryPath: string,
     change: ChangeEvent<RxDocumentData<RxDocType>>,
     startTime?: number,
@@ -493,7 +498,7 @@ export function changeEventToNormal<RxDocType>(
     const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
     const primary: string = (doc as any)[primaryPath];
     const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
-        eventId: getEventKey(false, primary, doc._rev),
+        eventId: getEventKey(pouchDBInstance, primary, doc._rev),
         documentId: primary,
         change,
         startTime,

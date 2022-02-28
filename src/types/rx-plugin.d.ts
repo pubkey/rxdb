@@ -1,5 +1,5 @@
 import { RxQuery, RxQueryOP, MangoQuery } from './rx-query';
-import { RxCollection } from './rx-collection';
+import { RxCollection, RxCollectionCreator } from './rx-collection';
 import {
     RxAttachmentData,
     RxStorageInstanceCreationParams
@@ -7,7 +7,9 @@ import {
 import type {
     DeepReadonly,
     RxDatabase,
-    RxJsonSchema
+    RxDatabaseCreator,
+    RxJsonSchema,
+    RxStorage
 } from '../types'
 
 export type RxPluginPreCreateRxQueryArgs = {
@@ -86,11 +88,26 @@ export interface RxPlugin {
     hooks?: {
         preAddRxPlugin?: RxPluginHooks<RxPluginPreAddRxPluginArgs>,
         preCreateRxDatabase?: RxPluginHooks<any>,
-        createRxDatabase?: RxPluginHooks<any>,
-        preDestroyRxDatabase?: RxPluginHooks<any>,
-        createRxCollection?: RxPluginHooks<any>,
+        createRxDatabase?: RxPluginHooks<{
+            database: RxDatabase,
+            creator: RxDatabaseCreator
+        }>,
+        preDestroyRxDatabase?: RxPluginHooks<RxDatabase>,
+        postRemoveRxDatabase?: RxPluginHooks<{
+            databaseName: string,
+            storage: RxStorage<any, any>
+        }>,
+        createRxCollection?: RxPluginHooks<{
+            collection: RxCollection,
+            creator: RxCollectionCreator
+        }>,
         preCreateRxCollection?: RxPluginHooks<any>,
-        postDestroyRxCollection?: RxPluginHooks<any>,
+        postDestroyRxCollection?: RxPluginHooks<RxCollection>,
+        postRemoveRxCollection?: RxPluginHooks<{
+            storage: RxStorage<any, any>;
+            databaseName: string;
+            collectionName: string;
+        }>,
         preCreateRxSchema?: RxPluginHooks<any>,
         createRxSchema?: RxPluginHooks<any>,
         preCreateRxQuery?: RxPluginHooks<RxPluginPreCreateRxQueryArgs>,
