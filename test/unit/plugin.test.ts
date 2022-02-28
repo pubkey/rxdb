@@ -208,8 +208,8 @@ config.parallel('plugin.test.js', () => {
     describe('hooks', () => {
         it('createRxDatabase', async () => {
 
-            const createRxDatabase = (db: any) => {
-                db.foo = 'bar_createRxDatabase';
+            const createRxDatabase = (args: any) => {
+                args.database.foo = 'bar_createRxDatabase';
             };
             const plugin: RxPlugin = {
                 rxdb: true,
@@ -228,8 +228,8 @@ config.parallel('plugin.test.js', () => {
             _clearHook('createRxDatabase', createRxDatabase);
         });
         it('createRxCollection', async () => {
-            const createRxCollection = (c: any) => {
-                c.foo = 'bar_createRxCollection';
+            const createRxCollection = (args: any) => {
+                args.collection.foo = 'bar_createRxCollection';
             };
             const plugin: RxPlugin = {
                 rxdb: true,

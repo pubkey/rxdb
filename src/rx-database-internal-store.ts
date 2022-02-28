@@ -129,10 +129,10 @@ export async function getAllCollectionDocuments(
  * name and adapter, but do not share state with this one (for example in-memory-instances),
  * we set a storage-token and use it in the broadcast-channel
  */
+export const STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
 export async function ensureStorageTokenExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<string> {
-    const storageTokenDocumentKey = 'storageToken';
     const storageTokenDocumentId = getPrimaryKeyOfInternalDocument(
-        storageTokenDocumentKey,
+        STORAGE_TOKEN_DOCUMENT_KEY,
         INTERNAL_CONTEXT_STORAGE_TOKEN
     );
     const storageTokenDoc = await getSingleDocument<InternalStoreStorageTokenDocType>(
@@ -148,7 +148,7 @@ export async function ensureStorageTokenExists<Collections = any>(rxDatabase: Rx
                     document: {
                         id: storageTokenDocumentId,
                         context: INTERNAL_CONTEXT_STORAGE_TOKEN,
-                        key: storageTokenDocumentKey,
+                        key: STORAGE_TOKEN_DOCUMENT_KEY,
                         data: {
                             token: storageToken
                         },

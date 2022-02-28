@@ -610,7 +610,8 @@ config.parallel('rx-database.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory')
+                storage: getRxStoragePouch('memory'),
+                localDocuments: true
             });
 
             const id = 'foobar';
@@ -620,7 +621,8 @@ config.parallel('rx-database.test.js', () => {
 
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory')
+                storage: getRxStoragePouch('memory'),
+                localDocuments: true
             });
 
             const hasLocal = await db2.getLocal(id);

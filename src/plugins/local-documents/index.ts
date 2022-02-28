@@ -1,8 +1,17 @@
 import type {
     RxPlugin
 } from '../../types';
-import { getLocal, getLocal$, insertLocal, upsertLocal } from './local-documents';
-import { closeStateByParent, removeLocalDocumentsStorageInstance } from './local-documents-helper';
+import {
+    getLocal,
+    getLocal$,
+    insertLocal,
+    upsertLocal
+} from './local-documents';
+import {
+    closeStateByParent,
+    createLocalDocStateByParent,
+    removeLocalDocumentsStorageInstance
+} from './local-documents-helper';
 
 export * from './local-documents';
 export * from './rx-local-document';
@@ -12,9 +21,6 @@ export type {
     RxLocalDocument,
     RxLocalDocumentData
 } from '../../types/plugins/local-documents';
-
-
-
 
 
 export const RxDBLocalDocumentsPlugin: RxPlugin = {
@@ -35,6 +41,28 @@ export const RxDBLocalDocumentsPlugin: RxPlugin = {
         }
     },
     hooks: {
+        createRxDatabase: {
+            before: args => {
+                if (args.creator.localDocuments) {
+                    /**
+                     * We do not have to await
+                     * the creation to speed up initial page load.
+                     */
+                    /* await */ createLocalDocStateByParent(args.database);
+                }
+            }
+        },
+        createRxCollection: {
+            before: args => {
+                if (args.creator.localDocuments) {
+                    /**
+                     * We do not have to await
+                     * the creation to speed up initial page load.
+                     */
+                    /* await */ createLocalDocStateByParent(args.collection);
+                }
+            }
+        },
         preDestroyRxDatabase: {
             after: db => {
                 return closeStateByParent(db);

@@ -21,6 +21,27 @@ import { RxDBLocalDocumentsPlugin } from 'rxdb/plugins/local-documents';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 ```
 
+## Activate the plugin for a RxDatabase or RxCollection
+
+For better performance, the local document plugin does not create a storage for every database or collection that is created.
+Instead you have to set `localDocuments: true` when you want to store local documents in the instance.
+
+```js
+// activate local documents on a RxDatabase
+const myDatabase = await createRxDatabase({
+    name: 'mydatabase',
+    storage: getRxStoragePouch('memory'),
+    localDocuments: true // <- activate this to store local documents in the database
+});
+
+myDatabase.addCollections({
+  messages: {
+    schema: messageSchema,
+    localDocuments: true // <- activate this to store local documents in the collection
+  }
+});
+```
+
 ## insertLocal()
 
 Creates a local document for the database or collection. Throws if a local document with the same id already exists. Returns a Promise which resolves the new `RxLocalDocument`.

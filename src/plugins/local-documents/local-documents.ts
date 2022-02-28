@@ -1,7 +1,4 @@
 import {
-    newRxError
-} from '../../rx-error';
-import {
     flatClone,
     getDefaultRxDocumentMeta
 } from '../../util';
@@ -40,38 +37,32 @@ export async function insertLocal<DocData = any>(
     id: string,
     data: DocData
 ): Promise<RxLocalDocument<DocData>> {
+    console.log('- insertLocal()');
     const state = await getLocalDocStateByParent(this);
-    return (this as any).getLocal(id)
-        .then((existing: any) => {
+    console.log('- insertLocal() got state');
 
-            if (existing) {
-                throw newRxError('LD7', {
-                    id,
-                    data
-                });
-            }
 
-            // create new one
-            let docData: RxDocumentWriteData<RxLocalDocumentData<DocData>> = {
-                id: id,
-                data,
-                _deleted: false,
-                _meta: getDefaultRxDocumentMeta(),
-                _attachments: {}
-            };
+    // create new one
+    let docData: RxDocumentWriteData<RxLocalDocumentData<DocData>> = {
+        id: id,
+        data,
+        _deleted: false,
+        _meta: getDefaultRxDocumentMeta(),
+        _attachments: {}
+    };
 
-            return writeSingle(
-                state.storageInstance,
-                {
-                    document: docData
-                }
-            ).then(res => {
-                docData = flatClone(docData);
-                docData._rev = res._rev;
-                const newDoc = createRxLocalDocument(id, docData, this, state);
-                return newDoc;
-            });
-        });
+    return writeSingle(
+        state.storageInstance,
+        {
+            document: docData
+        }
+    ).then(res => {
+        console.log('- insertLocal() write single done');
+        docData = flatClone(docData);
+        docData._rev = res._rev;
+        const newDoc = createRxLocalDocument(id, docData as any, this, state);
+        return newDoc as any;
+    });
 }
 
 /**

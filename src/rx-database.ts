@@ -224,10 +224,16 @@ export class RxDatabaseBase<
                     useArgs.name = useName;
                     const schema = createRxSchema((args as RxCollectionCreator).schema);
                     schemaHashByName[useName] = schema.hash;
+
+                    /**
+                     * TODO
+                     * do not transfrom RxCollectionCreator
+                     * parameters here.
+                     * createRxCollection() must accept the plain data of
+                     * RxCollectionCreator
+                     */
                     (useArgs as any).schema = schema;
                     (useArgs as any).database = this;
-
-                    // TODO check if already exists and schema hash has changed
 
                     // crypt=true but no password given
                     if (
@@ -630,7 +636,8 @@ export function createRxDatabase<
         multiInstance = true,
         eventReduce = false,
         ignoreDuplicate = false,
-        options = {}
+        options = {},
+        localDocuments = false
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions>
@@ -643,7 +650,8 @@ export function createRxDatabase<
         multiInstance,
         eventReduce,
         ignoreDuplicate,
-        options
+        options,
+        localDocuments
     });
 
     if (password) {
@@ -689,7 +697,20 @@ export function createRxDatabase<
             broadcastChannel
         ) as any;
         return prepare(rxDatabase)
-            .then(() => runAsyncPluginHooks('createRxDatabase', rxDatabase))
+            .then(() => runAsyncPluginHooks('createRxDatabase', {
+                database: rxDatabase,
+                creator: {
+                    storage,
+                    instanceCreationOptions,
+                    name,
+                    password,
+                    multiInstance,
+                    eventReduce,
+                    ignoreDuplicate,
+                    options,
+                    localDocuments
+                }
+            }))
             .then(() => rxDatabase);
     });
 }

@@ -21,6 +21,11 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
     eventReduce?: boolean;
     ignoreDuplicate?: boolean;
     options?: any;
+    /**
+     * Set this to true if you want to store local documents
+     * in the RxDatabase instance.
+     */
+    localDocuments?: boolean;
 }
 
 // options for the server-plugin

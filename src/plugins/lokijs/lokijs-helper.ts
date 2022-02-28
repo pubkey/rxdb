@@ -295,8 +295,10 @@ export async function requestRemoteInstance(
     const isRxStorageInstanceLoki = typeof (instance as any).query === 'function';
     const messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
 
+    console.log('requestRemoteInstance()');
     const leaderElector = ensureNotFalsy(instance.internals.leaderElector);
     await waitUntilHasLeader(leaderElector);
+    console.log('requestRemoteInstance() has leader now');
     const broadcastChannel = leaderElector.broadcastChannel;
 
     type WinningPromise = {
@@ -342,6 +344,7 @@ export async function requestRemoteInstance(
     });
 
     // send out the request to the other instance
+    console.log('requestRemoteInstance() post message');
     broadcastChannel.postMessage({
         response: false,
         type: messageType,
@@ -357,6 +360,8 @@ export async function requestRemoteInstance(
         leaderDeadPromise,
         responsePromise
     ]).then(firstResolved => {
+        console.log('requestRemoteInstance() first resolved');
+
         // clean up listeners
         broadcastChannel.removeEventListener('message', responseListener);
         broadcastChannel.removeEventListener('internal', whenDeathListener);

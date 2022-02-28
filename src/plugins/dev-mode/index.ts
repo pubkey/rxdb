@@ -115,17 +115,17 @@ export const RxDBDevModePlugin: RxPlugin = {
             }
         },
         createRxCollection: {
-            after: (args: RxCollectionCreator) => {
+            after: (args) => {
                 // check ORM-methods
-                checkOrmMethods(args.statics);
-                checkOrmMethods(args.methods);
-                checkOrmMethods(args.attachments);
+                checkOrmMethods(args.creator.statics);
+                checkOrmMethods(args.creator.methods);
+                checkOrmMethods(args.creator.attachments);
 
                 // check migration strategies
-                if (args.schema && args.migrationStrategies) {
+                if (args.creator.schema && args.creator.migrationStrategies) {
                     checkMigrationStrategies(
-                        args.schema,
-                        args.migrationStrategies
+                        args.creator.schema,
+                        args.creator.migrationStrategies
                     );
                 }
             }

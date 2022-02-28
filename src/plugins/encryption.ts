@@ -147,8 +147,8 @@ export const RxDBEncryptionPlugin: RxPlugin = {
     },
     hooks: {
         createRxDatabase: {
-            after: (db: RxDatabase) => {
-                return storePasswordHashIntoDatabase(db);
+            after: args => {
+                return storePasswordHashIntoDatabase(args.database);
             }
         },
         preWriteToStorageInstance: {

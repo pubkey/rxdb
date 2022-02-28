@@ -1,6 +1,10 @@
 import { filter } from 'rxjs/operators';
 import { DocCache } from '../../doc-cache';
-import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent } from '../../rx-storage-helper';
+import { newRxError } from '../../rx-error';
+import {
+    getWrappedStorageInstance,
+    storageChangeEventToRxChangeEvent
+} from '../../rx-storage-helper';
 import type {
     LocalDocumentParent,
     LocalDocumentState,
@@ -15,71 +19,80 @@ import type {
 import { ensureNotFalsy } from '../../util';
 
 const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();
-export function getLocalDocStateByParent(parent: LocalDocumentParent): Promise<LocalDocumentState> {
-    let statePromise = LOCAL_DOC_STATE_BY_PARENT.get(parent);
-    if (!statePromise) {
 
+
+export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
+    const database: RxDatabase = parent.database ? parent.database : parent as any;
+    const collectionName = parent.database ? parent.name : '';
+    const statePromise = (async () => {
+        let storageInstance = await createLocalDocumentStorageInstance(
+            database.storage,
+            database.name,
+            collectionName,
+            database.instanceCreationOptions,
+            database.multiInstance
+        );
+        storageInstance = getWrappedStorageInstance(
+            database,
+            storageInstance,
+            RX_LOCAL_DOCUMENT_SCHEMA
+        );
+        const docCache = new DocCache<RxLocalDocument<any, any>>();
+
+        /**
+         * Update cached local documents on events.
+         */
+        const sub = parent.$
+            .pipe(
+                filter(cE => (cE as RxChangeEvent<any>).isLocal)
+            )
+            .subscribe((cE: RxChangeEvent<any>) => {
+                const doc = docCache.get(cE.documentId);
+                if (doc) {
+                    doc._handleChangeEvent(cE);
+                }
+            });
+        parent._subs.push(sub);
+
+        /**
+         * Emit the changestream into the collections change stream
+         */
+        const subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
+            const changeEventBulk: RxChangeEventBulk<RxLocalDocumentData> = {
+                id: eventBulk.id,
+                internal: false,
+                collectionName: parent.database ? parent.name : undefined,
+                storageToken: ensureNotFalsy(database.storageToken),
+                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
+                    true,
+                    ev,
+                    parent.database ? parent as any : undefined
+                )),
+                databaseToken: database.token
+            };
+            database.$emit(changeEventBulk);
+        });
+        parent._subs.push(subLocalDocs);
+
+        return {
+            database,
+            parent,
+            storageInstance,
+            docCache
+        }
+    })();
+    LOCAL_DOC_STATE_BY_PARENT.set(parent, statePromise);
+}
+
+export function getLocalDocStateByParent(parent: LocalDocumentParent): Promise<LocalDocumentState> {
+    const statePromise = LOCAL_DOC_STATE_BY_PARENT.get(parent);
+    if (!statePromise) {
         const database: RxDatabase = parent.database ? parent.database : parent as any;
         const collectionName = parent.database ? parent.name : '';
-
-        statePromise = (async () => {
-            let storageInstance = await createLocalDocumentStorageInstance(
-                database.storage,
-                database.name,
-                collectionName,
-                database.instanceCreationOptions,
-                database.multiInstance
-            );
-            storageInstance = getWrappedStorageInstance(
-                database,
-                storageInstance,
-                RX_LOCAL_DOCUMENT_SCHEMA
-            );
-            const docCache = new DocCache<RxLocalDocument<any, any>>();
-
-            /**
-             * Update cached local documents on events.
-             */
-            const sub = parent.$
-                .pipe(
-                    filter(cE => (cE as RxChangeEvent<any>).isLocal)
-                )
-                .subscribe((cE: RxChangeEvent<any>) => {
-                    const doc = docCache.get(cE.documentId);
-                    if (doc) {
-                        doc._handleChangeEvent(cE);
-                    }
-                });
-            parent._subs.push(sub);
-
-            /**
-             * Emit the changestream into the collections change stream
-             */
-            const subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
-                const changeEventBulk: RxChangeEventBulk<RxLocalDocumentData> = {
-                    id: eventBulk.id,
-                    internal: false,
-                    collectionName: parent.database ? parent.name : undefined,
-                    storageToken: ensureNotFalsy(database.storageToken),
-                    events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
-                        true,
-                        ev,
-                        parent.database ? parent as any : undefined
-                    )),
-                    databaseToken: database.token
-                };
-                database.$emit(changeEventBulk);
-            });
-            parent._subs.push(subLocalDocs);
-
-            return {
-                database,
-                parent,
-                storageInstance,
-                docCache
-            }
-        })();
-        LOCAL_DOC_STATE_BY_PARENT.set(parent, statePromise);
+        throw newRxError('LD8', {
+            database: database.name,
+            collection: collectionName
+        });
     }
     return statePromise;
 }

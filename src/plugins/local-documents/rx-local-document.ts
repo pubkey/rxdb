@@ -12,6 +12,7 @@ import type {
     RxDocument,
     RxDocumentData,
     RxDocumentWriteData,
+    RxLocalDocument,
     RxLocalDocumentData
 } from '../../types';
 import { flatClone, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
@@ -19,7 +20,7 @@ import { getLocalDocStateByParent } from './local-documents-helper';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
 
-class RxLocalDocument<DocData = any> extends RxDocumentParent {
+class RxLocalDocumentClass<DocData = any> extends RxDocumentParent {
     constructor(
         public readonly id: string,
         jsonData: DocData,
@@ -129,10 +130,10 @@ const RxLocalDocumentPrototype: any = {
         objectPath.set(this._data, objPath, value);
         return this;
     },
-    async _saveData(this: RxLocalDocument, newData: RxDocumentData<RxLocalDocumentData>) {
+    async _saveData(this: RxLocalDocument<any>, newData: RxDocumentData<RxLocalDocumentData>) {
         const state = await getLocalDocStateByParent(this.parent);
-        const oldData: RxDocumentData<RxLocalDocumentData> = this._dataSync$.getValue();
-        newData.id = this.id;
+        const oldData: RxDocumentData<RxLocalDocumentData> = this._dataSync$.getValue() as any;
+        newData.id = (this as any).id;
 
         return state.storageInstance.bulkWrite([{
             previous: oldData,
@@ -207,13 +208,13 @@ const _init = () => {
 
 export function createRxLocalDocument<DocData>(
     id: string,
-    data: DocData,
+    data: RxDocumentData<RxLocalDocumentData<DocData>>,
     parent: any,
     state: LocalDocumentState
 ): RxLocalDocument<DocData> {
     _init();
-    const newDoc = new RxLocalDocument(id, data, parent, state);
+    const newDoc = new RxLocalDocumentClass(id, data, parent, state);
     newDoc.__proto__ = RxLocalDocumentPrototype;
     state.docCache.set(id, newDoc as any);
-    return newDoc;
+    return newDoc as any;
 }

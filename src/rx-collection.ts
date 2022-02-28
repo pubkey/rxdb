@@ -956,6 +956,7 @@ export function createRxCollection(
         methods = {},
         attachments = {},
         options = {},
+        localDocuments = false,
         cacheReplacementPolicy = defaultCacheReplacementPolicy
     }: any
 ): Promise<RxCollection> {
@@ -1009,7 +1010,22 @@ export function createRxCollection(
                 return ret;
             })
             .then(() => {
-                runPluginHooks('createRxCollection', collection);
+                runPluginHooks('createRxCollection', {
+                    collection,
+                    creator: {
+                        name,
+                        schema,
+                        storageInstance,
+                        instanceCreationOptions,
+                        migrationStrategies,
+                        methods,
+                        attachments,
+                        options,
+                        cacheReplacementPolicy,
+                        localDocuments,
+                        statics
+                    }
+                });
                 return collection as any;
             })
             /**

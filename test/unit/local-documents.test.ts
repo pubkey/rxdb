@@ -64,13 +64,15 @@ config.parallel('local-documents.test.js', () => {
                     foo: 'bar'
                 });
                 assert.ok(doc);
-                await AsyncTestUtil.assertThrows(
-                    () => c.insertLocal('foobar', {
+                let thrown = false;
+                try {
+                    await c.insertLocal('foobar', {
                         foo: 'bar2'
-                    }),
-                    'RxError',
-                    'already exists'
-                );
+                    });
+                } catch (err) {
+                    thrown = true;
+                }
+                assert.ok(thrown);
                 c.database.destroy();
             });
         });
@@ -270,11 +272,13 @@ config.parallel('local-documents.test.js', () => {
             const db = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
+                localDocuments: true
             });
             const db2 = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
-                ignoreDuplicate: true
+                ignoreDuplicate: true,
+                localDocuments: true
             });
 
             const doc1 = await db.insertLocal('foobar', {
@@ -298,11 +302,13 @@ config.parallel('local-documents.test.js', () => {
             const db = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
+                localDocuments: true
             });
             const db2 = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
-                ignoreDuplicate: true
+                ignoreDuplicate: true,
+                localDocuments: true
             });
 
             const doc1 = await db.insertLocal('foobar', {
@@ -328,11 +334,13 @@ config.parallel('local-documents.test.js', () => {
             const db = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
+                localDocuments: true
             });
             const db2 = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
-                ignoreDuplicate: true
+                ignoreDuplicate: true,
+                localDocuments: true
             });
 
             const doc1 = await db.insertLocal('foobar', {
@@ -360,13 +368,15 @@ config.parallel('local-documents.test.js', () => {
             });
             const c1 = await db.addCollections({
                 humans: {
-                    schema: schemas.primaryHuman
+                    schema: schemas.primaryHuman,
+                    localDocuments: true
                 }
             });
 
             const c2 = await db2.addCollections({
                 humans: {
-                    schema: schemas.primaryHuman
+                    schema: schemas.primaryHuman,
+                    localDocuments: true
                 }
             });
 
@@ -400,11 +410,13 @@ config.parallel('local-documents.test.js', () => {
             const db = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
+                localDocuments: true
             });
             const db2 = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
-                ignoreDuplicate: true
+                ignoreDuplicate: true,
+                localDocuments: true
             });
 
             const emitted: any[] = [];
@@ -431,20 +443,24 @@ config.parallel('local-documents.test.js', () => {
             const db = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
+                localDocuments: true
             });
             const c1 = await db.addCollections({
                 humans: {
-                    schema: schemas.primaryHuman
+                    schema: schemas.primaryHuman,
+                    localDocuments: true
                 }
             });
             const db2 = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
-                ignoreDuplicate: true
+                ignoreDuplicate: true,
+                localDocuments: true
             });
             const c2 = await db2.addCollections({
                 humans: {
-                    schema: schemas.primaryHuman
+                    schema: schemas.primaryHuman,
+                    localDocuments: true
                 }
             });
             const docData = schemaObjects.human();
@@ -530,7 +546,8 @@ config.parallel('local-documents.test.js', () => {
             };
             const boundaryMgmtCols = await db.addCollections({
                 human: {
-                    schema: boundaryMgmtSchema
+                    schema: boundaryMgmtSchema,
+                    localDocuments: true
                 }
             });
             const boundaryMgmtCol = boundaryMgmtCols.human;
@@ -584,11 +601,13 @@ config.parallel('local-documents.test.js', () => {
             const db = await createRxDatabase({
                 name: dbName,
                 storage: getRxStoragePouch(leveldown),
-                multiInstance: false
+                multiInstance: false,
+                localDocuments: true
             });
             const cols = await db.addCollections({
                 humans: {
-                    schema: schemas.human
+                    schema: schemas.human,
+                    localDocuments: true
                 }
             });
 
@@ -600,11 +619,13 @@ config.parallel('local-documents.test.js', () => {
             const db2 = await createRxDatabase({
                 name: dbName,
                 storage: getRxStoragePouch(leveldown),
-                multiInstance: false
+                multiInstance: false,
+                localDocuments: true
             });
             const col2 = await db2.addCollections({
                 humans: {
-                    schema: schemas.human
+                    schema: schemas.human,
+                    localDocuments: true
                 }
             });
 
@@ -627,7 +648,8 @@ config.parallel('local-documents.test.js', () => {
             const db = await createRxDatabase({
                 name: dbName,
                 storage: getRxStoragePouch('leveldb'),
-                multiInstance: false
+                multiInstance: false,
+                localDocuments: true
             });
 
             const key = 'foobar';
