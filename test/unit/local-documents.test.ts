@@ -7,9 +7,9 @@ import * as schemaObjects from '../helper/schema-objects';
 import {
     createRxDatabase,
     randomCouchString,
-    RxLocalDocument,
     addRxPlugin,
     RxJsonSchema,
+    ensureNotFalsy
 } from '../../';
 
 import {
@@ -132,15 +132,15 @@ config.parallel('local-documents.test.js', () => {
             const cDoc = await c.getLocal$(id).pipe(first()).toPromise();
             const dbDoc = await c.database.getLocal$(id).pipe(first()).toPromise();
 
-            assert.strictEqual(cDoc.get('data.foo'), 'bar');
-            assert.strictEqual(dbDoc.get('data.foo'), 'bar');
+            assert.strictEqual(ensureNotFalsy(cDoc).get('data.foo'), 'bar');
+            assert.strictEqual(ensureNotFalsy(dbDoc).get('data.foo'), 'bar');
 
             c.database.destroy();
         });
         it('collection: should emit again when state changed', async () => {
             const c = await humansCollection.create(0);
             const cEmits: any[] = [];
-            const sub = c.getLocal$(id).subscribe((x: RxLocalDocument<any>) => {
+            const sub = c.getLocal$(id).subscribe((x: any) => {
                 cEmits.push(x ? x.toJSON() : null);
             });
 
@@ -165,7 +165,7 @@ config.parallel('local-documents.test.js', () => {
             const db = c.database;
 
             const cEmits: any[] = [];
-            const sub = db.getLocal$(id).subscribe((x: RxLocalDocument<any>) => {
+            const sub = db.getLocal$(id).subscribe((x) => {
                 cEmits.push(x ? x.toJSON() : null);
             });
 
@@ -339,9 +339,9 @@ config.parallel('local-documents.test.js', () => {
             });
             const doc2 = await db2.getLocal<TestDocType>('foobar');
 
-            await doc1.atomicPatch({ foo: 'bar2' });
+            await doc1.atomicPatch({ data: { foo: 'bar2' } });
 
-            await waitUntil(() => doc2 && doc2.toJSON().foo === 'bar2');
+            await waitUntil(() => doc2 && doc2.toJSON().data.foo === 'bar2');
 
             db.destroy();
             db2.destroy();
@@ -383,9 +383,9 @@ config.parallel('local-documents.test.js', () => {
 
             // update on instance #2
             const doc2 = await c2.humans.getLocal<TestDocType>('foobar');
-            await doc1.atomicPatch({ foo: 'bar2' });
+            await doc1.atomicPatch({ data: { foo: 'bar2' } });
 
-            await waitUntil(() => doc2 && doc2.toJSON().foo === 'bar2');
+            await waitUntil(() => doc2 && doc2.toJSON().data.foo === 'bar2');
             await waitUntil(() => {
                 return emitted.length >= 2;
             });
@@ -457,12 +457,15 @@ config.parallel('local-documents.test.js', () => {
 
             const doc2 = await c2.humans.findOne().exec();
             const localDoc2 = await c2.humans.getLocal('foobar');
+            if (!localDoc2) {
+                throw new Error('localDoc2 missing');
+            }
             await doc.atomicPatch({ age: 50 });
 
             await AsyncTestUtil.waitUntil(() => doc2.age === 50);
             await AsyncTestUtil.wait(20);
             assert.strictEqual(localDoc2.get('data.age'), 10);
-            await localDoc.atomicPatch({ data: { age: 66 } });
+            await localDoc.atomicPatch({ data: { age: 66, foo: 'bar' } });
 
             await AsyncTestUtil.waitUntil(() => localDoc2.get('data.age') === 66);
             await AsyncTestUtil.wait(20);
@@ -483,7 +486,7 @@ config.parallel('local-documents.test.js', () => {
 
             const emitted: any[] = [];
             const localDoc = await myCollection.getLocal('foobar');
-            localDoc.get$('data.foo').subscribe((val: any) => emitted.push(val));
+            ensureNotFalsy(localDoc).get$('data.foo').subscribe((val: any) => emitted.push(val));
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(emitted[0], 'bar');
@@ -554,7 +557,10 @@ config.parallel('local-documents.test.js', () => {
             const grpId = 'foobar';
             const metadata = await boundaryMgmtCol.getLocal('metadata');
 
-            await metadata.atomicPatch({ selectedBndrPlnId: grpId });
+            await ensureNotFalsy(metadata).atomicUpdate(docData => {
+                docData.data.selectedBndrPlnId = grpId;
+                return docData;
+            });
 
             const data = await boundaryMgmtCol.findOne().exec(true);
             const json = data.toJSON();

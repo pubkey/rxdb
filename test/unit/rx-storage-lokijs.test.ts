@@ -48,9 +48,6 @@ describe('rx-storage-lokijs.test.js', () => {
             assert.ok(doc);
 
             const storageInstance: RxStorageInstanceLoki<HumanDocumentType> = collection.storageInstance as any;
-            const localStorageInstance: RxStorageInstanceLoki<any> = collection.localDocumentsStore as any;
-
-            assert.ok(localStorageInstance.internals.leaderElector);
             assert.ok(storageInstance.internals.leaderElector);
 
             await collection.database.destroy();
@@ -78,9 +75,7 @@ describe('rx-storage-lokijs.test.js', () => {
 
             // the database storage of col2 should not have internal localState
             assert.ok(col1.database.internalStore.internals.localState);
-            assert.ok(col1.database.localDocumentsStore.internals.localState);
             assert.ok(!col2.database.internalStore.internals.localState);
-            assert.ok(!col2.database.localDocumentsStore.internals.localState);
 
             /**
              * Only col1 should be leader
@@ -180,9 +175,7 @@ describe('rx-storage-lokijs.test.js', () => {
             cols.forEach(col => {
                 const mustHaveLocal = col.storageInstance.internals.leaderElector.isLeader;
                 assert.strictEqual(mustHaveLocal, !!col.database.internalStore.internals.localState);
-                assert.strictEqual(mustHaveLocal, !!col.database.localDocumentsStore.internals.localState);
                 assert.strictEqual(mustHaveLocal, !!col.storageInstance.internals.localState);
-                assert.strictEqual(mustHaveLocal, !!col.localDocumentsStore.internals.localState);
             });
 
             cols.forEach(col => col.database.destroy());

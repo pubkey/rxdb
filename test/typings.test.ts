@@ -631,8 +631,8 @@ describe('typings.test.js', function () {
                     throw new Error('local doc missing');
                 }
 
-                const x: string = typedLocalDoc.foo;
-                const x2: string = typedLocalDocInsert.foo;
+                const x: string = typedLocalDoc.data.foo;
+                const x2: string = typedLocalDocInsert.data.foo;
             });
             `;
             await AsyncTestUtil.assertThrows(
@@ -651,8 +651,8 @@ describe('typings.test.js', function () {
                     throw new Error('local doc missing');
                 }
 
-                const x: string = typedLocalDoc.foo;
-                const x2: string = typedLocalDocUpsert.foo;
+                const x: string = typedLocalDoc.data.foo;
+                const x2: string = typedLocalDocUpsert.data.foo;
             });
             `;
             await transpileCode(code);
@@ -662,7 +662,7 @@ describe('typings.test.js', function () {
             (async() => {
                 const myDb: RxDatabase = {} as any;
                 const typedLocalDoc = await myDb.getLocal<{foo: string;}>('foobar');
-                const x: string = typedLocalDoc.bar;
+                const x: string = typedLocalDoc.data.bar;
             });
             `;
             await AsyncTestUtil.assertThrows(

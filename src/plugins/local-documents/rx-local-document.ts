@@ -19,7 +19,7 @@ import { getLocalDocStateByParent } from './local-documents-helper';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
 
-export class RxLocalDocument<DocData = any> extends RxDocumentParent {
+class RxLocalDocument<DocData = any> extends RxDocumentParent {
     constructor(
         public readonly id: string,
         jsonData: DocData,

@@ -6,7 +6,12 @@ import { closeStateByParent, removeLocalDocumentsStorageInstance } from './local
 
 export * from './local-documents';
 export * from './rx-local-document';
-
+export type {
+    LocalDocumentParent,
+    LocalDocumentState,
+    RxLocalDocument,
+    RxLocalDocumentData
+} from '../../types/plugins/local-documents';
 
 
 

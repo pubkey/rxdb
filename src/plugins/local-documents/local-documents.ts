@@ -13,6 +13,7 @@ import type {
     RxDocument,
     RxDocumentData,
     RxDocumentWriteData,
+    RxLocalDocument,
     RxLocalDocumentData
 } from '../../types';
 
@@ -24,7 +25,7 @@ import {
 } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-import { createRxLocalDocument, RxLocalDocument } from './rx-local-document';
+import { createRxLocalDocument } from './rx-local-document';
 import { getLocalDocStateByParent } from './local-documents-helper';
 import { getSingleDocument, writeSingle } from '../../rx-storage-helper';
 
@@ -34,11 +35,11 @@ import { getSingleDocument, writeSingle } from '../../rx-storage-helper';
  * save the local-document-data
  * throws if already exists
  */
-export async function insertLocal<DocData>(
+export async function insertLocal<DocData = any>(
     this: RxDatabase | RxCollection,
     id: string,
     data: DocData
-): Promise<RxLocalDocument> {
+): Promise<RxLocalDocument<DocData>> {
     const state = await getLocalDocStateByParent(this);
     return (this as any).getLocal(id)
         .then((existing: any) => {
@@ -77,11 +78,11 @@ export async function insertLocal<DocData>(
  * save the local-document-data
  * overwrites existing if exists
  */
-export function upsertLocal<DocData>(
+export function upsertLocal<DocData = any>(
     this: any,
     id: string,
     data: DocData
-): Promise<RxLocalDocument> {
+): Promise<RxLocalDocument<DocData>> {
     return this.getLocal(id)
         .then((existing: RxDocument) => {
             if (!existing) {
@@ -107,7 +108,7 @@ export function upsertLocal<DocData>(
         });
 }
 
-export async function getLocal(this: any, id: string): Promise<RxLocalDocument | null> {
+export async function getLocal<DocData = any>(this: any, id: string): Promise<RxLocalDocument<DocData> | null> {
     const state = await getLocalDocStateByParent(this);
     const docCache = state.docCache;
 
@@ -124,12 +125,12 @@ export async function getLocal(this: any, id: string): Promise<RxLocalDocument |
                 return null;
             }
             const doc = createRxLocalDocument(id, docData, this, state);
-            return doc;
+            return doc as any;
         })
         .catch(() => null);
 }
 
-export function getLocal$(this: RxCollection, id: string): Observable<RxLocalDocument | null> {
+export function getLocal$<DocData = any>(this: RxCollection, id: string): Observable<RxLocalDocument<DocData> | null> {
     return this.$.pipe(
         startWith(null),
         mergeMap(async (cE: RxChangeEvent<RxLocalDocumentData> | null) => {
