@@ -657,7 +657,7 @@ describe('typings.test.js', function () {
             `;
             await transpileCode(code);
         });
-        it('should allow to access differnt property', async () => {
+        it('should allow to access different property', async () => {
             const code = codeBase + `
             (async() => {
                 const myDb: RxDatabase = {} as any;

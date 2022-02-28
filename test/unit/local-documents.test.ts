@@ -9,7 +9,8 @@ import {
     randomCouchString,
     addRxPlugin,
     RxJsonSchema,
-    ensureNotFalsy
+    ensureNotFalsy,
+    RxLocalDocument
 } from '../../';
 
 import {
@@ -190,11 +191,12 @@ config.parallel('local-documents.test.js', () => {
         describe('positive', () => {
             it('should insert when not exists', async () => {
                 const c = await humansCollection.create();
-                const doc = await c.upsertLocal('foobar', {
+                const doc: RxLocalDocument<any, { foo: string; }> = await c.upsertLocal<{ foo: string; }>('foobar', {
                     foo: 'bar'
                 });
                 assert.ok(doc);
-                assert.strictEqual(doc.get('data.foo'), 'bar');
+                assert.ok(doc.data);
+                assert.strictEqual(doc.data.foo, 'bar');
                 c.database.destroy();
             });
             it('should update when exists', async () => {
