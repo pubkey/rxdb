@@ -876,27 +876,26 @@ AFTER:
   "spawnDatabases": {
     "amount": 1000,
     "collections": 5,
-    "total": 28892.555505,
-    "perInstance": 28.892555505
+    "total": 17822.879896,
+    "perInstance": 17.822879896
   },
   "insertDocuments": {
     "blocks": 2000,
     "blockSize": 5,
-    "total": 6853.536292,
-    "perBlock": 3.4267681459999997
+    "total": 4327.567031,
+    "perBlock": 2.1637835154999996
   },
   "findDocuments": {
     "amount": 10000,
-    "total": 1955.409268,
-    "perDocument": 0.19554092680000001
+    "total": 1483.613512,
+    "perDocument": 0.1483613512
   },
   "migrateDocuments": {
     "amount": 1000,
-    "total": 3948.629363
+    "total": 2639.312311
   },
   "writeWhileSubscribe": {
     "amount": 1000,
-    "total": 2767.23861
+    "total": 1738.548941
   }
 }
-
