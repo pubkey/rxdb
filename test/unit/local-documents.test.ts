@@ -288,7 +288,6 @@ config.parallel('local-documents.test.js', () => {
             assert.ok(doc2);
 
             await doc1.atomicPatch({ foo: 'bar2' });
-            console.dir(doc2);
             await AsyncTestUtil.waitUntil(() => {
                 console.dir(doc2._dataSync$.getValue());
                 return doc2.get('foo') === 'bar2';
