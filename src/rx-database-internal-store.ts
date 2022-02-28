@@ -1,8 +1,18 @@
 import { getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
-import type { RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstance } from './types';
+import { getSingleDocument, writeSingle } from './rx-storage-helper';
+import type {
+    RxDatabase,
+    RxDocumentData,
+    RxJsonSchema,
+    RxStorage,
+    RxStorageBulkWriteError,
+    RxStorageInstance
+} from './types';
+import { getDefaultRxDocumentMeta, randomCouchString } from './util';
 
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
+export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 export const INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
 export const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 
@@ -28,8 +38,10 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<InternalStoreDocType<any>> = {
             type: 'string',
             enum: [
                 INTERNAL_CONTEXT_COLLECTION,
+                INTERNAL_CONTEXT_STORAGE_TOKEN,
                 INTERNAL_CONTEXT_ENCRYPTION,
-                INTERNAL_CONTEXT_REPLICATION_PRIMITIVES
+                INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+                'OTHER'
             ]
         },
         data: {
@@ -55,6 +67,14 @@ export type InternalStoreDocType<Data = any> = {
     context: string;
     data: Data;
 }
+
+/**
+ * Stores information about the collections.
+ * The collection.name is the 'key' value.
+ */
+export type InternalStoreStorageTokenDocType = InternalStoreDocType<{
+    token: string;
+}>;
 
 
 /**
@@ -101,4 +121,65 @@ export async function getAllCollectionDocuments(
     const queryResult = await storageInstance.query(getAllQueryPrepared);
     const allDocs = queryResult.documents;
     return allDocs;
+}
+
+
+/**
+ * to not confuse multiInstance-messages with other databases that have the same
+ * name and adapter, but do not share state with this one (for example in-memory-instances),
+ * we set a storage-token and use it in the broadcast-channel
+ */
+export async function ensureStorageTokenExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<string> {
+    const storageTokenDocumentKey = 'storageToken';
+    const storageTokenDocumentId = getPrimaryKeyOfInternalDocument(
+        storageTokenDocumentKey,
+        INTERNAL_CONTEXT_STORAGE_TOKEN
+    );
+    const storageTokenDoc = await getSingleDocument<InternalStoreStorageTokenDocType>(
+        rxDatabase.internalStore,
+        storageTokenDocumentId
+    );
+    if (!storageTokenDoc) {
+        const storageToken = randomCouchString(10);
+        try {
+            await writeSingle<InternalStoreStorageTokenDocType>(
+                rxDatabase.internalStore,
+                {
+                    document: {
+                        id: storageTokenDocumentId,
+                        context: INTERNAL_CONTEXT_STORAGE_TOKEN,
+                        key: storageTokenDocumentKey,
+                        data: {
+                            token: storageToken
+                        },
+                        _deleted: false,
+                        _meta: getDefaultRxDocumentMeta(),
+                        _attachments: {}
+                    }
+                }
+            );
+        } catch (err: RxStorageBulkWriteError<InternalStoreStorageTokenDocType> | any) {
+            /**
+             * If we get a 409 error,
+             * it means another instance already inserted the storage token.
+             * So we get that token from the database and return that one.
+             */
+            if (
+                err.isError &&
+                (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).status === 409
+            ) {
+                const useStorageTokenDoc = await getSingleDocument<InternalStoreStorageTokenDocType>(
+                    rxDatabase.internalStore,
+                    storageTokenDocumentId
+                );
+                if (useStorageTokenDoc) {
+                    return useStorageTokenDoc.data.token;
+                }
+            }
+            throw err;
+        }
+        return storageToken;
+    } else {
+        return storageTokenDoc.data.token;
+    }
 }

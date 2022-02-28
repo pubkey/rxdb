@@ -7,7 +7,8 @@ import {
 import type {
     DeepReadonly,
     RxDatabase,
-    RxJsonSchema
+    RxJsonSchema,
+    RxStorage
 } from '../types'
 
 export type RxPluginPreCreateRxQueryArgs = {
@@ -87,10 +88,19 @@ export interface RxPlugin {
         preAddRxPlugin?: RxPluginHooks<RxPluginPreAddRxPluginArgs>,
         preCreateRxDatabase?: RxPluginHooks<any>,
         createRxDatabase?: RxPluginHooks<any>,
-        preDestroyRxDatabase?: RxPluginHooks<any>,
+        preDestroyRxDatabase?: RxPluginHooks<RxDatabase>,
+        postRemoveRxDatabase?: RxPluginHooks<{
+            databaseName: string,
+            storage: RxStorage<any, any>
+        }>,
         createRxCollection?: RxPluginHooks<any>,
         preCreateRxCollection?: RxPluginHooks<any>,
-        postDestroyRxCollection?: RxPluginHooks<any>,
+        postDestroyRxCollection?: RxPluginHooks<RxCollection>,
+        postRemoveRxCollection?: RxPluginHooks<{
+            storage: RxStorage<any, any>;
+            databaseName: string;
+            collectionName: string;
+        }>,
         preCreateRxSchema?: RxPluginHooks<any>,
         createRxSchema?: RxPluginHooks<any>,
         preCreateRxQuery?: RxPluginHooks<RxPluginPreCreateRxQueryArgs>,

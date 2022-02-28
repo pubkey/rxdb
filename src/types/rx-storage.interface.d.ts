@@ -197,7 +197,7 @@ export interface RxStorageInstance<
     readonly collectionName: string;
 
     /**
-     * Writes multiple non-local documents to the storage instance.
+     * Writes multiple documents to the storage instance.
      * The write for each single document is atomic, there
      * is no transaction arround all documents.
      * The written documents must be the newest revision of that documents data.

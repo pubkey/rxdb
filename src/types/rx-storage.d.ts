@@ -108,10 +108,6 @@ export type BulkWriteRow<DocumentData> = {
     document: RxDocumentWriteData<DocumentData>
 };
 
-export type BulkWriteLocalRow<DocumentData> = {
-    previous?: RxLocalDocumentData<DocumentData>,
-    document: RxLocalDocumentData<DocumentData>
-}
 
 /**
  * Meta data of the attachment.
@@ -159,25 +155,6 @@ export type RxAttachmentWriteData = RxAttachmentData & {
 }
 
 
-export type RxLocalDocumentData<
-    Data = {
-        // local documents are schemaless and contain any data
-        [key: string]: any
-    }
-    > = {
-        // Local documents always have _id as primary
-        _id: string;
-
-        // local documents cannot have attachments,
-        // so this must always be an empty object.
-        _attachments: {};
-
-        _deleted: boolean;
-        _rev?: string;
-
-        _meta: RxDocumentMeta;
-    } & Data;
-
 /**
  * Error that can happer per document when
  * RxStorage.bulkWrite() is called
@@ -206,29 +183,6 @@ export type RxStorageBulkWriteError<RxDocType> = {
     writeRow: BulkWriteRow<RxDocType>;
 }
 
-export type RxStorageBulkWriteLocalError<D> = {
-    status: number |
-    409 // conflict
-    /**
-     * Before you add any other status code,
-     * check pouchdb/packages/node_modules/pouch-errors/src/index.js
-     * and try to use the same code as PouchDB does.
-     */
-    ;
-
-    /**
-     * set this property to make it easy
-     * to detect if the object is a RxStorageBulkWriteError
-     */
-    isError: true;
-
-    // primary key of the document
-    documentId: string;
-
-    // the original document data that should have been written.
-    writeRow: BulkWriteLocalRow<D>;
-}
-
 export type RxStorageBulkWriteResponse<DocData> = {
     /**
      * A map that is indexed by the documentId
@@ -246,25 +200,6 @@ export type RxStorageBulkWriteResponse<DocData> = {
         [documentId: string]: RxStorageBulkWriteError<DocData>;
     }
 }
-
-export type RxLocalStorageBulkWriteResponse<DocData> = {
-    /**
-     * A map that is indexed by the documentId
-     * contains all succeded writes.
-     */
-    success: {
-        [documentId: string]: RxLocalDocumentData<DocData>;
-    };
-
-    /**
-     * A map that is indexed by the documentId
-     * contains all errored writes.
-     */
-    error: {
-        [documentId: string]: RxStorageBulkWriteLocalError<DocData>;
-    };
-}
-
 
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
 

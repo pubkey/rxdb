@@ -8,7 +8,6 @@ import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
-    BulkWriteLocalRow,
     BulkWriteRow,
     ChangeStreamOnceOptions,
     EventBulk,
@@ -18,8 +17,6 @@ import type {
     RxDocumentData,
     RxDocumentWriteData,
     RxJsonSchema,
-    RxLocalDocumentData,
-    RxLocalStorageBulkWriteResponse,
     RxStorage,
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
@@ -83,41 +80,6 @@ export async function writeSingle<RxDocType>(
     } else {
         const ret = firstPropertyValueOfObject(writeResult.success);
         return ret;
-    }
-}
-
-/**
- * Writes a single local document,
- * throws RxStorageBulkWriteError on failure
- */
-export async function writeSingleLocal<DocumentData>(
-    instance: RxStorageInstance<any, any, any>,
-    writeRow: BulkWriteLocalRow<DocumentData>
-): Promise<RxLocalDocumentData<DocumentData>> {
-    const writeResult: RxLocalStorageBulkWriteResponse<DocumentData> = await instance.bulkWrite(
-        [writeRow]
-    );
-
-    if (Object.keys(writeResult.error).length > 0) {
-        const error = firstPropertyValueOfObject(writeResult.error);
-        throw error;
-    } else {
-        const ret = firstPropertyValueOfObject(writeResult.success);
-        return ret;
-    }
-}
-
-export async function findLocalDocument<DocumentData>(
-    instance: RxStorageInstance<any, any, any>,
-    id: string,
-    withDeleted: boolean
-): Promise<RxDocumentData<RxLocalDocumentData<DocumentData>> | null> {
-    const docList = await instance.findDocumentsById([id], withDeleted);
-    const doc = docList[id];
-    if (!doc) {
-        return null;
-    } else {
-        return doc;
     }
 }
 
@@ -345,28 +307,4 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         }
     };
     return ret;
-}
-
-
-
-export function transformLocalDocumentDataFromRxDBToRxStorage<D>(
-    parent: RxCollection | RxDatabase,
-    data: RxLocalDocumentData<D>,
-    updateLwt: boolean
-): RxLocalDocumentData<D> {
-    data = flatClone(data);
-    data._meta = flatClone(data._meta);
-
-    if (updateLwt) {
-        data._meta.lwt = new Date().getTime();
-    }
-
-    return data;
-}
-
-export function transformLocalDocumentDataFromRxStorageToRxDB<D>(
-    parent: RxCollection | RxDatabase,
-    data: RxLocalDocumentData<D>
-): RxLocalDocumentData<D> {
-    return data;
 }

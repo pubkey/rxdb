@@ -20,7 +20,7 @@ import {
 } from './util';
 import {
     fillObjectDataBeforeInsert,
-    createRxCollectionStorageInstances
+    createRxCollectionStorageInstance
 } from './rx-collection-helper';
 import {
     createRxQuery,
@@ -34,8 +34,7 @@ import type {
     DataMigrator
 } from './plugins/migration';
 import {
-    DocCache,
-    createDocCache
+    DocCache
 } from './doc-cache';
 import {
     QueryCache,
@@ -123,11 +122,6 @@ export class RxCollectionBase<
      * Stores all 'normal' documents
      */
     public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
-    /**
-     * Stores the local documents so that they are not deleted
-     * when a migration runs.
-     */
-    public localDocumentsStore: RxStorageInstance<RxLocalDocumentData, any, InstanceCreationOptions> = {} as any;
     public readonly timeouts: Set<ReturnType<typeof setTimeout>> = new Set();
 
     constructor(
@@ -135,8 +129,6 @@ export class RxCollectionBase<
         public name: string,
         public schema: RxSchema<RxDocumentType>,
         public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
-        public internalLocalDocumentsStore: RxStorageInstance<RxLocalDocumentData, any, InstanceCreationOptions>,
-
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
         public migrationStrategies: KeyFunctionMap = {},
         public methods: KeyFunctionMap = {},
@@ -186,7 +178,7 @@ export class RxCollectionBase<
 
     public _docCache: DocCache<
         RxDocument<RxDocumentType, OrmMethods>
-    > = createDocCache();
+    > = new DocCache();
 
     public _queryCache: QueryCache = createQueryCache();
     public _observable$: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
@@ -203,11 +195,6 @@ export class RxCollectionBase<
             this.database,
             this.internalStorageInstance,
             this.schema.jsonSchema
-        );
-        this.localDocumentsStore = getWrappedStorageInstance(
-            this.database,
-            this.internalLocalDocumentsStore,
-            this.internalLocalDocumentsStore.schema
         );
 
         this._observable$ = this.database.eventBulks$.pipe(
@@ -237,25 +224,7 @@ export class RxCollectionBase<
             };
             this.database.$emit(changeEventBulk);
         });
-
         this._subs.push(subDocs);
-        const subLocalDocs = this.localDocumentsStore.changeStream().subscribe(eventBulk => {
-            const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
-                id: eventBulk.id,
-                internal: false,
-                collectionName: this.name,
-                storageToken: ensureNotFalsy(this.database.storageToken),
-                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
-                    true,
-                    ev,
-                    this as any
-                )),
-                databaseToken: this.database.token
-            };
-            this.database.$emit(changeEventBulk);
-        });
-        this._subs.push(subLocalDocs);
-
 
         /**
          * When a write happens to the collection
@@ -884,11 +853,7 @@ export class RxCollectionBase<
         if (this._changeEventBuffer) {
             this._changeEventBuffer.destroy();
         }
-        return Promise
-            .all([
-                this.storageInstance.close(),
-                this.localDocumentsStore.close()
-            ])
+        return this.storageInstance.close()
             .then(() => {
                 delete this.database.collections[this.name];
                 return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
@@ -1007,18 +972,15 @@ export function createRxCollection(
         storageInstanceCreationParams
     );
 
-    return createRxCollectionStorageInstances(
-        name,
+    return createRxCollectionStorageInstance(
         database,
-        storageInstanceCreationParams,
-        instanceCreationOptions
-    ).then(storageInstances => {
+        storageInstanceCreationParams
+    ).then(storageInstance => {
         const collection = new RxCollectionBase(
             database,
             name,
             schema,
-            storageInstances.storageInstance,
-            storageInstances.localDocumentsStore,
+            storageInstance,
             instanceCreationOptions,
             migrationStrategies,
             methods,
@@ -1055,11 +1017,7 @@ export function createRxCollection(
              * we yet have to close the storage instances.
              */
             .catch(err => {
-                return Promise
-                    .all([
-                        storageInstances.storageInstance.close(),
-                        storageInstances.localDocumentsStore.close()
-                    ])
+                return storageInstance.close()
                     .then(() => Promise.reject(err));
             });
     });

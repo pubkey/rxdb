@@ -103,10 +103,3 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
 
     destroy(): void;
 }
-
-declare type LocalDocWithType<LocalDocType> = RxDocumentBase<LocalDocType> & LocalDocType;
-
-export declare type RxLocalDocument<Parent, LocalDocType = any> = RxDocumentBase<LocalDocType> & LocalDocType & {
-    readonly parent: Parent;
-    isLocal(): true;
-}

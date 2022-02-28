@@ -366,7 +366,6 @@ export class RxReplicationStateBase<RxDocType> {
                 writeDoc,
                 nextRevisionHeight
             );
-
             bulkWriteData.push({
                 previous: docStateInLocalStorageInstance ? docStateInLocalStorageInstance : undefined,
                 document: writeDoc

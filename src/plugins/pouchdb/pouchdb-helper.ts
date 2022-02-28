@@ -370,37 +370,3 @@ export const RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted' as const;
 export type RxLocalDocumentDataWithCustomDeletedFlag<D> = RxLocalDocumentData<D> & {
     [k in typeof RXDB_POUCH_DELETED_FLAG]?: boolean;
 };
-
-export function localDocumentToPouch<D>(
-    docData: RxLocalDocumentData<D>
-): RxLocalDocumentDataWithCustomDeletedFlag<D> {
-    const ret: RxLocalDocumentDataWithCustomDeletedFlag<D> = flatClone(docData);
-
-    // add local prefix
-    ret._id = POUCHDB_LOCAL_PREFIX + ret._id;
-
-    // add custom deleted flag if document is deleted 
-    if (docData._deleted) {
-        ret._deleted = false;
-        ret[RXDB_POUCH_DELETED_FLAG] = true;
-    }
-
-    return ret;
-}
-
-export function localDocumentFromPouch<D>(
-    docData: RxLocalDocumentDataWithCustomDeletedFlag<D>
-): RxLocalDocumentData<D> {
-    const ret: RxLocalDocumentData<D> = flatClone(docData);
-
-    // strip local prefix
-    ret._id = ret._id.slice(POUCHDB_LOCAL_PREFIX_LENGTH);
-
-    if (docData[RXDB_POUCH_DELETED_FLAG]) {
-        ret._deleted = true;
-        delete (ret as any)[RXDB_POUCH_DELETED_FLAG];
-    }
-
-
-    return ret;
-}

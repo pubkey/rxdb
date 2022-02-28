@@ -15,9 +15,9 @@ import {
     createRxSchema,
     randomCouchString,
     addRxPlugin,
-    findLocalDocument,
     getPrimaryKeyOfInternalDocument,
-    INTERNAL_CONTEXT_ENCRYPTION
+    INTERNAL_CONTEXT_ENCRYPTION,
+    getSingleDocument
 } from '../../';
 
 
@@ -206,12 +206,13 @@ config.parallel('rx-database.test.js', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                const doc = await findLocalDocument<InternalStorePasswordDocType>(
+                const doc = await getSingleDocument<InternalStorePasswordDocType>(
                     db.internalStore,
                     getPrimaryKeyOfInternalDocument(
                         'pwHash',
                         INTERNAL_CONTEXT_ENCRYPTION
-                    ), false);
+                    )
+                );
                 if (!doc) {
                     throw new Error('error in test this should never happen ' + doc);
                 }
@@ -222,10 +223,13 @@ config.parallel('rx-database.test.js', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                const doc2 = await findLocalDocument<InternalStorePasswordDocType>(db.internalStore, getPrimaryKeyOfInternalDocument(
-                    'pwHash',
-                    INTERNAL_CONTEXT_ENCRYPTION
-                ), false);
+                const doc2 = await getSingleDocument<InternalStorePasswordDocType>(
+                    db.internalStore,
+                    getPrimaryKeyOfInternalDocument(
+                        'pwHash',
+                        INTERNAL_CONTEXT_ENCRYPTION
+                    )
+                );
                 assert.ok(doc2);
                 assert.strictEqual(typeof doc2.data.hash, 'string');
 

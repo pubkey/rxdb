@@ -20,7 +20,6 @@ import type {
     RxChangeEvent,
     RxDatabaseCreator,
     RxChangeEventBulk,
-    RxLocalDocumentData,
     RxDocumentData
 } from './types';
 
@@ -56,21 +55,16 @@ import {
     createRxCollection
 } from './rx-collection';
 import {
-    findLocalDocument,
     getSingleDocument,
-    getWrappedStorageInstance,
-    INTERNAL_STORAGE_NAME,
-    RX_DATABASE_LOCAL_DOCS_STORAGE_NAME,
-    storageChangeEventToRxChangeEvent
+    INTERNAL_STORAGE_NAME
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
-import { getPseudoSchemaForVersion } from './rx-schema-helper';
 import {
-    createRxCollectionStorageInstances,
-    getCollectionLocalInstanceName
+    createRxCollectionStorageInstance
 } from './rx-collection-helper';
 import { ObliviousSet } from 'oblivious-set';
 import {
+    ensureStorageTokenExists,
     getAllCollectionDocuments,
     getPrimaryKeyOfInternalDocument,
     InternalStoreCollectionDocType,
@@ -91,12 +85,6 @@ export class RxDatabaseBase<
     Internals, InstanceCreationOptions,
     Collections = CollectionsOfDatabase,
     > {
-
-    /**
-     * Stores the local documents which are attached to this database.
-     */
-    public localDocumentsStore: RxStorageInstance<RxLocalDocumentData, Internals, InstanceCreationOptions> = {} as any;
-
     constructor(
         public readonly name: string,
         public readonly storage: RxStorage<Internals, InstanceCreationOptions>,
@@ -110,7 +98,6 @@ export class RxDatabaseBase<
          * Stores information documents about the collections of the database
          */
         public readonly internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>,
-        public readonly internalLocalDocumentsStore: RxStorageInstance<RxLocalDocumentData, Internals, InstanceCreationOptions>,
         /**
          * Set if multiInstance: true
          * This broadcast channel is used to send events to other instances like
@@ -345,32 +332,32 @@ export class RxDatabaseBase<
                 return Promise.all(
                     knownVersions
                         .map(knownVersionDoc => {
-                            return createRxCollectionStorageInstances<any, any, any>(
-                                collectionName,
-                                this as any,
+                            return createRxCollectionStorageInstance(
+                                this.asRxDatabase,
                                 {
                                     databaseName: this.name,
                                     collectionName,
                                     schema: knownVersionDoc.data.schema,
                                     options: this.instanceCreationOptions,
                                     multiInstance: this.multiInstance
-                                },
-                                {}
+                                }
                             );
                         })
                 );
             })
-            // remove normal and local documents
+            // remove the storage instance
             .then(storageInstances => {
                 return Promise.all(
                     storageInstances.map(
-                        instance => Promise.all([
-                            instance.storageInstance.remove(),
-                            instance.localDocumentsStore.remove()
-                        ])
+                        instance => instance.remove()
                     )
                 );
             })
+            .then(() => runAsyncPluginHooks('postRemoveRxCollection', {
+                storage: this.storage,
+                databaseName: this.name,
+                collectionName
+            }))
             .then(() => { });
     }
 
@@ -438,14 +425,14 @@ export class RxDatabaseBase<
     /**
      * destroys the database-instance and all collections
      */
-    public destroy(): Promise<boolean> {
+    public async destroy(): Promise<boolean> {
         if (this.destroyed) {
             return PROMISE_RESOLVE_FALSE;
         }
         // settings destroyed = true must be the first thing to do.
         this.destroyed = true;
 
-        runPluginHooks('preDestroyRxDatabase', this);
+        await runAsyncPluginHooks('preDestroyRxDatabase', this);
         DB_COUNT--;
 
         this._subs.map(sub => sub.unsubscribe());
@@ -471,7 +458,6 @@ export class RxDatabaseBase<
             ))
             // destroy internal storage instances
             .then(() => this.internalStore.close())
-            .then(() => this.localDocumentsStore.close())
             // close broadcastChannel if exists
             .then(() => this.broadcastChannel ? this.broadcastChannel.close() : null)
             // remove combination from USED_COMBINATIONS-map
@@ -511,32 +497,6 @@ function throwIfDatabaseNameUsed(
             name,
             link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
         });
-    }
-}
-
-/**
- * to not confuse multiInstance-messages with other databases that have the same
- * name and adapter, but do not share state with this one (for example in-memory-instances),
- * we set a storage-token and use it in the broadcast-channel
- */
-export async function _ensureStorageTokenExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<string> {
-    const storageTokenDocumentId = 'storageToken';
-    const storageTokenDoc = await findLocalDocument<{ value: string }>(rxDatabase.localDocumentsStore, storageTokenDocumentId, false);
-    if (!storageTokenDoc) {
-        const storageToken = randomCouchString(10);
-        await rxDatabase.localDocumentsStore.bulkWrite([{
-            document: {
-                _id: storageTokenDocumentId,
-                value: storageToken,
-                _deleted: false,
-                _meta: getDefaultRxDocumentMeta(),
-                _attachments: {}
-
-            }
-        }]);
-        return storageToken;
-    } else {
-        return storageTokenDoc.value;
     }
 }
 
@@ -627,15 +587,12 @@ function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collection
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.
  */
-async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptions>(
+async function createRxDatabaseStorageInstance<Internals, InstanceCreationOptions>(
     storage: RxStorage<Internals, InstanceCreationOptions>,
     databaseName: string,
     options: InstanceCreationOptions,
     multiInstance: boolean
-): Promise<{
-    internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>,
-    localDocumentsStore: RxStorageInstance<RxLocalDocumentData, Internals, InstanceCreationOptions>
-}> {
+): Promise<RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>> {
     const internalStore = await storage.createStorageInstance<InternalStoreDocType>(
         {
             databaseName,
@@ -645,21 +602,7 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
             multiInstance
         }
     );
-
-    const localDocumentsStore = await storage.createStorageInstance<RxLocalDocumentData>(
-        {
-            databaseName,
-            collectionName: RX_DATABASE_LOCAL_DOCS_STORAGE_NAME,
-            schema: getPseudoSchemaForVersion(0, '_id'),
-            options,
-            multiInstance
-        }
-    );
-
-    return {
-        internalStore,
-        localDocumentsStore
-    };
+    return internalStore;
 }
 
 /**
@@ -668,27 +611,7 @@ async function createRxDatabaseStorageInstances<Internals, InstanceCreationOptio
 async function prepare<Internals, InstanceCreationOptions, Collections>(
     rxDatabase: RxDatabaseBase<Internals, InstanceCreationOptions, Collections>
 ): Promise<void> {
-    rxDatabase.localDocumentsStore = getWrappedStorageInstance(
-        rxDatabase.asRxDatabase,
-        rxDatabase.internalLocalDocumentsStore,
-        rxDatabase.internalLocalDocumentsStore.schema
-    );
-    rxDatabase.storageToken = await _ensureStorageTokenExists<Collections>(rxDatabase as any);
-    const localDocsSub = rxDatabase.localDocumentsStore.changeStream()
-        .subscribe(eventBulk => {
-            const changeEventBulk: RxChangeEventBulk<any> = {
-                id: eventBulk.id,
-                internal: false,
-                storageToken: ensureNotFalsy(rxDatabase.storageToken),
-                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
-                    true,
-                    ev
-                )),
-                databaseToken: rxDatabase.token
-            };
-            rxDatabase.$emit(changeEventBulk);
-        });
-    rxDatabase._subs.push(localDocsSub);
+    rxDatabase.storageToken = await ensureStorageTokenExists<Collections>(rxDatabase as any);
     if (rxDatabase.multiInstance) {
         _prepareBroadcastChannel<Collections>(rxDatabase as any);
     }
@@ -744,7 +667,7 @@ export function createRxDatabase<
 
     const idleQueue = new IdleQueue();
 
-    return createRxDatabaseStorageInstances<
+    return createRxDatabaseStorageInstance<
         Internals,
         InstanceCreationOptions
     >(
@@ -752,7 +675,7 @@ export function createRxDatabase<
         name,
         instanceCreationOptions as any,
         multiInstance
-    ).then(storageInstances => {
+    ).then(storageInstance => {
         const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
             name,
             storage,
@@ -762,8 +685,7 @@ export function createRxDatabase<
             eventReduce,
             options,
             idleQueue,
-            storageInstances.internalStore,
-            storageInstances.localDocumentsStore,
+            storageInstance,
             broadcastChannel
         ) as any;
         return prepare(rxDatabase)
@@ -779,7 +701,7 @@ export async function removeRxDatabase(
     databaseName: string,
     storage: RxStorage<any, any>
 ): Promise<any> {
-    const storageInstance = await createRxDatabaseStorageInstances(
+    const storageInstance = await createRxDatabaseStorageInstance(
         storage,
         databaseName,
         {},
@@ -787,7 +709,7 @@ export async function removeRxDatabase(
     );
 
     const collectionDocs = await getAllCollectionDocuments(
-        storageInstance.internalStore,
+        storageInstance,
         storage
     );
 
@@ -798,32 +720,26 @@ export async function removeRxDatabase(
                 const schema = colDoc.data.schema;
                 const split = key.split('-');
                 const collectionName = split[0];
-                const [instance, localInstance] = await Promise.all([
-                    storage.createStorageInstance<any>(
-                        {
-                            databaseName,
-                            collectionName,
-                            schema,
-                            options: {},
-                            multiInstance: false
-                        }
-                    ),
-                    storage.createStorageInstance({
+                const storageInstance = storage.createStorageInstance<any>(
+                    {
                         databaseName,
-                        collectionName: getCollectionLocalInstanceName(collectionName),
+                        collectionName,
+                        schema,
                         options: {},
-                        schema: getPseudoSchemaForVersion(0, '_id'),
                         multiInstance: false
-                    })
-                ]);
-                await Promise.all([instance.remove(), localInstance.remove()]);
+                    }
+                );
+                await (await storageInstance).remove();
             })
     );
 
-    return Promise.all([
-        storageInstance.internalStore.remove(),
-        storageInstance.localDocumentsStore.remove()
-    ]);
+
+    await runAsyncPluginHooks('postRemoveRxDatabase', {
+        databaseName,
+        storage
+    });
+
+    return storageInstance.remove();
 }
 
 export function isRxDatabase(obj: any) {

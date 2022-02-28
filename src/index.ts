@@ -72,10 +72,8 @@ export {
 } from './rx-schema-helper';
 
 export {
-    findLocalDocument,
     getSingleDocument,
     getAllDocuments,
-    writeSingleLocal,
     writeSingle
 } from './rx-storage-helper';
 
