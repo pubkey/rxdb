@@ -42,6 +42,8 @@ myDatabase.addCollections({
 });
 ```
 
+**NOTICE:** If you want to store local documents in a `RxCollection` but **NOT** in the `RxDatabase`, you **MUST NOT** set `localDocuments: true` in the `RxDatabase` because it will only slow down the inital database creation.
+
 ## insertLocal()
 
 Creates a local document for the database or collection. Throws if a local document with the same id already exists. Returns a Promise which resolves the new `RxLocalDocument`.

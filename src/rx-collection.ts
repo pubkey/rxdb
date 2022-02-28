@@ -191,6 +191,7 @@ export class RxCollectionBase<
 
     private _onDestroyCall?: () => void;
     public async prepare(): Promise<void> {
+        const databaseStorageToken = await this.database.storageToken;
         this.storageInstance = getWrappedStorageInstance(
             this.database,
             this.internalStorageInstance,
@@ -214,7 +215,7 @@ export class RxCollectionBase<
                 id: eventBulk.id,
                 internal: false,
                 collectionName: this.name,
-                storageToken: ensureNotFalsy(this.database.storageToken),
+                storageToken: databaseStorageToken,
                 events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
                     false,
                     ev,

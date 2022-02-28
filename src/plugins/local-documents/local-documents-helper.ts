@@ -16,7 +16,6 @@ import type {
     RxLocalDocumentData,
     RxStorage
 } from '../../types';
-import { ensureNotFalsy } from '../../util';
 
 const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();
 
@@ -57,12 +56,13 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
         /**
          * Emit the changestream into the collections change stream
          */
-        const subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
+        const subLocalDocs = storageInstance.changeStream().subscribe(async(eventBulk) => {
+            const databaseStorageToken = await database.storageToken;
             const changeEventBulk: RxChangeEventBulk<RxLocalDocumentData> = {
                 id: eventBulk.id,
                 internal: false,
                 collectionName: parent.database ? parent.name : undefined,
-                storageToken: ensureNotFalsy(database.storageToken),
+                storageToken: databaseStorageToken,
                 events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
                     true,
                     ev,

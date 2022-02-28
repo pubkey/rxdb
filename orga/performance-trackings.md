@@ -833,3 +833,70 @@ Build-Size (minified+gzip):
 
 Without externalHelpers: 70732
 With externalHelpers: 
+
+
+
+
+## 28.02.2022
+
+BEFORE: 
+{
+  "storage": "pouchdb",
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 29323.446457,
+    "perInstance": 29.323446457
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7082.087827,
+    "perBlock": 3.5410439135000003
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 2235.385865,
+    "perDocument": 0.22353858650000002
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3841.661595
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 2821.622409
+  }
+}
+
+AFTER:
+
+{
+  "storage": "pouchdb",
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 28892.555505,
+    "perInstance": 28.892555505
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 6853.536292,
+    "perBlock": 3.4267681459999997
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1955.409268,
+    "perDocument": 0.19554092680000001
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3948.629363
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 2767.23861
+  }
+}
+

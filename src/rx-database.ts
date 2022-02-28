@@ -109,6 +109,10 @@ export class RxDatabaseBase<
     ) {
         this.collections = {} as any;
         DB_COUNT++;
+
+        if (this.name !== 'pseudoInstance') {
+            this.storageToken = ensureStorageTokenExists(this.asRxDatabase);
+        }
     }
 
     get $(): Observable<RxChangeEvent<any>> {
@@ -129,8 +133,12 @@ export class RxDatabaseBase<
      * Unique token that is stored with the data.
      * Used to detect if the dataset has been deleted
      * and if two RxDatabase instances work on the same dataset or not.
+     * 
+     * Because reading and writing the storageToken runs in the hot path
+     * of database creation, we do not await the storageWrites but instead
+     * work with the promise when we need the value.
      */
-    public storageToken?: string;
+    public storageToken: Promise<string> = PROMISE_RESOLVE_FALSE as any;
 
     /**
      * Contains the ids of all event bulks that have been emitted
@@ -517,21 +525,24 @@ export function writeToSocket(
         return PROMISE_RESOLVE_FALSE;
     }
 
-    if (
-        !rxDatabase.storage.statics.doesBroadcastChangestream() &&
-        rxDatabase.multiInstance &&
-        rxDatabase.broadcastChannel &&
-        !changeEventBulk.internal &&
-        rxDatabase.token === changeEventBulk.databaseToken &&
-        rxDatabase.storageToken === changeEventBulk.storageToken
+    return rxDatabase.storageToken
+        .then(storageToken => {
+            if (
+                !rxDatabase.storage.statics.doesBroadcastChangestream() &&
+                rxDatabase.multiInstance &&
+                rxDatabase.broadcastChannel &&
+                !changeEventBulk.internal &&
+                rxDatabase.token === changeEventBulk.databaseToken &&
+                storageToken === changeEventBulk.storageToken
 
-    ) {
-        return rxDatabase.broadcastChannel
-            .postMessage(changeEventBulk)
-            .then(() => true);
-    } else {
-        return PROMISE_RESOLVE_FALSE;
-    }
+            ) {
+                return rxDatabase.broadcastChannel
+                    .postMessage(changeEventBulk)
+                    .then(() => true);
+            } else {
+                return PROMISE_RESOLVE_FALSE;
+            }
+        });
 }
 
 /**
@@ -575,10 +586,11 @@ export async function _removeAllOfCollection(
 function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collections>): void {
     // listen to changes from other instances that come over the BroadcastChannel
     ensureNotFalsy(rxDatabase.broadcastChannel)
-        .addEventListener('message', (changeEventBulk: RxChangeEventBulk<any>) => {
+        .addEventListener('message', async (changeEventBulk: RxChangeEventBulk<any>) => {
+            const databaseStorageToken = await rxDatabase.storageToken;
             if (
                 // not same storage-state
-                changeEventBulk.storageToken !== rxDatabase.storageToken ||
+                changeEventBulk.storageToken !== databaseStorageToken ||
                 // this db instance was sender
                 changeEventBulk.databaseToken === rxDatabase.token
             ) {
@@ -617,7 +629,6 @@ async function createRxDatabaseStorageInstance<Internals, InstanceCreationOption
 async function prepare<Internals, InstanceCreationOptions, Collections>(
     rxDatabase: RxDatabaseBase<Internals, InstanceCreationOptions, Collections>
 ): Promise<void> {
-    rxDatabase.storageToken = await ensureStorageTokenExists<Collections>(rxDatabase as any);
     if (rxDatabase.multiInstance) {
         _prepareBroadcastChannel<Collections>(rxDatabase as any);
     }

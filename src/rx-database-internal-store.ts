@@ -49,7 +49,10 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<InternalStoreDocType<any>> = {
         }
     },
     indexes: [
-        'context'
+        [
+            'context',
+            'id'
+        ]
     ],
     required: [
         'key',
