@@ -55,16 +55,10 @@ Ensure that it works with typescript. Check the rxjs repo and find out how they 
 
 Rename the paths in the `exports` field in the `package.json` so that users can do `import {} from 'rxdb/core'` instead of the current `import {} from 'rxdb/plugins/core'`.
 
-
 # Move _rev, _deleted and _attachments into _meta
 
 From version `12.0.0` on, all document data is stored with an `_meta` field that can contain various flags and other values. This makes it easier for plugins to remember stuff that belongs to the document.
 In the future, the other meta field like `_rev`, `_deleted` and `_attachments` will be moved from the root level to the `_meta` field. This is **not** done directly in release `12.0.0` to ensure that there is a migration path.
-
-
-## Ensure deterministic sorting.
-The PouchDB RxStorage does not automatically add the primary key to a queries sort options.
-But this must be done to ensure deterministic sorting and to ensure the event-reduce algorithm works exactly the same on each storage. Adding the sort field creates errors because we cannot sort over non-indexes stuff. So maybe we should fix this at the index creation.
 
 # Maybe
 
