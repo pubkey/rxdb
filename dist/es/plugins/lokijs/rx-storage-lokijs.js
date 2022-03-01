@@ -1,7 +1,6 @@
 import lokijs from 'lokijs';
 import { ensureNotFalsy, flatClone } from '../../util';
 import { createLokiStorageInstance } from './rx-storage-instance-loki';
-import { createLokiKeyObjectStorageInstance } from './rx-storage-key-object-instance-loki';
 import { getLokiSortComparator } from './lokijs-helper';
 import { binaryMd5 } from 'pouchdb-md5';
 export var RxStorageLokiStatics = {
@@ -87,13 +86,6 @@ export var RxStorageLoki = /*#__PURE__*/function () {
 
   _proto.createStorageInstance = function createStorageInstance(params) {
     return createLokiStorageInstance(this, params, this.databaseSettings);
-  };
-
-  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
-    // ensure we never mix up key-object data with normal storage documents.
-    var useParams = flatClone(params);
-    useParams.collectionName = params.collectionName + '-key-object';
-    return createLokiKeyObjectStorageInstance(this, params, this.databaseSettings);
   };
 
   return RxStorageLoki;

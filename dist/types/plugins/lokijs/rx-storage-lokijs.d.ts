@@ -1,9 +1,8 @@
 /// <reference types="pouchdb-core" />
 /// <reference types="node" />
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import type { LokiDatabaseSettings, LokiSettings, LokiStorageInternals, MangoQuery, RxDocumentWriteData, RxJsonSchema, RxKeyObjectStorageInstanceCreationParams, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
+import type { LokiDatabaseSettings, LokiSettings, LokiStorageInternals, MangoQuery, RxDocumentWriteData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
 import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
-import { RxStorageKeyObjectInstanceLoki } from './rx-storage-key-object-instance-loki';
 import type { LeaderElector } from 'broadcast-channel';
 export declare const RxStorageLokiStatics: RxStorageStatics;
 export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
@@ -32,6 +31,5 @@ export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, Lo
     }>;
     constructor(databaseSettings: LokiDatabaseSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>): Promise<RxStorageInstanceLoki<RxDocType>>;
-    createKeyObjectStorageInstance(params: RxKeyObjectStorageInstanceCreationParams<LokiSettings>): Promise<RxStorageKeyObjectInstanceLoki>;
 }
 export declare function getRxStorageLoki(databaseSettings?: LokiDatabaseSettings): RxStorageLoki;

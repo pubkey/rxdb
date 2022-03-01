@@ -92,6 +92,7 @@ export declare const ERROR_MESSAGES: {
     LD5: string;
     LD6: string;
     LD7: string;
+    LD8: string;
     RC1: string;
     RC2: string;
     RC3: string;

@@ -53,24 +53,23 @@ var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   });
 };
 
-export var rxdb = true;
-export var prototypes = {
-  /**
-   * set validate-function for the RxSchema.prototype
-   * @param prototype of RxSchema
-   */
-  RxSchema: function RxSchema(proto) {
-    proto._getValidator = _getValidator;
-    proto.validate = validate;
-  }
-};
-export var hooks = {
-  createRxSchema: runAfterSchemaCreated
-};
 export var RxDBValidatePlugin = {
   name: 'validate',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  hooks: hooks
+  rxdb: true,
+  prototypes: {
+    /**
+     * set validate-function for the RxSchema.prototype
+     * @param prototype of RxSchema
+     */
+    RxSchema: function RxSchema(proto) {
+      proto._getValidator = _getValidator;
+      proto.validate = validate;
+    }
+  },
+  hooks: {
+    createRxSchema: {
+      after: runAfterSchemaCreated
+    }
+  }
 };
 //# sourceMappingURL=validate.js.map

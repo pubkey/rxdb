@@ -15,15 +15,13 @@ var _pouchDb = require("./pouch-db");
 
 var _rxError = require("../../rx-error");
 
-var _rxSchema = require("../../rx-schema");
-
 var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
-
-var _rxStorageKeyObjectInstancePouch = require("./rx-storage-key-object-instance-pouch");
 
 var _pouchdbHelper = require("./pouchdb-helper");
 
 var _pouchStatics = require("./pouch-statics");
+
+var _rxSchemaHelper = require("../../rx-schema-helper");
 
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
@@ -35,7 +33,7 @@ var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
       return Promise.resolve();
     }
 
-    var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+    var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
     return Promise.resolve(pouch.getIndexes()).then(function (before) {
       var existingIndexes = new Set(before.indexes.map(function (idx) {
         return idx.name;
@@ -138,31 +136,6 @@ var RxStoragePouch = /*#__PURE__*/function () {
             pouch: pouch
           }, params.options);
         });
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
-  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
-    try {
-      var _this6 = this;
-
-      var useOptions = (0, _util.flatClone)(params.options); // no compaction because this only stores local documents
-
-      useOptions.auto_compaction = false;
-      useOptions.revs_limit = 1;
-      /**
-       * TODO shouldnt we use a different location
-       * for the local storage? Or at least make sure we
-       * reuse the same pouchdb instance?
-       */
-
-      var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, 0);
-      return Promise.resolve(_this6.createPouch(pouchLocation, params.options)).then(function (pouch) {
-        return new _rxStorageKeyObjectInstancePouch.RxStorageKeyObjectInstancePouch(params.databaseName, params.collectionName, {
-          pouch: pouch
-        }, params.options);
       });
     } catch (e) {
       return Promise.reject(e);

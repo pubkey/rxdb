@@ -284,7 +284,12 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
    * Increase when a pull or push fails to retry after retryTime.
    * Decrease when the retry-cycle started to run.
    */
-  function RxReplicationStateBase(replicationIdentifier, collection, pull, push, live, liveInterval, retryTime) {
+  function RxReplicationStateBase(
+  /**
+   * hash of the identifier, used to flag revisions
+   * and to identify which documents state came from the remote.
+   */
+  replicationIdentifierHash, collection, pull, push, live, liveInterval, retryTime) {
     var _this = this;
 
     this.subs = [];
@@ -307,15 +312,14 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
     this.runQueueCount = 0;
     this.runCount = 0;
     this.pendingRetries = 0;
-    this.replicationIdentifier = replicationIdentifier;
+    this.replicationIdentifierHash = replicationIdentifierHash;
     this.collection = collection;
     this.pull = pull;
     this.push = push;
     this.live = live;
     this.liveInterval = liveInterval;
     this.retryTime = retryTime;
-    this.replicationIdentifierHash = (0, _util.hash)(this.replicationIdentifier); // stop the replication when the collection gets destroyed
-
+    // stop the replication when the collection gets destroyed
     this.collection.onDestroy.then(function () {
       _this.cancel();
     }); // create getters for the observables
@@ -526,7 +530,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
         return Promise.resolve('ok');
       }
 
-      return Promise.resolve((0, _replicationCheckpoint.getLastPullDocument)(_this7.collection, _this7.replicationIdentifier)).then(function (latestDocument) {
+      return Promise.resolve((0, _replicationCheckpoint.getLastPullDocument)(_this7.collection, _this7.replicationIdentifierHash)).then(function (latestDocument) {
         var _exit3 = false;
 
         function _temp16(_result3) {
@@ -582,7 +586,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
                     if (_this7.live) {}
                   } else {
                     var newLatestDocument = (0, _util.lastOfArray)(pulledDocuments);
-                    return Promise.resolve((0, _replicationCheckpoint.setLastPullDocument)(_this7.collection, _this7.replicationIdentifier, newLatestDocument)).then(function () {
+                    return Promise.resolve((0, _replicationCheckpoint.setLastPullDocument)(_this7.collection, _this7.replicationIdentifierHash, newLatestDocument)).then(function () {
                       var _temp8 = function () {
                         if (result.hasMoreDocuments) {
                           return Promise.resolve(_this7.runPull()).then(function () {});
@@ -650,6 +654,11 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
               var _temp11 = function () {
                 if (bulkWriteData.length > 0) {
+                  /**
+                   * TODO only do a write to a document
+                   * if the relevant data has been changed.
+                   * Otherwise we can ignore the pulled document data.
+                   */
                   return Promise.resolve(_this7.collection.storageInstance.bulkWrite(bulkWriteData)).then(function (bulkWriteResponse) {
                     /**
                      * If writing the pulled documents caused an conflict error,
@@ -683,7 +692,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
                   return _Promise$resolve6;
                 }
 
-                return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this7.collection, _this7.replicationIdentifier, _this7.replicationIdentifierHash, function () {
+                return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this7.collection, _this7.replicationIdentifierHash, function () {
                   return _this7.isStopped();
                 }, 1)).then(function (localWritesInBetween) {
                   /**
@@ -765,7 +774,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
       }
 
       var batchSize = _this9.push.batchSize ? _this9.push.batchSize : 5;
-      return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this9.collection, _this9.replicationIdentifier, _this9.replicationIdentifierHash, function () {
+      return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this9.collection, _this9.replicationIdentifierHash, function () {
         return _this9.isStopped();
       }, batchSize)).then(function (changesResult) {
         var _exit6 = false;
@@ -787,7 +796,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
           var _temp17 = function () {
             if (changesResult.hasChangesSinceLastSequence) {
-              return Promise.resolve((0, _replicationCheckpoint.setLastPushSequence)(_this9.collection, _this9.replicationIdentifier, changesResult.lastSequence)).then(function () {});
+              return Promise.resolve((0, _replicationCheckpoint.setLastPushSequence)(_this9.collection, _this9.replicationIdentifierHash, changesResult.lastSequence)).then(function () {});
             }
           }();
 
@@ -848,7 +857,8 @@ function replicateRxCollection(_ref) {
       _ref$retryTime = _ref.retryTime,
       retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
       waitForLeadership = _ref.waitForLeadership;
-  var replicationState = new RxReplicationStateBase(replicationIdentifier, collection, pull, push, live, liveInterval, retryTime);
+  var replicationIdentifierHash = (0, _util.hash)([collection.database.name, collection.name, replicationIdentifier].join('|'));
+  var replicationState = new RxReplicationStateBase(replicationIdentifierHash, collection, pull, push, live, liveInterval, retryTime);
   /**
    * Always await this Promise to ensure that the current instance
    * is leader when waitForLeadership=true

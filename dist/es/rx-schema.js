@@ -1,10 +1,10 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'fast-deep-equal';
-import objectPath from 'object-path';
 import { clone, hash, sortObject, overwriteGetterForCaching, flatClone, isMaybeReadonlyArray } from './util';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
+import { getComposedPrimaryKeyOfDocumentData, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 export var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonSchema) {
     this.jsonSchema = jsonSchema;
@@ -94,26 +94,6 @@ export var RxSchema = /*#__PURE__*/function () {
     return getComposedPrimaryKeyOfDocumentData(this.jsonSchema, documentData);
   };
 
-  _proto.fillPrimaryKey = function fillPrimaryKey(documentData) {
-    var cloned = flatClone(documentData);
-    var newPrimary = getComposedPrimaryKeyOfDocumentData(this.jsonSchema, documentData);
-    var existingPrimary = documentData[this.primaryPath];
-
-    if (existingPrimary && existingPrimary !== newPrimary) {
-      throw newRxError('DOC19', {
-        args: {
-          documentData: documentData,
-          existingPrimary: existingPrimary,
-          newPrimary: newPrimary
-        },
-        schema: this.jsonSchema
-      });
-    }
-
-    cloned[this.primaryPath] = newPrimary;
-    return cloned;
-  };
-
   _createClass(RxSchema, [{
     key: "version",
     get: function get() {
@@ -152,15 +132,6 @@ export var RxSchema = /*#__PURE__*/function () {
       }
     }
     /**
-     * get all encrypted paths
-     */
-
-  }, {
-    key: "encryptedPaths",
-    get: function get() {
-      return this.jsonSchema.encrypted || [];
-    }
-    /**
      * @overrides itself on the first call
      */
 
@@ -177,38 +148,6 @@ export function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(function (index) {
     return isMaybeReadonlyArray(index) ? index : [index];
   });
-}
-export function getPrimaryFieldOfPrimaryKey(primaryKey) {
-  if (typeof primaryKey === 'string') {
-    return primaryKey;
-  } else {
-    return primaryKey.key;
-  }
-}
-/**
- * Returns the composed primaryKey of a document by its data.
- */
-
-export function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
-  if (typeof jsonSchema.primaryKey === 'string') {
-    return documentData[jsonSchema.primaryKey];
-  }
-
-  var compositePrimary = jsonSchema.primaryKey;
-  return compositePrimary.fields.map(function (field) {
-    var value = objectPath.get(documentData, field);
-
-    if (typeof value === 'undefined') {
-      throw newRxError('DOC18', {
-        args: {
-          field: field,
-          documentData: documentData
-        }
-      });
-    }
-
-    return value;
-  }).join(compositePrimary.separator);
 }
 /**
  * array with previous version-numbers

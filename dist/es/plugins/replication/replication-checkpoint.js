@@ -1,8 +1,8 @@
-import { findLocalDocument, writeSingleLocal } from '../../rx-storage-helper';
+import { getSingleDocument, writeSingle } from '../../rx-storage-helper';
 import { flatClone, getDefaultRxDocumentMeta } from '../../util';
 import { newRxError } from '../../rx-error';
 import { wasLastWriteFromPullReplication } from './revision-flag';
-import { runPluginHooks } from '../../hooks'; //
+import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES } from '../../rx-database-internal-store'; //
 // things for the push-checkpoint
 //
 
@@ -195,26 +195,31 @@ function _for(test, update, body) {
   }
 }
 
-export var setLastPullDocument = function setLastPullDocument(collection, replicationIdentifier, doc) {
+export var setLastPullDocument = function setLastPullDocument(collection, replicationIdentifierHash, lastPulledDoc) {
   try {
-    var _id = pullLastDocumentId(replicationIdentifier);
-
-    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, _id, false)).then(function (localDoc) {
-      if (!localDoc) {
-        return writeSingleLocal(collection.localDocumentsStore, {
+    var pullCheckpointId = getPrimaryKeyOfInternalDocument(pullLastDocumentKey(replicationIdentifierHash), INTERNAL_CONTEXT_REPLICATION_PRIMITIVES);
+    return Promise.resolve(getSingleDocument(collection.database.internalStore, pullCheckpointId)).then(function (lastPullCheckpointDoc) {
+      if (!lastPullCheckpointDoc) {
+        return writeSingle(collection.database.internalStore, {
           document: {
-            _id: _id,
-            doc: doc,
+            id: pullCheckpointId,
+            key: pullLastDocumentKey(replicationIdentifierHash),
+            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+            data: {
+              lastPulledDoc: lastPulledDoc
+            },
             _meta: getDefaultRxDocumentMeta(),
             _deleted: false,
             _attachments: {}
           }
         });
       } else {
-        var newDoc = flatClone(localDoc);
-        newDoc.doc = doc;
-        return writeSingleLocal(collection.localDocumentsStore, {
-          previous: localDoc,
+        var newDoc = flatClone(lastPullCheckpointDoc);
+        newDoc.data = {
+          lastPulledDoc: lastPulledDoc
+        };
+        return writeSingle(collection.database.internalStore, {
+          previous: lastPullCheckpointDoc,
           document: newDoc
         });
       }
@@ -223,23 +228,7 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
     return Promise.reject(e);
   }
 };
-//
-// things for pull-checkpoint
-//
-export var getLastPullDocument = function getLastPullDocument(collection, replicationIdentifier) {
-  try {
-    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, pullLastDocumentId(replicationIdentifier), false)).then(function (localDoc) {
-      if (!localDoc) {
-        return null;
-      } else {
-        return localDoc.doc;
-      }
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-export var getChangesSinceLastPushSequence = function getChangesSinceLastPushSequence(collection, replicationIdentifier, replicationIdentifierHash,
+export var getChangesSinceLastPushSequence = function getChangesSinceLastPushSequence(collection, replicationIdentifierHash,
 /**
  * A function that returns true
  * when the underlaying RxReplication is stopped.
@@ -248,8 +237,8 @@ export var getChangesSinceLastPushSequence = function getChangesSinceLastPushSeq
 isStopped) {
   try {
     var _arguments2 = arguments;
-    var batchSize = _arguments2.length > 4 && _arguments2[4] !== undefined ? _arguments2[4] : 10;
-    return Promise.resolve(getLastPushSequence(collection, replicationIdentifier)).then(function (lastPushSequence) {
+    var batchSize = _arguments2.length > 3 && _arguments2[3] !== undefined ? _arguments2[3] : 10;
+    return Promise.resolve(getLastPushSequence(collection, replicationIdentifierHash)).then(function (lastPushSequence) {
       var _interrupt = false;
 
       function _temp2() {
@@ -324,12 +313,6 @@ isStopped) {
                 return false;
               }
 
-              var hookParams = {
-                collection: collection,
-                doc: changedDoc
-              };
-              runPluginHooks('postReadFromInstance', hookParams);
-              changedDoc = hookParams.doc;
               changedDocIds.add(id);
               changedDocs.set(id, {
                 id: id,
@@ -354,39 +337,47 @@ isStopped) {
   } catch (e) {
     return Promise.reject(e);
   }
-};
-export var setLastPushSequence = function setLastPushSequence(collection, replicationIdentifier, sequence) {
-  try {
-    var _id = pushSequenceId(replicationIdentifier);
+}; //
+// things for pull-checkpoint
+//
 
-    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, _id, false)).then(function (doc) {
+export var setLastPushSequence = function setLastPushSequence(collection, replicationIdentifierHash, sequence) {
+  try {
+    var docId = getPrimaryKeyOfInternalDocument(pushSequenceDocumentKey(replicationIdentifierHash), INTERNAL_CONTEXT_REPLICATION_PRIMITIVES);
+    return Promise.resolve(getSingleDocument(collection.database.internalStore, docId)).then(function (doc) {
       if (!doc) {
-        return Promise.resolve(writeSingleLocal(collection.localDocumentsStore, {
+        return Promise.resolve(writeSingle(collection.database.internalStore, {
           document: {
-            _id: _id,
-            value: sequence,
+            id: docId,
+            key: pushSequenceDocumentKey(replicationIdentifierHash),
+            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+            data: {
+              lastPushSequence: sequence
+            },
             _deleted: false,
             _meta: getDefaultRxDocumentMeta(),
             _attachments: {}
           }
-        })).then(function (res) {
-          return res;
-        });
+        }));
       } else {
         var newDoc = flatClone(doc);
-        newDoc.value = sequence;
-        return Promise.resolve(writeSingleLocal(collection.localDocumentsStore, {
+        newDoc.data = {
+          lastPushSequence: sequence
+        };
+        return Promise.resolve(writeSingle(collection.database.internalStore, {
           previous: doc,
           document: {
-            _id: _id,
-            value: sequence,
+            id: docId,
+            key: pushSequenceDocumentKey(replicationIdentifierHash),
+            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+            data: {
+              lastPushSequence: sequence
+            },
             _meta: getDefaultRxDocumentMeta(),
             _deleted: false,
             _attachments: {}
           }
-        })).then(function (res) {
-          return res;
-        });
+        }));
       }
     });
   } catch (e) {
@@ -394,28 +385,34 @@ export var setLastPushSequence = function setLastPushSequence(collection, replic
   }
 };
 
+var pushSequenceDocumentKey = function pushSequenceDocumentKey(replicationIdentifierHash) {
+  return 'replication-checkpoint-push-' + replicationIdentifierHash;
+};
+
+var pullLastDocumentKey = function pullLastDocumentKey(replicationIdentifierHash) {
+  return 'replication-checkpoint-pull-' + replicationIdentifierHash;
+};
 /**
  * Get the last push checkpoint
  */
-export var getLastPushSequence = function getLastPushSequence(collection, replicationIdentifier) {
-  try {
-    return Promise.resolve(findLocalDocument(collection.localDocumentsStore, pushSequenceId(replicationIdentifier), false)).then(function (doc) {
-      if (!doc) {
-        return 0;
-      } else {
-        return doc.value;
-      }
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
 
-var pushSequenceId = function pushSequenceId(replicationIdentifier) {
-  return 'replication-checkpoint-push-' + replicationIdentifier;
-};
 
-var pullLastDocumentId = function pullLastDocumentId(replicationIdentifier) {
-  return 'replication-checkpoint-pull-' + replicationIdentifier;
-};
+export function getLastPushSequence(collection, replicationIdentifierHash) {
+  return getSingleDocument(collection.database.internalStore, getPrimaryKeyOfInternalDocument(pushSequenceDocumentKey(replicationIdentifierHash), INTERNAL_CONTEXT_REPLICATION_PRIMITIVES)).then(function (doc) {
+    if (!doc) {
+      return 0;
+    } else {
+      return doc.data.lastPushSequence;
+    }
+  });
+}
+export function getLastPullDocument(collection, replicationIdentifierHash) {
+  return getSingleDocument(collection.database.internalStore, getPrimaryKeyOfInternalDocument(pullLastDocumentKey(replicationIdentifierHash), INTERNAL_CONTEXT_REPLICATION_PRIMITIVES)).then(function (lastPullCheckpoint) {
+    if (!lastPullCheckpoint) {
+      return null;
+    } else {
+      return lastPullCheckpoint.data.lastPulledDoc;
+    }
+  });
+}
 //# sourceMappingURL=replication-checkpoint.js.map

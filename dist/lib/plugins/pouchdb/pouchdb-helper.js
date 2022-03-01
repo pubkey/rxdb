@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.RXDB_POUCH_DELETED_FLAG = exports.POUCH_HASH_KEY = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
 exports.getPouchIndexDesignDocNameByIndex = getPouchIndexDesignDocNameByIndex;
-exports.localDocumentFromPouch = localDocumentFromPouch;
-exports.localDocumentToPouch = localDocumentToPouch;
 exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
 exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
 exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
@@ -45,26 +43,25 @@ var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attac
             }
           });
         }
+        /**
+         * Is write attachment,
+         * so we have to remove the data to have a
+         * non-write attachment.
+         */
 
-        var _temp2 = function () {
-          if (obj.data) {
-            var asWrite = obj;
-            return Promise.resolve(Promise.all([pouchHash(asWrite.data), _util.blobBufferUtil.toString(asWrite.data)])).then(function (_ref5) {
-              var hash = _ref5[0],
-                  asString = _ref5[1];
-              var length = asString.length;
-              ret[key] = {
-                digest: POUCH_HASH_KEY + '-' + hash,
-                length: length,
-                type: asWrite.type
-              };
-            });
-          } else {
-            ret[key] = obj;
-          }
-        }();
 
-        return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+        if (obj.data) {
+          var asWriteAttachment = obj;
+          ret[key] = {
+            digest: asWriteAttachment.digest,
+            length: asWriteAttachment.length,
+            type: asWriteAttachment.type
+          };
+        } else {
+          ret[key] = obj;
+        }
+
+        return Promise.resolve();
       } catch (e) {
         return Promise.reject(e);
       }
@@ -175,8 +172,10 @@ function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
       var useValue = value;
 
       if (useValue.data) {
+        var asBlobBuffer = _util.blobBufferUtil.createBlobBufferFromBase64(useValue.data, useValue.type);
+
         pouchDoc._attachments[key] = {
-          data: useValue.data,
+          data: asBlobBuffer,
           content_type: useValue.type
         };
       } else {
@@ -222,9 +221,8 @@ function pouchStripLocalFlagFromPrimary(str) {
   return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
 
-function getEventKey(isLocal, primary, revision) {
-  var prefix = isLocal ? 'local' : 'non-local';
-  var eventKey = prefix + '|' + primary + '|' + revision;
+function getEventKey(pouchDBInstance, primary, revision) {
+  var eventKey = pouchDBInstance.name + '|' + primary + '|' + revision;
   return eventKey;
 }
 
@@ -370,30 +368,4 @@ function getPouchIndexDesignDocNameByIndex(index) {
 
 var RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted';
 exports.RXDB_POUCH_DELETED_FLAG = RXDB_POUCH_DELETED_FLAG;
-
-function localDocumentToPouch(docData) {
-  var ret = (0, _util.flatClone)(docData); // add local prefix
-
-  ret._id = POUCHDB_LOCAL_PREFIX + ret._id; // add custom deleted flag if document is deleted 
-
-  if (docData._deleted) {
-    ret._deleted = false;
-    ret[RXDB_POUCH_DELETED_FLAG] = true;
-  }
-
-  return ret;
-}
-
-function localDocumentFromPouch(docData) {
-  var ret = (0, _util.flatClone)(docData); // strip local prefix
-
-  ret._id = ret._id.slice(POUCHDB_LOCAL_PREFIX_LENGTH);
-
-  if (docData[RXDB_POUCH_DELETED_FLAG]) {
-    ret._deleted = true;
-    delete ret[RXDB_POUCH_DELETED_FLAG];
-  }
-
-  return ret;
-}
 //# sourceMappingURL=pouchdb-helper.js.map

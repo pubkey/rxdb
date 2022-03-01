@@ -1,4 +1,4 @@
-import type { DeepMutable, DeepReadonly, JsonSchema, MaybeReadonly, PrimaryKey, RxJsonSchema } from './types';
+import type { DeepMutable, DeepReadonly, JsonSchema, MaybeReadonly, RxJsonSchema } from './types';
 export declare class RxSchema<T = any> {
     readonly jsonSchema: RxJsonSchema<T>;
     indexes: MaybeReadonly<string[]>[];
@@ -14,10 +14,6 @@ export declare class RxSchema<T = any> {
         * true if schema contains at least one encrypted path
         */
     get crypt(): boolean;
-    /**
-     * get all encrypted paths
-     */
-    get encryptedPaths(): string[];
     /**
      * @overrides itself on the first call
      */
@@ -48,14 +44,8 @@ export declare class RxSchema<T = any> {
      */
     getDocumentPrototype(): any;
     getPrimaryOfDocumentData(documentData: Partial<T>): string;
-    fillPrimaryKey(documentData: T): T;
 }
 export declare function getIndexes<T = any>(jsonSchema: RxJsonSchema<T>): MaybeReadonly<string[]>[];
-export declare function getPrimaryFieldOfPrimaryKey<RxDocType>(primaryKey: PrimaryKey<RxDocType>): keyof RxDocType;
-/**
- * Returns the composed primaryKey of a document by its data.
- */
-export declare function getComposedPrimaryKeyOfDocumentData<RxDocType>(jsonSchema: RxJsonSchema<RxDocType>, documentData: Partial<RxDocType>): string;
 /**
  * array with previous version-numbers
  */

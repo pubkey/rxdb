@@ -7,9 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxDBReplicationCouchDBPlugin = exports.RxCouchDBReplicationStateBase = void 0;
 exports.createRxCouchDBReplicationState = createRxCouchDBReplicationState;
-exports.hooks = void 0;
 exports.pouchReplicationFunction = pouchReplicationFunction;
-exports.rxdb = exports.prototypes = void 0;
 exports.setPouchEventEmitter = setPouchEventEmitter;
 exports.syncCouchDB = syncCouchDB;
 
@@ -27,7 +25,7 @@ var _pouchdb = require("../plugins/pouchdb");
 
 var _rxCollection = require("../rx-collection");
 
-var _rxStorageHelper = require("../rx-storage-helper");
+var _hooks = require("../hooks");
 
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
@@ -143,7 +141,14 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
       return doc.language !== 'query';
     }) // remove internal docs
     .map(function (doc) {
-      return (0, _rxStorageHelper.transformDocumentDataFromRxStorageToRxDB)(rxRepState.collection, doc);
+      var hookParams = {
+        database: rxRepState.collection.database,
+        primaryPath: rxRepState.collection.schema.primaryPath,
+        schema: rxRepState.collection.schema.jsonSchema,
+        doc: doc
+      };
+      (0, _hooks.runPluginHooks)('postReadFromInstance', hookParams);
+      return hookParams.doc;
     }) // do primary-swap and keycompression
     .forEach(function (doc) {
       return rxRepState._subjects.docs.next(doc);
@@ -324,29 +329,26 @@ function syncCouchDB(_ref2) {
   return repState;
 }
 
-var rxdb = true;
-exports.rxdb = rxdb;
-var prototypes = {
-  RxCollection: function RxCollection(proto) {
-    proto.syncCouchDB = syncCouchDB;
-  }
-};
-exports.prototypes = prototypes;
-var hooks = {
-  createRxCollection: function createRxCollection(collection) {
-    var pouch = collection.storageInstance.internals.pouch;
-
-    if (pouch) {
-      INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
-    }
-  }
-};
-exports.hooks = hooks;
 var RxDBReplicationCouchDBPlugin = {
   name: 'replication-couchdb',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  hooks: hooks
+  rxdb: true,
+  prototypes: {
+    RxCollection: function RxCollection(proto) {
+      proto.syncCouchDB = syncCouchDB;
+    }
+  },
+  hooks: {
+    createRxCollection: {
+      after: function after(args) {
+        var collection = args.collection;
+        var pouch = collection.storageInstance.internals.pouch;
+
+        if (pouch) {
+          INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
+        }
+      }
+    }
+  }
 };
 exports.RxDBReplicationCouchDBPlugin = RxDBReplicationCouchDBPlugin;
 //# sourceMappingURL=replication-couchdb.js.map

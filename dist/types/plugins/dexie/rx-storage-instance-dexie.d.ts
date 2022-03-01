@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, BlobBuffer, ChangeStreamOnceOptions, RxJsonSchema, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, EventBulk, PreparedQuery } from '../../types';
+import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, ChangeStreamOnceOptions, RxJsonSchema, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, EventBulk, PreparedQuery } from '../../types';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageDexie } from './rx-storage-dexie';
 export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<RxDocType, DexieStorageInternals, DexieSettings> {
@@ -33,7 +33,7 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     }>;
     remove(): Promise<void>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<BlobBuffer>;
+    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
     close(): Promise<void>;
 }
 export declare function createDexieStorageInstance<RxDocType>(storage: RxStorageDexie, params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>, settings: DexieSettings): Promise<RxStorageInstanceDexie<RxDocType>>;

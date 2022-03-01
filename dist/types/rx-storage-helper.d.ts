@@ -1,11 +1,12 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import { RxCollectionBase } from './rx-collection';
-import type { BulkWriteLocalRow, BulkWriteRow, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxLocalDocumentData, RxStorage, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageKeyObjectInstance } from './types';
+import type { BulkWriteRow, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorage, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance } from './types';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
+export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
 /**
- * returns all NON-LOCAL documents
+ * Returns all non-deleted documents
+ * of the storage.
  */
 export declare function getAllDocuments<RxDocType>(primaryKey: keyof RxDocType, storage: RxStorage<any, any>, storageInstance: RxStorageInstance<RxDocType, any, any>): Promise<RxDocumentData<RxDocType>[]>;
 export declare function getSingleDocument<RxDocType>(storageInstance: RxStorageInstance<RxDocType, any, any>, documentId: string): Promise<RxDocumentData<RxDocType> | null>;
@@ -14,15 +15,7 @@ export declare function getSingleDocument<RxDocType>(storageInstance: RxStorageI
  * throws RxStorageBulkWriteError on failure
  */
 export declare function writeSingle<RxDocType>(instance: RxStorageInstance<RxDocType, any, any>, writeRow: BulkWriteRow<RxDocType>): Promise<RxDocumentData<RxDocType>>;
-/**
- * Writes a single local document,
- * throws RxStorageBulkWriteError on failure
- */
-export declare function writeSingleLocal<DocumentData>(instance: RxStorageKeyObjectInstance<any, any>, writeRow: BulkWriteLocalRow<DocumentData>): Promise<RxLocalDocumentData<RxLocalDocumentData>>;
-export declare function findLocalDocument<DocType>(instance: RxStorageKeyObjectInstance<any, any>, id: string, withDeleted: boolean): Promise<RxDocumentData<RxLocalDocumentData<DocType>> | null>;
 export declare function storageChangeEventToRxChangeEvent<DocType>(isLocal: boolean, rxStorageChangeEvent: RxStorageChangeEvent<DocType>, rxCollection?: RxCollection): RxChangeEvent<DocType>;
-export declare function transformDocumentDataFromRxDBToRxStorage(col: RxCollection | RxCollectionBase<any, any, any>, data: any, updateLwt: boolean): any;
-export declare function transformDocumentDataFromRxStorageToRxDB(col: RxCollection | RxCollectionBase<any, any, any>, data: any): any;
 export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxCollection<RxDocType>, documentId: string, writeData: RxDocumentWriteData<RxDocType> | RxDocType, error: RxStorageBulkWriteError<RxDocType> | undefined): void;
 /**
  * Wraps the normal storageInstance of a RxCollection
@@ -30,11 +23,9 @@ export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxColl
  * and other data transformations and also ensure that database.lockedRun()
  * is used properly.
  */
-export declare function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>(collection: RxCollection<RxDocumentType, {}, {}, InstanceCreationOptions>, storageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>): RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
-export declare function transformLocalDocumentDataFromRxDBToRxStorage<D>(parent: RxCollection | RxDatabase, data: RxLocalDocumentData<D>, updateLwt: boolean): RxLocalDocumentData<D>;
-export declare function transformLocalDocumentDataFromRxStorageToRxDB<D>(parent: RxCollection | RxDatabase, data: RxLocalDocumentData<D>): RxLocalDocumentData<D>;
+export declare function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions>(database: RxDatabase<{}, Internals, InstanceCreationOptions>, storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>, 
 /**
- * Does the same as getWrappedStorageInstance()
- * but for a key->object store.
+ * The original RxJsonSchema
+ * before it was mutated by hooks.
  */
-export declare function getWrappedKeyObjectInstance<Internals, InstanceCreationOptions>(parent: RxCollection | RxDatabase, keyObjectInstance: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>): RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>;
+rxJsonSchema: RxJsonSchema<RxDocType>): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>;

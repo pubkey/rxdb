@@ -9,7 +9,7 @@ import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } f
 import { newRxError } from '../rx-error';
 import { isInstanceOf as isInstanceOfPouchDB, addPouchPlugin } from '../plugins/pouchdb';
 import { isRxCollection } from '../rx-collection';
-import { transformDocumentDataFromRxStorageToRxDB } from '../rx-storage-helper'; // add pouchdb-replication-plugin
+import { runPluginHooks } from '../hooks'; // add pouchdb-replication-plugin
 
 addPouchPlugin(PouchReplicationPlugin);
 /**
@@ -116,7 +116,14 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
       return doc.language !== 'query';
     }) // remove internal docs
     .map(function (doc) {
-      return transformDocumentDataFromRxStorageToRxDB(rxRepState.collection, doc);
+      var hookParams = {
+        database: rxRepState.collection.database,
+        primaryPath: rxRepState.collection.schema.primaryPath,
+        schema: rxRepState.collection.schema.jsonSchema,
+        doc: doc
+      };
+      runPluginHooks('postReadFromInstance', hookParams);
+      return hookParams.doc;
     }) // do primary-swap and keycompression
     .forEach(function (doc) {
       return rxRepState._subjects.docs.next(doc);
@@ -293,25 +300,25 @@ export function syncCouchDB(_ref2) {
   });
   return repState;
 }
-export var rxdb = true;
-export var prototypes = {
-  RxCollection: function RxCollection(proto) {
-    proto.syncCouchDB = syncCouchDB;
-  }
-};
-export var hooks = {
-  createRxCollection: function createRxCollection(collection) {
-    var pouch = collection.storageInstance.internals.pouch;
-
-    if (pouch) {
-      INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
-    }
-  }
-};
 export var RxDBReplicationCouchDBPlugin = {
   name: 'replication-couchdb',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  hooks: hooks
+  rxdb: true,
+  prototypes: {
+    RxCollection: function RxCollection(proto) {
+      proto.syncCouchDB = syncCouchDB;
+    }
+  },
+  hooks: {
+    createRxCollection: {
+      after: function after(args) {
+        var collection = args.collection;
+        var pouch = collection.storageInstance.internals.pouch;
+
+        if (pouch) {
+          INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
+        }
+      }
+    }
+  }
 };
 //# sourceMappingURL=replication-couchdb.js.map

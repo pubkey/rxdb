@@ -1,4 +1,4 @@
-import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema';
+import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema-helper';
 import { clone, ensureNotFalsy } from '../../../util';
 import { getPouchIndexDesignDocNameByIndex, POUCHDB_DESIGN_PREFIX, pouchSwapIdToPrimaryString } from '../../pouchdb';
 import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';

@@ -8,11 +8,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.RxSchema = exports.RX_META_SCHEMA = void 0;
 exports.createRxSchema = createRxSchema;
 exports.fillWithDefaultSettings = fillWithDefaultSettings;
-exports.getComposedPrimaryKeyOfDocumentData = getComposedPrimaryKeyOfDocumentData;
 exports.getFinalFields = getFinalFields;
 exports.getIndexes = getIndexes;
 exports.getPreviousVersions = getPreviousVersions;
-exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
 exports.isInstanceOf = isInstanceOf;
 exports.normalizeRxJsonSchema = normalizeRxJsonSchema;
 exports.toTypedRxJsonSchema = toTypedRxJsonSchema;
@@ -20,8 +18,6 @@ exports.toTypedRxJsonSchema = toTypedRxJsonSchema;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
-
-var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("./util");
 
@@ -31,12 +27,14 @@ var _hooks = require("./hooks");
 
 var _rxDocument = require("./rx-document");
 
+var _rxSchemaHelper = require("./rx-schema-helper");
+
 var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonSchema) {
     this.jsonSchema = jsonSchema;
     this.indexes = getIndexes(this.jsonSchema); // primary is always required
 
-    this.primaryPath = getPrimaryFieldOfPrimaryKey(this.jsonSchema.primaryKey); // final fields are always required
+    this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.jsonSchema.primaryKey); // final fields are always required
 
     this.finalFields = getFinalFields(this.jsonSchema);
     this.jsonSchema.required = this.jsonSchema.required.concat(this.finalFields).filter(function (field) {
@@ -117,27 +115,7 @@ var RxSchema = /*#__PURE__*/function () {
   };
 
   _proto.getPrimaryOfDocumentData = function getPrimaryOfDocumentData(documentData) {
-    return getComposedPrimaryKeyOfDocumentData(this.jsonSchema, documentData);
-  };
-
-  _proto.fillPrimaryKey = function fillPrimaryKey(documentData) {
-    var cloned = (0, _util.flatClone)(documentData);
-    var newPrimary = getComposedPrimaryKeyOfDocumentData(this.jsonSchema, documentData);
-    var existingPrimary = documentData[this.primaryPath];
-
-    if (existingPrimary && existingPrimary !== newPrimary) {
-      throw (0, _rxError.newRxError)('DOC19', {
-        args: {
-          documentData: documentData,
-          existingPrimary: existingPrimary,
-          newPrimary: newPrimary
-        },
-        schema: this.jsonSchema
-      });
-    }
-
-    cloned[this.primaryPath] = newPrimary;
-    return cloned;
+    return (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(this.jsonSchema, documentData);
   };
 
   (0, _createClass2["default"])(RxSchema, [{
@@ -178,15 +156,6 @@ var RxSchema = /*#__PURE__*/function () {
       }
     }
     /**
-     * get all encrypted paths
-     */
-
-  }, {
-    key: "encryptedPaths",
-    get: function get() {
-      return this.jsonSchema.encrypted || [];
-    }
-    /**
      * @overrides itself on the first call
      */
 
@@ -205,40 +174,6 @@ function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(function (index) {
     return (0, _util.isMaybeReadonlyArray)(index) ? index : [index];
   });
-}
-
-function getPrimaryFieldOfPrimaryKey(primaryKey) {
-  if (typeof primaryKey === 'string') {
-    return primaryKey;
-  } else {
-    return primaryKey.key;
-  }
-}
-/**
- * Returns the composed primaryKey of a document by its data.
- */
-
-
-function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
-  if (typeof jsonSchema.primaryKey === 'string') {
-    return documentData[jsonSchema.primaryKey];
-  }
-
-  var compositePrimary = jsonSchema.primaryKey;
-  return compositePrimary.fields.map(function (field) {
-    var value = _objectPath["default"].get(documentData, field);
-
-    if (typeof value === 'undefined') {
-      throw (0, _rxError.newRxError)('DOC18', {
-        args: {
-          field: field,
-          documentData: documentData
-        }
-      });
-    }
-
-    return value;
-  }).join(compositePrimary.separator);
 }
 /**
  * array with previous version-numbers
@@ -263,7 +198,7 @@ function getFinalFields(jsonSchema) {
     return jsonSchema.properties[key]["final"];
   }); // primary is also final
 
-  var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
+  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(jsonSchema.primaryKey);
   ret.push(primaryPath); // fields of composite primary are final
 
   if (typeof jsonSchema.primaryKey !== 'string') {
@@ -289,7 +224,7 @@ function getFinalFields(jsonSchema) {
 
 
 function normalizeRxJsonSchema(jsonSchema) {
-  var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
+  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(jsonSchema.primaryKey);
   var normalizedSchema = (0, _util.sortObject)((0, _util.clone)(jsonSchema)); // indexes must NOT be sorted because sort order is important here.
 
   if (jsonSchema.indexes) {

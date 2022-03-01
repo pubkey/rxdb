@@ -15,10 +15,10 @@ import { createRxSchema } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
 import { runAsyncPluginHooks, runPluginHooks } from '../../hooks';
 import { getPreviousVersions } from '../../rx-schema';
-import { createCrypter } from '../../crypter';
 import { getMigrationStateByDatabase } from './migration-state';
 import { map } from 'rxjs/operators';
-import { getAllDocuments, getSingleDocument, getWrappedStorageInstance } from '../../rx-storage-helper';
+import { getAllDocuments, getWrappedStorageInstance } from '../../rx-storage-helper';
+import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_COLLECTION } from '../../rx-database-internal-store';
 
 /**
  * transform documents data and save them to the new collection
@@ -149,44 +149,29 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
  * get an array with OldCollection-instances from all existing old storage-instances
  */
 export var _getOldCollections = function _getOldCollections(dataMigrator) {
-  return Promise.resolve(getOldCollectionDocs(dataMigrator)).then(function (oldColDocs) {
-    return Promise.all(oldColDocs.map(function (colDoc) {
-      if (!colDoc) {
-        return null;
-      }
-
-      return createOldCollection(colDoc.schema.version, colDoc.schema, dataMigrator);
-    }).filter(function (colDoc) {
-      return colDoc !== null;
-    }));
-  });
-};
-/**
- * returns true if a migration is needed
- */
-
-export var getOldCollectionDocs = function getOldCollectionDocs(dataMigrator) {
   try {
-    return Promise.all(getPreviousVersions(dataMigrator.currentSchema.jsonSchema).map(function (v) {
-      return getSingleDocument(dataMigrator.database.internalStore, dataMigrator.name + '-' + v);
-    }).map(function (fun) {
-      return fun["catch"](function () {
-        return null;
-      });
-    }) // auto-catch so Promise.all continues
-    ).then(function (oldCollectionDocs) {
-      return oldCollectionDocs.filter(function (d) {
-        return !!d;
-      });
+    return Promise.resolve(getOldCollectionDocs(dataMigrator)).then(function (oldColDocs) {
+      return Promise.all(oldColDocs.map(function (colDoc) {
+        if (!colDoc) {
+          return null;
+        }
+
+        return createOldCollection(colDoc.data.schema.version, colDoc.data.schema, dataMigrator);
+      }).filter(function (colDoc) {
+        return colDoc !== null;
+      }));
     });
   } catch (e) {
     return Promise.reject(e);
   }
 };
+/**
+ * returns true if a migration is needed
+ */
+
 export var createOldCollection = function createOldCollection(version, schemaObj, dataMigrator) {
   try {
     var database = dataMigrator.newestCollection.database;
-    var schema = createRxSchema(schemaObj, false);
     var storageInstanceCreationParams = {
       databaseName: database.name,
       collectionName: dataMigrator.newestCollection.name,
@@ -202,10 +187,9 @@ export var createOldCollection = function createOldCollection(version, schemaObj
         newestCollection: dataMigrator.newestCollection,
         database: database,
         schema: createRxSchema(schemaObj, false),
-        storageInstance: storageInstance,
-        _crypter: createCrypter(database.password, schema)
+        storageInstance: storageInstance
       };
-      ret.storageInstance = getWrappedStorageInstance(ret, storageInstance);
+      ret.storageInstance = getWrappedStorageInstance(ret.database, storageInstance, schemaObj);
       return ret;
     });
   } catch (e) {
@@ -377,6 +361,16 @@ export var DataMigrator = /*#__PURE__*/function () {
 
   return DataMigrator;
 }();
+export function getOldCollectionDocs(dataMigrator) {
+  var collectionDocKeys = getPreviousVersions(dataMigrator.currentSchema.jsonSchema).map(function (version) {
+    return dataMigrator.name + '-' + version;
+  });
+  return dataMigrator.database.internalStore.findDocumentsById(collectionDocKeys.map(function (key) {
+    return getPrimaryKeyOfInternalDocument(key, INTERNAL_CONTEXT_COLLECTION);
+  }), false).then(function (docsObj) {
+    return Object.values(docsObj);
+  });
+}
 export function mustMigrate(dataMigrator) {
   if (dataMigrator.currentSchema.version === 0) {
     return PROMISE_RESOLVE_FALSE;

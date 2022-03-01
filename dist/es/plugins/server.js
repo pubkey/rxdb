@@ -468,8 +468,12 @@ export var RxDBServerPlugin = {
   },
   overwritable: {},
   hooks: {
-    preDestroyRxDatabase: onDestroy,
-    preCreateRxCollection: ensureNoMoreCollections
+    preDestroyRxDatabase: {
+      after: onDestroy
+    },
+    preCreateRxCollection: {
+      after: ensureNoMoreCollections
+    }
   }
 };
 //# sourceMappingURL=server.js.map

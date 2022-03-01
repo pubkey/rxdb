@@ -7,8 +7,6 @@ exports.addRxPlugin = addRxPlugin;
 
 var _rxSchema = require("./rx-schema");
 
-var _crypter = require("./crypter");
-
 var _rxDocument = require("./rx-document");
 
 var _rxQuery = require("./rx-query");
@@ -34,7 +32,6 @@ var _rxError = require("./rx-error");
  */
 var PROTOTYPES = {
   RxSchema: _rxSchema.RxSchema.prototype,
-  Crypter: _crypter.Crypter.prototype,
   RxDocument: _rxDocument.basePrototype,
   RxQuery: _rxQuery.RxQueryBase.prototype,
   RxCollection: _rxCollection.RxCollectionBase.prototype,
@@ -92,8 +89,15 @@ function addRxPlugin(plugin) {
   if (plugin.hooks) {
     Object.entries(plugin.hooks).forEach(function (_ref2) {
       var name = _ref2[0],
-          fun = _ref2[1];
-      return _hooks.HOOKS[name].push(fun);
+          hooksObj = _ref2[1];
+
+      if (hooksObj.after) {
+        _hooks.HOOKS[name].push(hooksObj.after);
+      }
+
+      if (hooksObj.before) {
+        _hooks.HOOKS[name].unshift(hooksObj.before);
+      }
     });
   }
 }

@@ -1,8 +1,7 @@
 /// <reference types="pouchdb-core" />
 /// <reference types="node" />
-import type { PouchDBInstance, PouchSettings, RxJsonSchema, RxStorageInstanceCreationParams, RxStorage, RxKeyObjectStorageInstanceCreationParams } from '../../types';
+import type { PouchDBInstance, PouchSettings, RxJsonSchema, RxStorageInstanceCreationParams, RxStorage } from '../../types';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
-import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
 import { PouchStorageInternals } from './pouchdb-helper';
 export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
     adapter: any;
@@ -19,7 +18,6 @@ export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, 
     constructor(adapter: any, pouchSettings?: PouchSettings);
     private createPouch;
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, PouchSettings>): Promise<RxStorageInstancePouch<RxDocType>>;
-    createKeyObjectStorageInstance(params: RxKeyObjectStorageInstanceCreationParams<PouchSettings>): Promise<RxStorageKeyObjectInstancePouch>;
 }
 /**
  * Checks if all is ok with the given adapter,

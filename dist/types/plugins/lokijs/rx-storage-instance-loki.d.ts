@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, BlobBuffer, ChangeStreamOnceOptions, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk } from '../../types';
+import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, ChangeStreamOnceOptions, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk } from '../../types';
 import type { RxStorageLoki } from './rx-storage-lokijs';
 export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<RxDocType, LokiStorageInternals, LokiSettings> {
     readonly storage: RxStorageLoki;
@@ -27,7 +27,7 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
         [documentId: string]: RxDocumentData<RxDocType>;
     }>;
     query(preparedQuery: MangoQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<BlobBuffer>;
+    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
     getChangedDocuments(options: ChangeStreamOnceOptions): Promise<{
         changedDocuments: RxStorageChangedDocumentMeta[];
         lastSequence: number;

@@ -16,6 +16,6 @@ declare type Emitter<RxDocType> = {
 export declare const EVENT_EMITTER_BY_POUCH_INSTANCE: Map<string, Emitter<any>>;
 export declare function getCustomEventEmitterByPouch<RxDocType>(pouch: PouchDBInstance): Emitter<RxDocType>;
 export declare function addCustomEventsPluginToPouch(): void;
-export declare function eventEmitDataToStorageEvents<RxDocType>(primaryPath: string, emitData: EmitData): Promise<RxStorageChangeEvent<RxDocumentData<RxDocType>>[]>;
-export declare function changeEventToNormal<RxDocType>(primaryPath: string, change: ChangeEvent<RxDocumentData<RxDocType>>, startTime?: number, endTime?: number): RxStorageChangeEvent<RxDocumentData<RxDocType>>;
+export declare function eventEmitDataToStorageEvents<RxDocType>(pouchDBInstance: PouchDBInstance, primaryPath: string, emitData: EmitData): Promise<RxStorageChangeEvent<RxDocumentData<RxDocType>>[]>;
+export declare function changeEventToNormal<RxDocType>(pouchDBInstance: PouchDBInstance, primaryPath: string, change: ChangeEvent<RxDocumentData<RxDocType>>, startTime?: number, endTime?: number): RxStorageChangeEvent<RxDocumentData<RxDocType>>;
 export {};

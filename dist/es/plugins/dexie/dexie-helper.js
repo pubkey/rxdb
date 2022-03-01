@@ -1,8 +1,8 @@
 import mingo from 'mingo';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { Dexie } from 'dexie';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 /**
  * Returns all documents in the database.
@@ -177,9 +177,8 @@ export function getDexieStoreSchema(rxJsonSchema) {
     }
   }).join(', ');
 }
-export function getDexieEventKey(isLocal, primary, revision) {
-  var prefix = isLocal ? 'local' : 'non-local';
-  var eventKey = prefix + '|' + primary + '|' + revision;
+export function getDexieEventKey(storageInstance, primary, revision) {
+  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + primary + '|' + revision;
   return eventKey;
 }
 //# sourceMappingURL=dexie-helper.js.map

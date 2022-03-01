@@ -12,7 +12,7 @@ var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
 
-var _rxSchema = require("../../rx-schema");
+var _rxSchemaHelper = require("../../rx-schema-helper");
 
 function pullQueryBuilderFromRxSchema(collectionName, input, batchSize) {
   input = (0, _graphqlSchemaFromRxSchema.fillUpOptionals)(input);
@@ -64,7 +64,7 @@ function pullQueryBuilderFromRxSchema(collectionName, input, batchSize) {
 }
 
 function pushQueryBuilderFromRxSchema(collectionName, input) {
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(input.schema.primaryKey);
+  var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(input.schema.primaryKey);
   input = (0, _graphqlSchemaFromRxSchema.fillUpOptionals)(input);
   var prefixes = input.prefixes;
   var ucCollectionName = (0, _util.ucfirst)(collectionName);

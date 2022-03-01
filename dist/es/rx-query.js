@@ -8,7 +8,7 @@ import { runPluginHooks } from './hooks';
 import { createRxDocuments } from './rx-document-prototype-merge';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 
 /**
  * Runs the query over the storage instance

@@ -10,7 +10,7 @@
 import { Observable } from 'rxjs';
 import type { RxCollection, RxDatabase, MigrationState, NumberFunctionMap, OldRxCollection, RxJsonSchema, RxDocumentData } from '../../types';
 import { RxSchema } from '../../rx-schema';
-import { InternalStoreDocumentData } from '../../rx-database';
+import { InternalStoreCollectionDocType } from '../../rx-database-internal-store';
 export declare class DataMigrator {
     newestCollection: RxCollection;
     migrationStrategies: NumberFunctionMap;
@@ -26,7 +26,7 @@ export declare class DataMigrator {
     migratePromise(batchSize: number): Promise<any>;
 }
 export declare function createOldCollection(version: number, schemaObj: RxJsonSchema<any>, dataMigrator: DataMigrator): Promise<OldRxCollection>;
-export declare function getOldCollectionDocs(dataMigrator: DataMigrator): Promise<RxDocumentData<InternalStoreDocumentData>[]>;
+export declare function getOldCollectionDocs(dataMigrator: DataMigrator): Promise<RxDocumentData<InternalStoreCollectionDocType>[]>;
 /**
  * get an array with OldCollection-instances from all existing old storage-instances
  */

@@ -20,26 +20,25 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
             }
           });
         }
+        /**
+         * Is write attachment,
+         * so we have to remove the data to have a
+         * non-write attachment.
+         */
 
-        var _temp2 = function () {
-          if (obj.data) {
-            var asWrite = obj;
-            return Promise.resolve(Promise.all([pouchHash(asWrite.data), blobBufferUtil.toString(asWrite.data)])).then(function (_ref5) {
-              var hash = _ref5[0],
-                  asString = _ref5[1];
-              var length = asString.length;
-              ret[key] = {
-                digest: POUCH_HASH_KEY + '-' + hash,
-                length: length,
-                type: asWrite.type
-              };
-            });
-          } else {
-            ret[key] = obj;
-          }
-        }();
 
-        return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+        if (obj.data) {
+          var asWriteAttachment = obj;
+          ret[key] = {
+            digest: asWriteAttachment.digest,
+            length: asWriteAttachment.length,
+            type: asWriteAttachment.type
+          };
+        } else {
+          ret[key] = obj;
+        }
+
+        return Promise.resolve();
       } catch (e) {
         return Promise.reject(e);
       }
@@ -139,8 +138,9 @@ export function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
       var useValue = value;
 
       if (useValue.data) {
+        var asBlobBuffer = blobBufferUtil.createBlobBufferFromBase64(useValue.data, useValue.type);
         pouchDoc._attachments[key] = {
-          data: useValue.data,
+          data: asBlobBuffer,
           content_type: useValue.type
         };
       } else {
@@ -183,9 +183,8 @@ export function pouchSwapPrimaryToId(primaryKey, docData) {
 export function pouchStripLocalFlagFromPrimary(str) {
   return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
-export function getEventKey(isLocal, primary, revision) {
-  var prefix = isLocal ? 'local' : 'non-local';
-  var eventKey = prefix + '|' + primary + '|' + revision;
+export function getEventKey(pouchDBInstance, primary, revision) {
+  var eventKey = pouchDBInstance.name + '|' + primary + '|' + revision;
   return eventKey;
 }
 export function pouchChangeRowToChangeEvent(primaryKey, pouchDoc) {
@@ -322,28 +321,4 @@ export function getPouchIndexDesignDocNameByIndex(index) {
  */
 
 export var RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted';
-export function localDocumentToPouch(docData) {
-  var ret = flatClone(docData); // add local prefix
-
-  ret._id = POUCHDB_LOCAL_PREFIX + ret._id; // add custom deleted flag if document is deleted 
-
-  if (docData._deleted) {
-    ret._deleted = false;
-    ret[RXDB_POUCH_DELETED_FLAG] = true;
-  }
-
-  return ret;
-}
-export function localDocumentFromPouch(docData) {
-  var ret = flatClone(docData); // strip local prefix
-
-  ret._id = ret._id.slice(POUCHDB_LOCAL_PREFIX_LENGTH);
-
-  if (docData[RXDB_POUCH_DELETED_FLAG]) {
-    ret._deleted = true;
-    delete ret[RXDB_POUCH_DELETED_FLAG];
-  }
-
-  return ret;
-}
 //# sourceMappingURL=pouchdb-helper.js.map

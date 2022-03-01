@@ -29,18 +29,16 @@ export function RxQueryUpdate(updateObj) {
     }
   });
 }
-export var rxdb = true;
-export var prototypes = {
-  RxDocument: function RxDocument(proto) {
-    proto.update = update;
-  },
-  RxQuery: function RxQuery(proto) {
-    proto.update = RxQueryUpdate;
-  }
-};
 export var RxDBUpdatePlugin = {
   name: 'update',
-  rxdb: rxdb,
-  prototypes: prototypes
+  rxdb: true,
+  prototypes: {
+    RxDocument: function RxDocument(proto) {
+      proto.update = update;
+    },
+    RxQuery: function RxQuery(proto) {
+      proto.update = RxQueryUpdate;
+    }
+  }
 };
 //# sourceMappingURL=update.js.map

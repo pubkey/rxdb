@@ -3,16 +3,12 @@ import type {
     QueryMatcher
 } from 'event-reduce-js';
 import type {
-    BulkWriteLocalRow,
     BulkWriteRow,
     ChangeStreamOnceOptions,
     EventBulk,
     PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
-    RxKeyObjectStorageInstanceCreationParams,
-    RxLocalDocumentData,
-    RxLocalStorageBulkWriteResponse,
     RxStorageBulkWriteResponse,
     RxStorageChangedDocumentMeta,
     RxStorageChangeEvent,
@@ -20,7 +16,6 @@ import type {
     RxStorageQueryResult
 } from './rx-storage';
 import type {
-    BlobBuffer,
     MangoQuery,
     MangoQuerySortPart,
     RxJsonSchema
@@ -70,14 +65,6 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
     createStorageInstance<DocumentData>(
         params: RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions>
     ): Promise<RxStorageInstance<DocumentData, Internals, InstanceCreationOptions>>;
-
-    /**
-     * Creates the internal storage instance
-     * that is only cappable of saving schemaless key-object sets.
-     */
-    createKeyObjectStorageInstance(
-        params: RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions>
-    ): Promise<RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>>;
 }
 
 
@@ -195,60 +182,6 @@ export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {
     remove(): Promise<void>;
 }
 
-/**
- * A StorageInstance that is only capable of saving key-object relations,
- * cannot be queried and has no schema.
- * In the past we saved normal and local documents into the same instance of pouchdb.
- * This was bad because it means that on migration or deletion, we always
- * will remove the local documents. Now this is splitted into
- * as separate RxStorageKeyObjectInstance that only stores the local documents
- * aka key->object sets.
- */
-export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
-    extends RxStorageInstanceBase<Internals, InstanceCreationOptions> {
-
-    /**
-     * Writes multiple local documents to the storage instance.
-     * The write for each single document is atomic, there
-     * is not transaction arround all documents.
-     * It must be possible that some document writes succeed
-     * and others error.
-     * We need this to have a similar behavior as most NoSQL databases.
-     * Local documents always have _id as primary and cannot have attachments.
-     * They can only be queried directly by their primary _id.
-     */
-    bulkWrite<D = any>(
-        documentWrites: BulkWriteLocalRow<D>[]
-    ): Promise<
-        /**
-         * returns the response, splitted into success and error lists.
-         */
-        RxLocalStorageBulkWriteResponse<D>
-    >;
-
-    /**
-     * Get Multiple local documents by their primary value.
-     */
-    findLocalDocumentsById<D = any>(
-        /**
-         * List of primary values
-         * of the documents to find.
-         */
-        ids: string[],
-        /**
-         * If set to true, deleted documents will also be returned.
-         */
-        withDeleted: boolean
-    ): Promise<{
-        [documentId: string]: RxLocalDocumentData<D>
-    }>;
-
-    /**
-     * Emits all changes to the local documents.
-     */
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>>;
-}
-
 export interface RxStorageInstance<
     /**
      * The type of the documents that can be stored in this instance.
@@ -264,7 +197,7 @@ export interface RxStorageInstance<
     readonly collectionName: string;
 
     /**
-     * Writes multiple non-local documents to the storage instance.
+     * Writes multiple documents to the storage instance.
      * The write for each single document is atomic, there
      * is no transaction arround all documents.
      * The written documents must be the newest revision of that documents data.
@@ -341,7 +274,7 @@ export interface RxStorageInstance<
     getAttachmentData(
         documentId: string,
         attachmentId: string
-    ): Promise<BlobBuffer>;
+    ): Promise<string>;
 
     /**
      * Returns the ids of all documents that have been

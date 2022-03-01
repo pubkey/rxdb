@@ -11,9 +11,9 @@ var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
 
-var _rxSchema = require("../../rx-schema");
-
 var _lokijsHelper = require("./lokijs-helper");
+
+var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var createLokiStorageInstance = function createLokiStorageInstance(storage, params, databaseSettings) {
   try {
@@ -81,7 +81,7 @@ var createLokiLocalState = function createLokiLocalState(params, databaseSetting
        */
 
 
-      var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(params.schema.primaryKey);
+      var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(params.schema.primaryKey);
       indices.push(primaryKey);
       var collectionOptions = Object.assign({}, params.options.collection, {
         indices: indices,
@@ -126,7 +126,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     this.databaseSettings = databaseSettings;
-    this.primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
+    this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
 
     _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
 
@@ -228,7 +228,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               _this5.addChangeDocumentMeta(id);
 
               eventBulk.events.push({
-                eventId: (0, _lokijsHelper.getLokiEventKey)(false, id, newRevision),
+                eventId: (0, _lokijsHelper.getLokiEventKey)(_this5, id, newRevision),
                 documentId: id,
                 change: {
                   doc: writeDoc,
@@ -319,7 +319,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               }
 
               eventBulk.events.push({
-                eventId: (0, _lokijsHelper.getLokiEventKey)(false, id, _newRevision),
+                eventId: (0, _lokijsHelper.getLokiEventKey)(_this5, id, _newRevision),
                 documentId: id,
                 change: change,
                 startTime: startTime,
@@ -371,7 +371,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
             localState.collection.insert((0, _util.flatClone)(docData));
             eventBulk.events.push({
               documentId: id,
-              eventId: (0, _lokijsHelper.getLokiEventKey)(false, id, docData._rev),
+              eventId: (0, _lokijsHelper.getLokiEventKey)(_this7, id, docData._rev),
               change: {
                 doc: docData,
                 id: id,
@@ -432,7 +432,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               if (change) {
                 eventBulk.events.push({
                   documentId: id,
-                  eventId: (0, _lokijsHelper.getLokiEventKey)(false, id, docData._rev),
+                  eventId: (0, _lokijsHelper.getLokiEventKey)(_this7, id, docData._rev),
                   change: change,
                   startTime: startTime,
                   endTime: (0, _util.now)()

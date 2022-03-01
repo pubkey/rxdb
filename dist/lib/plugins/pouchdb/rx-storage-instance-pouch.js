@@ -11,13 +11,13 @@ var _rxjs = require("rxjs");
 
 var _rxError = require("../../rx-error");
 
-var _rxSchema = require("../../rx-schema");
-
 var _pouchdbHelper = require("./pouchdb-helper");
 
 var _util = require("../../util");
 
 var _customEventsPlugin = require("./custom-events-plugin");
+
+var _rxSchemaHelper = require("../../rx-schema-helper");
 
 function _settle(pact, state, value) {
   if (!pact.s) {
@@ -225,7 +225,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
     _pouchdbHelper.OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
 
-    this.primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
+    this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
     /**
      * Instead of listening to pouch.changes,
      * we have overwritten pouchdbs bulkDocs()
@@ -432,7 +432,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     try {
       var _this11 = this;
 
-      return Promise.resolve(_this11.internals.pouch.getAttachment(documentId, attachmentId));
+      return Promise.resolve(_this11.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
+        return _util.blobBufferUtil.tobase64String(attachmentData);
+      });
     } catch (e) {
       return Promise.reject(e);
     }

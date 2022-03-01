@@ -1,10 +1,10 @@
-import type { RxCollection, RxDocumentData, ReplicationCheckpointDocument } from '../../types';
+import type { RxCollection, RxDocumentData, InternalStoreReplicationPullDocType, InternalStoreReplicationPushDocType, DeepReadonlyObject } from '../../types';
 /**
  * Get the last push checkpoint
  */
-export declare function getLastPushSequence(collection: RxCollection, replicationIdentifier: string): Promise<number>;
-export declare function setLastPushSequence(collection: RxCollection, replicationIdentifier: string, sequence: number): Promise<ReplicationCheckpointDocument>;
-export declare function getChangesSinceLastPushSequence<RxDocType>(collection: RxCollection<RxDocType, any>, replicationIdentifier: string, replicationIdentifierHash: string, 
+export declare function getLastPushSequence(collection: RxCollection, replicationIdentifierHash: string): Promise<number>;
+export declare function setLastPushSequence(collection: RxCollection, replicationIdentifierHash: string, sequence: number): Promise<RxDocumentData<InternalStoreReplicationPushDocType>>;
+export declare function getChangesSinceLastPushSequence<RxDocType>(collection: RxCollection<RxDocType, any>, replicationIdentifierHash: string, 
 /**
  * A function that returns true
  * when the underlaying RxReplication is stopped.
@@ -20,7 +20,5 @@ isStopped: () => boolean, batchSize?: number): Promise<{
     lastSequence: number;
     hasChangesSinceLastSequence: boolean;
 }>;
-export declare function getLastPullDocument<RxDocType>(collection: RxCollection<RxDocType>, replicationIdentifier: string): Promise<RxDocumentData<RxDocType> | null>;
-export declare function setLastPullDocument(collection: RxCollection, replicationIdentifier: string, doc: any): Promise<{
-    _id: string;
-}>;
+export declare function getLastPullDocument<RxDocType>(collection: RxCollection<RxDocType>, replicationIdentifierHash: string): Promise<RxDocumentData<RxDocType> | null>;
+export declare function setLastPullDocument<RxDocType>(collection: RxCollection, replicationIdentifierHash: string, lastPulledDoc: RxDocumentData<RxDocType> | DeepReadonlyObject<RxDocumentData<RxDocType>>): Promise<RxDocumentData<InternalStoreReplicationPullDocType<RxDocType>>>;

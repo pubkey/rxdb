@@ -1,10 +1,9 @@
 /// <reference types="pouchdb-core" />
 /// <reference types="node" />
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import type { MangoQuery, RxDocumentWriteData, RxJsonSchema, RxKeyObjectStorageInstanceCreationParams, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
+import type { MangoQuery, RxDocumentWriteData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
-import { RxStorageKeyObjectInstanceDexie } from './rx-storage-key-object-instance-dexie';
 export declare const RxStorageDexieStatics: RxStorageStatics;
 export declare class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSettings> {
     settings: DexieSettings;
@@ -19,6 +18,5 @@ export declare class RxStorageDexie implements RxStorage<DexieStorageInternals, 
     }>;
     constructor(settings: DexieSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>): Promise<RxStorageInstanceDexie<RxDocType>>;
-    createKeyObjectStorageInstance(params: RxKeyObjectStorageInstanceCreationParams<DexieSettings>): Promise<RxStorageKeyObjectInstanceDexie>;
 }
 export declare function getRxStorageDexie(settings?: DexieSettings): RxStorageDexie;

@@ -1,17 +1,16 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter, startWith, mergeMap, shareReplay } from 'rxjs/operators';
 import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, RXJS_SHARE_REPLAY_DEFAULTS, getDefaultRxDocumentMeta } from './util';
-import { fillObjectDataBeforeInsert, createRxCollectionStorageInstances } from './rx-collection-helper';
+import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { newRxError, newRxTypeError } from './rx-error';
-import { createCrypter } from './crypter';
-import { createDocCache } from './doc-cache';
+import { DocCache } from './doc-cache';
 import { createQueryCache, defaultCacheReplacementPolicy } from './query-cache';
 import { createChangeEventBuffer } from './change-event-buffer';
 import { runAsyncPluginHooks, runPluginHooks } from './hooks';
 import { createWithConstructor as createRxDocumentWithConstructor, isRxDocument } from './rx-document';
 import { createRxDocument, getRxDocumentConstructor } from './rx-document-prototype-merge';
-import { getWrappedKeyObjectInstance, getWrappedStorageInstance, storageChangeEventToRxChangeEvent, throwIfIsStorageWriteError } from './rx-storage-helper';
+import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent, throwIfIsStorageWriteError } from './rx-storage-helper';
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
@@ -19,37 +18,29 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   /**
    * Stores all 'normal' documents
    */
-
-  /**
-   * Stores the local documents so that they are not deleted
-   * when a migration runs.
-   */
-  function RxCollectionBase(database, name, schema, internalStorageInstance, internalLocalDocumentsStore) {
-    var instanceCreationOptions = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
-    var migrationStrategies = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
-    var methods = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
-    var attachments = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
-    var options = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : {};
-    var cacheReplacementPolicy = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : defaultCacheReplacementPolicy;
-    var statics = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : {};
+  function RxCollectionBase(database, name, schema, internalStorageInstance) {
+    var instanceCreationOptions = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+    var migrationStrategies = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
+    var methods = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
+    var attachments = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
+    var options = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
+    var cacheReplacementPolicy = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : defaultCacheReplacementPolicy;
+    var statics = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : {};
     this.storageInstance = {};
-    this.localDocumentsStore = {};
     this.timeouts = new Set();
     this.destroyed = false;
     this._atomicUpsertQueues = new Map();
     this.synced = false;
     this.hooks = {};
     this._subs = [];
-    this._docCache = createDocCache();
+    this._docCache = new DocCache();
     this._queryCache = createQueryCache();
-    this._crypter = {};
     this._observable$ = {};
     this._changeEventBuffer = {};
     this.database = database;
     this.name = name;
     this.schema = schema;
     this.internalStorageInstance = internalStorageInstance;
-    this.internalLocalDocumentsStore = internalLocalDocumentsStore;
     this.instanceCreationOptions = instanceCreationOptions;
     this.migrationStrategies = migrationStrategies;
     this.methods = methods;
@@ -71,10 +62,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     try {
       var _this2 = this;
 
-      _this2.storageInstance = getWrappedStorageInstance(_this2, _this2.internalStorageInstance);
-      _this2.localDocumentsStore = getWrappedKeyObjectInstance(_this2, _this2.internalLocalDocumentsStore); // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
-
-      _this2._crypter = createCrypter(_this2.database.password, _this2.schema);
+      _this2.storageInstance = getWrappedStorageInstance(_this2.database, _this2.internalStorageInstance, _this2.schema.jsonSchema);
       _this2._observable$ = _this2.database.eventBulks$.pipe(filter(function (changeEventBulk) {
         return changeEventBulk.collectionName === _this2.name;
       }), mergeMap(function (changeEventBulk) {
@@ -87,58 +75,43 @@ export var RxCollectionBase = /*#__PURE__*/function () {
        * to save performance.
        */
 
-      var subDocs = _this2.storageInstance.changeStream().subscribe(function (eventBulk) {
-        var changeEventBulk = {
-          id: eventBulk.id,
-          internal: false,
-          collectionName: _this2.name,
-          storageToken: ensureNotFalsy(_this2.database.storageToken),
-          events: eventBulk.events.map(function (ev) {
-            return storageChangeEventToRxChangeEvent(false, ev, _this2);
-          }),
-          databaseToken: _this2.database.token
-        };
+      return Promise.resolve(_this2.database.storageToken).then(function (databaseStorageToken) {
+        var subDocs = _this2.storageInstance.changeStream().subscribe(function (eventBulk) {
+          var changeEventBulk = {
+            id: eventBulk.id,
+            internal: false,
+            collectionName: _this2.name,
+            storageToken: databaseStorageToken,
+            events: eventBulk.events.map(function (ev) {
+              return storageChangeEventToRxChangeEvent(false, ev, _this2);
+            }),
+            databaseToken: _this2.database.token
+          };
 
-        _this2.database.$emit(changeEventBulk);
+          _this2.database.$emit(changeEventBulk);
+        });
+
+        _this2._subs.push(subDocs);
+        /**
+         * When a write happens to the collection
+         * we find the changed document in the docCache
+         * and tell it that it has to change its data.
+         */
+
+
+        _this2._subs.push(_this2._observable$.pipe(filter(function (cE) {
+          return !cE.isLocal;
+        })).subscribe(function (cE) {
+          // when data changes, send it to RxDocument in docCache
+          var doc = _this2._docCache.get(cE.documentId);
+
+          if (doc) {
+            doc._handleChangeEvent(cE);
+          }
+        }));
+
+        return PROMISE_RESOLVE_VOID;
       });
-
-      _this2._subs.push(subDocs);
-
-      var subLocalDocs = _this2.localDocumentsStore.changeStream().subscribe(function (eventBulk) {
-        var changeEventBulk = {
-          id: eventBulk.id,
-          internal: false,
-          collectionName: _this2.name,
-          storageToken: ensureNotFalsy(_this2.database.storageToken),
-          events: eventBulk.events.map(function (ev) {
-            return storageChangeEventToRxChangeEvent(true, ev, _this2);
-          }),
-          databaseToken: _this2.database.token
-        };
-
-        _this2.database.$emit(changeEventBulk);
-      });
-
-      _this2._subs.push(subLocalDocs);
-      /**
-       * When a write happens to the collection
-       * we find the changed document in the docCache
-       * and tell it that it has to change its data.
-       */
-
-
-      _this2._subs.push(_this2._observable$.pipe(filter(function (cE) {
-        return !cE.isLocal;
-      })).subscribe(function (cE) {
-        // when data changes, send it to RxDocument in docCache
-        var doc = _this2._docCache.get(cE.documentId);
-
-        if (doc) {
-          doc._handleChangeEvent(cE);
-        }
-      }));
-
-      return Promise.resolve();
     } catch (e) {
       return Promise.reject(e);
     }
@@ -609,8 +582,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   ;
 
   _proto.exportJSON = function exportJSON() {
-    var _decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
     throw pluginMissing('json-dump');
   }
   /**
@@ -797,7 +768,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       this._changeEventBuffer.destroy();
     }
 
-    return Promise.all([this.storageInstance.close(), this.localDocumentsStore.close()]).then(function () {
+    return this.storageInstance.close().then(function () {
       delete _this15.database.collections[_this15.name];
       return runAsyncPluginHooks('postDestroyRxCollection', _this15).then(function () {
         return true;
@@ -950,6 +921,8 @@ export function createRxCollection(_ref3) {
       attachments = _ref3$attachments === void 0 ? {} : _ref3$attachments,
       _ref3$options = _ref3.options,
       options = _ref3$options === void 0 ? {} : _ref3$options,
+      _ref3$localDocuments = _ref3.localDocuments,
+      localDocuments = _ref3$localDocuments === void 0 ? false : _ref3$localDocuments,
       _ref3$cacheReplacemen = _ref3.cacheReplacementPolicy,
       cacheReplacementPolicy = _ref3$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref3$cacheReplacemen;
   var storageInstanceCreationParams = {
@@ -960,8 +933,8 @@ export function createRxCollection(_ref3) {
     multiInstance: database.multiInstance
   };
   runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
-  return createRxCollectionStorageInstances(name, database, storageInstanceCreationParams, instanceCreationOptions).then(function (storageInstances) {
-    var collection = new RxCollectionBase(database, name, schema, storageInstances.storageInstance, storageInstances.localDocumentsStore, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
+  return createRxCollectionStorageInstance(database, storageInstanceCreationParams).then(function (storageInstance) {
+    var collection = new RxCollectionBase(database, name, schema, storageInstance, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
     return collection.prepare().then(function () {
       // ORM add statics
       Object.entries(statics).forEach(function (_ref4) {
@@ -981,7 +954,22 @@ export function createRxCollection(_ref3) {
 
       return ret;
     }).then(function () {
-      runPluginHooks('createRxCollection', collection);
+      runPluginHooks('createRxCollection', {
+        collection: collection,
+        creator: {
+          name: name,
+          schema: schema,
+          storageInstance: storageInstance,
+          instanceCreationOptions: instanceCreationOptions,
+          migrationStrategies: migrationStrategies,
+          methods: methods,
+          attachments: attachments,
+          options: options,
+          cacheReplacementPolicy: cacheReplacementPolicy,
+          localDocuments: localDocuments,
+          statics: statics
+        }
+      });
       return collection;
     })
     /**
@@ -989,7 +977,7 @@ export function createRxCollection(_ref3) {
      * we yet have to close the storage instances.
      */
     ["catch"](function (err) {
-      return Promise.all([storageInstances.storageInstance.close(), storageInstances.localDocumentsStore.close()]).then(function () {
+      return storageInstance.close().then(function () {
         return Promise.reject(err);
       });
     });

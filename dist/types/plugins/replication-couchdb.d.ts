@@ -45,11 +45,4 @@ export declare function pouchReplicationFunction(pouch: PouchDBInstance, { pull,
     push?: boolean | undefined;
 }): any;
 export declare function syncCouchDB(this: RxCollection, { remote, waitForLeadership, direction, options, query }: SyncOptions): any;
-export declare const rxdb = true;
-export declare const prototypes: {
-    RxCollection: (proto: any) => void;
-};
-export declare const hooks: {
-    createRxCollection: (collection: RxCollection) => void;
-};
 export declare const RxDBReplicationCouchDBPlugin: RxPlugin;

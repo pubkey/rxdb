@@ -37,6 +37,14 @@ export declare const basePrototype: {
         _rev: string;
         _meta: import("./types").RxDocumentMeta;
     }>;
+    toMutableJSON(this: import("./types").RxDocumentBase<{}, {}>, withMetaFields?: boolean): {
+        _deleted: boolean;
+        _attachments: {
+            [attachmentId: string]: import("./types").RxAttachmentData;
+        };
+        _rev: string;
+        _meta: import("./types").RxDocumentMeta;
+    };
     /**
      * set data by objectPath
      * This can only be called on temporary documents
@@ -117,6 +125,14 @@ export declare function createRxDocumentConstructor(proto?: {
         _rev: string;
         _meta: import("./types").RxDocumentMeta;
     }>;
+    toMutableJSON(this: import("./types").RxDocumentBase<{}, {}>, withMetaFields?: boolean): {
+        _deleted: boolean;
+        _attachments: {
+            [attachmentId: string]: import("./types").RxAttachmentData;
+        };
+        _rev: string;
+        _meta: import("./types").RxDocumentMeta;
+    };
     /**
      * set data by objectPath
      * This can only be called on temporary documents
@@ -198,6 +214,14 @@ export declare function createRxDocumentConstructor(proto?: {
             _rev: string;
             _meta: import("./types").RxDocumentMeta;
         }>;
+        toMutableJSON(this: import("./types").RxDocumentBase<{}, {}>, withMetaFields?: boolean): {
+            _deleted: boolean;
+            _attachments: {
+                [attachmentId: string]: import("./types").RxAttachmentData;
+            };
+            _rev: string;
+            _meta: import("./types").RxDocumentMeta;
+        };
         /**
          * set data by objectPath
          * This can only be called on temporary documents

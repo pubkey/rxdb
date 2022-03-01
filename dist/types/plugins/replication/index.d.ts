@@ -2,7 +2,11 @@ import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import type { PullRunResult, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxReplicationState } from '../../types';
 import { RxReplicationError } from './rx-replication-error';
 export declare class RxReplicationStateBase<RxDocType> {
-    readonly replicationIdentifier: string;
+    /**
+     * hash of the identifier, used to flag revisions
+     * and to identify which documents state came from the remote.
+     */
+    readonly replicationIdentifierHash: string;
     readonly collection: RxCollection<RxDocType>;
     readonly pull?: ReplicationPullOptions<RxDocType> | undefined;
     readonly push?: ReplicationPushOptions<RxDocType> | undefined;
@@ -32,12 +36,12 @@ export declare class RxReplicationStateBase<RxDocType> {
      * Decrease when the retry-cycle started to run.
      */
     pendingRetries: number;
+    constructor(
     /**
      * hash of the identifier, used to flag revisions
      * and to identify which documents state came from the remote.
      */
-    replicationIdentifierHash: string;
-    constructor(replicationIdentifier: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, liveInterval?: number | undefined, retryTime?: number | undefined);
+    replicationIdentifierHash: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, liveInterval?: number | undefined, retryTime?: number | undefined);
     isStopped(): boolean;
     awaitInitialReplication(): Promise<true>;
     cancel(): Promise<any>;

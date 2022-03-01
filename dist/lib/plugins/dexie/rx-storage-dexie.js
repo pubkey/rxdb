@@ -12,11 +12,7 @@ var _pouchdbMd = require("pouchdb-md5");
 
 var _dexieHelper = require("./dexie-helper");
 
-var _util = require("../../util");
-
 var _rxStorageInstanceDexie = require("./rx-storage-instance-dexie");
-
-var _rxStorageKeyObjectInstanceDexie = require("./rx-storage-key-object-instance-dexie");
 
 var _dexieQuery = require("./query/dexie-query");
 
@@ -86,13 +82,6 @@ var RxStorageDexie = /*#__PURE__*/function () {
 
   _proto.createStorageInstance = function createStorageInstance(params) {
     return (0, _rxStorageInstanceDexie.createDexieStorageInstance)(this, params, this.settings);
-  };
-
-  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
-    // ensure we never mix up key-object data with normal storage documents.
-    var useParams = (0, _util.flatClone)(params);
-    useParams.collectionName = params.collectionName + '-key-object';
-    return (0, _rxStorageKeyObjectInstanceDexie.createDexieKeyObjectStorageInstance)(this, params, this.settings);
   };
 
   return RxStorageDexie;

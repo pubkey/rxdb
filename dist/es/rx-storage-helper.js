@@ -5,42 +5,8 @@ import { map } from 'rxjs/operators';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
-import { firstPropertyValueOfObject, flatClone } from './util';
-export var findLocalDocument = function findLocalDocument(instance, id, withDeleted) {
-  try {
-    return Promise.resolve(instance.findLocalDocumentsById([id], withDeleted)).then(function (docList) {
-      var doc = docList[id];
-
-      if (!doc) {
-        return null;
-      } else {
-        return doc;
-      }
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-/**
- * Writes a single local document,
- * throws RxStorageBulkWriteError on failure
- */
-export var writeSingleLocal = function writeSingleLocal(instance, writeRow) {
-  try {
-    return Promise.resolve(instance.bulkWrite([writeRow])).then(function (writeResult) {
-      if (Object.keys(writeResult.error).length > 0) {
-        var error = firstPropertyValueOfObject(writeResult.error);
-        throw error;
-      } else {
-        var ret = firstPropertyValueOfObject(writeResult.success);
-        return ret;
-      }
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
+import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
+import { clone, firstPropertyValueOfObject, flatClone } from './util';
 
 /**
  * Writes a single document,
@@ -78,7 +44,8 @@ export var getSingleDocument = function getSingleDocument(storageInstance, docum
 };
 
 /**
- * returns all NON-LOCAL documents
+ * Returns all non-deleted documents
+ * of the storage.
  */
 export var getAllDocuments = function getAllDocuments(primaryKey, storage, storageInstance) {
   try {
@@ -97,6 +64,7 @@ export var getAllDocuments = function getAllDocuments(primaryKey, storage, stora
   }
 };
 export var INTERNAL_STORAGE_NAME = '_rxdb_internal';
+export var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 export function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
   var documentData;
 
@@ -123,35 +91,6 @@ export function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent,
   };
   return ret;
 }
-export function transformDocumentDataFromRxDBToRxStorage(col, data, updateLwt) {
-  data = flatClone(data);
-  data._meta = flatClone(data._meta); // ensure primary key has not been changed
-
-  if (overwritable.isDevMode()) {
-    col.schema.fillPrimaryKey(data);
-  }
-
-  data = col._crypter.encrypt(data);
-
-  if (updateLwt) {
-    data._meta.lwt = new Date().getTime();
-  }
-
-  var hookParams = {
-    collection: col,
-    doc: data
-  };
-  runPluginHooks('preWriteToStorageInstance', hookParams);
-  return hookParams.doc;
-}
-export function transformDocumentDataFromRxStorageToRxDB(col, data) {
-  var hookParams = {
-    collection: col,
-    doc: data
-  };
-  runPluginHooks('postReadFromInstance', hookParams);
-  return col._crypter.decrypt(hookParams.doc);
-}
 export function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
   if (error) {
     if (error.status === 409) {
@@ -173,8 +112,48 @@ export function throwIfIsStorageWriteError(collection, documentId, writeData, er
  * is used properly.
  */
 
-export function getWrappedStorageInstance(collection, storageInstance) {
-  var database = collection.database;
+export function getWrappedStorageInstance(database, storageInstance,
+/**
+ * The original RxJsonSchema
+ * before it was mutated by hooks.
+ */
+rxJsonSchema) {
+  overwritable.deepFreezeWhenDevMode(rxJsonSchema);
+  var primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
+
+  function transformDocumentDataFromRxDBToRxStorage(data, updateLwt) {
+    data = flatClone(data);
+    data._meta = flatClone(data._meta); // ensure primary key has not been changed
+
+    if (overwritable.isDevMode()) {
+      data = fillPrimaryKey(primaryPath, rxJsonSchema, data);
+    }
+
+    if (updateLwt) {
+      data._meta.lwt = new Date().getTime();
+    }
+
+    var hookParams = {
+      database: database,
+      primaryPath: primaryPath,
+      schema: rxJsonSchema,
+      doc: data
+    };
+    runPluginHooks('preWriteToStorageInstance', hookParams);
+    return hookParams.doc;
+  }
+
+  function transformDocumentDataFromRxStorageToRxDB(data) {
+    var hookParams = {
+      database: database,
+      primaryPath: primaryPath,
+      schema: rxJsonSchema,
+      doc: data
+    };
+    runPluginHooks('postReadFromInstance', hookParams);
+    return hookParams.doc;
+  }
+
   var ret = {
     schema: storageInstance.schema,
     internals: storageInstance.internals,
@@ -183,21 +162,22 @@ export function getWrappedStorageInstance(collection, storageInstance) {
     options: storageInstance.options,
     bulkAddRevisions: function bulkAddRevisions(documents) {
       var toStorageDocuments = documents.map(function (doc) {
-        return transformDocumentDataFromRxDBToRxStorage(collection, doc, true);
+        return transformDocumentDataFromRxDBToRxStorage(doc, true);
       });
-      return database.lockedRun(function () {
+      var ret = database.lockedRun(function () {
         return storageInstance.bulkAddRevisions(toStorageDocuments);
       });
+      return ret;
     },
     bulkWrite: function bulkWrite(rows) {
       var toStorageWriteRows = rows.map(function (row) {
         return {
-          document: transformDocumentDataFromRxDBToRxStorage(collection, row.document, true),
-          previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(collection, row.previous, false) : undefined
+          previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(row.previous, false) : undefined,
+          document: transformDocumentDataFromRxDBToRxStorage(row.document, true)
         };
       });
       return database.lockedRun(function () {
-        return storageInstance.bulkWrite(toStorageWriteRows);
+        return storageInstance.bulkWrite(clone(toStorageWriteRows));
       }).then(function (writeResult) {
         var ret = {
           success: {},
@@ -211,7 +191,7 @@ export function getWrappedStorageInstance(collection, storageInstance) {
         Object.entries(writeResult.success).forEach(function (_ref3) {
           var k = _ref3[0],
               v = _ref3[1];
-          ret.success[k] = transformDocumentDataFromRxStorageToRxDB(collection, v);
+          ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
         });
         return ret;
       });
@@ -222,7 +202,7 @@ export function getWrappedStorageInstance(collection, storageInstance) {
       }).then(function (queryResult) {
         return {
           documents: queryResult.documents.map(function (doc) {
-            return transformDocumentDataFromRxStorageToRxDB(collection, doc);
+            return transformDocumentDataFromRxStorageToRxDB(doc);
           })
         };
       });
@@ -235,7 +215,7 @@ export function getWrappedStorageInstance(collection, storageInstance) {
         Object.entries(findResult).forEach(function (_ref4) {
           var key = _ref4[0],
               doc = _ref4[1];
-          ret[key] = transformDocumentDataFromRxStorageToRxDB(collection, doc);
+          ret[key] = transformDocumentDataFromRxStorageToRxDB(doc);
         });
         return ret;
       });
@@ -273,120 +253,14 @@ export function getWrappedStorageInstance(collection, storageInstance) {
               change: {
                 id: event.change.id,
                 operation: event.change.operation,
-                doc: event.change.doc ? transformDocumentDataFromRxStorageToRxDB(collection, event.change.doc) : undefined,
-                previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(collection, event.change.previous) : undefined
+                doc: event.change.doc ? transformDocumentDataFromRxStorageToRxDB(event.change.doc) : undefined,
+                previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(event.change.previous) : undefined
               }
             };
           })
         };
         return ret;
       }));
-    }
-  };
-  return ret;
-}
-export function transformLocalDocumentDataFromRxDBToRxStorage(parent, data, updateLwt) {
-  data = flatClone(data);
-  data._meta = flatClone(data._meta);
-
-  if (updateLwt) {
-    data._meta.lwt = new Date().getTime();
-  }
-
-  return data;
-}
-export function transformLocalDocumentDataFromRxStorageToRxDB(parent, data) {
-  return data;
-}
-/**
- * Does the same as getWrappedStorageInstance()
- * but for a key->object store.
- */
-
-export function getWrappedKeyObjectInstance(parent, keyObjectInstance) {
-  var database = parent.database ? parent.database : parent;
-  var ret = {
-    databaseName: database.name,
-    internals: keyObjectInstance.internals,
-    options: keyObjectInstance.options,
-    bulkWrite: function bulkWrite(rows) {
-      var toStorageWriteRows = rows.map(function (row) {
-        return {
-          document: transformLocalDocumentDataFromRxDBToRxStorage(parent, row.document, true),
-          previous: row.previous ? transformLocalDocumentDataFromRxDBToRxStorage(parent, row.previous, false) : undefined
-        };
-      });
-      return database.lockedRun(function () {
-        return keyObjectInstance.bulkWrite(toStorageWriteRows);
-      }).then(function (writeResult) {
-        var ret = {
-          success: {},
-          error: {}
-        };
-        Object.entries(writeResult.error).forEach(function (_ref5) {
-          var k = _ref5[0],
-              v = _ref5[1];
-          ret.error[k] = v;
-        });
-        Object.entries(writeResult.success).forEach(function (_ref6) {
-          var k = _ref6[0],
-              v = _ref6[1];
-          ret.success[k] = transformLocalDocumentDataFromRxStorageToRxDB(parent, v);
-        });
-        return ret;
-      });
-    },
-    findLocalDocumentsById: function findLocalDocumentsById(ids, withDeleted) {
-      return database.lockedRun(function () {
-        return keyObjectInstance.findLocalDocumentsById(ids, withDeleted);
-      }).then(function (findResult) {
-        var ret = {};
-        Object.entries(findResult).forEach(function (_ref7) {
-          var key = _ref7[0],
-              doc = _ref7[1];
-          ret[key] = transformLocalDocumentDataFromRxStorageToRxDB(parent, doc);
-        });
-        return ret;
-      });
-    },
-    changeStream: function changeStream() {
-      return keyObjectInstance.changeStream().pipe(map(function (eventBulk) {
-        var ret = {
-          id: eventBulk.id,
-          events: eventBulk.events.map(function (event) {
-            var changeDoc = event.change.doc;
-
-            if (changeDoc && !changeDoc._meta) {
-              console.dir(changeDoc);
-              console.error('local changeSTream meta is missing'); // process.exit(1);
-            }
-
-            return {
-              eventId: event.eventId,
-              documentId: event.documentId,
-              endTime: event.endTime,
-              startTime: event.startTime,
-              change: {
-                id: event.change.id,
-                operation: event.change.operation,
-                doc: event.change.doc ? transformLocalDocumentDataFromRxStorageToRxDB(parent, event.change.doc) : undefined,
-                previous: event.change.previous ? transformLocalDocumentDataFromRxStorageToRxDB(parent, event.change.previous) : undefined
-              }
-            };
-          })
-        };
-        return ret;
-      }));
-    },
-    remove: function remove() {
-      return database.lockedRun(function () {
-        return keyObjectInstance.remove();
-      });
-    },
-    close: function close() {
-      return database.lockedRun(function () {
-        return keyObjectInstance.close();
-      });
     }
   };
   return ret;

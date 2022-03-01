@@ -1,8 +1,8 @@
 import { Subject } from 'rxjs';
 import { createRevision, getHeightOfRevision, parseRevision, lastOfArray, flatClone, now, ensureNotFalsy, randomCouchString, isMaybeReadonlyArray } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { CHANGES_COLLECTION_SUFFIX, closeLokiCollections, getLokiDatabase, getLokiEventKey, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, removeLokiLeaderElectorReference, requestRemoteInstance, mustUseLocalState, handleRemoteRequest } from './lokijs-helper';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 export var createLokiStorageInstance = function createLokiStorageInstance(storage, params, databaseSettings) {
   try {
     var _temp7 = function _temp7() {
@@ -209,7 +209,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
               _this5.addChangeDocumentMeta(id);
 
               eventBulk.events.push({
-                eventId: getLokiEventKey(false, id, newRevision),
+                eventId: getLokiEventKey(_this5, id, newRevision),
                 documentId: id,
                 change: {
                   doc: writeDoc,
@@ -300,7 +300,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
               }
 
               eventBulk.events.push({
-                eventId: getLokiEventKey(false, id, _newRevision),
+                eventId: getLokiEventKey(_this5, id, _newRevision),
                 documentId: id,
                 change: change,
                 startTime: startTime,
@@ -352,7 +352,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
             localState.collection.insert(flatClone(docData));
             eventBulk.events.push({
               documentId: id,
-              eventId: getLokiEventKey(false, id, docData._rev),
+              eventId: getLokiEventKey(_this7, id, docData._rev),
               change: {
                 doc: docData,
                 id: id,
@@ -413,7 +413,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
               if (change) {
                 eventBulk.events.push({
                   documentId: id,
-                  eventId: getLokiEventKey(false, id, docData._rev),
+                  eventId: getLokiEventKey(_this7, id, docData._rev),
                   change: change,
                   startTime: startTime,
                   endTime: now()

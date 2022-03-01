@@ -1,9 +1,7 @@
 import { Query as MingoQuery } from 'mingo';
 import { binaryMd5 } from 'pouchdb-md5';
 import { getDexieSortComparator } from './dexie-helper';
-import { flatClone } from '../../util';
 import { createDexieStorageInstance } from './rx-storage-instance-dexie';
-import { createDexieKeyObjectStorageInstance } from './rx-storage-key-object-instance-dexie';
 import { getPouchQueryPlan } from './query/dexie-query';
 import { newRxError } from '../../rx-error';
 export var RxStorageDexieStatics = {
@@ -68,13 +66,6 @@ export var RxStorageDexie = /*#__PURE__*/function () {
 
   _proto.createStorageInstance = function createStorageInstance(params) {
     return createDexieStorageInstance(this, params, this.settings);
-  };
-
-  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
-    // ensure we never mix up key-object data with normal storage documents.
-    var useParams = flatClone(params);
-    useParams.collectionName = params.collectionName + '-key-object';
-    return createDexieKeyObjectStorageInstance(this, params, this.settings);
   };
 
   return RxStorageDexie;

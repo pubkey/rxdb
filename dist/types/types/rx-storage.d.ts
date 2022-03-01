@@ -1,5 +1,4 @@
 import type { ChangeEvent } from 'event-reduce-js';
-import { BlobBuffer } from './pouch';
 import { RxDocumentMeta } from './rx-document';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
@@ -109,10 +108,6 @@ export type BulkWriteRow<DocumentData> = {
     document: RxDocumentWriteData<DocumentData>
 };
 
-export type BulkWriteLocalRow<DocumentData> = {
-    previous?: RxLocalDocumentData<DocumentData>,
-    document: RxLocalDocumentData<DocumentData>
-}
 
 /**
  * Meta data of the attachment.
@@ -147,30 +142,18 @@ export type RxAttachmentData = RxAttachmentDataMeta & {
  */
 export type RxAttachmentWriteData = RxAttachmentData & {
     /**
-     * The data of the attachment.
+     * The data of the attachment. As string in base64 format.
+     * In the past we used BlobBuffer internally but it created many
+     * problems because of then we need the full data (for encryption/compression)
+     * so we anyway have to get the string value out of the BlobBuffer.
+     * 
+     * Also using BlobBuffer has no performance benefit because in some RxStorage implementations,
+     * like PouchDB, it just keeps the transaction open for longer because the BlobBuffer
+     * has be be read.
      */
-    data: BlobBuffer;
+    data: string;
 }
 
-
-export type RxLocalDocumentData<
-    Data = {
-        // local documents are schemaless and contain any data
-        [key: string]: any
-    }
-    > = {
-        // Local documents always have _id as primary
-        _id: string;
-
-        // local documents cannot have attachments,
-        // so this must always be an empty object.
-        _attachments: {};
-
-        _deleted: boolean;
-        _rev?: string;
-
-        _meta: RxDocumentMeta;
-    } & Data;
 
 /**
  * Error that can happer per document when
@@ -200,29 +183,6 @@ export type RxStorageBulkWriteError<RxDocType> = {
     writeRow: BulkWriteRow<RxDocType>;
 }
 
-export type RxStorageBulkWriteLocalError<D> = {
-    status: number |
-    409 // conflict
-    /**
-     * Before you add any other status code,
-     * check pouchdb/packages/node_modules/pouch-errors/src/index.js
-     * and try to use the same code as PouchDB does.
-     */
-    ;
-
-    /**
-     * set this property to make it easy
-     * to detect if the object is a RxStorageBulkWriteError
-     */
-    isError: true;
-
-    // primary key of the document
-    documentId: string;
-
-    // the original document data that should have been written.
-    writeRow: BulkWriteLocalRow<D>;
-}
-
 export type RxStorageBulkWriteResponse<DocData> = {
     /**
      * A map that is indexed by the documentId
@@ -240,25 +200,6 @@ export type RxStorageBulkWriteResponse<DocData> = {
         [documentId: string]: RxStorageBulkWriteError<DocData>;
     }
 }
-
-export type RxLocalStorageBulkWriteResponse<DocData> = {
-    /**
-     * A map that is indexed by the documentId
-     * contains all succeded writes.
-     */
-    success: {
-        [documentId: string]: RxLocalDocumentData<DocData>;
-    };
-
-    /**
-     * A map that is indexed by the documentId
-     * contains all errored writes.
-     */
-    error: {
-        [documentId: string]: RxStorageBulkWriteLocalError<DocData>;
-    };
-}
-
 
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
 
@@ -284,14 +225,6 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
      */
     multiInstance: boolean;
 }
-
-export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = {
-    databaseName: string;
-    collectionName: string;
-    options: InstanceCreationOptions;
-    multiInstance: boolean;
-}
-
 
 export type ChangeStreamOptions = {
 

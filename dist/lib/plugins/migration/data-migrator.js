@@ -8,7 +8,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.createOldCollection = exports._migrateDocuments = exports._getOldCollections = exports.DataMigrator = void 0;
 exports.deleteOldCollection = deleteOldCollection;
 exports.getBatchOfOldCollection = getBatchOfOldCollection;
-exports.getOldCollectionDocs = void 0;
+exports.getOldCollectionDocs = getOldCollectionDocs;
 exports.isDocumentDataWithoutRevisionEqual = isDocumentDataWithoutRevisionEqual;
 exports.migrateDocumentData = migrateDocumentData;
 exports.migrateOldCollection = migrateOldCollection;
@@ -28,13 +28,13 @@ var _rxError = require("../../rx-error");
 
 var _hooks = require("../../hooks");
 
-var _crypter = require("../../crypter");
-
 var _migrationState = require("./migration-state");
 
 var _operators = require("rxjs/operators");
 
 var _rxStorageHelper = require("../../rx-storage-helper");
+
+var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 
 /**
  * The DataMigrator handles the documents from collections with older schemas
@@ -179,17 +179,21 @@ exports._migrateDocuments = _migrateDocuments;
  * get an array with OldCollection-instances from all existing old storage-instances
  */
 var _getOldCollections = function _getOldCollections(dataMigrator) {
-  return Promise.resolve(getOldCollectionDocs(dataMigrator)).then(function (oldColDocs) {
-    return Promise.all(oldColDocs.map(function (colDoc) {
-      if (!colDoc) {
-        return null;
-      }
+  try {
+    return Promise.resolve(getOldCollectionDocs(dataMigrator)).then(function (oldColDocs) {
+      return Promise.all(oldColDocs.map(function (colDoc) {
+        if (!colDoc) {
+          return null;
+        }
 
-      return createOldCollection(colDoc.schema.version, colDoc.schema, dataMigrator);
-    }).filter(function (colDoc) {
-      return colDoc !== null;
-    }));
-  });
+        return createOldCollection(colDoc.data.schema.version, colDoc.data.schema, dataMigrator);
+      }).filter(function (colDoc) {
+        return colDoc !== null;
+      }));
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
 };
 /**
  * returns true if a migration is needed
@@ -198,31 +202,9 @@ var _getOldCollections = function _getOldCollections(dataMigrator) {
 
 exports._getOldCollections = _getOldCollections;
 
-var getOldCollectionDocs = function getOldCollectionDocs(dataMigrator) {
-  try {
-    return Promise.all((0, _rxSchema.getPreviousVersions)(dataMigrator.currentSchema.jsonSchema).map(function (v) {
-      return (0, _rxStorageHelper.getSingleDocument)(dataMigrator.database.internalStore, dataMigrator.name + '-' + v);
-    }).map(function (fun) {
-      return fun["catch"](function () {
-        return null;
-      });
-    }) // auto-catch so Promise.all continues
-    ).then(function (oldCollectionDocs) {
-      return oldCollectionDocs.filter(function (d) {
-        return !!d;
-      });
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports.getOldCollectionDocs = getOldCollectionDocs;
-
 var createOldCollection = function createOldCollection(version, schemaObj, dataMigrator) {
   try {
     var database = dataMigrator.newestCollection.database;
-    var schema = (0, _rxSchema.createRxSchema)(schemaObj, false);
     var storageInstanceCreationParams = {
       databaseName: database.name,
       collectionName: dataMigrator.newestCollection.name,
@@ -238,10 +220,9 @@ var createOldCollection = function createOldCollection(version, schemaObj, dataM
         newestCollection: dataMigrator.newestCollection,
         database: database,
         schema: (0, _rxSchema.createRxSchema)(schemaObj, false),
-        storageInstance: storageInstance,
-        _crypter: (0, _crypter.createCrypter)(database.password, schema)
+        storageInstance: storageInstance
       };
-      ret.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(ret, storageInstance);
+      ret.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(ret.database, storageInstance, schemaObj);
       return ret;
     });
   } catch (e) {
@@ -418,6 +399,17 @@ var DataMigrator = /*#__PURE__*/function () {
 }();
 
 exports.DataMigrator = DataMigrator;
+
+function getOldCollectionDocs(dataMigrator) {
+  var collectionDocKeys = (0, _rxSchema.getPreviousVersions)(dataMigrator.currentSchema.jsonSchema).map(function (version) {
+    return dataMigrator.name + '-' + version;
+  });
+  return dataMigrator.database.internalStore.findDocumentsById(collectionDocKeys.map(function (key) {
+    return (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(key, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION);
+  }), false).then(function (docsObj) {
+    return Object.values(docsObj);
+  });
+}
 
 function mustMigrate(dataMigrator) {
   if (dataMigrator.currentSchema.version === 0) {

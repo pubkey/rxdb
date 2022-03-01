@@ -34,7 +34,7 @@ var _eventReduce = require("./event-reduce");
 
 var _queryCache = require("./query-cache");
 
-var _rxSchema = require("./rx-schema");
+var _rxSchemaHelper = require("./rx-schema-helper");
 
 /**
  * Runs the query over the storage instance
@@ -558,7 +558,7 @@ function __ensureEqual(rxQuery) {
 
 
 function normalizeMangoQuery(schema, mangoQuery) {
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+  var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   mangoQuery = (0, _util.flatClone)(mangoQuery);
   /**
    * To ensure a deterministic sorting,

@@ -5,4 +5,3 @@ export declare class DocCache<T> {
     set(id: string, obj: T): Map<string, T>;
     delete(id: string): boolean;
 }
-export declare function createDocCache<T = any>(): DocCache<T>;

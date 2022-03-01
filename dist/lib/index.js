@@ -10,6 +10,11 @@ var _exportNames = {
   isRxDatabase: true,
   dbCount: true,
   _collectionNamePrimary: true,
+  INTERNAL_CONTEXT_COLLECTION: true,
+  INTERNAL_CONTEXT_ENCRYPTION: true,
+  INTERNAL_CONTEXT_REPLICATION_PRIMITIVES: true,
+  getPrimaryKeyOfInternalDocument: true,
+  STORAGE_TOKEN_DOCUMENT_KEY: true,
   overwritable: true,
   isRxCollection: true,
   RxCollectionBase: true,
@@ -31,14 +36,29 @@ var _exportNames = {
   toTypedRxJsonSchema: true,
   getPseudoSchemaForVersion: true,
   getSchemaByObjectPath: true,
-  findLocalDocument: true,
   getSingleDocument: true,
   getAllDocuments: true,
-  writeSingleLocal: true,
   writeSingle: true,
-  _clearHook: true,
-  createCrypter: true
+  _clearHook: true
 };
+Object.defineProperty(exports, "INTERNAL_CONTEXT_COLLECTION", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION;
+  }
+});
+Object.defineProperty(exports, "INTERNAL_CONTEXT_ENCRYPTION", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabaseInternalStore.INTERNAL_CONTEXT_ENCRYPTION;
+  }
+});
+Object.defineProperty(exports, "INTERNAL_CONTEXT_REPLICATION_PRIMITIVES", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabaseInternalStore.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES;
+  }
+});
 Object.defineProperty(exports, "RxCollectionBase", {
   enumerable: true,
   get: function get() {
@@ -49,6 +69,12 @@ Object.defineProperty(exports, "RxSchema", {
   enumerable: true,
   get: function get() {
     return _rxSchema.RxSchema;
+  }
+});
+Object.defineProperty(exports, "STORAGE_TOKEN_DOCUMENT_KEY", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabaseInternalStore.STORAGE_TOKEN_DOCUMENT_KEY;
   }
 });
 Object.defineProperty(exports, "_clearHook", {
@@ -67,12 +93,6 @@ Object.defineProperty(exports, "addRxPlugin", {
   enumerable: true,
   get: function get() {
     return _plugin.addRxPlugin;
-  }
-});
-Object.defineProperty(exports, "createCrypter", {
-  enumerable: true,
-  get: function get() {
-    return _crypter.createCrypter;
   }
 });
 Object.defineProperty(exports, "createRxCollection", {
@@ -103,12 +123,6 @@ Object.defineProperty(exports, "fillObjectDataBeforeInsert", {
   enumerable: true,
   get: function get() {
     return _rxCollectionHelper.fillObjectDataBeforeInsert;
-  }
-});
-Object.defineProperty(exports, "findLocalDocument", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.findLocalDocument;
   }
 });
 Object.defineProperty(exports, "flattenEvents", {
@@ -151,6 +165,12 @@ Object.defineProperty(exports, "getPreviousVersions", {
   enumerable: true,
   get: function get() {
     return _rxSchema.getPreviousVersions;
+  }
+});
+Object.defineProperty(exports, "getPrimaryKeyOfInternalDocument", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument;
   }
 });
 Object.defineProperty(exports, "getPseudoSchemaForVersion", {
@@ -237,12 +257,6 @@ Object.defineProperty(exports, "writeSingle", {
     return _rxStorageHelper.writeSingle;
   }
 });
-Object.defineProperty(exports, "writeSingleLocal", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.writeSingleLocal;
-  }
-});
 
 require("./types/modules/graphql-client.d");
 
@@ -253,6 +267,8 @@ require("./types/modules/modifiyjs.d");
 var _plugin = require("./plugin");
 
 var _rxDatabase = require("./rx-database");
+
+var _rxDatabaseInternalStore = require("./rx-database-internal-store");
 
 var _overwritable = require("./overwritable");
 
@@ -275,8 +291,6 @@ var _rxSchemaHelper = require("./rx-schema-helper");
 var _rxStorageHelper = require("./rx-storage-helper");
 
 var _hooks = require("./hooks");
-
-var _crypter = require("./crypter");
 
 var _queryCache = require("./query-cache");
 

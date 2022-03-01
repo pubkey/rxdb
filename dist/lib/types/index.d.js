@@ -212,6 +212,19 @@ Object.keys(_replicationCouchdb).forEach(function (key) {
   });
 });
 
+var _localDocuments = require("./plugins/local-documents");
+
+Object.keys(_localDocuments).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _localDocuments[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _localDocuments[key];
+    }
+  });
+});
+
 var _server = require("./plugins/server");
 
 Object.keys(_server).forEach(function (key) {

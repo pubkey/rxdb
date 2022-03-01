@@ -112,6 +112,7 @@ export var ERROR_MESSAGES = {
   LD5: 'RxDocument.set() id cannot be modified',
   LD6: 'LocalDocument: Function is not useable on local documents',
   LD7: 'Local document already exists',
+  LD8: 'localDocuments not activated. Set localDocuments=true on creation, when you want to store local documents on the RxDatabase or RxCollection.',
   // plugins/replication.js
   RC1: 'Replication: already added',
   RC2: 'RxCollection.syncCouchDB() query must be from the same RxCollection',

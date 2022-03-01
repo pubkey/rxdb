@@ -101,12 +101,9 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     toJSON(withRevAndAttachments: true): DeepReadonly<RxDocumentData<RxDocumentType>>;
     toJSON(withRevAndAttachments: false): DeepReadonly<RxDocumentType>;
 
+    toMutableJSON(): RxDocumentType;
+    toMutableJSON(withRevAndAttachments: true): RxDocumentData<RxDocumentType>;
+    toMutableJSON(withRevAndAttachments: false): RxDocumentType;
+
     destroy(): void;
-}
-
-declare type LocalDocWithType<LocalDocType> = RxDocumentBase<LocalDocType> & LocalDocType;
-
-export declare type RxLocalDocument<Parent, LocalDocType = any> = RxDocumentBase<LocalDocType> & LocalDocType & {
-    readonly parent: Parent;
-    isLocal(): true;
 }

@@ -14,8 +14,6 @@ var _util = require("../../util");
 
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
 
-var _rxStorageKeyObjectInstanceLoki = require("./rx-storage-key-object-instance-loki");
-
 var _lokijsHelper = require("./lokijs-helper");
 
 var _pouchdbMd = require("pouchdb-md5");
@@ -105,13 +103,6 @@ var RxStorageLoki = /*#__PURE__*/function () {
 
   _proto.createStorageInstance = function createStorageInstance(params) {
     return (0, _rxStorageInstanceLoki.createLokiStorageInstance)(this, params, this.databaseSettings);
-  };
-
-  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
-    // ensure we never mix up key-object data with normal storage documents.
-    var useParams = (0, _util.flatClone)(params);
-    useParams.collectionName = params.collectionName + '-key-object';
-    return (0, _rxStorageKeyObjectInstanceLoki.createLokiKeyObjectStorageInstance)(this, params, this.databaseSettings);
   };
 
   return RxStorageLoki;

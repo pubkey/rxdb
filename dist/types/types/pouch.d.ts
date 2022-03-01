@@ -348,7 +348,7 @@ export declare class PouchDBInstance {
         docId: string,
         attachmentId: string,
         options?: { rev?: string },
-    ): Promise<any>;
+    ): Promise<BlobBuffer>;
     removeAttachment(
         docId: string,
         attachmentId: string,

@@ -18,8 +18,6 @@ exports.waitUntilHasLeader = void 0;
 
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
 
-var _rxStorageKeyObjectInstanceLoki = require("./rx-storage-key-object-instance-loki");
-
 var _lokijs = _interopRequireDefault(require("lokijs"));
 
 var _unload = require("unload");
@@ -241,8 +239,6 @@ function _for(test, update, body) {
  */
 var mustUseLocalState = function mustUseLocalState(instance) {
   try {
-    var isRxStorageInstanceLoki = typeof instance.query === 'function';
-
     if (instance.closed) {
       /**
        * If this happens, it means that RxDB made a call to an already closed storage instance.
@@ -253,8 +249,7 @@ var mustUseLocalState = function mustUseLocalState(instance) {
         args: {
           instanceClosed: instance.closed,
           databaseName: instance.databaseName,
-          collectionName: instance.collectionName,
-          isRxStorageInstanceLoki: isRxStorageInstanceLoki
+          collectionName: instance.collectionName
         }
       });
     }
@@ -275,23 +270,13 @@ var mustUseLocalState = function mustUseLocalState(instance) {
 
       if (leaderElector.isLeader && !instance.internals.localState) {
         // own is leader, use local instance
-        if (isRxStorageInstanceLoki) {
-          instance.internals.localState = (0, _rxStorageInstanceLoki.createLokiLocalState)({
-            databaseName: instance.databaseName,
-            collectionName: instance.collectionName,
-            options: instance.options,
-            schema: instance.schema,
-            multiInstance: instance.internals.leaderElector ? true : false
-          }, instance.databaseSettings);
-        } else {
-          instance.internals.localState = (0, _rxStorageKeyObjectInstanceLoki.createLokiKeyValueLocalState)({
-            databaseName: instance.databaseName,
-            collectionName: instance.collectionName,
-            options: instance.options,
-            multiInstance: instance.internals.leaderElector ? true : false
-          }, instance.databaseSettings);
-        }
-
+        instance.internals.localState = (0, _rxStorageInstanceLoki.createLokiLocalState)({
+          databaseName: instance.databaseName,
+          collectionName: instance.collectionName,
+          options: instance.options,
+          schema: instance.schema,
+          multiInstance: instance.internals.leaderElector ? true : false
+        }, instance.databaseSettings);
         return (0, _util.ensureNotFalsy)(instance.internals.localState);
       } else {
         // other is leader, send message to remote leading instance
@@ -329,11 +314,8 @@ exports.waitUntilHasLeader = waitUntilHasLeader;
  */
 var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
   try {
-    var isRxStorageInstanceLoki = typeof instance.query === 'function';
-    var messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
-
     var _temp9 = function () {
-      if (msg.type === messageType && msg.requestId && msg.databaseName === instance.databaseName && msg.collectionName === instance.collectionName && !msg.response) {
+      if (msg.type === LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE && msg.requestId && msg.databaseName === instance.databaseName && msg.collectionName === instance.collectionName && !msg.response) {
         var _temp10 = function _temp10() {
           var response = {
             response: true,
@@ -541,9 +523,8 @@ function stripLokiKey(docData) {
   return cloned;
 }
 
-function getLokiEventKey(isLocal, primary, revision) {
-  var prefix = isLocal ? 'local' : 'non-local';
-  var eventKey = prefix + '|' + primary + '|' + revision;
+function getLokiEventKey(storageInstance, primary, revision) {
+  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + primary + '|' + revision;
   return eventKey;
 }
 /**

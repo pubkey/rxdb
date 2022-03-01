@@ -14,8 +14,6 @@ var _pouchdbHelper = require("./pouchdb-helper");
 
 var _rxSchemaHelper = require("../../rx-schema-helper");
 
-var _rxSchema = require("../../rx-schema");
-
 var _overwritable = require("../../overwritable");
 
 var _util = require("../../util");
@@ -35,7 +33,7 @@ var RxStoragePouchStatics = {
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
 
-    var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+    var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
     var sortOptions = query.sort ? query.sort : [(_ref = {}, _ref[primaryPath] = 'asc', _ref)];
     var selector = query.selector ? query.selector : {};
     var inMemoryFields = Object.keys(selector).filter(function (key) {
@@ -94,7 +92,7 @@ var RxStoragePouchStatics = {
    * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
    */
   getQueryMatcher: function getQueryMatcher(schema, query) {
-    var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+    var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
     var selector = query.selector ? query.selector : {};
     var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(selector);
 
@@ -135,7 +133,7 @@ var RxStoragePouchStatics = {
 exports.RxStoragePouchStatics = RxStoragePouchStatics;
 
 function preparePouchDbQuery(schema, mutateableQuery) {
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+  var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   var query = mutateableQuery;
   /**
    * because sort wont work on unused keys we have to workaround

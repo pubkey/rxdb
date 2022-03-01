@@ -30,19 +30,6 @@ Object.keys(_rxStorageInstanceDexie).forEach(function (key) {
   });
 });
 
-var _rxStorageKeyObjectInstanceDexie = require("./rx-storage-key-object-instance-dexie");
-
-Object.keys(_rxStorageKeyObjectInstanceDexie).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _rxStorageKeyObjectInstanceDexie[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _rxStorageKeyObjectInstanceDexie[key];
-    }
-  });
-});
-
 var _dexieHelper = require("./dexie-helper");
 
 Object.keys(_dexieHelper).forEach(function (key) {

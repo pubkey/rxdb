@@ -8,7 +8,9 @@ export var RxDBMigrationPlugin = {
   name: 'migration',
   rxdb: true,
   hooks: {
-    preDestroyRxDatabase: onDatabaseDestroy
+    preDestroyRxDatabase: {
+      after: onDatabaseDestroy
+    }
   },
   prototypes: {
     RxDatabase: function RxDatabase(proto) {

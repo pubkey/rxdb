@@ -487,6 +487,31 @@ export var blobBufferUtil = {
 
     return blobBuffer;
   },
+
+  /**
+   * depending if we are on node or browser,
+   * we have to use Buffer(node) or Blob(browser)
+   */
+  createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
+    var blobBuffer;
+
+    if (isElectronRenderer) {
+      // if we are inside of electron-renderer, always use the node-buffer
+      return Buffer.from(base64String, 'base64');
+    }
+
+    try {
+      // for browsers
+      blobBuffer = new Blob([base64String], {
+        type: type
+      });
+    } catch (e) {
+      // for node
+      blobBuffer = Buffer.from(base64String, 'base64');
+    }
+
+    return blobBuffer;
+  },
   isBlobBuffer: function isBlobBuffer(data) {
     if (typeof Buffer !== 'undefined' && Buffer.isBuffer(data) || data instanceof Blob) {
       return true;
@@ -503,6 +528,39 @@ export var blobBufferUtil = {
       // node
       return nextTick().then(function () {
         return blobBuffer.toString();
+      });
+    }
+
+    return new Promise(function (res) {
+      // browser
+      var reader = new FileReader();
+      reader.addEventListener('loadend', function (e) {
+        var text = e.target.result;
+        res(text);
+      });
+      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+      /**
+       * in the electron-renderer we have a typed array insteaf of a blob
+       * so we have to transform it.
+       * @link https://github.com/pubkey/rxdb/issues/1371
+       */
+
+      if (blobBufferType === '[object Uint8Array]') {
+        blobBuffer = new Blob([blobBuffer]);
+      }
+
+      reader.readAsText(blobBuffer);
+    });
+  },
+  tobase64String: function tobase64String(blobBuffer) {
+    if (typeof blobBuffer === 'string') {
+      return Promise.resolve(blobBuffer);
+    }
+
+    if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
+      // node
+      return nextTick().then(function () {
+        return blobBuffer.toString('base64');
       });
     }
 

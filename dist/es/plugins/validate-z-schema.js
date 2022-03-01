@@ -72,23 +72,22 @@ var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   });
 };
 
-export var rxdb = true;
-export var prototypes = {
-  /**
-   * set validate-function for the RxSchema.prototype
-   */
-  RxSchema: function RxSchema(proto) {
-    proto._getValidator = _getValidator;
-    proto.validate = validate;
-  }
-};
-export var hooks = {
-  createRxSchema: runAfterSchemaCreated
-};
 export var RxDBValidateZSchemaPlugin = {
   name: 'validate-z-schema',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  hooks: hooks
+  rxdb: true,
+  prototypes: {
+    /**
+     * set validate-function for the RxSchema.prototype
+     */
+    RxSchema: function RxSchema(proto) {
+      proto._getValidator = _getValidator;
+      proto.validate = validate;
+    }
+  },
+  hooks: {
+    createRxSchema: {
+      after: runAfterSchemaCreated
+    }
+  }
 };
 //# sourceMappingURL=validate-z-schema.js.map

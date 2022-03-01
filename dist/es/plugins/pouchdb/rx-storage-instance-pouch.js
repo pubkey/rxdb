@@ -1,10 +1,10 @@
 import { ObliviousSet } from 'oblivious-set';
 import { Subject } from 'rxjs';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { OPEN_POUCHDB_STORAGE_INSTANCES, POUCHDB_DESIGN_PREFIX, pouchDocumentDataToRxDocumentData, pouchSwapIdToPrimary, rxDocumentDataToPouchDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
-import { flatClone, getFromMapOrThrow, PROMISE_RESOLVE_VOID } from '../../util';
+import { blobBufferUtil, flatClone, getFromMapOrThrow, PROMISE_RESOLVE_VOID } from '../../util';
 import { getCustomEventEmitterByPouch } from './custom-events-plugin';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 function _settle(pact, state, value) {
   if (!pact.s) {
@@ -414,7 +414,9 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
     try {
       var _this11 = this;
 
-      return Promise.resolve(_this11.internals.pouch.getAttachment(documentId, attachmentId));
+      return Promise.resolve(_this11.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
+        return blobBufferUtil.tobase64String(attachmentData);
+      });
     } catch (e) {
       return Promise.reject(e);
     }

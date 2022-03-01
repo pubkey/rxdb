@@ -1,13 +1,21 @@
 import type { Observable } from 'rxjs';
 import type { RxReplicationStateBase } from '../../plugins/replication';
 import { RxReplicationError } from '../../plugins/replication/rx-replication-error';
+import { InternalStoreDocType } from '../../rx-database-internal-store';
 import type {
     DeepReadonlyObject,
     RxCollection,
     RxDocumentData
 } from '../../types';
 
-export type ReplicationCheckpointDocument = { _id: string; value: number; };
+
+export type InternalStoreReplicationPushDocType = InternalStoreDocType<{
+    lastPushSequence: number;
+}>;
+export type InternalStoreReplicationPullDocType<RxDocType> = InternalStoreDocType<{
+    lastPulledDoc: RxDocumentData<RxDocType>;
+}>;
+
 export type PullRunResult =
     'ok' |      // pull was sucessfull 
     'error' |   // pull errored and must be retried

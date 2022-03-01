@@ -93,7 +93,9 @@ var RxDBLeaderElectionPlugin = {
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: {
-    preDestroyRxDatabase: onDestroy
+    preDestroyRxDatabase: {
+      after: onDestroy
+    }
   }
 };
 exports.RxDBLeaderElectionPlugin = RxDBLeaderElectionPlugin;

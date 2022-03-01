@@ -459,6 +459,10 @@ var basePrototype = {
       return _overwritable.overwritable.deepFreezeWhenDevMode(this._data);
     }
   },
+  toMutableJSON: function toMutableJSON() {
+    var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    return (0, _util.clone)(this.toJSON(withMetaFields));
+  },
 
   /**
    * set data by objectPath

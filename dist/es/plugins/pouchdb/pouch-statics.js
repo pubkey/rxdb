@@ -1,8 +1,7 @@
 import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
 import { newRxError } from '../../rx-error';
 import { getPouchIndexDesignDocNameByIndex, pouchHash, pouchSwapPrimaryToId, POUCH_HASH_KEY, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
-import { getSchemaByObjectPath } from '../../rx-schema-helper';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import { overwritable } from '../../overwritable';
 import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
 export var RxStoragePouchStatics = {

@@ -1,8 +1,4 @@
 /**
- * stores the hooks that where added by the plugins
- */
-
-/**
  * hook-functions that can be extended by the plugin
  */
 export var HOOKS = {
@@ -31,6 +27,12 @@ export var HOOKS = {
   * @async
   */
   postDestroyRxCollection: [],
+
+  /**
+   * Runs after a collection is removed.
+   * @async
+   */
+  postRemoveRxCollection: [],
 
   /**
     * functions that get the json-schema as input
@@ -73,6 +75,8 @@ export var HOOKS = {
    * the RxStorage instance.
    */
   postReadFromInstance: [],
+  preWriteAttachment: [],
+  postReadAttachment: [],
   createRxDocument: [],
 
   /**
@@ -106,7 +110,13 @@ export var HOOKS = {
   /**
    * runs at the beginning of the destroy-process of a database
    */
-  preDestroyRxDatabase: []
+  preDestroyRxDatabase: [],
+
+  /**
+   * runs after a database has been removed
+   * @async
+   */
+  postRemoveRxDatabase: []
 };
 export function runPluginHooks(hookKey, obj) {
   HOOKS[hookKey].forEach(function (fun) {

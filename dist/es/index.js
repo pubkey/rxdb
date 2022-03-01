@@ -8,6 +8,7 @@ import './types/modules/modifiyjs.d';
 export { addRxPlugin } from './plugin';
 export { createRxDatabase, removeRxDatabase, isRxDatabase, dbCount, _collectionNamePrimary // used in tests
 } from './rx-database';
+export { INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_ENCRYPTION, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES, getPrimaryKeyOfInternalDocument, STORAGE_TOKEN_DOCUMENT_KEY } from './rx-database-internal-store';
 export { overwritable } from './overwritable';
 export { isRxCollection, RxCollectionBase, createRxCollection // used in tests
 } from './rx-collection';
@@ -18,11 +19,9 @@ export { getDocumentOrmPrototype, getDocumentPrototype } from './rx-document-pro
 export { isInstanceOf as isRxQuery, normalizeMangoQuery } from './rx-query';
 export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, normalizeRxJsonSchema, getFinalFields, getPreviousVersions, toTypedRxJsonSchema } from './rx-schema';
 export { getPseudoSchemaForVersion, getSchemaByObjectPath } from './rx-schema-helper';
-export { findLocalDocument, getSingleDocument, getAllDocuments, writeSingleLocal, writeSingle } from './rx-storage-helper';
+export { getSingleDocument, getAllDocuments, writeSingle } from './rx-storage-helper';
 export { _clearHook // used in tests
 } from './hooks';
-export { createCrypter // used in tests
-} from './crypter';
 export * from './query-cache';
 export * from './util'; // TODO how to do 'export type * ..' ?
 //# sourceMappingURL=index.js.map

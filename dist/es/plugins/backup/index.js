@@ -464,13 +464,15 @@ export var RxDBBackupPlugin = {
     }
   },
   hooks: {
-    preDestroyRxDatabase: function preDestroyRxDatabase(db) {
-      var states = BACKUP_STATES_BY_DB.get(db);
+    preDestroyRxDatabase: {
+      after: function preDestroyRxDatabase(db) {
+        var states = BACKUP_STATES_BY_DB.get(db);
 
-      if (states) {
-        states.forEach(function (state) {
-          return state.cancel();
-        });
+        if (states) {
+          states.forEach(function (state) {
+            return state.cancel();
+          });
+        }
       }
     }
   }

@@ -15,13 +15,13 @@ exports.getDocsInDb = void 0;
 
 var _mingo = _interopRequireDefault(require("mingo"));
 
-var _rxSchema = require("../../rx-schema");
-
 var _dexie = require("dexie");
 
 var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
+
+var _rxSchemaHelper = require("../../rx-schema-helper");
 
 /**
  * Returns all documents in the database.
@@ -70,7 +70,7 @@ var DEXIE_STATE_DB_BY_NAME = new Map();
 var REF_COUNT_PER_DEXIE_DB = new Map();
 
 function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
-  var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   var dexieDbName = 'rxdb-dexie-' + databaseName + '--' + collectionName;
   var state = DEXIE_STATE_DB_BY_NAME.get(dexieDbName);
 
@@ -181,7 +181,7 @@ function getDexieStoreSchema(rxJsonSchema) {
    * @link https://github.com/dexie/Dexie.js/issues/1307#issuecomment-846590912
    */
 
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
+  var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
   parts.push([primaryKey]); // add other indexes
 
   if (rxJsonSchema.indexes) {
@@ -211,9 +211,8 @@ function getDexieStoreSchema(rxJsonSchema) {
   }).join(', ');
 }
 
-function getDexieEventKey(isLocal, primary, revision) {
-  var prefix = isLocal ? 'local' : 'non-local';
-  var eventKey = prefix + '|' + primary + '|' + revision;
+function getDexieEventKey(storageInstance, primary, revision) {
+  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + primary + '|' + revision;
   return eventKey;
 }
 //# sourceMappingURL=dexie-helper.js.map

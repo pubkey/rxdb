@@ -3,11 +3,13 @@
  * It's using crypto-js/aes for password-encryption
  * @link https://github.com/brix/crypto-js
  */
-import type { RxPlugin, RxDatabase, RxLocalDocumentData } from '../types';
-export declare function encrypt(value: string, password: any): string;
-export declare function decrypt(cipherText: string, password: any): string;
-export declare type PasswordHashDocument = RxLocalDocumentData<{
-    value: string;
+import type { RxPlugin, RxDatabase } from '../types';
+import { InternalStoreDocType } from '../rx-database-internal-store';
+export declare const MINIMUM_PASSWORD_LENGTH: 8;
+export declare function encryptString(value: string, password: string): string;
+export declare function decryptString(cipherText: string, password: any): string;
+export declare type InternalStorePasswordDocType = InternalStoreDocType<{
+    hash: string;
 }>;
 /**
  * validates and inserts the password hash into the internal collection
@@ -15,14 +17,4 @@ export declare type PasswordHashDocument = RxLocalDocumentData<{
  * which would cause strange side effects when both instances save into the same db
  */
 export declare function storePasswordHashIntoDatabase(rxDatabase: RxDatabase): Promise<boolean>;
-export declare const rxdb = true;
-export declare const prototypes: {
-    /**
-     * set crypto-functions for the Crypter.prototype
-     */
-    Crypter: (proto: any) => void;
-};
-export declare const overwritable: {
-    validatePassword: (password: any) => void;
-};
 export declare const RxDBEncryptionPlugin: RxPlugin;

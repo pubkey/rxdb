@@ -30,7 +30,7 @@ var _pouchdbHelper = require("./pouchdb-helper");
  * @link http://jsbin.com/pagebi/1/edit?js,output
  * @link https://github.com/pubkey/rxdb/blob/1f4115b69bdacbb853af9c637d70f5f184d4e474/src/rx-storage-pouchdb.ts#L273
  */
-var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(primaryPath, emitData) {
+var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDBInstance, primaryPath, emitData) {
   try {
     var ret = [];
 
@@ -113,7 +113,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(primary
                 });
               }
 
-              var changeEvent = changeEventToNormal(primaryPath, event, emitData.startTime, emitData.endTime);
+              var changeEvent = changeEventToNormal(pouchDBInstance, primaryPath, event, emitData.startTime, emitData.endTime);
               ret.push(changeEvent);
             });
           } catch (e) {
@@ -142,7 +142,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(primary
                   writeDoc = (0, _util.flatClone)(writeDoc);
                   writeDoc._rev = resultRow.rev;
                   var event = (0, _pouchdbHelper.pouchChangeRowToChangeEvent)(primaryPath, writeDoc);
-                  var changeEvent = changeEventToNormal(primaryPath, event);
+                  var changeEvent = changeEventToNormal(pouchDBInstance, primaryPath, event);
                   ret.push(changeEvent);
                 });
               } catch (e) {
@@ -162,7 +162,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(primary
                 return Promise.resolve((0, _pouchdbHelper.writeAttachmentsToAttachments)(writeRow.document._attachments)).then(function (attachments) {
                   function _temp15() {
                     if (writeRow.document._deleted && (!writeRow.previous || writeRow.previous._deleted)) {} else {
-                      var changeEvent = changeEventToNormal(emitData.writeOptions.custom.primaryPath, event, emitData.startTime, emitData.endTime);
+                      var changeEvent = changeEventToNormal(pouchDBInstance, emitData.writeOptions.custom.primaryPath, event, emitData.startTime, emitData.endTime);
                       ret.push(changeEvent);
                     }
                   }
@@ -307,7 +307,7 @@ function addCustomEventsPluginToPouch() {
                       startTime: startTime,
                       endTime: endTime
                     };
-                    return Promise.resolve(eventEmitDataToStorageEvents('_id', emitData)).then(function (events) {
+                    return Promise.resolve(eventEmitDataToStorageEvents(_this2, '_id', emitData)).then(function (events) {
                       var eventBulk = {
                         id: (0, _util.randomCouchString)(10),
                         events: events
@@ -455,11 +455,11 @@ function addCustomEventsPluginToPouch() {
   });
 }
 
-function changeEventToNormal(primaryPath, change, startTime, endTime) {
+function changeEventToNormal(pouchDBInstance, primaryPath, change, startTime, endTime) {
   var doc = change.operation === 'DELETE' ? change.previous : change.doc;
   var primary = doc[primaryPath];
   var storageChangeEvent = {
-    eventId: (0, _pouchdbHelper.getEventKey)(false, primary, doc._rev),
+    eventId: (0, _pouchdbHelper.getEventKey)(pouchDBInstance, primary, doc._rev),
     documentId: primary,
     change: change,
     startTime: startTime,

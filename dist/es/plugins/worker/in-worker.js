@@ -58,30 +58,6 @@ export function wrappedRxStorage(args) {
     remove: function remove(instanceId) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.remove();
-    },
-
-    /**
-     * RxKeyObjectStorageInstance
-     */
-    createKeyObjectStorageInstance: function createKeyObjectStorageInstance(params) {
-      try {
-        var _instanceId2 = nextId++;
-
-        return Promise.resolve(args.storage.createKeyObjectStorageInstance(params)).then(function (instance) {
-          instanceById.set(_instanceId2, instance);
-          return _instanceId2;
-        });
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    },
-    bulkWriteLocal: function bulkWriteLocal(instanceId, documentWrites) {
-      var instance = getFromMapOrThrow(instanceById, instanceId);
-      return instance.bulkWrite(documentWrites);
-    },
-    findLocalDocumentsById: function findLocalDocumentsById(instanceId, ids, withDeleted) {
-      var instance = getFromMapOrThrow(instanceById, instanceId);
-      return instance.findLocalDocumentsById(ids, withDeleted);
     }
   };
   expose(exposeMe);

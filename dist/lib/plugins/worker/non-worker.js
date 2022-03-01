@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxStorageWorker = exports.RxStorageKeyObjectInstanceWorker = exports.RxStorageInstanceWorker = void 0;
+exports.RxStorageWorker = exports.RxStorageInstanceWorker = void 0;
 exports.getRxStorageWorker = getRxStorageWorker;
 
 var _rxjs = require("rxjs");
@@ -53,24 +53,6 @@ var RxStorageWorker = /*#__PURE__*/function () {
     }
   };
 
-  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
-    try {
-      var _this4 = this;
-
-      return Promise.resolve(_this4.workerPromise).then(function (worker) {
-        return Promise.resolve(worker.createKeyObjectStorageInstance(params)).then(function (instanceId) {
-          return new RxStorageKeyObjectInstanceWorker(params.databaseName, params.collectionName, {
-            rxStorage: _this4,
-            worker: worker,
-            instanceId: instanceId
-          }, params.options);
-        });
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
   return RxStorageWorker;
 }();
 
@@ -82,7 +64,7 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
    * so we have to transform it.
    */
   function RxStorageInstanceWorker(databaseName, collectionName, schema, internals, options) {
-    var _this5 = this;
+    var _this3 = this;
 
     this.changes$ = new _rxjs.Subject();
     this.subs = [];
@@ -92,7 +74,7 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     this.subs.push(this.internals.worker.changeStream(this.internals.instanceId).subscribe(function (ev) {
-      return _this5.changes$.next(ev);
+      return _this3.changes$.next(ev);
     }));
   }
 
@@ -141,55 +123,6 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
 }();
 
 exports.RxStorageInstanceWorker = RxStorageInstanceWorker;
-
-var RxStorageKeyObjectInstanceWorker = /*#__PURE__*/function () {
-  /**
-   * threads.js uses observable-fns instead of rxjs
-   * so we have to transform it.
-   */
-  function RxStorageKeyObjectInstanceWorker(databaseName, collectionName, internals, options) {
-    var _this6 = this;
-
-    this.changes$ = new _rxjs.Subject();
-    this.subs = [];
-    this.databaseName = databaseName;
-    this.collectionName = collectionName;
-    this.internals = internals;
-    this.options = options;
-    this.subs.push(this.internals.worker.changeStream(this.internals.instanceId).subscribe(function (ev) {
-      return _this6.changes$.next(ev);
-    }));
-  }
-
-  var _proto3 = RxStorageKeyObjectInstanceWorker.prototype;
-
-  _proto3.bulkWrite = function bulkWrite(documentWrites) {
-    return this.internals.worker.bulkWriteLocal(this.internals.instanceId, documentWrites);
-  };
-
-  _proto3.findLocalDocumentsById = function findLocalDocumentsById(ids, withDeleted) {
-    return this.internals.worker.findLocalDocumentsById(this.internals.instanceId, ids, withDeleted);
-  };
-
-  _proto3.changeStream = function changeStream() {
-    return this.changes$.asObservable();
-  };
-
-  _proto3.close = function close() {
-    this.subs.forEach(function (sub) {
-      return sub.unsubscribe();
-    });
-    return this.internals.worker.close(this.internals.instanceId);
-  };
-
-  _proto3.remove = function remove() {
-    return this.internals.worker.remove(this.internals.instanceId);
-  };
-
-  return RxStorageKeyObjectInstanceWorker;
-}();
-
-exports.RxStorageKeyObjectInstanceWorker = RxStorageKeyObjectInstanceWorker;
 
 function getRxStorageWorker(settings) {
   var storage = new RxStorageWorker(settings, settings.statics);

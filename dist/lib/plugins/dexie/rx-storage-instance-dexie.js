@@ -11,11 +11,11 @@ var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
 
-var _rxSchema = require("../../rx-schema");
-
 var _dexieHelper = require("./dexie-helper");
 
 var _dexieQuery = require("./query/dexie-query");
+
+var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var createDexieStorageInstance = function createDexieStorageInstance(storage, params, settings) {
   try {
@@ -43,7 +43,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     this.settings = settings;
-    this.primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
+    this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
   }
   /**
    * Adds entries to the changes feed
@@ -116,7 +116,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                   var writeDoc = Object.assign({}, writeRow.document, {
                     _rev: newRevision,
                     _deleted: insertedIsDeleted,
-                    // TODO attachments are currently not working with lokijs
+                    // TODO attachments are currently not working with dexie.js
                     _attachments: {}
                   });
                   changesIds.push(id);
@@ -126,7 +126,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                   } else {
                     bulkPutDocs.push(writeDoc);
                     eventBulk.events.push({
-                      eventId: (0, _dexieHelper.getDexieEventKey)(false, id, newRevision),
+                      eventId: (0, _dexieHelper.getDexieEventKey)(_this4, id, newRevision),
                       documentId: id,
                       change: {
                         doc: writeDoc,
@@ -229,7 +229,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                     }
 
                     eventBulk.events.push({
-                      eventId: (0, _dexieHelper.getDexieEventKey)(false, id, _newRevision),
+                      eventId: (0, _dexieHelper.getDexieEventKey)(_this4, id, _newRevision),
                       documentId: id,
                       change: change,
                       startTime: startTime,
@@ -299,7 +299,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
 
                   eventBulk.events.push({
                     documentId: id,
-                    eventId: (0, _dexieHelper.getDexieEventKey)(false, id, docData._rev),
+                    eventId: (0, _dexieHelper.getDexieEventKey)(_this6, id, docData._rev),
                     change: {
                       doc: docData,
                       id: id,
@@ -363,7 +363,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                     if (change) {
                       eventBulk.events.push({
                         documentId: id,
-                        eventId: (0, _dexieHelper.getDexieEventKey)(false, id, docData._rev),
+                        eventId: (0, _dexieHelper.getDexieEventKey)(_this6, id, docData._rev),
                         change: change,
                         startTime: startTime,
                         // will be filled up before the event is pushed into the changestream

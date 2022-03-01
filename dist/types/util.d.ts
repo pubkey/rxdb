@@ -145,8 +145,14 @@ export declare const blobBufferUtil: {
      * we have to use Buffer(node) or Blob(browser)
      */
     createBlobBuffer(data: string, type: string): BlobBuffer;
+    /**
+     * depending if we are on node or browser,
+     * we have to use Buffer(node) or Blob(browser)
+     */
+    createBlobBufferFromBase64(base64String: string, type: string): BlobBuffer;
     isBlobBuffer(data: any): boolean;
     toString(blobBuffer: BlobBuffer | string): Promise<string>;
+    tobase64String(blobBuffer: BlobBuffer | string): Promise<string>;
     size(blobBuffer: BlobBuffer): number;
 };
 /**

@@ -14,8 +14,6 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _rxError = require("../../rx-error");
 
-var _rxSchema = require("../../rx-schema");
-
 var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var _util = require("../../util");
@@ -66,7 +64,7 @@ function checkFieldNameRegex(fieldName) {
 
 
 function validateFieldsDeep(rxJsonSchema) {
-  var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
+  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
 
   function checkField(fieldName, schemaObj, path) {
     if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
