@@ -56,8 +56,8 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
         /**
          * Emit the changestream into the collections change stream
          */
-        const subLocalDocs = storageInstance.changeStream().subscribe(async(eventBulk) => {
-            const databaseStorageToken = await database.storageToken;
+        const databaseStorageToken = await database.storageToken;
+        const subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
             const changeEventBulk: RxChangeEventBulk<RxLocalDocumentData> = {
                 id: eventBulk.id,
                 internal: false,

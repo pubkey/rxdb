@@ -202,13 +202,16 @@ config.parallel('local-documents.test.js', () => {
             });
             it('should update when exists', async () => {
                 const c = await humansCollection.create(0);
-                await c.upsertLocal('foobar', {
+                console.log('AAA');
+                const doc = await c.upsertLocal('foobar', {
                     foo: 'bar'
                 });
-                const doc = await c.upsertLocal('foobar', {
+                const doc2 = await c.upsertLocal('foobar', {
                     foo: 'bar2'
                 });
-                assert.ok(doc);
+
+                assert.ok(doc === doc2);
+                console.dir(doc._dataSync$.getValue());
                 assert.strictEqual(doc.get('foo'), 'bar2');
                 c.database.destroy();
             });

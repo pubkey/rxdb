@@ -335,6 +335,7 @@ export const basePrototype = {
                             if (this.collection) {
                                 newData = this.collection.schema.fillObjectWithDefaults(newData);
                             }
+
                             await this._saveData(newData, oldData);
                             done = true;
                         } catch (err) {

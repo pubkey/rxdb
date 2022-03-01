@@ -190,7 +190,7 @@ export class RxCollectionBase<
     private _onDestroy?: Promise<void>;
 
     private _onDestroyCall?: () => void;
-    public prepare(): Promise<void> {
+    public async prepare(): Promise<void> {
         this.storageInstance = getWrappedStorageInstance(
             this.database,
             this.internalStorageInstance,
@@ -209,8 +209,8 @@ export class RxCollectionBase<
          * single events, we should fully work with event bulks internally
          * to save performance.
          */
-        const subDocs = this.storageInstance.changeStream().subscribe(async (eventBulk) => {
-            const databaseStorageToken = await this.database.storageToken;
+        const databaseStorageToken = await this.database.storageToken;
+        const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
             const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
                 id: eventBulk.id,
                 internal: false,

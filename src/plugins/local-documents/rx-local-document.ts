@@ -129,7 +129,6 @@ const RxLocalDocumentPrototype: any = {
         const state = await getLocalDocStateByParent(this.parent);
         const oldData: RxDocumentData<RxLocalDocumentData> = this._dataSync$.getValue() as any;
         newData.id = (this as any).id;
-
         return state.storageInstance.bulkWrite([{
             previous: oldData,
             document: newData
