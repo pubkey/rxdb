@@ -73,12 +73,10 @@ export function upsertLocal<DocData = any>(
     return this.getLocal(id)
         .then((existing: RxDocument) => {
             if (!existing) {
-                console.log('upsertLocal() not existing');
                 // create new one
                 const docPromise = this.insertLocal(id, data);
                 return docPromise;
             } else {
-                console.log('upsertLocal() existing');
                 // update existing
                 const newData: RxDocumentData<RxLocalDocumentData<DocData>> = {
                     id,

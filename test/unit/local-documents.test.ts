@@ -211,7 +211,6 @@ config.parallel('local-documents.test.js', () => {
                 });
 
                 assert.ok(doc === doc2);
-                console.dir(doc._dataSync$.getValue());
                 assert.strictEqual(doc.get('foo'), 'bar2');
                 c.database.destroy();
             });
