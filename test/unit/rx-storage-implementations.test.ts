@@ -17,7 +17,10 @@ import {
     ensureNotFalsy,
     getFromObjectOrThrow,
     shuffleArray,
-    now
+    now,
+    getSingleDocument,
+    hashAttachmentData,
+    getAttachmentSize
 } from '../../';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -146,6 +149,13 @@ declare type NestedDoc = {
 };
 
 config.parallel('rx-storage-implementations.test.js (implementation: ' + config.storage.name + ')', () => {
+    describe('statics', () => {
+        const statics = config.storage.getStorage().statics;
+        it('.hashKey', () => {
+            assert.strictEqual(typeof statics.hashKey, 'string');
+            assert.ok(statics.hashKey.length > 0);
+        });
+    });
     describe('RxStorageInstance', () => {
         describe('creation', () => {
             it('open and close', async () => {
@@ -206,9 +216,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
 
-                console.log('writeResponse:');
-                console.dir(writeResponse);
-
                 assert.deepStrictEqual(writeResponse.error, {});
                 const first = getFromObjectOrThrow(writeResponse.success, 'foobar');
                 assert.deepStrictEqual(docData, first);
@@ -262,9 +269,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                await wait(500);
-                console.log('---------------------- A  -1');
-
                 // make an insert
                 const insertData = {
                     key: 'foobar',
@@ -297,10 +301,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
                 assert.deepStrictEqual(updateResponse.error, {});
-
-
-                await wait(500);
-                console.log('---------------------- A  -2');
 
                 // make the delete
                 const deleteResponse = await storageInstance.bulkWrite(
@@ -1405,8 +1405,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
 
                 const insertDocs = new Array(10).fill(0).map(() => getWriteData());
-                console.log('insertDocs:');
-                console.dir(insertDocs);
                 for (const insertDoc of insertDocs) {
                     await storageInstance.bulkWrite([
                         { document: insertDoc }
@@ -1420,8 +1418,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     limit: 5,
                     direction: 'after'
                 });
-                console.log('changesResults:');
-                console.log(JSON.stringify(changesResults, null, 4));
                 const resultIds = Array.from(changesResults.changedDocuments.values()).map(d => d.id);
                 assert.deepStrictEqual(first5Ids[0], resultIds[0]);
 
@@ -1656,13 +1652,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     'text/plain'
                 );
 
-
-                console.log(':::::::::::::::::::::::::::::::::::::');
-                console.log('await blobBufferUtil.tobase64String(dataBlobBuffer): ' + await blobBufferUtil.tobase64String(dataBlobBuffer));
-                const attachmentHash = await statics.hash(await blobBufferUtil.tobase64String(dataBlobBuffer));
-                console.log('attachmentHash: ' + attachmentHash);
-                const dataString = await blobBufferUtil.tobase64String(dataBlobBuffer);
-                const dataLength = blobBufferUtil.size(dataBlobBuffer);
+                const dataStringBase64 = await blobBufferUtil.tobase64String(dataBlobBuffer);
+                const attachmentHash = await hashAttachmentData(
+                    dataStringBase64,
+                    statics
+                );
+                const dataLength = getAttachmentSize(dataStringBase64);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -1676,7 +1671,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         foo: {
                             digest: statics.hashKey + '-' + attachmentHash,
                             length: dataLength,
-                            data: dataString,
+                            data: dataStringBase64,
                             type: 'text/plain'
                         }
                     }
@@ -1688,12 +1683,29 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: writeData
                     }
                 );
-
                 await waitUntil(() => flattenEvents(emitted).length === 1);
-
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
                 assert.strictEqual(writeResult._attachments.foo.digest, statics.hashKey + '-' + attachmentHash);
 
+
+                /**
+                 * When getting the document from the storage again,
+                 * it should contain the same attachment digest and length
+                 */
+                const docFromStorage = await getSingleDocument(
+                    storageInstance,
+                    'foobar'
+                );
+                assert.strictEqual(
+                    writeResult._attachments.foo.digest,
+                    ensureNotFalsy(docFromStorage)._attachments.foo.digest
+                );
+                assert.strictEqual(
+                    writeResult._attachments.foo.length,
+                    ensureNotFalsy(docFromStorage)._attachments.foo.length
+                );
+
+                // check in query() result
                 const queryResult = await storageInstance.query(
                     config.storage.getStorage().statics.prepareQuery(
                         storageInstance.schema,
@@ -1705,22 +1717,20 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     )
                 );
-
                 assert.strictEqual(queryResult.documents[0]._attachments.foo.type, 'text/plain');
-                assert.strictEqual(queryResult.documents[0]._attachments.foo.length, attachmentData.length);
+                assert.strictEqual(queryResult.documents[0]._attachments.foo.length, dataLength);
 
+                // check in findDocumentsById() result
                 const byId = await storageInstance.findDocumentsById([writeData.key], false);
                 const byIdDoc = getFromObjectOrThrow(byId, writeData.key);
                 assert.strictEqual(byIdDoc._attachments.foo.type, 'text/plain');
-                assert.strictEqual(byIdDoc._attachments.foo.length, attachmentData.length);
+                assert.strictEqual(byIdDoc._attachments.foo.length, dataLength);
                 assert.ok(!(byIdDoc._attachments.foo as any).data);
 
-                // test emitted
+                // test the emitted event
                 const firstEventAttachment = flattenEvents(emitted)[0].change.doc._attachments.foo;
-                console.log('first event doc:');
-                console.dir(flattenEvents(emitted)[0].change.doc);
                 assert.strictEqual(firstEventAttachment.type, 'text/plain');
-                assert.strictEqual(firstEventAttachment.length, attachmentData.length);
+                assert.strictEqual(firstEventAttachment.length, dataLength);
                 assert.ok(!(firstEventAttachment as any).data);
 
                 const changesResult = await storageInstance.getChangedDocuments({

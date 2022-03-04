@@ -193,8 +193,6 @@ export function addCustomEventsPluginToPouch() {
                 const newRev = parseRevision(writeRow.document._rev);
                 const docInDb = previousDocsInDb.get(id);
                 const docInDbRev: string | null = docInDb ? docInDb._rev : null;
-                console.log('docInDb: ' + id);
-                console.dir(docInDb);
                 if (docInDbRev !== previousRev) {
                     // we have a conflict
                     usePouchResult.push({
@@ -512,6 +510,8 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
         !emitData.writeOptions.custom ||
         (emitData.writeOptions.custom && !emitData.writeOptions.custom.writeRowById)
     ) {
+        console.log('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
+
         const writeDocsById: Map<string, any> = new Map();
         emitData.writeDocs.forEach(writeDoc => writeDocsById.set(writeDoc._id, writeDoc));
         await Promise.all(
@@ -529,7 +529,9 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     writeDoc
                 );
 
+                console.dir(writeDoc._attachments);
                 writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
+                console.dir(writeDoc._attachments);
 
                 writeDoc = flatClone(writeDoc);
                 writeDoc._rev = (resultRow as any).rev;
@@ -551,7 +553,12 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
 
                 const id = resultRow.id;
                 const writeRow = getFromMapOrThrow(writeMap, id);
+
+                console.log('UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU');
+                console.dir(writeRow.document._attachments);
+
                 const attachments = await writeAttachmentsToAttachments(writeRow.document._attachments);
+                console.dir(attachments);
                 const newDoc: RxDocumentData<RxDocType> = Object.assign(
                     {},
                     writeRow.document,

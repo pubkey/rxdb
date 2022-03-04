@@ -595,6 +595,7 @@ export const blobBufferUtil = {
             reader.readAsText(blobBuffer as any);
         });
     },
+    // TODO uppercase B ins base64
     tobase64String(blobBuffer: BlobBuffer | string): Promise<string> {
         if (typeof blobBuffer === 'string') {
             return Promise.resolve(blobBuffer);

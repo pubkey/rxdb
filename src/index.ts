@@ -75,7 +75,9 @@ export {
 export {
     getSingleDocument,
     getAllDocuments,
-    writeSingle
+    writeSingle,
+    hashAttachmentData,
+    getAttachmentSize
 } from './rx-storage-helper';
 
 export {

@@ -21,7 +21,8 @@ import type {
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
-    RxStorageInstance
+    RxStorageInstance,
+    RxStorageStatics
 } from './types';
 import { clone, createRevision, firstPropertyValueOfObject, flatClone } from './util';
 
@@ -130,6 +131,17 @@ export function throwIfIsStorageWriteError<RxDocType>(
     }
 }
 
+export function hashAttachmentData(
+    attachmentBase64String: string,
+    storageStatics: RxStorageStatics
+): Promise<string> {
+    return storageStatics.hash(atob(attachmentBase64String));
+}
+export function getAttachmentSize(
+    attachmentBase64String: string
+): number {
+    return atob(attachmentBase64String).length;
+}
 
 /**
  * Wraps the normal storageInstance of a RxCollection

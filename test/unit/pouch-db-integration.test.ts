@@ -325,8 +325,6 @@ config.parallel('pouch-db-integration.test.js', () => {
             console.log('end docs:');
             console.dir(allDocs.docs);
 
-            process.exit(1);
-
             pouch.close();
         });
     });
