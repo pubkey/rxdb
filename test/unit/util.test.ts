@@ -51,14 +51,24 @@ describe('util.test.js', () => {
         it('should return the same values for the same document data', async () => {
             const hash1 = createRevision({
                 foo: 'bar',
-                bar: 'foo'
-            });
+                bar: 'foo',
+                _deleted: false,
+                _attachments: {},
+                _meta: {
+                    lwt: 1
+                }
+            } as any);
             const hash2 = createRevision({
                 foo: 'bar',
                 bar: 'foo',
                 // _rev_tree and _rev must be ignored from hashing
                 _rev: '1-asdf',
-                _rev_tree: 'foobar'
+                _rev_tree: 'foobar',
+                _deleted: false,
+                _attachments: {},
+                _meta: {
+                    lwt: 1
+                }
             });
             assert.strictEqual(hash1, hash2);
         });
@@ -68,7 +78,7 @@ describe('util.test.js', () => {
                 bar: 'foo',
                 _rev_tree: '1-asdfasdf'
             };
-            const ownRev = createRevision(docData);
+            const ownRev = createRevision(docData as any);
             const pouchRev = '1-' + pouchCreateRevisison(docData, true);
             assert.strictEqual(ownRev, pouchRev);
         });

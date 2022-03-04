@@ -410,7 +410,14 @@ export function getHeightOfRevision(revision: string): number {
  * Creates the next write revision for a given document.
  */
 export function createRevision<RxDocType>(
-    docData: RxDocumentData<RxDocType>,
+    docData: RxDocumentData<RxDocType> & {
+        /**
+         * Passing a revision is optional here,
+         * because it is anyway not needed to calculate
+         * the new revision.
+         */
+        _rev?: string;
+    },
     previousDocData?: RxDocumentData<RxDocType>
 ): string {
 
