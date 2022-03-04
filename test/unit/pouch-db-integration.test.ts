@@ -57,16 +57,6 @@ config.parallel('pouch-db-integration.test.js', () => {
         });
     });
     describe('pouchdb-adapter-memory', () => {
-        it('should not create a db without adding the adapter', async () => {
-            await AsyncTestUtil.assertThrows(
-                () => createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory')
-                }),
-                'RxError',
-                'Adapter'
-            );
-        });
         it('should work when adapter was added', async () => {
             addPouchPlugin(require('pouchdb-adapter-memory'));
             const db = await createRxDatabase({

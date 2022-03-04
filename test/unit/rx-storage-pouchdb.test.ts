@@ -101,12 +101,22 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     adapter: 'memory'
                 }
             ) as any;
+            await pouch.info();
             (pouch as any).primaryPath = '_id';
+
+
+            console.log('###############################');
+            console.log('###############################');
+            console.log('###############################');
+            console.log('###############################');
 
             const emitted: any[] = [];
             const sub = getCustomEventEmitterByPouch(pouch).subject.subscribe(ev => {
+                console.log('emmited:');
+                console.dir(ev);
                 emitted.push(ev);
             });
+
 
             await pouch.bulkDocs([{
                 _id: 'foo',

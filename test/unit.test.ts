@@ -1,5 +1,7 @@
 import './unit/init.test.js';
 import './unit/util.test.js';
+import './unit/pouch-db-integration.test.js';
+import './unit/adapter-check.test.js'; // TODO move up
 
 /**
  * Move these tests around so that
@@ -9,9 +11,7 @@ import './unit/util.test.js';
  */
 import './unit/rx-storage-implementations.test.js';
 import './unit/rx-storage-pouchdb.test.js';
-import './unit/adapter-check.test.js'; // TODO move up
 import './unit/rx-storage-lokijs.test.js';
-import './unit/pouch-db-integration.test.js'; // TODO move up
 import './unit/rx-storage-dexie.test.js';
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';

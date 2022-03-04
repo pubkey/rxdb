@@ -142,32 +142,14 @@ export function addCustomEventsPluginToPouch() {
                 revs: true,
                 latest: true
             });
-
-            console.log('custom events plugin viaBulkGet:');
-            console.log(JSON.stringify(viaBulkGet, null, 4));
-
             viaBulkGet.results.forEach(resultRow => {
                 const firstDoc = resultRow.docs[0];
-                console.dir(firstDoc.ok);
                 if (firstDoc.ok) {
                     previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
                 } else {
 
                 }
-            })
-
-
-            // const nonDeletedDocsInPouchRows = await this.allDocs({
-            //     keys: ids,
-            //     include_docs: true
-            // });
-            // console.log('nonDeletedDocsInPouchRows:');
-            // console.log(JSON.stringify(nonDeletedDocsInPouchRows, null, 4));
-            // nonDeletedDocsInPouchRows.rows.forEach(row => {
-            //     if (row.doc) {
-            //         previousDocsInDb.set(row.id, row.doc);
-            //     }
-            // });
+            });
         }
 
         /**
@@ -231,7 +213,6 @@ export function addCustomEventsPluginToPouch() {
              * we can skip directly.
              */
             if (!hasNonErrorWrite) {
-                console.log('use hasNonErrorWrite shortcut');
                 return usePouchResult;
             }
         }
@@ -308,10 +289,6 @@ export function addCustomEventsPluginToPouch() {
          */
         const deeperOptions = flatClone(options);
         deeperOptions.isDeeper = true;
-
-
-        console.log('custom events plugin write these docs:');
-        console.log(JSON.stringify(docs, null, 4));
 
         let callReturn: any;
         const callPromise = new Promise((res, rej) => {
@@ -391,11 +368,6 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
     emitData: EmitData
 ): Promise<RxStorageChangeEvent<RxDocumentData<RxDocType>>[]> {
     const ret: RxStorageChangeEvent<RxDocumentData<RxDocType>>[] = [];
-
-
-    console.log('eventEmitDataToStorageEvents()');
-    console.log(JSON.stringify(emitData, null, 4));
-
     if (
         emitData.writeOptions.hasOwnProperty('new_edits') &&
         emitData.writeOptions.new_edits === false
@@ -403,17 +375,11 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
         await Promise.all(
             emitData.writeDocs.map(async (writeDoc) => {
                 const id = writeDoc._id;
-
                 writeDoc = pouchDocumentDataToRxDocumentData(
                     primaryPath,
                     writeDoc
                 );
-
                 writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
-
-                console.log('writeDoc after:');
-                console.log(JSON.stringify(writeDoc, null, 4));
-
                 let previousDoc = emitData.previousDocs.get(id);
                 if (previousDoc) {
                     previousDoc = pouchDocumentDataToRxDocumentData(
@@ -510,8 +476,6 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
         !emitData.writeOptions.custom ||
         (emitData.writeOptions.custom && !emitData.writeOptions.custom.writeRowById)
     ) {
-        console.log('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
-
         const writeDocsById: Map<string, any> = new Map();
         emitData.writeDocs.forEach(writeDoc => writeDocsById.set(writeDoc._id, writeDoc));
         await Promise.all(
@@ -529,10 +493,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     writeDoc
                 );
 
-                console.dir(writeDoc._attachments);
                 writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
-                console.dir(writeDoc._attachments);
-
                 writeDoc = flatClone(writeDoc);
                 writeDoc._rev = (resultRow as any).rev;
                 const event = pouchChangeRowToChangeEvent<RxDocType>(
@@ -550,15 +511,9 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                 if ((resultRow as PouchWriteError).error) {
                     return;
                 }
-
                 const id = resultRow.id;
                 const writeRow = getFromMapOrThrow(writeMap, id);
-
-                console.log('UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU');
-                console.dir(writeRow.document._attachments);
-
                 const attachments = await writeAttachmentsToAttachments(writeRow.document._attachments);
-                console.dir(attachments);
                 const newDoc: RxDocumentData<RxDocType> = Object.assign(
                     {},
                     writeRow.document,

@@ -339,19 +339,12 @@ export async function writeAttachmentsToAttachments(
              */
             if ((obj as RxAttachmentWriteData).data) {
                 const asWrite = (obj as RxAttachmentWriteData);
-                const [hash, asString] = await Promise.all([
-                    hashAttachmentData(
-                        asWrite.data,
-                        RxStoragePouchStatics
-                    ),
-                    blobBufferUtil.tobase64String(asWrite.data)
-                ]);
-
-                console.log('asString: ' + asString);
-                console.log('asWrite.data: ' + asWrite.data);
-                console.log('hash: ' + hash);
-
-                const length = getAttachmentSize(asString);
+                const dataAsBase64String = typeof asWrite.data === 'string' ? asWrite.data : await blobBufferUtil.tobase64String(asWrite.data);
+                const hash = await hashAttachmentData(
+                    dataAsBase64String,
+                    RxStoragePouchStatics
+                );
+                const length = getAttachmentSize(dataAsBase64String);
                 ret[key] = {
                     digest: 'md5-' + hash,
                     length,
