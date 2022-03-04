@@ -6,9 +6,6 @@ import {
     Observable
 } from 'rxjs';
 import {
-    createRevision,
-    getHeightOfRevision,
-    parseRevision,
     lastOfArray,
     flatClone,
     now,
@@ -146,9 +143,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             const documentInDb = localState.collection.by(this.primaryPath, id);
 
             if (!documentInDb) {
-                // insert new document
-                const newRevision = '1-' + createRevision(writeRow.document);
-
                 /**
                  * It is possible to insert already deleted documents,
                  * this can happen on replication.
@@ -159,7 +153,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     {},
                     writeRow.document,
                     {
-                        _rev: newRevision,
                         _deleted: insertedIsDeleted,
                         // TODO attachments are currently not working with lokijs
                         _attachments: {} as any
@@ -169,7 +162,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 if (!insertedIsDeleted) {
                     this.addChangeDocumentMeta(id);
                     eventBulk.events.push({
-                        eventId: getLokiEventKey(this, id, newRevision),
+                        eventId: getLokiEventKey(this, id, writeRow.document._rev),
                         documentId: id,
                         change: {
                             doc: writeDoc,
@@ -211,15 +204,12 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     };
                     ret.error[id] = err;
                 } else {
-                    const newRevHeight = getHeightOfRevision(revInDb) + 1;
-                    const newRevision = newRevHeight + '-' + createRevision(writeRow.document);
                     const isDeleted = !!writeRow.document._deleted;
                     const writeDoc: any = Object.assign(
                         {},
                         writeRow.document,
                         {
                             $loki: documentInDb.$loki,
-                            _rev: newRevision,
                             _deleted: isDeleted,
                             // TODO attachments are currently not working with lokijs
                             _attachments: {}
@@ -248,9 +238,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         /**
                          * On delete, we send the 'new' rev in the previous property,
                          * to have the equal behavior as pouchdb.
+                         * TODO do we even need this anymore?
                          */
                         const previous = flatClone(writeRow.previous);
-                        previous._rev = newRevision;
+                        previous._rev = writeRow.document._rev;
                         change = {
                             id,
                             operation: 'DELETE',
@@ -262,7 +253,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         throw newRxError('SNH', { args: { writeRow } });
                     }
                     eventBulk.events.push({
-                        eventId: getLokiEventKey(this, id, newRevision),
+                        eventId: getLokiEventKey(this, id, writeRow.document._rev),
                         documentId: id,
                         change,
                         startTime,
@@ -276,104 +267,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         this.changes$.next(eventBulk);
 
         return ret;
-    }
-
-    async bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void> {
-        if (documents.length === 0) {
-            throw newRxError('P3', {
-                args: {
-                    documents
-                }
-            });
-        }
-
-        const localState = await mustUseLocalState(this);
-        if (!localState) {
-            return requestRemoteInstance(this, 'bulkAddRevisions', [documents]);
-        }
-
-        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
-            id: randomCouchString(10),
-            events: []
-        };
-        documents.forEach(docData => {
-            const startTime = now();
-            const id: string = docData[this.primaryPath] as any;
-            const documentInDb = localState.collection.by(this.primaryPath, id);
-            if (!documentInDb) {
-                // document not here, so we can directly insert
-                localState.collection.insert(flatClone(docData));
-                eventBulk.events.push({
-                    documentId: id,
-                    eventId: getLokiEventKey(this, id, docData._rev),
-                    change: {
-                        doc: docData,
-                        id,
-                        operation: 'INSERT',
-                        previous: null
-                    },
-                    startTime,
-                    endTime: now()
-                });
-                this.addChangeDocumentMeta(id);
-            } else {
-                const newWriteRevision = parseRevision(docData._rev);
-                const oldRevision = parseRevision(documentInDb._rev);
-
-                let mustUpdate: boolean = false;
-                if (newWriteRevision.height !== oldRevision.height) {
-                    // height not equal, compare base on height
-                    if (newWriteRevision.height > oldRevision.height) {
-                        mustUpdate = true;
-                    }
-                } else if (newWriteRevision.hash > oldRevision.hash) {
-                    // equal height but new write has the 'winning' hash
-                    mustUpdate = true;
-                }
-                if (mustUpdate) {
-                    const storeAtLoki = flatClone(docData) as any;
-                    storeAtLoki.$loki = documentInDb.$loki;
-                    localState.collection.update(storeAtLoki);
-                    let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
-                    if (documentInDb._deleted && !docData._deleted) {
-                        change = {
-                            id,
-                            operation: 'INSERT',
-                            previous: null,
-                            doc: docData
-                        };
-                    } else if (!documentInDb._deleted && !docData._deleted) {
-                        change = {
-                            id,
-                            operation: 'UPDATE',
-                            previous: stripLokiKey(documentInDb),
-                            doc: docData
-                        };
-                    } else if (!documentInDb._deleted && docData._deleted) {
-                        change = {
-                            id,
-                            operation: 'DELETE',
-                            previous: stripLokiKey(documentInDb),
-                            doc: null
-                        };
-                    } else if (documentInDb._deleted && docData._deleted) {
-                        change = null;
-                    }
-                    if (change) {
-                        eventBulk.events.push({
-                            documentId: id,
-                            eventId: getLokiEventKey(this, id, docData._rev),
-                            change,
-                            startTime,
-                            endTime: now()
-                        });
-                        this.addChangeDocumentMeta(id);
-                    }
-                }
-            }
-        });
-        localState.databaseState.saveQueue.addWrite();
-        this.changes$.next(eventBulk);
     }
     async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
         const localState = await mustUseLocalState(this);

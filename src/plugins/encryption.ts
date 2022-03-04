@@ -22,6 +22,7 @@ import type {
 import {
     blobBufferUtil,
     clone,
+    createRevision,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
@@ -102,6 +103,7 @@ export async function storePasswordHashIntoDatabase(
             _meta: getDefaultRxDocumentMeta(),
             _rev: getDefaultRevision()
         };
+        docData._rev = createRevision(docData);
         await rxDatabase.internalStore.bulkWrite([{
             document: docData
         }]);

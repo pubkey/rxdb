@@ -945,18 +945,19 @@ config.parallel('data-migration.test.js', () => {
                 const collection: RxCollection<SimpleHumanV3DocumentType> = db.foobar;
 
                 // insert a document without the _meta field
-                await collection.internalStorageInstance.bulkWrite([{
-                    document: Object.assign(
-                        simpleHumanV3(docId),
-                        {
-                            _deleted: false,
-                            _attachments: {},
-                            // DO NOT ADD THE META FIELD HERE
-                            // _meta: {
-                            //     lwt: 3
-                            // }
-                        } as any
-                    )
+                const insertDocData = Object.assign(
+                    simpleHumanV3(docId),
+                    {
+                        _deleted: false,
+                        _attachments: {},
+                        // DO NOT ADD THE META FIELD HERE
+                        // _meta: {
+                        //     lwt: 3
+                        // }
+                    } as any
+                );
+                await collection.storageInstance.bulkWrite([{
+                    document: insertDocData
                 }]);
                 await db.destroy();
 

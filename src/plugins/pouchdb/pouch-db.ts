@@ -6,9 +6,6 @@
  */
 import PouchDBCore from 'pouchdb-core';
 
-// pouchdb-find
-import PouchDBFind from 'pouchdb-find';
-
 /*
 // comment in to debug
 const pouchdbDebug = require('pouchdb-debug');
@@ -21,10 +18,6 @@ import {
     newRxError,
     newRxTypeError
 } from '../../rx-error';
-import { addCustomEventsPluginToPouch } from './custom-events-plugin';
-
-addPouchPlugin(PouchDBFind);
-addCustomEventsPluginToPouch();
 
 
 /**

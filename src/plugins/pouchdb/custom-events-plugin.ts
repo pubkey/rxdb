@@ -79,6 +79,13 @@ export function getCustomEventEmitterByPouch<RxDocType>(
 
 let i = 0;
 
+/**
+ * PouchDB is like a minefield,
+ * where stuff randomly does not work dependend on some conditions.
+ * So instead of doing plain writes,
+ * we hack into the bulkDocs() function
+ * and adjust the behavior accordingly.
+ */
 export function addCustomEventsPluginToPouch() {
     if (addedToPouch) {
         return;
@@ -142,14 +149,60 @@ export function addCustomEventsPluginToPouch() {
                 revs: true,
                 latest: true
             });
+
+            /**
+             * bulkGet() does not return deleted documents,
+             * so we must refetch them via allDocs() afterwards.
+             */
+            const mustRefetchBecauseDeleted: string[] = [];
+
             viaBulkGet.results.forEach(resultRow => {
                 const firstDoc = resultRow.docs[0];
                 if (firstDoc.ok) {
                     previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
                 } else {
-
+                    if (firstDoc.error && firstDoc.error.reason === 'deleted') {
+                        mustRefetchBecauseDeleted.push(resultRow.id);
+                    }
                 }
             });
+
+            if (mustRefetchBecauseDeleted.length > 0) {
+                const deletedDocsViaAllDocs = await this.allDocs({
+                    keys: mustRefetchBecauseDeleted,
+                    include_docs: true,
+                    conflicts: true,
+                });
+
+                const idsWithRevs: { id: string; rev: string; }[] = [];
+                deletedDocsViaAllDocs.rows.forEach(row => {
+                    idsWithRevs.push({
+                        id: row.id,
+                        rev: row.value.rev
+                    });
+                });
+
+                const deletedDocsViaBulkGetWithRev = await this.bulkGet({
+                    docs: idsWithRevs,
+                    revs: true,
+                    latest: true
+                });
+
+                deletedDocsViaBulkGetWithRev.results.forEach(resultRow => {
+                    const firstDoc = resultRow.docs[0];
+                    if (firstDoc.ok) {
+                        previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
+                    } else {
+                        throw newRxError('SNH', {
+                            args: {
+                                deletedDocsViaBulkGetWithRev,
+                                resultRow
+                            }
+                        });
+                    }
+                });
+
+            }
         }
 
         /**
@@ -175,7 +228,20 @@ export function addCustomEventsPluginToPouch() {
                 const newRev = parseRevision(writeRow.document._rev);
                 const docInDb = previousDocsInDb.get(id);
                 const docInDbRev: string | null = docInDb ? docInDb._rev : null;
-                if (docInDbRev !== previousRev) {
+
+                if (
+                    docInDbRev !== previousRev &&
+                    /**
+                     * If doc in db is deleted
+                     * and no previous docs was send,
+                     * We have a re-insert which must not cause a conflict.
+                     */
+                    !(
+                        docInDb &&
+                        docInDb._deleted &&
+                        !writeRow.previous
+                    )
+                ) {
                     // we have a conflict
                     usePouchResult.push({
                         error: true,
@@ -184,10 +250,11 @@ export function addCustomEventsPluginToPouch() {
                     });
                 } else {
                     const useRevisions = {
-                        start: newRev.height,
+                        start: docInDb ? docInDb._revisions.start + 1 : newRev.height,
                         ids: docInDb ? docInDb._revisions.ids.slice(0) : []
                     };
                     useRevisions.ids.unshift(newRev.hash);
+                    const useNewRev = useRevisions.start + '-' + newRev.hash;
 
                     hasNonErrorWrite = true;
                     docs.push(
@@ -195,7 +262,8 @@ export function addCustomEventsPluginToPouch() {
                             {},
                             insertDocsById.get(id),
                             {
-                                _revisions: useRevisions
+                                _revisions: useRevisions,
+                                _rev: useNewRev
                             }
                         )
                     );
@@ -289,7 +357,6 @@ export function addCustomEventsPluginToPouch() {
          */
         const deeperOptions = flatClone(options);
         deeperOptions.isDeeper = true;
-
         let callReturn: any;
         const callPromise = new Promise((res, rej) => {
             callReturn = oldBulkDocs.call(

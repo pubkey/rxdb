@@ -127,35 +127,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
         await this.internals.pouch.destroy();
     }
-
-    public async bulkAddRevisions(
-        documents: RxDocumentData<RxDocType>[]
-    ): Promise<void> {
-        if (documents.length === 0) {
-            throw newRxError('P3', {
-                args: {
-                    documents
-                }
-            });
-        }
-
-        const writeData = documents.map(doc => {
-            return rxDocumentDataToPouchDocumentData(
-                this.primaryPath,
-                doc
-            );
-        });
-
-        // we do not need the response here because pouchdb returns an empty array on new_edits: false
-        await this.internals.pouch.bulkDocs(
-            writeData,
-            {
-                new_edits: false,
-                set_new_edit_as_latest_revision: true
-            }
-        );
-    }
-
     public async bulkWrite(
         documentWrites: BulkWriteRow<RxDocType>[]
     ): Promise<
@@ -182,6 +153,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             }
             if (writeRow.previous) {
                 const parsedPrev = parseRevision(writeRow.previous._rev);
+                if (typeof parsedPrev.height !== 'number') {
+                    console.dir(writeRow);
+                    throw new Error('rev height is no number');
+                }
                 const parsedNew = parseRevision(writeRow.document._rev);
                 if (parsedPrev.height >= parsedNew.height) {
                     console.dir(writeRow);

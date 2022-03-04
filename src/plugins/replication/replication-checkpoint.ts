@@ -10,6 +10,7 @@ import {
     writeSingle
 } from '../../rx-storage-helper';
 import {
+    createRevision,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta
@@ -65,21 +66,23 @@ export async function setLastPushSequence(
         docId
     );
     if (!doc) {
+        const insertData = {
+            id: docId,
+            key: pushSequenceDocumentKey(replicationIdentifierHash),
+            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+            data: {
+                lastPushSequence: sequence
+            },
+            _deleted: false,
+            _meta: getDefaultRxDocumentMeta(),
+            _rev: getDefaultRevision(),
+            _attachments: {}
+        };
+        insertData._rev = createRevision(insertData);
         const res = await writeSingle(
             collection.database.internalStore,
             {
-                document: {
-                    id: docId,
-                    key: pushSequenceDocumentKey(replicationIdentifierHash),
-                    context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
-                    data: {
-                        lastPushSequence: sequence
-                    },
-                    _deleted: false,
-                    _meta: getDefaultRxDocumentMeta(),
-                    _rev: getDefaultRevision(),
-                    _attachments: {}
-                }
+                document: insertData
             }
         );
         return res;
@@ -88,22 +91,24 @@ export async function setLastPushSequence(
         newDoc.data = {
             lastPushSequence: sequence
         };
+        const docData = {
+            id: docId,
+            key: pushSequenceDocumentKey(replicationIdentifierHash),
+            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+            data: {
+                lastPushSequence: sequence
+            },
+            _meta: getDefaultRxDocumentMeta(),
+            _rev: getDefaultRevision(),
+            _deleted: false,
+            _attachments: {}
+        };
+        docData._rev = createRevision(docData, doc);
         const res = await writeSingle<InternalStoreReplicationPushDocType>(
             collection.database.internalStore,
             {
                 previous: doc,
-                document: {
-                    id: docId,
-                    key: pushSequenceDocumentKey(replicationIdentifierHash),
-                    context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
-                    data: {
-                        lastPushSequence: sequence
-                    },
-                    _meta: getDefaultRxDocumentMeta(),
-                    _rev: getDefaultRevision(),
-                    _deleted: false,
-                    _attachments: {}
-                }
+                document: docData
             }
         );
         return res;
@@ -269,26 +274,29 @@ export async function setLastPullDocument<RxDocType>(
     );
 
     if (!lastPullCheckpointDoc) {
+        const insertData = {
+            id: pullCheckpointId,
+            key: pullLastDocumentKey(replicationIdentifierHash),
+            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+            data: {
+                lastPulledDoc: lastPulledDoc as any
+            },
+            _meta: getDefaultRxDocumentMeta(),
+            _rev: getDefaultRevision(),
+            _deleted: false,
+            _attachments: {}
+        };
+        insertData._rev = createRevision(insertData);
         return writeSingle<InternalStoreReplicationPullDocType<RxDocType>>(
             collection.database.internalStore,
             {
-                document: {
-                    id: pullCheckpointId,
-                    key: pullLastDocumentKey(replicationIdentifierHash),
-                    context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
-                    data: {
-                        lastPulledDoc: lastPulledDoc as any
-                    },
-                    _meta: getDefaultRxDocumentMeta(),
-                    _rev: getDefaultRevision(),
-                    _deleted: false,
-                    _attachments: {}
-                }
+                document: insertData
             }
         );
     } else {
         const newDoc = flatClone(lastPullCheckpointDoc);
         newDoc.data = { lastPulledDoc: lastPulledDoc as any };
+        newDoc._rev = createRevision(newDoc, lastPullCheckpointDoc);
         return writeSingle<InternalStoreReplicationPullDocType<RxDocType>>(
             collection.database.internalStore,
             {

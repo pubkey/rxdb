@@ -49,7 +49,8 @@ import { filter, map } from 'rxjs/operators';
 import {
     EXAMPLE_REVISION_1,
     EXAMPLE_REVISION_2,
-    EXAMPLE_REVISION_3
+    EXAMPLE_REVISION_3,
+    EXAMPLE_REVISION_4
 } from '../helper/revisions';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -150,8 +151,8 @@ declare type NestedDoc = {
 
 config.parallel('rx-storage-implementations.test.js (implementation: ' + config.storage.name + ')', () => {
     describe('statics', () => {
-        const statics = config.storage.getStorage().statics;
         it('.hashKey', () => {
+            const statics = config.storage.getStorage().statics;
             assert.strictEqual(typeof statics.hashKey, 'string');
             assert.ok(statics.hashKey.length > 0);
         });
@@ -328,10 +329,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
+                const docId = 'undeleteMe';
                 const insertResponse = await storageInstance.bulkWrite(
                     [{
                         document: {
-                            key: 'foobar',
+                            key: docId,
                             value: 'barfoo1',
                             _deleted: false,
                             _attachments: {},
@@ -343,20 +345,32 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
                 assert.strictEqual(Object.keys(insertResponse.error).length, 0);
-                const first = getFromObjectOrThrow(insertResponse.success, 'foobar');
+                let previous = getFromObjectOrThrow(insertResponse.success, docId);
 
-
-                const deleteResponse = await storageInstance.bulkWrite(
+                const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: first,
-                        document: Object.assign({}, first, {
-                            _deleted: true,
+                        previous: previous,
+                        document: Object.assign({}, previous, {
+                            value: 'barfoo2',
                             _rev: EXAMPLE_REVISION_2
                         })
                     }]
                 );
-                assert.strictEqual(Object.keys(deleteResponse.error).length, 0);
-                const second = getFromObjectOrThrow(deleteResponse.success, 'foobar');
+                assert.deepStrictEqual(updateResponse.error, {});
+                previous = getFromObjectOrThrow(updateResponse.success, docId);
+
+
+                const deleteResponse = await storageInstance.bulkWrite(
+                    [{
+                        previous: previous,
+                        document: Object.assign({}, previous, {
+                            _deleted: true,
+                            _rev: EXAMPLE_REVISION_3
+                        })
+                    }]
+                );
+                assert.deepStrictEqual(deleteResponse.error, {});
+                const second = getFromObjectOrThrow(deleteResponse.success, docId);
 
 
                 const undeleteResponse = await storageInstance.bulkWrite(
@@ -366,14 +380,19 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: Object.assign({}, second, {
                             _deleted: false,
                             value: 'aaa',
-                            _rev: EXAMPLE_REVISION_3
+                            _rev: EXAMPLE_REVISION_4
                         })
                     }]
                 );
 
-                assert.strictEqual(Object.keys(undeleteResponse.error).length, 0);
-                const third = getFromObjectOrThrow(undeleteResponse.success, 'foobar');
+                assert.deepStrictEqual(undeleteResponse.error, {});
+                const third = getFromObjectOrThrow(undeleteResponse.success, docId);
                 assert.strictEqual(third.value, 'aaa');
+
+
+                const foundDoc = await storageInstance.findDocumentsById([docId], false);
+                assert.ok(foundDoc[docId]);
+                assert.deepStrictEqual(foundDoc[docId].value, 'aaa');
 
                 storageInstance.close();
             });
@@ -488,46 +507,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     storageInstance.close(),
                     storageInstance2.close()
                 ]);
-            });
-        });
-        describe('.bulkAddRevisions()', () => {
-            it('should add the revisions for new documents', async () => {
-                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {},
-                    multiInstance: false
-                });
-
-                const writeData: RxDocumentData<TestDocType> = {
-                    key: 'foobar',
-                    value: 'barfoo',
-                    _attachments: {},
-                    _deleted: false,
-                    _rev: '1-a623631364fbfa906c5ffa8203ac9725',
-                    _meta: {
-                        lwt: now()
-                    }
-                };
-                const originalWriteData = clone(writeData);
-                await storageInstance.bulkAddRevisions(
-                    [
-                        writeData
-                    ]
-                );
-
-                // should not have mutated the input
-                assert.deepStrictEqual(originalWriteData, writeData);
-
-                const found = await storageInstance.findDocumentsById([originalWriteData.key], false);
-                const doc = getFromObjectOrThrow(found, originalWriteData.key);
-                assert.ok(doc);
-                assert.strictEqual(doc.value, originalWriteData.value);
-                // because overwrite=true, the _rev from the input data must be used.
-                assert.strictEqual(doc._rev, originalWriteData._rev);
-
-                storageInstance.close();
             });
         });
         describe('.getSortComparator()', () => {
@@ -842,77 +821,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const first = allDocs.documents[0];
                 assert.ok(first);
                 assert.strictEqual(first.value, 'barfoo');
-
-                storageInstance.close();
-            });
-            it('should not find deleted documents', async () => {
-                const storageInstance = await config.storage
-                    .getStorage()
-                    .createStorageInstance<{ key: string; value: string; }>({
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
-                        schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
-                        options: {},
-                        multiInstance: false
-                    });
-
-                const value = 'foobar';
-                await storageInstance.bulkWrite([
-                    {
-                        document: getWriteData({ value })
-                    },
-                    {
-                        document: getWriteData({ value })
-                    },
-                    {
-                        document: getWriteData({ value, _deleted: true })
-                    },
-                ]);
-
-                /**
-                 * Also add deleted documents via bulkAddRevisions()
-                 */
-                await storageInstance.bulkAddRevisions(
-                    new Array(5)
-                        .fill(0)
-                        .map(() => {
-                            const docData: RxDocumentData<TestDocType> = getWriteData({
-                                value,
-                                _deleted: true
-                            }) as any;
-                            docData._rev = '2-5373c7dc85e8705456beaf68ae041110';
-                            return docData;
-                        })
-                );
-                /**
-                 * Simulate deletion of existing document via bulkAddRevisions() 
-                 */
-                const oneDoc = getWriteData({ key: 'deleted-doc', value });
-                await storageInstance.bulkWrite([
-                    {
-                        document: clone(oneDoc)
-                    }
-                ]);
-                oneDoc._rev = '2-5373c7dc85e8705456beaf68ae041110';
-                oneDoc._deleted = true;
-                await storageInstance.bulkAddRevisions([oneDoc as any]);
-
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
-                    storageInstance.schema,
-                    {
-                        selector: {
-                            value: {
-                                $eq: value
-                            }
-                        },
-                        sort: [
-                            { key: 'asc' }
-                        ]
-                    }
-                );
-
-                const allDocs = await storageInstance.query(preparedQuery);
-                assert.strictEqual(allDocs.documents.length, 2);
 
                 storageInstance.close();
             });
@@ -1275,24 +1183,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 const docsInDbResult = await storageInstance.findDocumentsById(['foobar'], true);
                 const docInDb = getFromObjectOrThrow(docsInDbResult, 'foobar');
-
-                const oldRev = parseRevision(docInDb._rev);
-                const nextRevHeight = oldRev.height + 1;
-
-                // write one via bulkAddRevisions
-                await storageInstance.bulkAddRevisions([
-                    {
-                        key: 'foobar2',
-                        _deleted: false,
-                        _attachments: {},
-                        _rev: nextRevHeight + '-' + oldRev.hash,
-                        _meta: {
-                            lwt: now()
-                        }
-                    }
-                ]);
-                const latestAfterBulkAddRevision = await getSequenceAfter(2);
-                assert.strictEqual(latestAfterBulkAddRevision, 3);
 
                 storageInstance.close();
             });

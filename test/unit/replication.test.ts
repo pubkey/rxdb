@@ -314,40 +314,6 @@ describe('replication.test.js', () => {
 
                 c.database.destroy();
             });
-            it('should get deletions after an update via addRevisions', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(1);
-                const oneDoc = await c.findOne().exec(true);
-                const id = oneDoc.primary;
-
-                const newDocData: RxDocumentData<HumanWithTimestampDocumentType> = flatClone(oneDoc.toJSON(true));
-                newDocData.age = 100;
-                newDocData._rev = '2-23099cb8125d2c79db839ae3f1211cf8';
-                await c.storageInstance.bulkAddRevisions([newDocData]);
-
-                /**
-                 * We wait here because directly after the last write,
-                 * it takes some milliseconds until the change is propagated
-                 * via the event stream.
-                 * This does only happen because we directly access storageInstance.bulkAddRevisions()
-                 * and so RxDB does not know about the change.
-                 * This problem will not happen during normal RxDB usage.
-                 */
-                await waitUntil(() => oneDoc.age === 100);
-                await oneDoc.remove();
-
-                const changesResult = await getChangesSinceLastPushSequence(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    () => false,
-                    10
-                );
-                assert.strictEqual(changesResult.changedDocs.size, 1);
-                const docFromChange = getFromMapOrThrow(changesResult.changedDocs, id);
-                assert.ok(docFromChange.doc._deleted);
-                assert.strictEqual(docFromChange.doc.age, 100);
-
-                c.database.destroy();
-            });
             it('should have resolved the primary', async () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);

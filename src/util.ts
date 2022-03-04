@@ -665,8 +665,7 @@ export function getDefaultRxDocumentMeta(): RxDocumentMeta {
 /**
  * Returns a revision that is not valid.
  * Use this to have correct typings
- * while the storage wrapper anyway will overwrite the revision
- * 
+ * while the storage wrapper anyway will overwrite the revision.
  */
 export function getDefaultRevision(): string {
     /**
@@ -674,5 +673,5 @@ export function getDefaultRevision(): string {
      * to ensure that the RxStorage will throw
      * when the revision is not replaced downstream.
      */
-    return 'error-revision';
+    return '';
 }

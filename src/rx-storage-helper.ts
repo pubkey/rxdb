@@ -189,9 +189,17 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         data = hookParams.doc;
 
         /**
-         * Update the revision after the hooks have run
+         * Update the revision after the hooks have run.
+         * Do not update the revision if no previous is given,
+         * because the migration plugin must be able to do an insert
+         * with a pre-created revision.
          */
-        data._rev = createRevision(data, writeRow.previous);
+        if (
+            writeRow.previous ||
+            !data._rev
+        ) {
+            data._rev = createRevision(data, writeRow.previous);
+        }
 
         return {
             document: data,
@@ -219,10 +227,6 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         collectionName: storageInstance.collectionName,
         databaseName: storageInstance.databaseName,
         options: storageInstance.options,
-        bulkAddRevisions(_documents) {
-            // TODO remove this method
-            throw new Error('bulkAddRevisions must be removed');
-        },
         bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
             const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows
                 .map(row => transformDocumentDataFromRxDBToRxStorage(row));

@@ -202,7 +202,6 @@ config.parallel('local-documents.test.js', () => {
             });
             it('should update when exists', async () => {
                 const c = await humansCollection.create(0);
-                console.log('AAA');
                 const doc = await c.upsertLocal('foobar', {
                     foo: 'bar'
                 });

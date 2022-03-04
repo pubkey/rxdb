@@ -456,7 +456,7 @@ export async function _migrateDocuments(
     );
 
 
-    const bulkWriteToStorageInput: any[] = [];
+    const bulkWriteToStorageInput: RxDocumentData<any>[] = [];
     const actions: any[] = [];
 
     documentsData.forEach((docData, idx) => {
@@ -523,7 +523,9 @@ export async function _migrateDocuments(
      * runs on multiple nodes which must lead to the equal storage state.
      */
     if (bulkWriteToStorageInput.length) {
-        await oldCollection.newestCollection.storageInstance.bulkAddRevisions(bulkWriteToStorageInput);
+        await oldCollection.newestCollection.storageInstance.bulkWrite(
+            bulkWriteToStorageInput.map(document => ({ document }))
+        );
     }
 
     // run hooks
