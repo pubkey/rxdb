@@ -23,6 +23,7 @@ import {
     blobBufferUtil,
     clone,
     flatClone,
+    getDefaultRevision,
     getDefaultRxDocumentMeta,
     hash,
     PROMISE_RESOLVE_FALSE
@@ -96,9 +97,10 @@ export async function storePasswordHashIntoDatabase(
             data: {
                 hash: pwHash
             },
+            _deleted: false,
             _attachments: {},
             _meta: getDefaultRxDocumentMeta(),
-            _deleted: false
+            _rev: getDefaultRevision()
         };
         await rxDatabase.internalStore.bulkWrite([{
             document: docData

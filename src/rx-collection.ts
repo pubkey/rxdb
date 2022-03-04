@@ -16,7 +16,8 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    getDefaultRevision
 } from './util';
 import {
     fillObjectDataBeforeInsert,
@@ -332,6 +333,7 @@ export class RxCollectionBase<
                 document: Object.assign(doc, {
                     _attachments: {},
                     _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
                     _deleted: false
                 })
             };

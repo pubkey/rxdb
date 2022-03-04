@@ -56,7 +56,8 @@ describe('util.test.js', () => {
             const hash2 = createRevision({
                 foo: 'bar',
                 bar: 'foo',
-                // _rev_tree must be ignored from hashing
+                // _rev_tree and _rev must be ignored from hashing
+                _rev: '1-asdf',
                 _rev_tree: 'foobar'
             });
             assert.strictEqual(hash1, hash2);
@@ -68,7 +69,7 @@ describe('util.test.js', () => {
                 _rev_tree: '1-asdfasdf'
             };
             const ownRev = createRevision(docData);
-            const pouchRev = pouchCreateRevisison(docData, true);
+            const pouchRev = '1-' + pouchCreateRevisison(docData, true);
             assert.strictEqual(ownRev, pouchRev);
         });
     });

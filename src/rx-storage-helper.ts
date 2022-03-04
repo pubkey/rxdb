@@ -23,7 +23,7 @@ import type {
     RxStorageChangeEvent,
     RxStorageInstance
 } from './types';
-import { clone, firstPropertyValueOfObject, flatClone } from './util';
+import { clone, createRevision, firstPropertyValueOfObject, flatClone } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
@@ -151,10 +151,9 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
     const primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
 
     function transformDocumentDataFromRxDBToRxStorage(
-        data: RxDocumentData<RxDocType> | RxDocumentWriteData<RxDocType>,
-        updateLwt: boolean
+        writeRow: BulkWriteRow<RxDocType>
     ) {
-        data = flatClone(data);
+        let data = flatClone(writeRow.document);
         data._meta = flatClone(data._meta);
 
         // ensure primary key has not been changed
@@ -166,10 +165,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             );
         }
 
-        if (updateLwt) {
-            data._meta.lwt = new Date().getTime();
-        }
-
+        data._meta.lwt = new Date().getTime();
         const hookParams = {
             database,
             primaryPath,
@@ -178,8 +174,17 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         };
 
         runPluginHooks('preWriteToStorageInstance', hookParams);
+        data = hookParams.doc;
 
-        return hookParams.doc as any;
+        /**
+         * Update the revision after the hooks have run
+         */
+        data._rev = createRevision(data, writeRow.previous);
+
+        return {
+            document: data,
+            previous: writeRow.previous
+        };
     }
 
     function transformDocumentDataFromRxStorageToRxDB(
@@ -202,22 +207,13 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         collectionName: storageInstance.collectionName,
         databaseName: storageInstance.databaseName,
         options: storageInstance.options,
-        bulkAddRevisions(documents) {
-            const toStorageDocuments = documents.map(doc => transformDocumentDataFromRxDBToRxStorage(doc, true))
-            const ret = database.lockedRun(
-                () => storageInstance.bulkAddRevisions(
-                    toStorageDocuments
-                )
-            );
-            return ret;
+        bulkAddRevisions(_documents) {
+            // TODO remove this method
+            throw new Error('bulkAddRevisions must be removed');
         },
         bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
-            const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows.map(row => {
-                return {
-                    previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(row.previous, false) : undefined,
-                    document: transformDocumentDataFromRxDBToRxStorage(row.document, true)
-                }
-            });
+            const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows
+                .map(row => transformDocumentDataFromRxDBToRxStorage(row));
             return database.lockedRun(
                 () => storageInstance.bulkWrite(
                     clone(toStorageWriteRows)

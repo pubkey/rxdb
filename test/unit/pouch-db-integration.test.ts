@@ -120,6 +120,216 @@ config.parallel('pouch-db-integration.test.js', () => {
             });
         });
     });
+    describe('assumptions', () => {
+        it('must be able to insert->update->delete via replication', async () => {
+            const pouch1: PouchDBInstance = new PouchDB('foobar1' + randomCouchString(10), {
+                adapter: 'memory'
+            });
+            const pouch2: PouchDBInstance = new PouchDB('foobar2' + randomCouchString(10), {
+                adapter: 'memory'
+            });
+            pouch1.sync(pouch2, {
+                live: true
+            });
+
+            const docData: any = {
+                _id: 'syncMe',
+                value: 1
+            };
+            async function getDocsFromPouch2() {
+                const allDocs = await pouch2.find({
+                    selector: {}
+                });
+                return allDocs.docs;
+            }
+
+            // insert
+            const insertResult = await pouch1.put(clone(docData));
+            docData._rev = insertResult.rev;
+
+            await AsyncTestUtil.waitUntil(async () => {
+                const allDocs = await getDocsFromPouch2();
+                return allDocs.length === 1;
+            });
+            console.log('insertResult.rev: ' + insertResult.rev);
+
+            // update
+            docData.value = 2;
+            const updateResult = await pouch1.put(clone(docData));
+            docData._rev = updateResult.rev;
+
+            await AsyncTestUtil.waitUntil(async () => {
+                const allDocs = await getDocsFromPouch2();
+                return allDocs.length === 1 && (allDocs[0] as any).value === 2;
+            });
+            console.log('updateResult.rev: ' + updateResult.rev);
+
+
+            // delete
+            docData._deleted = true;
+            const deleteResult = await pouch1.put(clone(docData));
+            await AsyncTestUtil.waitUntil(async () => {
+                const allDocs = await getDocsFromPouch2();
+                return allDocs.length === 0;
+            });
+            console.log('delete done:');
+            console.dir(deleteResult);
+
+
+            // undelete via insert
+            const undeleteResult = await pouch1.put({
+                _id: 'syncMe',
+                value: 5
+            });
+            await AsyncTestUtil.waitUntil(async () => {
+                const allDocs = await getDocsFromPouch2();
+                console.log('AFTER ALL alldocs:');
+                console.log(JSON.stringify(allDocs, null, 4));
+                return allDocs.length === 1 && (allDocs[0] as any).value === 5;
+            });
+            console.log('undelete done:');
+            console.dir(undeleteResult);
+
+
+            pouch1.close();
+            pouch2.close();
+        });
+        it('must be able to insert->update->delete via new_edits:false', async () => {
+            const pouch: PouchDBInstance = new PouchDB('foobar' + randomCouchString(10), {
+                adapter: 'memory'
+            });
+            const docId = 'foobar';
+
+            console.log('##############################################');
+            console.log('##############################################');
+            console.log('##############################################');
+
+            // insert
+            await pouch.bulkDocs({
+                docs: [{
+                    _id: docId,
+                    value: 1,
+                    _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
+                }]
+            }, {
+                new_edits: false
+            });
+
+            // update
+            let getDocs = await pouch.bulkGet({
+                docs: [{ id: docId }],
+                revs: true,
+                latest: true
+            });
+            console.log('getDocs: ');
+            console.log(JSON.stringify(getDocs, null, 4));
+            let useRevs = (getDocs as any).results[0].docs[0].ok._revisions;
+            console.dir(useRevs);
+            useRevs.start = useRevs.start + 1;
+            useRevs.ids.unshift('a723631364fbfa906c5ffa8203ac9725');
+
+            await pouch.bulkDocs({
+                docs: [{
+                    _id: docId,
+                    value: 2,
+                    _rev: '2-a723631364fbfa906c5ffa8203ac9725',
+                    _revisions: useRevs
+                }]
+            }, {
+                new_edits: false
+            });
+
+            // delete
+
+            getDocs = await pouch.bulkGet({
+                docs: [{ id: docId }],
+                revs: true,
+                latest: true
+            });
+            console.log('getDocs: ');
+            console.log(JSON.stringify(getDocs, null, 4));
+            useRevs = (getDocs as any).results[0].docs[0].ok._revisions;
+            console.dir(useRevs);
+            useRevs.start = useRevs.start + 1;
+            useRevs.ids.unshift('13af8c9a835820969a8a273b18783a70');
+
+            await pouch.bulkDocs({
+                docs: [{
+                    _id: docId,
+                    value: 2,
+                    _deleted: true,
+                    _rev: '3-13af8c9a835820969a8a273b18783a70',
+                    _revisions: useRevs
+                }]
+            }, {
+                new_edits: false
+            });
+
+            let allDocs = await pouch.find({
+                selector: {}
+            });
+
+            console.dir(allDocs);
+            assert.strictEqual(allDocs.docs.length, 0);
+
+            console.log('UNDLEETE ::::::::::::::::::::::::::::::');
+
+            // undelete via insert
+            getDocs = await pouch.bulkGet({
+                docs: [{ id: docId }],
+                revs: true,
+                latest: true
+            });
+            console.log('getDocs: ');
+            console.log(JSON.stringify(getDocs, null, 4));
+
+            const altGetDocs = await pouch.allDocs({
+                keys: [docId],
+                include_docs: true,
+                conflicts: true,
+            });
+            console.log('altGetDocs:');
+            console.log(JSON.stringify(altGetDocs, null, 4));
+
+            const getDocs2 = await pouch.bulkGet({
+                docs: [{ id: docId, rev: '3-13af8c9a835820969a8a273b18783a70' }],
+                revs: true,
+                latest: true
+            });
+            console.log('getDocs2: ');
+            console.log(JSON.stringify(getDocs2, null, 4));
+
+
+            useRevs = (getDocs2 as any).results[0].docs[0].ok._revisions;
+            useRevs.start = 1;
+            useRevs.ids.unshift('14af8c9a835820969a8a273b18783a70');
+            console.dir(useRevs);
+            await pouch.bulkDocs({
+                docs: [{
+                    _id: docId,
+                    value: 5,
+                    _deleted: false,
+                    _rev: '1-14af8c9a835820969a8a273b18783a70',
+                    _revisions: useRevs
+                }]
+            }, {
+                new_edits: false
+            });
+
+
+            allDocs = await pouch.find({
+                selector: {}
+            });
+            assert.strictEqual(allDocs.docs.length, 1);
+
+            console.log('end docs:');
+            console.dir(allDocs.docs);
+
+            process.exit(1);
+
+            pouch.close();
+        });
+    });
     describe('BUGS: pouchdb', () => {
         it('_local documents should not be cached by pouchdb', async () => {
             const name = randomCouchString(10);

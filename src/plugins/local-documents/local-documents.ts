@@ -1,5 +1,6 @@
 import {
     flatClone,
+    getDefaultRevision,
     getDefaultRxDocumentMeta
 } from '../../util';
 
@@ -45,6 +46,7 @@ export async function insertLocal<DocData = any>(
         data,
         _deleted: false,
         _meta: getDefaultRxDocumentMeta(),
+        _rev: getDefaultRevision(),
         _attachments: {}
     };
 

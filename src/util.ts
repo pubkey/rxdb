@@ -2,6 +2,7 @@ import type {
     BlobBuffer,
     DeepReadonlyObject,
     MaybeReadonly,
+    RxDocumentData,
     RxDocumentMeta
 } from './types';
 import {
@@ -406,19 +407,26 @@ export function getHeightOfRevision(revision: string): number {
 }
 
 /**
- * Creates a revision string that does NOT include the revision height
- * Copied and adapted from pouchdb-utils/src/rev.js
- * 
- * We use our own function so RxDB usage without pouchdb RxStorage
- * does not include pouchdb code in the bundle.
+ * Creates the next write revision for a given document.
  */
-export function createRevision(docData: any): string {
+export function createRevision<RxDocType>(
+    docData: RxDocumentData<RxDocType>,
+    previousDocData?: RxDocumentData<RxDocType>
+): string {
+
+    const previousRevision = previousDocData ? previousDocData._rev : null;
+    const previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
+    const newRevisionHeight = previousRevisionHeigth + 1;
+
     const docWithoutRev = Object.assign({}, docData, {
+        _rev: undefined,
         _rev_tree: undefined
     });
-
     const diggestString = JSON.stringify(docWithoutRev);
-    return Md5.hash(diggestString);
+    const revisionHash = Md5.hash(diggestString);
+
+
+    return newRevisionHeight + '-' + revisionHash;
 }
 
 /**
@@ -651,4 +659,19 @@ export function getDefaultRxDocumentMeta(): RxDocumentMeta {
          */
         lwt: 1
     }
+}
+
+/**
+ * Returns a revision that is not valid.
+ * Use this to have correct typings
+ * while the storage wrapper anyway will overwrite the revision
+ * 
+ */
+export function getDefaultRevision(): string {
+    /**
+     * Use a non-valid revision format,
+     * to ensure that the RxStorage will throw
+     * when the revision is not replaced downstream.
+     */
+    return 'error-revision';
 }

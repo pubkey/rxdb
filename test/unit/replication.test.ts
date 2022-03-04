@@ -46,6 +46,7 @@ import type {
     RxDocumentData,
     RxDocumentWriteData
 } from '../../src/types';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
@@ -371,7 +372,8 @@ describe('replication.test.js', () => {
                         _deleted: false,
                         _meta: {
                             lwt: now()
-                        }
+                        },
+                        _rev: EXAMPLE_REVISION_1
                     }
                 );
                 setLastWritePullReplication(

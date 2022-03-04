@@ -35,6 +35,7 @@ import {
     blobBufferUtil,
     flatClone,
     getFromMapOrThrow,
+    parseRevision,
     PROMISE_RESOLVE_VOID
 } from '../../util';
 import {
@@ -168,28 +169,47 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             });
         }
 
+
+        // TODO remove this check
+        documentWrites.forEach(writeRow => {
+            if (!writeRow.document._rev) {
+                console.dir(writeRow);
+                throw new Error('rev missing');
+            }
+            if (!writeRow.document._rev.includes('-')) {
+                console.dir(writeRow);
+                throw new Error('invalid rev format: ' + writeRow.document._rev);
+            }
+            if (writeRow.previous) {
+                const parsedPrev = parseRevision(writeRow.previous._rev);
+                const parsedNew = parseRevision(writeRow.document._rev);
+                if (parsedPrev.height >= parsedNew.height) {
+                    console.dir(writeRow);
+                    throw new Error('new revision must be higher then previous');
+                }
+            }
+        });
+
+
+
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
-        const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
+        const insertDocsById: Map<string, any> = new Map();
+        const writeDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
             const primary: string = (writeData.document as any)[this.primaryPath];
             writeRowById.set(primary, writeData);
-
             const storeDocumentData: any = rxDocumentDataToPouchDocumentData<RxDocType>(
                 this.primaryPath,
                 writeData.document
             );
-
-            // if previous document exists, we have to send the previous revision to pouchdb.
-            if (writeData.previous) {
-                storeDocumentData._rev = writeData.previous._rev;
-            }
-
+            insertDocsById.set(primary, storeDocumentData);
             return storeDocumentData;
         });
-
-        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
+        const pouchResult = await this.internals.pouch.bulkDocs(writeDocs, {
+            new_edits: false,
             custom: {
                 primaryPath: this.primaryPath,
-                writeRowById
+                writeRowById,
+                insertDocsById
             }
         } as any);
 

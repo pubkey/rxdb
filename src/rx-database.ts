@@ -30,7 +30,8 @@ import {
     randomCouchString,
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    getDefaultRevision
 } from './util';
 import {
     newRxError
@@ -305,6 +306,7 @@ export class RxDatabaseBase<
                         },
                         _deleted: false,
                         _meta: getDefaultRxDocumentMeta(),
+                        _rev: getDefaultRevision(),
                         _attachments: {}
                     }
                 });

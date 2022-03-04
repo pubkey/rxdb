@@ -25,6 +25,7 @@ import {
     getFromMapOrThrow,
     now,
     parseRevision,
+    PROMISE_RESOLVE_VOID,
     randomCouchString
 } from '../../util';
 import { newRxError } from '../../rx-error';
@@ -115,6 +116,7 @@ export function addCustomEventsPluginToPouch() {
             }
         }
 
+        // throw if no docs given, because RxDB should never make such a call.
         if (docs.length === 0) {
             throw newRxError('SNH', {
                 args: {
@@ -124,6 +126,117 @@ export function addCustomEventsPluginToPouch() {
             });
         }
 
+
+        /**
+         * If new_edits=false we have to first find the current state
+         * of the document and can later check if the state was changed
+         * because a new revision was written and we have to emit an event.
+         */
+        const previousDocsInDb: Map<string, RxDocumentData<any>> = new Map();
+        if (
+            options.hasOwnProperty('new_edits') &&
+            options.new_edits === false
+        ) {
+            const viaBulkGet = await this.bulkGet({
+                docs: docs.map(doc => ({ id: doc._id })),
+                revs: true,
+                latest: true
+            });
+
+            console.log('custom events plugin viaBulkGet:');
+            console.log(JSON.stringify(viaBulkGet, null, 4));
+
+            viaBulkGet.results.forEach(resultRow => {
+                const firstDoc = resultRow.docs[0];
+                console.dir(firstDoc.ok);
+                if (firstDoc.ok) {
+                    previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
+                } else {
+
+                }
+            })
+
+
+            // const nonDeletedDocsInPouchRows = await this.allDocs({
+            //     keys: ids,
+            //     include_docs: true
+            // });
+            // console.log('nonDeletedDocsInPouchRows:');
+            // console.log(JSON.stringify(nonDeletedDocsInPouchRows, null, 4));
+            // nonDeletedDocsInPouchRows.rows.forEach(row => {
+            //     if (row.doc) {
+            //         previousDocsInDb.set(row.id, row.doc);
+            //     }
+            // });
+        }
+
+        /**
+         * Custom handling if the call came from RxDB (options.custom is set).
+         */
+        const usePouchResult: (PouchBulkDocResultRow | PouchWriteError)[] = [];
+        let hasNonErrorWrite = false;
+        if (
+            options.custom &&
+            options.hasOwnProperty('new_edits') &&
+            options.new_edits === false
+        ) {
+            /**
+             * Reset the write docs array,
+             * because we only write non-conflicting documents.
+             */
+            docs = [];
+            const writeRowById: Map<string, BulkWriteRow<any>> = options.custom.writeRowById;
+            const insertDocsById: Map<string, any> = options.custom.insertDocsById;
+
+            Array.from(writeRowById.entries()).forEach(([id, writeRow]) => {
+                const previousRev = writeRow.previous ? writeRow.previous._rev : null;
+                const newRev = parseRevision(writeRow.document._rev);
+                const docInDb = previousDocsInDb.get(id);
+                const docInDbRev: string | null = docInDb ? docInDb._rev : null;
+                console.log('docInDb: ' + id);
+                console.dir(docInDb);
+                if (docInDbRev !== previousRev) {
+                    // we have a conflict
+                    usePouchResult.push({
+                        error: true,
+                        id,
+                        status: 409
+                    });
+                } else {
+                    const useRevisions = {
+                        start: newRev.height,
+                        ids: docInDb ? docInDb._revisions.ids.slice(0) : []
+                    };
+                    useRevisions.ids.unshift(newRev.hash);
+
+                    hasNonErrorWrite = true;
+                    docs.push(
+                        Object.assign(
+                            {},
+                            insertDocsById.get(id),
+                            {
+                                _revisions: useRevisions
+                            }
+                        )
+                    );
+                    usePouchResult.push({
+                        ok: true,
+                        id,
+                        rev: writeRow.document._rev
+                    });
+                }
+            });
+
+            /**
+             * Optimization shortcut,
+             * if all document writes were conflict errors,
+             * we can skip directly.
+             */
+            if (!hasNonErrorWrite) {
+                console.log('use hasNonErrorWrite shortcut');
+                return usePouchResult;
+            }
+        }
 
         /**
          * If new_edits=false we have to first find the current state
@@ -198,54 +311,74 @@ export function addCustomEventsPluginToPouch() {
         const deeperOptions = flatClone(options);
         deeperOptions.isDeeper = true;
 
-        return oldBulkDocs.call(this, docs, deeperOptions, (err: any, result: any) => {
-            if (err) {
-                if (callback) {
-                    callback(err);
-                } else {
-                    throw err;
-                }
-            } else {
-                return (async () => {
 
-                    /**
-                     * For calls that came from RxDB,
-                     * we have to ensure that the events are emitted
-                     * before the actual call resolves.
-                     */
-                    if (!options.isDeeper) {
-                        const endTime = now();
-                        const emitData = {
-                            emitId: t,
-                            writeDocs: docs,
-                            writeOptions: options,
-                            writeResult: result,
-                            previousDocs,
-                            startTime,
-                            endTime
-                        };
+        console.log('custom events plugin write these docs:');
+        console.log(JSON.stringify(docs, null, 4));
 
-                        const events = await eventEmitDataToStorageEvents(
-                            this,
-                            '_id',
-                            emitData
-                        );
-                        const eventBulk: EventBulk<any> = {
-                            id: randomCouchString(10),
-                            events
-                        }
-                        const emitter = getCustomEventEmitterByPouch(this);
-                        emitter.subject.next(eventBulk);
-                    }
-
-                    if (callback) {
-                        callback(null, result);
+        let callReturn: any;
+        const callPromise = new Promise((res, rej) => {
+            callReturn = oldBulkDocs.call(
+                this, docs,
+                deeperOptions,
+                (err: any, result: (PouchBulkDocResultRow | PouchWriteError)[]) => {
+                    if (err) {
+                        callback ? callback(err) : rej(err);
                     } else {
-                        return result;
+                        return (async () => {
+
+                            result.forEach(row => {
+                                usePouchResult.push(row);
+                            });
+
+                            /**
+                             * For calls that came from RxDB,
+                             * we have to ensure that the events are emitted
+                             * before the actual call resolves.
+                             */
+                            let eventsPromise = PROMISE_RESOLVE_VOID;
+                            if (!options.isDeeper) {
+                                const endTime = now();
+                                const emitData = {
+                                    emitId: t,
+                                    writeDocs: docs,
+                                    writeOptions: options,
+                                    writeResult: usePouchResult,
+                                    previousDocs,
+                                    startTime,
+                                    endTime
+                                };
+
+                                eventsPromise = eventEmitDataToStorageEvents(
+                                    this,
+                                    '_id',
+                                    emitData
+                                ).then(events => {
+                                    const eventBulk: EventBulk<any> = {
+                                        id: randomCouchString(10),
+                                        events
+                                    }
+                                    const emitter = getCustomEventEmitterByPouch(this);
+                                    emitter.subject.next(eventBulk);
+                                });
+                            }
+
+                            if (callback) {
+                                callback(null, usePouchResult);
+                            } else {
+                                return eventsPromise.then(() => {
+                                    res(usePouchResult);
+                                    return usePouchResult;
+                                });
+                            }
+                        })();
                     }
-                })();
-            }
+                });
         });
+
+        if (options.custom) {
+            return callPromise;
+        }
+        return callReturn;
     };
 
     PouchDBCore.plugin({
@@ -261,7 +394,14 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
 ): Promise<RxStorageChangeEvent<RxDocumentData<RxDocType>>[]> {
     const ret: RxStorageChangeEvent<RxDocumentData<RxDocType>>[] = [];
 
-    if (emitData.writeOptions.hasOwnProperty('new_edits') && !emitData.writeOptions.new_edits) {
+
+    console.log('eventEmitDataToStorageEvents()');
+    console.log(JSON.stringify(emitData, null, 4));
+
+    if (
+        emitData.writeOptions.hasOwnProperty('new_edits') &&
+        emitData.writeOptions.new_edits === false
+    ) {
         await Promise.all(
             emitData.writeDocs.map(async (writeDoc) => {
                 const id = writeDoc._id;
@@ -272,6 +412,9 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                 );
 
                 writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
+
+                console.log('writeDoc after:');
+                console.log(JSON.stringify(writeDoc, null, 4));
 
                 let previousDoc = emitData.previousDocs.get(id);
                 if (previousDoc) {

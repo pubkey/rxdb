@@ -30,6 +30,7 @@ import {
 import {
     ensureNotFalsy,
     flatClone,
+    getDefaultRevision,
     getDefaultRxDocumentMeta,
     getHeightOfRevision,
     hash,
@@ -358,7 +359,8 @@ export class RxReplicationStateBase<RxDocType> {
                 pulledDocument as WithDeleted<RxDocType>,
                 {
                     _attachments: {},
-                    _meta: getDefaultRxDocumentMeta()
+                    _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision()
                 }
             );
             setLastWritePullReplication(

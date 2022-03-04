@@ -11,6 +11,7 @@ import {
 } from '../../rx-storage-helper';
 import {
     flatClone,
+    getDefaultRevision,
     getDefaultRxDocumentMeta
 } from '../../util';
 import { newRxError } from '../../rx-error';
@@ -76,6 +77,7 @@ export async function setLastPushSequence(
                     },
                     _deleted: false,
                     _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
                     _attachments: {}
                 }
             }
@@ -98,6 +100,7 @@ export async function setLastPushSequence(
                         lastPushSequence: sequence
                     },
                     _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
                     _deleted: false,
                     _attachments: {}
                 }
@@ -277,6 +280,7 @@ export async function setLastPullDocument<RxDocType>(
                         lastPulledDoc: lastPulledDoc as any
                     },
                     _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
                     _deleted: false,
                     _attachments: {}
                 }
