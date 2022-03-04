@@ -1182,7 +1182,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(latestAfter, 2);
 
                 const docsInDbResult = await storageInstance.findDocumentsById(['foobar'], true);
-                const docInDb = getFromObjectOrThrow(docsInDbResult, 'foobar');
+                getFromObjectOrThrow(docsInDbResult, 'foobar');
 
                 storageInstance.close();
             });

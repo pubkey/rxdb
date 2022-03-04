@@ -20,7 +20,6 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     flatClone,
-    getFromMapOrThrow,
     RxCollection,
     ensureNotFalsy,
     randomCouchString,

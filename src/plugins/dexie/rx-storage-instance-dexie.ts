@@ -6,7 +6,6 @@ import {
     Observable
 } from 'rxjs';
 import {
-    getHeightOfRevision,
     lastOfArray,
     flatClone,
     now,
