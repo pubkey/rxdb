@@ -1536,7 +1536,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     emitted.push(x);
                 });
 
-                const attachmentData = randomString(20);
+                const attachmentData = new Array(20).fill('a').join('');
                 const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
                     attachmentData,
                     'text/plain'
@@ -1567,6 +1567,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 };
 
+
                 const writeResult = await writeSingle<TestDocType>(
                     storageInstance,
                     {
@@ -1574,9 +1575,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 );
                 await waitUntil(() => flattenEvents(emitted).length === 1);
+
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
                 assert.strictEqual(writeResult._attachments.foo.digest, statics.hashKey + '-' + attachmentHash);
-
 
                 /**
                  * When getting the document from the storage again,

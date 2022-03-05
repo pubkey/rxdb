@@ -127,12 +127,8 @@ export function rxDocumentDataToPouchDocumentData<T>(
         Object.entries(doc._attachments).forEach(([key, value]) => {
             const useValue: RxAttachmentWriteData & RxAttachmentData = value as any;
             if (useValue.data) {
-                const asBlobBuffer = blobBufferUtil.createBlobBufferFromBase64(
-                    useValue.data,
-                    useValue.type
-                );
                 (pouchDoc as any)._attachments[key] = {
-                    data: asBlobBuffer,
+                    data: useValue.data,
                     content_type: useValue.type
                 };
             } else {

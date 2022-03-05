@@ -371,6 +371,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
 ): Promise<RxStorageChangeEvent<RxDocumentData<RxDocType>>[]> {
     const ret: RxStorageChangeEvent<RxDocumentData<RxDocType>>[] = [];
     if (
+        !emitData.writeOptions.custom &&
         emitData.writeOptions.hasOwnProperty('new_edits') &&
         emitData.writeOptions.new_edits === false
     ) {
@@ -381,6 +382,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     primaryPath,
                     writeDoc
                 );
+
                 writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
                 let previousDoc = emitData.previousDocs.get(id);
                 if (previousDoc) {

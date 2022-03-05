@@ -263,12 +263,10 @@ for (let r = 0; r < runs; r++) {
             const col = cols.human;
             let lastDoc;
 
-            console.log('--- 1');
             const docsData = new Array(benchmark.insertDocuments.blocks * benchmark.insertDocuments.blockSize)
                 .fill(0)
                 .map(() => schemaObjects.averageSchema());
 
-            console.log('--- 3');
             let t = 0;
             const startTime = nowTime();
             for (let i = 0; i < benchmark.insertDocuments.blocks; i++) {
@@ -283,7 +281,6 @@ for (let r = 0; r < runs; r++) {
                         })
                 );
             }
-            console.log('--- 4');
             const elapsed = elapsedTime(startTime);
             assert.ok(lastDoc);
             benchmark.insertDocuments.total = benchmark.insertDocuments.total + elapsed;

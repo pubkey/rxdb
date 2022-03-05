@@ -617,7 +617,7 @@ export const blobBufferUtil = {
             const reader = new FileReader();
             reader.addEventListener('loadend', e => {
                 const text = (e.target as any).result;
-                res(text);
+                res(btoa(text));
             });
 
             const blobBufferType = Object.prototype.toString.call(blobBuffer);

@@ -20,7 +20,7 @@ import type {
     RxAttachmentCreator,
     RxAttachmentWriteData
 } from '../types';
-import { writeSingle } from '../rx-storage-helper';
+import { hashAttachmentData, writeSingle } from '../rx-storage-helper';
 import { runAsyncPluginHooks } from '../hooks';
 
 function ensureSchemaSupportsAttachments(doc: any) {
@@ -167,11 +167,9 @@ export async function putAttachment(
         id, data, type
     } = hookAttachmentData;
 
-    const newDigest = await storageStatics.hash(
-        blobBufferUtil.createBlobBufferFromBase64(
-            data,
-            type
-        )
+    const newDigest = await hashAttachmentData(
+        dataString,
+        storageStatics
     ).then(hash => storageStatics.hashKey + '-' + hash);
 
     this._atomicQueue = this._atomicQueue
