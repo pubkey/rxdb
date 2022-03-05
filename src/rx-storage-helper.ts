@@ -185,6 +185,19 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             doc: data
         };
 
+
+        /**
+         * Run the hooks once for the previous doc,
+         * once for the new write data
+         */
+        let previous = writeRow.previous;
+        if (previous) {
+            hookParams.doc = previous;
+            runPluginHooks('preWriteToStorageInstance', hookParams);
+            previous = hookParams.doc;
+        }
+
+        hookParams.doc = data;
         runPluginHooks('preWriteToStorageInstance', hookParams);
         data = hookParams.doc;
 
@@ -203,7 +216,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
 
         return {
             document: data,
-            previous: writeRow.previous
+            previous
         };
     }
 

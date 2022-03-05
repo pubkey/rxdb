@@ -105,6 +105,7 @@ config.parallel('encryption.test.ts', () => {
                 const secret = doc.get('secret');
                 assert.strictEqual(agent.secret, secret);
                 const newSecret = randomCouchString(10);
+
                 await doc.atomicPatch({ secret: newSecret });
                 const docNew = await c.findOne().exec(true);
                 assert.strictEqual(newSecret, docNew.get('secret'));
