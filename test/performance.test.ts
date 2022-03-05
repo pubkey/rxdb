@@ -263,10 +263,13 @@ for (let r = 0; r < runs; r++) {
             const col = cols.human;
             let lastDoc;
 
+            console.log('--- 1');
             const docsData = new Array(benchmark.insertDocuments.blocks * benchmark.insertDocuments.blockSize)
                 .fill(0)
                 .map(() => schemaObjects.averageSchema());
 
+            console.log('--- 3');
+            let t = 0;
             const startTime = nowTime();
             for (let i = 0; i < benchmark.insertDocuments.blocks; i++) {
                 await Promise.all(
@@ -274,10 +277,13 @@ for (let r = 0; r < runs; r++) {
                         .fill(0)
                         .map(async () => {
                             const doc = await col.insert(docsData.pop());
+                            t++;
+                            console.log('. ' + t);
                             lastDoc = doc;
                         })
                 );
             }
+            console.log('--- 4');
             const elapsed = elapsedTime(startTime);
             assert.ok(lastDoc);
             benchmark.insertDocuments.total = benchmark.insertDocuments.total + elapsed;

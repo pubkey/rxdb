@@ -286,71 +286,6 @@ export function addCustomEventsPluginToPouch() {
         }
 
         /**
-         * If new_edits=false we have to first find the current state
-         * of the document and can later check if the state was changed
-         * because a new revision was written and we have to emit an event.
-         */
-        const previousDocs: Map<string, any> = new Map();
-        if (
-            options.hasOwnProperty('new_edits') &&
-            options.new_edits === false
-        ) {
-            const ids = docs.map(doc => doc._id);
-
-            /**
-             * Pouchdb does not return deleted documents via allDocs()
-             * So have to do use our hack with getting the newest revisions from the
-             * changes.
-             * @link https://github.com/pouchdb/pouchdb/issues/7877#issuecomment-522775955
-             */
-            const viaChanges = await this.changes({
-                live: false,
-                since: 0,
-                doc_ids: ids,
-                style: 'all_docs'
-            });
-
-            const previousDocsResult = await Promise.all(
-                viaChanges.results.map(async (result) => {
-                    const firstDoc = await this.get(
-                        result.id,
-                        {
-                            rev: result.changes[0].rev,
-                            deleted: 'ok',
-                            revs: options.set_new_edit_as_latest_revision ? true : false,
-                            style: 'all_docs'
-                        }
-                    );
-                    return firstDoc;
-                })
-            );
-            previousDocsResult.forEach(doc => previousDocs.set(doc._id, doc));
-
-            if (options.set_new_edit_as_latest_revision) {
-                docs.forEach(doc => {
-                    const id = doc._id;
-                    const previous = previousDocs.get(id);
-                    if (previous) {
-                        const splittedRev = doc._rev.split('-');
-                        const revHeight = parseInt(splittedRev[0], 10);
-                        const revLabel = splittedRev[1];
-
-                        if (!previous._revisions) { previous._revisions = { ids: [] } }
-
-                        doc._revisions = {
-                            start: revHeight,
-                            ids: previous._revisions.ids
-                        };
-                        doc._revisions.ids.unshift(revLabel);
-
-                        delete previous._revisions;
-                    }
-                });
-            }
-        }
-
-
-        /**
          * pouchdb calls this function again with transformed input.
          * This would lead to duplicate events. So we marks the deeper calls via the options
          * parameter and do not emit events if it is set.
@@ -385,7 +320,7 @@ export function addCustomEventsPluginToPouch() {
                                     writeDocs: docs,
                                     writeOptions: options,
                                     writeResult: usePouchResult,
-                                    previousDocs,
+                                    previousDocs: previousDocsInDb,
                                     startTime,
                                     endTime
                                 };
