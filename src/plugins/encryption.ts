@@ -20,7 +20,6 @@ import type {
     RxDocumentWriteData
 } from '../types';
 import {
-    blobBufferUtil,
     clone,
     createRevision,
     flatClone,
@@ -216,8 +215,11 @@ export const RxDBEncryptionPlugin: RxPlugin = {
                     schema.attachments &&
                     schema.attachments.encrypted
                 ) {
-                    const dataString = await blobBufferUtil.toString(args.attachmentData.data);
+                    const dataString = args.attachmentData.data;
                     const encrypted = encryptString(dataString, password);
+
+                    console.log('preWriteAttachment: encrypted: ' + encrypted);
+
                     args.attachmentData.data = encrypted;
                 }
             }
@@ -231,7 +233,7 @@ export const RxDBEncryptionPlugin: RxPlugin = {
                     schema.attachments &&
                     schema.attachments.encrypted
                 ) {
-                    const dataString = await blobBufferUtil.toString(args.plainData);
+                    const dataString = args.plainData;
                     const decrypted = decryptString(dataString, password);
                     args.plainData = decrypted;
                 }

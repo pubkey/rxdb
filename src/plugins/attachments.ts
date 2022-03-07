@@ -96,19 +96,26 @@ export class RxAttachment {
      * returns the data for the attachment
      */
     async getData(): Promise<BlobBuffer> {
-        const plainData = await this.doc.collection.storageInstance.getAttachmentData(
+        console.log('getData() 0');
+        const plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(
             this.doc.primary,
             this.id
         );
+        console.log('getData() 1');
 
         const hookInput = {
             database: this.doc.collection.database,
             schema: this.doc.collection.schema.jsonSchema,
             type: this.type,
-            plainData
+            plainData: plainDataBase64
         };
+        console.log('getData() 2');
         await runAsyncPluginHooks('postReadAttachment', hookInput);
-        const ret = blobBufferUtil.createBlobBufferFromBase64(
+        console.log('getData() 3');
+
+        console.log('getData() after hooks: ' + plainDataBase64);
+
+        const ret = await blobBufferUtil.createBlobBufferFromBase64(
             hookInput.plainData,
             this.type as any
         );
@@ -116,9 +123,12 @@ export class RxAttachment {
     }
 
     async getStringData(): Promise<string> {
+        console.log('getStringData() - 1');
         const data = await this.getData();
-        const string = await blobBufferUtil.toString(data);
-        return string;
+        console.log('getStringData() - 2');
+        const asString = await blobBufferUtil.toString(data);
+        console.log('getStringData() - 3 ' + asString);
+        return asString;
     }
 }
 
@@ -150,7 +160,7 @@ export async function putAttachment(
 
     const dataSize = blobBufferUtil.size(attachmentData.data);
     const storageStatics = this.collection.database.storage.statics;
-    const dataString = await blobBufferUtil.tobase64String(attachmentData.data);
+    const dataString = await blobBufferUtil.toBase64String(attachmentData.data);
 
     const hookAttachmentData = {
         id: attachmentData.id,

@@ -899,3 +899,35 @@ AFTER:
     "total": 1738.548941
   }
 }
+
+
+## 05.03.2022
+
+{
+  "storage": "pouchdb",
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 18651.573212,
+    "perInstance": 18.651573212
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 6650.861714,
+    "perBlock": 3.3254308569999997
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1156.847967,
+    "perDocument": 0.1156847967
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 1833.045903
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 2059.198253
+  }
+}

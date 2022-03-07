@@ -1542,7 +1542,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     'text/plain'
                 );
 
-                const dataStringBase64 = await blobBufferUtil.tobase64String(dataBlobBuffer);
+                const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
                 const attachmentHash = await hashAttachmentData(
                     dataStringBase64,
                     statics
@@ -1650,7 +1650,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
                 const attachmentHash = await config.storage.getStorage().statics.hash(data);
-                const dataString = await blobBufferUtil.tobase64String(data);
+                const dataString = await blobBufferUtil.toBase64String(data);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
@@ -1685,7 +1685,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 const data2 = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
                 const attachmentHash2 = await config.storage.getStorage().statics.hash(data2);
-                const dataString2 = await blobBufferUtil.tobase64String(data2);
+                const dataString2 = await blobBufferUtil.toBase64String(data2);
                 writeData._attachments.bar = {
                     data: dataString2,
                     digest: config.storage.getStorage().statics.hashKey + '-' + attachmentHash2,

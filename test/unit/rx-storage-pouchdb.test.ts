@@ -60,7 +60,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                 attachmentData,
                 'text/plain'
             );
-            const attachmentDataBBase64 = await blobBufferUtil.tobase64String(attachmentDataBlobBuffer);
+            const attachmentDataBBase64 = await blobBufferUtil.toBase64String(attachmentDataBlobBuffer);
             const attachmentId = 'myText';
             const docId = 'myDoc';
 

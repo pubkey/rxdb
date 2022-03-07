@@ -1476,8 +1476,9 @@ config.parallel('rx-collection.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
 
+                    let t = 0;
                     const docs = await Promise.all(
-                        new Array(config.isFastMode() ? 20 : 100)
+                        new Array(config.isFastMode() ? 20 : 40)
                             .fill(0)
                             .map(async (_v, idx) => {
                                 if (randomBoolean()) {
@@ -1485,7 +1486,10 @@ config.parallel('rx-collection.test.js', () => {
                                 }
                                 const upsertData = clone(docData);
                                 upsertData.lastName = idx + '';
-                                return c.atomicUpsert(docData);
+                                const ret = await c.atomicUpsert(docData);
+                                t++;
+                                console.log('::::: atomicWaits() ' + t);
+                                return ret;
                             })
                     );
                     assert.ok(docs[0] === docs[1]);

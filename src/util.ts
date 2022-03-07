@@ -535,10 +535,12 @@ export const blobBufferUtil = {
      * depending if we are on node or browser,
      * we have to use Buffer(node) or Blob(browser)
      */
-    createBlobBufferFromBase64(
+    async createBlobBufferFromBase64(
         base64String: string,
         type: string
-    ): BlobBuffer {
+    ): Promise<BlobBuffer> {
+
+        console.log('createBlobBufferFromBase64() ' + base64String);
 
         let blobBuffer: any;
         if (isElectronRenderer) {
@@ -550,10 +552,13 @@ export const blobBufferUtil = {
         }
 
         try {
-            // for browsers
-            blobBuffer = new Blob([base64String], {
-                type
-            } as any);
+            /**
+             * For browsers.
+             * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+             */
+            const base64Response = await fetch(`data:${type};base64,${base64String}`);
+            const blob = await base64Response.blob();
+            return blob;
         } catch (e) {
             // for node
             blobBuffer = Buffer.from(
@@ -602,23 +607,33 @@ export const blobBufferUtil = {
             reader.readAsText(blobBuffer as any);
         });
     },
-    // TODO uppercase B ins base64
-    tobase64String(blobBuffer: BlobBuffer | string): Promise<string> {
+    toBase64String(blobBuffer: BlobBuffer | string): Promise<string> {
         if (typeof blobBuffer === 'string') {
             return Promise.resolve(blobBuffer);
         }
         if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
             // node
             return nextTick()
+                /**
+                 * We use btoa() instead of blobBuffer.toString('base64')
+                 * to ensure that we have the same behavior in nodejs and the browser.
+                 */
                 .then(() => blobBuffer.toString('base64'));
         }
-        return new Promise(res => {
-            // browser
-            const reader = new FileReader();
-            reader.addEventListener('loadend', e => {
-                const text = (e.target as any).result;
-                res(btoa(text));
-            });
+        return new Promise((res, rej) => {
+            /**
+             * Browser
+             * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+             */
+            const reader = new FileReader;
+            reader.onerror = rej;
+            reader.onload = () => {
+                // looks like 'data:plain/text;base64,YWFh...'
+                const fullResult = reader.result as any;
+                const split = fullResult.split(',');
+                split.shift();
+                res(split.join(','));
+            };
 
             const blobBufferType = Object.prototype.toString.call(blobBuffer);
 
@@ -631,7 +646,7 @@ export const blobBufferUtil = {
                 blobBuffer = new Blob([blobBuffer]);
             }
 
-            reader.readAsText(blobBuffer as any);
+            reader.readAsDataURL(blobBuffer as any);
         });
     },
     size(blobBuffer: BlobBuffer): number {

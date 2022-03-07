@@ -335,7 +335,7 @@ export async function writeAttachmentsToAttachments(
              */
             if ((obj as RxAttachmentWriteData).data) {
                 const asWrite = (obj as RxAttachmentWriteData);
-                const dataAsBase64String = typeof asWrite.data === 'string' ? asWrite.data : await blobBufferUtil.tobase64String(asWrite.data);
+                const dataAsBase64String = typeof asWrite.data === 'string' ? asWrite.data : await blobBufferUtil.toBase64String(asWrite.data);
                 const hash = await hashAttachmentData(
                     dataAsBase64String,
                     RxStoragePouchStatics
