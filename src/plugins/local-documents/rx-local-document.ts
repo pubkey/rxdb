@@ -15,7 +15,7 @@ import type {
     RxLocalDocument,
     RxLocalDocumentData
 } from '../../types';
-import { flatClone, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
+import { flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
 import { getLocalDocStateByParent } from './local-documents-helper';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
@@ -150,6 +150,7 @@ const RxLocalDocumentPrototype: any = {
             data: {},
             _deleted: true,
             _meta: getDefaultRxDocumentMeta(),
+            _rev: getDefaultRevision(),
             _attachments: {}
         };
         return writeSingle(state.storageInstance, {

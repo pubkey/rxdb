@@ -9,20 +9,22 @@ import './unit/adapter-check.test.js';
  * your relevant tests run first.
  * Do not commit this file if you modified the order.
  */
-import './unit/rx-storage-pouchdb.test.js';
 import './unit/rx-storage-implementations.test.js';
+import './unit/rx-storage-pouchdb.test.js';
 import './unit/rx-storage-lokijs.test.js';
 import './unit/rx-storage-dexie.test.js';
+
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
-import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
-import './unit/local-documents.test.js';
 import './unit/rx-database.test.js';
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
 import './unit/rx-query.test.js';
 import './unit/primary.test.js';
+import './unit/key-compression.test.js';
+import './unit/local-documents.test.js';
+import './unit/encryption.test.js';
 import './unit/temporary-document.test.js';
 import './unit/change-event-buffer.test.js';
 import './unit/cache-replacement-policy.test';
@@ -42,7 +44,6 @@ import './unit/leader-election.test.js';
 import './unit/replication.test.js';
 import './unit/replication-couchdb.test.js';
 import './unit/replication-graphql.test.js';
-import './unit/encryption.test.js';
 import './unit/import-export.test.js';
 import './unit/cross-instance.test.js';
 import './unit/server.test.js';

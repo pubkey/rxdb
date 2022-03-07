@@ -8,7 +8,6 @@ import {
     getPouchIndexDesignDocNameByIndex,
     pouchHash,
     pouchSwapPrimaryToId,
-    POUCH_HASH_KEY,
     primarySwapPouchDbQuerySelector
 } from './pouchdb-helper';
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
@@ -34,7 +33,7 @@ export const RxStoragePouchStatics: RxStorageStatics = {
     hash(data: Buffer | Blob | string): Promise<string> {
         return pouchHash(data);
     },
-    hashKey: POUCH_HASH_KEY,
+    hashKey: 'md5',
     doesBroadcastChangestream() {
         return false;
     },

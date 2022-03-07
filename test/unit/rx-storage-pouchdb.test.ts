@@ -9,7 +9,10 @@ import {
     normalizeMangoQuery,
     MangoQuery,
     ensureNotFalsy,
-    now
+    now,
+    blobBufferUtil,
+    hashAttachmentData,
+    getAttachmentSize
 } from '../../';
 
 import {
@@ -31,6 +34,7 @@ import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import { clone, waitUntil } from 'async-test-util';
 import { HumanDocumentType, humanSchemaLiteral } from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -41,6 +45,51 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
     if (config.storage.name !== 'pouchdb') {
         return;
     }
+    describe('utils', () => {
+        it('.hashAttachmentData() must return the same hash as pouchdb creates for an attachment', async () => {
+            const storage = getRxStoragePouch('memory');
+            const pouch: PouchDBInstance = new PouchDB(
+                randomCouchString(12),
+                {
+                    adapter: 'memory'
+                }
+            ) as any;
+
+            const attachmentData = 'foobaasdfasdfsadfr';
+            const attachmentDataBlobBuffer = blobBufferUtil.createBlobBuffer(
+                attachmentData,
+                'text/plain'
+            );
+            const attachmentDataBBase64 = await blobBufferUtil.toBase64String(attachmentDataBlobBuffer);
+            const attachmentId = 'myText';
+            const docId = 'myDoc';
+
+            const rxdbHash = await hashAttachmentData(
+                attachmentDataBBase64,
+                storage.statics
+            );
+
+            await pouch.put({
+                _id: docId,
+                _attachments: {
+                    [attachmentId]: {
+                        data: attachmentDataBBase64,
+                        type: 'text/plain'
+                    }
+                }
+            });
+            const pouchDoc = await pouch.get(docId);
+            assert.strictEqual(
+                pouchDoc._attachments[attachmentId].digest,
+                storage.statics.hashKey + '-' + rxdbHash
+            );
+
+            const size = getAttachmentSize(attachmentDataBBase64);
+            assert.strictEqual(pouchDoc._attachments[attachmentId].length, size);
+
+            pouch.destroy();
+        });
+    });
     describe('custom events plugin', () => {
         it('should not throw when added to pouch', () => {
             addCustomEventsPluginToPouch();
@@ -52,12 +101,14 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     adapter: 'memory'
                 }
             ) as any;
+            await pouch.info();
             (pouch as any).primaryPath = '_id';
 
             const emitted: any[] = [];
             const sub = getCustomEventEmitterByPouch(pouch).subject.subscribe(ev => {
                 emitted.push(ev);
             });
+
 
             await pouch.bulkDocs([{
                 _id: 'foo',
@@ -107,6 +158,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                         {
                             _attachments: {},
                             _deleted: false,
+                            _rev: EXAMPLE_REVISION_1,
                             _meta: {
                                 lwt: now()
                             }

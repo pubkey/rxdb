@@ -12,7 +12,6 @@ import {
     trimDots,
     getHeightOfRevision,
     pluginMissing,
-    nextTick,
     flatClone,
     PROMISE_RESOLVE_NULL,
     PROMISE_RESOLVE_VOID,
@@ -347,8 +346,6 @@ export const basePrototype = {
                              * we can just re-run the mutation until there is no conflict
                              */
                             if (isPouchdbConflictError(err as any)) {
-                                // we need to free the cpu for a tick or the browser tests will fail
-                                await nextTick();
                                 // pouchdb conflict error -> retrying
                             } else {
                                 rej(err);

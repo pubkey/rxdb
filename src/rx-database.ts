@@ -30,7 +30,9 @@ import {
     randomCouchString,
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    getDefaultRevision,
+    createRevision
 } from './util';
 import {
     newRxError
@@ -184,6 +186,7 @@ export class RxDatabaseBase<
         }
         const writeDoc = flatClone(doc);
         writeDoc._deleted = true;
+        writeDoc._rev = createRevision(writeDoc, doc);
         await this.lockedRun(
             () => this.internalStore.bulkWrite([{
                 document: writeDoc,
@@ -290,23 +293,26 @@ export class RxDatabaseBase<
             // add to bulk-docs list
             const collectionName = _collectionNamePrimary(name as any, collectionCreators[name].schema);
             if (!internalDocByCollectionName[collectionName]) {
+                const collectionDocData = {
+                    id: getPrimaryKeyOfInternalDocument(
+                        collectionName,
+                        INTERNAL_CONTEXT_COLLECTION
+                    ),
+                    key: collectionName,
+                    context: INTERNAL_CONTEXT_COLLECTION,
+                    data: {
+                        schemaHash: schemaHashByName[name],
+                        schema: collection.schema.normalized,
+                        version: collection.schema.version,
+                    },
+                    _deleted: false,
+                    _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
+                    _attachments: {}
+                };
+                collectionDocData._rev = createRevision(collectionDocData);
                 bulkPutDocs.push({
-                    document: {
-                        id: getPrimaryKeyOfInternalDocument(
-                            collectionName,
-                            INTERNAL_CONTEXT_COLLECTION
-                        ),
-                        key: collectionName,
-                        context: INTERNAL_CONTEXT_COLLECTION,
-                        data: {
-                            schemaHash: schemaHashByName[name],
-                            schema: collection.schema.normalized,
-                            version: collection.schema.version,
-                        },
-                        _deleted: false,
-                        _meta: getDefaultRxDocumentMeta(),
-                        _attachments: {}
-                    }
+                    document: collectionDocData
                 });
             }
 
@@ -573,6 +579,7 @@ export async function _removeAllOfCollection(
     const writeRows = relevantDocs.map(doc => {
         const writeDoc = flatClone(doc);
         writeDoc._deleted = true;
+        writeDoc._rev = createRevision(writeDoc, doc);
         return {
             previous: doc,
             document: writeDoc

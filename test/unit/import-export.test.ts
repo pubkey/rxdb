@@ -14,11 +14,6 @@ import {
     blobBufferUtil,
 } from '../../';
 
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
-
 import AsyncTestUtil from 'async-test-util';
 import config from './config';
 import { HumanDocumentType } from './../helper/schemas';
@@ -38,7 +33,7 @@ config.parallel('import-export.test.js', () => {
             it('export encrypted as decrypted', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     password: randomCouchString(10)
                 });
                 const cols = await db.addCollections({
@@ -105,7 +100,7 @@ config.parallel('import-export.test.js', () => {
                 it('should not import if schema not matching', async () => {
                     const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                         password: randomCouchString(10)
                     });
                     const cols = await db.addCollections({
@@ -169,7 +164,7 @@ config.parallel('import-export.test.js', () => {
             it('export encrypted as decrypted', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     password: randomCouchString(10)
                 });
                 const cols = await db.addCollections({
@@ -195,7 +190,7 @@ config.parallel('import-export.test.js', () => {
             it('export with multiple collections', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     password: randomCouchString(10)
                 });
                 const cols = await db.addCollections({
@@ -227,7 +222,7 @@ config.parallel('import-export.test.js', () => {
             it('export 1 of 2 collections', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     password: randomCouchString(10)
                 });
                 const cols = await db.addCollections({
@@ -277,7 +272,7 @@ config.parallel('import-export.test.js', () => {
 
                     const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType> }>({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                         password: null,
                         multiInstance: true
                     });
@@ -290,7 +285,7 @@ config.parallel('import-export.test.js', () => {
 
                     const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                         password: null,
                         multiInstance: true
                     });
@@ -322,7 +317,7 @@ config.parallel('import-export.test.js', () => {
                 it('should not import if schema not matching', async () => {
                     const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                         multiInstance: true
                     });
                     const cols = await db.addCollections({
@@ -334,7 +329,7 @@ config.parallel('import-export.test.js', () => {
 
                     const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                         multiInstance: true
                     });
                     await db2.addCollections({
@@ -389,11 +384,11 @@ config.parallel('import-export.test.js', () => {
 
             const db = await createRxDatabase({
                 name: 'aaa',
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const db2 = await createRxDatabase({
                 name: 'aaa1',
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
                 demo: {

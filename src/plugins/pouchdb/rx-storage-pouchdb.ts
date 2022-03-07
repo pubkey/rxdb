@@ -13,6 +13,7 @@ import {
     isMaybeReadonlyArray
 } from '../../util';
 import {
+    addPouchPlugin,
     isLevelDown,
     PouchDB
 } from './pouch-db';
@@ -23,8 +24,10 @@ import {
     getPouchIndexDesignDocNameByIndex,
     PouchStorageInternals
 } from './pouchdb-helper';
+import PouchDBFind from 'pouchdb-find';
 import { RxStoragePouchStatics } from './pouch-statics';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { addCustomEventsPluginToPouch } from './custom-events-plugin';
 export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
     public name: string = 'pouchdb';
     public statics = RxStoragePouchStatics;
@@ -189,10 +192,19 @@ export function getPouchLocation(
     }
 }
 
+
+let addedRxDBPouchPlugins = false;
+
 export function getRxStoragePouch(
     adapter: any,
     pouchSettings?: PouchSettings
 ): RxStoragePouch {
+    if (!addedRxDBPouchPlugins) {
+        addedRxDBPouchPlugins = true;
+        addPouchPlugin(PouchDBFind);
+        addCustomEventsPluginToPouch();
+    }
+
     if (!adapter) {
         throw new Error('adapter missing');
     }

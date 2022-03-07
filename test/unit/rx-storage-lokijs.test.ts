@@ -27,6 +27,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { LeaderElector } from 'broadcast-channel';
 import { HumanDocumentType } from '../helper/schemas';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 /**
  * RxStorageLokiJS specific tests
@@ -243,6 +244,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 document: {
                     key: 'foobar',
                     _deleted: false,
+                    _rev: EXAMPLE_REVISION_1,
                     _meta: {
                         lwt: now()
                     },
@@ -288,6 +290,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 document: {
                     key: 'foobar',
                     _deleted: false,
+                    _rev: EXAMPLE_REVISION_1,
                     _meta: {
                         lwt: now()
                     },
@@ -350,6 +353,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     _meta: {
                         lwt: now()
                     },
+                    _rev: EXAMPLE_REVISION_1,
                     _attachments: {}
                 });
                 await storageInstance.bulkWrite([
@@ -358,15 +362,17 @@ describe('rx-storage-lokijs.test.js', () => {
                     }
                 ]);
 
-                await storageInstance.bulkAddRevisions([
-                    Object.assign(schemaObjects.human(), {
-                        _deleted: false,
-                        _attachments: {},
-                        _meta: {
-                            lwt: now()
-                        },
-                        _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
-                    })
+                await storageInstance.bulkWrite([
+                    {
+                        document: Object.assign(schemaObjects.human(), {
+                            _deleted: false,
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            },
+                            _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
+                        })
+                    }
                 ]);
                 const preparedQuery = storage.statics.prepareQuery(
                     schemas.human,

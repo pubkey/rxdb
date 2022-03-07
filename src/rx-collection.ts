@@ -16,7 +16,9 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    getDefaultRevision,
+    nextTick
 } from './util';
 import {
     fillObjectDataBeforeInsert,
@@ -82,7 +84,8 @@ import type {
     RxStorageInstance,
     CollectionsOfDatabase,
     RxChangeEventBulk,
-    RxLocalDocumentData
+    RxLocalDocumentData,
+    RxDocumentBase
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -332,6 +335,7 @@ export class RxCollectionBase<
                 document: Object.assign(doc, {
                     _attachments: {},
                     _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
                     _deleted: false
                 })
             };
@@ -895,12 +899,17 @@ function _applyHookFunctions(
     });
 }
 
-function _atomicUpsertUpdate(doc: any, json: any): Promise<any> {
-    return doc.atomicUpdate((innerDoc: any) => {
-        json._rev = innerDoc._rev;
-        innerDoc._data = json;
-        return innerDoc._data;
-    }).then(() => doc);
+function _atomicUpsertUpdate<RxDocType>(
+    doc: RxDocumentBase<RxDocType>,
+    json: RxDocumentData<RxDocType>
+): Promise<RxDocumentBase<RxDocType>> {
+    return doc.atomicUpdate((_innerDoc: RxDocumentData<RxDocType>) => {
+        return json;
+    })
+        .then(() => nextTick())
+        .then(() => {
+            return doc;
+        });
 }
 
 /**

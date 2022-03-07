@@ -110,7 +110,6 @@ export function getCompressionStateByRxJsonSchema(
 ): CompressionState {
     let state = COMPRESSION_STATE_BY_SCHEMA.get(schema);
     if (!state) {
-
         /**
          * Because we cache the state by the JsonSchema,
          * it must be ausured that the given schema object never changes.

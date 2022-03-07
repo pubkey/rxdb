@@ -87,10 +87,6 @@ describe('replication-couchdb.test.js', () => {
     config.parallel('test pouch-sync to ensure nothing broke', () => {
         describe('positive', () => {
             it('sync two collections over server', async function () {
-
-
-                console.log('##############################################');
-
                 const server = await SpawnServer.spawn();
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(0);
@@ -133,7 +129,6 @@ describe('replication-couchdb.test.js', () => {
                 /**
                  * Also try a delete
                  */
-                console.log('............... DELETE');
                 await doc.remove();
 
 

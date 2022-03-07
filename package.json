@@ -55,6 +55,7 @@
     "// test:node:loop": "runs tests in node in a loop. Use this to debug tests that only fail sometimes",
     "test:node:loop": "npm run test:node && npm run test:node:loop",
     "test:browser": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb karma start ./config/karma.conf.js --single-run",
+    "test:browser:loop": "npm run test:browser && npm run test:browser:loop",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",

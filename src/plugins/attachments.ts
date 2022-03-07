@@ -20,7 +20,7 @@ import type {
     RxAttachmentCreator,
     RxAttachmentWriteData
 } from '../types';
-import { writeSingle } from '../rx-storage-helper';
+import { hashAttachmentData, writeSingle } from '../rx-storage-helper';
 import { runAsyncPluginHooks } from '../hooks';
 
 function ensureSchemaSupportsAttachments(doc: any) {
@@ -96,19 +96,18 @@ export class RxAttachment {
      * returns the data for the attachment
      */
     async getData(): Promise<BlobBuffer> {
-        const plainData = await this.doc.collection.storageInstance.getAttachmentData(
+        const plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(
             this.doc.primary,
             this.id
         );
-
         const hookInput = {
             database: this.doc.collection.database,
             schema: this.doc.collection.schema.jsonSchema,
             type: this.type,
-            plainData
+            plainData: plainDataBase64
         };
         await runAsyncPluginHooks('postReadAttachment', hookInput);
-        const ret = blobBufferUtil.createBlobBufferFromBase64(
+        const ret = await blobBufferUtil.createBlobBufferFromBase64(
             hookInput.plainData,
             this.type as any
         );
@@ -117,8 +116,8 @@ export class RxAttachment {
 
     async getStringData(): Promise<string> {
         const data = await this.getData();
-        const string = await blobBufferUtil.toString(data);
-        return string;
+        const asString = await blobBufferUtil.toString(data);
+        return asString;
     }
 }
 
@@ -150,7 +149,7 @@ export async function putAttachment(
 
     const dataSize = blobBufferUtil.size(attachmentData.data);
     const storageStatics = this.collection.database.storage.statics;
-    const dataString = await blobBufferUtil.tobase64String(attachmentData.data);
+    const dataString = await blobBufferUtil.toBase64String(attachmentData.data);
 
     const hookAttachmentData = {
         id: attachmentData.id,
@@ -167,11 +166,9 @@ export async function putAttachment(
         id, data, type
     } = hookAttachmentData;
 
-    const newDigest = await storageStatics.hash(
-        blobBufferUtil.createBlobBufferFromBase64(
-            data,
-            type
-        )
+    const newDigest = await hashAttachmentData(
+        dataString,
+        storageStatics
     ).then(hash => storageStatics.hashKey + '-' + hash);
 
     this._atomicQueue = this._atomicQueue

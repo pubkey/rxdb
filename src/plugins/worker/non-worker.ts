@@ -101,12 +101,6 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
             documentWrites
         );
     }
-    bulkAddRevisions(documents: RxDocumentData<DocumentData>[]): Promise<void> {
-        return this.internals.worker.bulkAddRevisions(
-            this.internals.instanceId,
-            documents
-        );
-    }
     findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<DocumentData> }> {
         return this.internals.worker.findDocumentsById(
             this.internals.instanceId,

@@ -35,6 +35,7 @@ import {
     blobBufferUtil,
     flatClone,
     getFromMapOrThrow,
+    parseRevision,
     PROMISE_RESOLVE_VOID
 } from '../../util';
 import {
@@ -126,35 +127,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
         await this.internals.pouch.destroy();
     }
-
-    public async bulkAddRevisions(
-        documents: RxDocumentData<RxDocType>[]
-    ): Promise<void> {
-        if (documents.length === 0) {
-            throw newRxError('P3', {
-                args: {
-                    documents
-                }
-            });
-        }
-
-        const writeData = documents.map(doc => {
-            return rxDocumentDataToPouchDocumentData(
-                this.primaryPath,
-                doc
-            );
-        });
-
-        // we do not need the response here because pouchdb returns an empty array on new_edits: false
-        await this.internals.pouch.bulkDocs(
-            writeData,
-            {
-                new_edits: false,
-                set_new_edit_as_latest_revision: true
-            }
-        );
-    }
-
     public async bulkWrite(
         documentWrites: BulkWriteRow<RxDocType>[]
     ): Promise<
@@ -168,28 +140,51 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             });
         }
 
+
+        // TODO remove this check
+        documentWrites.forEach(writeRow => {
+            if (!writeRow.document._rev) {
+                console.dir(writeRow);
+                throw new Error('rev missing');
+            }
+            if (!writeRow.document._rev.includes('-')) {
+                console.dir(writeRow);
+                throw new Error('invalid rev format: ' + writeRow.document._rev);
+            }
+            if (writeRow.previous) {
+                const parsedPrev = parseRevision(writeRow.previous._rev);
+                if (typeof parsedPrev.height !== 'number') {
+                    console.dir(writeRow);
+                    throw new Error('rev height is no number');
+                }
+                const parsedNew = parseRevision(writeRow.document._rev);
+                if (parsedPrev.height >= parsedNew.height) {
+                    console.dir(writeRow);
+                    throw new Error('new revision must be higher then previous');
+                }
+            }
+        });
+
+
+
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
-        const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
+        const insertDocsById: Map<string, any> = new Map();
+        const writeDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
             const primary: string = (writeData.document as any)[this.primaryPath];
             writeRowById.set(primary, writeData);
-
             const storeDocumentData: any = rxDocumentDataToPouchDocumentData<RxDocType>(
                 this.primaryPath,
                 writeData.document
             );
-
-            // if previous document exists, we have to send the previous revision to pouchdb.
-            if (writeData.previous) {
-                storeDocumentData._rev = writeData.previous._rev;
-            }
-
+            insertDocsById.set(primary, storeDocumentData);
             return storeDocumentData;
         });
-
-        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
+        const pouchResult = await this.internals.pouch.bulkDocs(writeDocs, {
+            new_edits: false,
             custom: {
                 primaryPath: this.primaryPath,
-                writeRowById
+                writeRowById,
+                insertDocsById
             }
         } as any);
 
@@ -252,7 +247,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             documentId,
             attachmentId
         );
-        return blobBufferUtil.tobase64String(attachmentData);
+        const ret = await blobBufferUtil.toBase64String(attachmentData);
+        return ret;
     }
 
     async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {

@@ -22,14 +22,198 @@ import {
     addPouchPlugin,
     getRxStoragePouch
 } from '../../plugins/pouchdb';
+import PouchDBFind from 'pouchdb-find';
 
 
 import * as schemaObjects from './../helper/schema-objects';
 
 config.parallel('pouch-db-integration.test.js', () => {
+    if (config.storage.name !== 'pouchdb') {
+        return;
+    }
+
     describe('init', () => {
         it('should export the pouchDB-module', () => {
             assert.strictEqual(typeof PouchDB, 'function');
+        });
+    });
+    describe('assumptions', () => {
+        it('must be able to insert->update->delete via replication', async () => {
+            addPouchPlugin(require('pouchdb-adapter-memory'));
+            addPouchPlugin(PouchDBFind);
+            const pouch1: PouchDBInstance = new PouchDB('foobar1' + randomCouchString(10), {
+                adapter: 'memory'
+            });
+            const pouch2: PouchDBInstance = new PouchDB('foobar2' + randomCouchString(10), {
+                adapter: 'memory'
+            });
+            const syncHandler = pouch1.sync(pouch2, {
+                live: true
+            });
+
+            const docData: any = {
+                _id: 'syncMe',
+                value: 1
+            };
+            async function getDocsFromPouch2() {
+                const allDocs = await pouch2.find({
+                    selector: {}
+                });
+                return allDocs.docs;
+            }
+
+            // insert
+            const insertResult = await pouch1.put(clone(docData));
+            docData._rev = insertResult.rev;
+
+            await AsyncTestUtil.waitUntil(async () => {
+                const allDocs = await getDocsFromPouch2();
+                return allDocs.length === 1;
+            });
+
+            // update
+            docData.value = 2;
+            const updateResult = await pouch1.put(clone(docData));
+            docData._rev = updateResult.rev;
+
+            await AsyncTestUtil.waitUntil(async () => {
+                const allDocs = await getDocsFromPouch2();
+                return allDocs.length === 1 && (allDocs[0] as any).value === 2;
+            });
+
+            // delete
+            docData._deleted = true;
+            const deleteResult = await pouch1.put(clone(docData));
+            assert.ok(deleteResult);
+            await AsyncTestUtil.waitUntil(async () => {
+                const allDocs = await getDocsFromPouch2();
+                return allDocs.length === 0;
+            });
+
+            // undelete via insert
+            const undeleteResult = await pouch1.put({
+                _id: 'syncMe',
+                value: 5
+            });
+            assert.ok(undeleteResult);
+            await AsyncTestUtil.waitUntil(async () => {
+                const allDocs = await getDocsFromPouch2();
+                return allDocs.length === 1 && (allDocs[0] as any).value === 5;
+            });
+
+            await syncHandler.cancel();
+            pouch1.close();
+            pouch2.close();
+        });
+        it('must be able to insert->update->delete via new_edits:false', async () => {
+            const pouch: PouchDBInstance = new PouchDB('foobar' + randomCouchString(10), {
+                adapter: 'memory'
+            });
+            const docId = 'foobar';
+
+            // insert
+            await pouch.bulkDocs({
+                docs: [{
+                    _id: docId,
+                    value: 1,
+                    _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
+                }]
+            }, {
+                new_edits: false
+            });
+
+            // update
+            let getDocs = await pouch.bulkGet({
+                docs: [{ id: docId }],
+                revs: true,
+                latest: true
+            });
+            let useRevs = (getDocs as any).results[0].docs[0].ok._revisions;
+            useRevs.start = useRevs.start + 1;
+            useRevs.ids.unshift('a723631364fbfa906c5ffa8203ac9725');
+
+            await pouch.bulkDocs({
+                docs: [{
+                    _id: docId,
+                    value: 2,
+                    _rev: '2-a723631364fbfa906c5ffa8203ac9725',
+                    _revisions: useRevs
+                }]
+            }, {
+                new_edits: false
+            });
+
+            // delete
+            getDocs = await pouch.bulkGet({
+                docs: [{ id: docId }],
+                revs: true,
+                latest: true
+            });
+            useRevs = (getDocs as any).results[0].docs[0].ok._revisions;
+            useRevs.start = useRevs.start + 1;
+            useRevs.ids.unshift('13af8c9a835820969a8a273b18783a70');
+
+            await pouch.bulkDocs({
+                docs: [{
+                    _id: docId,
+                    value: 2,
+                    _deleted: true,
+                    _rev: '3-13af8c9a835820969a8a273b18783a70',
+                    _revisions: useRevs
+                }]
+            }, {
+                new_edits: false
+            });
+
+            let allDocs = await pouch.find({
+                selector: {}
+            });
+            assert.strictEqual(allDocs.docs.length, 0);
+
+            // undelete via insert
+            getDocs = await pouch.bulkGet({
+                docs: [{ id: docId }],
+                revs: true,
+                latest: true
+            });
+
+            const getDocs2 = await pouch.bulkGet({
+                docs: [{ id: docId, rev: '3-13af8c9a835820969a8a273b18783a70' }],
+                revs: true,
+                latest: true
+            });
+
+            useRevs = (getDocs2 as any).results[0].docs[0].ok._revisions;
+            useRevs.start = 1;
+            useRevs.ids.unshift('14af8c9a835820969a8a273b18783a70');
+            await pouch.bulkDocs({
+                docs: [{
+                    _id: docId,
+                    value: 5,
+                    _deleted: false,
+                    _rev: '1-14af8c9a835820969a8a273b18783a70',
+                    _revisions: useRevs
+                }]
+            }, {
+                new_edits: false
+            });
+
+
+            // must be found via query
+            allDocs = await pouch.find({
+                selector: {
+                    _id: docId
+                },
+                limit: 1
+            });
+            assert.strictEqual(allDocs.docs.length, 1);
+            assert.strictEqual((allDocs.docs[0] as any).value, 5);
+
+            // same via .get
+            const getDoc = await pouch.get(docId);
+            assert.strictEqual(getDoc.value, 5);
+
+            pouch.close();
         });
     });
     describe('memdown', () => {
@@ -57,16 +241,6 @@ config.parallel('pouch-db-integration.test.js', () => {
         });
     });
     describe('pouchdb-adapter-memory', () => {
-        it('should not create a db without adding the adapter', async () => {
-            await AsyncTestUtil.assertThrows(
-                () => createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory')
-                }),
-                'RxError',
-                'Adapter'
-            );
-        });
         it('should work when adapter was added', async () => {
             addPouchPlugin(require('pouchdb-adapter-memory'));
             const db = await createRxDatabase({

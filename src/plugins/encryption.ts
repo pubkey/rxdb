@@ -20,9 +20,10 @@ import type {
     RxDocumentWriteData
 } from '../types';
 import {
-    blobBufferUtil,
     clone,
+    createRevision,
     flatClone,
+    getDefaultRevision,
     getDefaultRxDocumentMeta,
     hash,
     PROMISE_RESOLVE_FALSE
@@ -96,10 +97,12 @@ export async function storePasswordHashIntoDatabase(
             data: {
                 hash: pwHash
             },
+            _deleted: false,
             _attachments: {},
             _meta: getDefaultRxDocumentMeta(),
-            _deleted: false
+            _rev: getDefaultRevision()
         };
+        docData._rev = createRevision(docData);
         await rxDatabase.internalStore.bulkWrite([{
             document: docData
         }]);
@@ -212,7 +215,7 @@ export const RxDBEncryptionPlugin: RxPlugin = {
                     schema.attachments &&
                     schema.attachments.encrypted
                 ) {
-                    const dataString = await blobBufferUtil.toString(args.attachmentData.data);
+                    const dataString = args.attachmentData.data;
                     const encrypted = encryptString(dataString, password);
                     args.attachmentData.data = encrypted;
                 }
@@ -227,7 +230,7 @@ export const RxDBEncryptionPlugin: RxPlugin = {
                     schema.attachments &&
                     schema.attachments.encrypted
                 ) {
-                    const dataString = await blobBufferUtil.toString(args.plainData);
+                    const dataString = args.plainData;
                     const decrypted = decryptString(dataString, password);
                     args.plainData = decrypted;
                 }

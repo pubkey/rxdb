@@ -2,6 +2,7 @@ import type {
     BlobBuffer,
     DeepReadonlyObject,
     MaybeReadonly,
+    RxDocumentData,
     RxDocumentMeta
 } from './types';
 import {
@@ -406,19 +407,33 @@ export function getHeightOfRevision(revision: string): number {
 }
 
 /**
- * Creates a revision string that does NOT include the revision height
- * Copied and adapted from pouchdb-utils/src/rev.js
- * 
- * We use our own function so RxDB usage without pouchdb RxStorage
- * does not include pouchdb code in the bundle.
+ * Creates the next write revision for a given document.
  */
-export function createRevision(docData: any): string {
+export function createRevision<RxDocType>(
+    docData: RxDocumentData<RxDocType> & {
+        /**
+         * Passing a revision is optional here,
+         * because it is anyway not needed to calculate
+         * the new revision.
+         */
+        _rev?: string;
+    },
+    previousDocData?: RxDocumentData<RxDocType>
+): string {
+
+    const previousRevision = previousDocData ? previousDocData._rev : null;
+    const previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
+    const newRevisionHeight = previousRevisionHeigth + 1;
+
     const docWithoutRev = Object.assign({}, docData, {
+        _rev: undefined,
         _rev_tree: undefined
     });
-
     const diggestString = JSON.stringify(docWithoutRev);
-    return Md5.hash(diggestString);
+    const revisionHash = Md5.hash(diggestString);
+
+
+    return newRevisionHeight + '-' + revisionHash;
 }
 
 /**
@@ -520,11 +535,10 @@ export const blobBufferUtil = {
      * depending if we are on node or browser,
      * we have to use Buffer(node) or Blob(browser)
      */
-    createBlobBufferFromBase64(
+    async createBlobBufferFromBase64(
         base64String: string,
         type: string
-    ): BlobBuffer {
-
+    ): Promise<BlobBuffer> {
         let blobBuffer: any;
         if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer
@@ -535,10 +549,13 @@ export const blobBufferUtil = {
         }
 
         try {
-            // for browsers
-            blobBuffer = new Blob([base64String], {
-                type
-            } as any);
+            /**
+             * For browsers.
+             * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+             */
+            const base64Response = await fetch(`data:${type};base64,${base64String}`);
+            const blob = await base64Response.blob();
+            return blob;
         } catch (e) {
             // for node
             blobBuffer = Buffer.from(
@@ -587,22 +604,33 @@ export const blobBufferUtil = {
             reader.readAsText(blobBuffer as any);
         });
     },
-    tobase64String(blobBuffer: BlobBuffer | string): Promise<string> {
+    toBase64String(blobBuffer: BlobBuffer | string): Promise<string> {
         if (typeof blobBuffer === 'string') {
             return Promise.resolve(blobBuffer);
         }
         if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
             // node
             return nextTick()
+                /**
+                 * We use btoa() instead of blobBuffer.toString('base64')
+                 * to ensure that we have the same behavior in nodejs and the browser.
+                 */
                 .then(() => blobBuffer.toString('base64'));
         }
-        return new Promise(res => {
-            // browser
-            const reader = new FileReader();
-            reader.addEventListener('loadend', e => {
-                const text = (e.target as any).result;
-                res(text);
-            });
+        return new Promise((res, rej) => {
+            /**
+             * Browser
+             * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+             */
+            const reader = new FileReader;
+            reader.onerror = rej;
+            reader.onload = () => {
+                // looks like 'data:plain/text;base64,YWFh...'
+                const fullResult = reader.result as any;
+                const split = fullResult.split(',');
+                split.shift();
+                res(split.join(','));
+            };
 
             const blobBufferType = Object.prototype.toString.call(blobBuffer);
 
@@ -615,7 +643,7 @@ export const blobBufferUtil = {
                 blobBuffer = new Blob([blobBuffer]);
             }
 
-            reader.readAsText(blobBuffer as any);
+            reader.readAsDataURL(blobBuffer as any);
         });
     },
     size(blobBuffer: BlobBuffer): number {
@@ -651,4 +679,18 @@ export function getDefaultRxDocumentMeta(): RxDocumentMeta {
          */
         lwt: 1
     }
+}
+
+/**
+ * Returns a revision that is not valid.
+ * Use this to have correct typings
+ * while the storage wrapper anyway will overwrite the revision.
+ */
+export function getDefaultRevision(): string {
+    /**
+     * Use a non-valid revision format,
+     * to ensure that the RxStorage will throw
+     * when the revision is not replaced downstream.
+     */
+    return '';
 }

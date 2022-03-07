@@ -16,10 +16,6 @@ import {
     randomCouchString
 } from '../../';
 
-import {
-    getRxStoragePouch,
-} from '../../plugins/pouchdb';
-
 
 config.parallel('hooks.test.js', () => {
     describe('get/set', () => {
@@ -463,7 +459,7 @@ config.parallel('hooks.test.js', () => {
             it('should define a getter', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     multiInstance: true
                 });
                 const collections = await db.addCollections({
@@ -491,7 +487,7 @@ config.parallel('hooks.test.js', () => {
             it('should throw when adding an async-hook', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     multiInstance: true
                 });
                 const collections = await db.addCollections({

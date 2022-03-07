@@ -51,13 +51,24 @@ describe('util.test.js', () => {
         it('should return the same values for the same document data', async () => {
             const hash1 = createRevision({
                 foo: 'bar',
-                bar: 'foo'
-            });
+                bar: 'foo',
+                _deleted: false,
+                _attachments: {},
+                _meta: {
+                    lwt: 1
+                }
+            } as any);
             const hash2 = createRevision({
                 foo: 'bar',
                 bar: 'foo',
-                // _rev_tree must be ignored from hashing
-                _rev_tree: 'foobar'
+                // _rev_tree and _rev must be ignored from hashing
+                _rev: '1-asdf',
+                _rev_tree: 'foobar',
+                _deleted: false,
+                _attachments: {},
+                _meta: {
+                    lwt: 1
+                }
             });
             assert.strictEqual(hash1, hash2);
         });
@@ -67,8 +78,8 @@ describe('util.test.js', () => {
                 bar: 'foo',
                 _rev_tree: '1-asdfasdf'
             };
-            const ownRev = createRevision(docData);
-            const pouchRev = pouchCreateRevisison(docData, true);
+            const ownRev = createRevision(docData as any);
+            const pouchRev = '1-' + pouchCreateRevisison(docData, true);
             assert.strictEqual(ownRev, pouchRev);
         });
     });
@@ -161,6 +172,56 @@ describe('util.test.js', () => {
             const blobBuffer = blobBufferUtil.createBlobBuffer(str, 'plain/text');
             const size = blobBufferUtil.size(blobBuffer);
             assert.strictEqual(size, amount);
+        });
+        it('should do the correct base64 conversion', async () => {
+            const plain = 'aaa';
+            const base64 = 'YWFh';
+
+            const blobBuffer = blobBufferUtil.createBlobBuffer(plain, 'plain/text');
+            assert.strictEqual(
+                await blobBufferUtil.toBase64String(blobBuffer),
+                base64
+            );
+            assert.strictEqual(
+                await blobBufferUtil.toString(blobBuffer),
+                plain
+            );
+
+            const blobBufferFromb64 = await blobBufferUtil.createBlobBufferFromBase64(base64, 'plain/text');
+            assert.strictEqual(
+                await blobBufferUtil.toBase64String(blobBufferFromb64),
+                base64
+            );
+            assert.strictEqual(
+                await blobBufferUtil.toString(blobBufferFromb64),
+                plain
+            );
+        });
+        it('should work with non latin-1 chars', async () => {
+            const plain = 'aäß';
+            const base64 = 'YcOkw58=';
+            const blobBuffer = blobBufferUtil.createBlobBuffer(plain, 'plain/text');
+            assert.strictEqual(
+                await blobBufferUtil.toBase64String(blobBuffer),
+                base64
+            );
+            assert.strictEqual(
+                await blobBufferUtil.toString(blobBuffer),
+                plain
+            );
+            const blobBufferFromb64 = await blobBufferUtil.createBlobBufferFromBase64(base64, 'plain/text');
+            assert.strictEqual(
+                await blobBufferUtil.toString(blobBufferFromb64),
+                plain
+            );
+            assert.strictEqual(
+                await blobBufferUtil.toBase64String(blobBufferFromb64),
+                base64
+            );
+            assert.strictEqual(
+                await blobBufferUtil.toString(blobBufferFromb64),
+                plain
+            );
         });
     });
     describe('.deepFreezeWhenDevMode()', () => {

@@ -1370,7 +1370,11 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const collection = collections.human;
                     const objData = schemaObjects.simpleHuman();
+
                     const doc = await collection.insert(objData);
+                    await doc.atomicPatch({
+                        firstName: 'alice'
+                    });
                     await doc.remove();
 
                     objData.firstName = 'foobar';
@@ -1472,20 +1476,37 @@ config.parallel('rx-collection.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
 
+                    console.log('::::::::::::::::::::::::::::::::::::::::');
+                    console.log('::::::::::::::::::::::::::::::::::::::::');
+                    console.log('::::::::::::::::::::::::::::::::::::::::');
+                    console.log('::::::::::::::::::::::::::::::::::::::::');
+
+
+                    let t = 0;
+                    const amount = config.isFastMode() ? 20 : 200;
                     const docs = await Promise.all(
-                        new Array(config.isFastMode() ? 20 : 100)
+                        new Array(amount)
                             .fill(0)
-                            .map(async (_v, idx) => {
-                                if (randomBoolean()) {
-                                    await wait(randomNumber(0, 30));
-                                }
+                            .map((_v, idx) => {
                                 const upsertData = clone(docData);
                                 upsertData.lastName = idx + '';
-                                return c.atomicUpsert(docData);
+                                const randomWait = randomBoolean() ? wait(randomNumber(0, 30)) : Promise.resolve();
+                                return randomWait
+                                    .then(() => c.atomicUpsert(docData))
+                                    .then(doc => {
+                                        t++;
+                                        return doc;
+                                    });
                             })
                     );
+                    assert.strictEqual(t, amount);
                     assert.ok(docs[0] === docs[1]);
                     assert.ok(isRxDocument(docs[0]));
+
+                    console.log('#######################################');
+                    console.log('#######################################');
+                    console.log('#######################################');
+                    console.log('#######################################');
 
                     c.database.destroy();
                 });
@@ -2102,11 +2123,13 @@ config.parallel('rx-collection.test.js', () => {
 
 
             //  Simulate a write from a primitive replication
-            await collection.storageInstance.bulkAddRevisions(
+            await collection.storageInstance.bulkWrite(
                 matchingIds
                     .map(id => {
                         const saveMe = createObject(id);
-                        return saveMe;
+                        return {
+                            document: saveMe
+                        };
                     })
             );
 
@@ -2134,13 +2157,13 @@ config.parallel('rx-collection.test.js', () => {
             assert.strictEqual(updates[1].get('d')?.passportId, 'd');
 
             //  Let's try to update something different that should be ignored
-            await collection.storageInstance.bulkAddRevisions(
+            await collection.storageInstance.bulkWrite(
                 [
                     createObject('e'),
                     createObject('f'),
                     createObject('g'),
                     createObject('h')
-                ]
+                ].map(document => ({ document }))
             );
 
             //  Wait a bit to see if we catch anything

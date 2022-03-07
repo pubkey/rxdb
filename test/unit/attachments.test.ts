@@ -14,13 +14,10 @@ import {
     blobBufferUtil,
     MigrationStrategies,
     WithAttachmentsData,
-    RxCollection,
+    RxCollection
 } from '../../';
-
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
 import { HumanDocumentType } from '../helper/schemas';
+import { RxDocumentWriteData } from '../../src/types';
 
 
 config.parallel('attachments.test.ts', () => {
@@ -166,7 +163,7 @@ config.parallel('attachments.test.ts', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
@@ -188,7 +185,7 @@ config.parallel('attachments.test.ts', () => {
             await db.destroy();
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
@@ -314,8 +311,6 @@ config.parallel('attachments.test.ts', () => {
         it('should store the data encrypted', async () => {
             const c = await humansCollection.createEncryptedAttachments(1);
             const doc = await c.findOne().exec(true);
-
-
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
                 data: blobBufferUtil.createBlobBuffer('foo bar aaa', 'text/plain'),
@@ -330,7 +325,6 @@ config.parallel('attachments.test.ts', () => {
             // getting the data again must be decrypted
             const data = await attachment.getStringData();
             assert.strictEqual(data, 'foo bar aaa');
-
             c.database.destroy();
         });
     });
@@ -363,7 +357,7 @@ config.parallel('attachments.test.ts', () => {
             type Document = RxDocument<HumanDocumentType>;
             const db = await createRxDatabase<Collections>({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
@@ -379,7 +373,7 @@ config.parallel('attachments.test.ts', () => {
 
             const db2 = await createRxDatabase<Collections>({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
@@ -449,7 +443,7 @@ config.parallel('attachments.test.ts', () => {
 
             const db = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const col = await db.addCollections({
                 heroes: {
@@ -468,7 +462,7 @@ config.parallel('attachments.test.ts', () => {
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
 
             const migrationStrategies: MigrationStrategies = {
@@ -517,7 +511,7 @@ config.parallel('attachments.test.ts', () => {
 
             const db = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const col = await db.addCollections({
                 heroes: {
@@ -536,7 +530,7 @@ config.parallel('attachments.test.ts', () => {
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const migrationStrategies: MigrationStrategies = {
                 1: (oldDoc: WithAttachmentsData<DocData>) => {
@@ -577,7 +571,7 @@ config.parallel('attachments.test.ts', () => {
 
             const db = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const col = await db.addCollections({
                 heroes: {
@@ -596,28 +590,28 @@ config.parallel('attachments.test.ts', () => {
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const migrationStrategies: MigrationStrategies = {
-                1: async (oldDoc: WithAttachmentsData<DocData>) => {
+                1: async (oldDoc: RxDocumentWriteData<DocData>) => {
                     if (!oldDoc._attachments) {
                         throw new Error('oldDoc._attachments missing');
                     }
                     const myAttachment = oldDoc._attachments.foobar;
-                    myAttachment.data = await blobBufferUtil.createBlobBuffer(
+                    const blobBuffer = await blobBufferUtil.createBlobBuffer(
                         'barfoo2',
-                        myAttachment.content_type
+                        myAttachment.type
                     );
+                    (myAttachment as any).data = await blobBufferUtil.toBase64String(blobBuffer);
+
                     oldDoc._attachments = {
                         foobar: myAttachment
                     };
-
                     return oldDoc;
                 }
             };
             const col2 = await db2.addCollections({
                 heroes: {
-
                     schema: schema1,
                     migrationStrategies
                 }
@@ -637,7 +631,7 @@ config.parallel('attachments.test.ts', () => {
         it('should be able to call the defined function', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
@@ -682,7 +676,7 @@ config.parallel('attachments.test.ts', () => {
             };
             const myDB = await createRxDatabase({
                 name: 'mylocaldb' + randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: true
             });
             const myCollections = await myDB.addCollections({
@@ -712,7 +706,7 @@ config.parallel('attachments.test.ts', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: false,
                 ignoreDuplicate: true
             });

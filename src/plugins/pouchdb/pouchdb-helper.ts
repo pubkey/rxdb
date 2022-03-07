@@ -19,6 +19,8 @@ import {
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type { ChangeEvent } from 'event-reduce-js';
+import { getAttachmentSize, hashAttachmentData } from '../../rx-storage-helper';
+import { RxStoragePouchStatics } from './pouch-statics';
 
 export type PouchStorageInternals = {
     pouch: PouchDBInstance;
@@ -125,12 +127,8 @@ export function rxDocumentDataToPouchDocumentData<T>(
         Object.entries(doc._attachments).forEach(([key, value]) => {
             const useValue: RxAttachmentWriteData & RxAttachmentData = value as any;
             if (useValue.data) {
-                const asBlobBuffer = blobBufferUtil.createBlobBufferFromBase64(
-                    useValue.data,
-                    useValue.type
-                );
                 (pouchDoc as any)._attachments[key] = {
-                    data: asBlobBuffer,
+                    data: useValue.data,
                     content_type: useValue.type
                 };
             } else {
@@ -318,8 +316,6 @@ export function pouchHash(data: Buffer | Blob | string): Promise<string> {
     });
 }
 
-export const POUCH_HASH_KEY = 'md5';
-
 export async function writeAttachmentsToAttachments(
     attachments: { [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData; }
 ): Promise<{ [attachmentId: string]: RxAttachmentData; }> {
@@ -338,11 +334,17 @@ export async function writeAttachmentsToAttachments(
              * non-write attachment.
              */
             if ((obj as RxAttachmentWriteData).data) {
-                const asWriteAttachment = (obj as RxAttachmentWriteData);
+                const asWrite = (obj as RxAttachmentWriteData);
+                const dataAsBase64String = typeof asWrite.data === 'string' ? asWrite.data : await blobBufferUtil.toBase64String(asWrite.data);
+                const hash = await hashAttachmentData(
+                    dataAsBase64String,
+                    RxStoragePouchStatics
+                );
+                const length = getAttachmentSize(dataAsBase64String);
                 ret[key] = {
-                    digest: asWriteAttachment.digest,
-                    length: asWriteAttachment.length,
-                    type: asWriteAttachment.type
+                    digest: 'md5-' + hash,
+                    length,
+                    type: asWrite.type
                 };
             } else {
                 ret[key] = obj as RxAttachmentData;

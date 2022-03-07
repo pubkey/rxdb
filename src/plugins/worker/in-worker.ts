@@ -27,10 +27,6 @@ export type InWorkerStorage = {
         instanceId: number,
         documentWrites: BulkWriteRow<DocumentData>[]
     ): Promise<RxStorageBulkWriteResponse<DocumentData>>;
-    bulkAddRevisions<DocumentData>(
-        instanceId: number,
-        documents: RxDocumentData<DocumentData>[]
-    ): Promise<void>;
     findDocumentsById<DocumentData>(
         instanceId: number,
         ids: string[], deleted: boolean
@@ -82,13 +78,6 @@ export function wrappedRxStorage<T, D>(
         ) {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.bulkWrite(documentWrites);
-        },
-        bulkAddRevisions<DocumentData>(
-            instanceId: number,
-            documents: RxDocumentData<DocumentData>[]
-        ) {
-            const instance = getFromMapOrThrow(instanceById, instanceId);
-            return instance.bulkAddRevisions(documents);
         },
         findDocumentsById<DocumentData>(
             instanceId: number,
