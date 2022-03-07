@@ -21,7 +21,7 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 import { HumanDocumentType } from '../helper/schemas';
-import { RxDocumentData, RxDocumentWriteData } from '../../src/types';
+import { RxDocumentWriteData } from '../../src/types';
 
 
 config.parallel('attachments.test.ts', () => {
