@@ -14,6 +14,7 @@ import {
 } from '../../';
 
 import {
+    addPouchPlugin,
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
@@ -272,12 +273,12 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 localDocuments: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true,
                 localDocuments: true
             });
@@ -300,12 +301,12 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 localDocuments: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true,
                 localDocuments: true
             });
@@ -332,12 +333,12 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 localDocuments: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true,
                 localDocuments: true
             });
@@ -358,11 +359,11 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true
             });
             const c1 = await db.addCollections({
@@ -408,12 +409,12 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 localDocuments: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true,
                 localDocuments: true
             });
@@ -441,7 +442,7 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 localDocuments: true
             });
             const c1 = await db.addCollections({
@@ -452,7 +453,7 @@ config.parallel('local-documents.test.js', () => {
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true,
                 localDocuments: true
             });
@@ -513,7 +514,7 @@ config.parallel('local-documents.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
 
             type DocData = { id: string; boudariesGrp: { bndrPlnId: string; bndrPlnNm: string; }[] };
@@ -587,6 +588,7 @@ config.parallel('local-documents.test.js', () => {
             db.destroy();
         });
         it('local documents not persistent on db restart', async () => {
+            addPouchPlugin(require('pouchdb-adapter-leveldb'));
             if (!config.platform.isNode()) {
                 return;
             }

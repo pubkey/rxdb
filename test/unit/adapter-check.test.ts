@@ -16,6 +16,9 @@ if (!config.platform.isNode()) {
 }
 
 config.parallel('adapter-check.test.js', () => {
+    if (config.storage.name !== 'pouchdb') {
+        return;
+    }
     describe('outcome', () => {
         it('should be true on memory', async () => {
             const ok2 = await checkAdapter('memory');

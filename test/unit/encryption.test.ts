@@ -16,10 +16,7 @@ import {
     encryptString,
     decryptString
 } from '../../plugins/encryption';
-
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
+import { getRxStoragePouch } from '../../plugins/pouchdb';
 
 
 config.parallel('encryption.test.ts', () => {
@@ -76,7 +73,7 @@ config.parallel('encryption.test.ts', () => {
             it('should insert one encrypted value (object)', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     password: randomCouchString(10)
                 });
                 const c = await db.addCollections({
@@ -114,7 +111,7 @@ config.parallel('encryption.test.ts', () => {
             it('should save one encrypted value (object)', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     password: randomCouchString(10)
                 });
                 const c = await db.addCollections({
@@ -206,7 +203,7 @@ config.parallel('encryption.test.ts', () => {
 
             const db = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 password: 'myLongAndStupidPassword'
             });
 

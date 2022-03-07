@@ -17,11 +17,6 @@ import {
     RxDatabase,
 } from '../../';
 
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
-
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
@@ -31,7 +26,7 @@ config.parallel('cross-instance.test.js', () => {
         it('create a multiInstance database', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: true
             });
             assert.ok(isRxDatabase(db));
@@ -41,13 +36,13 @@ config.parallel('cross-instance.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
@@ -186,14 +181,14 @@ config.parallel('cross-instance.test.js', () => {
             const password = randomCouchString(10);
             const db1 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
@@ -241,14 +236,14 @@ config.parallel('cross-instance.test.js', () => {
             const password = randomCouchString(10);
             const db1 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true

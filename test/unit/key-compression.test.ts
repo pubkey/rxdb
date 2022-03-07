@@ -110,7 +110,7 @@ config.parallel('key-compression.test.js', () => {
 
             const db = await createRxDatabase({
                 name: 'heroesdb',
-                storage: getRxStoragePouch('memory')
+                storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
                 mycollection: {
@@ -148,7 +148,7 @@ config.parallel('key-compression.test.js', () => {
 
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory')
+                storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
                 mycollection: {
