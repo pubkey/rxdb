@@ -485,13 +485,10 @@ export class RxCollectionBase<
         queue = queue
             .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
             .then((wasInserted: any) => {
-                console.log('wasInserted: ' + wasInserted.inserted);
                 if (!wasInserted.inserted) {
-                    console.log('inner queue done UPDATE!');
                     return _atomicUpsertUpdate(wasInserted.doc, useJson)
                         .then(() => wasInserted.doc);
                 } else {
-                    console.log('inner queue done INSERT!');
                     return wasInserted.doc;
                 }
             });

@@ -343,12 +343,10 @@ export const basePrototype = {
                              * conflicts cannot happen by just using RxDB in one process
                              * There are two ways they still can appear which is
                              * replication and multi-tab usage
-                             * Because atomicUpdate has a mutation function,
+                             * Because atomicUpdate() has a mutation function,
                              * we can just re-run the mutation until there is no conflict
                              */
                             if (isPouchdbConflictError(err as any)) {
-                                // we need to free the cpu for a tick or the browser tests will fail
-                                await nextTick();
                                 // pouchdb conflict error -> retrying
                             } else {
                                 rej(err);
