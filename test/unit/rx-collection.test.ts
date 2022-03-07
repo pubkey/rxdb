@@ -1483,7 +1483,7 @@ config.parallel('rx-collection.test.js', () => {
 
 
                     let t = 0;
-                    const amount = config.isFastMode() ? 20 : 500;
+                    const amount = config.isFastMode() ? 20 : 200;
                     const docs = await Promise.all(
                         new Array(amount)
                             .fill(0)
@@ -1495,7 +1495,6 @@ config.parallel('rx-collection.test.js', () => {
                                     .then(() => c.atomicUpsert(docData))
                                     .then(doc => {
                                         t++;
-                                        console.log('atomicUpsert() DONE ' + t);
                                         return doc;
                                     });
                             })

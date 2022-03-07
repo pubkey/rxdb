@@ -17,7 +17,8 @@ import {
     PROMISE_RESOLVE_VOID,
     RXJS_SHARE_REPLAY_DEFAULTS,
     getDefaultRxDocumentMeta,
-    getDefaultRevision
+    getDefaultRevision,
+    nextTick
 } from './util';
 import {
     fillObjectDataBeforeInsert,
@@ -902,13 +903,13 @@ function _atomicUpsertUpdate<RxDocType>(
     doc: RxDocumentBase<RxDocType>,
     json: RxDocumentData<RxDocType>
 ): Promise<RxDocumentBase<RxDocType>> {
-    console.log('_atomicUpsertUpdate() start');
     return doc.atomicUpdate((_innerDoc: RxDocumentData<RxDocType>) => {
         return json;
-    }).then(() => {
-        console.log('_atomicUpsertUpdate() DONE');
-        return doc;
-    });
+    })
+        .then(() => nextTick())
+        .then(() => {
+            return doc;
+        });
 }
 
 /**
