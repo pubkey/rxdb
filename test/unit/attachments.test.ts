@@ -606,7 +606,7 @@ config.parallel('attachments.test.ts', () => {
                         'barfoo2',
                         myAttachment.type
                     );
-                    myAttachment.data = await blobBufferUtil.toBase64String(blobBuffer);
+                    (myAttachment as any).data = await blobBufferUtil.toBase64String(blobBuffer);
 
                     oldDoc._attachments = {
                         foobar: myAttachment
