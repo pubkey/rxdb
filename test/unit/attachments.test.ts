@@ -315,30 +315,20 @@ config.parallel('attachments.test.ts', () => {
         it('should store the data encrypted', async () => {
             const c = await humansCollection.createEncryptedAttachments(1);
             const doc = await c.findOne().exec(true);
-
-
-            console.log('AAAAAAAAAAAAA --- 1');
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
                 data: blobBufferUtil.createBlobBuffer('foo bar aaa', 'text/plain'),
                 type: 'text/plain'
             });
-            console.log('AAAAAAAAAAAAA --- 2');
 
             // the data stored in the storage must be encrypted
             const encryptedData = await doc.collection.storageInstance.internals.pouch.getAttachment(doc.primary, 'cat.txt');
-            console.log('AAAAAAAAAAAAA --- 3');
             const dataString = await blobBufferUtil.toString(encryptedData);
-            console.log('AAAAAAAAAAAAA --- 4');
             assert.notStrictEqual(dataString, 'foo bar aaa');
 
             // getting the data again must be decrypted
-            console.log('AAAAAAAAAAAAA --- 5');
             const data = await attachment.getStringData();
-            console.log('AAAAAAAAAAAAA --- 6');
-            console.dir(data);
             assert.strictEqual(data, 'foo bar aaa');
-
             c.database.destroy();
         });
     });
@@ -608,13 +598,10 @@ config.parallel('attachments.test.ts', () => {
             });
             const migrationStrategies: MigrationStrategies = {
                 1: async (oldDoc: RxDocumentWriteData<DocData>) => {
-                    console.log('xxxxxxxxxxxxxxxxx - 3');
-
                     if (!oldDoc._attachments) {
                         throw new Error('oldDoc._attachments missing');
                     }
                     const myAttachment = oldDoc._attachments.foobar;
-                    console.log('xxxxxxxxxxxxxxxxx - 4');
                     const blobBuffer = await blobBufferUtil.createBlobBuffer(
                         'barfoo2',
                         myAttachment.type
@@ -624,18 +611,15 @@ config.parallel('attachments.test.ts', () => {
                     oldDoc._attachments = {
                         foobar: myAttachment
                     };
-                    console.log('xxxxxxxxxxxxxxxxx - 5');
                     return oldDoc;
                 }
             };
-            console.log('xxxxxxxxxxxxxxxxx - 1');
             const col2 = await db2.addCollections({
                 heroes: {
                     schema: schema1,
                     migrationStrategies
                 }
             });
-            console.log('xxxxxxxxxxxxxxxxx - 2');
 
             const doc2: RxDocument<DocData> = await col2.heroes.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 1);

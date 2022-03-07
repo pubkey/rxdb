@@ -129,7 +129,6 @@ describe('replication-couchdb.test.js', () => {
                 /**
                  * Also try a delete
                  */
-                console.log('............... DELETE');
                 await doc.remove();
 
 

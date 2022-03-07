@@ -247,12 +247,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             documentId,
             attachmentId
         );
-
-        console.log('getAttachmentData()');
-        console.log(await blobBufferUtil.toString(attachmentData));
         const ret = await blobBufferUtil.toBase64String(attachmentData);
-
-        console.log('getAttachmentData() DONE ' + ret);
         return ret;
     }
 

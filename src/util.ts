@@ -539,9 +539,6 @@ export const blobBufferUtil = {
         base64String: string,
         type: string
     ): Promise<BlobBuffer> {
-
-        console.log('createBlobBufferFromBase64() ' + base64String);
-
         let blobBuffer: any;
         if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer

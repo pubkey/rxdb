@@ -200,37 +200,28 @@ describe('util.test.js', () => {
         it('should work with non latin-1 chars', async () => {
             const plain = 'aäß';
             const base64 = 'YcOkw58=';
-
-            console.log('--- 1');
             const blobBuffer = blobBufferUtil.createBlobBuffer(plain, 'plain/text');
             assert.strictEqual(
                 await blobBufferUtil.toBase64String(blobBuffer),
                 base64
             );
-            console.log('--- 2');
             assert.strictEqual(
                 await blobBufferUtil.toString(blobBuffer),
                 plain
             );
-
-            console.log('--- 3');
             const blobBufferFromb64 = await blobBufferUtil.createBlobBufferFromBase64(base64, 'plain/text');
-            console.log('--- 3.5');
             assert.strictEqual(
                 await blobBufferUtil.toString(blobBufferFromb64),
                 plain
             );
-            console.log('--- 4 ' + await blobBufferUtil.toString(blobBufferFromb64));
             assert.strictEqual(
                 await blobBufferUtil.toBase64String(blobBufferFromb64),
                 base64
             );
-            console.log('--- 5');
             assert.strictEqual(
                 await blobBufferUtil.toString(blobBufferFromb64),
                 plain
             );
-            console.log('--- 6');
         });
     });
     describe('.deepFreezeWhenDevMode()', () => {

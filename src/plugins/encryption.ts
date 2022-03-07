@@ -217,9 +217,6 @@ export const RxDBEncryptionPlugin: RxPlugin = {
                 ) {
                     const dataString = args.attachmentData.data;
                     const encrypted = encryptString(dataString, password);
-
-                    console.log('preWriteAttachment: encrypted: ' + encrypted);
-
                     args.attachmentData.data = encrypted;
                 }
             }
