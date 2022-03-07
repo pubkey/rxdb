@@ -20,6 +20,7 @@ import {
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
+import { getRxStoragePouch } from '../../plugins/pouchdb';
 
 config.parallel('cross-instance.test.js', () => {
     describe('create database', () => {
@@ -36,13 +37,13 @@ config.parallel('cross-instance.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: config.storage.getStorage(),
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: config.storage.getStorage(),
+                storage: getRxStoragePouch('memory'),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
