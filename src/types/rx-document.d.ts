@@ -16,7 +16,7 @@ import { DeepReadonly, PlainJsonValue } from './util';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
-declare type AtomicUpdateFunction<RxDocumentType> = (doc: RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
+declare type AtomicUpdateFunction<RxDocumentType> = (doc: RxDocumentData<RxDocumentType>) => RxDocumentType | Promise<RxDocumentType>;
 
 /**
  * Meta data that is attached to each document by RxDB.

@@ -1475,8 +1475,15 @@ config.parallel('rx-collection.test.js', () => {
                 it('should not crash when upserting the same doc in parallel many times with random waits', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
+
+                    console.log('::::::::::::::::::::::::::::::::::::::::');
+                    console.log('::::::::::::::::::::::::::::::::::::::::');
+                    console.log('::::::::::::::::::::::::::::::::::::::::');
+                    console.log('::::::::::::::::::::::::::::::::::::::::');
+
+
                     let t = 0;
-                    const amount = config.isFastMode() ? 20 : 200;
+                    const amount = config.isFastMode() ? 20 : 500;
                     const docs = await Promise.all(
                         new Array(amount)
                             .fill(0)
@@ -1488,6 +1495,7 @@ config.parallel('rx-collection.test.js', () => {
                                     .then(() => c.atomicUpsert(docData))
                                     .then(doc => {
                                         t++;
+                                        console.log('atomicUpsert() DONE ' + t);
                                         return doc;
                                     });
                             })
@@ -1496,6 +1504,10 @@ config.parallel('rx-collection.test.js', () => {
                     assert.ok(docs[0] === docs[1]);
                     assert.ok(isRxDocument(docs[0]));
 
+                    console.log('#######################################');
+                    console.log('#######################################');
+                    console.log('#######################################');
+                    console.log('#######################################');
 
                     c.database.destroy();
                 });

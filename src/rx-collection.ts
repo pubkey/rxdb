@@ -83,7 +83,8 @@ import type {
     RxStorageInstance,
     CollectionsOfDatabase,
     RxChangeEventBulk,
-    RxLocalDocumentData
+    RxLocalDocumentData,
+    RxDocumentBase
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -484,10 +485,13 @@ export class RxCollectionBase<
         queue = queue
             .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
             .then((wasInserted: any) => {
+                console.log('wasInserted: ' + wasInserted.inserted);
                 if (!wasInserted.inserted) {
+                    console.log('inner queue done UPDATE!');
                     return _atomicUpsertUpdate(wasInserted.doc, useJson)
                         .then(() => wasInserted.doc);
                 } else {
+                    console.log('inner queue done INSERT!');
                     return wasInserted.doc;
                 }
             });
@@ -897,12 +901,17 @@ function _applyHookFunctions(
     });
 }
 
-function _atomicUpsertUpdate(doc: any, json: any): Promise<any> {
-    return doc.atomicUpdate((innerDoc: any) => {
-        json._rev = innerDoc._rev;
-        innerDoc._data = json;
-        return innerDoc._data;
-    }).then(() => doc);
+function _atomicUpsertUpdate<RxDocType>(
+    doc: RxDocumentBase<RxDocType>,
+    json: RxDocumentData<RxDocType>
+): Promise<RxDocumentBase<RxDocType>> {
+    console.log('_atomicUpsertUpdate() start');
+    return doc.atomicUpdate((_innerDoc: RxDocumentData<RxDocType>) => {
+        return json;
+    }).then(() => {
+        console.log('_atomicUpsertUpdate() DONE');
+        return doc;
+    });
 }
 
 /**
