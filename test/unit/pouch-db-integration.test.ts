@@ -47,7 +47,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             const pouch2: PouchDBInstance = new PouchDB('foobar2' + randomCouchString(10), {
                 adapter: 'memory'
             });
-            pouch1.sync(pouch2, {
+            const syncHandler = pouch1.sync(pouch2, {
                 live: true
             });
 
@@ -101,6 +101,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 return allDocs.length === 1 && (allDocs[0] as any).value === 5;
             });
 
+            await syncHandler.cancel();
             pouch1.close();
             pouch2.close();
         });
