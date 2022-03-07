@@ -1480,15 +1480,16 @@ config.parallel('rx-collection.test.js', () => {
                     const docs = await Promise.all(
                         new Array(amount)
                             .fill(0)
-                            .map(async (_v, idx) => {
-                                if (randomBoolean()) {
-                                    await wait(randomNumber(0, 30));
-                                }
+                            .map((_v, idx) => {
                                 const upsertData = clone(docData);
                                 upsertData.lastName = idx + '';
-                                const ret = await c.atomicUpsert(docData);
-                                t++;
-                                return ret;
+                                const randomWait = randomBoolean() ? wait(randomNumber(0, 30)) : Promise.resolve();
+                                return randomWait
+                                    .then(() => c.atomicUpsert(docData))
+                                    .then(doc => {
+                                        t++;
+                                        return doc;
+                                    });
                             })
                     );
                     assert.strictEqual(t, amount);
