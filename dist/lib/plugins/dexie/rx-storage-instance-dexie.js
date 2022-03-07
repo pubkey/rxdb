@@ -105,16 +105,12 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                 var documentInDb = docsInDb[docIndex];
 
                 if (!documentInDb) {
-                  // insert new document
-                  var newRevision = '1-' + (0, _util.createRevision)(writeRow.document);
                   /**
                    * It is possible to insert already deleted documents,
                    * this can happen on replication.
                    */
-
                   var insertedIsDeleted = writeRow.document._deleted ? true : false;
                   var writeDoc = Object.assign({}, writeRow.document, {
-                    _rev: newRevision,
                     _deleted: insertedIsDeleted,
                     // TODO attachments are currently not working with dexie.js
                     _attachments: {}
@@ -126,7 +122,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                   } else {
                     bulkPutDocs.push(writeDoc);
                     eventBulk.events.push({
-                      eventId: (0, _dexieHelper.getDexieEventKey)(_this4, id, newRevision),
+                      eventId: (0, _dexieHelper.getDexieEventKey)(_this4, id, writeRow.document._rev),
                       documentId: id,
                       change: {
                         doc: writeDoc,
@@ -160,14 +156,9 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                     };
                     ret.error[id] = err;
                   } else {
-                    var newRevHeight = (0, _util.getHeightOfRevision)(revInDb) + 1;
-
-                    var _newRevision = newRevHeight + '-' + (0, _util.createRevision)(writeRow.document);
-
                     var isDeleted = !!writeRow.document._deleted;
 
                     var _writeDoc = Object.assign({}, writeRow.document, {
-                      _rev: _newRevision,
                       _deleted: isDeleted,
                       // TODO attachments are currently not working with lokijs
                       _attachments: {}
@@ -208,10 +199,11 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                       /**
                        * On delete, we send the 'new' rev in the previous property,
                        * to have the equal behavior as pouchdb.
+                       * TODO do we even need this anymore?
                        */
 
                       var previous = (0, _util.flatClone)(writeRow.previous);
-                      previous._rev = _newRevision;
+                      previous._rev = writeRow.document._rev;
                       change = {
                         id: id,
                         operation: 'DELETE',
@@ -229,7 +221,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                     }
 
                     eventBulk.events.push({
-                      eventId: (0, _dexieHelper.getDexieEventKey)(_this4, id, _newRevision),
+                      eventId: (0, _dexieHelper.getDexieEventKey)(_this4, id, writeRow.document._rev),
                       documentId: id,
                       change: change,
                       startTime: startTime,
@@ -261,143 +253,11 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     }
   };
 
-  _proto.bulkAddRevisions = function bulkAddRevisions(documents) {
+  _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
     try {
       var _this6 = this;
 
       return Promise.resolve(_this6.internals).then(function (state) {
-        var eventBulk = {
-          id: (0, _util.randomCouchString)(10),
-          events: []
-        };
-        var documentKeys = documents.map(function (writeRow) {
-          return writeRow[_this6.primaryPath];
-        });
-        return Promise.resolve(state.dexieDb.transaction('rw', state.dexieTable, state.dexieDeletedTable, state.dexieChangesTable, function () {
-          try {
-            return Promise.resolve((0, _dexieHelper.getDocsInDb)(_this6.internals, documentKeys)).then(function (docsInDb) {
-              /**
-               * Batch up the database operations
-               * so we can later run them in bulk.
-               */
-              var bulkPutDocs = [];
-              var bulkRemoveDocs = [];
-              var bulkPutDeletedDocs = [];
-              var bulkRemoveDeletedDocs = [];
-              var changesIds = [];
-              documents.forEach(function (docData, docIndex) {
-                var startTime = (0, _util.now)();
-                var documentInDb = docsInDb[docIndex];
-                var id = docData[_this6.primaryPath];
-
-                if (!documentInDb) {
-                  if (docData._deleted) {
-                    bulkPutDeletedDocs.push(docData);
-                  } else {
-                    bulkPutDocs.push(docData);
-                  }
-
-                  eventBulk.events.push({
-                    documentId: id,
-                    eventId: (0, _dexieHelper.getDexieEventKey)(_this6, id, docData._rev),
-                    change: {
-                      doc: docData,
-                      id: id,
-                      operation: 'INSERT',
-                      previous: null
-                    },
-                    startTime: startTime,
-                    // will be filled up before the event is pushed into the changestream
-                    endTime: startTime
-                  });
-                  changesIds.push(id);
-                } else {
-                  var newWriteRevision = (0, _util.parseRevision)(docData._rev);
-                  var oldRevision = (0, _util.parseRevision)(documentInDb._rev);
-                  var mustUpdate = false;
-
-                  if (newWriteRevision.height !== oldRevision.height) {
-                    // height not equal, compare base on height
-                    if (newWriteRevision.height > oldRevision.height) {
-                      mustUpdate = true;
-                    }
-                  } else if (newWriteRevision.hash > oldRevision.hash) {
-                    // equal height but new write has the 'winning' hash
-                    mustUpdate = true;
-                  }
-
-                  if (mustUpdate) {
-                    var change = null;
-
-                    if (documentInDb._deleted && !docData._deleted) {
-                      bulkRemoveDeletedDocs.push(id);
-                      bulkPutDocs.push(docData);
-                      change = {
-                        id: id,
-                        operation: 'INSERT',
-                        previous: null,
-                        doc: docData
-                      };
-                    } else if (!documentInDb._deleted && !docData._deleted) {
-                      bulkPutDocs.push(docData);
-                      change = {
-                        id: id,
-                        operation: 'UPDATE',
-                        previous: documentInDb,
-                        doc: docData
-                      };
-                    } else if (!documentInDb._deleted && docData._deleted) {
-                      bulkPutDeletedDocs.push(docData);
-                      bulkRemoveDocs.push(id);
-                      change = {
-                        id: id,
-                        operation: 'DELETE',
-                        previous: documentInDb,
-                        doc: null
-                      };
-                    } else if (documentInDb._deleted && docData._deleted) {
-                      bulkPutDocs.push(docData);
-                      change = null;
-                    }
-
-                    if (change) {
-                      eventBulk.events.push({
-                        documentId: id,
-                        eventId: (0, _dexieHelper.getDexieEventKey)(_this6, id, docData._rev),
-                        change: change,
-                        startTime: startTime,
-                        // will be filled up before the event is pushed into the changestream
-                        endTime: startTime
-                      });
-                      changesIds.push(id);
-                    }
-                  }
-                }
-              });
-              return Promise.resolve(Promise.all([bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : _util.PROMISE_RESOLVE_VOID, bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : _util.PROMISE_RESOLVE_VOID, bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs) : _util.PROMISE_RESOLVE_VOID, bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : _util.PROMISE_RESOLVE_VOID, _this6.addChangeDocumentsMeta(changesIds)])).then(function () {});
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
-        })).then(function () {
-          var endTime = (0, _util.now)();
-          eventBulk.events.forEach(function (event) {
-            return event.endTime = endTime;
-          });
-
-          _this6.changes$.next(eventBulk);
-        });
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
-  _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
-    try {
-      var _this8 = this;
-
-      return Promise.resolve(_this8.internals).then(function (state) {
         var ret = {};
         return Promise.resolve(state.dexieDb.transaction('r', state.dexieTable, state.dexieDeletedTable, function () {
           try {
@@ -415,7 +275,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
 
             var _temp4 = function () {
               if (deleted) {
-                return Promise.resolve((0, _dexieHelper.getDocsInDb)(_this8.internals, ids)).then(function (_getDocsInDb) {
+                return Promise.resolve((0, _dexieHelper.getDocsInDb)(_this6.internals, ids)).then(function (_getDocsInDb) {
                   docsInDb = _getDocsInDb;
                 });
               } else {
@@ -444,9 +304,9 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
 
   _proto.getChangedDocuments = function getChangedDocuments(options) {
     try {
-      var _this10 = this;
+      var _this8 = this;
 
-      return Promise.resolve(_this10.internals).then(function (state) {
+      return Promise.resolve(_this8.internals).then(function (state) {
         var lastSequence = 0;
         var query;
 
@@ -481,11 +341,11 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
 
   _proto.remove = function remove() {
     try {
-      var _this12 = this;
+      var _this10 = this;
 
-      return Promise.resolve(_this12.internals).then(function (state) {
+      return Promise.resolve(_this10.internals).then(function (state) {
         return Promise.resolve(Promise.all([state.dexieChangesTable.clear(), state.dexieTable.clear()])).then(function () {
-          return _this12.close();
+          return _this10.close();
         });
       });
     } catch (e) {
@@ -503,13 +363,13 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
 
   _proto.close = function close() {
     try {
-      var _this14 = this;
+      var _this12 = this;
 
-      _this14.closed = true;
+      _this12.closed = true;
 
-      _this14.changes$.complete();
+      _this12.changes$.complete();
 
-      (0, _dexieHelper.closeDexieDb)(_this14.internals);
+      (0, _dexieHelper.closeDexieDb)(_this12.internals);
       return Promise.resolve();
     } catch (e) {
       return Promise.reject(e);

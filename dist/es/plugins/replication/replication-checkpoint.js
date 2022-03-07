@@ -1,5 +1,5 @@
 import { getSingleDocument, writeSingle } from '../../rx-storage-helper';
-import { flatClone, getDefaultRxDocumentMeta } from '../../util';
+import { createRevision, flatClone, getDefaultRevision, getDefaultRxDocumentMeta } from '../../util';
 import { newRxError } from '../../rx-error';
 import { wasLastWriteFromPullReplication } from './revision-flag';
 import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES } from '../../rx-database-internal-store'; //
@@ -200,24 +200,28 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
     var pullCheckpointId = getPrimaryKeyOfInternalDocument(pullLastDocumentKey(replicationIdentifierHash), INTERNAL_CONTEXT_REPLICATION_PRIMITIVES);
     return Promise.resolve(getSingleDocument(collection.database.internalStore, pullCheckpointId)).then(function (lastPullCheckpointDoc) {
       if (!lastPullCheckpointDoc) {
+        var insertData = {
+          id: pullCheckpointId,
+          key: pullLastDocumentKey(replicationIdentifierHash),
+          context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+          data: {
+            lastPulledDoc: lastPulledDoc
+          },
+          _meta: getDefaultRxDocumentMeta(),
+          _rev: getDefaultRevision(),
+          _deleted: false,
+          _attachments: {}
+        };
+        insertData._rev = createRevision(insertData);
         return writeSingle(collection.database.internalStore, {
-          document: {
-            id: pullCheckpointId,
-            key: pullLastDocumentKey(replicationIdentifierHash),
-            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
-            data: {
-              lastPulledDoc: lastPulledDoc
-            },
-            _meta: getDefaultRxDocumentMeta(),
-            _deleted: false,
-            _attachments: {}
-          }
+          document: insertData
         });
       } else {
         var newDoc = flatClone(lastPullCheckpointDoc);
         newDoc.data = {
           lastPulledDoc: lastPulledDoc
         };
+        newDoc._rev = createRevision(newDoc, lastPullCheckpointDoc);
         return writeSingle(collection.database.internalStore, {
           previous: lastPullCheckpointDoc,
           document: newDoc
@@ -346,37 +350,43 @@ export var setLastPushSequence = function setLastPushSequence(collection, replic
     var docId = getPrimaryKeyOfInternalDocument(pushSequenceDocumentKey(replicationIdentifierHash), INTERNAL_CONTEXT_REPLICATION_PRIMITIVES);
     return Promise.resolve(getSingleDocument(collection.database.internalStore, docId)).then(function (doc) {
       if (!doc) {
+        var insertData = {
+          id: docId,
+          key: pushSequenceDocumentKey(replicationIdentifierHash),
+          context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+          data: {
+            lastPushSequence: sequence
+          },
+          _deleted: false,
+          _meta: getDefaultRxDocumentMeta(),
+          _rev: getDefaultRevision(),
+          _attachments: {}
+        };
+        insertData._rev = createRevision(insertData);
         return Promise.resolve(writeSingle(collection.database.internalStore, {
-          document: {
-            id: docId,
-            key: pushSequenceDocumentKey(replicationIdentifierHash),
-            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
-            data: {
-              lastPushSequence: sequence
-            },
-            _deleted: false,
-            _meta: getDefaultRxDocumentMeta(),
-            _attachments: {}
-          }
+          document: insertData
         }));
       } else {
         var newDoc = flatClone(doc);
         newDoc.data = {
           lastPushSequence: sequence
         };
+        var docData = {
+          id: docId,
+          key: pushSequenceDocumentKey(replicationIdentifierHash),
+          context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+          data: {
+            lastPushSequence: sequence
+          },
+          _meta: getDefaultRxDocumentMeta(),
+          _rev: getDefaultRevision(),
+          _deleted: false,
+          _attachments: {}
+        };
+        docData._rev = createRevision(docData, doc);
         return Promise.resolve(writeSingle(collection.database.internalStore, {
           previous: doc,
-          document: {
-            id: docId,
-            key: pushSequenceDocumentKey(replicationIdentifierHash),
-            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
-            data: {
-              lastPushSequence: sequence
-            },
-            _meta: getDefaultRxDocumentMeta(),
-            _deleted: false,
-            _attachments: {}
-          }
+          document: docData
         }));
       }
     });

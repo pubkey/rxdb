@@ -57,10 +57,12 @@ var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabase(rxDat
           data: {
             hash: pwHash
           },
+          _deleted: false,
           _attachments: {},
           _meta: (0, _util.getDefaultRxDocumentMeta)(),
-          _deleted: false
+          _rev: (0, _util.getDefaultRevision)()
         };
+        docData._rev = (0, _util.createRevision)(docData);
         return Promise.resolve(rxDatabase.internalStore.bulkWrite([{
           document: docData
         }])).then(function () {
@@ -204,16 +206,13 @@ var RxDBEncryptionPlugin = {
           var password = args.database.password;
           var schema = args.schema;
 
-          var _temp2 = function () {
-            if (password && schema.attachments && schema.attachments.encrypted) {
-              return Promise.resolve(_util.blobBufferUtil.toString(args.attachmentData.data)).then(function (dataString) {
-                var encrypted = encryptString(dataString, password);
-                args.attachmentData.data = encrypted;
-              });
-            }
-          }();
+          if (password && schema.attachments && schema.attachments.encrypted) {
+            var dataString = args.attachmentData.data;
+            var encrypted = encryptString(dataString, password);
+            args.attachmentData.data = encrypted;
+          }
 
-          return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+          return Promise.resolve();
         } catch (e) {
           return Promise.reject(e);
         }
@@ -225,16 +224,13 @@ var RxDBEncryptionPlugin = {
           var password = args.database.password;
           var schema = args.schema;
 
-          var _temp4 = function () {
-            if (password && schema.attachments && schema.attachments.encrypted) {
-              return Promise.resolve(_util.blobBufferUtil.toString(args.plainData)).then(function (dataString) {
-                var decrypted = decryptString(dataString, password);
-                args.plainData = decrypted;
-              });
-            }
-          }();
+          if (password && schema.attachments && schema.attachments.encrypted) {
+            var dataString = args.plainData;
+            var decrypted = decryptString(dataString, password);
+            args.plainData = decrypted;
+          }
 
-          return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
+          return Promise.resolve();
         } catch (e) {
           return Promise.reject(e);
         }

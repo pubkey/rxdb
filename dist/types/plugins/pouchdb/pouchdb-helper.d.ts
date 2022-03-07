@@ -55,7 +55,6 @@ export declare function pouchChangeRowToChangeStreamEvent<DocumentData>(primaryK
  */
 export declare function primarySwapPouchDbQuerySelector<RxDocType>(selector: any, primaryKey: keyof RxDocType): any;
 export declare function pouchHash(data: Buffer | Blob | string): Promise<string>;
-export declare const POUCH_HASH_KEY = "md5";
 export declare function writeAttachmentsToAttachments(attachments: {
     [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
 }): Promise<{

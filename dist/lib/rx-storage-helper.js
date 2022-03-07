@@ -3,8 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getSingleDocument = exports.getAllDocuments = exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = void 0;
+exports.getAllDocuments = exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = void 0;
+exports.getAttachmentSize = getAttachmentSize;
+exports.getSingleDocument = void 0;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
+exports.hashAttachmentData = hashAttachmentData;
 exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
 exports.throwIfIsStorageWriteError = throwIfIsStorageWriteError;
 exports.writeSingle = void 0;
@@ -133,6 +136,14 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
     }
   }
 }
+
+function hashAttachmentData(attachmentBase64String, storageStatics) {
+  return storageStatics.hash(atob(attachmentBase64String));
+}
+
+function getAttachmentSize(attachmentBase64String) {
+  return atob(attachmentBase64String).length;
+}
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -151,26 +162,52 @@ rxJsonSchema) {
 
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
 
-  function transformDocumentDataFromRxDBToRxStorage(data, updateLwt) {
-    data = (0, _util.flatClone)(data);
+  function transformDocumentDataFromRxDBToRxStorage(writeRow) {
+    var data = (0, _util.flatClone)(writeRow.document);
     data._meta = (0, _util.flatClone)(data._meta); // ensure primary key has not been changed
 
     if (_overwritable.overwritable.isDevMode()) {
       data = (0, _rxSchemaHelper.fillPrimaryKey)(primaryPath, rxJsonSchema, data);
     }
 
-    if (updateLwt) {
-      data._meta.lwt = new Date().getTime();
-    }
-
+    data._meta.lwt = new Date().getTime();
     var hookParams = {
       database: database,
       primaryPath: primaryPath,
       schema: rxJsonSchema,
       doc: data
     };
+    /**
+     * Run the hooks once for the previous doc,
+     * once for the new write data
+     */
+
+    var previous = writeRow.previous;
+
+    if (previous) {
+      hookParams.doc = previous;
+      (0, _hooks.runPluginHooks)('preWriteToStorageInstance', hookParams);
+      previous = hookParams.doc;
+    }
+
+    hookParams.doc = data;
     (0, _hooks.runPluginHooks)('preWriteToStorageInstance', hookParams);
-    return hookParams.doc;
+    data = hookParams.doc;
+    /**
+     * Update the revision after the hooks have run.
+     * Do not update the revision if no previous is given,
+     * because the migration plugin must be able to do an insert
+     * with a pre-created revision.
+     */
+
+    if (writeRow.previous || !data._rev) {
+      data._rev = (0, _util.createRevision)(data, writeRow.previous);
+    }
+
+    return {
+      document: data,
+      previous: previous
+    };
   }
 
   function transformDocumentDataFromRxStorageToRxDB(data) {
@@ -190,21 +227,9 @@ rxJsonSchema) {
     collectionName: storageInstance.collectionName,
     databaseName: storageInstance.databaseName,
     options: storageInstance.options,
-    bulkAddRevisions: function bulkAddRevisions(documents) {
-      var toStorageDocuments = documents.map(function (doc) {
-        return transformDocumentDataFromRxDBToRxStorage(doc, true);
-      });
-      var ret = database.lockedRun(function () {
-        return storageInstance.bulkAddRevisions(toStorageDocuments);
-      });
-      return ret;
-    },
     bulkWrite: function bulkWrite(rows) {
       var toStorageWriteRows = rows.map(function (row) {
-        return {
-          previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(row.previous, false) : undefined,
-          document: transformDocumentDataFromRxDBToRxStorage(row.document, true)
-        };
+        return transformDocumentDataFromRxDBToRxStorage(row);
       });
       return database.lockedRun(function () {
         return storageInstance.bulkWrite((0, _util.clone)(toStorageWriteRows));

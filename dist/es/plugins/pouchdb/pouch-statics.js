@@ -1,6 +1,6 @@
 import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
 import { newRxError } from '../../rx-error';
-import { getPouchIndexDesignDocNameByIndex, pouchHash, pouchSwapPrimaryToId, POUCH_HASH_KEY, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
+import { getPouchIndexDesignDocNameByIndex, pouchHash, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import { overwritable } from '../../overwritable';
 import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
@@ -12,7 +12,7 @@ export var RxStoragePouchStatics = {
   hash: function hash(data) {
     return pouchHash(data);
   },
-  hashKey: POUCH_HASH_KEY,
+  hashKey: 'md5',
   doesBroadcastChangestream: function doesBroadcastChangestream() {
     return false;
   },

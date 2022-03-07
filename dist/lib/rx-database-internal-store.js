@@ -37,18 +37,21 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
 
     var storageToken = (0, _util.randomCouchString)(10);
     return Promise.resolve(_catch(function () {
+      var docData = {
+        id: storageTokenDocumentId,
+        context: INTERNAL_CONTEXT_STORAGE_TOKEN,
+        key: STORAGE_TOKEN_DOCUMENT_KEY,
+        data: {
+          token: storageToken
+        },
+        _deleted: false,
+        _meta: (0, _util.getDefaultRxDocumentMeta)(),
+        _rev: (0, _util.getDefaultRevision)(),
+        _attachments: {}
+      };
+      docData._rev = (0, _util.createRevision)(docData);
       return Promise.resolve((0, _rxStorageHelper.writeSingle)(rxDatabase.internalStore, {
-        document: {
-          id: storageTokenDocumentId,
-          context: INTERNAL_CONTEXT_STORAGE_TOKEN,
-          key: STORAGE_TOKEN_DOCUMENT_KEY,
-          data: {
-            token: storageToken
-          },
-          _deleted: false,
-          _meta: (0, _util.getDefaultRxDocumentMeta)(),
-          _attachments: {}
-        }
+        document: docData
       })).then(function () {
         return storageToken;
       });

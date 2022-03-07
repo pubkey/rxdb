@@ -1,7 +1,7 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
-import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, PROMISE_RESOLVE_VOID, getDefaultRxDocumentMeta } from './util';
+import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, PROMISE_RESOLVE_VOID, getDefaultRxDocumentMeta, getDefaultRevision, createRevision } from './util';
 import { newRxError } from './rx-error';
 import { createRxSchema } from './rx-schema';
 import { overwritable } from './overwritable';
@@ -108,6 +108,7 @@ export var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, 
       var writeRows = relevantDocs.map(function (doc) {
         var writeDoc = flatClone(doc);
         writeDoc._deleted = true;
+        writeDoc._rev = createRevision(writeDoc, doc);
         return {
           previous: doc,
           document: writeDoc
@@ -210,6 +211,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
         var writeDoc = flatClone(doc);
         writeDoc._deleted = true;
+        writeDoc._rev = createRevision(writeDoc, doc);
         return Promise.resolve(_this2.lockedRun(function () {
           return _this2.internalStore.bulkWrite([{
             document: writeDoc,
@@ -309,20 +311,23 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
             var collectionName = _collectionNamePrimary(name, collectionCreators[name].schema);
 
             if (!internalDocByCollectionName[collectionName]) {
+              var collectionDocData = {
+                id: getPrimaryKeyOfInternalDocument(collectionName, INTERNAL_CONTEXT_COLLECTION),
+                key: collectionName,
+                context: INTERNAL_CONTEXT_COLLECTION,
+                data: {
+                  schemaHash: schemaHashByName[name],
+                  schema: collection.schema.normalized,
+                  version: collection.schema.version
+                },
+                _deleted: false,
+                _meta: getDefaultRxDocumentMeta(),
+                _rev: getDefaultRevision(),
+                _attachments: {}
+              };
+              collectionDocData._rev = createRevision(collectionDocData);
               bulkPutDocs.push({
-                document: {
-                  id: getPrimaryKeyOfInternalDocument(collectionName, INTERNAL_CONTEXT_COLLECTION),
-                  key: collectionName,
-                  context: INTERNAL_CONTEXT_COLLECTION,
-                  data: {
-                    schemaHash: schemaHashByName[name],
-                    schema: collection.schema.normalized,
-                    version: collection.schema.version
-                  },
-                  _deleted: false,
-                  _meta: getDefaultRxDocumentMeta(),
-                  _attachments: {}
-                }
+                document: collectionDocData
               });
             } // set as getter to the database
 

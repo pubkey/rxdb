@@ -515,6 +515,8 @@ var _exportNames = {
   getSingleDocument: true,
   getAllDocuments: true,
   writeSingle: true,
+  hashAttachmentData: true,
+  getAttachmentSize: true,
   _clearHook: true
 };
 Object.defineProperty(exports, "INTERNAL_CONTEXT_COLLECTION", {
@@ -613,6 +615,12 @@ Object.defineProperty(exports, "getAllDocuments", {
     return _rxStorageHelper.getAllDocuments;
   }
 });
+Object.defineProperty(exports, "getAttachmentSize", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.getAttachmentSize;
+  }
+});
 Object.defineProperty(exports, "getDocumentOrmPrototype", {
   enumerable: true,
   get: function get() {
@@ -665,6 +673,12 @@ Object.defineProperty(exports, "getSingleDocument", {
   enumerable: true,
   get: function get() {
     return _rxStorageHelper.getSingleDocument;
+  }
+});
+Object.defineProperty(exports, "hashAttachmentData", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.hashAttachmentData;
   }
 });
 Object.defineProperty(exports, "isRxCollection", {
@@ -1069,8 +1083,8 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
   try {
     var ret = [];
 
-    var _temp11 = function () {
-      if (emitData.writeOptions.hasOwnProperty('new_edits') && !emitData.writeOptions.new_edits) {
+    var _temp8 = function () {
+      if (!emitData.writeOptions.custom && emitData.writeOptions.hasOwnProperty('new_edits') && emitData.writeOptions.new_edits === false) {
         return Promise.resolve(Promise.all(emitData.writeDocs.map(function (writeDoc) {
           try {
             var id = writeDoc._id;
@@ -1156,7 +1170,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
           }
         }))).then(function () {});
       } else {
-        var _temp12 = function () {
+        var _temp9 = function () {
           if (!emitData.writeOptions.custom || emitData.writeOptions.custom && !emitData.writeOptions.custom.writeRowById) {
             var writeDocsById = new Map();
             emitData.writeDocs.forEach(function (writeDoc) {
@@ -1195,7 +1209,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                 var id = resultRow.id;
                 var writeRow = (0, _util.getFromMapOrThrow)(writeMap, id);
                 return Promise.resolve((0, _pouchdbHelper.writeAttachmentsToAttachments)(writeRow.document._attachments)).then(function (attachments) {
-                  function _temp15() {
+                  function _temp12() {
                     if (writeRow.document._deleted && (!writeRow.previous || writeRow.previous._deleted)) {} else {
                       var changeEvent = changeEventToNormal(pouchDBInstance, emitData.writeOptions.custom.primaryPath, event, emitData.startTime, emitData.endTime);
                       ret.push(changeEvent);
@@ -1208,7 +1222,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                   });
                   var event;
 
-                  var _temp14 = function () {
+                  var _temp11 = function () {
                     if (!writeRow.previous || writeRow.previous._deleted) {
                       // was insert
                       event = {
@@ -1218,7 +1232,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                         previous: null
                       };
                     } else {
-                      var _temp16 = function () {
+                      var _temp13 = function () {
                         if (writeRow.document._deleted) {
                           // was delete
                           // we need to add the new revision to the previous doc
@@ -1247,11 +1261,11 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                         }
                       }();
 
-                      if (_temp16 && _temp16.then) return _temp16.then(function () {});
+                      if (_temp13 && _temp13.then) return _temp13.then(function () {});
                     }
                   }();
 
-                  return _temp14 && _temp14.then ? _temp14.then(_temp15) : _temp15(_temp14);
+                  return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
                 });
               } catch (e) {
                 return Promise.reject(e);
@@ -1260,11 +1274,11 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
           }
         }();
 
-        if (_temp12 && _temp12.then) return _temp12.then(function () {});
+        if (_temp9 && _temp9.then) return _temp9.then(function () {});
       }
     }();
 
-    return Promise.resolve(_temp11 && _temp11.then ? _temp11.then(function () {
+    return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(function () {
       return ret;
     }) : ret);
   } catch (e) {
@@ -1293,6 +1307,13 @@ function getCustomEventEmitterByPouch(pouch) {
 }
 
 var i = 0;
+/**
+ * PouchDB is like a minefield,
+ * where stuff randomly does not work dependend on some conditions.
+ * So instead of doing plain writes,
+ * we hack into the bulkDocs() function
+ * and adjust the behavior accordingly.
+ */
 
 function addCustomEventsPluginToPouch() {
   if (addedToPouch) {
@@ -1304,45 +1325,111 @@ function addCustomEventsPluginToPouch() {
 
   var newBulkDocs = function newBulkDocs(body, options, callback) {
     try {
-      var _temp7 = function _temp7() {
+      var _temp4 = function _temp4() {
+        /**
+         * Custom handling if the call came from RxDB (options.custom is set).
+         */
+        var usePouchResult = [];
+        var hasNonErrorWrite = false;
+
+        if (options.custom && options.hasOwnProperty('new_edits') && options.new_edits === false) {
+          /**
+           * Reset the write docs array,
+           * because we only write non-conflicting documents.
+           */
+          docs = [];
+          var writeRowById = options.custom.writeRowById;
+          var insertDocsById = options.custom.insertDocsById;
+          Array.from(writeRowById.entries()).forEach(function (_ref) {
+            var id = _ref[0],
+                writeRow = _ref[1];
+            var previousRev = writeRow.previous ? writeRow.previous._rev : null;
+            var newRev = (0, _util.parseRevision)(writeRow.document._rev);
+            var docInDb = previousDocsInDb.get(id);
+            var docInDbRev = docInDb ? docInDb._rev : null;
+
+            if (docInDbRev !== previousRev &&
+            /**
+             * If doc in db is deleted
+             * and no previous docs was send,
+             * We have a re-insert which must not cause a conflict.
+             */
+            !(docInDb && docInDb._deleted && !writeRow.previous)) {
+              // we have a conflict
+              usePouchResult.push({
+                error: true,
+                id: id,
+                status: 409
+              });
+            } else {
+              var useRevisions = {
+                start: docInDb ? docInDb._revisions.start + 1 : newRev.height,
+                ids: docInDb ? docInDb._revisions.ids.slice(0) : []
+              };
+              useRevisions.ids.unshift(newRev.hash);
+              var useNewRev = useRevisions.start + '-' + newRev.hash;
+              hasNonErrorWrite = true;
+              docs.push(Object.assign({}, insertDocsById.get(id), {
+                _revisions: useRevisions,
+                _rev: useNewRev
+              }));
+              usePouchResult.push({
+                ok: true,
+                id: id,
+                rev: writeRow.document._rev
+              });
+            }
+          });
+          /**
+           * Optimization shortcut,
+           * if all document writes were conflict errors,
+           * we can skip directly.
+           */
+
+          if (!hasNonErrorWrite) {
+            return usePouchResult;
+          }
+        }
         /**
          * pouchdb calls this function again with transformed input.
          * This would lead to duplicate events. So we marks the deeper calls via the options
          * parameter and do not emit events if it is set.
          */
+
+
         var deeperOptions = (0, _util.flatClone)(options);
         deeperOptions.isDeeper = true;
-        return oldBulkDocs.call(_this2, docs, deeperOptions, function (err, result) {
-          if (err) {
-            if (callback) {
-              callback(err);
+        var callReturn;
+        var callPromise = new Promise(function (res, rej) {
+          callReturn = oldBulkDocs.call(_this2, docs, deeperOptions, function (err, result) {
+            if (err) {
+              callback ? callback(err) : rej(err);
             } else {
-              throw err;
-            }
-          } else {
-            return function () {
-              try {
-                var _temp5 = function _temp5() {
-                  if (callback) {
-                    callback(null, result);
-                  } else {
-                    return result;
-                  }
-                };
+              return function () {
+                try {
+                  result.forEach(function (row) {
+                    usePouchResult.push(row);
+                  });
+                  /**
+                   * For calls that came from RxDB,
+                   * we have to ensure that the events are emitted
+                   * before the actual call resolves.
+                   */
 
-                var _temp6 = function () {
+                  var eventsPromise = _util.PROMISE_RESOLVE_VOID;
+
                   if (!options.isDeeper) {
                     var endTime = (0, _util.now)();
                     var emitData = {
                       emitId: t,
                       writeDocs: docs,
                       writeOptions: options,
-                      writeResult: result,
-                      previousDocs: previousDocs,
+                      writeResult: usePouchResult,
+                      previousDocs: previousDocsInDb,
                       startTime: startTime,
                       endTime: endTime
                     };
-                    return Promise.resolve(eventEmitDataToStorageEvents(_this2, '_id', emitData)).then(function (events) {
+                    eventsPromise = eventEmitDataToStorageEvents(_this2, '_id', emitData).then(function (events) {
                       var eventBulk = {
                         id: (0, _util.randomCouchString)(10),
                         events: events
@@ -1351,20 +1438,25 @@ function addCustomEventsPluginToPouch() {
                       emitter.subject.next(eventBulk);
                     });
                   }
-                }();
 
-                /**
-                 * For calls that came from RxDB,
-                 * we have to ensure that the events are emitted
-                 * before the actual call resolves.
-                 */
-                return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
-              } catch (e) {
-                return Promise.reject(e);
-              }
-            }();
-          }
+                  if (callback) {
+                    callback(null, usePouchResult);
+                  } else {
+                    return Promise.resolve(eventsPromise.then(function () {
+                      res(usePouchResult);
+                      return usePouchResult;
+                    }));
+                  }
+
+                  return Promise.resolve();
+                } catch (e) {
+                  return Promise.reject(e);
+                }
+              }();
+            }
+          });
         });
+        return options.custom ? callPromise : callReturn;
       };
 
       var _this2 = this;
@@ -1393,7 +1485,8 @@ function addCustomEventsPluginToPouch() {
         if (body.hasOwnProperty('new_edits')) {
           options.new_edits = body.new_edits;
         }
-      }
+      } // throw if no docs given, because RxDB should never make such a call.
+
 
       if (docs.length === 0) {
         throw (0, _rxError.newRxError)('SNH', {
@@ -1410,76 +1503,80 @@ function addCustomEventsPluginToPouch() {
        */
 
 
-      var previousDocs = new Map();
+      var previousDocsInDb = new Map();
 
-      var _temp8 = function () {
+      var _temp5 = function () {
         if (options.hasOwnProperty('new_edits') && options.new_edits === false) {
-          var ids = docs.map(function (doc) {
-            return doc._id;
-          });
-          /**
-           * Pouchdb does not return deleted documents via allDocs()
-           * So have to do use our hack with getting the newest revisions from the
-           * changes.
-           * @link https://github.com/pouchdb/pouchdb/issues/7877#issuecomment-522775955
-           */
+          return Promise.resolve(_this2.bulkGet({
+            docs: docs.map(function (doc) {
+              return {
+                id: doc._id
+              };
+            }),
+            revs: true,
+            latest: true
+          })).then(function (viaBulkGet) {
+            /**
+             * bulkGet() does not return deleted documents,
+             * so we must refetch them via allDocs() afterwards.
+             */
+            var mustRefetchBecauseDeleted = [];
+            viaBulkGet.results.forEach(function (resultRow) {
+              var firstDoc = resultRow.docs[0];
 
-          return Promise.resolve(_this2.changes({
-            live: false,
-            since: 0,
-            doc_ids: ids,
-            style: 'all_docs'
-          })).then(function (viaChanges) {
-            return Promise.resolve(Promise.all(viaChanges.results.map(function (result) {
-              try {
-                return Promise.resolve(_this2.get(result.id, {
-                  rev: result.changes[0].rev,
-                  deleted: 'ok',
-                  revs: options.set_new_edit_as_latest_revision ? true : false,
-                  style: 'all_docs'
-                }));
-              } catch (e) {
-                return Promise.reject(e);
-              }
-            }))).then(function (previousDocsResult) {
-              previousDocsResult.forEach(function (doc) {
-                return previousDocs.set(doc._id, doc);
-              });
-
-              if (options.set_new_edit_as_latest_revision) {
-                docs.forEach(function (doc) {
-                  var id = doc._id;
-                  var previous = previousDocs.get(id);
-
-                  if (previous) {
-                    var splittedRev = doc._rev.split('-');
-
-                    var revHeight = parseInt(splittedRev[0], 10);
-                    var revLabel = splittedRev[1];
-
-                    if (!previous._revisions) {
-                      previous._revisions = {
-                        ids: []
-                      };
-                    }
-
-                    doc._revisions = {
-                      start: revHeight,
-                      ids: previous._revisions.ids
-                    };
-
-                    doc._revisions.ids.unshift(revLabel);
-
-                    delete previous._revisions;
-                  }
-                });
+              if (firstDoc.ok) {
+                previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
+              } else {
+                if (firstDoc.error && firstDoc.error.reason === 'deleted') {
+                  mustRefetchBecauseDeleted.push(resultRow.id);
+                }
               }
             });
+
+            var _temp = function () {
+              if (mustRefetchBecauseDeleted.length > 0) {
+                return Promise.resolve(_this2.allDocs({
+                  keys: mustRefetchBecauseDeleted,
+                  include_docs: true,
+                  conflicts: true
+                })).then(function (deletedDocsViaAllDocs) {
+                  var idsWithRevs = [];
+                  deletedDocsViaAllDocs.rows.forEach(function (row) {
+                    idsWithRevs.push({
+                      id: row.id,
+                      rev: row.value.rev
+                    });
+                  });
+                  return Promise.resolve(_this2.bulkGet({
+                    docs: idsWithRevs,
+                    revs: true,
+                    latest: true
+                  })).then(function (deletedDocsViaBulkGetWithRev) {
+                    deletedDocsViaBulkGetWithRev.results.forEach(function (resultRow) {
+                      var firstDoc = resultRow.docs[0];
+
+                      if (firstDoc.ok) {
+                        previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
+                      } else {
+                        throw (0, _rxError.newRxError)('SNH', {
+                          args: {
+                            deletedDocsViaBulkGetWithRev: deletedDocsViaBulkGetWithRev,
+                            resultRow: resultRow
+                          }
+                        });
+                      }
+                    });
+                  });
+                });
+              }
+            }();
+
+            if (_temp && _temp.then) return _temp.then(function () {});
           });
         }
       }();
 
-      return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(_temp7) : _temp7(_temp8));
+      return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(_temp4) : _temp4(_temp5));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -1616,11 +1713,7 @@ exports.isLevelDown = isLevelDown;
 
 var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
 
-var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
-
 var _rxError = require("../../rx-error");
-
-var _customEventsPlugin = require("./custom-events-plugin");
 
 /**
  * this handles the pouchdb-instance
@@ -1628,7 +1721,6 @@ var _customEventsPlugin = require("./custom-events-plugin");
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-// pouchdb-find
 
 /*
 // comment in to debug
@@ -1636,13 +1728,11 @@ const pouchdbDebug = require('pouchdb-debug');
 PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
-addPouchPlugin(_pouchdbFind["default"]);
-(0, _customEventsPlugin.addCustomEventsPluginToPouch)();
+
 /**
  * check if the given module is a leveldown-adapter
  * throws if not
  */
-
 function isLevelDown(adapter) {
   if (!adapter || typeof adapter.super_ !== 'function') {
     throw (0, _rxError.newRxError)('UT4', {
@@ -1682,7 +1772,7 @@ function addPouchPlugin(plugin) {
 var PouchDB = _pouchdbCore["default"];
 exports.PouchDB = PouchDB;
 
-},{"../../rx-error":25,"./custom-events-plugin":10,"@babel/runtime/helpers/interopRequireDefault":40,"pouchdb-core":417,"pouchdb-find":420}],13:[function(require,module,exports){
+},{"../../rx-error":25,"@babel/runtime/helpers/interopRequireDefault":40,"pouchdb-core":417}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1711,7 +1801,7 @@ var RxStoragePouchStatics = {
   hash: function hash(data) {
     return (0, _pouchdbHelper.pouchHash)(data);
   },
-  hashKey: _pouchdbHelper.POUCH_HASH_KEY,
+  hashKey: 'md5',
   doesBroadcastChangestream: function doesBroadcastChangestream() {
     return false;
   },
@@ -1942,7 +2032,7 @@ function preparePouchDbQuery(schema, mutateableQuery) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RXDB_POUCH_DELETED_FLAG = exports.POUCH_HASH_KEY = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
+exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
 exports.getPouchIndexDesignDocNameByIndex = getPouchIndexDesignDocNameByIndex;
 exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
@@ -1962,6 +2052,10 @@ var _pouchdbMd = require("pouchdb-md5");
 var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
+
+var _rxStorageHelper = require("../../rx-storage-helper");
+
+var _pouchStatics = require("./pouch-statics");
 
 var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attachments) {
   try {
@@ -1989,18 +2083,30 @@ var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attac
          */
 
 
-        if (obj.data) {
-          var asWriteAttachment = obj;
-          ret[key] = {
-            digest: asWriteAttachment.digest,
-            length: asWriteAttachment.length,
-            type: asWriteAttachment.type
-          };
-        } else {
-          ret[key] = obj;
-        }
+        var _temp4 = function () {
+          if (obj.data) {
+            var _temp5 = function _temp5(dataAsBase64String) {
+              return Promise.resolve((0, _rxStorageHelper.hashAttachmentData)(dataAsBase64String, _pouchStatics.RxStoragePouchStatics)).then(function (hash) {
+                var length = (0, _rxStorageHelper.getAttachmentSize)(dataAsBase64String);
+                ret[key] = {
+                  digest: 'md5-' + hash,
+                  length: length,
+                  type: _asWrite.type
+                };
+              });
+            };
 
-        return Promise.resolve();
+            var _asWrite = obj;
+
+            var _temp6 = typeof _asWrite.data === 'string';
+
+            return _temp6 ? _temp5(_asWrite.data) : Promise.resolve(_util.blobBufferUtil.toBase64String(_asWrite.data)).then(_temp5);
+          } else {
+            ret[key] = obj;
+          }
+        }();
+
+        return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
       } catch (e) {
         return Promise.reject(e);
       }
@@ -2111,10 +2217,8 @@ function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
       var useValue = value;
 
       if (useValue.data) {
-        var asBlobBuffer = _util.blobBufferUtil.createBlobBufferFromBase64(useValue.data, useValue.type);
-
         pouchDoc._attachments[key] = {
-          data: asBlobBuffer,
+          data: useValue.data,
           content_type: useValue.type
         };
       } else {
@@ -2291,9 +2395,6 @@ function pouchHash(data) {
   });
 }
 
-var POUCH_HASH_KEY = 'md5';
-exports.POUCH_HASH_KEY = POUCH_HASH_KEY;
-
 function getPouchIndexDesignDocNameByIndex(index) {
   var indexName = 'idx-rxdb-index-' + index.join(',');
   return indexName;
@@ -2308,7 +2409,7 @@ function getPouchIndexDesignDocNameByIndex(index) {
 var RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted';
 exports.RXDB_POUCH_DELETED_FLAG = RXDB_POUCH_DELETED_FLAG;
 
-},{"../../rx-error":25,"../../util":33,"pouchdb-md5":423}],15:[function(require,module,exports){
+},{"../../rx-error":25,"../../rx-storage-helper":29,"../../util":33,"./pouch-statics":13,"pouchdb-md5":423}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2610,34 +2711,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     }
   };
 
-  _proto.bulkAddRevisions = function bulkAddRevisions(documents) {
-    try {
-      var _this5 = this;
-
-      if (documents.length === 0) {
-        throw (0, _rxError.newRxError)('P3', {
-          args: {
-            documents: documents
-          }
-        });
-      }
-
-      var writeData = documents.map(function (doc) {
-        return (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, doc);
-      }); // we do not need the response here because pouchdb returns an empty array on new_edits: false
-
-      return Promise.resolve(_this5.internals.pouch.bulkDocs(writeData, {
-        new_edits: false,
-        set_new_edit_as_latest_revision: true
-      })).then(function () {});
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
   _proto.bulkWrite = function bulkWrite(documentWrites) {
     try {
-      var _this7 = this;
+      var _this5 = this;
 
       if (documentWrites.length === 0) {
         throw (0, _rxError.newRxError)('P2', {
@@ -2645,24 +2721,51 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             documentWrites: documentWrites
           }
         });
-      }
+      } // TODO remove this check
 
-      var writeRowById = new Map();
-      var insertDocs = documentWrites.map(function (writeData) {
-        var primary = writeData.document[_this7.primaryPath];
-        writeRowById.set(primary, writeData);
-        var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this7.primaryPath, writeData.document); // if previous document exists, we have to send the previous revision to pouchdb.
 
-        if (writeData.previous) {
-          storeDocumentData._rev = writeData.previous._rev;
+      documentWrites.forEach(function (writeRow) {
+        if (!writeRow.document._rev) {
+          console.dir(writeRow);
+          throw new Error('rev missing');
         }
 
+        if (!writeRow.document._rev.includes('-')) {
+          console.dir(writeRow);
+          throw new Error('invalid rev format: ' + writeRow.document._rev);
+        }
+
+        if (writeRow.previous) {
+          var parsedPrev = (0, _util.parseRevision)(writeRow.previous._rev);
+
+          if (typeof parsedPrev.height !== 'number') {
+            console.dir(writeRow);
+            throw new Error('rev height is no number');
+          }
+
+          var parsedNew = (0, _util.parseRevision)(writeRow.document._rev);
+
+          if (parsedPrev.height >= parsedNew.height) {
+            console.dir(writeRow);
+            throw new Error('new revision must be higher then previous');
+          }
+        }
+      });
+      var writeRowById = new Map();
+      var insertDocsById = new Map();
+      var writeDocs = documentWrites.map(function (writeData) {
+        var primary = writeData.document[_this5.primaryPath];
+        writeRowById.set(primary, writeData);
+        var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, writeData.document);
+        insertDocsById.set(primary, storeDocumentData);
         return storeDocumentData;
       });
-      return Promise.resolve(_this7.internals.pouch.bulkDocs(insertDocs, {
+      return Promise.resolve(_this5.internals.pouch.bulkDocs(writeDocs, {
+        new_edits: false,
         custom: {
-          primaryPath: _this7.primaryPath,
-          writeRowById: writeRowById
+          primaryPath: _this5.primaryPath,
+          writeRowById: writeRowById,
+          insertDocsById: insertDocsById
         }
       })).then(function (pouchResult) {
         var ret = {
@@ -2689,7 +2792,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                 var _pushObj = (0, _util.flatClone)(writeRow.document);
 
-                _pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this7.primaryPath, _pushObj);
+                _pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this5.primaryPath, _pushObj);
                 _pushObj._rev = resultRow.rev; // replace the inserted attachments with their diggest
 
                 _pushObj._attachments = {};
@@ -2723,12 +2826,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.query = function query(preparedQuery) {
     try {
-      var _this9 = this;
+      var _this7 = this;
 
-      return Promise.resolve(_this9.internals.pouch.find(preparedQuery)).then(function (findResult) {
+      return Promise.resolve(_this7.internals.pouch.find(preparedQuery)).then(function (findResult) {
         var ret = {
           documents: findResult.docs.map(function (pouchDoc) {
-            var useDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this9.primaryPath, pouchDoc);
+            var useDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this7.primaryPath, pouchDoc);
             return useDoc;
           })
         };
@@ -2741,10 +2844,10 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     try {
-      var _this11 = this;
+      var _this9 = this;
 
-      return Promise.resolve(_this11.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
-        return _util.blobBufferUtil.tobase64String(attachmentData);
+      return Promise.resolve(_this9.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
+        return Promise.resolve(_util.blobBufferUtil.toBase64String(attachmentData));
       });
     } catch (e) {
       return Promise.reject(e);
@@ -2754,7 +2857,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
     try {
       var _temp9 = function _temp9(_result) {
-        return _exit2 ? _result : Promise.resolve(_this13.internals.pouch.allDocs({
+        return _exit2 ? _result : Promise.resolve(_this11.internals.pouch.allDocs({
           include_docs: true,
           keys: ids
         })).then(function (pouchResult) {
@@ -2763,7 +2866,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             return !!row.doc;
           }).forEach(function (row) {
             var docData = row.doc;
-            docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this13.primaryPath, docData);
+            docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this11.primaryPath, docData);
             ret[row.id] = docData;
           });
           return ret;
@@ -2772,11 +2875,11 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
       var _exit2 = false;
 
-      var _this13 = this;
+      var _this11 = this;
 
       var _temp10 = function () {
         if (deleted) {
-          return Promise.resolve(_this13.internals.pouch.changes({
+          return Promise.resolve(_this11.internals.pouch.changes({
             live: false,
             since: 0,
             doc_ids: ids,
@@ -2785,12 +2888,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             var retDocs = {};
             return Promise.resolve(Promise.all(viaChanges.results.map(function (result) {
               try {
-                return Promise.resolve(_this13.internals.pouch.get(result.id, {
+                return Promise.resolve(_this11.internals.pouch.get(result.id, {
                   rev: result.changes[0].rev,
                   deleted: 'ok',
                   style: 'all_docs'
                 })).then(function (firstDoc) {
-                  var useFirstDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this13.primaryPath, firstDoc);
+                  var useFirstDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this11.primaryPath, firstDoc);
                   retDocs[result.id] = useFirstDoc;
                 });
               } catch (e) {
@@ -2832,7 +2935,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         };
       };
 
-      var _this15 = this;
+      var _this13 = this;
 
       var pouchChangesOpts = {
         live: false,
@@ -2855,7 +2958,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       }, void 0, function () {
         first = false;
         skippedDesignDocuments = 0;
-        return Promise.resolve(_this15.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
+        return Promise.resolve(_this13.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
           var addChangedDocuments = pouchResults.results.filter(function (row) {
             var isDesignDoc = row.id.startsWith(_pouchdbHelper.POUCHDB_DESIGN_PREFIX);
 
@@ -2893,6 +2996,8 @@ exports.RxStorageInstancePouch = RxStorageInstancePouch;
 },{"../../rx-error":25,"../../rx-schema-helper":27,"../../util":33,"./custom-events-plugin":10,"./pouchdb-helper":14,"oblivious-set":408,"rxjs":440}],16:[function(require,module,exports){
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -2912,9 +3017,13 @@ var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
 
 var _pouchdbHelper = require("./pouchdb-helper");
 
+var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
+
 var _pouchStatics = require("./pouch-statics");
 
 var _rxSchemaHelper = require("../../rx-schema-helper");
+
+var _customEventsPlugin = require("./custom-events-plugin");
 
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
@@ -3078,7 +3187,15 @@ function getPouchLocation(dbName, collectionName, schemaVersion) {
   }
 }
 
+var addedRxDBPouchPlugins = false;
+
 function getRxStoragePouch(adapter, pouchSettings) {
+  if (!addedRxDBPouchPlugins) {
+    addedRxDBPouchPlugins = true;
+    (0, _pouchDb.addPouchPlugin)(_pouchdbFind["default"]);
+    (0, _customEventsPlugin.addCustomEventsPluginToPouch)();
+  }
+
   if (!adapter) {
     throw new Error('adapter missing');
   }
@@ -3087,7 +3204,7 @@ function getRxStoragePouch(adapter, pouchSettings) {
   return storage;
 }
 
-},{"../../rx-error":25,"../../rx-schema-helper":27,"../../util":33,"./pouch-db":12,"./pouch-statics":13,"./pouchdb-helper":14,"./rx-storage-instance-pouch":15}],17:[function(require,module,exports){
+},{"../../rx-error":25,"../../rx-schema-helper":27,"../../util":33,"./custom-events-plugin":10,"./pouch-db":12,"./pouch-statics":13,"./pouchdb-helper":14,"./rx-storage-instance-pouch":15,"@babel/runtime/helpers/interopRequireDefault":40,"pouchdb-find":420}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3600,6 +3717,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
             document: Object.assign(doc, {
               _attachments: {},
               _meta: (0, _util.getDefaultRxDocumentMeta)(),
+              _rev: (0, _util.getDefaultRevision)(),
               _deleted: false
             })
           };
@@ -4249,10 +4367,10 @@ function _applyHookFunctions(collection) {
 }
 
 function _atomicUpsertUpdate(doc, json) {
-  return doc.atomicUpdate(function (innerDoc) {
-    json._rev = innerDoc._rev;
-    innerDoc._data = json;
-    return innerDoc._data;
+  return doc.atomicUpdate(function (_innerDoc) {
+    return json;
+  }).then(function () {
+    return (0, _util.nextTick)();
   }).then(function () {
     return doc;
   });
@@ -4423,18 +4541,21 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
 
     var storageToken = (0, _util.randomCouchString)(10);
     return Promise.resolve(_catch(function () {
+      var docData = {
+        id: storageTokenDocumentId,
+        context: INTERNAL_CONTEXT_STORAGE_TOKEN,
+        key: STORAGE_TOKEN_DOCUMENT_KEY,
+        data: {
+          token: storageToken
+        },
+        _deleted: false,
+        _meta: (0, _util.getDefaultRxDocumentMeta)(),
+        _rev: (0, _util.getDefaultRevision)(),
+        _attachments: {}
+      };
+      docData._rev = (0, _util.createRevision)(docData);
       return Promise.resolve((0, _rxStorageHelper.writeSingle)(rxDatabase.internalStore, {
-        document: {
-          id: storageTokenDocumentId,
-          context: INTERNAL_CONTEXT_STORAGE_TOKEN,
-          key: STORAGE_TOKEN_DOCUMENT_KEY,
-          data: {
-            token: storageToken
-          },
-          _deleted: false,
-          _meta: (0, _util.getDefaultRxDocumentMeta)(),
-          _attachments: {}
-        }
+        document: docData
       })).then(function () {
         return storageToken;
       });
@@ -4689,6 +4810,7 @@ var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collect
       var writeRows = relevantDocs.map(function (doc) {
         var writeDoc = (0, _util.flatClone)(doc);
         writeDoc._deleted = true;
+        writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
         return {
           previous: doc,
           document: writeDoc
@@ -4799,6 +4921,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
         var writeDoc = (0, _util.flatClone)(doc);
         writeDoc._deleted = true;
+        writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
         return Promise.resolve(_this2.lockedRun(function () {
           return _this2.internalStore.bulkWrite([{
             document: writeDoc,
@@ -4898,20 +5021,23 @@ var RxDatabaseBase = /*#__PURE__*/function () {
             var collectionName = _collectionNamePrimary(name, collectionCreators[name].schema);
 
             if (!internalDocByCollectionName[collectionName]) {
+              var collectionDocData = {
+                id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionName, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
+                key: collectionName,
+                context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION,
+                data: {
+                  schemaHash: schemaHashByName[name],
+                  schema: collection.schema.normalized,
+                  version: collection.schema.version
+                },
+                _deleted: false,
+                _meta: (0, _util.getDefaultRxDocumentMeta)(),
+                _rev: (0, _util.getDefaultRevision)(),
+                _attachments: {}
+              };
+              collectionDocData._rev = (0, _util.createRevision)(collectionDocData);
               bulkPutDocs.push({
-                document: {
-                  id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionName, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
-                  key: collectionName,
-                  context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION,
-                  data: {
-                    schemaHash: schemaHashByName[name],
-                    schema: collection.schema.normalized,
-                    version: collection.schema.version
-                  },
-                  _deleted: false,
-                  _meta: (0, _util.getDefaultRxDocumentMeta)(),
-                  _attachments: {}
-                }
+                document: collectionDocData
               });
             } // set as getter to the database
 
@@ -5941,7 +6067,7 @@ var basePrototype = {
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
         try {
-          var _temp5 = function _temp5(_result2) {
+          var _temp4 = function _temp4(_result2) {
             if (_exit2) return _result2;
             res(_this2);
           };
@@ -5950,12 +6076,12 @@ var basePrototype = {
           var done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
           // while still having the option to run a retry on conflicts
 
-          var _temp6 = _for(function () {
+          var _temp5 = _for(function () {
             return !_exit2 && !done;
           }, void 0, function () {
             var oldData = _this2._dataSync$.getValue();
 
-            var _temp2 = _catch(function () {
+            var _temp = _catch(function () {
               // always await because mutationFunction might be async
               return Promise.resolve(mutationFunction((0, _util.clone)(_this2._dataSync$.getValue()), _this2)).then(function (newData) {
                 if (_this2.collection) {
@@ -5967,23 +6093,16 @@ var basePrototype = {
                 });
               });
             }, function (err) {
-              var _temp = function () {
-                if ((0, _rxError.isPouchdbConflictError)(err)) {
-                  // we need to free the cpu for a tick or the browser tests will fail
-                  return Promise.resolve((0, _util.nextTick)()).then(function () {}); // pouchdb conflict error -> retrying
-                } else {
-                  rej(err);
-                  _exit2 = true;
-                }
-              }();
-
-              return _temp && _temp.then ? _temp.then(function () {}) : void 0;
+              if ((0, _rxError.isPouchdbConflictError)(err)) {} else {
+                rej(err);
+                _exit2 = true;
+              }
             });
 
-            if (_temp2 && _temp2.then) return _temp2.then(function () {});
+            if (_temp && _temp.then) return _temp.then(function () {});
           });
 
-          return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
+          return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(_temp4) : _temp4(_temp5));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -7441,8 +7560,11 @@ function toTypedRxJsonSchema(schema) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getSingleDocument = exports.getAllDocuments = exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = void 0;
+exports.getAllDocuments = exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = void 0;
+exports.getAttachmentSize = getAttachmentSize;
+exports.getSingleDocument = void 0;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
+exports.hashAttachmentData = hashAttachmentData;
 exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
 exports.throwIfIsStorageWriteError = throwIfIsStorageWriteError;
 exports.writeSingle = void 0;
@@ -7571,6 +7693,14 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
     }
   }
 }
+
+function hashAttachmentData(attachmentBase64String, storageStatics) {
+  return storageStatics.hash(atob(attachmentBase64String));
+}
+
+function getAttachmentSize(attachmentBase64String) {
+  return atob(attachmentBase64String).length;
+}
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -7589,26 +7719,52 @@ rxJsonSchema) {
 
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
 
-  function transformDocumentDataFromRxDBToRxStorage(data, updateLwt) {
-    data = (0, _util.flatClone)(data);
+  function transformDocumentDataFromRxDBToRxStorage(writeRow) {
+    var data = (0, _util.flatClone)(writeRow.document);
     data._meta = (0, _util.flatClone)(data._meta); // ensure primary key has not been changed
 
     if (_overwritable.overwritable.isDevMode()) {
       data = (0, _rxSchemaHelper.fillPrimaryKey)(primaryPath, rxJsonSchema, data);
     }
 
-    if (updateLwt) {
-      data._meta.lwt = new Date().getTime();
-    }
-
+    data._meta.lwt = new Date().getTime();
     var hookParams = {
       database: database,
       primaryPath: primaryPath,
       schema: rxJsonSchema,
       doc: data
     };
+    /**
+     * Run the hooks once for the previous doc,
+     * once for the new write data
+     */
+
+    var previous = writeRow.previous;
+
+    if (previous) {
+      hookParams.doc = previous;
+      (0, _hooks.runPluginHooks)('preWriteToStorageInstance', hookParams);
+      previous = hookParams.doc;
+    }
+
+    hookParams.doc = data;
     (0, _hooks.runPluginHooks)('preWriteToStorageInstance', hookParams);
-    return hookParams.doc;
+    data = hookParams.doc;
+    /**
+     * Update the revision after the hooks have run.
+     * Do not update the revision if no previous is given,
+     * because the migration plugin must be able to do an insert
+     * with a pre-created revision.
+     */
+
+    if (writeRow.previous || !data._rev) {
+      data._rev = (0, _util.createRevision)(data, writeRow.previous);
+    }
+
+    return {
+      document: data,
+      previous: previous
+    };
   }
 
   function transformDocumentDataFromRxStorageToRxDB(data) {
@@ -7628,21 +7784,9 @@ rxJsonSchema) {
     collectionName: storageInstance.collectionName,
     databaseName: storageInstance.databaseName,
     options: storageInstance.options,
-    bulkAddRevisions: function bulkAddRevisions(documents) {
-      var toStorageDocuments = documents.map(function (doc) {
-        return transformDocumentDataFromRxDBToRxStorage(doc, true);
-      });
-      var ret = database.lockedRun(function () {
-        return storageInstance.bulkAddRevisions(toStorageDocuments);
-      });
-      return ret;
-    },
     bulkWrite: function bulkWrite(rows) {
       var toStorageWriteRows = rows.map(function (row) {
-        return {
-          previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(row.previous, false) : undefined,
-          document: transformDocumentDataFromRxDBToRxStorage(row.document, true)
-        };
+        return transformDocumentDataFromRxDBToRxStorage(row);
       });
       return database.lockedRun(function () {
         return storageInstance.bulkWrite((0, _util.clone)(toStorageWriteRows));
@@ -7763,6 +7907,7 @@ exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
 exports.firstPropertyValueOfObject = firstPropertyValueOfObject;
 exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
+exports.getDefaultRevision = getDefaultRevision;
 exports.getDefaultRxDocumentMeta = getDefaultRxDocumentMeta;
 exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.getFromObjectOrThrow = getFromObjectOrThrow;
@@ -7796,6 +7941,20 @@ var _clone = _interopRequireDefault(require("clone"));
 var _sparkMd = _interopRequireDefault(require("spark-md5"));
 
 var _isElectron = _interopRequireDefault(require("is-electron"));
+
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
 
 /**
  * Returns an error that indicates that a plugin is missing
@@ -8219,20 +8378,23 @@ function getHeightOfRevision(revision) {
   return parseRevision(revision).height;
 }
 /**
- * Creates a revision string that does NOT include the revision height
- * Copied and adapted from pouchdb-utils/src/rev.js
- * 
- * We use our own function so RxDB usage without pouchdb RxStorage
- * does not include pouchdb code in the bundle.
+ * Creates the next write revision for a given document.
  */
 
 
-function createRevision(docData) {
+function createRevision(docData, previousDocData) {
+  var previousRevision = previousDocData ? previousDocData._rev : null;
+  var previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
+  var newRevisionHeight = previousRevisionHeigth + 1;
   var docWithoutRev = Object.assign({}, docData, {
+    _rev: undefined,
     _rev_tree: undefined
   });
   var diggestString = JSON.stringify(docWithoutRev);
-  return _sparkMd["default"].hash(diggestString);
+
+  var revisionHash = _sparkMd["default"].hash(diggestString);
+
+  return newRevisionHeight + '-' + revisionHash;
 }
 /**
  * overwrites the getter with the actual value
@@ -8334,24 +8496,37 @@ var blobBufferUtil = {
    * we have to use Buffer(node) or Blob(browser)
    */
   createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
-    var blobBuffer;
-
-    if (isElectronRenderer) {
-      // if we are inside of electron-renderer, always use the node-buffer
-      return Buffer.from(base64String, 'base64');
-    }
-
     try {
-      // for browsers
-      blobBuffer = new Blob([base64String], {
-        type: type
-      });
-    } catch (e) {
-      // for node
-      blobBuffer = Buffer.from(base64String, 'base64');
-    }
+      var _exit2 = false;
+      var blobBuffer;
 
-    return blobBuffer;
+      if (isElectronRenderer) {
+        // if we are inside of electron-renderer, always use the node-buffer
+        return Promise.resolve(Buffer.from(base64String, 'base64'));
+      }
+
+      var _temp2 = _catch(function () {
+        /**
+         * For browsers.
+         * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+         */
+        return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
+          return Promise.resolve(base64Response.blob()).then(function (blob) {
+            _exit2 = true;
+            return blob;
+          });
+        });
+      }, function () {
+        // for node
+        blobBuffer = Buffer.from(base64String, 'base64');
+      });
+
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function (_result) {
+        return _exit2 ? _result : blobBuffer;
+      }) : _exit2 ? _temp2 : blobBuffer);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   },
   isBlobBuffer: function isBlobBuffer(data) {
     if (typeof Buffer !== 'undefined' && Buffer.isBuffer(data) || data instanceof Blob) {
@@ -8393,25 +8568,39 @@ var blobBufferUtil = {
       reader.readAsText(blobBuffer);
     });
   },
-  tobase64String: function tobase64String(blobBuffer) {
+  toBase64String: function toBase64String(blobBuffer) {
     if (typeof blobBuffer === 'string') {
       return Promise.resolve(blobBuffer);
     }
 
     if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
       // node
-      return nextTick().then(function () {
+      return nextTick()
+      /**
+       * We use btoa() instead of blobBuffer.toString('base64')
+       * to ensure that we have the same behavior in nodejs and the browser.
+       */
+      .then(function () {
         return blobBuffer.toString('base64');
       });
     }
 
-    return new Promise(function (res) {
-      // browser
+    return new Promise(function (res, rej) {
+      /**
+       * Browser
+       * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+       */
       var reader = new FileReader();
-      reader.addEventListener('loadend', function (e) {
-        var text = e.target.result;
-        res(text);
-      });
+      reader.onerror = rej;
+
+      reader.onload = function () {
+        // looks like 'data:plain/text;base64,YWFh...'
+        var fullResult = reader.result;
+        var split = fullResult.split(',');
+        split.shift();
+        res(split.join(','));
+      };
+
       var blobBufferType = Object.prototype.toString.call(blobBuffer);
       /**
        * in the electron-renderer we have a typed array insteaf of a blob
@@ -8423,7 +8612,7 @@ var blobBufferUtil = {
         blobBuffer = new Blob([blobBuffer]);
       }
 
-      reader.readAsText(blobBuffer);
+      reader.readAsDataURL(blobBuffer);
     });
   },
   size: function size(blobBuffer) {
@@ -8460,6 +8649,21 @@ function getDefaultRxDocumentMeta() {
      */
     lwt: 1
   };
+}
+/**
+ * Returns a revision that is not valid.
+ * Use this to have correct typings
+ * while the storage wrapper anyway will overwrite the revision.
+ */
+
+
+function getDefaultRevision() {
+  /**
+   * Use a non-valid revision format,
+   * to ensure that the RxStorage will throw
+   * when the revision is not replaced downstream.
+   */
+  return '';
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
@@ -33474,7 +33678,7 @@ exports.parseField = parseField;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-function _interopDefault(ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var getArguments = _interopDefault(require('argsarray'));
 var pouchdbCollections = require('pouchdb-collections');
@@ -33506,10 +33710,6 @@ function cloneBinaryObject(object) {
   if (object instanceof ArrayBuffer) {
     return cloneArrayBuffer(object);
   }
-
-  console.log('cloneBinaryObject:');
-  console.log(object);
-
   var size = object.size;
   var type = object.type;
   // Blob
@@ -33600,11 +33800,6 @@ function toPromise(func) {
   //create the function we will be returning
   return getArguments(function (args) {
     // Clone arguments
-
-
-    console.log('pouch index browser inner');
-    console.log(JSON.stringify(args, null, 4));
-
     args = clone(args);
     var self = this;
     // if the last argument is a function, assume its a callback
@@ -33742,7 +33937,7 @@ function bulkGet(db, opts, callback) {
         });
       });
     });
-    callback(null, { results: results });
+    callback(null, {results: results});
   }
 
   function checkDone() {
@@ -33752,7 +33947,7 @@ function bulkGet(db, opts, callback) {
   }
 
   function gotResult(docIndex, id, docs) {
-    perDocResults[docIndex] = { id: id, docs: docs };
+    perDocResults[docIndex] = {id: id, docs: docs};
     checkDone();
   }
 
@@ -33816,7 +34011,7 @@ function bulkGet(db, opts, callback) {
         var result;
         /* istanbul ignore if */
         if (err) {
-          result = [{ error: err }];
+          result = [{error: err}];
         } else {
           result = formatResult(res);
         }
@@ -34058,7 +34253,7 @@ function flatten(arrs) {
 // for browsers that don't support it like IE
 
 /* istanbul ignore next */
-function f() { }
+function f() {}
 
 var hasName = f.name;
 var res;
@@ -34121,7 +34316,7 @@ function isRemote(db) {
 
 function listenerCount(ee, type) {
   return 'listenerCount' in ee ? ee.listenerCount(type) :
-    EventEmitter.listenerCount(ee, type);
+                                 EventEmitter.listenerCount(ee, type);
 }
 
 function parseDesignDocFunctionName(s) {
@@ -34147,8 +34342,8 @@ function normalizeDesignDocFunctionName(s) {
 // (c) Steven Levithan <stevenlevithan.com>
 // MIT License
 var keys = ["source", "protocol", "authority", "userInfo", "user", "password",
-  "host", "port", "relative", "path", "directory", "file", "query", "anchor"];
-var qName = "queryKey";
+    "host", "port", "relative", "path", "directory", "file", "query", "anchor"];
+var qName ="queryKey";
 var qParser = /(?:^|&)([^&=]*)=?([^&]*)/g;
 
 // use the "loose" parser
@@ -34215,7 +34410,7 @@ function upsert(db, docId, diffFun) {
       if (!newDoc) {
         // if the diffFun returns falsy, we short-circuit as
         // an optimization
-        return fulfill({ updated: false, rev: docRev });
+        return fulfill({updated: false, rev: docRev});
       }
 
       // users aren't allowed to modify these values,
@@ -36868,27 +37063,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EMPTY_OBSERVER = exports.SafeSubscriber = exports.Subscriber = void 0;
 var isFunction_1 = require("./util/isFunction");
@@ -36973,56 +37147,92 @@ var Subscriber = (function (_super) {
     return Subscriber;
 }(Subscription_1.Subscription));
 exports.Subscriber = Subscriber;
+var _bind = Function.prototype.bind;
+function bind(fn, thisArg) {
+    return _bind.call(fn, thisArg);
+}
+var ConsumerObserver = (function () {
+    function ConsumerObserver(partialObserver) {
+        this.partialObserver = partialObserver;
+    }
+    ConsumerObserver.prototype.next = function (value) {
+        var partialObserver = this.partialObserver;
+        if (partialObserver.next) {
+            try {
+                partialObserver.next(value);
+            }
+            catch (error) {
+                handleUnhandledError(error);
+            }
+        }
+    };
+    ConsumerObserver.prototype.error = function (err) {
+        var partialObserver = this.partialObserver;
+        if (partialObserver.error) {
+            try {
+                partialObserver.error(err);
+            }
+            catch (error) {
+                handleUnhandledError(error);
+            }
+        }
+        else {
+            handleUnhandledError(err);
+        }
+    };
+    ConsumerObserver.prototype.complete = function () {
+        var partialObserver = this.partialObserver;
+        if (partialObserver.complete) {
+            try {
+                partialObserver.complete();
+            }
+            catch (error) {
+                handleUnhandledError(error);
+            }
+        }
+    };
+    return ConsumerObserver;
+}());
 var SafeSubscriber = (function (_super) {
     __extends(SafeSubscriber, _super);
     function SafeSubscriber(observerOrNext, error, complete) {
         var _this = _super.call(this) || this;
-        var next;
-        if (isFunction_1.isFunction(observerOrNext)) {
-            next = observerOrNext;
+        var partialObserver;
+        if (isFunction_1.isFunction(observerOrNext) || !observerOrNext) {
+            partialObserver = {
+                next: observerOrNext !== null && observerOrNext !== void 0 ? observerOrNext : undefined,
+                error: error !== null && error !== void 0 ? error : undefined,
+                complete: complete !== null && complete !== void 0 ? complete : undefined,
+            };
         }
-        else if (observerOrNext) {
-            (next = observerOrNext.next, error = observerOrNext.error, complete = observerOrNext.complete);
+        else {
             var context_1;
             if (_this && config_1.config.useDeprecatedNextContext) {
                 context_1 = Object.create(observerOrNext);
                 context_1.unsubscribe = function () { return _this.unsubscribe(); };
+                partialObserver = {
+                    next: observerOrNext.next && bind(observerOrNext.next, context_1),
+                    error: observerOrNext.error && bind(observerOrNext.error, context_1),
+                    complete: observerOrNext.complete && bind(observerOrNext.complete, context_1),
+                };
             }
             else {
-                context_1 = observerOrNext;
+                partialObserver = observerOrNext;
             }
-            next = next === null || next === void 0 ? void 0 : next.bind(context_1);
-            error = error === null || error === void 0 ? void 0 : error.bind(context_1);
-            complete = complete === null || complete === void 0 ? void 0 : complete.bind(context_1);
         }
-        _this.destination = {
-            next: next ? wrapForErrorHandling(next, _this) : noop_1.noop,
-            error: wrapForErrorHandling(error !== null && error !== void 0 ? error : defaultErrorHandler, _this),
-            complete: complete ? wrapForErrorHandling(complete, _this) : noop_1.noop,
-        };
+        _this.destination = new ConsumerObserver(partialObserver);
         return _this;
     }
     return SafeSubscriber;
 }(Subscriber));
 exports.SafeSubscriber = SafeSubscriber;
-function wrapForErrorHandling(handler, instance) {
-    return function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        try {
-            handler.apply(void 0, __spreadArray([], __read(args)));
-        }
-        catch (err) {
-            if (config_1.config.useDeprecatedSynchronousErrorHandling) {
-                errorContext_1.captureError(err);
-            }
-            else {
-                reportUnhandledError_1.reportUnhandledError(err);
-            }
-        }
-    };
+function handleUnhandledError(error) {
+    if (config_1.config.useDeprecatedSynchronousErrorHandling) {
+        errorContext_1.captureError(error);
+    }
+    else {
+        reportUnhandledError_1.reportUnhandledError(error);
+    }
 }
 function defaultErrorHandler(err) {
     throw err;
@@ -37350,7 +37560,7 @@ var ConnectableObservable = (function (_super) {
         if (!connection) {
             connection = this._connection = new Subscription_1.Subscription();
             var subject_1 = this.getSubject();
-            connection.add(this.source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subject_1, undefined, function () {
+            connection.add(this.source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subject_1, undefined, function () {
                 _this._teardown();
                 subject_1.complete();
             }, function (err) {
@@ -37539,7 +37749,7 @@ function combineLatestInit(observables, scheduler, valueTransform) {
                 maybeSchedule(scheduler, function () {
                     var source = from_1.from(observables[i], scheduler);
                     var hasFirstValue = false;
-                    source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+                    source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
                         values[i] = value;
                         if (!hasFirstValue) {
                             hasFirstValue = true;
@@ -37709,7 +37919,7 @@ function forkJoin() {
         var remainingEmissions = length;
         var _loop_1 = function (sourceIndex) {
             var hasValue = false;
-            innerFrom_1.innerFrom(sources[sourceIndex]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+            innerFrom_1.innerFrom(sources[sourceIndex]).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
                 if (!hasValue) {
                     hasValue = true;
                     remainingEmissions--;
@@ -38287,7 +38497,7 @@ function raceInit(sources) {
     return function (subscriber) {
         var subscriptions = [];
         var _loop_1 = function (i) {
-            subscriptions.push(innerFrom_1.innerFrom(sources[i]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+            subscriptions.push(innerFrom_1.innerFrom(sources[i]).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
                 if (subscriptions) {
                     for (var s = 0; s < subscriptions.length; s++) {
                         s !== i && subscriptions[s].unsubscribe();
@@ -38466,7 +38676,7 @@ function zip() {
                 buffers = completed = null;
             });
             var _loop_1 = function (sourceIndex) {
-                innerFrom_1.innerFrom(sources[sourceIndex]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+                innerFrom_1.innerFrom(sources[sourceIndex]).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
                     buffers[sourceIndex].push(value);
                     if (buffers.every(function (buffer) { return buffer.length; })) {
                         var result = buffers.map(function (buffer) { return buffer.shift(); });
@@ -38509,13 +38719,18 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OperatorSubscriber = void 0;
+exports.OperatorSubscriber = exports.createOperatorSubscriber = void 0;
 var Subscriber_1 = require("../Subscriber");
+function createOperatorSubscriber(destination, onNext, onComplete, onError, onFinalize) {
+    return new OperatorSubscriber(destination, onNext, onComplete, onError, onFinalize);
+}
+exports.createOperatorSubscriber = createOperatorSubscriber;
 var OperatorSubscriber = (function (_super) {
     __extends(OperatorSubscriber, _super);
-    function OperatorSubscriber(destination, onNext, onComplete, onError, onFinalize) {
+    function OperatorSubscriber(destination, onNext, onComplete, onError, onFinalize, shouldUnsubscribe) {
         var _this = _super.call(this, destination) || this;
         _this.onFinalize = onFinalize;
+        _this.shouldUnsubscribe = shouldUnsubscribe;
         _this._next = onNext
             ? function (value) {
                 try {
@@ -38556,9 +38771,11 @@ var OperatorSubscriber = (function (_super) {
     }
     OperatorSubscriber.prototype.unsubscribe = function () {
         var _a;
-        var closed = this.closed;
-        _super.prototype.unsubscribe.call(this);
-        !closed && ((_a = this.onFinalize) === null || _a === void 0 ? void 0 : _a.call(this));
+        if (!this.shouldUnsubscribe || this.shouldUnsubscribe()) {
+            var closed_1 = this.closed;
+            _super.prototype.unsubscribe.call(this);
+            !closed_1 && ((_a = this.onFinalize) === null || _a === void 0 ? void 0 : _a.call(this));
+        }
     };
     return OperatorSubscriber;
 }(Subscriber_1.Subscriber));
@@ -38592,11 +38809,11 @@ function audit(durationSelector) {
             durationSubscriber = null;
             isComplete && subscriber.complete();
         };
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             hasValue = true;
             lastValue = value;
             if (!durationSubscriber) {
-                innerFrom_1.innerFrom(durationSelector(value)).subscribe((durationSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, endDuration, cleanupDuration)));
+                innerFrom_1.innerFrom(durationSelector(value)).subscribe((durationSubscriber = OperatorSubscriber_1.createOperatorSubscriber(subscriber, endDuration, cleanupDuration)));
             }
         }, function () {
             isComplete = true;
@@ -38629,11 +38846,11 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function buffer(closingNotifier) {
     return lift_1.operate(function (source, subscriber) {
         var currentBuffer = [];
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return currentBuffer.push(value); }, function () {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) { return currentBuffer.push(value); }, function () {
             subscriber.next(currentBuffer);
             subscriber.complete();
         }));
-        closingNotifier.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
+        closingNotifier.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
             var b = currentBuffer;
             currentBuffer = [];
             subscriber.next(b);
@@ -38669,7 +38886,7 @@ function bufferCount(bufferSize, startBufferEvery) {
     return lift_1.operate(function (source, subscriber) {
         var buffers = [];
         var count = 0;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var e_1, _a, e_2, _b;
             var toEmit = null;
             if (count++ % startBufferEvery === 0) {
@@ -38792,7 +39009,7 @@ function bufferTime(bufferTimeSpan) {
             restartOnEmit = true;
         }
         startBuffer();
-        var bufferTimeSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        var bufferTimeSubscriber = OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var e_1, _a;
             var recordsCopy = bufferRecords.slice();
             try {
@@ -38847,7 +39064,7 @@ var arrRemove_1 = require("../util/arrRemove");
 function bufferToggle(openings, closingSelector) {
     return lift_1.operate(function (source, subscriber) {
         var buffers = [];
-        innerFrom_1.innerFrom(openings).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (openValue) {
+        innerFrom_1.innerFrom(openings).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (openValue) {
             var buffer = [];
             buffers.push(buffer);
             var closingSubscription = new Subscription_1.Subscription();
@@ -38856,9 +39073,9 @@ function bufferToggle(openings, closingSelector) {
                 subscriber.next(buffer);
                 closingSubscription.unsubscribe();
             };
-            closingSubscription.add(innerFrom_1.innerFrom(closingSelector(openValue)).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, emitBuffer, noop_1.noop)));
+            closingSubscription.add(innerFrom_1.innerFrom(closingSelector(openValue)).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, emitBuffer, noop_1.noop)));
         }, noop_1.noop));
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var e_1, _a;
             try {
                 for (var buffers_1 = __values(buffers), buffers_1_1 = buffers_1.next(); !buffers_1_1.done; buffers_1_1 = buffers_1.next()) {
@@ -38900,10 +39117,10 @@ function bufferWhen(closingSelector) {
             var b = buffer;
             buffer = [];
             b && subscriber.next(b);
-            innerFrom_1.innerFrom(closingSelector()).subscribe((closingSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, openBuffer, noop_1.noop)));
+            innerFrom_1.innerFrom(closingSelector()).subscribe((closingSubscriber = OperatorSubscriber_1.createOperatorSubscriber(subscriber, openBuffer, noop_1.noop)));
         };
         openBuffer();
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return buffer === null || buffer === void 0 ? void 0 : buffer.push(value); }, function () {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) { return buffer === null || buffer === void 0 ? void 0 : buffer.push(value); }, function () {
             buffer && subscriber.next(buffer);
             subscriber.complete();
         }, undefined, function () { return (buffer = closingSubscriber = null); }));
@@ -38923,7 +39140,7 @@ function catchError(selector) {
         var innerSub = null;
         var syncUnsub = false;
         var handledResult;
-        innerSub = source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, undefined, function (err) {
+        innerSub = source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, undefined, undefined, function (err) {
             handledResult = innerFrom_1.innerFrom(selector(err, catchError(selector)(source)));
             if (innerSub) {
                 innerSub.unsubscribe();
@@ -39204,11 +39421,11 @@ function debounce(durationSelector) {
                 subscriber.next(value);
             }
         };
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             durationSubscriber === null || durationSubscriber === void 0 ? void 0 : durationSubscriber.unsubscribe();
             hasValue = true;
             lastValue = value;
-            durationSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, emit, noop_1.noop);
+            durationSubscriber = OperatorSubscriber_1.createOperatorSubscriber(subscriber, emit, noop_1.noop);
             innerFrom_1.innerFrom(durationSelector(value)).subscribe(durationSubscriber);
         }, function () {
             emit();
@@ -39252,7 +39469,7 @@ function debounceTime(dueTime, scheduler) {
             }
             emit();
         }
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             lastValue = value;
             lastTime = scheduler.now();
             if (!activeTask) {
@@ -39278,7 +39495,7 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function defaultIfEmpty(defaultValue) {
     return lift_1.operate(function (source, subscriber) {
         var hasValue = false;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             hasValue = true;
             subscriber.next(value);
         }, function () {
@@ -39333,7 +39550,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function dematerialize() {
     return lift_1.operate(function (source, subscriber) {
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (notification) { return Notification_1.observeNotification(notification, subscriber); }));
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (notification) { return Notification_1.observeNotification(notification, subscriber); }));
     });
 }
 exports.dematerialize = dematerialize;
@@ -39348,14 +39565,14 @@ var noop_1 = require("../util/noop");
 function distinct(keySelector, flushes) {
     return lift_1.operate(function (source, subscriber) {
         var distinctKeys = new Set();
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var key = keySelector ? keySelector(value) : value;
             if (!distinctKeys.has(key)) {
                 distinctKeys.add(key);
                 subscriber.next(value);
             }
         }));
-        flushes === null || flushes === void 0 ? void 0 : flushes.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () { return distinctKeys.clear(); }, noop_1.noop));
+        flushes === null || flushes === void 0 ? void 0 : flushes.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () { return distinctKeys.clear(); }, noop_1.noop));
     });
 }
 exports.distinct = distinct;
@@ -39373,7 +39590,7 @@ function distinctUntilChanged(comparator, keySelector) {
     return lift_1.operate(function (source, subscriber) {
         var previousKey;
         var first = true;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var currentKey = keySelector(value);
             if (first || !comparator(previousKey, currentKey)) {
                 first = false;
@@ -39463,7 +39680,7 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function every(predicate, thisArg) {
     return lift_1.operate(function (source, subscriber) {
         var index = 0;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             if (!predicate.call(thisArg, value, index++, source)) {
                 subscriber.next(false);
                 subscriber.complete();
@@ -39494,9 +39711,9 @@ function exhaustAll() {
     return lift_1.operate(function (source, subscriber) {
         var isComplete = false;
         var innerSub = null;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (inner) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (inner) {
             if (!innerSub) {
-                innerSub = innerFrom_1.innerFrom(inner).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, function () {
+                innerSub = innerFrom_1.innerFrom(inner).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, undefined, function () {
                     innerSub = null;
                     isComplete && subscriber.complete();
                 }));
@@ -39527,9 +39744,9 @@ function exhaustMap(project, resultSelector) {
         var index = 0;
         var innerSub = null;
         var isComplete = false;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (outerValue) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (outerValue) {
             if (!innerSub) {
-                innerSub = new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, function () {
+                innerSub = OperatorSubscriber_1.createOperatorSubscriber(subscriber, undefined, function () {
                     innerSub = null;
                     isComplete && subscriber.complete();
                 });
@@ -39567,7 +39784,7 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function filter(predicate, thisArg) {
     return lift_1.operate(function (source, subscriber) {
         var index = 0;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return predicate.call(thisArg, value, index++) && subscriber.next(value); }));
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) { return predicate.call(thisArg, value, index++) && subscriber.next(value); }));
     });
 }
 exports.filter = filter;
@@ -39603,7 +39820,7 @@ function createFind(predicate, thisArg, emit) {
     var findIndex = emit === 'index';
     return function (source, subscriber) {
         var index = 0;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var i = index++;
             if (predicate.call(thisArg, value, i, source)) {
                 subscriber.next(findIndex ? i : value);
@@ -39655,21 +39872,6 @@ exports.flatMap = mergeMap_1.mergeMap;
 
 },{"./mergeMap":539}],527:[function(require,module,exports){
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.groupBy = void 0;
 var Observable_1 = require("../Observable");
@@ -39692,7 +39894,9 @@ function groupBy(keySelector, elementOrOptions, duration, connector) {
             cb(subscriber);
         };
         var handleError = function (err) { return notify(function (consumer) { return consumer.error(err); }); };
-        var groupBySourceSubscriber = new GroupBySubscriber(subscriber, function (value) {
+        var activeGroups = 0;
+        var teardownAttempted = false;
+        var groupBySourceSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
             try {
                 var key_1 = keySelector(value);
                 var group_1 = groups.get(key_1);
@@ -39701,7 +39905,7 @@ function groupBy(keySelector, elementOrOptions, duration, connector) {
                     var grouped = createGroupedObservable(key_1, group_1);
                     subscriber.next(grouped);
                     if (duration) {
-                        var durationSubscriber_1 = new OperatorSubscriber_1.OperatorSubscriber(group_1, function () {
+                        var durationSubscriber_1 = OperatorSubscriber_1.createOperatorSubscriber(group_1, function () {
                             group_1.complete();
                             durationSubscriber_1 === null || durationSubscriber_1 === void 0 ? void 0 : durationSubscriber_1.unsubscribe();
                         }, undefined, undefined, function () { return groups.delete(key_1); });
@@ -39713,17 +39917,18 @@ function groupBy(keySelector, elementOrOptions, duration, connector) {
             catch (err) {
                 handleError(err);
             }
-        }, function () { return notify(function (consumer) { return consumer.complete(); }); }, handleError, function () { return groups.clear(); });
+        }, function () { return notify(function (consumer) { return consumer.complete(); }); }, handleError, function () { return groups.clear(); }, function () {
+            teardownAttempted = true;
+            return activeGroups === 0;
+        });
         source.subscribe(groupBySourceSubscriber);
         function createGroupedObservable(key, groupSubject) {
             var result = new Observable_1.Observable(function (groupSubscriber) {
-                groupBySourceSubscriber.activeGroups++;
+                activeGroups++;
                 var innerSub = groupSubject.subscribe(groupSubscriber);
                 return function () {
                     innerSub.unsubscribe();
-                    --groupBySourceSubscriber.activeGroups === 0 &&
-                        groupBySourceSubscriber.teardownAttempted &&
-                        groupBySourceSubscriber.unsubscribe();
+                    --activeGroups === 0 && teardownAttempted && groupBySourceSubscriber.unsubscribe();
                 };
             });
             result.key = key;
@@ -39732,20 +39937,6 @@ function groupBy(keySelector, elementOrOptions, duration, connector) {
     });
 }
 exports.groupBy = groupBy;
-var GroupBySubscriber = (function (_super) {
-    __extends(GroupBySubscriber, _super);
-    function GroupBySubscriber() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.activeGroups = 0;
-        _this.teardownAttempted = false;
-        return _this;
-    }
-    GroupBySubscriber.prototype.unsubscribe = function () {
-        this.teardownAttempted = true;
-        this.activeGroups === 0 && _super.prototype.unsubscribe.call(this);
-    };
-    return GroupBySubscriber;
-}(OperatorSubscriber_1.OperatorSubscriber));
 
 },{"../Observable":445,"../Subject":448,"../observable/innerFrom":471,"../util/lift":658,"./OperatorSubscriber":485}],528:[function(require,module,exports){
 "use strict";
@@ -39756,7 +39947,7 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 var noop_1 = require("../util/noop");
 function ignoreElements() {
     return lift_1.operate(function (source, subscriber) {
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, noop_1.noop));
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, noop_1.noop));
     });
 }
 exports.ignoreElements = ignoreElements;
@@ -39769,7 +39960,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function isEmpty() {
     return lift_1.operate(function (source, subscriber) {
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
             subscriber.next(false);
             subscriber.complete();
         }, function () {
@@ -39821,7 +40012,7 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function map(project, thisArg) {
     return lift_1.operate(function (source, subscriber) {
         var index = 0;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             subscriber.next(project.call(thisArg, value, index++));
         }));
     });
@@ -39847,7 +40038,7 @@ var lift_1 = require("../util/lift");
 var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function materialize() {
     return lift_1.operate(function (source, subscriber) {
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             subscriber.next(Notification_1.Notification.createNext(value));
         }, function () {
             subscriber.next(Notification_1.Notification.createComplete());
@@ -39949,7 +40140,7 @@ function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, e
         expand && subscriber.next(value);
         active++;
         var innerComplete = false;
-        innerFrom_1.innerFrom(project(value, index++)).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (innerValue) {
+        innerFrom_1.innerFrom(project(value, index++)).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (innerValue) {
             onBeforeNext === null || onBeforeNext === void 0 ? void 0 : onBeforeNext(innerValue);
             if (expand) {
                 outerNext(innerValue);
@@ -39983,7 +40174,7 @@ function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, e
             }
         }));
     };
-    source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, outerNext, function () {
+    source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, outerNext, function () {
         isComplete = true;
         checkComplete();
     }));
@@ -40123,7 +40314,7 @@ var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function observeOn(scheduler, delay) {
     if (delay === void 0) { delay = 0; }
     return lift_1.operate(function (source, subscriber) {
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return executeSchedule_1.executeSchedule(subscriber, scheduler, function () { return subscriber.next(value); }, delay); }, function () { return executeSchedule_1.executeSchedule(subscriber, scheduler, function () { return subscriber.complete(); }, delay); }, function (err) { return executeSchedule_1.executeSchedule(subscriber, scheduler, function () { return subscriber.error(err); }, delay); }));
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) { return executeSchedule_1.executeSchedule(subscriber, scheduler, function () { return subscriber.next(value); }, delay); }, function () { return executeSchedule_1.executeSchedule(subscriber, scheduler, function () { return subscriber.complete(); }, delay); }, function (err) { return executeSchedule_1.executeSchedule(subscriber, scheduler, function () { return subscriber.error(err); }, delay); }));
     });
 }
 exports.observeOn = observeOn;
@@ -40177,8 +40368,8 @@ function onErrorResumeNext() {
                         subscribeNext();
                         return;
                     }
-                    var innerSub = new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, noop_1.noop, noop_1.noop);
-                    subscriber.add(nextSource.subscribe(innerSub));
+                    var innerSub = OperatorSubscriber_1.createOperatorSubscriber(subscriber, undefined, noop_1.noop, noop_1.noop);
+                    nextSource.subscribe(innerSub);
                     innerSub.add(subscribeNext);
                 }
                 else {
@@ -40201,7 +40392,7 @@ function pairwise() {
     return lift_1.operate(function (source, subscriber) {
         var prev;
         var hasPrev = false;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var p = prev;
             prev = value;
             hasPrev && subscriber.next([p, value]);
@@ -40408,7 +40599,7 @@ function refCount() {
     return lift_1.operate(function (source, subscriber) {
         var connection = null;
         source._refCount++;
-        var refCounter = new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, undefined, undefined, function () {
+        var refCounter = OperatorSubscriber_1.createOperatorSubscriber(subscriber, undefined, undefined, undefined, function () {
             if (!source || source._refCount <= 0 || 0 < --source._refCount) {
                 connection = null;
                 return;
@@ -40460,7 +40651,7 @@ function repeat(countOrConfig) {
                 sourceSub = null;
                 if (delay != null) {
                     var notifier = typeof delay === 'number' ? timer_1.timer(delay) : innerFrom_1.innerFrom(delay(soFar));
-                    var notifierSubscriber_1 = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
+                    var notifierSubscriber_1 = OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
                         notifierSubscriber_1.unsubscribe();
                         subscribeToSource();
                     });
@@ -40472,7 +40663,7 @@ function repeat(countOrConfig) {
             };
             var subscribeToSource = function () {
                 var syncUnsub = false;
-                sourceSub = source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, function () {
+                sourceSub = source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, undefined, function () {
                     if (++soFar < count) {
                         if (sourceSub) {
                             resubscribe();
@@ -40512,7 +40703,7 @@ function repeatWhen(notifier) {
         var getCompletionSubject = function () {
             if (!completions$) {
                 completions$ = new Subject_1.Subject();
-                notifier(completions$).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
+                notifier(completions$).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
                     if (innerSub) {
                         subscribeForRepeatWhen();
                     }
@@ -40528,7 +40719,7 @@ function repeatWhen(notifier) {
         };
         var subscribeForRepeatWhen = function () {
             isMainComplete = false;
-            innerSub = source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, function () {
+            innerSub = source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, undefined, function () {
                 isMainComplete = true;
                 !checkComplete() && getCompletionSubject().next();
             }));
@@ -40572,7 +40763,7 @@ function retry(configOrCount) {
             var innerSub;
             var subscribeForRetry = function () {
                 var syncUnsub = false;
-                innerSub = source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+                innerSub = source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
                     if (resetOnSuccess) {
                         soFar = 0;
                     }
@@ -40591,7 +40782,7 @@ function retry(configOrCount) {
                         };
                         if (delay != null) {
                             var notifier = typeof delay === 'number' ? timer_1.timer(delay) : innerFrom_1.innerFrom(delay(err, soFar));
-                            var notifierSubscriber_1 = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
+                            var notifierSubscriber_1 = OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
                                 notifierSubscriber_1.unsubscribe();
                                 resub_1();
                             }, function () {
@@ -40631,10 +40822,10 @@ function retryWhen(notifier) {
         var syncResub = false;
         var errors$;
         var subscribeForRetryWhen = function () {
-            innerSub = source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, undefined, undefined, function (err) {
+            innerSub = source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, undefined, undefined, function (err) {
                 if (!errors$) {
                     errors$ = new Subject_1.Subject();
-                    notifier(errors$).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
+                    notifier(errors$).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
                         return innerSub ? subscribeForRetryWhen() : (syncResub = true);
                     }));
                 }
@@ -40665,19 +40856,18 @@ function sample(notifier) {
     return lift_1.operate(function (source, subscriber) {
         var hasValue = false;
         var lastValue = null;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             hasValue = true;
             lastValue = value;
         }));
-        var emit = function () {
+        notifier.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
             if (hasValue) {
                 hasValue = false;
                 var value = lastValue;
                 lastValue = null;
                 subscriber.next(value);
             }
-        };
-        notifier.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, emit, noop_1.noop));
+        }, noop_1.noop));
     });
 }
 exports.sample = sample;
@@ -40716,7 +40906,7 @@ function scanInternals(accumulator, seed, hasSeed, emitOnNext, emitBeforeComplet
         var hasState = hasSeed;
         var state = seed;
         var index = 0;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var i = index++;
             state = hasState
                 ?
@@ -40749,7 +40939,7 @@ function sequenceEqual(compareTo, comparator) {
             subscriber.complete();
         };
         var createSubscriber = function (selfState, otherState) {
-            var sequenceEqualSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (a) {
+            var sequenceEqualSubscriber = OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (a) {
                 var buffer = otherState.buffer, complete = otherState.complete;
                 if (buffer.length === 0) {
                     complete ? emit(false) : selfState.buffer.push(a);
@@ -40925,7 +41115,7 @@ function single(predicate) {
         var singleValue;
         var seenValue = false;
         var index = 0;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             seenValue = true;
             if (!predicate || predicate(value, index++, source)) {
                 hasValue && subscriber.error(new SequenceError_1.SequenceError('Too many matching values'));
@@ -40969,7 +41159,7 @@ function skipLast(skipCount) {
         : lift_1.operate(function (source, subscriber) {
             var ring = new Array(skipCount);
             var seen = 0;
-            source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+            source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
                 var valueIndex = seen++;
                 if (valueIndex < skipCount) {
                     ring[valueIndex] = value;
@@ -40999,12 +41189,12 @@ var noop_1 = require("../util/noop");
 function skipUntil(notifier) {
     return lift_1.operate(function (source, subscriber) {
         var taking = false;
-        var skipSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
+        var skipSubscriber = OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
             skipSubscriber === null || skipSubscriber === void 0 ? void 0 : skipSubscriber.unsubscribe();
             taking = true;
         }, noop_1.noop);
         innerFrom_1.innerFrom(notifier).subscribe(skipSubscriber);
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return taking && subscriber.next(value); }));
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) { return taking && subscriber.next(value); }));
     });
 }
 exports.skipUntil = skipUntil;
@@ -41019,7 +41209,7 @@ function skipWhile(predicate) {
     return lift_1.operate(function (source, subscriber) {
         var taking = false;
         var index = 0;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return (taking || (taking = !predicate(value, index++))) && subscriber.next(value); }));
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) { return (taking || (taking = !predicate(value, index++))) && subscriber.next(value); }));
     });
 }
 exports.skipWhile = skipWhile;
@@ -41080,11 +41270,11 @@ function switchMap(project, resultSelector) {
         var index = 0;
         var isComplete = false;
         var checkComplete = function () { return isComplete && !innerSubscriber && subscriber.complete(); };
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             innerSubscriber === null || innerSubscriber === void 0 ? void 0 : innerSubscriber.unsubscribe();
             var innerIndex = 0;
             var outerIndex = index++;
-            innerFrom_1.innerFrom(project(value, outerIndex)).subscribe((innerSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (innerValue) { return subscriber.next(resultSelector ? resultSelector(value, innerValue, outerIndex, innerIndex++) : innerValue); }, function () {
+            innerFrom_1.innerFrom(project(value, outerIndex)).subscribe((innerSubscriber = OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (innerValue) { return subscriber.next(resultSelector ? resultSelector(value, innerValue, outerIndex, innerIndex++) : innerValue); }, function () {
                 innerSubscriber = null;
                 checkComplete();
             })));
@@ -41137,7 +41327,7 @@ function take(count) {
             function () { return empty_1.EMPTY; }
         : lift_1.operate(function (source, subscriber) {
             var seen = 0;
-            source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+            source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
                 if (++seen <= count) {
                     subscriber.next(value);
                     if (count <= seen) {
@@ -41172,7 +41362,7 @@ function takeLast(count) {
         ? function () { return empty_1.EMPTY; }
         : lift_1.operate(function (source, subscriber) {
             var buffer = [];
-            source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+            source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
                 buffer.push(value);
                 count < buffer.length && buffer.shift();
             }, function () {
@@ -41208,7 +41398,7 @@ var innerFrom_1 = require("../observable/innerFrom");
 var noop_1 = require("../util/noop");
 function takeUntil(notifier) {
     return lift_1.operate(function (source, subscriber) {
-        innerFrom_1.innerFrom(notifier).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () { return subscriber.complete(); }, noop_1.noop));
+        innerFrom_1.innerFrom(notifier).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () { return subscriber.complete(); }, noop_1.noop));
         !subscriber.closed && source.subscribe(subscriber);
     });
 }
@@ -41224,7 +41414,7 @@ function takeWhile(predicate, inclusive) {
     if (inclusive === void 0) { inclusive = false; }
     return lift_1.operate(function (source, subscriber) {
         var index = 0;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var result = predicate(value, index++);
             (result || inclusive) && subscriber.next(value);
             !result && subscriber.complete();
@@ -41251,7 +41441,7 @@ function tap(observerOrNext, error, complete) {
             var _a;
             (_a = tapObserver.subscribe) === null || _a === void 0 ? void 0 : _a.call(tapObserver);
             var isUnsub = true;
-            source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+            source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
                 var _a;
                 (_a = tapObserver.next) === null || _a === void 0 ? void 0 : _a.call(tapObserver, value);
                 subscriber.next(value);
@@ -41310,7 +41500,7 @@ function throttle(durationSelector, config) {
             isComplete && subscriber.complete();
         };
         var startThrottle = function (value) {
-            return (throttled = innerFrom_1.innerFrom(durationSelector(value)).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, endThrottling, cleanupThrottling)));
+            return (throttled = innerFrom_1.innerFrom(durationSelector(value)).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, endThrottling, cleanupThrottling)));
         };
         var send = function () {
             if (hasValue) {
@@ -41321,7 +41511,7 @@ function throttle(durationSelector, config) {
                 !isComplete && startThrottle(value);
             }
         };
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             hasValue = true;
             sendValue = value;
             !(throttled && !throttled.closed) && (leading ? send() : startThrottle(value));
@@ -41359,7 +41549,7 @@ function throwIfEmpty(errorFactory) {
     if (errorFactory === void 0) { errorFactory = defaultErrorFactory; }
     return lift_1.operate(function (source, subscriber) {
         var hasValue = false;
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             hasValue = true;
             subscriber.next(value);
         }, function () { return (hasValue ? subscriber.complete() : subscriber.error(errorFactory())); }));
@@ -41375,26 +41565,19 @@ function defaultErrorFactory() {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TimeInterval = exports.timeInterval = void 0;
 var async_1 = require("../scheduler/async");
-var scan_1 = require("./scan");
-var defer_1 = require("../observable/defer");
-var map_1 = require("./map");
+var lift_1 = require("../util/lift");
+var OperatorSubscriber_1 = require("./OperatorSubscriber");
 function timeInterval(scheduler) {
     if (scheduler === void 0) { scheduler = async_1.asyncScheduler; }
-    return function (source) {
-        return defer_1.defer(function () {
-            return source.pipe(scan_1.scan(function (_a, value) {
-                var current = _a.current;
-                return ({ value: value, current: scheduler.now(), last: current });
-            }, {
-                current: scheduler.now(),
-                value: undefined,
-                last: undefined,
-            }), map_1.map(function (_a) {
-                var current = _a.current, last = _a.last, value = _a.value;
-                return new TimeInterval(value, current - last);
-            }));
-        });
-    };
+    return lift_1.operate(function (source, subscriber) {
+        var last = scheduler.now();
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
+            var now = scheduler.now();
+            var interval = now - last;
+            last = now;
+            subscriber.next(new TimeInterval(value, interval));
+        }));
+    });
 }
 exports.timeInterval = timeInterval;
 var TimeInterval = (function () {
@@ -41406,7 +41589,7 @@ var TimeInterval = (function () {
 }());
 exports.TimeInterval = TimeInterval;
 
-},{"../observable/defer":461,"../scheduler/async":622,"./map":532,"./scan":564}],589:[function(require,module,exports){
+},{"../scheduler/async":622,"../util/lift":658,"./OperatorSubscriber":485}],589:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timeout = exports.TimeoutError = void 0;
@@ -41427,11 +41610,7 @@ exports.TimeoutError = createErrorClass_1.createErrorClass(function (_super) {
     };
 });
 function timeout(config, schedulerArg) {
-    var _a = (isDate_1.isValidDate(config)
-        ? { first: config }
-        : typeof config === 'number'
-            ? { each: config }
-            : config), first = _a.first, each = _a.each, _b = _a.with, _with = _b === void 0 ? timeoutErrorFactory : _b, _c = _a.scheduler, scheduler = _c === void 0 ? schedulerArg !== null && schedulerArg !== void 0 ? schedulerArg : async_1.asyncScheduler : _c, _d = _a.meta, meta = _d === void 0 ? null : _d;
+    var _a = (isDate_1.isValidDate(config) ? { first: config } : typeof config === 'number' ? { each: config } : config), first = _a.first, each = _a.each, _b = _a.with, _with = _b === void 0 ? timeoutErrorFactory : _b, _c = _a.scheduler, scheduler = _c === void 0 ? schedulerArg !== null && schedulerArg !== void 0 ? schedulerArg : async_1.asyncScheduler : _c, _d = _a.meta, meta = _d === void 0 ? null : _d;
     if (first == null && each == null) {
         throw new TypeError('No timeout provided.');
     }
@@ -41455,7 +41634,7 @@ function timeout(config, schedulerArg) {
                 }
             }, delay);
         };
-        originalSourceSubscription = source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        originalSourceSubscription = source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             timerSubscription === null || timerSubscription === void 0 ? void 0 : timerSubscription.unsubscribe();
             seen++;
             subscriber.next((lastValue = value));
@@ -41552,11 +41731,11 @@ function window(windowBoundaries) {
             windowSubject.error(err);
             subscriber.error(err);
         };
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return windowSubject === null || windowSubject === void 0 ? void 0 : windowSubject.next(value); }, function () {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) { return windowSubject === null || windowSubject === void 0 ? void 0 : windowSubject.next(value); }, function () {
             windowSubject.complete();
             subscriber.complete();
         }, errorHandler));
-        windowBoundaries.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function () {
+        windowBoundaries.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
             windowSubject.complete();
             subscriber.next((windowSubject = new Subject_1.Subject()));
         }, noop_1.noop, errorHandler));
@@ -41594,7 +41773,7 @@ function windowCount(windowSize, startWindowEvery) {
         var starts = [];
         var count = 0;
         subscriber.next(windows[0].asObservable());
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var e_1, _a;
             try {
                 for (var windows_1 = __values(windows), windows_1_1 = windows_1.next(); !windows_1_1.done; windows_1_1 = windows_1.next()) {
@@ -41698,7 +41877,7 @@ function windowTime(windowTimeSpan) {
             cb(subscriber);
             subscriber.unsubscribe();
         };
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             loop(function (record) {
                 record.window.next(value);
                 maxWindowSize <= ++record.seen && closeWindow(record);
@@ -41742,7 +41921,7 @@ function windowToggle(openings, closingSelector) {
             }
             subscriber.error(err);
         };
-        innerFrom_1.innerFrom(openings).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (openValue) {
+        innerFrom_1.innerFrom(openings).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (openValue) {
             var window = new Subject_1.Subject();
             windows.push(window);
             var closingSubscription = new Subscription_1.Subscription();
@@ -41760,9 +41939,9 @@ function windowToggle(openings, closingSelector) {
                 return;
             }
             subscriber.next(window.asObservable());
-            closingSubscription.add(closingNotifier.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, closeWindow, noop_1.noop, handleError)));
+            closingSubscription.add(closingNotifier.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, closeWindow, noop_1.noop, handleError)));
         }, noop_1.noop));
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             var e_1, _a;
             var windowsCopy = windows.slice();
             try {
@@ -41821,10 +42000,10 @@ function windowWhen(closingSelector) {
                 handleError(err);
                 return;
             }
-            closingNotifier.subscribe((closingSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, openWindow, openWindow, handleError)));
+            closingNotifier.subscribe((closingSubscriber = OperatorSubscriber_1.createOperatorSubscriber(subscriber, openWindow, openWindow, handleError)));
         };
         openWindow();
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) { return window.next(value); }, function () {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) { return window.next(value); }, function () {
             window.complete();
             subscriber.complete();
         }, handleError, function () {
@@ -41878,7 +42057,7 @@ function withLatestFrom() {
         var hasValue = inputs.map(function () { return false; });
         var ready = false;
         var _loop_1 = function (i) {
-            innerFrom_1.innerFrom(inputs[i]).subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+            innerFrom_1.innerFrom(inputs[i]).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
                 otherValues[i] = value;
                 if (!ready && !hasValue[i]) {
                     hasValue[i] = true;
@@ -41889,7 +42068,7 @@ function withLatestFrom() {
         for (var i = 0; i < len; i++) {
             _loop_1(i);
         }
-        source.subscribe(new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
             if (ready) {
                 var values = __spreadArray([value], __read(otherValues));
                 subscriber.next(project ? project.apply(void 0, __spreadArray([], __read(values))) : values);

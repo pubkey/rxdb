@@ -178,6 +178,7 @@ var RxLocalDocumentPrototype = {
           data: {},
           _deleted: true,
           _meta: (0, _util.getDefaultRxDocumentMeta)(),
+          _rev: (0, _util.getDefaultRevision)(),
           _attachments: {}
         };
         return (0, _rxStorageHelper.writeSingle)(state.storageInstance, {

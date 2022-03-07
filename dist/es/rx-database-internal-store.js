@@ -1,6 +1,6 @@
 import { getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
 import { getSingleDocument, writeSingle } from './rx-storage-helper';
-import { getDefaultRxDocumentMeta, randomCouchString } from './util';
+import { createRevision, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './util';
 
 function _catch(body, recover) {
   try {
@@ -27,18 +27,21 @@ export var ensureStorageTokenExists = function ensureStorageTokenExists(rxDataba
 
     var storageToken = randomCouchString(10);
     return Promise.resolve(_catch(function () {
+      var docData = {
+        id: storageTokenDocumentId,
+        context: INTERNAL_CONTEXT_STORAGE_TOKEN,
+        key: STORAGE_TOKEN_DOCUMENT_KEY,
+        data: {
+          token: storageToken
+        },
+        _deleted: false,
+        _meta: getDefaultRxDocumentMeta(),
+        _rev: getDefaultRevision(),
+        _attachments: {}
+      };
+      docData._rev = createRevision(docData);
       return Promise.resolve(writeSingle(rxDatabase.internalStore, {
-        document: {
-          id: storageTokenDocumentId,
-          context: INTERNAL_CONTEXT_STORAGE_TOKEN,
-          key: STORAGE_TOKEN_DOCUMENT_KEY,
-          data: {
-            token: storageToken
-          },
-          _deleted: false,
-          _meta: getDefaultRxDocumentMeta(),
-          _attachments: {}
-        }
+        document: docData
       })).then(function () {
         return storageToken;
       });

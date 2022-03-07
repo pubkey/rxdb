@@ -14,7 +14,6 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     constructor(databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocType>>, internals: Readonly<PouchStorageInternals>, options: Readonly<PouchSettings>);
     close(): Promise<void>;
     remove(): Promise<void>;
-    bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void>;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     getAttachmentData(documentId: string, attachmentId: string): Promise<string>;

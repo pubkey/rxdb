@@ -299,34 +299,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     }
   };
 
-  _proto.bulkAddRevisions = function bulkAddRevisions(documents) {
-    try {
-      var _this5 = this;
-
-      if (documents.length === 0) {
-        throw (0, _rxError.newRxError)('P3', {
-          args: {
-            documents: documents
-          }
-        });
-      }
-
-      var writeData = documents.map(function (doc) {
-        return (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, doc);
-      }); // we do not need the response here because pouchdb returns an empty array on new_edits: false
-
-      return Promise.resolve(_this5.internals.pouch.bulkDocs(writeData, {
-        new_edits: false,
-        set_new_edit_as_latest_revision: true
-      })).then(function () {});
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
   _proto.bulkWrite = function bulkWrite(documentWrites) {
     try {
-      var _this7 = this;
+      var _this5 = this;
 
       if (documentWrites.length === 0) {
         throw (0, _rxError.newRxError)('P2', {
@@ -334,24 +309,51 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             documentWrites: documentWrites
           }
         });
-      }
+      } // TODO remove this check
 
-      var writeRowById = new Map();
-      var insertDocs = documentWrites.map(function (writeData) {
-        var primary = writeData.document[_this7.primaryPath];
-        writeRowById.set(primary, writeData);
-        var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this7.primaryPath, writeData.document); // if previous document exists, we have to send the previous revision to pouchdb.
 
-        if (writeData.previous) {
-          storeDocumentData._rev = writeData.previous._rev;
+      documentWrites.forEach(function (writeRow) {
+        if (!writeRow.document._rev) {
+          console.dir(writeRow);
+          throw new Error('rev missing');
         }
 
+        if (!writeRow.document._rev.includes('-')) {
+          console.dir(writeRow);
+          throw new Error('invalid rev format: ' + writeRow.document._rev);
+        }
+
+        if (writeRow.previous) {
+          var parsedPrev = (0, _util.parseRevision)(writeRow.previous._rev);
+
+          if (typeof parsedPrev.height !== 'number') {
+            console.dir(writeRow);
+            throw new Error('rev height is no number');
+          }
+
+          var parsedNew = (0, _util.parseRevision)(writeRow.document._rev);
+
+          if (parsedPrev.height >= parsedNew.height) {
+            console.dir(writeRow);
+            throw new Error('new revision must be higher then previous');
+          }
+        }
+      });
+      var writeRowById = new Map();
+      var insertDocsById = new Map();
+      var writeDocs = documentWrites.map(function (writeData) {
+        var primary = writeData.document[_this5.primaryPath];
+        writeRowById.set(primary, writeData);
+        var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, writeData.document);
+        insertDocsById.set(primary, storeDocumentData);
         return storeDocumentData;
       });
-      return Promise.resolve(_this7.internals.pouch.bulkDocs(insertDocs, {
+      return Promise.resolve(_this5.internals.pouch.bulkDocs(writeDocs, {
+        new_edits: false,
         custom: {
-          primaryPath: _this7.primaryPath,
-          writeRowById: writeRowById
+          primaryPath: _this5.primaryPath,
+          writeRowById: writeRowById,
+          insertDocsById: insertDocsById
         }
       })).then(function (pouchResult) {
         var ret = {
@@ -378,7 +380,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
                 var _pushObj = (0, _util.flatClone)(writeRow.document);
 
-                _pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this7.primaryPath, _pushObj);
+                _pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this5.primaryPath, _pushObj);
                 _pushObj._rev = resultRow.rev; // replace the inserted attachments with their diggest
 
                 _pushObj._attachments = {};
@@ -412,12 +414,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.query = function query(preparedQuery) {
     try {
-      var _this9 = this;
+      var _this7 = this;
 
-      return Promise.resolve(_this9.internals.pouch.find(preparedQuery)).then(function (findResult) {
+      return Promise.resolve(_this7.internals.pouch.find(preparedQuery)).then(function (findResult) {
         var ret = {
           documents: findResult.docs.map(function (pouchDoc) {
-            var useDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this9.primaryPath, pouchDoc);
+            var useDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this7.primaryPath, pouchDoc);
             return useDoc;
           })
         };
@@ -430,10 +432,10 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     try {
-      var _this11 = this;
+      var _this9 = this;
 
-      return Promise.resolve(_this11.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
-        return _util.blobBufferUtil.tobase64String(attachmentData);
+      return Promise.resolve(_this9.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
+        return Promise.resolve(_util.blobBufferUtil.toBase64String(attachmentData));
       });
     } catch (e) {
       return Promise.reject(e);
@@ -443,7 +445,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
     try {
       var _temp9 = function _temp9(_result) {
-        return _exit2 ? _result : Promise.resolve(_this13.internals.pouch.allDocs({
+        return _exit2 ? _result : Promise.resolve(_this11.internals.pouch.allDocs({
           include_docs: true,
           keys: ids
         })).then(function (pouchResult) {
@@ -452,7 +454,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             return !!row.doc;
           }).forEach(function (row) {
             var docData = row.doc;
-            docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this13.primaryPath, docData);
+            docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this11.primaryPath, docData);
             ret[row.id] = docData;
           });
           return ret;
@@ -461,11 +463,11 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
       var _exit2 = false;
 
-      var _this13 = this;
+      var _this11 = this;
 
       var _temp10 = function () {
         if (deleted) {
-          return Promise.resolve(_this13.internals.pouch.changes({
+          return Promise.resolve(_this11.internals.pouch.changes({
             live: false,
             since: 0,
             doc_ids: ids,
@@ -474,12 +476,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             var retDocs = {};
             return Promise.resolve(Promise.all(viaChanges.results.map(function (result) {
               try {
-                return Promise.resolve(_this13.internals.pouch.get(result.id, {
+                return Promise.resolve(_this11.internals.pouch.get(result.id, {
                   rev: result.changes[0].rev,
                   deleted: 'ok',
                   style: 'all_docs'
                 })).then(function (firstDoc) {
-                  var useFirstDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this13.primaryPath, firstDoc);
+                  var useFirstDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this11.primaryPath, firstDoc);
                   retDocs[result.id] = useFirstDoc;
                 });
               } catch (e) {
@@ -521,7 +523,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         };
       };
 
-      var _this15 = this;
+      var _this13 = this;
 
       var pouchChangesOpts = {
         live: false,
@@ -544,7 +546,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       }, void 0, function () {
         first = false;
         skippedDesignDocuments = 0;
-        return Promise.resolve(_this15.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
+        return Promise.resolve(_this13.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
           var addChangedDocuments = pouchResults.results.filter(function (row) {
             var isDesignDoc = row.id.startsWith(_pouchdbHelper.POUCHDB_DESIGN_PREFIX);
 

@@ -1,6 +1,8 @@
 import { binaryMd5 } from 'pouchdb-md5';
 import { blobBufferUtil, flatClone, getHeightOfRevision } from '../../util';
 import { newRxError } from '../../rx-error';
+import { getAttachmentSize, hashAttachmentData } from '../../rx-storage-helper';
+import { RxStoragePouchStatics } from './pouch-statics';
 export var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attachments) {
   try {
     if (!attachments) {
@@ -27,18 +29,30 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
          */
 
 
-        if (obj.data) {
-          var asWriteAttachment = obj;
-          ret[key] = {
-            digest: asWriteAttachment.digest,
-            length: asWriteAttachment.length,
-            type: asWriteAttachment.type
-          };
-        } else {
-          ret[key] = obj;
-        }
+        var _temp4 = function () {
+          if (obj.data) {
+            var _temp5 = function _temp5(dataAsBase64String) {
+              return Promise.resolve(hashAttachmentData(dataAsBase64String, RxStoragePouchStatics)).then(function (hash) {
+                var length = getAttachmentSize(dataAsBase64String);
+                ret[key] = {
+                  digest: 'md5-' + hash,
+                  length: length,
+                  type: _asWrite.type
+                };
+              });
+            };
 
-        return Promise.resolve();
+            var _asWrite = obj;
+
+            var _temp6 = typeof _asWrite.data === 'string';
+
+            return _temp6 ? _temp5(_asWrite.data) : Promise.resolve(blobBufferUtil.toBase64String(_asWrite.data)).then(_temp5);
+          } else {
+            ret[key] = obj;
+          }
+        }();
+
+        return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
       } catch (e) {
         return Promise.reject(e);
       }
@@ -138,9 +152,8 @@ export function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
       var useValue = value;
 
       if (useValue.data) {
-        var asBlobBuffer = blobBufferUtil.createBlobBufferFromBase64(useValue.data, useValue.type);
         pouchDoc._attachments[key] = {
-          data: asBlobBuffer,
+          data: useValue.data,
           content_type: useValue.type
         };
       } else {
@@ -309,7 +322,6 @@ export function pouchHash(data) {
     });
   });
 }
-export var POUCH_HASH_KEY = 'md5';
 export function getPouchIndexDesignDocNameByIndex(index) {
   var indexName = 'idx-rxdb-index-' + index.join(',');
   return indexName;

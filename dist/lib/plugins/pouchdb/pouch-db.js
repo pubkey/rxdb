@@ -12,11 +12,7 @@ exports.isLevelDown = isLevelDown;
 
 var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
 
-var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
-
 var _rxError = require("../../rx-error");
-
-var _customEventsPlugin = require("./custom-events-plugin");
 
 /**
  * this handles the pouchdb-instance
@@ -24,7 +20,6 @@ var _customEventsPlugin = require("./custom-events-plugin");
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-// pouchdb-find
 
 /*
 // comment in to debug
@@ -32,13 +27,11 @@ const pouchdbDebug = require('pouchdb-debug');
 PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
-addPouchPlugin(_pouchdbFind["default"]);
-(0, _customEventsPlugin.addCustomEventsPluginToPouch)();
+
 /**
  * check if the given module is a leveldown-adapter
  * throws if not
  */
-
 function isLevelDown(adapter) {
   if (!adapter || typeof adapter.super_ !== 'function') {
     throw (0, _rxError.newRxError)('UT4', {

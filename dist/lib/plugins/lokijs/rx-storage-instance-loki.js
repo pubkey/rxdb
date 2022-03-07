@@ -208,16 +208,12 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
           var documentInDb = localState.collection.by(_this5.primaryPath, id);
 
           if (!documentInDb) {
-            // insert new document
-            var newRevision = '1-' + (0, _util.createRevision)(writeRow.document);
             /**
              * It is possible to insert already deleted documents,
              * this can happen on replication.
              */
-
             var insertedIsDeleted = writeRow.document._deleted ? true : false;
             var writeDoc = Object.assign({}, writeRow.document, {
-              _rev: newRevision,
               _deleted: insertedIsDeleted,
               // TODO attachments are currently not working with lokijs
               _attachments: {}
@@ -228,7 +224,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               _this5.addChangeDocumentMeta(id);
 
               eventBulk.events.push({
-                eventId: (0, _lokijsHelper.getLokiEventKey)(_this5, id, newRevision),
+                eventId: (0, _lokijsHelper.getLokiEventKey)(_this5, id, writeRow.document._rev),
                 documentId: id,
                 change: {
                   doc: writeDoc,
@@ -261,15 +257,10 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               };
               ret.error[id] = err;
             } else {
-              var newRevHeight = (0, _util.getHeightOfRevision)(revInDb) + 1;
-
-              var _newRevision = newRevHeight + '-' + (0, _util.createRevision)(writeRow.document);
-
               var isDeleted = !!writeRow.document._deleted;
 
               var _writeDoc = Object.assign({}, writeRow.document, {
                 $loki: documentInDb.$loki,
-                _rev: _newRevision,
                 _deleted: isDeleted,
                 // TODO attachments are currently not working with lokijs
                 _attachments: {}
@@ -299,9 +290,10 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                 /**
                  * On delete, we send the 'new' rev in the previous property,
                  * to have the equal behavior as pouchdb.
+                 * TODO do we even need this anymore?
                  */
                 var previous = (0, _util.flatClone)(writeRow.previous);
-                previous._rev = _newRevision;
+                previous._rev = writeRow.document._rev;
                 change = {
                   id: id,
                   operation: 'DELETE',
@@ -319,7 +311,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               }
 
               eventBulk.events.push({
-                eventId: (0, _lokijsHelper.getLokiEventKey)(_this5, id, _newRevision),
+                eventId: (0, _lokijsHelper.getLokiEventKey)(_this5, id, writeRow.document._rev),
                 documentId: id,
                 change: change,
                 startTime: startTime,
@@ -340,130 +332,18 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     }
   };
 
-  _proto.bulkAddRevisions = function bulkAddRevisions(documents) {
+  _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
     try {
       var _this7 = this;
 
-      if (documents.length === 0) {
-        throw (0, _rxError.newRxError)('P3', {
-          args: {
-            documents: documents
-          }
-        });
-      }
-
       return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this7)).then(function (localState) {
         if (!localState) {
-          return (0, _lokijsHelper.requestRemoteInstance)(_this7, 'bulkAddRevisions', [documents]);
-        }
-
-        var eventBulk = {
-          id: (0, _util.randomCouchString)(10),
-          events: []
-        };
-        documents.forEach(function (docData) {
-          var startTime = (0, _util.now)();
-          var id = docData[_this7.primaryPath];
-          var documentInDb = localState.collection.by(_this7.primaryPath, id);
-
-          if (!documentInDb) {
-            // document not here, so we can directly insert
-            localState.collection.insert((0, _util.flatClone)(docData));
-            eventBulk.events.push({
-              documentId: id,
-              eventId: (0, _lokijsHelper.getLokiEventKey)(_this7, id, docData._rev),
-              change: {
-                doc: docData,
-                id: id,
-                operation: 'INSERT',
-                previous: null
-              },
-              startTime: startTime,
-              endTime: (0, _util.now)()
-            });
-
-            _this7.addChangeDocumentMeta(id);
-          } else {
-            var newWriteRevision = (0, _util.parseRevision)(docData._rev);
-            var oldRevision = (0, _util.parseRevision)(documentInDb._rev);
-            var mustUpdate = false;
-
-            if (newWriteRevision.height !== oldRevision.height) {
-              // height not equal, compare base on height
-              if (newWriteRevision.height > oldRevision.height) {
-                mustUpdate = true;
-              }
-            } else if (newWriteRevision.hash > oldRevision.hash) {
-              // equal height but new write has the 'winning' hash
-              mustUpdate = true;
-            }
-
-            if (mustUpdate) {
-              var storeAtLoki = (0, _util.flatClone)(docData);
-              storeAtLoki.$loki = documentInDb.$loki;
-              localState.collection.update(storeAtLoki);
-              var change = null;
-
-              if (documentInDb._deleted && !docData._deleted) {
-                change = {
-                  id: id,
-                  operation: 'INSERT',
-                  previous: null,
-                  doc: docData
-                };
-              } else if (!documentInDb._deleted && !docData._deleted) {
-                change = {
-                  id: id,
-                  operation: 'UPDATE',
-                  previous: (0, _lokijsHelper.stripLokiKey)(documentInDb),
-                  doc: docData
-                };
-              } else if (!documentInDb._deleted && docData._deleted) {
-                change = {
-                  id: id,
-                  operation: 'DELETE',
-                  previous: (0, _lokijsHelper.stripLokiKey)(documentInDb),
-                  doc: null
-                };
-              } else if (documentInDb._deleted && docData._deleted) {
-                change = null;
-              }
-
-              if (change) {
-                eventBulk.events.push({
-                  documentId: id,
-                  eventId: (0, _lokijsHelper.getLokiEventKey)(_this7, id, docData._rev),
-                  change: change,
-                  startTime: startTime,
-                  endTime: (0, _util.now)()
-                });
-
-                _this7.addChangeDocumentMeta(id);
-              }
-            }
-          }
-        });
-        localState.databaseState.saveQueue.addWrite();
-
-        _this7.changes$.next(eventBulk);
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
-  _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
-    try {
-      var _this9 = this;
-
-      return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this9)).then(function (localState) {
-        if (!localState) {
-          return (0, _lokijsHelper.requestRemoteInstance)(_this9, 'findDocumentsById', [ids, deleted]);
+          return (0, _lokijsHelper.requestRemoteInstance)(_this7, 'findDocumentsById', [ids, deleted]);
         }
 
         var ret = {};
         ids.forEach(function (id) {
-          var documentInDb = localState.collection.by(_this9.primaryPath, id);
+          var documentInDb = localState.collection.by(_this7.primaryPath, id);
 
           if (documentInDb && (!documentInDb._deleted || deleted)) {
             ret[id] = (0, _lokijsHelper.stripLokiKey)(documentInDb);
@@ -478,17 +358,17 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.query = function query(preparedQuery) {
     try {
-      var _this11 = this;
+      var _this9 = this;
 
-      return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this11)).then(function (localState) {
+      return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this9)).then(function (localState) {
         if (!localState) {
-          return (0, _lokijsHelper.requestRemoteInstance)(_this11, 'query', [preparedQuery]);
+          return (0, _lokijsHelper.requestRemoteInstance)(_this9, 'query', [preparedQuery]);
         }
 
         var query = localState.collection.chain().find(preparedQuery.selector);
 
         if (preparedQuery.sort) {
-          query = query.sort((0, _lokijsHelper.getLokiSortComparator)(_this11.schema, preparedQuery));
+          query = query.sort((0, _lokijsHelper.getLokiSortComparator)(_this9.schema, preparedQuery));
         }
         /**
          * Offset must be used before limit in LokiJS
@@ -522,13 +402,13 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.getChangedDocuments = function getChangedDocuments(options) {
     try {
-      var _this13 = this;
+      var _this11 = this;
 
-      return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this13)).then(function (localState) {
+      return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this11)).then(function (localState) {
         var _sequence;
 
         if (!localState) {
-          return (0, _lokijsHelper.requestRemoteInstance)(_this13, 'getChangedDocuments', [options]);
+          return (0, _lokijsHelper.requestRemoteInstance)(_this11, 'getChangedDocuments', [options]);
         }
 
         var desc = options.direction === 'before';
@@ -566,23 +446,23 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
   _proto.close = function close() {
     try {
       var _temp3 = function _temp3() {
-        (0, _lokijsHelper.removeLokiLeaderElectorReference)(_this15.storage, _this15.databaseName);
+        (0, _lokijsHelper.removeLokiLeaderElectorReference)(_this13.storage, _this13.databaseName);
       };
 
-      var _this15 = this;
+      var _this13 = this;
 
-      _this15.closed = true;
+      _this13.closed = true;
 
-      _this15.changes$.complete();
+      _this13.changes$.complete();
 
-      _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this15);
+      _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this13);
 
       var _temp4 = function () {
-        if (_this15.internals.localState) {
-          return Promise.resolve(_this15.internals.localState).then(function (localState) {
-            return Promise.resolve((0, _lokijsHelper.getLokiDatabase)(_this15.databaseName, _this15.databaseSettings)).then(function (dbState) {
+        if (_this13.internals.localState) {
+          return Promise.resolve(_this13.internals.localState).then(function (localState) {
+            return Promise.resolve((0, _lokijsHelper.getLokiDatabase)(_this13.databaseName, _this13.databaseSettings)).then(function (dbState) {
               return Promise.resolve(dbState.saveQueue.run()).then(function () {
-                return Promise.resolve((0, _lokijsHelper.closeLokiCollections)(_this15.databaseName, [localState.collection, localState.changesCollection])).then(function () {});
+                return Promise.resolve((0, _lokijsHelper.closeLokiCollections)(_this13.databaseName, [localState.collection, localState.changesCollection])).then(function () {});
               });
             });
           });
@@ -597,16 +477,16 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.remove = function remove() {
     try {
-      var _this17 = this;
+      var _this15 = this;
 
-      return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this17)).then(function (localState) {
+      return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this15)).then(function (localState) {
         if (!localState) {
-          return (0, _lokijsHelper.requestRemoteInstance)(_this17, 'remove', []);
+          return (0, _lokijsHelper.requestRemoteInstance)(_this15, 'remove', []);
         }
 
-        localState.databaseState.database.removeCollection(_this17.collectionName);
+        localState.databaseState.database.removeCollection(_this15.collectionName);
         localState.databaseState.database.removeCollection(localState.changesCollection.name);
-        return _this17.close();
+        return _this15.close();
       });
     } catch (e) {
       return Promise.reject(e);

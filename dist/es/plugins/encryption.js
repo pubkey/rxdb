@@ -7,7 +7,7 @@ import AES from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
 import { newRxTypeError, newRxError } from '../rx-error';
 import objectPath from 'object-path';
-import { blobBufferUtil, clone, flatClone, getDefaultRxDocumentMeta, hash, PROMISE_RESOLVE_FALSE } from '../util';
+import { clone, createRevision, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, hash, PROMISE_RESOLVE_FALSE } from '../util';
 import { getSingleDocument } from '../rx-storage-helper';
 import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_ENCRYPTION } from '../rx-database-internal-store';
 
@@ -34,10 +34,12 @@ export var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabas
           data: {
             hash: pwHash
           },
+          _deleted: false,
           _attachments: {},
           _meta: getDefaultRxDocumentMeta(),
-          _deleted: false
+          _rev: getDefaultRevision()
         };
+        docData._rev = createRevision(docData);
         return Promise.resolve(rxDatabase.internalStore.bulkWrite([{
           document: docData
         }])).then(function () {
@@ -172,16 +174,13 @@ export var RxDBEncryptionPlugin = {
           var password = args.database.password;
           var schema = args.schema;
 
-          var _temp2 = function () {
-            if (password && schema.attachments && schema.attachments.encrypted) {
-              return Promise.resolve(blobBufferUtil.toString(args.attachmentData.data)).then(function (dataString) {
-                var encrypted = encryptString(dataString, password);
-                args.attachmentData.data = encrypted;
-              });
-            }
-          }();
+          if (password && schema.attachments && schema.attachments.encrypted) {
+            var dataString = args.attachmentData.data;
+            var encrypted = encryptString(dataString, password);
+            args.attachmentData.data = encrypted;
+          }
 
-          return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+          return Promise.resolve();
         } catch (e) {
           return Promise.reject(e);
         }
@@ -193,16 +192,13 @@ export var RxDBEncryptionPlugin = {
           var password = args.database.password;
           var schema = args.schema;
 
-          var _temp4 = function () {
-            if (password && schema.attachments && schema.attachments.encrypted) {
-              return Promise.resolve(blobBufferUtil.toString(args.plainData)).then(function (dataString) {
-                var decrypted = decryptString(dataString, password);
-                args.plainData = decrypted;
-              });
-            }
-          }();
+          if (password && schema.attachments && schema.attachments.encrypted) {
+            var dataString = args.plainData;
+            var decrypted = decryptString(dataString, password);
+            args.plainData = decrypted;
+          }
 
-          return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
+          return Promise.resolve();
         } catch (e) {
           return Promise.reject(e);
         }

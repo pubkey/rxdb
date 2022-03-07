@@ -13,9 +13,9 @@ export var ERROR_MESSAGES = {
   PL1: 'Given plugin is not RxDB plugin. Pouchdb plugins must be added via addPouchPlugin()',
   PL2: 'You tried importy a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
   // pouch-db.js
-  // removed ind 12.0.0 - P1: 'PouchDB.getBatch: limit must be > 2',
+  // removed in 12.0.0 - P1: 'PouchDB.getBatch: limit must be > 2',
   P2: 'bulkWrite() cannot be called with an empty array',
-  P3: 'bulkAddRevisions cannot be called with an empty array',
+  // removed in 12.0.0 - P3: 'bulkAddRevisions cannot be called with an empty array',
   // rx-query
   QU1: 'RxQuery._execOverDatabase(): op not known',
   // removed in 9.0.0 - QU2: 'limit() must get a number',
@@ -47,8 +47,8 @@ export var ERROR_MESSAGES = {
   DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://pubkey.github.io/rxdb/questions-answers.html#cant-change-the-schema',
   DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
   DB8: 'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
-  DB9: 'createRxDatabase(): Adapter not added. Use RxDB.plugin(require(\'pouchdb-adapter-[adaptername]\'));',
-  DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use RxDB.plugin(require(\'pouchdb-adapter-leveldb\'));',
+  DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
+  DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addRxPlugin(require(\'pouchdb-adapter-leveldb\'));',
   DB11: 'createRxDatabase(): Invalid db-name, folder-paths must not have an ending slash',
   // rx-collection
   COL1: 'RxDocument.insert() You cannot insert an existing document',

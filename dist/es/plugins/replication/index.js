@@ -210,7 +210,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { getChangesSinceLastPushSequence, getLastPullDocument, setLastPullDocument, setLastPushSequence } from './replication-checkpoint';
-import { ensureNotFalsy, flatClone, getDefaultRxDocumentMeta, getHeightOfRevision, hash, lastOfArray, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
+import { ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getHeightOfRevision, hash, lastOfArray, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
 import { overwritable } from '../../overwritable';
 import { setLastWritePullReplication, wasLastWriteFromPullReplication } from './revision-flag';
 import { newRxError } from '../../rx-error';
@@ -586,7 +586,8 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
 
                 var writeDoc = Object.assign({}, pulledDocument, {
                   _attachments: {},
-                  _meta: getDefaultRxDocumentMeta()
+                  _meta: getDefaultRxDocumentMeta(),
+                  _rev: getDefaultRevision()
                 });
                 setLastWritePullReplication(_this7.replicationIdentifierHash, writeDoc, nextRevisionHeight);
                 bulkWriteData.push({

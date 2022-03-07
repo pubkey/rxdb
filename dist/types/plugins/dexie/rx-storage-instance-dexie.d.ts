@@ -22,7 +22,6 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
      */
     private addChangeDocumentsMeta;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
-    bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<{
         [documentId: string]: RxDocumentData<RxDocType>;
     }>;

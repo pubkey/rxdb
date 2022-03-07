@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter, startWith, mergeMap, shareReplay } from 'rxjs/operators';
-import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, RXJS_SHARE_REPLAY_DEFAULTS, getDefaultRxDocumentMeta } from './util';
+import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, RXJS_SHARE_REPLAY_DEFAULTS, getDefaultRxDocumentMeta, getDefaultRevision, nextTick } from './util';
 import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { newRxError, newRxTypeError } from './rx-error';
@@ -207,6 +207,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
             document: Object.assign(doc, {
               _attachments: {},
               _meta: getDefaultRxDocumentMeta(),
+              _rev: getDefaultRevision(),
               _deleted: false
             })
           };
@@ -854,10 +855,10 @@ function _applyHookFunctions(collection) {
 }
 
 function _atomicUpsertUpdate(doc, json) {
-  return doc.atomicUpdate(function (innerDoc) {
-    json._rev = innerDoc._rev;
-    innerDoc._data = json;
-    return innerDoc._data;
+  return doc.atomicUpdate(function (_innerDoc) {
+    return json;
+  }).then(function () {
+    return nextTick();
   }).then(function () {
     return doc;
   });

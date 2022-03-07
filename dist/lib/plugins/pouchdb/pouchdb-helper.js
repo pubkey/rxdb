@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RXDB_POUCH_DELETED_FLAG = exports.POUCH_HASH_KEY = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
+exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
 exports.getPouchIndexDesignDocNameByIndex = getPouchIndexDesignDocNameByIndex;
 exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
@@ -23,6 +23,10 @@ var _pouchdbMd = require("pouchdb-md5");
 var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
+
+var _rxStorageHelper = require("../../rx-storage-helper");
+
+var _pouchStatics = require("./pouch-statics");
 
 var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attachments) {
   try {
@@ -50,18 +54,30 @@ var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attac
          */
 
 
-        if (obj.data) {
-          var asWriteAttachment = obj;
-          ret[key] = {
-            digest: asWriteAttachment.digest,
-            length: asWriteAttachment.length,
-            type: asWriteAttachment.type
-          };
-        } else {
-          ret[key] = obj;
-        }
+        var _temp4 = function () {
+          if (obj.data) {
+            var _temp5 = function _temp5(dataAsBase64String) {
+              return Promise.resolve((0, _rxStorageHelper.hashAttachmentData)(dataAsBase64String, _pouchStatics.RxStoragePouchStatics)).then(function (hash) {
+                var length = (0, _rxStorageHelper.getAttachmentSize)(dataAsBase64String);
+                ret[key] = {
+                  digest: 'md5-' + hash,
+                  length: length,
+                  type: _asWrite.type
+                };
+              });
+            };
 
-        return Promise.resolve();
+            var _asWrite = obj;
+
+            var _temp6 = typeof _asWrite.data === 'string';
+
+            return _temp6 ? _temp5(_asWrite.data) : Promise.resolve(_util.blobBufferUtil.toBase64String(_asWrite.data)).then(_temp5);
+          } else {
+            ret[key] = obj;
+          }
+        }();
+
+        return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
       } catch (e) {
         return Promise.reject(e);
       }
@@ -172,10 +188,8 @@ function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
       var useValue = value;
 
       if (useValue.data) {
-        var asBlobBuffer = _util.blobBufferUtil.createBlobBufferFromBase64(useValue.data, useValue.type);
-
         pouchDoc._attachments[key] = {
-          data: asBlobBuffer,
+          data: useValue.data,
           content_type: useValue.type
         };
       } else {
@@ -351,9 +365,6 @@ function pouchHash(data) {
     });
   });
 }
-
-var POUCH_HASH_KEY = 'md5';
-exports.POUCH_HASH_KEY = POUCH_HASH_KEY;
 
 function getPouchIndexDesignDocNameByIndex(index) {
   var indexName = 'idx-rxdb-index-' + index.join(',');

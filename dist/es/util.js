@@ -5,6 +5,26 @@ import { default as deepClone } from 'clone';
  * programmatically but by using the correct import
  */
 
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
+/**
+ * this is a very fast hashing but its unsecure
+ * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
+ * @return a number as hash-result
+ */
+
+
 export function pluginMissing(pluginKey) {
   var keyParts = pluginKey.split('-');
   var pluginName = 'RxDB';
@@ -14,12 +34,6 @@ export function pluginMissing(pluginKey) {
   pluginName += 'Plugin';
   return new Error("You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n            import { " + pluginName + " } from 'rxdb/plugins/" + pluginKey + "';\n            addRxPlugin(" + pluginName + ");\n        ");
 }
-/**
- * this is a very fast hashing but its unsecure
- * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
- * @return a number as hash-result
- */
-
 export function fastUnsecureHash(obj) {
   if (typeof obj !== 'string') obj = JSON.stringify(obj);
   var hashValue = 0,
@@ -385,19 +399,20 @@ export function getHeightOfRevision(revision) {
   return parseRevision(revision).height;
 }
 /**
- * Creates a revision string that does NOT include the revision height
- * Copied and adapted from pouchdb-utils/src/rev.js
- * 
- * We use our own function so RxDB usage without pouchdb RxStorage
- * does not include pouchdb code in the bundle.
+ * Creates the next write revision for a given document.
  */
 
-export function createRevision(docData) {
+export function createRevision(docData, previousDocData) {
+  var previousRevision = previousDocData ? previousDocData._rev : null;
+  var previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
+  var newRevisionHeight = previousRevisionHeigth + 1;
   var docWithoutRev = Object.assign({}, docData, {
+    _rev: undefined,
     _rev_tree: undefined
   });
   var diggestString = JSON.stringify(docWithoutRev);
-  return Md5.hash(diggestString);
+  var revisionHash = Md5.hash(diggestString);
+  return newRevisionHeight + '-' + revisionHash;
 }
 /**
  * overwrites the getter with the actual value
@@ -493,24 +508,37 @@ export var blobBufferUtil = {
    * we have to use Buffer(node) or Blob(browser)
    */
   createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
-    var blobBuffer;
-
-    if (isElectronRenderer) {
-      // if we are inside of electron-renderer, always use the node-buffer
-      return Buffer.from(base64String, 'base64');
-    }
-
     try {
-      // for browsers
-      blobBuffer = new Blob([base64String], {
-        type: type
-      });
-    } catch (e) {
-      // for node
-      blobBuffer = Buffer.from(base64String, 'base64');
-    }
+      var _exit2 = false;
+      var blobBuffer;
 
-    return blobBuffer;
+      if (isElectronRenderer) {
+        // if we are inside of electron-renderer, always use the node-buffer
+        return Promise.resolve(Buffer.from(base64String, 'base64'));
+      }
+
+      var _temp2 = _catch(function () {
+        /**
+         * For browsers.
+         * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+         */
+        return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
+          return Promise.resolve(base64Response.blob()).then(function (blob) {
+            _exit2 = true;
+            return blob;
+          });
+        });
+      }, function () {
+        // for node
+        blobBuffer = Buffer.from(base64String, 'base64');
+      });
+
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function (_result) {
+        return _exit2 ? _result : blobBuffer;
+      }) : _exit2 ? _temp2 : blobBuffer);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   },
   isBlobBuffer: function isBlobBuffer(data) {
     if (typeof Buffer !== 'undefined' && Buffer.isBuffer(data) || data instanceof Blob) {
@@ -552,25 +580,39 @@ export var blobBufferUtil = {
       reader.readAsText(blobBuffer);
     });
   },
-  tobase64String: function tobase64String(blobBuffer) {
+  toBase64String: function toBase64String(blobBuffer) {
     if (typeof blobBuffer === 'string') {
       return Promise.resolve(blobBuffer);
     }
 
     if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
       // node
-      return nextTick().then(function () {
+      return nextTick()
+      /**
+       * We use btoa() instead of blobBuffer.toString('base64')
+       * to ensure that we have the same behavior in nodejs and the browser.
+       */
+      .then(function () {
         return blobBuffer.toString('base64');
       });
     }
 
-    return new Promise(function (res) {
-      // browser
+    return new Promise(function (res, rej) {
+      /**
+       * Browser
+       * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+       */
       var reader = new FileReader();
-      reader.addEventListener('loadend', function (e) {
-        var text = e.target.result;
-        res(text);
-      });
+      reader.onerror = rej;
+
+      reader.onload = function () {
+        // looks like 'data:plain/text;base64,YWFh...'
+        var fullResult = reader.result;
+        var split = fullResult.split(',');
+        split.shift();
+        res(split.join(','));
+      };
+
       var blobBufferType = Object.prototype.toString.call(blobBuffer);
       /**
        * in the electron-renderer we have a typed array insteaf of a blob
@@ -582,7 +624,7 @@ export var blobBufferUtil = {
         blobBuffer = new Blob([blobBuffer]);
       }
 
-      reader.readAsText(blobBuffer);
+      reader.readAsDataURL(blobBuffer);
     });
   },
   size: function size(blobBuffer) {
@@ -616,5 +658,19 @@ export function getDefaultRxDocumentMeta() {
      */
     lwt: 1
   };
+}
+/**
+ * Returns a revision that is not valid.
+ * Use this to have correct typings
+ * while the storage wrapper anyway will overwrite the revision.
+ */
+
+export function getDefaultRevision() {
+  /**
+   * Use a non-valid revision format,
+   * to ensure that the RxStorage will throw
+   * when the revision is not replaced downstream.
+   */
+  return '';
 }
 //# sourceMappingURL=util.js.map

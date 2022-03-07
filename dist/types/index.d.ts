@@ -17,7 +17,7 @@ export { getDocumentOrmPrototype, getDocumentPrototype } from './rx-document-pro
 export { isInstanceOf as isRxQuery, normalizeMangoQuery } from './rx-query';
 export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, normalizeRxJsonSchema, getFinalFields, getPreviousVersions, toTypedRxJsonSchema } from './rx-schema';
 export { getPseudoSchemaForVersion, getSchemaByObjectPath } from './rx-schema-helper';
-export { getSingleDocument, getAllDocuments, writeSingle } from './rx-storage-helper';
+export { getSingleDocument, getAllDocuments, writeSingle, hashAttachmentData, getAttachmentSize } from './rx-storage-helper';
 export { _clearHook } from './hooks';
 export * from './query-cache';
 export * from './util';

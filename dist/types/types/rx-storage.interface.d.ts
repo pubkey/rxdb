@@ -216,20 +216,6 @@ export interface RxStorageInstance<
     >;
 
     /**
-     * Adds revisions of documents to the storage instance.
-     * The revisions do not have to be the newest ones but can also be past
-     * states of the documents.
-     * Adding revisions can never cause conflicts.
-     * 
-     * Notice: When a revisions of a document is added and the storage instance
-     * decides that this is now the newest revision, the changeStream() must emit an event
-     * based on what the previous newest revision of the document was.
-     */
-    bulkAddRevisions(
-        documents: RxDocumentData<DocumentData>[]
-    ): Promise<void>;
-
-    /**
      * Get Multiple documents by their primary value.
      * This must also return deleted documents.
      */

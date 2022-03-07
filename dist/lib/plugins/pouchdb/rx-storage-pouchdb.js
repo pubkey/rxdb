@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -19,9 +21,13 @@ var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
 
 var _pouchdbHelper = require("./pouchdb-helper");
 
+var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
+
 var _pouchStatics = require("./pouch-statics");
 
 var _rxSchemaHelper = require("../../rx-schema-helper");
+
+var _customEventsPlugin = require("./custom-events-plugin");
 
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
@@ -185,7 +191,15 @@ function getPouchLocation(dbName, collectionName, schemaVersion) {
   }
 }
 
+var addedRxDBPouchPlugins = false;
+
 function getRxStoragePouch(adapter, pouchSettings) {
+  if (!addedRxDBPouchPlugins) {
+    addedRxDBPouchPlugins = true;
+    (0, _pouchDb.addPouchPlugin)(_pouchdbFind["default"]);
+    (0, _customEventsPlugin.addCustomEventsPluginToPouch)();
+  }
+
   if (!adapter) {
     throw new Error('adapter missing');
   }

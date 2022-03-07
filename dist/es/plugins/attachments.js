@@ -1,7 +1,7 @@
 import { map } from 'rxjs/operators';
 import { blobBufferUtil, flatClone } from './../util';
 import { newRxError } from '../rx-error';
-import { writeSingle } from '../rx-storage-helper';
+import { hashAttachmentData, writeSingle } from '../rx-storage-helper';
 import { runAsyncPluginHooks } from '../hooks';
 
 function ensureSchemaSupportsAttachments(doc) {
@@ -76,7 +76,7 @@ export var putAttachment = function putAttachment(attachmentData) {
     ensureSchemaSupportsAttachments(_this8);
     var dataSize = blobBufferUtil.size(attachmentData.data);
     var storageStatics = _this8.collection.database.storage.statics;
-    return Promise.resolve(blobBufferUtil.tobase64String(attachmentData.data)).then(function (dataString) {
+    return Promise.resolve(blobBufferUtil.toBase64String(attachmentData.data)).then(function (dataString) {
       var hookAttachmentData = {
         id: attachmentData.id,
         type: attachmentData.type,
@@ -90,7 +90,7 @@ export var putAttachment = function putAttachment(attachmentData) {
         var id = hookAttachmentData.id,
             data = hookAttachmentData.data,
             type = hookAttachmentData.type;
-        return Promise.resolve(storageStatics.hash(blobBufferUtil.createBlobBufferFromBase64(data, type)).then(function (hash) {
+        return Promise.resolve(hashAttachmentData(dataString, storageStatics).then(function (hash) {
           return storageStatics.hashKey + '-' + hash;
         })).then(function (newDigest) {
           _this8._atomicQueue = _this8._atomicQueue.then(function () {
@@ -215,16 +215,15 @@ export var RxAttachment = /*#__PURE__*/function () {
     try {
       var _this4 = this;
 
-      return Promise.resolve(_this4.doc.collection.storageInstance.getAttachmentData(_this4.doc.primary, _this4.id)).then(function (plainData) {
+      return Promise.resolve(_this4.doc.collection.storageInstance.getAttachmentData(_this4.doc.primary, _this4.id)).then(function (plainDataBase64) {
         var hookInput = {
           database: _this4.doc.collection.database,
           schema: _this4.doc.collection.schema.jsonSchema,
           type: _this4.type,
-          plainData: plainData
+          plainData: plainDataBase64
         };
         return Promise.resolve(runAsyncPluginHooks('postReadAttachment', hookInput)).then(function () {
-          var ret = blobBufferUtil.createBlobBufferFromBase64(hookInput.plainData, _this4.type);
-          return ret;
+          return Promise.resolve(blobBufferUtil.createBlobBufferFromBase64(hookInput.plainData, _this4.type));
         });
       });
     } catch (e) {

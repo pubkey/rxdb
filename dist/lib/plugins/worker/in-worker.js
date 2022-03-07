@@ -36,10 +36,6 @@ function wrappedRxStorage(args) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
       return instance.bulkWrite(documentWrites);
     },
-    bulkAddRevisions: function bulkAddRevisions(instanceId, documents) {
-      var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
-      return instance.bulkAddRevisions(documents);
-    },
     findDocumentsById: function findDocumentsById(instanceId, ids, deleted) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
       return instance.findDocumentsById(ids, deleted);

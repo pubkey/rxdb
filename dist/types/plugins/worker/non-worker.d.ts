@@ -32,7 +32,6 @@ export declare class RxStorageInstanceWorker<DocumentData> implements RxStorageI
     private subs;
     constructor(databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<DocumentData>>, internals: WorkerStorageInternals, options: Readonly<any>);
     bulkWrite(documentWrites: BulkWriteRow<DocumentData>[]): Promise<RxStorageBulkWriteResponse<DocumentData>>;
-    bulkAddRevisions(documents: RxDocumentData<DocumentData>[]): Promise<void>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<{
         [documentId: string]: RxDocumentData<DocumentData>;
     }>;

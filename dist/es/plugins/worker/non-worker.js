@@ -71,10 +71,6 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
     return this.internals.worker.bulkWrite(this.internals.instanceId, documentWrites);
   };
 
-  _proto2.bulkAddRevisions = function bulkAddRevisions(documents) {
-    return this.internals.worker.bulkAddRevisions(this.internals.instanceId, documents);
-  };
-
   _proto2.findDocumentsById = function findDocumentsById(ids, deleted) {
     return this.internals.worker.findDocumentsById(this.internals.instanceId, ids, deleted);
   };

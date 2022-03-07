@@ -232,6 +232,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
             document: Object.assign(doc, {
               _attachments: {},
               _meta: (0, _util.getDefaultRxDocumentMeta)(),
+              _rev: (0, _util.getDefaultRevision)(),
               _deleted: false
             })
           };
@@ -881,10 +882,10 @@ function _applyHookFunctions(collection) {
 }
 
 function _atomicUpsertUpdate(doc, json) {
-  return doc.atomicUpdate(function (innerDoc) {
-    json._rev = innerDoc._rev;
-    innerDoc._data = json;
-    return innerDoc._data;
+  return doc.atomicUpdate(function (_innerDoc) {
+    return json;
+  }).then(function () {
+    return (0, _util.nextTick)();
   }).then(function () {
     return doc;
   });

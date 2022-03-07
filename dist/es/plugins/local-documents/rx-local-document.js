@@ -5,7 +5,7 @@ import { overwritable } from '../../overwritable';
 import { basePrototype, createRxDocumentConstructor } from '../../rx-document';
 import { newRxError, newRxTypeError } from '../../rx-error';
 import { writeSingle } from '../../rx-storage-helper';
-import { flatClone, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
+import { flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
 import { getLocalDocStateByParent } from './local-documents-helper';
 var RxDocumentParent = createRxDocumentConstructor();
 
@@ -159,6 +159,7 @@ var RxLocalDocumentPrototype = {
           data: {},
           _deleted: true,
           _meta: getDefaultRxDocumentMeta(),
+          _rev: getDefaultRevision(),
           _attachments: {}
         };
         return writeSingle(state.storageInstance, {

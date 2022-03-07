@@ -99,7 +99,7 @@ var putAttachment = function putAttachment(attachmentData) {
     var dataSize = _util.blobBufferUtil.size(attachmentData.data);
 
     var storageStatics = _this8.collection.database.storage.statics;
-    return Promise.resolve(_util.blobBufferUtil.tobase64String(attachmentData.data)).then(function (dataString) {
+    return Promise.resolve(_util.blobBufferUtil.toBase64String(attachmentData.data)).then(function (dataString) {
       var hookAttachmentData = {
         id: attachmentData.id,
         type: attachmentData.type,
@@ -113,7 +113,7 @@ var putAttachment = function putAttachment(attachmentData) {
         var id = hookAttachmentData.id,
             data = hookAttachmentData.data,
             type = hookAttachmentData.type;
-        return Promise.resolve(storageStatics.hash(_util.blobBufferUtil.createBlobBufferFromBase64(data, type)).then(function (hash) {
+        return Promise.resolve((0, _rxStorageHelper.hashAttachmentData)(dataString, storageStatics).then(function (hash) {
           return storageStatics.hashKey + '-' + hash;
         })).then(function (newDigest) {
           _this8._atomicQueue = _this8._atomicQueue.then(function () {
@@ -241,17 +241,15 @@ var RxAttachment = /*#__PURE__*/function () {
     try {
       var _this4 = this;
 
-      return Promise.resolve(_this4.doc.collection.storageInstance.getAttachmentData(_this4.doc.primary, _this4.id)).then(function (plainData) {
+      return Promise.resolve(_this4.doc.collection.storageInstance.getAttachmentData(_this4.doc.primary, _this4.id)).then(function (plainDataBase64) {
         var hookInput = {
           database: _this4.doc.collection.database,
           schema: _this4.doc.collection.schema.jsonSchema,
           type: _this4.type,
-          plainData: plainData
+          plainData: plainDataBase64
         };
         return Promise.resolve((0, _hooks.runAsyncPluginHooks)('postReadAttachment', hookInput)).then(function () {
-          var ret = _util.blobBufferUtil.createBlobBufferFromBase64(hookInput.plainData, _this4.type);
-
-          return ret;
+          return Promise.resolve(_util.blobBufferUtil.createBlobBufferFromBase64(hookInput.plainData, _this4.type));
         });
       });
     } catch (e) {

@@ -4,9 +4,7 @@
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-import PouchDBCore from 'pouchdb-core'; // pouchdb-find
-
-import PouchDBFind from 'pouchdb-find';
+import PouchDBCore from 'pouchdb-core';
 /*
 // comment in to debug
 const pouchdbDebug = require('pouchdb-debug');
@@ -15,9 +13,6 @@ PouchDB.debug.enable('*');
 */
 
 import { newRxError, newRxTypeError } from '../../rx-error';
-import { addCustomEventsPluginToPouch } from './custom-events-plugin';
-addPouchPlugin(PouchDBFind);
-addCustomEventsPluginToPouch();
 /**
  * check if the given module is a leveldown-adapter
  * throws if not

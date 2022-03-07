@@ -1,10 +1,12 @@
 import { adapterObject, isMaybeReadonlyArray } from '../../util';
-import { isLevelDown, PouchDB } from './pouch-db';
+import { addPouchPlugin, isLevelDown, PouchDB } from './pouch-db';
 import { newRxError } from '../../rx-error';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { getPouchIndexDesignDocNameByIndex } from './pouchdb-helper';
+import PouchDBFind from 'pouchdb-find';
 import { RxStoragePouchStatics } from './pouch-statics';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { addCustomEventsPluginToPouch } from './custom-events-plugin';
 
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
@@ -160,7 +162,14 @@ export function getPouchLocation(dbName, collectionName, schemaVersion) {
     return ret;
   }
 }
+var addedRxDBPouchPlugins = false;
 export function getRxStoragePouch(adapter, pouchSettings) {
+  if (!addedRxDBPouchPlugins) {
+    addedRxDBPouchPlugins = true;
+    addPouchPlugin(PouchDBFind);
+    addCustomEventsPluginToPouch();
+  }
+
   if (!adapter) {
     throw new Error('adapter missing');
   }

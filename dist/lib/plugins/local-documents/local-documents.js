@@ -59,6 +59,7 @@ var insertLocal = function insertLocal(id, data) {
         data: data,
         _deleted: false,
         _meta: (0, _util.getDefaultRxDocumentMeta)(),
+        _rev: (0, _util.getDefaultRevision)(),
         _attachments: {}
       };
       return (0, _rxStorageHelper.writeSingle)(state.storageInstance, {
@@ -87,14 +88,12 @@ function upsertLocal(id, data) {
 
   return this.getLocal(id).then(function (existing) {
     if (!existing) {
-      console.log('upsertLocal() not existing'); // create new one
-
+      // create new one
       var docPromise = _this3.insertLocal(id, data);
 
       return docPromise;
     } else {
-      console.log('upsertLocal() existing'); // update existing
-
+      // update existing
       var newData = {
         id: id,
         data: data,

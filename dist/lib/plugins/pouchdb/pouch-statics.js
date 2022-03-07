@@ -26,7 +26,7 @@ var RxStoragePouchStatics = {
   hash: function hash(data) {
     return (0, _pouchdbHelper.pouchHash)(data);
   },
-  hashKey: _pouchdbHelper.POUCH_HASH_KEY,
+  hashKey: 'md5',
   doesBroadcastChangestream: function doesBroadcastChangestream() {
     return false;
   },

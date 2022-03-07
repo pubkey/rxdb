@@ -157,7 +157,11 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
 
         var _temp2 = function () {
           if (bulkWriteToStorageInput.length) {
-            return Promise.resolve(oldCollection.newestCollection.storageInstance.bulkAddRevisions(bulkWriteToStorageInput)).then(function () {});
+            return Promise.resolve(oldCollection.newestCollection.storageInstance.bulkWrite(bulkWriteToStorageInput.map(function (document) {
+              return {
+                document: document
+              };
+            }))).then(function () {});
           }
         }();
 

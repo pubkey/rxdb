@@ -6,7 +6,7 @@ import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { clone, firstPropertyValueOfObject, flatClone } from './util';
+import { clone, createRevision, firstPropertyValueOfObject, flatClone } from './util';
 
 /**
  * Writes a single document,
@@ -105,6 +105,12 @@ export function throwIfIsStorageWriteError(collection, documentId, writeData, er
     }
   }
 }
+export function hashAttachmentData(attachmentBase64String, storageStatics) {
+  return storageStatics.hash(atob(attachmentBase64String));
+}
+export function getAttachmentSize(attachmentBase64String) {
+  return atob(attachmentBase64String).length;
+}
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -121,26 +127,52 @@ rxJsonSchema) {
   overwritable.deepFreezeWhenDevMode(rxJsonSchema);
   var primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
 
-  function transformDocumentDataFromRxDBToRxStorage(data, updateLwt) {
-    data = flatClone(data);
+  function transformDocumentDataFromRxDBToRxStorage(writeRow) {
+    var data = flatClone(writeRow.document);
     data._meta = flatClone(data._meta); // ensure primary key has not been changed
 
     if (overwritable.isDevMode()) {
       data = fillPrimaryKey(primaryPath, rxJsonSchema, data);
     }
 
-    if (updateLwt) {
-      data._meta.lwt = new Date().getTime();
-    }
-
+    data._meta.lwt = new Date().getTime();
     var hookParams = {
       database: database,
       primaryPath: primaryPath,
       schema: rxJsonSchema,
       doc: data
     };
+    /**
+     * Run the hooks once for the previous doc,
+     * once for the new write data
+     */
+
+    var previous = writeRow.previous;
+
+    if (previous) {
+      hookParams.doc = previous;
+      runPluginHooks('preWriteToStorageInstance', hookParams);
+      previous = hookParams.doc;
+    }
+
+    hookParams.doc = data;
     runPluginHooks('preWriteToStorageInstance', hookParams);
-    return hookParams.doc;
+    data = hookParams.doc;
+    /**
+     * Update the revision after the hooks have run.
+     * Do not update the revision if no previous is given,
+     * because the migration plugin must be able to do an insert
+     * with a pre-created revision.
+     */
+
+    if (writeRow.previous || !data._rev) {
+      data._rev = createRevision(data, writeRow.previous);
+    }
+
+    return {
+      document: data,
+      previous: previous
+    };
   }
 
   function transformDocumentDataFromRxStorageToRxDB(data) {
@@ -160,21 +192,9 @@ rxJsonSchema) {
     collectionName: storageInstance.collectionName,
     databaseName: storageInstance.databaseName,
     options: storageInstance.options,
-    bulkAddRevisions: function bulkAddRevisions(documents) {
-      var toStorageDocuments = documents.map(function (doc) {
-        return transformDocumentDataFromRxDBToRxStorage(doc, true);
-      });
-      var ret = database.lockedRun(function () {
-        return storageInstance.bulkAddRevisions(toStorageDocuments);
-      });
-      return ret;
-    },
     bulkWrite: function bulkWrite(rows) {
       var toStorageWriteRows = rows.map(function (row) {
-        return {
-          previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(row.previous, false) : undefined,
-          document: transformDocumentDataFromRxDBToRxStorage(row.document, true)
-        };
+        return transformDocumentDataFromRxDBToRxStorage(row);
       });
       return database.lockedRun(function () {
         return storageInstance.bulkWrite(clone(toStorageWriteRows));

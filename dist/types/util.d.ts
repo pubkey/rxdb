@@ -1,4 +1,4 @@
-import type { BlobBuffer, DeepReadonlyObject, MaybeReadonly, RxDocumentMeta } from './types';
+import type { BlobBuffer, DeepReadonlyObject, MaybeReadonly, RxDocumentData, RxDocumentMeta } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -115,13 +115,16 @@ export declare function parseRevision(revision: string): {
 };
 export declare function getHeightOfRevision(revision: string): number;
 /**
- * Creates a revision string that does NOT include the revision height
- * Copied and adapted from pouchdb-utils/src/rev.js
- *
- * We use our own function so RxDB usage without pouchdb RxStorage
- * does not include pouchdb code in the bundle.
+ * Creates the next write revision for a given document.
  */
-export declare function createRevision(docData: any): string;
+export declare function createRevision<RxDocType>(docData: RxDocumentData<RxDocType> & {
+    /**
+     * Passing a revision is optional here,
+     * because it is anyway not needed to calculate
+     * the new revision.
+     */
+    _rev?: string;
+}, previousDocData?: RxDocumentData<RxDocType>): string;
 /**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run
@@ -149,10 +152,10 @@ export declare const blobBufferUtil: {
      * depending if we are on node or browser,
      * we have to use Buffer(node) or Blob(browser)
      */
-    createBlobBufferFromBase64(base64String: string, type: string): BlobBuffer;
+    createBlobBufferFromBase64(base64String: string, type: string): Promise<BlobBuffer>;
     isBlobBuffer(data: any): boolean;
     toString(blobBuffer: BlobBuffer | string): Promise<string>;
-    tobase64String(blobBuffer: BlobBuffer | string): Promise<string>;
+    toBase64String(blobBuffer: BlobBuffer | string): Promise<string>;
     size(blobBuffer: BlobBuffer): number;
 };
 /**
@@ -166,4 +169,10 @@ export declare const RXJS_SHARE_REPLAY_DEFAULTS: {
     refCount: boolean;
 };
 export declare function getDefaultRxDocumentMeta(): RxDocumentMeta;
+/**
+ * Returns a revision that is not valid.
+ * Use this to have correct typings
+ * while the storage wrapper anyway will overwrite the revision.
+ */
+export declare function getDefaultRevision(): string;
 export {};

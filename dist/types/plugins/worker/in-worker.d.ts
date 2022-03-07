@@ -7,7 +7,6 @@ import { Observable } from 'rxjs';
 export declare type InWorkerStorage = {
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<number>;
     bulkWrite<DocumentData>(instanceId: number, documentWrites: BulkWriteRow<DocumentData>[]): Promise<RxStorageBulkWriteResponse<DocumentData>>;
-    bulkAddRevisions<DocumentData>(instanceId: number, documents: RxDocumentData<DocumentData>[]): Promise<void>;
     findDocumentsById<DocumentData>(instanceId: number, ids: string[], deleted: boolean): Promise<{
         [documentId: string]: RxDocumentData<DocumentData>;
     }>;

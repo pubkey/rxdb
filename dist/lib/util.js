@@ -16,6 +16,7 @@ exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
 exports.firstPropertyValueOfObject = firstPropertyValueOfObject;
 exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
+exports.getDefaultRevision = getDefaultRevision;
 exports.getDefaultRxDocumentMeta = getDefaultRxDocumentMeta;
 exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.getFromObjectOrThrow = getFromObjectOrThrow;
@@ -49,6 +50,20 @@ var _clone = _interopRequireDefault(require("clone"));
 var _sparkMd = _interopRequireDefault(require("spark-md5"));
 
 var _isElectron = _interopRequireDefault(require("is-electron"));
+
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
 
 /**
  * Returns an error that indicates that a plugin is missing
@@ -472,20 +487,23 @@ function getHeightOfRevision(revision) {
   return parseRevision(revision).height;
 }
 /**
- * Creates a revision string that does NOT include the revision height
- * Copied and adapted from pouchdb-utils/src/rev.js
- * 
- * We use our own function so RxDB usage without pouchdb RxStorage
- * does not include pouchdb code in the bundle.
+ * Creates the next write revision for a given document.
  */
 
 
-function createRevision(docData) {
+function createRevision(docData, previousDocData) {
+  var previousRevision = previousDocData ? previousDocData._rev : null;
+  var previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
+  var newRevisionHeight = previousRevisionHeigth + 1;
   var docWithoutRev = Object.assign({}, docData, {
+    _rev: undefined,
     _rev_tree: undefined
   });
   var diggestString = JSON.stringify(docWithoutRev);
-  return _sparkMd["default"].hash(diggestString);
+
+  var revisionHash = _sparkMd["default"].hash(diggestString);
+
+  return newRevisionHeight + '-' + revisionHash;
 }
 /**
  * overwrites the getter with the actual value
@@ -587,24 +605,37 @@ var blobBufferUtil = {
    * we have to use Buffer(node) or Blob(browser)
    */
   createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
-    var blobBuffer;
-
-    if (isElectronRenderer) {
-      // if we are inside of electron-renderer, always use the node-buffer
-      return Buffer.from(base64String, 'base64');
-    }
-
     try {
-      // for browsers
-      blobBuffer = new Blob([base64String], {
-        type: type
-      });
-    } catch (e) {
-      // for node
-      blobBuffer = Buffer.from(base64String, 'base64');
-    }
+      var _exit2 = false;
+      var blobBuffer;
 
-    return blobBuffer;
+      if (isElectronRenderer) {
+        // if we are inside of electron-renderer, always use the node-buffer
+        return Promise.resolve(Buffer.from(base64String, 'base64'));
+      }
+
+      var _temp2 = _catch(function () {
+        /**
+         * For browsers.
+         * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+         */
+        return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
+          return Promise.resolve(base64Response.blob()).then(function (blob) {
+            _exit2 = true;
+            return blob;
+          });
+        });
+      }, function () {
+        // for node
+        blobBuffer = Buffer.from(base64String, 'base64');
+      });
+
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function (_result) {
+        return _exit2 ? _result : blobBuffer;
+      }) : _exit2 ? _temp2 : blobBuffer);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   },
   isBlobBuffer: function isBlobBuffer(data) {
     if (typeof Buffer !== 'undefined' && Buffer.isBuffer(data) || data instanceof Blob) {
@@ -646,25 +677,39 @@ var blobBufferUtil = {
       reader.readAsText(blobBuffer);
     });
   },
-  tobase64String: function tobase64String(blobBuffer) {
+  toBase64String: function toBase64String(blobBuffer) {
     if (typeof blobBuffer === 'string') {
       return Promise.resolve(blobBuffer);
     }
 
     if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
       // node
-      return nextTick().then(function () {
+      return nextTick()
+      /**
+       * We use btoa() instead of blobBuffer.toString('base64')
+       * to ensure that we have the same behavior in nodejs and the browser.
+       */
+      .then(function () {
         return blobBuffer.toString('base64');
       });
     }
 
-    return new Promise(function (res) {
-      // browser
+    return new Promise(function (res, rej) {
+      /**
+       * Browser
+       * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+       */
       var reader = new FileReader();
-      reader.addEventListener('loadend', function (e) {
-        var text = e.target.result;
-        res(text);
-      });
+      reader.onerror = rej;
+
+      reader.onload = function () {
+        // looks like 'data:plain/text;base64,YWFh...'
+        var fullResult = reader.result;
+        var split = fullResult.split(',');
+        split.shift();
+        res(split.join(','));
+      };
+
       var blobBufferType = Object.prototype.toString.call(blobBuffer);
       /**
        * in the electron-renderer we have a typed array insteaf of a blob
@@ -676,7 +721,7 @@ var blobBufferUtil = {
         blobBuffer = new Blob([blobBuffer]);
       }
 
-      reader.readAsText(blobBuffer);
+      reader.readAsDataURL(blobBuffer);
     });
   },
   size: function size(blobBuffer) {
@@ -713,5 +758,20 @@ function getDefaultRxDocumentMeta() {
      */
     lwt: 1
   };
+}
+/**
+ * Returns a revision that is not valid.
+ * Use this to have correct typings
+ * while the storage wrapper anyway will overwrite the revision.
+ */
+
+
+function getDefaultRevision() {
+  /**
+   * Use a non-valid revision format,
+   * to ensure that the RxStorage will throw
+   * when the revision is not replaced downstream.
+   */
+  return '';
 }
 //# sourceMappingURL=util.js.map

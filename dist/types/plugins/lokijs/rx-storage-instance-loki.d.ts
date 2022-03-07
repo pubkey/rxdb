@@ -22,7 +22,6 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
      */
     private addChangeDocumentMeta;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
-    bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<{
         [documentId: string]: RxDocumentData<RxDocType>;
     }>;

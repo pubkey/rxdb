@@ -39,6 +39,8 @@ var _exportNames = {
   getSingleDocument: true,
   getAllDocuments: true,
   writeSingle: true,
+  hashAttachmentData: true,
+  getAttachmentSize: true,
   _clearHook: true
 };
 Object.defineProperty(exports, "INTERNAL_CONTEXT_COLLECTION", {
@@ -137,6 +139,12 @@ Object.defineProperty(exports, "getAllDocuments", {
     return _rxStorageHelper.getAllDocuments;
   }
 });
+Object.defineProperty(exports, "getAttachmentSize", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.getAttachmentSize;
+  }
+});
 Object.defineProperty(exports, "getDocumentOrmPrototype", {
   enumerable: true,
   get: function get() {
@@ -189,6 +197,12 @@ Object.defineProperty(exports, "getSingleDocument", {
   enumerable: true,
   get: function get() {
     return _rxStorageHelper.getSingleDocument;
+  }
+});
+Object.defineProperty(exports, "hashAttachmentData", {
+  enumerable: true,
+  get: function get() {
+    return _rxStorageHelper.hashAttachmentData;
   }
 });
 Object.defineProperty(exports, "isRxCollection", {

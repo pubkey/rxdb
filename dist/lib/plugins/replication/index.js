@@ -643,7 +643,8 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
                 var writeDoc = Object.assign({}, pulledDocument, {
                   _attachments: {},
-                  _meta: (0, _util.getDefaultRxDocumentMeta)()
+                  _meta: (0, _util.getDefaultRxDocumentMeta)(),
+                  _rev: (0, _util.getDefaultRevision)()
                 });
                 (0, _revisionFlag.setLastWritePullReplication)(_this7.replicationIdentifierHash, writeDoc, nextRevisionHeight);
                 bulkWriteData.push({

@@ -11,7 +11,6 @@ export declare const ERROR_MESSAGES: {
     PL1: string;
     PL2: string;
     P2: string;
-    P3: string;
     QU1: string;
     QU4: string;
     QU5: string;

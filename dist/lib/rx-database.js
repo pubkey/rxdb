@@ -136,6 +136,7 @@ var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collect
       var writeRows = relevantDocs.map(function (doc) {
         var writeDoc = (0, _util.flatClone)(doc);
         writeDoc._deleted = true;
+        writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
         return {
           previous: doc,
           document: writeDoc
@@ -246,6 +247,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
         var writeDoc = (0, _util.flatClone)(doc);
         writeDoc._deleted = true;
+        writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
         return Promise.resolve(_this2.lockedRun(function () {
           return _this2.internalStore.bulkWrite([{
             document: writeDoc,
@@ -345,20 +347,23 @@ var RxDatabaseBase = /*#__PURE__*/function () {
             var collectionName = _collectionNamePrimary(name, collectionCreators[name].schema);
 
             if (!internalDocByCollectionName[collectionName]) {
+              var collectionDocData = {
+                id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionName, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
+                key: collectionName,
+                context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION,
+                data: {
+                  schemaHash: schemaHashByName[name],
+                  schema: collection.schema.normalized,
+                  version: collection.schema.version
+                },
+                _deleted: false,
+                _meta: (0, _util.getDefaultRxDocumentMeta)(),
+                _rev: (0, _util.getDefaultRevision)(),
+                _attachments: {}
+              };
+              collectionDocData._rev = (0, _util.createRevision)(collectionDocData);
               bulkPutDocs.push({
-                document: {
-                  id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionName, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
-                  key: collectionName,
-                  context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION,
-                  data: {
-                    schemaHash: schemaHashByName[name],
-                    schema: collection.schema.normalized,
-                    version: collection.schema.version
-                  },
-                  _deleted: false,
-                  _meta: (0, _util.getDefaultRxDocumentMeta)(),
-                  _attachments: {}
-                }
+                document: collectionDocData
               });
             } // set as getter to the database
 
