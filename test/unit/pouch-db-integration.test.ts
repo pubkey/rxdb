@@ -28,6 +28,10 @@ import PouchDBFind from 'pouchdb-find';
 import * as schemaObjects from './../helper/schema-objects';
 
 config.parallel('pouch-db-integration.test.js', () => {
+    if (config.storage.name !== 'pouchdb') {
+        return;
+    }
+
     describe('init', () => {
         it('should export the pouchDB-module', () => {
             assert.strictEqual(typeof PouchDB, 'function');
