@@ -16,14 +16,14 @@ import './unit/rx-storage-dexie.test.js';
 
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
-import './unit/key-compression.test.js';
 import './unit/bug-report.test.js';
-import './unit/local-documents.test.js';
 import './unit/rx-database.test.js';
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
 import './unit/rx-query.test.js';
 import './unit/primary.test.js';
+import './unit/key-compression.test.js';
+import './unit/local-documents.test.js';
 import './unit/encryption.test.js';
 import './unit/temporary-document.test.js';
 import './unit/change-event-buffer.test.js';

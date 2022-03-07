@@ -15,7 +15,7 @@ import {
 } from '../../';
 
 import {
-    getRxStoragePouch, pouchDocumentDataToRxDocumentData
+    pouchDocumentDataToRxDocumentData
 } from '../../plugins/pouchdb';
 import { SimpleHumanDocumentType } from './../helper/schema-objects';
 

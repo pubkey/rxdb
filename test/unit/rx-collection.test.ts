@@ -1475,8 +1475,10 @@ config.parallel('rx-collection.test.js', () => {
                 it('should not crash when upserting the same doc in parallel many times with random waits', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
+                    console.log('########################');
+                    let t = 0;
                     const docs = await Promise.all(
-                        new Array(config.isFastMode() ? 20 : 40)
+                        new Array(config.isFastMode() ? 20 : 200)
                             .fill(0)
                             .map(async (_v, idx) => {
                                 if (randomBoolean()) {
@@ -1485,12 +1487,15 @@ config.parallel('rx-collection.test.js', () => {
                                 const upsertData = clone(docData);
                                 upsertData.lastName = idx + '';
                                 const ret = await c.atomicUpsert(docData);
+                                t++;
+                                console.log('done one atomicUpsert: ' + t);
                                 return ret;
                             })
                     );
                     assert.ok(docs[0] === docs[1]);
                     assert.ok(isRxDocument(docs[0]));
 
+                    
                     c.database.destroy();
                 });
                 it('should update the value', async () => {
