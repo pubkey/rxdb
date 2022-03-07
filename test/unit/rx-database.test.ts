@@ -41,6 +41,7 @@ config.parallel('rx-database.test.js', () => {
         describe('positive', () => {
             it('memdown', async () => {
                 if (!config.platform.isNode()) return;
+                addPouchPlugin(require('pouchdb-adapter-leveldb'));
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: getRxStoragePouch(memdown)
