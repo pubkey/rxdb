@@ -140,33 +140,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             });
         }
 
-
-        // TODO remove this check
-        documentWrites.forEach(writeRow => {
-            if (!writeRow.document._rev) {
-                console.dir(writeRow);
-                throw new Error('rev missing');
-            }
-            if (!writeRow.document._rev.includes('-')) {
-                console.dir(writeRow);
-                throw new Error('invalid rev format: ' + writeRow.document._rev);
-            }
-            if (writeRow.previous) {
-                const parsedPrev = parseRevision(writeRow.previous._rev);
-                if (typeof parsedPrev.height !== 'number') {
-                    console.dir(writeRow);
-                    throw new Error('rev height is no number');
-                }
-                const parsedNew = parseRevision(writeRow.document._rev);
-                if (parsedPrev.height >= parsedNew.height) {
-                    console.dir(writeRow);
-                    throw new Error('new revision must be higher then previous');
-                }
-            }
-        });
-
-
-
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
         const insertDocsById: Map<string, any> = new Map();
         const writeDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {

@@ -41,6 +41,8 @@ config.parallel('pouch-db-integration.test.js', () => {
         it('must be able to insert->update->delete via replication', async () => {
             addPouchPlugin(require('pouchdb-adapter-memory'));
             addPouchPlugin(PouchDBFind);
+
+            console.log('--- 1');
             const pouch1: PouchDBInstance = new PouchDB('foobar1' + randomCouchString(10), {
                 adapter: 'memory'
             });
@@ -63,6 +65,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             }
 
             // insert
+            console.log('--- 2');
             const insertResult = await pouch1.put(clone(docData));
             docData._rev = insertResult.rev;
 
@@ -80,6 +83,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 const allDocs = await getDocsFromPouch2();
                 return allDocs.length === 1 && (allDocs[0] as any).value === 2;
             });
+            console.log('--- 3');
 
             // delete
             docData._deleted = true;
@@ -91,19 +95,23 @@ config.parallel('pouch-db-integration.test.js', () => {
             });
 
             // undelete via insert
+            console.log('--- 4');
             const undeleteResult = await pouch1.put({
                 _id: 'syncMe',
                 value: 5
             });
             assert.ok(undeleteResult);
+            console.log('--- 5');
             await AsyncTestUtil.waitUntil(async () => {
                 const allDocs = await getDocsFromPouch2();
                 return allDocs.length === 1 && (allDocs[0] as any).value === 5;
             });
 
+            console.log('--- 6');
             await syncHandler.cancel();
             pouch1.close();
             pouch2.close();
+            console.log('--- 7');
         });
         it('must be able to insert->update->delete via new_edits:false', async () => {
             const pouch: PouchDBInstance = new PouchDB('foobar' + randomCouchString(10), {
