@@ -35,7 +35,6 @@ import {
     blobBufferUtil,
     flatClone,
     getFromMapOrThrow,
-    parseRevision,
     PROMISE_RESOLVE_VOID
 } from '../../util';
 import {
