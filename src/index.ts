@@ -130,6 +130,28 @@ export type {
     ExtractDTcol,
     RxDatabaseGenerated,
     RxDocumentBase,
+
+    // stuff from the RxStorage interface
+    RxDocumentData,
+    RxDocumentWriteData,
+    WithDeleted,
+    BulkWriteRow,
+    RxAttachmentDataMeta,
+    RxAttachmentData,
+    RxAttachmentWriteData,
+    RxStorageBulkWriteError,
+    RxStorageBulkWriteResponse,
+    PreparedQuery,
+    RxStorageQueryResult,
+    RxStorageInstanceCreationParams,
+    ChangeStreamOptions,
+    ChangeStreamOnceOptions,
+    EventBulk,
+    ChangeStreamEvent,
+    RxStorageChangedDocumentMeta,
+    RxStorageChangeEvent,
+
+
     RxDumpCollectionBase,
     RxDumpDatabaseAny,
     RxDumpDatabaseBase,
