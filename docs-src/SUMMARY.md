@@ -1,7 +1,7 @@
 
 # Summary
 
-* [Introduction](README.md)
+* [Quickstart](./quickstart.md)
 
 * [Install](./install.md)
     * [npm](./install.md#npm)
