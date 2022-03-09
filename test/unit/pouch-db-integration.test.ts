@@ -109,8 +109,9 @@ config.parallel('pouch-db-integration.test.js', () => {
 
             console.log('--- 6');
             await syncHandler.cancel();
-            pouch1.close();
-            pouch2.close();
+            await pouch1.close();
+            console.log('--- 6.5');
+            await pouch2.close();
             console.log('--- 7');
         });
         it('must be able to insert->update->delete via new_edits:false', async () => {
