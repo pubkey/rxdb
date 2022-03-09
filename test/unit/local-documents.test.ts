@@ -10,7 +10,8 @@ import {
     addRxPlugin,
     RxJsonSchema,
     ensureNotFalsy,
-    RxLocalDocument
+    RxLocalDocument,
+    RxCollection
 } from '../../';
 
 import {
@@ -119,9 +120,12 @@ config.parallel('local-documents.test.js', () => {
         describe('.atomicPatch()', () => {
             it('should modify the data', async () => {
                 const c = await humansCollection.create(0);
-                const doc = await c.upsertLocal<LocalDocType>('foobar', {
-                    foo: 'bar'
-                });
+                const doc = await c.upsertLocal<LocalDocType>(
+                    'foobar',
+                    {
+                        foo: 'bar'
+                    }
+                );
 
                 await doc.atomicPatch({
                     added: 'foo'
@@ -136,7 +140,7 @@ config.parallel('local-documents.test.js', () => {
         describe('.atomicUpdate()', () => {
             it('should modify the data', async () => {
                 const c = await humansCollection.create(0);
-                const doc = await c.upsertLocal<LocalDocType>('foobar', {
+                const doc: RxLocalDocument<RxCollection<any>, LocalDocType> = await c.upsertLocal<LocalDocType>('foobar', {
                     foo: 'bar'
                 });
 
