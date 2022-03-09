@@ -2,7 +2,7 @@
   "name": "rxdb",
   "description": "A realtime Database for JavaScript applications",
   "// version": "For pre-release versions run 'npm publish --tag next'",
-  "version": "12.0.0-beta.5",
+  "version": "12.0.0-beta.6",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -99,7 +99,7 @@
     "lint"
   ],
   "peerDependencies": {
-    "rxjs": "^7.4.0"
+    "rxjs": "^7.5.4"
   },
   "dependencies": {
     "@babel/runtime": "7.17.2",
