@@ -41,7 +41,7 @@ config.parallel('local-documents.test.js', () => {
     describe('.insertLocal()', () => {
         describe('positive', () => {
             it('should create a local document', async () => {
-                const c = await humansCollection.create();
+                const c = await humansCollection.create(0);
                 const doc = await c.insertLocal('foobar', {
                     foo: 'bar'
                 });
@@ -60,7 +60,7 @@ config.parallel('local-documents.test.js', () => {
         });
         describe('negative', () => {
             it('should throw if already exists', async () => {
-                const c = await humansCollection.create();
+                const c = await humansCollection.create(0);
                 const doc = await c.insertLocal('foobar', {
                     foo: 'bar'
                 });
@@ -81,7 +81,7 @@ config.parallel('local-documents.test.js', () => {
     describe('.getLocal()', () => {
         describe('positive', () => {
             it('should find the document', async () => {
-                const c = await humansCollection.create();
+                const c = await humansCollection.create(0);
                 await c.insertLocal('foobar', {
                     foo: 'bar'
                 });
@@ -91,7 +91,7 @@ config.parallel('local-documents.test.js', () => {
                 c.database.destroy();
             });
             it('should find the document twice (doc-cache)', async () => {
-                const c = await humansCollection.create();
+                const c = await humansCollection.create(0);
                 await c.insertLocal('foobar', {
                     foo: 'bar'
                 });
@@ -104,9 +104,50 @@ config.parallel('local-documents.test.js', () => {
         });
         describe('negative', () => {
             it('should not find non-existing', async () => {
-                const c = await humansCollection.create();
+                const c = await humansCollection.create(0);
                 const doc = await c.getLocal('foobar');
                 assert.strictEqual(doc, null);
+                c.database.destroy();
+            });
+        });
+    });
+    describe('atomic mutation functions', () => {
+        type LocalDocType = {
+            foo: string;
+            added?: string;
+        }
+        describe('.atomicPatch()', () => {
+            it('should modify the data', async () => {
+                const c = await humansCollection.create(0);
+                const doc = await c.upsertLocal<LocalDocType>('foobar', {
+                    foo: 'bar'
+                });
+
+                await doc.atomicPatch({
+                    added: 'foo'
+                });
+
+                assert.strictEqual(doc.get('foo'), 'bar');
+                assert.strictEqual(doc.get('added'), 'foo');
+
+                c.database.destroy();
+            });
+        });
+        describe('.atomicUpdate()', () => {
+            it('should modify the data', async () => {
+                const c = await humansCollection.create(0);
+                const doc = await c.upsertLocal<LocalDocType>('foobar', {
+                    foo: 'bar'
+                });
+
+                await doc.atomicUpdate(data => {
+                    data.added = 'foo';
+                    return data;
+                });
+
+                assert.strictEqual(doc.get('foo'), 'bar');
+                assert.strictEqual(doc.get('added'), 'foo');
+
                 c.database.destroy();
             });
         });
@@ -114,7 +155,7 @@ config.parallel('local-documents.test.js', () => {
     describe('.getLocal$()', () => {
         const id = 'foo';
         it('should emit null when not exists', async () => {
-            const c = await humansCollection.create();
+            const c = await humansCollection.create(0);
             const cData = await c.getLocal$(id).pipe(first()).toPromise();
             const dbData = await c.database.getLocal$(id).pipe(first()).toPromise();
 
@@ -124,7 +165,7 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
         it('should emit the document when exists', async () => {
-            const c = await humansCollection.create();
+            const c = await humansCollection.create(0);
 
             await c.insertLocal(id, {
                 foo: 'bar'
@@ -193,7 +234,7 @@ config.parallel('local-documents.test.js', () => {
     describe('.upsertLocal()', () => {
         describe('positive', () => {
             it('should insert when not exists', async () => {
-                const c = await humansCollection.create();
+                const c = await humansCollection.create(0);
                 const doc: RxLocalDocument<any, { foo: string; }> = await c.upsertLocal<{ foo: string; }>('foobar', {
                     foo: 'bar'
                 });
@@ -218,7 +259,7 @@ config.parallel('local-documents.test.js', () => {
              * @link https://github.com/pubkey/rxdb/issues/2471
              */
             it('should invoke subscription once', async () => {
-                const c = await humansCollection.create();
+                const c = await humansCollection.create(0);
                 const emitted: any[] = [];
                 const doc = await c.upsertLocal('foobar', {
                     foo: 'barOne',
@@ -245,7 +286,7 @@ config.parallel('local-documents.test.js', () => {
     });
     describe('.remove()', () => {
         it('should remove the document', async () => {
-            const c = await humansCollection.create();
+            const c = await humansCollection.create(0);
             const doc = await c.upsertLocal('foobar', {
                 foo: 'bar'
             });
@@ -257,7 +298,7 @@ config.parallel('local-documents.test.js', () => {
     });
     describe('with database', () => {
         it('should be able to use local documents directly on the database', async () => {
-            const c = await humansCollection.create();
+            const c = await humansCollection.create(0);
             const db = c.database;
 
             const doc1 = await db.insertLocal('foobar', {
@@ -576,7 +617,7 @@ config.parallel('local-documents.test.js', () => {
             const metadata = await boundaryMgmtCol.getLocal('metadata');
 
             await ensureNotFalsy(metadata).atomicUpdate(docData => {
-                docData.data.selectedBndrPlnId = grpId;
+                docData.selectedBndrPlnId = grpId;
                 return docData;
             });
 

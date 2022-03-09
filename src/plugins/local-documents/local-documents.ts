@@ -9,7 +9,6 @@ import type {
     RxCollection,
     RxDatabase,
     RxDocument,
-    RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocument,
     RxLocalDocumentData
@@ -80,18 +79,8 @@ export function upsertLocal<DocData = any>(
                 return docPromise;
             } else {
                 // update existing
-                const newData: RxDocumentData<RxLocalDocumentData<DocData>> = {
-                    id,
-                    data,
-                    _rev: existing._data._rev,
-                    _deleted: false,
-                    _attachments: {},
-                    _meta: getDefaultRxDocumentMeta()
-                };
-
                 return existing.atomicUpdate(() => {
-                    newData._rev = existing._data._rev;
-                    return newData;
+                    return data;
                 }).then(() => existing);
             }
         });

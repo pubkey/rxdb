@@ -2,9 +2,10 @@ import objectPath from 'object-path';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { overwritable } from '../../overwritable';
 import { basePrototype, createRxDocumentConstructor } from '../../rx-document';
-import { newRxError, newRxTypeError } from '../../rx-error';
+import { isPouchdbConflictError, newRxError, newRxTypeError } from '../../rx-error';
 import { writeSingle } from '../../rx-storage-helper';
 import type {
+    LocalDocumentAtomicUpdateFunction,
     LocalDocumentState,
     RxChangeEvent,
     RxCollection,
@@ -15,7 +16,7 @@ import type {
     RxLocalDocument,
     RxLocalDocumentData
 } from '../../types';
-import { flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
+import { clone, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
 import { getLocalDocStateByParent } from './local-documents-helper';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
@@ -115,12 +116,50 @@ const RxLocalDocumentPrototype: any = {
                 distinctUntilChanged()
             );
     },
+    atomicUpdate(mutationFunction: LocalDocumentAtomicUpdateFunction<any>) {
+        return new Promise((res, rej) => {
+            this._atomicQueue = this._atomicQueue
+                .then(async () => {
+                    let done = false;
+                    // we need a hacky while loop to stay incide the chain-link of _atomicQueue
+                    // while still having the option to run a retry on conflicts
+                    while (!done) {
+                        const oldDocData = this._dataSync$.getValue();
+                        try {
+                            // always await because mutationFunction might be async
+                            const newData = await mutationFunction(clone(oldDocData.data), this);
+
+                            const newDocData = flatClone(oldDocData);
+                            newDocData.data = newData;
+
+                            await this._saveData(newDocData, oldDocData);
+                            done = true;
+                        } catch (err) {
+                            /**
+                             * conflicts cannot happen by just using RxDB in one process
+                             * There are two ways they still can appear which is
+                             * replication and multi-tab usage
+                             * Because atomicUpdate has a mutation function,
+                             * we can just re-run the mutation until there is no conflict
+                             */
+                            if (isPouchdbConflictError(err as any)) {
+                                // pouchdb conflict error -> retrying
+                            } else {
+                                rej(err);
+                                return;
+                            }
+                        }
+                    }
+                    res(this);
+                });
+        });
+    },
     atomicPatch(patch: Partial<any>) {
         return this.atomicUpdate((docData: any) => {
             Object
                 .entries(patch)
                 .forEach(([k, v]) => {
-                    (docData as any).data[k] = v;
+                    docData[k] = v;
                 });
             return docData;
         });
