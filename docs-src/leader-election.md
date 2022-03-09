@@ -91,4 +91,4 @@ The leader is elected between different processes on the same javascript-runtime
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./rx-storage-dexie.md)
+If you are new to RxDB, you should continue [here](./rx-storage.md)

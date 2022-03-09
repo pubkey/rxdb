@@ -7,7 +7,7 @@
 
 `npm install rxdb rxjs --save`
 
-- Create a database with the PouchDB `RxStorage` (You can also use other storages based on [LokiJS](./rx-storage-lokijs.md) or [Dexie.js](./rx-storage-dexie.md)).
+- Create a database with the PouchDB [RxStorage](./rx-storage.md) (You can also use other storages based on [LokiJS](./rx-storage-lokijs.md) or [Dexie.js](./rx-storage-dexie.md)).
 
 ```ts
 import { createRxDatabase } from 'rxdb';

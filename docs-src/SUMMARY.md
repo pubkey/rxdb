@@ -111,6 +111,10 @@
 
 * [LeaderElection](./leader-election.md)
 
+* [RxStorage](./rx-storage.md)
+
+* [RxStorage PouchDB](./rx-storage-pouchdb.md)
+
 * [RxStorage Dexie.js](./rx-storage-dexie.md)
 
 * [RxStorage LokiJS](./rx-storage-lokijs.md)
