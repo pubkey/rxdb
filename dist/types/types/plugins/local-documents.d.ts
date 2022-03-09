@@ -21,10 +21,20 @@ export type RxLocalDocumentData<
         data: Data;
     };
 
+declare type LocalDocumentAtomicUpdateFunction<Data> = (
+    doc: Data,
+    rxLocalDocument: RxLocalDocument<any, Data>
+) => Data | Promise<Data>;
+
 
 export declare type RxLocalDocument<Parent, Data = any> = RxDocumentBase<RxLocalDocumentData<Data>> & {
     readonly parent: Parent;
     isLocal(): true;
 
+    /**
+     * Because local documents store their relevant data inside of the 'data' property,
+     * the atomic mutation methods are changed a bit to only allow to change parts of the data property.
+     */
+    atomicUpdate(mutationFunction: LocalDocumentAtomicUpdateFunction<Data>): Promise<RxLocalDocument<Parent, Data>>;
     atomicPatch(patch: Partial<Data>): Promise<RxLocalDocument<Parent, Data>>;
 };

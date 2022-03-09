@@ -94,17 +94,8 @@ function upsertLocal(id, data) {
       return docPromise;
     } else {
       // update existing
-      var newData = {
-        id: id,
-        data: data,
-        _rev: existing._data._rev,
-        _deleted: false,
-        _attachments: {},
-        _meta: (0, _util.getDefaultRxDocumentMeta)()
-      };
       return existing.atomicUpdate(function () {
-        newData._rev = existing._data._rev;
-        return newData;
+        return data;
       }).then(function () {
         return existing;
       });

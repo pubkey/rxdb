@@ -2721,36 +2721,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             documentWrites: documentWrites
           }
         });
-      } // TODO remove this check
+      }
 
-
-      documentWrites.forEach(function (writeRow) {
-        if (!writeRow.document._rev) {
-          console.dir(writeRow);
-          throw new Error('rev missing');
-        }
-
-        if (!writeRow.document._rev.includes('-')) {
-          console.dir(writeRow);
-          throw new Error('invalid rev format: ' + writeRow.document._rev);
-        }
-
-        if (writeRow.previous) {
-          var parsedPrev = (0, _util.parseRevision)(writeRow.previous._rev);
-
-          if (typeof parsedPrev.height !== 'number') {
-            console.dir(writeRow);
-            throw new Error('rev height is no number');
-          }
-
-          var parsedNew = (0, _util.parseRevision)(writeRow.document._rev);
-
-          if (parsedPrev.height >= parsedNew.height) {
-            console.dir(writeRow);
-            throw new Error('new revision must be higher then previous');
-          }
-        }
-      });
       var writeRowById = new Map();
       var insertDocsById = new Map();
       var writeDocs = documentWrites.map(function (writeData) {

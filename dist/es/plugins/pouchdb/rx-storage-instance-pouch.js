@@ -2,7 +2,7 @@ import { ObliviousSet } from 'oblivious-set';
 import { Subject } from 'rxjs';
 import { newRxError } from '../../rx-error';
 import { OPEN_POUCHDB_STORAGE_INSTANCES, POUCHDB_DESIGN_PREFIX, pouchDocumentDataToRxDocumentData, pouchSwapIdToPrimary, rxDocumentDataToPouchDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
-import { blobBufferUtil, flatClone, getFromMapOrThrow, parseRevision, PROMISE_RESOLVE_VOID } from '../../util';
+import { blobBufferUtil, flatClone, getFromMapOrThrow, PROMISE_RESOLVE_VOID } from '../../util';
 import { getCustomEventEmitterByPouch } from './custom-events-plugin';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
@@ -291,36 +291,8 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
             documentWrites: documentWrites
           }
         });
-      } // TODO remove this check
+      }
 
-
-      documentWrites.forEach(function (writeRow) {
-        if (!writeRow.document._rev) {
-          console.dir(writeRow);
-          throw new Error('rev missing');
-        }
-
-        if (!writeRow.document._rev.includes('-')) {
-          console.dir(writeRow);
-          throw new Error('invalid rev format: ' + writeRow.document._rev);
-        }
-
-        if (writeRow.previous) {
-          var parsedPrev = parseRevision(writeRow.previous._rev);
-
-          if (typeof parsedPrev.height !== 'number') {
-            console.dir(writeRow);
-            throw new Error('rev height is no number');
-          }
-
-          var parsedNew = parseRevision(writeRow.document._rev);
-
-          if (parsedPrev.height >= parsedNew.height) {
-            console.dir(writeRow);
-            throw new Error('new revision must be higher then previous');
-          }
-        }
-      });
       var writeRowById = new Map();
       var insertDocsById = new Map();
       var writeDocs = documentWrites.map(function (writeData) {
