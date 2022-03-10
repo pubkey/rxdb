@@ -58,7 +58,11 @@ export class RxReplicationStateBase<RxDocType> {
         initialReplicationComplete: new BehaviorSubject<boolean>(false) // true the initial replication-cycle is over
     };
 
-    private runningPromise: Promise<void> = PROMISE_RESOLVE_VOID;
+    /**
+     * Queue promise to ensure that run()
+     * does not run in parallel
+     */
+    public runningPromise: Promise<void> = PROMISE_RESOLVE_VOID;
     public runQueueCount: number = 0;
     /**
      * Counts how many times the run() method

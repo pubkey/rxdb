@@ -107,7 +107,7 @@ export function syncGraphQL<RxDocType>(
         liveInterval = 1000 * 10, // in ms
         retryTime = 1000 * 5, // in ms
     }: SyncOptionsGraphQL<RxDocType>
-) {
+): RxGraphQLReplicationState<RxDocType> {
     const collection = this;
 
     // fill in defaults for pull & push

@@ -34,7 +34,8 @@ import {
     RxDBReplicationGraphQLPlugin,
     graphQLSchemaFromRxSchema,
     pullQueryBuilderFromRxSchema,
-    pushQueryBuilderFromRxSchema
+    pushQueryBuilderFromRxSchema,
+    RxGraphQLReplicationState
 } from '../../plugins/replication-graphql';
 import {
     getLastPullDocument,
@@ -1621,7 +1622,7 @@ describe('replication-graphql.test.ts', () => {
                     ignoreDuplicate: true,
                     password: randomCouchString(10)
                 });
-                const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestamp);
+                const schema: RxJsonSchema<HumanWithTimestampDocumentType> = clone(schemas.humanWithTimestamp);
                 schema.encrypted = ['name'];
                 const collections = await db.addCollections({
                     humans: {
@@ -1634,7 +1635,7 @@ describe('replication-graphql.test.ts', () => {
                 testData[0].name = 'Alice';
                 const server = await SpawnServer.spawn(testData);
 
-                const replicationState = collection.syncGraphQL({
+                const replicationState: RxGraphQLReplicationState<HumanWithTimestampDocumentType> = collection.syncGraphQL({
                     url: server.url,
                     pull: {
                         batchSize,
