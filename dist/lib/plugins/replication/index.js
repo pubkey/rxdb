@@ -275,6 +275,11 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 var RxReplicationStateBase = /*#__PURE__*/function () {
   /**
+   * Queue promise to ensure that run()
+   * does not run in parallel
+   */
+
+  /**
    * Counts how many times the run() method
    * has been called. Used in tests.
    */

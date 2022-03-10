@@ -23,7 +23,11 @@ export declare class RxReplicationStateBase<RxDocType> {
         active: BehaviorSubject<boolean>;
         initialReplicationComplete: BehaviorSubject<boolean>;
     };
-    private runningPromise;
+    /**
+     * Queue promise to ensure that run()
+     * does not run in parallel
+     */
+    runningPromise: Promise<void>;
     runQueueCount: number;
     /**
      * Counts how many times the run() method

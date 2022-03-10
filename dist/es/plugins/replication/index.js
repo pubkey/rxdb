@@ -218,6 +218,11 @@ import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import { RxReplicationPullError, RxReplicationPushError } from './rx-replication-error';
 export var RxReplicationStateBase = /*#__PURE__*/function () {
   /**
+   * Queue promise to ensure that run()
+   * does not run in parallel
+   */
+
+  /**
    * Counts how many times the run() method
    * has been called. Used in tests.
    */
