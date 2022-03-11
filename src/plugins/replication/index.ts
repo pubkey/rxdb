@@ -449,7 +449,10 @@ export class RxReplicationStateBase<RxDocType> {
             batchSize,
         );
 
-        if (changesResult.changedDocs.size === 0) {
+        if (
+            changesResult.changedDocs.size === 0 ||
+            this.isStopped()
+        ) {
             return true;
         }
 
@@ -486,13 +489,11 @@ export class RxReplicationStateBase<RxDocType> {
             return true;
         }
 
-        if (changesResult.hasChangesSinceLastSequence) {
-            await setLastPushSequence(
-                this.collection,
-                this.replicationIdentifierHash,
-                changesResult.lastSequence
-            );
-        }
+        await setLastPushSequence(
+            this.collection,
+            this.replicationIdentifierHash,
+            changesResult.lastSequence
+        );
 
         // batch had documents so there might be more changes to replicate
         if (changesResult.changedDocs.size !== 0) {

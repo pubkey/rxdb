@@ -689,6 +689,47 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
-    });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/3727
+         */
+        it('#3727 should not go into infinite push loop when number of changed requests equals to batchSize', async () => {
+            const MAX_PUSH_COUNT = 30 // arbitrary big number
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 4 });
+            let pushCount = 0;
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    batchSize: 5,
+                    handler: async (documents) => {
+                        pushCount++;
 
+                        if (pushCount > MAX_PUSH_COUNT) {
+                            // Exit push cycle. Otherwise test will never end
+                            throw new Error('Stop replication');
+                        }
+
+                        const ret = await getPushHandler(remoteCollection)(documents);
+                        return ret;
+                    }
+                }
+            });
+
+            await replicationState.awaitInitialReplication();
+            const docData = schemaObjects.humanWithTimestamp();
+            await localCollection.insert(docData)
+            await replicationState.run();
+
+            if (pushCount > MAX_PUSH_COUNT) {
+                throw new Error('Infinite push loop');
+            }
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+
+        });
+    });
 });
