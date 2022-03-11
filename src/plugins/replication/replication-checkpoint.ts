@@ -136,7 +136,6 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
         sequence: number;
     }>;
     lastSequence: number;
-    hasChangesSinceLastSequence: boolean;
 }> {
     let lastPushSequence = await getLastPushSequence(
         collection,
@@ -215,7 +214,10 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             });
         });
 
-        if (changedDocs.size < batchSize && changesResults.changedDocuments.length === batchSize) {
+        if (
+            changedDocs.size < batchSize &&
+            changesResults.changedDocuments.length === batchSize
+        ) {
             // no pushable docs found but also not reached the end -> re-run
             lastPushSequence = lastSequence;
             retry = true;
@@ -223,12 +225,10 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             retry = false;
         }
     }
-
     return {
         changedDocIds,
         changedDocs,
-        lastSequence,
-        hasChangesSinceLastSequence: lastPushSequence !== lastSequence,
+        lastSequence
     };
 }
 

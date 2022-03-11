@@ -689,7 +689,10 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
-        it('should not go into infinite push loop when number of changed requests equals to batchSize', async () => {
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/3727
+         */
+        it('#3727 should not go into infinite push loop when number of changed requests equals to batchSize', async () => {
             const MAX_PUSH_COUNT = 30 // arbitrary big number
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 4 });
             let pushCount = 0;
@@ -701,15 +704,17 @@ describe('replication.test.js', () => {
                 },
                 push: {
                     batchSize: 5,
-                    handler: (documents) => {
-                        pushCount++
+                    handler: async (documents) => {
+                        pushCount++;
 
                         if (pushCount > MAX_PUSH_COUNT) {
                             // Exit push cycle. Otherwise test will never end
-                            throw new Error('Stop replication')
+                            throw new Error('Stop replication');
                         }
 
-                        return getPushHandler(remoteCollection)(documents)}
+                        const ret = await getPushHandler(remoteCollection)(documents);
+                        return ret;
+                    }
                 }
             });
 
@@ -724,6 +729,7 @@ describe('replication.test.js', () => {
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
+
         });
     });
 });
