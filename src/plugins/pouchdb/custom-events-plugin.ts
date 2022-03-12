@@ -139,7 +139,7 @@ export function addCustomEventsPluginToPouch() {
          * of the document and can later check if the state was changed
          * because a new revision was written and we have to emit an event.
          */
-        const previousDocsInDb: Map<string, RxDocumentData<any>> = new Map();
+        const previousDocsInDb: Map<string, RxDocumentData<any>> = options.custom ? options.custom.previousDocsInDb : new Map();
         if (
             options.hasOwnProperty('new_edits') &&
             options.new_edits === false

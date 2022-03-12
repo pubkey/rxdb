@@ -17,7 +17,8 @@ import {
     addRxPlugin,
     getPrimaryKeyOfInternalDocument,
     INTERNAL_CONTEXT_ENCRYPTION,
-    getSingleDocument
+    getSingleDocument,
+    parseRevision
 } from '../../';
 
 
@@ -389,22 +390,30 @@ config.parallel('rx-database.test.js', () => {
                     ignoreDuplicate: true
                 });
 
-                // wrap internalStore to track writes
-                const originalBulkWrite = db2.internalStore.bulkWrite.bind(db2.internalStore);
-                let writeCount = 0;
-                db2.internalStore.bulkWrite = (...args) => {
-                    writeCount++;
-                    return originalBulkWrite(...args);
-                }
-
                 await db2.addCollections({
                     [collectionName]: {
                         schema: schemas.human
                     }
                 });
-                await db2.destroy();
 
-                assert.strictEqual(writeCount, 0);
+                const internalStoreDocs = await db2.internalStore.query(
+                    db2.storage.statics.prepareQuery(
+                        db2.internalStore.schema,
+                        {
+                            selector: {
+                                context: 'collection'
+                            },
+                            sort: [{ id: 'asc' }]
+                        }
+                    )
+                );
+
+                // revision height must still be 1
+                const doc = Object.values(internalStoreDocs.documents)[0];
+                const parsedRev = parseRevision(doc._rev);
+                assert.strictEqual(parsedRev.height, 1);
+
+                await db2.destroy();
             });
         });
         describe('negative', () => {

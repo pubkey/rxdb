@@ -38,7 +38,7 @@ import {
     newRxError
 } from './rx-error';
 import {
-    createRxSchema
+    createRxSchema, RxSchema
 } from './rx-schema';
 import { overwritable } from './overwritable';
 import {
@@ -204,133 +204,115 @@ export class RxDatabaseBase<
     async addCollections<CreatedCollections = Partial<Collections>>(collectionCreators: {
         [key in keyof CreatedCollections]: RxCollectionCreator
     }): Promise<{ [key in keyof CreatedCollections]: RxCollection }> {
-        // get local management docs in bulk request
-        const collectionDocs = await this.lockedRun(
-            () => this.internalStore.findDocumentsById(
-                Object
-                    .keys(collectionCreators)
-                    .map(name => {
-                        const schema: RxJsonSchema<any> = (collectionCreators as any)[name].schema;
-                        return getPrimaryKeyOfInternalDocument(
-                            _collectionNamePrimary(name, schema),
-                            INTERNAL_CONTEXT_COLLECTION
-                        )
-                    }),
-                false
-            )
-        );
-
-        const internalDocByCollectionName: any = {};
-        Object.entries(collectionDocs).forEach(([_id, doc]) => {
-            internalDocByCollectionName[doc.key] = doc;
-        });
-
-        const schemaHashByName: { [key in keyof CreatedCollections]: string } = {} as any;
-        const collections = await Promise.all(
-            Object.entries(collectionCreators)
-                .map(([name, args]) => {
-                    const useName: keyof CreatedCollections = name as any;
-                    const internalDoc: InternalStoreCollectionDocType = internalDocByCollectionName[_collectionNamePrimary(name, collectionCreators[useName].schema)];
-                    const useArgs: RxCollectionCreator & { name: keyof CreatedCollections; } = flatClone(args) as any;
-                    useArgs.name = useName;
-                    const schema = createRxSchema((args as RxCollectionCreator).schema);
-                    schemaHashByName[useName] = schema.hash;
-
-                    /**
-                     * TODO
-                     * do not transfrom RxCollectionCreator
-                     * parameters here.
-                     * createRxCollection() must accept the plain data of
-                     * RxCollectionCreator
-                     */
-                    (useArgs as any).schema = schema;
-                    (useArgs as any).database = this;
-
-                    // crypt=true but no password given
-                    if (
-                        schema.crypt &&
-                        !this.password
-                    ) {
-                        throw newRxError('DB7', {
-                            name: name as string
-                        });
-                    }
-
-                    // collection already exists
-                    if ((this.collections as any)[name]) {
-                        throw newRxError('DB3', {
-                            name
-                        });
-                    }
-
-                    // collection already exists but has different schema
-                    if (internalDoc && internalDoc.data.schemaHash !== schemaHashByName[useName]) {
-                        throw newRxError('DB6', {
-                            name: name,
-                            previousSchemaHash: internalDoc.data.schemaHash,
-                            schemaHash: schemaHashByName[useName],
-                            previousSchema: internalDoc.data.schema,
-                            schema: (args as RxCollectionCreator).schema
-                        });
-                    }
-
-                    // run hooks
-                    const hookData: RxCollectionCreator & { name: string; } = flatClone(args) as any;
-                    (hookData as any).database = this;
-                    hookData.name = name;
-                    runPluginHooks('preCreateRxCollection', hookData);
-
-                    return createRxCollection(useArgs);
-                })
-        );
-
+        const jsonSchemas: { [key in keyof CreatedCollections]: RxJsonSchema<any> } = {} as any;
+        const schemas: { [key in keyof CreatedCollections]: RxSchema<any> } = {} as any;
         const bulkPutDocs: BulkWriteRow<InternalStoreCollectionDocType>[] = [];
-        const ret: { [key in keyof CreatedCollections]: RxCollection } = {} as any;
-        collections.forEach(collection => {
-            const name: keyof CreatedCollections = collection.name as any;
-            ret[name] = collection;
+        const useArgsByCollectionName: any = {};
 
-            // add to bulk-docs list
-            const collectionName = _collectionNamePrimary(name as any, collectionCreators[name].schema);
-            if (!internalDocByCollectionName[collectionName]) {
-                const collectionDocData = {
-                    id: getPrimaryKeyOfInternalDocument(
-                        collectionName,
-                        INTERNAL_CONTEXT_COLLECTION
-                    ),
-                    key: collectionName,
-                    context: INTERNAL_CONTEXT_COLLECTION,
-                    data: {
-                        schemaHash: schemaHashByName[name],
-                        schema: collection.schema.normalized,
-                        version: collection.schema.version,
-                    },
-                    _deleted: false,
-                    _meta: getDefaultRxDocumentMeta(),
-                    _rev: getDefaultRevision(),
-                    _attachments: {}
-                };
-                collectionDocData._rev = createRevision(collectionDocData);
-                bulkPutDocs.push({
-                    document: collectionDocData
+        Object.entries(collectionCreators).forEach(([name, args]) => {
+            const collectionName: keyof CreatedCollections = name as any;
+            const rxJsonSchema = (args as RxCollectionCreator).schema;
+            jsonSchemas[collectionName] = rxJsonSchema;
+            const schema = createRxSchema(rxJsonSchema);
+            schemas[collectionName] = schema;
+
+            // crypt=true but no password given
+            if (
+                schema.crypt &&
+                !this.password
+            ) {
+                throw newRxError('DB7', {
+                    name: name as string
                 });
             }
 
-            // set as getter to the database
-            (this.collections as any)[name] = collection;
-            if (!(this as any)[name]) {
-                Object.defineProperty(this, name, {
-                    get: () => (this.collections as any)[name]
+            // collection already exists
+            if ((this.collections as any)[name]) {
+                throw newRxError('DB3', {
+                    name
+                });
+            }
+
+            const collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
+            const collectionDocData: RxDocumentData<InternalStoreCollectionDocType> = {
+                id: getPrimaryKeyOfInternalDocument(
+                    collectionNameWithVersion,
+                    INTERNAL_CONTEXT_COLLECTION
+                ),
+                key: collectionNameWithVersion,
+                context: INTERNAL_CONTEXT_COLLECTION,
+                data: {
+                    name: collectionName as any,
+                    schemaHash: schema.hash,
+                    schema: schema.normalized,
+                    version: schema.version,
+                },
+                _deleted: false,
+                _meta: getDefaultRxDocumentMeta(),
+                _rev: getDefaultRevision(),
+                _attachments: {}
+            };
+            collectionDocData._rev = createRevision(collectionDocData);
+            bulkPutDocs.push({
+                document: collectionDocData
+            });
+
+            const useArgs = Object.assign(
+                {},
+                args,
+                {
+                    name: collectionName,
+                    schema,
+                    database: this,
+
+                }
+            );
+
+            // run hooks
+            const hookData: RxCollectionCreator & { name: string; } = flatClone(args) as any;
+            (hookData as any).database = this;
+            hookData.name = name;
+            runPluginHooks('preCreateRxCollection', hookData);
+
+            useArgsByCollectionName[collectionName] = useArgs;
+        });
+
+        const putDocsResult = await this.lockedRun(
+            () => this.internalStore.bulkWrite(bulkPutDocs)
+        );
+
+        Object.entries(putDocsResult.error).forEach(([_id, error]) => {
+            const docInDb: RxDocumentData<InternalStoreCollectionDocType> = error.documentInDb;
+            const collectionName = docInDb.data.name;
+            const schema = (schemas as any)[collectionName];
+            // collection already exists but has different schema
+            if (docInDb.data.schemaHash !== schema.hash) {
+                throw newRxError('DB6', {
+                    name: collectionName,
+                    previousSchemaHash: docInDb.data.schemaHash,
+                    schemaHash: schema.hash,
+                    previousSchema: docInDb.data.schema,
+                    schema: (jsonSchemas as any)[collectionName].schema
                 });
             }
         });
 
-        // make a single write call to the storage instance
-        if (bulkPutDocs.length > 0) {
-            await this.lockedRun(
-                () => this.internalStore.bulkWrite(bulkPutDocs)
-            );
-        }
+        const ret: { [key in keyof CreatedCollections]: RxCollection } = {} as any;
+        await Promise.all(
+            Object.keys(collectionCreators).map(async (collectionName) => {
+                const useArgs = useArgsByCollectionName[collectionName];
+                const collection = await createRxCollection(useArgs);
+                (ret as any)[collectionName] = collection;
+
+                // set as getter to the database
+                (this.collections as any)[collectionName] = collection;
+                if (!(this as any)[collectionName]) {
+                    Object.defineProperty(this, collectionName, {
+                        get: () => (this.collections as any)[collectionName]
+                    });
+                }
+            })
+        );
 
         return ret;
     }
@@ -575,7 +557,6 @@ export async function _removeAllOfCollection(
             const name = doc.key.split('-')[0];
             return name === collectionName;
         });
-
     const writeRows = relevantDocs.map(doc => {
         const writeDoc = flatClone(doc);
         writeDoc._deleted = true;
