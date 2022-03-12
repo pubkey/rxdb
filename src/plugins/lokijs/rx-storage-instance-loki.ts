@@ -200,7 +200,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         isError: true,
                         status: 409,
                         documentId: id,
-                        writeRow: writeRow
+                        writeRow: writeRow,
+                        documentInDb
                     };
                     ret.error[id] = err;
                 } else {
