@@ -110,7 +110,7 @@ export async function storePasswordHashIntoDatabase(
         );
     } catch (err) {
         if (
-            err.isError &&
+            (err as any).isError &&
             (err as RxStorageBulkWriteError<InternalStorePasswordDocType>).status === 409
         ) {
             pwHashDoc = (err as RxStorageBulkWriteError<InternalStorePasswordDocType>).documentInDb;
