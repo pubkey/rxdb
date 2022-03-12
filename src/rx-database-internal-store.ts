@@ -77,6 +77,10 @@ export type InternalStoreStorageTokenDocType = InternalStoreDocType<{
  * The collection.name is the 'key' value.
  */
 export type InternalStoreCollectionDocType = InternalStoreDocType<{
+    /**
+     * Plain name of the collection
+     */
+    name: string;
     schema: RxJsonSchema<any>;
     schemaHash: string;
     version: number;
