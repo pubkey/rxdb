@@ -276,7 +276,6 @@ for (let r = 0; r < runs; r++) {
                         .map(async () => {
                             const doc = await col.insert(docsData.pop());
                             t++;
-                            console.log('. ' + t);
                             lastDoc = doc;
                         })
                 );
