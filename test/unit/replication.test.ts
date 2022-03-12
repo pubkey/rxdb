@@ -729,7 +729,6 @@ describe('replication.test.js', () => {
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
-
         });
     });
 });

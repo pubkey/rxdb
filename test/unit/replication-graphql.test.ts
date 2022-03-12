@@ -1,6 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil, {
-    clone, wait
+    clone, wait, waitUntil
 } from 'async-test-util';
 import GraphQLClient from 'graphql-client';
 
@@ -28,7 +28,6 @@ import {
     addPouchPlugin,
     getRxStoragePouch
 } from '../../plugins/pouchdb';
-
 
 import {
     RxDBReplicationGraphQLPlugin,
@@ -1238,6 +1237,64 @@ describe('replication-graphql.test.ts', () => {
                 errSub.unsubscribe();
                 server.close();
                 db.destroy();
+            });
+            it('should not do more requests then needed', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+
+                let pullCount = 0;
+                let pushCount = 0;
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize: 20,
+                        queryBuilder: args => {
+                            pushCount++;
+                            return pushQueryBuilder(args);
+                        }
+                    },
+                    pull: {
+                        batchSize: 20,
+                        queryBuilder: args => {
+                            pullCount++;
+                            return queryBuilder(args);
+                        }
+                    },
+                    live: true,
+                    deletedFlag: 'deleted',
+                    liveInterval: 60 * 1000
+                });
+
+                await replicationState.awaitInitialReplication();
+
+                // pullCount should be exactly 1 because pull was started on replication start
+                assert.strictEqual(pullCount, 1);
+                assert.strictEqual(pushCount, 0);
+
+                // insert one document at the client
+                await c.insert(schemaObjects.humanWithTimestamp());
+
+                /**
+                 * After the insert,
+                 * exactly one push must be triggered
+                 * and then one pull should have happened afterwards
+                 */
+                await waitUntil(() => pushCount === 1);
+                await waitUntil(() => pullCount === 2);
+
+                /**
+                 * Even after some time,
+                 * no more requests should have happened
+                 */
+                await wait(250);
+                assert.strictEqual(pullCount, 2);
+                assert.strictEqual(pushCount, 1);
+
+
+                server.close();
+                c.database.destroy();
             });
         });
 
