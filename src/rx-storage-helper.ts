@@ -24,7 +24,11 @@ import type {
     RxStorageInstance,
     RxStorageStatics
 } from './types';
-import { clone, createRevision, firstPropertyValueOfObject, flatClone } from './util';
+import {
+    createRevision,
+    firstPropertyValueOfObject,
+    flatClone
+} from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
@@ -245,7 +249,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                 .map(row => transformDocumentDataFromRxDBToRxStorage(row));
             return database.lockedRun(
                 () => storageInstance.bulkWrite(
-                    clone(toStorageWriteRows)
+                    toStorageWriteRows
                 )
             ).then(writeResult => {
                 const ret: RxStorageBulkWriteResponse<RxDocType> = {
