@@ -145,6 +145,23 @@ const doc = await myCollection.upsert({
 });
 ```
 
+### bulkUpsert()
+Same as `upsert()` but runs over multiple documents. Improves performance compared to running many `upsert()` calls.
+
+```js
+const docs = await myCollection.bulkUpsert([
+  {
+    name: 'foo',
+    lastname: 'bar2'
+  },
+  {
+    name: 'bar',
+    lastname: 'foo2'
+  }
+]);
+// > [RxDocument, RxDocument]
+```
+
 ### atomicUpsert()
 
 When you run many upsert operations on the same RxDocument in a very short timespan, you might get a `409 Conflict` error.

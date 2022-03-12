@@ -441,29 +441,45 @@ export class RxCollectionBase<
     }
 
     /**
+     * same as bulkInsert but overwrites existing document with same primary
+     */
+    async bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<RxDocument<RxDocumentType, OrmMethods>[]> {
+        const insertData: RxDocumentType[] = [];
+        const useJsonByDocId: Map<string, RxDocumentType> = new Map();
+        docsData.forEach(docData => {
+            const useJson = fillObjectDataBeforeInsert(this.asRxCollection, docData);
+            const primary = useJson[this.schema.primaryPath];
+            if (!primary) {
+                throw newRxError('COL3', {
+                    primaryPath: this.schema.primaryPath as string,
+                    data: useJson,
+                    schema: this.schema.jsonSchema
+                });
+            }
+            useJsonByDocId.set(primary, useJson);
+            insertData.push(useJson);
+        });
+
+        const insertResult = await this.bulkInsert(insertData);
+        let ret = insertResult.success.slice(0);
+        const updatedDocs = await Promise.all(
+            insertResult.error.map(error => {
+                const id = error.documentId;
+                const writeData = getFromMapOrThrow(useJsonByDocId, id);
+                const docDataInDb = error.documentInDb;
+                const doc = createRxDocument(this.asRxCollection, docDataInDb);
+                return doc.atomicUpdate(() => writeData);
+            })
+        );
+        ret = ret.concat(updatedDocs);
+        return ret;
+    }
+
+    /**
      * same as insert but overwrites existing document with same primary
      */
     upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        const useJson = fillObjectDataBeforeInsert(this as any, json);
-        const primary = useJson[this.schema.primaryPath];
-        if (!primary) {
-            throw newRxError('COL3', {
-                primaryPath: this.schema.primaryPath as string,
-                data: useJson,
-                schema: this.schema.jsonSchema
-            });
-        }
-
-        return this.findOne(primary).exec()
-            .then((existing: RxDocument<RxDocumentType, OrmMethods> | null) => {
-                if (existing && !existing.deleted) {
-                    useJson._rev = (existing as any)['_rev'];
-                    return existing.atomicUpdate(() => useJson as any)
-                        .then(() => existing);
-                } else {
-                    return this.insert(json as any);
-                }
-            });
+        return this.bulkUpsert([json]).then(result => result[0]);
     }
 
     /**

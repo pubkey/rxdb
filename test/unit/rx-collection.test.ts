@@ -1296,6 +1296,32 @@ config.parallel('rx-collection.test.js', () => {
                 });
             });
         });
+        describe('.bulkUpsert()', () => {
+            describe('insert and update', async () => {
+                const c = await humansCollection.create(0);
+                const amount = 5;
+
+                // insert
+                await c.bulkUpsert(
+                    new Array(amount).fill(0).map(() => schemaObjects.human())
+                );
+                let allDocs = await c.find().exec();
+                assert.strictEqual(allDocs.length, 5);
+
+                // update
+                const docsData = allDocs.map(d => {
+                    const data = d.toMutableJSON();
+                    data.age = 100;
+                    return data;
+                });
+                await c.bulkUpsert(docsData);
+                allDocs = await c.find().exec();
+                assert.strictEqual(allDocs.length, 5);
+                allDocs.forEach(d => assert.strictEqual(d.age, 100));
+
+                c.database.destroy();
+            });
+        });
         describe('.upsert()', () => {
             describe('positive', () => {
                 it('insert when not exists', async () => {

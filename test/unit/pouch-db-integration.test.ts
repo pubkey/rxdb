@@ -109,6 +109,7 @@ config.parallel('pouch-db-integration.test.js', () => {
 
             console.log('--- 6');
             await syncHandler.cancel();
+            await promiseWait(100);
             console.log('--- 6.2');
             await pouch1.close();
             console.log('--- 6.5');
