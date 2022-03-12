@@ -267,7 +267,6 @@ for (let r = 0; r < runs; r++) {
                 .fill(0)
                 .map(() => schemaObjects.averageSchema());
 
-            let t = 0;
             const startTime = nowTime();
             for (let i = 0; i < benchmark.insertDocuments.blocks; i++) {
                 await Promise.all(
@@ -275,7 +274,6 @@ for (let r = 0; r < runs; r++) {
                         .fill(0)
                         .map(async () => {
                             const doc = await col.insert(docsData.pop());
-                            t++;
                             lastDoc = doc;
                         })
                 );
