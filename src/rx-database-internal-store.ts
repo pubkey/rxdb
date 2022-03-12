@@ -1,5 +1,5 @@
 import { getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
-import { getSingleDocument, writeSingle } from './rx-storage-helper';
+import { writeSingle } from './rx-storage-helper';
 import type {
     RxDatabase,
     RxDocumentData,
@@ -77,6 +77,10 @@ export type InternalStoreStorageTokenDocType = InternalStoreDocType<{
  * The collection.name is the 'key' value.
  */
 export type InternalStoreCollectionDocType = InternalStoreDocType<{
+    /**
+     * Plain name of the collection
+     */
+    name: string;
     schema: RxJsonSchema<any>;
     schemaHash: string;
     version: number;
@@ -167,13 +171,8 @@ export async function ensureStorageTokenExists<Collections = any>(rxDatabase: Rx
             err.isError &&
             (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).status === 409
         ) {
-            const useStorageTokenDoc = await getSingleDocument<InternalStoreStorageTokenDocType>(
-                rxDatabase.internalStore,
-                storageTokenDocumentId
-            );
-            if (useStorageTokenDoc) {
-                return useStorageTokenDoc.data.token;
-            }
+            const storageTokenDocInDb = (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).documentInDb;
+            return storageTokenDocInDb.data.token;
         }
         throw err;
     }

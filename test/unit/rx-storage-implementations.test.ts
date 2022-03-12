@@ -257,6 +257,15 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const first = getFromObjectOrThrow(writeResponse.error, 'foobar');
                 assert.strictEqual(first.status, 409);
                 assert.strictEqual(first.documentId, 'foobar');
+
+                /**
+                 * The conflict error state must contain the
+                 * document state in the database.
+                 * This ensures that we can continue resolving the conflict
+                 * without having to pull the document out of the db first.
+                 */
+                assert.ok(first.documentInDb.value, writeData.value);
+
                 assert.ok(first.writeRow);
 
                 storageInstance.close();

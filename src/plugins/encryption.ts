@@ -17,7 +17,8 @@ import type {
     RxPlugin,
     RxDatabase,
     RxDocumentData,
-    RxDocumentWriteData
+    RxDocumentWriteData,
+    RxStorageBulkWriteError
 } from '../types';
 import {
     clone,
@@ -28,7 +29,7 @@ import {
     hash,
     PROMISE_RESOLVE_FALSE
 } from '../util';
-import { getSingleDocument } from '../rx-storage-helper';
+import { writeSingle } from '../rx-storage-helper';
 import {
     getPrimaryKeyOfInternalDocument,
     InternalStoreDocType,
@@ -85,29 +86,40 @@ export async function storePasswordHashIntoDatabase(
         INTERNAL_CONTEXT_ENCRYPTION
     );
 
-    const pwHashDoc = await getSingleDocument<InternalStorePasswordDocType>(
-        rxDatabase.internalStore,
-        pwHashDocumentId
-    );
-    if (!pwHashDoc) {
-        const docData: RxDocumentWriteData<InternalStorePasswordDocType> = {
-            id: pwHashDocumentId,
-            key: pwHashDocumentKey,
-            context: INTERNAL_CONTEXT_ENCRYPTION,
-            data: {
-                hash: pwHash
-            },
-            _deleted: false,
-            _attachments: {},
-            _meta: getDefaultRxDocumentMeta(),
-            _rev: getDefaultRevision()
-        };
-        docData._rev = createRevision(docData);
-        await rxDatabase.internalStore.bulkWrite([{
-            document: docData
-        }]);
-        return true;
-    } else if (pwHash !== pwHashDoc.data.hash) {
+    const docData: RxDocumentWriteData<InternalStorePasswordDocType> = {
+        id: pwHashDocumentId,
+        key: pwHashDocumentKey,
+        context: INTERNAL_CONTEXT_ENCRYPTION,
+        data: {
+            hash: pwHash
+        },
+        _deleted: false,
+        _attachments: {},
+        _meta: getDefaultRxDocumentMeta(),
+        _rev: getDefaultRevision()
+    };
+    docData._rev = createRevision(docData);
+
+    let pwHashDoc;
+    try {
+        pwHashDoc = await writeSingle(
+            rxDatabase.internalStore,
+            {
+                document: docData
+            }
+        );
+    } catch (err) {
+        if (
+            (err as any).isError &&
+            (err as RxStorageBulkWriteError<InternalStorePasswordDocType>).status === 409
+        ) {
+            pwHashDoc = (err as RxStorageBulkWriteError<InternalStorePasswordDocType>).documentInDb;
+        } else {
+            throw err;
+        }
+    }
+
+    if (pwHash !== pwHashDoc.data.hash) {
         // different hash was already set by other instance
         await rxDatabase.destroy();
         throw newRxError('DB1', {

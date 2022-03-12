@@ -164,6 +164,14 @@ export type RxStorageBulkWriteError<RxDocType> = {
 
     // the original document data that should have been written.
     writeRow: BulkWriteRow<RxDocType>;
+
+    /**
+     * The error state must contain the
+     * document state in the database.
+     * This ensures that we can continue resolving a conflict
+     * without having to pull the document out of the db first.
+     */
+    documentInDb: RxDocumentData<RxDocType>;
 }
 
 export type RxStorageBulkWriteResponse<DocData> = {

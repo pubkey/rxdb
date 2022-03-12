@@ -151,12 +151,15 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             insertDocsById.set(primary, storeDocumentData);
             return storeDocumentData;
         });
+
+        const previousDocsInDb: Map<string, RxDocumentData<any>> = new Map();
         const pouchResult = await this.internals.pouch.bulkDocs(writeDocs, {
             new_edits: false,
             custom: {
                 primaryPath: this.primaryPath,
                 writeRowById,
-                insertDocsById
+                insertDocsById,
+                previousDocsInDb
             }
         } as any);
 
@@ -169,11 +172,16 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             pouchResult.map(async (resultRow) => {
                 const writeRow = getFromMapOrThrow(writeRowById, resultRow.id);
                 if ((resultRow as PouchWriteError).error) {
+                    const previousDoc = getFromMapOrThrow(previousDocsInDb, resultRow.id);
                     const err: RxStorageBulkWriteError<RxDocType> = {
                         isError: true,
                         status: 409,
                         documentId: resultRow.id,
-                        writeRow
+                        writeRow,
+                        documentInDb: pouchDocumentDataToRxDocumentData(
+                            this.primaryPath,
+                            previousDoc
+                        )
                     };
                     ret.error[resultRow.id] = err;
                 } else {
