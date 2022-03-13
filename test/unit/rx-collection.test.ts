@@ -1297,7 +1297,7 @@ config.parallel('rx-collection.test.js', () => {
             });
         });
         describe('.bulkUpsert()', () => {
-            describe('insert and update', async () => {
+            it('insert and update', async () => {
                 const c = await humansCollection.create(0);
                 const amount = 5;
 
