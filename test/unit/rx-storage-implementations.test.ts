@@ -420,6 +420,73 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 storageInstance.close();
             });
+            /**
+             * Updating a deleted document can happen
+             * when a deleted document is replicated from the client to the server
+             * and the server modifies a different field and sends the updated document back to the client.
+             * @link https://github.com/pubkey/rxdb/pull/3734
+             */
+            it('should be able to update the state of a deleted document', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+                const docId = 'foobar';
+
+                // insert
+                const docData: RxDocumentData<TestDocType> = {
+                    key: docId,
+                    value: 'barfoo1',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+                const insertResponse = await storageInstance.bulkWrite([{
+                    document: docData
+                }]);
+                assert.deepStrictEqual(insertResponse.error, {});
+                let previous = insertResponse.success[docId];
+
+                // delete
+                const deleteResponse = await storageInstance.bulkWrite([{
+                    previous,
+                    document: Object.assign({}, docData, {
+                        _deleted: true,
+                        _rev: EXAMPLE_REVISION_2,
+                        _meta: { lwt: now() }
+                    })
+                }]);
+                assert.deepStrictEqual(deleteResponse.error, {});
+                previous = deleteResponse.success[docId];
+
+                // modify deleted
+                const modifyResponse = await storageInstance.bulkWrite([{
+                    previous,
+                    document: Object.assign({}, docData, {
+                        value: 'barfoo2',
+                        _deleted: true,
+                        _rev: EXAMPLE_REVISION_3,
+                        _meta: { lwt: now() }
+                    })
+                }]);
+                assert.deepStrictEqual(modifyResponse.error, {});
+                previous = modifyResponse.success[docId];
+                assert.strictEqual(previous.value, 'barfoo2');
+
+                // check modified
+                const docs = await storageInstance.findDocumentsById([docId], true);
+                const doc = docs[docId];
+                assert.ok(doc);
+                assert.strictEqual(doc.value, 'barfoo2');
+
+                storageInstance.close();
+            });
             it('should be able to unset a property', async () => {
                 const schema = getTestDataSchema();
                 schema.required = ['key'];

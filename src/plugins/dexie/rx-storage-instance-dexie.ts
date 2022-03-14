@@ -229,18 +229,32 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                     previous,
                                     doc: null
                                 };
+                            }else if(
+                                writeRow.previous && writeRow.previous._deleted &&
+                                writeRow.document._deleted
+                            ){
+                                // deleted doc was overwritten with other deleted doc
+                                bulkPutDeletedDocs.push(writeDoc);
                             }
                             if (!change) {
-                                throw newRxError('SNH', { args: { writeRow } });
+                                if (
+                                    writeRow.previous && writeRow.previous._deleted &&
+                                    writeRow.document._deleted
+                                ) {
+                                    // deleted doc got overwritten with other deleted doc -> do not send an event
+                                } else {
+                                    throw newRxError('SNH', { args: { writeRow } });
+                                }
+                            } else {
+                                eventBulk.events.push({
+                                    eventId: getDexieEventKey(this, id, writeRow.document._rev),
+                                    documentId: id,
+                                    change,
+                                    startTime,
+                                    // will be filled up before the event is pushed into the changestream
+                                    endTime: startTime
+                                });
                             }
-                            eventBulk.events.push({
-                                eventId: getDexieEventKey(this, id, writeRow.document._rev),
-                                documentId: id,
-                                change,
-                                startTime,
-                                // will be filled up before the event is pushed into the changestream
-                                endTime: startTime
-                            });
                             ret.success[id] = writeDoc;
                         }
                     }

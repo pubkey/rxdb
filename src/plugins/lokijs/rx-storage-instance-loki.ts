@@ -251,15 +251,23 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                         };
                     }
                     if (!change) {
-                        throw newRxError('SNH', { args: { writeRow } });
+                        if (
+                            writeRow.previous && writeRow.previous._deleted &&
+                            writeRow.document._deleted
+                        ) {
+                            // deleted doc got overwritten with other deleted doc -> do not send an event
+                        } else {
+                            throw newRxError('SNH', { args: { writeRow } });
+                        }
+                    } else {
+                        eventBulk.events.push({
+                            eventId: getLokiEventKey(this, id, writeRow.document._rev),
+                            documentId: id,
+                            change,
+                            startTime,
+                            endTime: now()
+                        });
                     }
-                    eventBulk.events.push({
-                        eventId: getLokiEventKey(this, id, writeRow.document._rev),
-                        documentId: id,
-                        change,
-                        startTime,
-                        endTime: now()
-                    });
                     ret.success[id] = stripLokiKey(writeDoc);
                 }
             }
