@@ -638,7 +638,7 @@ describe('replication-couchdb.test.js', () => {
                     remote: remoteCollection
                 });
 
-                const emitted: RxChangeEvent<RxDocumentData<HumanDocumentType>>[] = [];
+                const emitted: RxChangeEvent<HumanDocumentType>[] = [];
                 const sub = collection.$.subscribe(cE => {
                     emitted.push(cE);
                 });
