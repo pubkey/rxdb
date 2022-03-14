@@ -302,7 +302,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 // make an update
                 const updateData = Object.assign({}, insertData, {
                     value: 'barfoo2',
-                    _rev: EXAMPLE_REVISION_2
+                    _rev: EXAMPLE_REVISION_2,
+                    _meta: {
+                        lwt: now()
+                    }
                 });
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
@@ -318,7 +321,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         previous: updateData,
                         document: Object.assign({}, first, {
                             _deleted: true,
-                            _rev: EXAMPLE_REVISION_3
+                            _rev: EXAMPLE_REVISION_3,
+                            _meta: {
+                                lwt: now()
+                            }
                         })
                     }]
                 );
@@ -361,7 +367,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         previous: previous,
                         document: Object.assign({}, previous, {
                             value: 'barfoo2',
-                            _rev: EXAMPLE_REVISION_2
+                            _rev: EXAMPLE_REVISION_2,
+                            _meta: {
+                                lwt: now()
+                            }
                         })
                     }]
                 );
@@ -374,7 +383,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         previous: previous,
                         document: Object.assign({}, previous, {
                             _deleted: true,
-                            _rev: EXAMPLE_REVISION_3
+                            _rev: EXAMPLE_REVISION_3,
+                            _meta: {
+                                lwt: now()
+                            }
                         })
                     }]
                 );
@@ -389,7 +401,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         document: Object.assign({}, second, {
                             _deleted: false,
                             value: 'aaa',
-                            _rev: EXAMPLE_REVISION_4
+                            _rev: EXAMPLE_REVISION_4,
+                            _meta: {
+                                lwt: now()
+                            }
                         })
                     }]
                 );
@@ -1238,6 +1253,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 // update
                 writeData.value = 'two';
                 writeData._rev = EXAMPLE_REVISION_2;
+                writeData._meta = {
+                    lwt: now()
+                };
                 const updateResult = await storageInstance.bulkWrite([{
                     previous,
                     document: writeData
@@ -1258,6 +1276,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 // delete
                 writeData._deleted = true;
                 writeData._rev = EXAMPLE_REVISION_3;
+                writeData._meta = {
+                    lwt: now()
+                };
                 await storageInstance.bulkWrite([{
                     previous,
                     document: writeData
@@ -1485,13 +1506,17 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const updateResult = await storageInstance.bulkWrite([{
                     previous,
                     document: Object.assign({}, writeData, {
-                        _rev: EXAMPLE_REVISION_2
+                        _rev: EXAMPLE_REVISION_2,
+                        _meta: {
+                            lwt: now()
+                        }
                     })
                 }]);
                 previous = getFromObjectOrThrow(updateResult.success, writeData.key);
 
                 // should not mutate the input or add additional properties to output
                 originalBeforeUpdate._rev = (previous as any)._rev;
+                originalBeforeUpdate._meta = (previous as any)._meta;
                 assert.deepStrictEqual(originalBeforeUpdate, previous);
 
                 // delete
@@ -1499,7 +1524,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 await storageInstance.bulkWrite([{
                     previous,
                     document: Object.assign({}, writeData, {
-                        _rev: EXAMPLE_REVISION_3
+                        _rev: EXAMPLE_REVISION_3,
+                        _meta: {
+                            lwt: now()
+                        }
                     })
                 }]);
 
@@ -1682,7 +1710,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     storageInstance,
                     {
                         previous,
-                        document: writeData
+                        document: Object.assign({}, writeData, {
+                            _meta: {
+                                lwt: now()
+                            }
+                        })
                     }
                 );
 
@@ -1707,7 +1739,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     storageInstance,
                     {
                         previous,
-                        document: writeData
+                        document: Object.assign({}, writeData, {
+                            _meta: {
+                                lwt: now()
+                            }
+                        })
                     }
                 );
                 if (!previous) {
@@ -1765,7 +1801,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 }]);
                 const previous = getFromObjectOrThrow(insertResult.success, id);
-                console.dir(previous);
+
                 /**
                  * Delete
                  */

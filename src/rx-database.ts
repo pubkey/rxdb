@@ -30,9 +30,9 @@ import {
     randomCouchString,
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID,
-    getDefaultRxDocumentMeta,
     getDefaultRevision,
-    createRevision
+    createRevision,
+    now
 } from './util';
 import {
     newRxError
@@ -187,6 +187,8 @@ export class RxDatabaseBase<
         const writeDoc = flatClone(doc);
         writeDoc._deleted = true;
         writeDoc._rev = createRevision(writeDoc, doc);
+        writeDoc._meta = { lwt: now() };
+
         await this.lockedRun(
             () => this.internalStore.bulkWrite([{
                 document: writeDoc,
@@ -248,7 +250,9 @@ export class RxDatabaseBase<
                     version: schema.version,
                 },
                 _deleted: false,
-                _meta: getDefaultRxDocumentMeta(),
+                _meta: {
+                    lwt: now()
+                },
                 _rev: getDefaultRevision(),
                 _attachments: {}
             };
@@ -561,6 +565,7 @@ export async function _removeAllOfCollection(
         const writeDoc = flatClone(doc);
         writeDoc._deleted = true;
         writeDoc._rev = createRevision(writeDoc, doc);
+        writeDoc._meta = { lwt: now() };
         return {
             previous: doc,
             document: writeDoc

@@ -142,6 +142,22 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
         const insertDocsById: Map<string, any> = new Map();
         const writeDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
+
+            /**
+             * Ensure that _meta.lwt is set correctly
+             */
+            if (
+                writeData.document._meta.lwt < 1000 ||
+                (
+                    writeData.previous &&
+                    writeData.previous._meta.lwt >= writeData.document._meta.lwt
+                )
+            ) {
+                throw newRxError('SNH', {
+                    args: writeData
+                });
+            }
+
             const primary: string = (writeData.document as any)[this.primaryPath];
             writeRowById.set(primary, writeData);
             const storeDocumentData: any = rxDocumentDataToPouchDocumentData<RxDocType>(

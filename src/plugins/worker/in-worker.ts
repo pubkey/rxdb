@@ -50,6 +50,7 @@ export type InWorkerStorage = {
     changeStream<DocumentData>(
         instanceById: number
     ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
+    cleanup(instanceId: number, minDeletedTime: number): Promise<boolean>;
     close(instanceId: number): Promise<void>;
     remove(instanceId: number): Promise<void>;
 }
@@ -122,6 +123,13 @@ export function wrappedRxStorage<T, D>(
         ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.changeStream();
+        },
+        cleanup(
+            instanceId: number,
+            minDeletedTime: number
+        ) {
+            const instance = getFromMapOrThrow(instanceById, instanceId);
+            return instance.cleanup(minDeletedTime);
         },
         close(instanceId: number) {
             const instance = getFromMapOrThrow(instanceById, instanceId);

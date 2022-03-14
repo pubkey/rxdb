@@ -13,7 +13,7 @@ import {
     createRevision,
     flatClone,
     getDefaultRevision,
-    getDefaultRxDocumentMeta
+    now
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import { wasLastWriteFromPullReplication } from './revision-flag';
@@ -74,7 +74,9 @@ export async function setLastPushSequence(
                 lastPushSequence: sequence
             },
             _deleted: false,
-            _meta: getDefaultRxDocumentMeta(),
+            _meta: {
+                lwt: now()
+            },
             _rev: getDefaultRevision(),
             _attachments: {}
         };
@@ -98,7 +100,9 @@ export async function setLastPushSequence(
             data: {
                 lastPushSequence: sequence
             },
-            _meta: getDefaultRxDocumentMeta(),
+            _meta: {
+                lwt: now()
+            },
             _rev: getDefaultRevision(),
             _deleted: false,
             _attachments: {}
@@ -281,7 +285,9 @@ export async function setLastPullDocument<RxDocType>(
             data: {
                 lastPulledDoc: lastPulledDoc as any
             },
-            _meta: getDefaultRxDocumentMeta(),
+            _meta: {
+                lwt: now()
+            },
             _rev: getDefaultRevision(),
             _deleted: false,
             _attachments: {}
@@ -297,6 +303,7 @@ export async function setLastPullDocument<RxDocType>(
         const newDoc = flatClone(lastPullCheckpointDoc);
         newDoc.data = { lastPulledDoc: lastPulledDoc as any };
         newDoc._rev = createRevision(newDoc, lastPullCheckpointDoc);
+        newDoc._meta = { lwt: now() };
         return writeSingle<InternalStoreReplicationPullDocType<RxDocType>>(
             collection.database.internalStore,
             {

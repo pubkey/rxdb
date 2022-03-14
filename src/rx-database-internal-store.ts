@@ -8,7 +8,7 @@ import type {
     RxStorageBulkWriteError,
     RxStorageInstance
 } from './types';
-import { createRevision, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './util';
+import { createRevision, getDefaultRevision, getDefaultRxDocumentMeta, now, randomCouchString } from './util';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
@@ -149,7 +149,9 @@ export async function ensureStorageTokenExists<Collections = any>(rxDatabase: Rx
                 token: storageToken
             },
             _deleted: false,
-            _meta: getDefaultRxDocumentMeta(),
+            _meta: {
+                lwt: now()
+            },
             _rev: getDefaultRevision(),
             _attachments: {}
         };

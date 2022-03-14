@@ -130,6 +130,9 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>> {
         return this.changes$.asObservable();
     }
+    cleanup(minDeletedTime: number) {
+        return this.internals.worker.cleanup(minDeletedTime);
+    }
     close(): Promise<void> {
         this.subs.forEach(sub => sub.unsubscribe());
         return this.internals.worker.close(

@@ -27,7 +27,8 @@ import type {
 import {
     createRevision,
     firstPropertyValueOfObject,
-    flatClone
+    flatClone,
+    now
 } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
@@ -181,7 +182,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             );
         }
 
-        data._meta.lwt = new Date().getTime();
+        data._meta.lwt = now();
         const hookParams = {
             database,
             primaryPath,
@@ -297,6 +298,11 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         getChangedDocuments(options: ChangeStreamOnceOptions) {
             return database.lockedRun(
                 () => storageInstance.getChangedDocuments(options)
+            );
+        },
+        cleanup(minDeletedTime: number) {
+            return database.lockedRun(
+                () => storageInstance.cleanup(minDeletedTime)
             );
         },
         remove() {
