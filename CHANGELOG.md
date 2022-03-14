@@ -27,6 +27,7 @@
 - Added `RxDocument().toMutableJSON()`
 - Added `RxCollection().bulkUpsert()`
 - Added `RxStorageInstance.cleanup()`
+- Added cleanup plugin
 
 ### 11.6.0 (4 February 2022)
 
