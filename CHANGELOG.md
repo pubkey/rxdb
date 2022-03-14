@@ -26,6 +26,7 @@
 - Refactor local documents plugin to only create a storage instance for local documents when needed.
 - Added `RxDocument().toMutableJSON()`
 - Added `RxCollection().bulkUpsert()`
+- Added `RxStorageInstance.cleanup()`
 
 ### 11.6.0 (4 February 2022)
 

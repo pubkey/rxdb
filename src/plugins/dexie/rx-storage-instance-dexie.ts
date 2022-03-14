@@ -353,6 +353,31 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return this.changes$.asObservable();
     }
 
+    async cleanup(minimumDeletedTime: number): Promise<boolean> {
+        const state = await this.internals;
+        await state.dexieDb.transaction(
+            'rw',
+            state.dexieDeletedTable,
+            async () => {
+                const maxDeletionTime = now() - minimumDeletedTime;
+                const toRemove = await state.dexieDeletedTable
+                    .where('_meta.lwt')
+                    .below(maxDeletionTime)
+                    .toArray();
+                const removeIds: string[] = toRemove.map(doc => doc[this.primaryPath]);
+                await state.dexieDeletedTable.bulkDelete(removeIds);
+            }
+        );
+
+        /**
+         * TODO instead of deleting all deleted docs at once,
+         * only clean up some of them and return true.
+         * This ensures that when many documents have to be purged,
+         * we do not block the more important tasks too long.
+         */
+        return false;
+    }
+
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
         throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
     }

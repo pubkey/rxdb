@@ -177,8 +177,6 @@ export function getDexieStoreSchema(
         return part.map(str => dexieReplaceIfStartsWithPipe(str))
     });
 
-
-
     return parts.map(part => {
         if (part.length === 1) {
             return part[0];

@@ -371,6 +371,29 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
         return this.changes$.asObservable();
     }
+
+    async cleanup(minimumDeletedTime: number): Promise<boolean> {
+        const localState = await mustUseLocalState(this);
+        if (!localState) {
+            return requestRemoteInstance(this, 'cleanup', [minimumDeletedTime]);
+        }
+
+        const deleteAmountPerRun = 10;
+        const maxDeletionTime = now() - minimumDeletedTime;
+        const query = localState.collection
+            .chain()
+            .find({
+                _deleted: true,
+                '_meta.lwt': {
+                    $lt: maxDeletionTime
+                }
+            }).limit(deleteAmountPerRun);
+        const foundDocuments = query.data();
+        localState.collection.remove(foundDocuments);
+
+        return foundDocuments.length !== deleteAmountPerRun;
+    }
+
     async close(): Promise<void> {
         this.closed = true;
         this.changes$.complete();

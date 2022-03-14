@@ -1502,12 +1502,6 @@ config.parallel('rx-collection.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
 
-                    console.log('::::::::::::::::::::::::::::::::::::::::');
-                    console.log('::::::::::::::::::::::::::::::::::::::::');
-                    console.log('::::::::::::::::::::::::::::::::::::::::');
-                    console.log('::::::::::::::::::::::::::::::::::::::::');
-
-
                     let t = 0;
                     const amount = config.isFastMode() ? 20 : 200;
                     const docs = await Promise.all(
@@ -1528,11 +1522,6 @@ config.parallel('rx-collection.test.js', () => {
                     assert.strictEqual(t, amount);
                     assert.ok(docs[0] === docs[1]);
                     assert.ok(isRxDocument(docs[0]));
-
-                    console.log('#######################################');
-                    console.log('#######################################');
-                    console.log('#######################################');
-                    console.log('#######################################');
 
                     c.database.destroy();
                 });

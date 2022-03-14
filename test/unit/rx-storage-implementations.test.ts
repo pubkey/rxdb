@@ -1718,6 +1718,115 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 storageInstance.close();
             });
         });
+        describe('.cleanup', () => {
+            it('should have cleaned up the deleted document', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const id = 'foobar';
+                const nonDeletedId = 'foobar2';
+
+                /**
+                 * Insert one that does not get deleted
+                 * and should still be there after the cleanup
+                 */
+                await storageInstance.bulkWrite([{
+                    document: {
+                        key: nonDeletedId,
+                        value: 'barfoo',
+                        _rev: EXAMPLE_REVISION_1,
+                        _deleted: false,
+                        _meta: {
+                            lwt: now()
+                        },
+                        _attachments: {}
+                    }
+                }]);
+
+
+                /**
+                 * Insert
+                 */
+                const insertResult = await storageInstance.bulkWrite([{
+                    document: {
+                        key: id,
+                        value: 'barfoo',
+                        _attachments: {},
+                        _rev: EXAMPLE_REVISION_1,
+                        _meta: {
+                            lwt: now()
+                        },
+                        _deleted: false
+                    }
+                }]);
+                const previous = getFromObjectOrThrow(insertResult.success, id);
+                console.dir(previous);
+                /**
+                 * Delete
+                 */
+                const deleteResult = await storageInstance.bulkWrite([{
+                    previous,
+                    document: {
+                        key: id,
+                        value: 'barfoo',
+                        _rev: EXAMPLE_REVISION_2,
+                        _deleted: true,
+                        _meta: {
+                            lwt: now()
+                        },
+                        _attachments: {}
+                    }
+                }]);
+                getFromObjectOrThrow(deleteResult.success, id);
+
+                /**
+                 * Running .cleanup() with a height minimumDeletedTime
+                 * should not remove the deleted document.
+                 */
+                await storageInstance.cleanup(1000 * 60 * 60);
+
+                const mustBeThereButDeleted = await storageInstance.findDocumentsById(
+                    [id],
+                    true
+                );
+                const doc = mustBeThereButDeleted[id];
+                assert.ok(doc._deleted);
+
+                // clean up the deleted document
+                await storageInstance.cleanup(0);
+
+                if (config.storage.name === 'pouchdb') {
+                    /**
+                     * PouchDB is not able to fully purge a document
+                     * so it makes no sense to check if the deleted document
+                     * was removed on cleanup.
+                     */
+                    return;
+                }
+
+                const mustNotBeThere = await storageInstance.findDocumentsById(
+                    [id],
+                    true
+                );
+                assert.deepStrictEqual(mustNotBeThere, {});
+
+                /**
+                 * Other docs must still be there
+                 */
+                const nonDeletedDoc = await storageInstance.findDocumentsById(
+                    [nonDeletedId],
+                    true
+                );
+                assert.ok(nonDeletedDoc[nonDeletedId]);
+
+                storageInstance.close();
+            });
+        });
         describe('.remove()', () => {
             it('should have deleted all data', async () => {
                 const databaseName = randomCouchString(12);

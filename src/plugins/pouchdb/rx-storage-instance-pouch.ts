@@ -295,6 +295,18 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return this.changes$.asObservable();
     }
 
+    cleanup(_minimumDeletedTime: number): Promise<boolean> {
+        /**
+         * PouchDB does not support purging documents.
+         * So instead we run a compaction that might at least help a bit
+         * in freeing up disc space.
+         * @link https://github.com/pouchdb/pouchdb/issues/802
+         */
+        return this.internals.pouch
+            .compact()
+            .then(() => false);
+    }
+
     async getChangedDocuments(
         options: ChangeStreamOnceOptions
     ): Promise<{
