@@ -87,7 +87,11 @@ describe('replication.test.js', () => {
             }).exec();
             const docsData = docs.map(doc => {
                 const docData: RxDocumentData<HumanWithTimestampDocumentType> = flatClone(doc.toJSON()) as any;
-                docData._deleted = false;
+                if (doc.deletedAt) {
+                    docData._deleted = true;
+                } else {
+                    docData._deleted = false;
+                }
                 return docData;
             });
 
@@ -102,23 +106,20 @@ describe('replication.test.js', () => {
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>
     ): ReplicationPushHandler<TestDocType> {
         const handler: ReplicationPushHandler<TestDocType> = async (docs) => {
-            // process deleted
-            const deletedIds = docs
-                .filter(doc => doc._deleted)
-                .map(doc => doc.id);
-            const deletedDocs = await remoteCollection.findByIds(deletedIds);
-            await Promise.all(
-                Array.from(deletedDocs.values()).map(doc => doc.remove())
-            );
-
             // process insert/updated
             const changedDocs = docs
-                .filter(doc => !doc._deleted)
                 // overwrite the timestamp with the 'server' time
                 // because the 'client' cannot be trusted.
                 .map(doc => {
                     doc = flatClone(doc);
                     doc.updatedAt = now();
+
+                    // Workaround to have `_deleted` flag in for both push and pull
+                    if (doc._deleted) {
+                        doc.deletedAt = now()
+                        delete doc._deleted;
+                    }
+
                     return doc;
                 });
             await Promise.all(
@@ -776,6 +777,30 @@ describe('replication.test.js', () => {
             if (pushCount > MAX_PUSH_COUNT) {
                 throw new Error('Infinite push loop');
             }
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+
+        it('should replicate deleted items', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                pull: {
+                   handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+
+            await replicationState.awaitInitialReplication();
+            await localCollection.findOne({ selector: {} }).remove()
+            await replicationState.run();
+
+            const items = await localCollection.find().exec()
+            assert.strictEqual(items.length, 0)
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
