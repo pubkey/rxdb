@@ -479,6 +479,56 @@ describe('replication.test.js', () => {
             remoteCollection.database.destroy();
         });
     });
+    config.parallel('other', () => {
+        describe('.awaitInSync()', () => {
+            it('should resolve after some time', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    pull: {
+                        handler: getPullHandler(remoteCollection)
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection)
+                    }
+                });
+                await replicationState.awaitInSync();
+
+                localCollection.database.destroy();
+                remoteCollection.database.destroy();
+            });
+            it('should never resolve when offline', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    pull: {
+                        handler: async () => {
+                            await wait(100);
+                            throw new Error('always error');
+                        }
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection)
+                    }
+                });
+                let resolved = false;
+                replicationState.awaitInSync().then(() => {
+                    resolved = true;
+                });
+                await wait(config.isFastMode() ? 100 : 400);
+                assert.strictEqual(resolved, false);
+
+                localCollection.database.destroy();
+                remoteCollection.database.destroy();
+            });
+        });
+    });
     config.parallel('issues', () => {
         it('should not create push checkpoints unnecessarily [PR: #3627]', async () => {
             const { localCollection, remoteCollection } =

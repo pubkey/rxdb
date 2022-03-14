@@ -127,7 +127,7 @@
 
 * [Replication Primitives](./replication.md)
 
-* [InMemory](./in-memory.md)
+* [Cleanup](./cleanup.md)
 
 * [Backup](./backup.md)
 

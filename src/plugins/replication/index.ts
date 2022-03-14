@@ -45,6 +45,9 @@ import { newRxError } from '../../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import { RxReplicationError, RxReplicationPullError, RxReplicationPushError } from './rx-replication-error';
 
+
+export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationStateBase<any>[]> = new WeakMap();
+
 export class RxReplicationStateBase<RxDocType> {
     public readonly subs: Subscription[] = [];
     public initialReplicationComplete$: Observable<true> = undefined as any;
@@ -90,6 +93,12 @@ export class RxReplicationStateBase<RxDocType> {
         public liveInterval?: number,
         public retryTime?: number,
     ) {
+        let replicationStates = REPLICATION_STATE_BY_COLLECTION.get(collection);
+        if (!replicationStates) {
+            replicationStates = [];
+            REPLICATION_STATE_BY_COLLECTION.set(collection, replicationStates);
+        }
+        replicationStates.push(this);
 
 
         // stop the replication when the collection gets destroyed
@@ -123,6 +132,19 @@ export class RxReplicationStateBase<RxDocType> {
                 filter(v => v === true),
             )
         );
+    }
+
+    /**
+     * Returns a promise that resolves when:
+     * - All local data is repliacted with the remote
+     * - No replication cycle is running or in retry-state
+     */
+    async awaitInSync(): Promise<true> {
+        await this.awaitInitialReplication();
+        while (this.runQueueCount > 0) {
+            await this.runningPromise;
+        }
+        return true;
     }
 
     cancel(): Promise<any> {

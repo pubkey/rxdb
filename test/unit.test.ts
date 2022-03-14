@@ -14,6 +14,7 @@ import './unit/rx-storage-pouchdb.test.js';
 import './unit/rx-storage-lokijs.test.js';
 import './unit/rx-storage-dexie.test.js';
 
+
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
 import './unit/bug-report.test.js';
@@ -36,6 +37,7 @@ import './unit/attachments.test.js';
 import './unit/reactive-query.test.js';
 import './unit/data-migration.test.js';
 import './unit/reactive-document.test.js';
+import './unit/cleanup.test.js';
 import './unit/hooks.test.js';
 import './unit/orm.test.js';
 import './unit/population.test.js';

@@ -20,7 +20,8 @@ import type {
     RxChangeEvent,
     RxDatabaseCreator,
     RxChangeEventBulk,
-    RxDocumentData
+    RxDocumentData,
+    RxCleanupPolicy
 } from './types';
 
 import {
@@ -108,6 +109,7 @@ export class RxDatabaseBase<
          * to be performance expensive.
          */
         public readonly broadcastChannel?: BroadcastChannel<RxChangeEventBulk<any>>,
+        public readonly cleanupPolicy?: Partial<RxCleanupPolicy>
     ) {
         this.collections = {} as any;
         DB_COUNT++;
@@ -439,10 +441,14 @@ export class RxDatabaseBase<
         this.destroyed = true;
 
         await runAsyncPluginHooks('preDestroyRxDatabase', this);
+        /**
+         * Complete the event stream
+         * to stop all subscribers who forgot to unsubscribe.
+         */
+        this.eventBulks$.complete();
+
         DB_COUNT--;
-
         this._subs.map(sub => sub.unsubscribe());
-
 
         /**
          * Destroying the pseudo instance will throw
@@ -641,6 +647,7 @@ export function createRxDatabase<
         eventReduce = false,
         ignoreDuplicate = false,
         options = {},
+        cleanupPolicy,
         localDocuments = false
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
 ): Promise<
@@ -698,7 +705,8 @@ export function createRxDatabase<
             options,
             idleQueue,
             storageInstance,
-            broadcastChannel
+            broadcastChannel,
+            cleanupPolicy
         ) as any;
         return prepare(rxDatabase)
             .then(() => runAsyncPluginHooks('createRxDatabase', {

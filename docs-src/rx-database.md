@@ -19,6 +19,7 @@ const db = await createRxDatabase({
   password: 'myPassword',             // <- password (optional)
   multiInstance: true,                // <- multiInstance (optional, default: true)
   eventReduce: true                   // <- eventReduce (optional, default: true)
+  cleanupPolicy: {}                   // <- custom cleanup policy (optional) 
 });
 ```
 
