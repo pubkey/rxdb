@@ -389,7 +389,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 }
             }).limit(deleteAmountPerRun);
         const foundDocuments = query.data();
-        localState.collection.remove(foundDocuments);
+        if (foundDocuments.length > 0) {
+            localState.collection.remove(foundDocuments);
+            localState.databaseState.saveQueue.addWrite();
+        }
 
         return foundDocuments.length !== deleteAmountPerRun;
     }
