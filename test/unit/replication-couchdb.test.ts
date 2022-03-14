@@ -38,7 +38,6 @@ import {
     filter,
     first
 } from 'rxjs/operators';
-import { RxDocumentData } from '../../src/types';
 import { HumanDocumentType } from '../helper/schemas';
 
 let request: any;
