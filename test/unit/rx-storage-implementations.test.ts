@@ -1842,8 +1842,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                      * so it makes no sense to check if the deleted document
                      * was removed on cleanup.
                      */
-                     await storageInstance.close();
-                     return;
+                    await storageInstance.close();
+                    return;
                 }
 
                 const mustNotBeThere = await storageInstance.findDocumentsById(

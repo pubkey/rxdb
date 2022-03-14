@@ -16,7 +16,7 @@ import type {
     RxLocalDocument,
     RxLocalDocumentData
 } from '../../types';
-import { clone, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow, now } from '../../util';
+import { clone, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
 import { getLocalDocStateByParent } from './local-documents-helper';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;

@@ -8,7 +8,7 @@ import type {
     RxStorageBulkWriteError,
     RxStorageInstance
 } from './types';
-import { createRevision, getDefaultRevision, getDefaultRxDocumentMeta, now, randomCouchString } from './util';
+import { createRevision, getDefaultRevision, now, randomCouchString } from './util';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
