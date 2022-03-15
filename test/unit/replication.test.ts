@@ -115,9 +115,10 @@ describe('replication.test.js', () => {
                     doc.updatedAt = now();
 
                     // Workaround to have `_deleted` flag in for both push and pull
+                    // We don't actually delete document from remote collection but treat it as deleted if `deletedAt` is present
                     if (doc._deleted) {
                         doc.deletedAt = now()
-                        delete doc._deleted;
+                        doc._deleted = false;
                     }
 
                     return doc;
