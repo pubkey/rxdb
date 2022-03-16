@@ -494,7 +494,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<OptionalValueTestDoc>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema,
+                    schema: schema as any,
                     options: {},
                     multiInstance: false
                 });
@@ -2035,7 +2035,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 }, 10 * 1000, 100);
 
                 // find via query
-                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery<TestDocType>(
                     instances.b.schema,
                     {
                         selector: {},
@@ -2064,7 +2064,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 // insert a document on A
                 await instances.a.bulkWrite([{ document: getWriteData() }]);
 
-                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery<TestDocType>(
                     instances.b.schema,
                     {
                         selector: {},
