@@ -17,6 +17,7 @@ export declare type InWorkerStorage = {
         lastSequence: number;
     }>;
     changeStream<DocumentData>(instanceById: number): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
+    cleanup(instanceId: number, minDeletedTime: number): Promise<boolean>;
     close(instanceId: number): Promise<void>;
     remove(instanceId: number): Promise<void>;
 };

@@ -34,8 +34,6 @@ var _exportNames = {
   getFinalFields: true,
   getPreviousVersions: true,
   toTypedRxJsonSchema: true,
-  getPseudoSchemaForVersion: true,
-  getSchemaByObjectPath: true,
   getSingleDocument: true,
   getAllDocuments: true,
   writeSingle: true,
@@ -181,18 +179,6 @@ Object.defineProperty(exports, "getPrimaryKeyOfInternalDocument", {
     return _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument;
   }
 });
-Object.defineProperty(exports, "getPseudoSchemaForVersion", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.getPseudoSchemaForVersion;
-  }
-});
-Object.defineProperty(exports, "getSchemaByObjectPath", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.getSchemaByObjectPath;
-  }
-});
 Object.defineProperty(exports, "getSingleDocument", {
   enumerable: true,
   get: function get() {
@@ -301,6 +287,18 @@ var _rxQuery = require("./rx-query");
 var _rxSchema = require("./rx-schema");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
+
+Object.keys(_rxSchemaHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxSchemaHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxSchemaHelper[key];
+    }
+  });
+});
 
 var _rxStorageHelper = require("./rx-storage-helper");
 

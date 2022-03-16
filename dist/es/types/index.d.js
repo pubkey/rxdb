@@ -20,6 +20,7 @@ export * from './plugins/local-documents';
 export * from './plugins/server';
 export * from './plugins/migration';
 export * from './plugins/backup';
+export * from './plugins/cleanup';
 export * from './plugins/lokijs';
 export * from './plugins/dexie';
 //# sourceMappingURL=index.d.js.map

@@ -28,10 +28,6 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
     readonly timeouts: Set<ReturnType<typeof setTimeout>>;
     constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap);
-    /**
-     * returns observable
-     */
-    get $(): Observable<RxChangeEvent<any>>;
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
     get remove$(): Observable<RxChangeEventDelete<RxDocumentType>>;
@@ -43,7 +39,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     _subs: Subscription[];
     _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>>;
     _queryCache: QueryCache;
-    _observable$: Observable<RxChangeEvent<RxDocumentType>>;
+    $: Observable<RxChangeEvent<RxDocumentType>>;
     _changeEventBuffer: ChangeEventBuffer;
     /**
      * returns a promise that is resolved when the collection gets destroyed
@@ -64,6 +60,10 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageBulkWriteError<RxDocumentType>[];
     }>;
+    /**
+     * same as bulkInsert but overwrites existing document with same primary
+     */
+    bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<RxDocument<RxDocumentType, OrmMethods>[]>;
     /**
      * same as insert but overwrites existing document with same primary
      */

@@ -454,7 +454,7 @@ function addCustomEventsPluginToPouch() {
        */
 
 
-      var previousDocsInDb = new Map();
+      var previousDocsInDb = options.custom ? options.custom.previousDocsInDb : new Map();
 
       var _temp5 = function () {
         if (options.hasOwnProperty('new_edits') && options.new_edits === false) {

@@ -170,7 +170,7 @@ rxJsonSchema) {
       data = (0, _rxSchemaHelper.fillPrimaryKey)(primaryPath, rxJsonSchema, data);
     }
 
-    data._meta.lwt = new Date().getTime();
+    data._meta.lwt = (0, _util.now)();
     var hookParams = {
       database: database,
       primaryPath: primaryPath,
@@ -232,7 +232,7 @@ rxJsonSchema) {
         return transformDocumentDataFromRxDBToRxStorage(row);
       });
       return database.lockedRun(function () {
-        return storageInstance.bulkWrite((0, _util.clone)(toStorageWriteRows));
+        return storageInstance.bulkWrite(toStorageWriteRows);
       }).then(function (writeResult) {
         var ret = {
           success: {},
@@ -283,6 +283,11 @@ rxJsonSchema) {
     getChangedDocuments: function getChangedDocuments(options) {
       return database.lockedRun(function () {
         return storageInstance.getChangedDocuments(options);
+      });
+    },
+    cleanup: function cleanup(minDeletedTime) {
+      return database.lockedRun(function () {
+        return storageInstance.cleanup(minDeletedTime);
       });
     },
     remove: function remove() {

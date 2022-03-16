@@ -42,6 +42,7 @@ export declare class RxStorageInstanceWorker<DocumentData> implements RxStorageI
         lastSequence: number;
     }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
+    cleanup(minDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;
     remove(): Promise<void>;
 }

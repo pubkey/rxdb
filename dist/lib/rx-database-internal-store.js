@@ -45,7 +45,9 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
           token: storageToken
         },
         _deleted: false,
-        _meta: (0, _util.getDefaultRxDocumentMeta)(),
+        _meta: {
+          lwt: (0, _util.now)()
+        },
         _rev: (0, _util.getDefaultRevision)(),
         _attachments: {}
       };
@@ -56,31 +58,17 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
         return storageToken;
       });
     }, function (err) {
-      var _exit = false;
-
-      function _temp2(_result) {
-        if (_exit) return _result;
-        throw err;
-      }
-
-      var _temp = function () {
-        if (err.isError && err.status === 409) {
-          return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(rxDatabase.internalStore, storageTokenDocumentId)).then(function (useStorageTokenDoc) {
-            if (useStorageTokenDoc) {
-              var _useStorageTokenDoc$d2 = useStorageTokenDoc.data.token;
-              _exit = true;
-              return _useStorageTokenDoc$d2;
-            }
-          });
-        }
-      }();
-
       /**
        * If we get a 409 error,
        * it means another instance already inserted the storage token.
        * So we get that token from the database and return that one.
        */
-      return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
+      if (err.isError && err.status === 409) {
+        var storageTokenDocInDb = err.documentInDb;
+        return storageTokenDocInDb.data.token;
+      }
+
+      throw err;
     }));
   } catch (e) {
     return Promise.reject(e);

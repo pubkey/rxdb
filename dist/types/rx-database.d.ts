@@ -1,7 +1,7 @@
 import { IdleQueue } from 'custom-idle-queue';
 import { BroadcastChannel } from 'broadcast-channel';
 import type { LeaderElector } from 'broadcast-channel';
-import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, ServerOptions, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, ServerResponse, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData } from './types';
+import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, ServerOptions, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, ServerResponse, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
 import type { RxBackupState } from './plugins/backup';
 import { ObliviousSet } from 'oblivious-set';
@@ -27,6 +27,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * to be performance expensive.
      */
     readonly broadcastChannel?: BroadcastChannel<RxChangeEventBulk<any>> | undefined;
+    readonly cleanupPolicy?: Partial<RxCleanupPolicy> | undefined;
     constructor(name: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce: boolean, options: any, idleQueue: IdleQueue, 
     /**
      * Stores information documents about the collections of the database
@@ -39,7 +40,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * We transfer everything in EventBulks because sending many small events has been shown
      * to be performance expensive.
      */
-    broadcastChannel?: BroadcastChannel<RxChangeEventBulk<any>> | undefined);
+    broadcastChannel?: BroadcastChannel<RxChangeEventBulk<any>> | undefined, cleanupPolicy?: Partial<RxCleanupPolicy> | undefined);
     get $(): Observable<RxChangeEvent<any>>;
     readonly token: string;
     _subs: Subscription[];
@@ -148,7 +149,7 @@ export declare function _collectionNamePrimary(name: string, schema: RxJsonSchem
 export declare function _removeAllOfCollection(rxDatabase: RxDatabaseBase<any, any, any>, collectionName: string): Promise<RxDocumentData<InternalStoreCollectionDocType>[]>;
 export declare function createRxDatabase<Collections = {
     [key: string]: RxCollection;
-}, Internals = any, InstanceCreationOptions = any>({ storage, instanceCreationOptions, name, password, multiInstance, eventReduce, ignoreDuplicate, options, localDocuments }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections, Internals, InstanceCreationOptions>>;
+}, Internals = any, InstanceCreationOptions = any>({ storage, instanceCreationOptions, name, password, multiInstance, eventReduce, ignoreDuplicate, options, cleanupPolicy, localDocuments }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections, Internals, InstanceCreationOptions>>;
 /**
  * removes the database and all its known data
  */

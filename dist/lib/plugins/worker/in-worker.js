@@ -56,6 +56,10 @@ function wrappedRxStorage(args) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
       return instance.changeStream();
     },
+    cleanup: function cleanup(instanceId, minDeletedTime) {
+      var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
+      return instance.cleanup(minDeletedTime);
+    },
     close: function close(instanceId) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
       return instance.close();

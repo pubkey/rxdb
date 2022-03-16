@@ -32,6 +32,7 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     }>;
     remove(): Promise<void>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    cleanup(minimumDeletedTime: number): Promise<boolean>;
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
     close(): Promise<void>;
 }

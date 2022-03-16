@@ -253,7 +253,8 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
                 isError: true,
                 status: 409,
                 documentId: id,
-                writeRow: writeRow
+                writeRow: writeRow,
+                documentInDb: documentInDb
               };
               ret.error[id] = err;
             } else {
@@ -303,20 +304,24 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
               }
 
               if (!change) {
-                throw (0, _rxError.newRxError)('SNH', {
-                  args: {
-                    writeRow: writeRow
-                  }
+                if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {// deleted doc got overwritten with other deleted doc -> do not send an event
+                } else {
+                  throw (0, _rxError.newRxError)('SNH', {
+                    args: {
+                      writeRow: writeRow
+                    }
+                  });
+                }
+              } else {
+                eventBulk.events.push({
+                  eventId: (0, _lokijsHelper.getLokiEventKey)(_this5, id, writeRow.document._rev),
+                  documentId: id,
+                  change: change,
+                  startTime: startTime,
+                  endTime: (0, _util.now)()
                 });
               }
 
-              eventBulk.events.push({
-                eventId: (0, _lokijsHelper.getLokiEventKey)(_this5, id, writeRow.document._rev),
-                documentId: id,
-                change: change,
-                startTime: startTime,
-                endTime: (0, _util.now)()
-              });
               ret.success[id] = (0, _lokijsHelper.stripLokiKey)(_writeDoc);
             }
           }
@@ -443,26 +448,57 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     return this.changes$.asObservable();
   };
 
+  _proto.cleanup = function cleanup(minimumDeletedTime) {
+    try {
+      var _this13 = this;
+
+      return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this13)).then(function (localState) {
+        if (!localState) {
+          return (0, _lokijsHelper.requestRemoteInstance)(_this13, 'cleanup', [minimumDeletedTime]);
+        }
+
+        var deleteAmountPerRun = 10;
+        var maxDeletionTime = (0, _util.now)() - minimumDeletedTime;
+        var query = localState.collection.chain().find({
+          _deleted: true,
+          '_meta.lwt': {
+            $lt: maxDeletionTime
+          }
+        }).limit(deleteAmountPerRun);
+        var foundDocuments = query.data();
+
+        if (foundDocuments.length > 0) {
+          localState.collection.remove(foundDocuments);
+          localState.databaseState.saveQueue.addWrite();
+        }
+
+        return foundDocuments.length !== deleteAmountPerRun;
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
   _proto.close = function close() {
     try {
       var _temp3 = function _temp3() {
-        (0, _lokijsHelper.removeLokiLeaderElectorReference)(_this13.storage, _this13.databaseName);
+        (0, _lokijsHelper.removeLokiLeaderElectorReference)(_this15.storage, _this15.databaseName);
       };
 
-      var _this13 = this;
+      var _this15 = this;
 
-      _this13.closed = true;
+      _this15.closed = true;
 
-      _this13.changes$.complete();
+      _this15.changes$.complete();
 
-      _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this13);
+      _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this15);
 
       var _temp4 = function () {
-        if (_this13.internals.localState) {
-          return Promise.resolve(_this13.internals.localState).then(function (localState) {
-            return Promise.resolve((0, _lokijsHelper.getLokiDatabase)(_this13.databaseName, _this13.databaseSettings)).then(function (dbState) {
+        if (_this15.internals.localState) {
+          return Promise.resolve(_this15.internals.localState).then(function (localState) {
+            return Promise.resolve((0, _lokijsHelper.getLokiDatabase)(_this15.databaseName, _this15.databaseSettings)).then(function (dbState) {
               return Promise.resolve(dbState.saveQueue.run()).then(function () {
-                return Promise.resolve((0, _lokijsHelper.closeLokiCollections)(_this13.databaseName, [localState.collection, localState.changesCollection])).then(function () {});
+                return Promise.resolve((0, _lokijsHelper.closeLokiCollections)(_this15.databaseName, [localState.collection, localState.changesCollection])).then(function () {});
               });
             });
           });
@@ -477,16 +513,16 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.remove = function remove() {
     try {
-      var _this15 = this;
+      var _this17 = this;
 
-      return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this15)).then(function (localState) {
+      return Promise.resolve((0, _lokijsHelper.mustUseLocalState)(_this17)).then(function (localState) {
         if (!localState) {
-          return (0, _lokijsHelper.requestRemoteInstance)(_this15, 'remove', []);
+          return (0, _lokijsHelper.requestRemoteInstance)(_this17, 'remove', []);
         }
 
-        localState.databaseState.database.removeCollection(_this15.collectionName);
+        localState.databaseState.database.removeCollection(_this17.collectionName);
         localState.databaseState.database.removeCollection(localState.changesCollection.name);
-        return _this15.close();
+        return _this17.close();
       });
     } catch (e) {
       return Promise.reject(e);

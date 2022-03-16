@@ -264,6 +264,19 @@ Object.keys(_backup).forEach(function (key) {
   });
 });
 
+var _cleanup = require("./plugins/cleanup");
+
+Object.keys(_cleanup).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _cleanup[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _cleanup[key];
+    }
+  });
+});
+
 var _lokijs = require("./plugins/lokijs");
 
 Object.keys(_lokijs).forEach(function (key) {

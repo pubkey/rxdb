@@ -18,7 +18,7 @@ export { flattenEvents } from './rx-change-event';
 export { getDocumentOrmPrototype, getDocumentPrototype } from './rx-document-prototype-merge';
 export { isInstanceOf as isRxQuery, normalizeMangoQuery } from './rx-query';
 export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, normalizeRxJsonSchema, getFinalFields, getPreviousVersions, toTypedRxJsonSchema } from './rx-schema';
-export { getPseudoSchemaForVersion, getSchemaByObjectPath } from './rx-schema-helper';
+export * from './rx-schema-helper';
 export { getSingleDocument, getAllDocuments, writeSingle, hashAttachmentData, getAttachmentSize } from './rx-storage-helper';
 export { _clearHook // used in tests
 } from './hooks';

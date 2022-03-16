@@ -47,6 +47,10 @@ export function wrappedRxStorage(args) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.changeStream();
     },
+    cleanup: function cleanup(instanceId, minDeletedTime) {
+      var instance = getFromMapOrThrow(instanceById, instanceId);
+      return instance.cleanup(minDeletedTime);
+    },
     close: function close(instanceId) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.close();

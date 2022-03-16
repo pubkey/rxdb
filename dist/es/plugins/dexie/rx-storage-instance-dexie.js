@@ -136,7 +136,8 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                       isError: true,
                       status: 409,
                       documentId: id,
-                      writeRow: writeRow
+                      writeRow: writeRow,
+                      documentInDb: documentInDb
                     };
                     ret.error[id] = err;
                   } else {
@@ -194,24 +195,31 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                         previous: previous,
                         doc: null
                       };
+                    } else if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {
+                      // deleted doc was overwritten with other deleted doc
+                      bulkPutDeletedDocs.push(_writeDoc);
                     }
 
                     if (!change) {
-                      throw newRxError('SNH', {
-                        args: {
-                          writeRow: writeRow
-                        }
+                      if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {// deleted doc got overwritten with other deleted doc -> do not send an event
+                      } else {
+                        throw newRxError('SNH', {
+                          args: {
+                            writeRow: writeRow
+                          }
+                        });
+                      }
+                    } else {
+                      eventBulk.events.push({
+                        eventId: getDexieEventKey(_this4, id, writeRow.document._rev),
+                        documentId: id,
+                        change: change,
+                        startTime: startTime,
+                        // will be filled up before the event is pushed into the changestream
+                        endTime: startTime
                       });
                     }
 
-                    eventBulk.events.push({
-                      eventId: getDexieEventKey(_this4, id, writeRow.document._rev),
-                      documentId: id,
-                      change: change,
-                      startTime: startTime,
-                      // will be filled up before the event is pushed into the changestream
-                      endTime: startTime
-                    });
                     ret.success[id] = _writeDoc;
                   }
                 }
@@ -341,19 +349,51 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
     return this.changes$.asObservable();
   };
 
+  _proto.cleanup = function cleanup(minimumDeletedTime) {
+    try {
+      var _this12 = this;
+
+      return Promise.resolve(_this12.internals).then(function (state) {
+        return Promise.resolve(state.dexieDb.transaction('rw', state.dexieDeletedTable, function () {
+          try {
+            var maxDeletionTime = now() - minimumDeletedTime;
+            return Promise.resolve(state.dexieDeletedTable.where('_meta.lwt').below(maxDeletionTime).toArray()).then(function (toRemove) {
+              var removeIds = toRemove.map(function (doc) {
+                return doc[_this12.primaryPath];
+              });
+              return Promise.resolve(state.dexieDeletedTable.bulkDelete(removeIds)).then(function () {});
+            });
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        })).then(function () {
+          /**
+           * TODO instead of deleting all deleted docs at once,
+           * only clean up some of them and return true.
+           * This ensures that when many documents have to be purged,
+           * we do not block the more important tasks too long.
+           */
+          return false;
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
   _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
     throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
   };
 
   _proto.close = function close() {
     try {
-      var _this12 = this;
+      var _this14 = this;
 
-      _this12.closed = true;
+      _this14.closed = true;
 
-      _this12.changes$.complete();
+      _this14.changes$.complete();
 
-      closeDexieDb(_this12.internals);
+      closeDexieDb(_this14.internals);
       return Promise.resolve();
     } catch (e) {
       return Promise.reject(e);

@@ -32,6 +32,7 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
         lastSequence: number;
     }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    cleanup(minimumDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;
     remove(): Promise<void>;
 }

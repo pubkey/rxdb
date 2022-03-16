@@ -1,6 +1,6 @@
 import { getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
-import { getSingleDocument, writeSingle } from './rx-storage-helper';
-import { createRevision, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './util';
+import { writeSingle } from './rx-storage-helper';
+import { createRevision, getDefaultRevision, now, randomCouchString } from './util';
 
 function _catch(body, recover) {
   try {
@@ -35,7 +35,9 @@ export var ensureStorageTokenExists = function ensureStorageTokenExists(rxDataba
           token: storageToken
         },
         _deleted: false,
-        _meta: getDefaultRxDocumentMeta(),
+        _meta: {
+          lwt: now()
+        },
         _rev: getDefaultRevision(),
         _attachments: {}
       };
@@ -46,31 +48,17 @@ export var ensureStorageTokenExists = function ensureStorageTokenExists(rxDataba
         return storageToken;
       });
     }, function (err) {
-      var _exit = false;
-
-      function _temp2(_result) {
-        if (_exit) return _result;
-        throw err;
-      }
-
-      var _temp = function () {
-        if (err.isError && err.status === 409) {
-          return Promise.resolve(getSingleDocument(rxDatabase.internalStore, storageTokenDocumentId)).then(function (useStorageTokenDoc) {
-            if (useStorageTokenDoc) {
-              var _useStorageTokenDoc$d2 = useStorageTokenDoc.data.token;
-              _exit = true;
-              return _useStorageTokenDoc$d2;
-            }
-          });
-        }
-      }();
-
       /**
        * If we get a 409 error,
        * it means another instance already inserted the storage token.
        * So we get that token from the database and return that one.
        */
-      return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
+      if (err.isError && err.status === 409) {
+        var storageTokenDocInDb = err.documentInDb;
+        return storageTokenDocInDb.data.token;
+      }
+
+      throw err;
     }));
   } catch (e) {
     return Promise.reject(e);

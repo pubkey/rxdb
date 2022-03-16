@@ -6,7 +6,7 @@ import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { clone, createRevision, firstPropertyValueOfObject, flatClone } from './util';
+import { createRevision, firstPropertyValueOfObject, flatClone, now } from './util';
 
 /**
  * Writes a single document,
@@ -135,7 +135,7 @@ rxJsonSchema) {
       data = fillPrimaryKey(primaryPath, rxJsonSchema, data);
     }
 
-    data._meta.lwt = new Date().getTime();
+    data._meta.lwt = now();
     var hookParams = {
       database: database,
       primaryPath: primaryPath,
@@ -197,7 +197,7 @@ rxJsonSchema) {
         return transformDocumentDataFromRxDBToRxStorage(row);
       });
       return database.lockedRun(function () {
-        return storageInstance.bulkWrite(clone(toStorageWriteRows));
+        return storageInstance.bulkWrite(toStorageWriteRows);
       }).then(function (writeResult) {
         var ret = {
           success: {},
@@ -248,6 +248,11 @@ rxJsonSchema) {
     getChangedDocuments: function getChangedDocuments(options) {
       return database.lockedRun(function () {
         return storageInstance.getChangedDocuments(options);
+      });
+    },
+    cleanup: function cleanup(minDeletedTime) {
+      return database.lockedRun(function () {
+        return storageInstance.cleanup(minDeletedTime);
       });
     },
     remove: function remove() {

@@ -18,7 +18,6 @@ isStopped: () => boolean, batchSize?: number): Promise<{
         sequence: number;
     }>;
     lastSequence: number;
-    hasChangesSinceLastSequence: boolean;
 }>;
 export declare function getLastPullDocument<RxDocType>(collection: RxCollection<RxDocType>, replicationIdentifierHash: string): Promise<RxDocumentData<RxDocType> | null>;
 export declare function setLastPullDocument<RxDocType>(collection: RxCollection, replicationIdentifierHash: string, lastPulledDoc: RxDocumentData<RxDocType> | DeepReadonlyObject<RxDocumentData<RxDocType>>): Promise<RxDocumentData<InternalStoreReplicationPullDocType<RxDocType>>>;

@@ -219,7 +219,9 @@ var setLastPullDocument = function setLastPullDocument(collection, replicationId
           data: {
             lastPulledDoc: lastPulledDoc
           },
-          _meta: (0, _util.getDefaultRxDocumentMeta)(),
+          _meta: {
+            lwt: (0, _util.now)()
+          },
           _rev: (0, _util.getDefaultRevision)(),
           _deleted: false,
           _attachments: {}
@@ -234,6 +236,9 @@ var setLastPullDocument = function setLastPullDocument(collection, replicationId
           lastPulledDoc: lastPulledDoc
         };
         newDoc._rev = (0, _util.createRevision)(newDoc, lastPullCheckpointDoc);
+        newDoc._meta = {
+          lwt: (0, _util.now)()
+        };
         return (0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
           previous: lastPullCheckpointDoc,
           document: newDoc
@@ -264,8 +269,7 @@ isStopped) {
         return {
           changedDocIds: changedDocIds,
           changedDocs: changedDocs,
-          lastSequence: lastSequence,
-          hasChangesSinceLastSequence: lastPushSequence !== lastSequence
+          lastSequence: lastSequence
         };
       }
 
@@ -376,7 +380,9 @@ var setLastPushSequence = function setLastPushSequence(collection, replicationId
             lastPushSequence: sequence
           },
           _deleted: false,
-          _meta: (0, _util.getDefaultRxDocumentMeta)(),
+          _meta: {
+            lwt: (0, _util.now)()
+          },
           _rev: (0, _util.getDefaultRevision)(),
           _attachments: {}
         };
@@ -396,7 +402,9 @@ var setLastPushSequence = function setLastPushSequence(collection, replicationId
           data: {
             lastPushSequence: sequence
           },
-          _meta: (0, _util.getDefaultRxDocumentMeta)(),
+          _meta: {
+            lwt: (0, _util.now)()
+          },
           _rev: (0, _util.getDefaultRevision)(),
           _deleted: false,
           _attachments: {}

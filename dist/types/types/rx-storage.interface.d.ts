@@ -159,28 +159,6 @@ export type RxStorageStatics = Readonly<{
 }>;
 
 
-export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {
-    readonly databaseName: string;
-    /**
-     * Returns the internal data that is used by the storage engine.
-     * For example the pouchdb instance.
-     */
-    readonly internals: Readonly<Internals>;
-    readonly options: Readonly<InstanceCreationOptions>;
-
-    /**
-     * Closes the storage instance so it cannot be used
-     * anymore and should clear all memory.
-     * The returned promise must resolve when everything is cleaned up.
-     */
-    close(): Promise<void>;
-
-    /**
-     * Remove the database and
-     * deletes all of its data.
-     */
-    remove(): Promise<void>;
-}
 
 export interface RxStorageInstance<
     /**
@@ -190,9 +168,14 @@ export interface RxStorageInstance<
     DocumentData,
     Internals,
     InstanceCreationOptions
-    >
-    extends RxStorageInstanceBase<Internals, InstanceCreationOptions> {
-
+    > {
+    readonly databaseName: string;
+    /**
+     * Returns the internal data that is used by the storage engine.
+     * For example the pouchdb instance.
+     */
+    readonly internals: Readonly<Internals>;
+    readonly options: Readonly<InstanceCreationOptions>;
     readonly schema: Readonly<RxJsonSchema<DocumentData>>;
     readonly collectionName: string;
 
@@ -286,4 +269,41 @@ export interface RxStorageInstance<
      * Do not forget to unsubscribe.
      */
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
+
+    /**
+     * Runs a cleanup that removes all tompstones
+     * of documents that have _deleted set to true
+     * to free up disc space.
+     * 
+     * Returns true if all cleanable documents have been removed.
+     * Returns false if there are more documents to be cleaned up,
+     * but not all have been purged because that would block the storage for too long.
+     */
+    cleanup(
+        /**
+         * The minimum time in milliseconds
+         * of how long a document must have been deleted
+         * until it is purged by the cleanup.
+         */
+        minimumDeletedTime: number
+    ): Promise<
+        /**
+         * True if all docs cleaned up,
+         * false if there are more docs to clean up
+         */
+        boolean
+    >;
+
+    /**
+     * Closes the storage instance so it cannot be used
+     * anymore and should clear all memory.
+     * The returned promise must resolve when everything is cleaned up.
+     */
+    close(): Promise<void>;
+
+    /**
+     * Remove the database and
+     * deletes all of its data.
+     */
+    remove(): Promise<void>;
 }

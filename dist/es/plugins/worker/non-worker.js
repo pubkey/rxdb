@@ -91,6 +91,10 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
     return this.changes$.asObservable();
   };
 
+  _proto2.cleanup = function cleanup(minDeletedTime) {
+    return this.internals.worker.cleanup(this.internals.instanceId, minDeletedTime);
+  };
+
   _proto2.close = function close() {
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();

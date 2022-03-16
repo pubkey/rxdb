@@ -24,6 +24,20 @@ var _rxStorageHelper = require("../rx-storage-helper");
 
 var _rxDatabaseInternalStore = require("../rx-database-internal-store");
 
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
+
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -41,34 +55,10 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  */
 var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabase(rxDatabase) {
   try {
-    if (!rxDatabase.password) {
-      return Promise.resolve(_util.PROMISE_RESOLVE_FALSE);
-    }
+    var _temp3 = function _temp3(_result) {
+      if (_exit2) return _result;
 
-    var pwHash = (0, _util.hash)(rxDatabase.password);
-    var pwHashDocumentKey = 'pwHash';
-    var pwHashDocumentId = (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(pwHashDocumentKey, _rxDatabaseInternalStore.INTERNAL_CONTEXT_ENCRYPTION);
-    return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(rxDatabase.internalStore, pwHashDocumentId)).then(function (pwHashDoc) {
-      if (!pwHashDoc) {
-        var docData = {
-          id: pwHashDocumentId,
-          key: pwHashDocumentKey,
-          context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_ENCRYPTION,
-          data: {
-            hash: pwHash
-          },
-          _deleted: false,
-          _attachments: {},
-          _meta: (0, _util.getDefaultRxDocumentMeta)(),
-          _rev: (0, _util.getDefaultRevision)()
-        };
-        docData._rev = (0, _util.createRevision)(docData);
-        return Promise.resolve(rxDatabase.internalStore.bulkWrite([{
-          document: docData
-        }])).then(function () {
-          return true;
-        });
-      } else if (pwHash !== pwHashDoc.data.hash) {
+      if (pwHash !== pwHashDoc.data.hash) {
         // different hash was already set by other instance
         return Promise.resolve(rxDatabase.destroy()).then(function () {
           throw (0, _rxError.newRxError)('DB1', {
@@ -79,7 +69,49 @@ var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabase(rxDat
       } else {
         return true;
       }
+    };
+
+    var _exit2 = false;
+
+    if (!rxDatabase.password) {
+      return Promise.resolve(_util.PROMISE_RESOLVE_FALSE);
+    }
+
+    var pwHash = (0, _util.hash)(rxDatabase.password);
+    var pwHashDocumentKey = 'pwHash';
+    var pwHashDocumentId = (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(pwHashDocumentKey, _rxDatabaseInternalStore.INTERNAL_CONTEXT_ENCRYPTION);
+    var docData = {
+      id: pwHashDocumentId,
+      key: pwHashDocumentKey,
+      context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_ENCRYPTION,
+      data: {
+        hash: pwHash
+      },
+      _deleted: false,
+      _attachments: {},
+      _meta: {
+        lwt: (0, _util.now)()
+      },
+      _rev: (0, _util.getDefaultRevision)()
+    };
+    docData._rev = (0, _util.createRevision)(docData);
+    var pwHashDoc;
+
+    var _temp4 = _catch(function () {
+      return Promise.resolve((0, _rxStorageHelper.writeSingle)(rxDatabase.internalStore, {
+        document: docData
+      })).then(function (_writeSingle) {
+        pwHashDoc = _writeSingle;
+      });
+    }, function (err) {
+      if (err.isError && err.status === 409) {
+        pwHashDoc = err.documentInDb;
+      } else {
+        throw err;
+      }
     });
+
+    return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
   } catch (e) {
     return Promise.reject(e);
   }

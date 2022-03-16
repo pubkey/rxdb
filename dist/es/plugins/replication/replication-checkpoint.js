@@ -1,5 +1,5 @@
 import { getSingleDocument, writeSingle } from '../../rx-storage-helper';
-import { createRevision, flatClone, getDefaultRevision, getDefaultRxDocumentMeta } from '../../util';
+import { createRevision, flatClone, getDefaultRevision, now } from '../../util';
 import { newRxError } from '../../rx-error';
 import { wasLastWriteFromPullReplication } from './revision-flag';
 import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES } from '../../rx-database-internal-store'; //
@@ -207,7 +207,9 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
           data: {
             lastPulledDoc: lastPulledDoc
           },
-          _meta: getDefaultRxDocumentMeta(),
+          _meta: {
+            lwt: now()
+          },
           _rev: getDefaultRevision(),
           _deleted: false,
           _attachments: {}
@@ -222,6 +224,9 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
           lastPulledDoc: lastPulledDoc
         };
         newDoc._rev = createRevision(newDoc, lastPullCheckpointDoc);
+        newDoc._meta = {
+          lwt: now()
+        };
         return writeSingle(collection.database.internalStore, {
           previous: lastPullCheckpointDoc,
           document: newDoc
@@ -249,8 +254,7 @@ isStopped) {
         return {
           changedDocIds: changedDocIds,
           changedDocs: changedDocs,
-          lastSequence: lastSequence,
-          hasChangesSinceLastSequence: lastPushSequence !== lastSequence
+          lastSequence: lastSequence
         };
       }
 
@@ -358,7 +362,9 @@ export var setLastPushSequence = function setLastPushSequence(collection, replic
             lastPushSequence: sequence
           },
           _deleted: false,
-          _meta: getDefaultRxDocumentMeta(),
+          _meta: {
+            lwt: now()
+          },
           _rev: getDefaultRevision(),
           _attachments: {}
         };
@@ -378,7 +384,9 @@ export var setLastPushSequence = function setLastPushSequence(collection, replic
           data: {
             lastPushSequence: sequence
           },
-          _meta: getDefaultRxDocumentMeta(),
+          _meta: {
+            lwt: now()
+          },
           _rev: getDefaultRevision(),
           _deleted: false,
           _attachments: {}

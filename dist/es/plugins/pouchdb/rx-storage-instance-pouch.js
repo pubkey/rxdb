@@ -296,18 +296,29 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
       var writeRowById = new Map();
       var insertDocsById = new Map();
       var writeDocs = documentWrites.map(function (writeData) {
+        /**
+         * Ensure that _meta.lwt is set correctly
+         */
+        if (writeData.document._meta.lwt < 1000 || writeData.previous && writeData.previous._meta.lwt >= writeData.document._meta.lwt) {
+          throw newRxError('SNH', {
+            args: writeData
+          });
+        }
+
         var primary = writeData.document[_this5.primaryPath];
         writeRowById.set(primary, writeData);
         var storeDocumentData = rxDocumentDataToPouchDocumentData(_this5.primaryPath, writeData.document);
         insertDocsById.set(primary, storeDocumentData);
         return storeDocumentData;
       });
+      var previousDocsInDb = new Map();
       return Promise.resolve(_this5.internals.pouch.bulkDocs(writeDocs, {
         new_edits: false,
         custom: {
           primaryPath: _this5.primaryPath,
           writeRowById: writeRowById,
-          insertDocsById: insertDocsById
+          insertDocsById: insertDocsById,
+          previousDocsInDb: previousDocsInDb
         }
       })).then(function (pouchResult) {
         var ret = {
@@ -320,11 +331,13 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
             var _temp4 = function () {
               if (resultRow.error) {
+                var previousDoc = getFromMapOrThrow(previousDocsInDb, resultRow.id);
                 var err = {
                   isError: true,
                   status: 409,
                   documentId: resultRow.id,
-                  writeRow: writeRow
+                  writeRow: writeRow,
+                  documentInDb: pouchDocumentDataToRxDocumentData(_this5.primaryPath, previousDoc)
                 };
                 ret.error[resultRow.id] = err;
               } else {
@@ -466,6 +479,18 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.changeStream = function changeStream() {
     return this.changes$.asObservable();
+  };
+
+  _proto.cleanup = function cleanup(_minimumDeletedTime) {
+    /**
+     * PouchDB does not support purging documents.
+     * So instead we run a compaction that might at least help a bit
+     * in freeing up disc space.
+     * @link https://github.com/pouchdb/pouchdb/issues/802
+     */
+    return this.internals.pouch.compact().then(function () {
+      return false;
+    });
   };
 
   _proto.getChangedDocuments = function getChangedDocuments(options) {

@@ -1,6 +1,7 @@
 import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import type { PullRunResult, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxReplicationState } from '../../types';
 import { RxReplicationError } from './rx-replication-error';
+export declare const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationStateBase<any>[]>;
 export declare class RxReplicationStateBase<RxDocType> {
     /**
      * hash of the identifier, used to flag revisions
@@ -48,6 +49,12 @@ export declare class RxReplicationStateBase<RxDocType> {
     replicationIdentifierHash: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, liveInterval?: number | undefined, retryTime?: number | undefined);
     isStopped(): boolean;
     awaitInitialReplication(): Promise<true>;
+    /**
+     * Returns a promise that resolves when:
+     * - All local data is repliacted with the remote
+     * - No replication cycle is running or in retry-state
+     */
+    awaitInSync(): Promise<true>;
     cancel(): Promise<any>;
     /**
      * Ensures that this._run() does not run in parallel

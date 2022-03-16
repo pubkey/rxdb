@@ -510,8 +510,6 @@ var _exportNames = {
   getFinalFields: true,
   getPreviousVersions: true,
   toTypedRxJsonSchema: true,
-  getPseudoSchemaForVersion: true,
-  getSchemaByObjectPath: true,
   getSingleDocument: true,
   getAllDocuments: true,
   writeSingle: true,
@@ -657,18 +655,6 @@ Object.defineProperty(exports, "getPrimaryKeyOfInternalDocument", {
     return _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument;
   }
 });
-Object.defineProperty(exports, "getPseudoSchemaForVersion", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.getPseudoSchemaForVersion;
-  }
-});
-Object.defineProperty(exports, "getSchemaByObjectPath", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.getSchemaByObjectPath;
-  }
-});
 Object.defineProperty(exports, "getSingleDocument", {
   enumerable: true,
   get: function get() {
@@ -777,6 +763,18 @@ var _rxQuery = require("./rx-query");
 var _rxSchema = require("./rx-schema");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
+
+Object.keys(_rxSchemaHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxSchemaHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxSchemaHelper[key];
+    }
+  });
+});
 
 var _rxStorageHelper = require("./rx-storage-helper");
 
@@ -1503,7 +1501,7 @@ function addCustomEventsPluginToPouch() {
        */
 
 
-      var previousDocsInDb = new Map();
+      var previousDocsInDb = options.custom ? options.custom.previousDocsInDb : new Map();
 
       var _temp5 = function () {
         if (options.hasOwnProperty('new_edits') && options.new_edits === false) {
@@ -2726,18 +2724,29 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       var writeRowById = new Map();
       var insertDocsById = new Map();
       var writeDocs = documentWrites.map(function (writeData) {
+        /**
+         * Ensure that _meta.lwt is set correctly
+         */
+        if (writeData.document._meta.lwt < 1000 || writeData.previous && writeData.previous._meta.lwt >= writeData.document._meta.lwt) {
+          throw (0, _rxError.newRxError)('SNH', {
+            args: writeData
+          });
+        }
+
         var primary = writeData.document[_this5.primaryPath];
         writeRowById.set(primary, writeData);
         var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, writeData.document);
         insertDocsById.set(primary, storeDocumentData);
         return storeDocumentData;
       });
+      var previousDocsInDb = new Map();
       return Promise.resolve(_this5.internals.pouch.bulkDocs(writeDocs, {
         new_edits: false,
         custom: {
           primaryPath: _this5.primaryPath,
           writeRowById: writeRowById,
-          insertDocsById: insertDocsById
+          insertDocsById: insertDocsById,
+          previousDocsInDb: previousDocsInDb
         }
       })).then(function (pouchResult) {
         var ret = {
@@ -2750,11 +2759,13 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
             var _temp4 = function () {
               if (resultRow.error) {
+                var previousDoc = (0, _util.getFromMapOrThrow)(previousDocsInDb, resultRow.id);
                 var err = {
                   isError: true,
                   status: 409,
                   documentId: resultRow.id,
-                  writeRow: writeRow
+                  writeRow: writeRow,
+                  documentInDb: (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this5.primaryPath, previousDoc)
                 };
                 ret.error[resultRow.id] = err;
               } else {
@@ -2896,6 +2907,18 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
   _proto.changeStream = function changeStream() {
     return this.changes$.asObservable();
+  };
+
+  _proto.cleanup = function cleanup(_minimumDeletedTime) {
+    /**
+     * PouchDB does not support purging documents.
+     * So instead we run a compaction that might at least help a bit
+     * in freeing up disc space.
+     * @link https://github.com/pouchdb/pouchdb/issues/802
+     */
+    return this.internals.pouch.compact().then(function () {
+      return false;
+    });
   };
 
   _proto.getChangedDocuments = function getChangedDocuments(options) {
@@ -3517,7 +3540,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this._subs = [];
     this._docCache = new _docCache.DocCache();
     this._queryCache = (0, _queryCache.createQueryCache)();
-    this._observable$ = {};
+    this.$ = {};
     this._changeEventBuffer = {};
     this.database = database;
     this.name = name;
@@ -3533,10 +3556,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     _applyHookFunctions(this.asRxCollection);
   }
-  /**
-   * returns observable
-   */
-
 
   var _proto = RxCollectionBase.prototype;
 
@@ -3545,7 +3564,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       var _this2 = this;
 
       _this2.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(_this2.database, _this2.internalStorageInstance, _this2.schema.jsonSchema);
-      _this2._observable$ = _this2.database.eventBulks$.pipe((0, _operators.filter)(function (changeEventBulk) {
+      _this2.$ = _this2.database.eventBulks$.pipe((0, _operators.filter)(function (changeEventBulk) {
         return changeEventBulk.collectionName === _this2.name;
       }), (0, _operators.mergeMap)(function (changeEventBulk) {
         return changeEventBulk.events;
@@ -3581,7 +3600,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
          */
 
 
-        _this2._subs.push(_this2._observable$.pipe((0, _operators.filter)(function (cE) {
+        _this2._subs.push(_this2.$.pipe((0, _operators.filter)(function (cE) {
           return !cE.isLocal;
         })).subscribe(function (cE) {
           // when data changes, send it to RxDocument in docCache
@@ -3778,35 +3797,58 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }
   }
   /**
+   * same as bulkInsert but overwrites existing document with same primary
+   */
+  ;
+
+  _proto.bulkUpsert = function bulkUpsert(docsData) {
+    try {
+      var _this10 = this;
+
+      var insertData = [];
+      var useJsonByDocId = new Map();
+      docsData.forEach(function (docData) {
+        var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this10.asRxCollection, docData);
+        var primary = useJson[_this10.schema.primaryPath];
+
+        if (!primary) {
+          throw (0, _rxError.newRxError)('COL3', {
+            primaryPath: _this10.schema.primaryPath,
+            data: useJson,
+            schema: _this10.schema.jsonSchema
+          });
+        }
+
+        useJsonByDocId.set(primary, useJson);
+        insertData.push(useJson);
+      });
+      return Promise.resolve(_this10.bulkInsert(insertData)).then(function (insertResult) {
+        var ret = insertResult.success.slice(0);
+        return Promise.resolve(Promise.all(insertResult.error.map(function (error) {
+          var id = error.documentId;
+          var writeData = (0, _util.getFromMapOrThrow)(useJsonByDocId, id);
+          var docDataInDb = error.documentInDb;
+          var doc = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this10.asRxCollection, docDataInDb);
+          return doc.atomicUpdate(function () {
+            return writeData;
+          });
+        }))).then(function (updatedDocs) {
+          ret = ret.concat(updatedDocs);
+          return ret;
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+  /**
    * same as insert but overwrites existing document with same primary
    */
   ;
 
   _proto.upsert = function upsert(json) {
-    var _this9 = this;
-
-    var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this, json);
-    var primary = useJson[this.schema.primaryPath];
-
-    if (!primary) {
-      throw (0, _rxError.newRxError)('COL3', {
-        primaryPath: this.schema.primaryPath,
-        data: useJson,
-        schema: this.schema.jsonSchema
-      });
-    }
-
-    return this.findOne(primary).exec().then(function (existing) {
-      if (existing && !existing.deleted) {
-        useJson._rev = existing['_rev'];
-        return existing.atomicUpdate(function () {
-          return useJson;
-        }).then(function () {
-          return existing;
-        });
-      } else {
-        return _this9.insert(json);
-      }
+    return this.bulkUpsert([json]).then(function (result) {
+      return result[0];
     });
   }
   /**
@@ -3815,7 +3857,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
   ;
 
   _proto.atomicUpsert = function atomicUpsert(json) {
-    var _this10 = this;
+    var _this11 = this;
 
     var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this, json);
     var primary = useJson[this.schema.primaryPath];
@@ -3834,7 +3876,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }
 
     queue = queue.then(function () {
-      return _atomicUpsertEnsureRxDocumentExists(_this10, primary, useJson);
+      return _atomicUpsertEnsureRxDocumentExists(_this11, primary, useJson);
     }).then(function (wasInserted) {
       if (!wasInserted.inserted) {
         return _atomicUpsertUpdate(wasInserted.doc, useJson).then(function () {
@@ -3905,13 +3947,13 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
   _proto.findByIds = function findByIds(ids) {
     try {
-      var _this12 = this;
+      var _this13 = this;
 
       var ret = new Map();
       var mustBeQueried = []; // first try to fill from docCache
 
       ids.forEach(function (id) {
-        var doc = _this12._docCache.get(id);
+        var doc = _this13._docCache.get(id);
 
         if (doc) {
           ret.set(id, doc);
@@ -3922,9 +3964,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
       var _temp2 = function () {
         if (mustBeQueried.length > 0) {
-          return Promise.resolve(_this12.storageInstance.findDocumentsById(mustBeQueried, false)).then(function (docs) {
+          return Promise.resolve(_this13.storageInstance.findDocumentsById(mustBeQueried, false)).then(function (docs) {
             Object.values(docs).forEach(function (docData) {
-              var doc = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this12, docData);
+              var doc = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this13, docData);
               ret.set(doc.primary, doc);
             });
           });
@@ -3945,7 +3987,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
   ;
 
   _proto.findByIds$ = function findByIds$(ids) {
-    var _this13 = this;
+    var _this14 = this;
 
     var currentValue = null;
     var lastChangeEvent = -1;
@@ -3955,7 +3997,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
     var queue = _util.PROMISE_RESOLVE_VOID;
     var initialPromise = this.findByIds(ids).then(function (docsMap) {
-      lastChangeEvent = _this13._changeEventBuffer.counter;
+      lastChangeEvent = _this14._changeEventBuffer.counter;
       currentValue = docsMap;
     });
     var firstEmitDone = false;
@@ -3995,9 +4037,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
           var _exit2 = false;
           var resultMap = (0, _util.ensureNotFalsy)(currentValue);
 
-          var missedChangeEvents = _this13._changeEventBuffer.getFrom(lastChangeEvent + 1);
+          var missedChangeEvents = _this14._changeEventBuffer.getFrom(lastChangeEvent + 1);
 
-          lastChangeEvent = _this13._changeEventBuffer.counter;
+          lastChangeEvent = _this14._changeEventBuffer.counter;
 
           var _temp7 = function () {
             if (missedChangeEvents === null) {
@@ -4005,8 +4047,8 @@ var RxCollectionBase = /*#__PURE__*/function () {
                * changeEventBuffer is of bounds -> we must re-execute over the database
                * because we cannot calculate the new results just from the events.
                */
-              return Promise.resolve(_this13.findByIds(ids)).then(function (newResult) {
-                lastChangeEvent = _this13._changeEventBuffer.counter;
+              return Promise.resolve(_this14.findByIds(ids)).then(function (newResult) {
+                lastChangeEvent = _this14._changeEventBuffer.counter;
                 Array.from(newResult.entries()).forEach(function (_ref2) {
                   var k = _ref2[0],
                       v = _ref2[1];
@@ -4027,7 +4069,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
                 if (op === 'INSERT' || op === 'UPDATE') {
                   resultHasChanged = true;
-                  var rxDocument = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this13.asRxCollection, rxChangeEvent.documentData);
+                  var rxDocument = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this14.asRxCollection, rxChangeEvent.documentData);
                   resultMap.set(docId, rxDocument);
                 } else {
                   if (resultMap.has(docId)) {
@@ -4205,22 +4247,22 @@ var RxCollectionBase = /*#__PURE__*/function () {
   ;
 
   _proto.promiseWait = function promiseWait(time) {
-    var _this14 = this;
+    var _this15 = this;
 
     var ret = new Promise(function (res) {
       var timeout = setTimeout(function () {
-        _this14.timeouts["delete"](timeout);
+        _this15.timeouts["delete"](timeout);
 
         res();
       }, time);
 
-      _this14.timeouts.add(timeout);
+      _this15.timeouts.add(timeout);
     });
     return ret;
   };
 
   _proto.destroy = function destroy() {
-    var _this15 = this;
+    var _this16 = this;
 
     if (this.destroyed) {
       return _util.PROMISE_RESOLVE_FALSE;
@@ -4252,8 +4294,8 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }
 
     return this.storageInstance.close().then(function () {
-      delete _this15.database.collections[_this15.name];
-      return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', _this15).then(function () {
+      delete _this16.database.collections[_this16.name];
+      return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', _this16).then(function () {
         return true;
       });
     });
@@ -4268,11 +4310,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
   };
 
   (0, _createClass2["default"])(RxCollectionBase, [{
-    key: "$",
-    get: function get() {
-      return this._observable$;
-    }
-  }, {
     key: "insert$",
     get: function get() {
       return this.$.pipe((0, _operators.filter)(function (cE) {
@@ -4296,11 +4333,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this16 = this;
+      var _this17 = this;
 
       if (!this._onDestroy) {
         this._onDestroy = new Promise(function (res) {
-          return _this16._onDestroyCall = res;
+          return _this17._onDestroyCall = res;
         });
       }
 
@@ -4521,7 +4558,9 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
           token: storageToken
         },
         _deleted: false,
-        _meta: (0, _util.getDefaultRxDocumentMeta)(),
+        _meta: {
+          lwt: (0, _util.now)()
+        },
         _rev: (0, _util.getDefaultRevision)(),
         _attachments: {}
       };
@@ -4532,31 +4571,17 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
         return storageToken;
       });
     }, function (err) {
-      var _exit = false;
-
-      function _temp2(_result) {
-        if (_exit) return _result;
-        throw err;
-      }
-
-      var _temp = function () {
-        if (err.isError && err.status === 409) {
-          return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(rxDatabase.internalStore, storageTokenDocumentId)).then(function (useStorageTokenDoc) {
-            if (useStorageTokenDoc) {
-              var _useStorageTokenDoc$d2 = useStorageTokenDoc.data.token;
-              _exit = true;
-              return _useStorageTokenDoc$d2;
-            }
-          });
-        }
-      }();
-
       /**
        * If we get a 409 error,
        * it means another instance already inserted the storage token.
        * So we get that token from the database and return that one.
        */
-      return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
+      if (err.isError && err.status === 409) {
+        var storageTokenDocInDb = err.documentInDb;
+        return storageTokenDocInDb.data.token;
+      }
+
+      throw err;
     }));
   } catch (e) {
     return Promise.reject(e);
@@ -4783,6 +4808,9 @@ var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collect
         var writeDoc = (0, _util.flatClone)(doc);
         writeDoc._deleted = true;
         writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
+        writeDoc._meta = {
+          lwt: (0, _util.now)()
+        };
         return {
           previous: doc,
           document: writeDoc
@@ -4827,6 +4855,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
      * to be performance expensive.
      */
     broadcastChannel = arguments.length > 9 ? arguments[9] : undefined;
+    var cleanupPolicy = arguments.length > 10 ? arguments[10] : undefined;
     this.token = (0, _util.randomCouchString)(10);
     this._subs = [];
     this.destroyed = false;
@@ -4846,6 +4875,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     this.idleQueue = idleQueue;
     this.internalStore = internalStore;
     this.broadcastChannel = broadcastChannel;
+    this.cleanupPolicy = cleanupPolicy;
     this.collections = {};
     DB_COUNT++;
 
@@ -4894,6 +4924,9 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         var writeDoc = (0, _util.flatClone)(doc);
         writeDoc._deleted = true;
         writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
+        writeDoc._meta = {
+          lwt: (0, _util.now)()
+        };
         return Promise.resolve(_this2.lockedRun(function () {
           return _this2.internalStore.bulkWrite([{
             document: writeDoc,
@@ -4917,125 +4950,109 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     try {
       var _this4 = this;
 
-      // get local management docs in bulk request
-      return Promise.resolve(_this4.lockedRun(function () {
-        return _this4.internalStore.findDocumentsById(Object.keys(collectionCreators).map(function (name) {
-          var schema = collectionCreators[name].schema;
-          return (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(_collectionNamePrimary(name, schema), _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION);
-        }), false);
-      })).then(function (collectionDocs) {
-        var internalDocByCollectionName = {};
-        Object.entries(collectionDocs).forEach(function (_ref) {
-          var _id = _ref[0],
-              doc = _ref[1];
-          internalDocByCollectionName[doc.key] = doc;
+      var jsonSchemas = {};
+      var schemas = {};
+      var bulkPutDocs = [];
+      var useArgsByCollectionName = {};
+      Object.entries(collectionCreators).forEach(function (_ref) {
+        var name = _ref[0],
+            args = _ref[1];
+        var collectionName = name;
+        var rxJsonSchema = args.schema;
+        jsonSchemas[collectionName] = rxJsonSchema;
+        var schema = (0, _rxSchema.createRxSchema)(rxJsonSchema);
+        schemas[collectionName] = schema; // crypt=true but no password given
+
+        if (schema.crypt && !_this4.password) {
+          throw (0, _rxError.newRxError)('DB7', {
+            name: name
+          });
+        } // collection already exists
+
+
+        if (_this4.collections[name]) {
+          throw (0, _rxError.newRxError)('DB3', {
+            name: name
+          });
+        }
+
+        var collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
+
+        var collectionDocData = {
+          id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionNameWithVersion, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
+          key: collectionNameWithVersion,
+          context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION,
+          data: {
+            name: collectionName,
+            schemaHash: schema.hash,
+            schema: schema.normalized,
+            version: schema.version
+          },
+          _deleted: false,
+          _meta: {
+            lwt: (0, _util.now)()
+          },
+          _rev: (0, _util.getDefaultRevision)(),
+          _attachments: {}
+        };
+        collectionDocData._rev = (0, _util.createRevision)(collectionDocData);
+        bulkPutDocs.push({
+          document: collectionDocData
         });
-        var schemaHashByName = {};
-        return Promise.resolve(Promise.all(Object.entries(collectionCreators).map(function (_ref2) {
-          var name = _ref2[0],
-              args = _ref2[1];
-          var useName = name;
+        var useArgs = Object.assign({}, args, {
+          name: collectionName,
+          schema: schema,
+          database: _this4
+        }); // run hooks
 
-          var internalDoc = internalDocByCollectionName[_collectionNamePrimary(name, collectionCreators[useName].schema)];
+        var hookData = (0, _util.flatClone)(args);
+        hookData.database = _this4;
+        hookData.name = name;
+        (0, _hooks.runPluginHooks)('preCreateRxCollection', hookData);
+        useArgsByCollectionName[collectionName] = useArgs;
+      });
+      return Promise.resolve(_this4.lockedRun(function () {
+        return _this4.internalStore.bulkWrite(bulkPutDocs);
+      })).then(function (putDocsResult) {
+        Object.entries(putDocsResult.error).forEach(function (_ref2) {
+          var _id = _ref2[0],
+              error = _ref2[1];
+          var docInDb = error.documentInDb;
+          var collectionName = docInDb.data.name;
+          var schema = schemas[collectionName]; // collection already exists but has different schema
 
-          var useArgs = (0, _util.flatClone)(args);
-          useArgs.name = useName;
-          var schema = (0, _rxSchema.createRxSchema)(args.schema);
-          schemaHashByName[useName] = schema.hash;
-          /**
-           * TODO
-           * do not transfrom RxCollectionCreator
-           * parameters here.
-           * createRxCollection() must accept the plain data of
-           * RxCollectionCreator
-           */
-
-          useArgs.schema = schema;
-          useArgs.database = _this4; // crypt=true but no password given
-
-          if (schema.crypt && !_this4.password) {
-            throw (0, _rxError.newRxError)('DB7', {
-              name: name
-            });
-          } // collection already exists
-
-
-          if (_this4.collections[name]) {
-            throw (0, _rxError.newRxError)('DB3', {
-              name: name
-            });
-          } // collection already exists but has different schema
-
-
-          if (internalDoc && internalDoc.data.schemaHash !== schemaHashByName[useName]) {
+          if (docInDb.data.schemaHash !== schema.hash) {
             throw (0, _rxError.newRxError)('DB6', {
-              name: name,
-              previousSchemaHash: internalDoc.data.schemaHash,
-              schemaHash: schemaHashByName[useName],
-              previousSchema: internalDoc.data.schema,
-              schema: args.schema
+              name: collectionName,
+              previousSchemaHash: docInDb.data.schemaHash,
+              schemaHash: schema.hash,
+              previousSchema: docInDb.data.schema,
+              schema: jsonSchemas[collectionName].schema
             });
-          } // run hooks
+          }
+        });
+        var ret = {};
+        return Promise.resolve(Promise.all(Object.keys(collectionCreators).map(function (collectionName) {
+          try {
+            var useArgs = useArgsByCollectionName[collectionName];
+            return Promise.resolve((0, _rxCollection.createRxCollection)(useArgs)).then(function (collection) {
+              ret[collectionName] = collection; // set as getter to the database
 
+              _this4.collections[collectionName] = collection;
 
-          var hookData = (0, _util.flatClone)(args);
-          hookData.database = _this4;
-          hookData.name = name;
-          (0, _hooks.runPluginHooks)('preCreateRxCollection', hookData);
-          return (0, _rxCollection.createRxCollection)(useArgs);
-        }))).then(function (collections) {
-          var bulkPutDocs = [];
-          var ret = {};
-          collections.forEach(function (collection) {
-            var name = collection.name;
-            ret[name] = collection; // add to bulk-docs list
-
-            var collectionName = _collectionNamePrimary(name, collectionCreators[name].schema);
-
-            if (!internalDocByCollectionName[collectionName]) {
-              var collectionDocData = {
-                id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionName, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
-                key: collectionName,
-                context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION,
-                data: {
-                  schemaHash: schemaHashByName[name],
-                  schema: collection.schema.normalized,
-                  version: collection.schema.version
-                },
-                _deleted: false,
-                _meta: (0, _util.getDefaultRxDocumentMeta)(),
-                _rev: (0, _util.getDefaultRevision)(),
-                _attachments: {}
-              };
-              collectionDocData._rev = (0, _util.createRevision)(collectionDocData);
-              bulkPutDocs.push({
-                document: collectionDocData
-              });
-            } // set as getter to the database
-
-
-            _this4.collections[name] = collection;
-
-            if (!_this4[name]) {
-              Object.defineProperty(_this4, name, {
-                get: function get() {
-                  return _this4.collections[name];
-                }
-              });
-            }
-          }); // make a single write call to the storage instance
-
-          var _temp = function () {
-            if (bulkPutDocs.length > 0) {
-              return Promise.resolve(_this4.lockedRun(function () {
-                return _this4.internalStore.bulkWrite(bulkPutDocs);
-              })).then(function () {});
-            }
-          }();
-
-          return _temp && _temp.then ? _temp.then(function () {
-            return ret;
-          }) : ret;
+              if (!_this4[collectionName]) {
+                Object.defineProperty(_this4, collectionName, {
+                  get: function get() {
+                    return _this4.collections[collectionName];
+                  }
+                });
+              }
+            });
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        }))).then(function () {
+          return ret;
         });
       });
     } catch (e) {
@@ -5164,6 +5181,12 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
       _this7.destroyed = true;
       return Promise.resolve((0, _hooks.runAsyncPluginHooks)('preDestroyRxDatabase', _this7)).then(function () {
+        /**
+         * Complete the event stream
+         * to stop all subscribers who forgot to unsubscribe.
+         */
+        _this7.eventBulks$.complete();
+
         DB_COUNT--;
 
         _this7._subs.map(function (sub) {
@@ -5307,6 +5330,7 @@ function createRxDatabase(_ref3) {
       ignoreDuplicate = _ref3$ignoreDuplicate === void 0 ? false : _ref3$ignoreDuplicate,
       _ref3$options = _ref3.options,
       options = _ref3$options === void 0 ? {} : _ref3$options,
+      cleanupPolicy = _ref3.cleanupPolicy,
       _ref3$localDocuments = _ref3.localDocuments,
       localDocuments = _ref3$localDocuments === void 0 ? false : _ref3$localDocuments;
   (0, _hooks.runPluginHooks)('preCreateRxDatabase', {
@@ -5339,7 +5363,7 @@ function createRxDatabase(_ref3) {
 
   var idleQueue = new _customIdleQueue.IdleQueue();
   return createRxDatabaseStorageInstance(storage, name, instanceCreationOptions, multiInstance).then(function (storageInstance) {
-    var rxDatabase = new RxDatabaseBase(name, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, idleQueue, storageInstance, broadcastChannel);
+    var rxDatabase = new RxDatabaseBase(name, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, idleQueue, storageInstance, broadcastChannel, cleanupPolicy);
     return prepare(rxDatabase).then(function () {
       return (0, _hooks.runAsyncPluginHooks)('createRxDatabase', {
         database: rxDatabase,
@@ -7699,7 +7723,7 @@ rxJsonSchema) {
       data = (0, _rxSchemaHelper.fillPrimaryKey)(primaryPath, rxJsonSchema, data);
     }
 
-    data._meta.lwt = new Date().getTime();
+    data._meta.lwt = (0, _util.now)();
     var hookParams = {
       database: database,
       primaryPath: primaryPath,
@@ -7761,7 +7785,7 @@ rxJsonSchema) {
         return transformDocumentDataFromRxDBToRxStorage(row);
       });
       return database.lockedRun(function () {
-        return storageInstance.bulkWrite((0, _util.clone)(toStorageWriteRows));
+        return storageInstance.bulkWrite(toStorageWriteRows);
       }).then(function (writeResult) {
         var ret = {
           success: {},
@@ -7812,6 +7836,11 @@ rxJsonSchema) {
     getChangedDocuments: function getChangedDocuments(options) {
       return database.lockedRun(function () {
         return storageInstance.getChangedDocuments(options);
+      });
+    },
+    cleanup: function cleanup(minDeletedTime) {
+      return database.lockedRun(function () {
+        return storageInstance.cleanup(minDeletedTime);
       });
     },
     remove: function remove() {
