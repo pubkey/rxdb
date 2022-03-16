@@ -67,10 +67,7 @@ export {
     getPreviousVersions,
     toTypedRxJsonSchema
 } from './rx-schema';
-export {
-    getPseudoSchemaForVersion,
-    getSchemaByObjectPath
-} from './rx-schema-helper';
+export * from './rx-schema-helper';
 
 export {
     getSingleDocument,
@@ -139,6 +136,8 @@ export type {
     RxAttachmentDataMeta,
     RxAttachmentData,
     RxAttachmentWriteData,
+    RxStorage,
+    RxStorageStatics,
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
     PreparedQuery,
@@ -150,7 +149,7 @@ export type {
     ChangeStreamEvent,
     RxStorageChangedDocumentMeta,
     RxStorageChangeEvent,
-
+    RxStorageInstance,
 
     RxDumpCollectionBase,
     RxDumpDatabaseAny,
@@ -174,8 +173,6 @@ export type {
     SyncOptionsGraphQL,
     MigrationStrategy,
     MigrationStrategies,
-    RxStorage,
-    RxStorageStatics,
     FilledMangoQuery,
     OldRxCollection,
     WithAttachmentsData
