@@ -203,7 +203,7 @@
     "karma": "6.3.17",
     "karma-babel-preprocessor": "8.0.2",
     "karma-browserify": "8.1.0",
-    "karma-chrome-launcher": "3.1.0",
+    "karma-chrome-launcher": "3.1.1",
     "karma-coverage": "2.2.0",
     "karma-detect-browsers": "2.3.3",
     "karma-edge-launcher": "0.4.2",
