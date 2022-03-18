@@ -25,6 +25,7 @@ import {
     randomCouchString,
     now,
     hash,
+    isRxDocument,
 } from '../../';
 
 import {
@@ -777,6 +778,31 @@ describe('replication.test.js', () => {
                 throw new Error('Infinite push loop');
             }
 
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/
+         */
+        it('should call pre insert on pulled docs', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 4 });
+            let count = 0;
+            localCollection.postInsert((data, instance) => {
+                assert.ok(data.age);
+                assert.ok(isRxDocument(instance));
+                count++;
+            }, false);
+            
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                }
+            });
+            await replicationState.awaitInitialReplication();
+            assert.strictEqual(count, 4);
+        
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
