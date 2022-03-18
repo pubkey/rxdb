@@ -25,7 +25,6 @@ import {
     randomCouchString,
     now,
     hash,
-    isRxDocument,
 } from '../../';
 
 import {
@@ -787,9 +786,8 @@ describe('replication.test.js', () => {
         it('should call pre insert on pulled docs', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 4 });
             let count = 0;
-            localCollection.postInsert((data, instance) => {
+            localCollection.preInsert((data) => {
                 assert.ok(data.age);
-                assert.ok(isRxDocument(instance));
                 count++;
             }, false);
             
