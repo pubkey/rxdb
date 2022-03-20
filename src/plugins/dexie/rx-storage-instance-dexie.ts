@@ -7,7 +7,6 @@ import {
 } from 'rxjs';
 import {
     lastOfArray,
-    flatClone,
     now,
     randomCouchString,
     PROMISE_RESOLVE_VOID
@@ -129,7 +128,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         } else {
                             bulkPutDocs.push(writeDoc);
                             eventBulk.events.push({
-                                eventId: getDexieEventKey(this, id, writeRow.document._rev),
+                                eventId: getDexieEventKey(this, this.primaryPath as any, writeRow),
                                 documentId: id,
                                 change: {
                                     doc: writeDoc,
@@ -216,23 +215,16 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 bulkPutDeletedDocs.push(writeDoc);
                                 bulkRemoveDocs.push(id);
 
-                                /**
-                                 * On delete, we send the 'new' rev in the previous property,
-                                 * to have the equal behavior as pouchdb.
-                                 * TODO do we even need this anymore?
-                                 */
-                                const previous = flatClone(writeRow.previous);
-                                previous._rev = writeRow.document._rev;
                                 change = {
                                     id,
                                     operation: 'DELETE',
-                                    previous,
+                                    previous: writeRow.previous,
                                     doc: null
                                 };
-                            }else if(
+                            } else if (
                                 writeRow.previous && writeRow.previous._deleted &&
                                 writeRow.document._deleted
-                            ){
+                            ) {
                                 // deleted doc was overwritten with other deleted doc
                                 bulkPutDeletedDocs.push(writeDoc);
                             }
@@ -247,7 +239,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 }
                             } else {
                                 eventBulk.events.push({
-                                    eventId: getDexieEventKey(this, id, writeRow.document._rev),
+                                    eventId: getDexieEventKey(this, this.primaryPath as any, writeRow),
                                     documentId: id,
                                     change,
                                     startTime,

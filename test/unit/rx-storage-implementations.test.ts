@@ -19,6 +19,7 @@ import {
     now,
     getSingleDocument,
     hashAttachmentData,
+    parseRevision,
     getAttachmentSize
 } from '../../';
 
@@ -1588,28 +1589,34 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.deepStrictEqual(originalBeforeUpdate, previous);
 
                 // delete
-                writeData._deleted = true;
-                await storageInstance.bulkWrite([{
+                const deleteBulkWriteResponse = await storageInstance.bulkWrite([{
                     previous,
                     document: Object.assign({}, writeData, {
                         _rev: EXAMPLE_REVISION_3,
+                        _deleted: true,
                         _meta: {
                             lwt: now()
                         }
                     })
                 }]);
+                assert.deepStrictEqual(deleteBulkWriteResponse.error, {});
 
-                await waitUntil(() => emitted.length === 3);
-
+                await waitUntil(() => {
+                    return flattenEvents(emitted).length === 3;
+                });
                 const emittedEvents = flattenEvents(emitted);
                 const lastEvent = lastOfArray(emittedEvents);
                 if (!lastEvent) {
                     throw new Error('missing last event');
                 }
 
-                // TODO ensure all RxStorrages return the same revision height here.
-                // const lastRevision = parseRevision((lastEvent as any).change.previous._rev);
-                // assert.strictEqual(lastRevision.height, 2);
+                /**
+                 * The previous doc data must still contain the given revision height.
+                 * This changed because in the past we increased the rev height
+                 * to be compliant with strange PouchDB behavior.
+                 */
+                const lastRevision = parseRevision((lastEvent as any).change.previous._rev);
+                assert.strictEqual(lastRevision.height, 2);
 
                 assert.strictEqual(lastEvent.change.operation, 'DELETE');
                 assert.ok(lastEvent.change.previous);

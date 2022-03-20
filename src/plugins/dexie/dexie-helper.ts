@@ -3,6 +3,7 @@ import type {
 } from 'event-reduce-js';
 import mingo from 'mingo';
 import type {
+    BulkWriteRow,
     DexieStorageInternals,
     MangoQuery,
     RxDocumentData,
@@ -186,15 +187,24 @@ export function getDexieStoreSchema(
     }).join(', ');
 }
 
+/**
+ * TODO unify the key creation above all RxStorage implementations.
+ */
 export function getDexieEventKey(
     storageInstance: RxStorageInstanceDexie<any>,
-    primary: string,
-    revision: string
+    primaryPath: string,
+    writeRow: BulkWriteRow<any>
 ): string {
-    const eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + primary + '|' + revision;
+    const docId = writeRow.document[primaryPath];
+    const binaryValues: boolean[] = [
+        !!writeRow.previous,
+        (writeRow.previous && writeRow.previous._deleted),
+        !!writeRow.document._deleted
+    ];
+    const binary = binaryValues.map(v => v ? '1' : '0').join('');
+    const eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
     return eventKey;
 }
-
 /**
  * Returns all documents in the database.
  * Non-deleted plus deleted ones.

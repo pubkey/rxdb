@@ -324,7 +324,6 @@ export function addCustomEventsPluginToPouch() {
                                     startTime,
                                     endTime
                                 };
-
                                 eventsPromise = eventEmitDataToStorageEvents(
                                     this,
                                     '_id',
@@ -333,7 +332,8 @@ export function addCustomEventsPluginToPouch() {
                                     const eventBulk: EventBulk<any> = {
                                         id: randomCouchString(10),
                                         events
-                                    }
+                                    };
+
                                     const emitter = getCustomEventEmitterByPouch(this);
                                     emitter.subject.next(eventBulk);
                                 });
@@ -382,7 +382,6 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     primaryPath,
                     writeDoc
                 );
-
                 writeDoc._attachments = await writeAttachmentsToAttachments(writeDoc._attachments);
                 let previousDoc = emitData.previousDocs.get(id);
                 if (previousDoc) {
@@ -391,8 +390,6 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                         previousDoc
                     );
                 }
-
-
                 if (previousDoc) {
                     const parsedRevPrevious = parseRevision(previousDoc._rev);
                     const parsedRevNew = parseRevision(writeDoc._rev);
@@ -468,6 +465,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     emitData.startTime,
                     emitData.endTime
                 );
+
                 ret.push(changeEvent);
             })
         );
@@ -547,8 +545,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                         {},
                         writeRow.previous,
                         {
-                            _attachments: attachments,
-                            _rev: (resultRow as PouchBulkDocResultRow).rev
+                            _attachments: attachments
                         }
                     );
 
@@ -593,7 +590,6 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
         );
     }
 
-
     return ret;
 }
 
@@ -607,7 +603,7 @@ export function changeEventToNormal<RxDocType>(
     const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
     const primary: string = (doc as any)[primaryPath];
     const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
-        eventId: getEventKey(pouchDBInstance, primary, doc._rev),
+        eventId: getEventKey(pouchDBInstance, primary, change.operation, doc._rev),
         documentId: primary,
         change,
         startTime,

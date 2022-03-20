@@ -60,6 +60,7 @@ export function pouchSwapIdToPrimary<T>(
     if (primaryKey === '_id' || docData[primaryKey]) {
         return docData;
     }
+
     docData = flatClone(docData);
     docData[primaryKey] = docData._id;
     delete docData._id;
@@ -180,9 +181,10 @@ export function pouchStripLocalFlagFromPrimary(str: string): string {
 export function getEventKey(
     pouchDBInstance: PouchDBInstance,
     primary: string,
+    operation: 'INSERT' | 'UPDATE' | 'DELETE',
     revision: string
 ): string {
-    const eventKey = pouchDBInstance.name + '|' + primary + '|' + revision;
+    const eventKey = pouchDBInstance.name + '|' + primary + '|' + '|' + operation + '|' + revision;
     return eventKey;
 }
 

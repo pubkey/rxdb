@@ -149,8 +149,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             docsInDb,
             documentWrites,
             (writeRow: BulkWriteRow<RxDocType>) => {
-                const id = writeRow.document[this.primaryPath];
-                return getLokiEventKey(this, id as any, writeRow.document._rev)
+                return getLokiEventKey(this, this.primaryPath as any, writeRow);
             }
         );
 

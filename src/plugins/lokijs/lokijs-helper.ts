@@ -1,6 +1,7 @@
 import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import lokijs, { Collection } from 'lokijs';
 import type {
+    BulkWriteRow,
     LokiDatabaseSettings,
     LokiDatabaseState,
     LokiLocalDatabaseState,
@@ -59,10 +60,17 @@ export function stripLokiKey<T>(docData: RxDocumentData<T> & { $loki?: number; }
 
 export function getLokiEventKey(
     storageInstance: RxStorageInstanceLoki<any>,
-    primary: string,
-    revision: string
+    primaryPath: string,
+    writeRow: BulkWriteRow<any>
 ): string {
-    const eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + primary + '|' + revision;
+    const docId = writeRow.document[primaryPath];
+    const binaryValues: boolean[] = [
+        !!writeRow.previous,
+        (writeRow.previous && writeRow.previous._deleted),
+        !!writeRow.document._deleted
+    ];
+    const binary = binaryValues.map(v => v ? '1' : '0').join('');
+    const eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
     return eventKey;
 }
 
