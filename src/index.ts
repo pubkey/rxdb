@@ -69,13 +69,7 @@ export {
 } from './rx-schema';
 export * from './rx-schema-helper';
 
-export {
-    getSingleDocument,
-    getAllDocuments,
-    writeSingle,
-    hashAttachmentData,
-    getAttachmentSize
-} from './rx-storage-helper';
+export * from './rx-storage-helper';
 
 export {
     _clearHook // used in tests
