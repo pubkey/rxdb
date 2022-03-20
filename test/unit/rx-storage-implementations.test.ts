@@ -1287,7 +1287,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
 
                 let previous: RxDocumentData<TestDocType> | undefined;
-                let writeData = {
+                const writeData = {
                     key: 'foobar',
                     value: 'one',
                     _attachments: {},
@@ -1607,9 +1607,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 if (!lastEvent) {
                     throw new Error('missing last event');
                 }
-
-                const lastRevision = parseRevision((lastEvent as any).change.previous._rev);
-                assert.strictEqual(lastRevision.height, 2);
 
                 assert.strictEqual(lastEvent.change.operation, 'DELETE');
                 assert.ok(lastEvent.change.previous);
