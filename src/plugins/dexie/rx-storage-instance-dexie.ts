@@ -32,11 +32,11 @@ import { RxStorageDexie } from './rx-storage-dexie';
 import {
     closeDexieDb,
     getDexieDbWithTables,
-    getDexieEventKey,
     getDocsInDb
 } from './dexie-helper';
 import { dexieQuery } from './query/dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
 
 let instanceId = now();
 
@@ -128,7 +128,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         } else {
                             bulkPutDocs.push(writeDoc);
                             eventBulk.events.push({
-                                eventId: getDexieEventKey(this, this.primaryPath as any, writeRow),
+                                eventId: getUniqueDeterministicEventKey(this, this.primaryPath as any, writeRow),
                                 documentId: id,
                                 change: {
                                     doc: writeDoc,
@@ -239,7 +239,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 }
                             } else {
                                 eventBulk.events.push({
-                                    eventId: getDexieEventKey(this, this.primaryPath as any, writeRow),
+                                    eventId: getUniqueDeterministicEventKey(this, this.primaryPath as any, writeRow),
                                     documentId: id,
                                     change,
                                     startTime,

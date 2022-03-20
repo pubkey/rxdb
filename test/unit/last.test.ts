@@ -4,8 +4,9 @@ import {
     dbCount
 } from '../../';
 import { OPEN_POUCHDB_STORAGE_INSTANCES } from '../../plugins/pouchdb';
+import config from './config';
 
-describe('last.test.js', () => {
+describe('last.test.ts (' + config.storage.name + ')', () => {
     it('ensure every db is cleaned up', () => {
         assert.strictEqual(dbCount(), 0);
     });

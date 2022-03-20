@@ -188,24 +188,6 @@ export function getDexieStoreSchema(
 }
 
 /**
- * TODO unify the key creation above all RxStorage implementations.
- */
-export function getDexieEventKey(
-    storageInstance: RxStorageInstanceDexie<any>,
-    primaryPath: string,
-    writeRow: BulkWriteRow<any>
-): string {
-    const docId = writeRow.document[primaryPath];
-    const binaryValues: boolean[] = [
-        !!writeRow.previous,
-        (writeRow.previous && writeRow.previous._deleted),
-        !!writeRow.document._deleted
-    ];
-    const binary = binaryValues.map(v => v ? '1' : '0').join('');
-    const eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
-    return eventKey;
-}
-/**
  * Returns all documents in the database.
  * Non-deleted plus deleted ones.
  */

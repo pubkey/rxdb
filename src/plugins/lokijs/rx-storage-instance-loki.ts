@@ -33,7 +33,6 @@ import {
     CHANGES_COLLECTION_SUFFIX,
     closeLokiCollections,
     getLokiDatabase,
-    getLokiEventKey,
     OPEN_LOKIJS_STORAGE_INSTANCES,
     LOKIJS_COLLECTION_DEFAULT_OPTIONS,
     stripLokiKey,
@@ -145,12 +144,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         });
 
         const categorized = categorizeBulkWriteRows<RxDocType>(
+            this,
             this.primaryPath,
             docsInDb,
-            documentWrites,
-            (writeRow: BulkWriteRow<RxDocType>) => {
-                return getLokiEventKey(this, this.primaryPath as any, writeRow);
-            }
+            documentWrites
         );
 
         categorized.bulkInsertDocs.forEach(writeRow => {

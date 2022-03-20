@@ -146,6 +146,7 @@ export function throwIfIsStorageWriteError<RxDocType>(
  * Used as helper inside of some RxStorage implementations.
  */
 export function categorizeBulkWriteRows<RxDocType>(
+    storageInstance: RxStorageInstance<any, any, any>,
     primaryPath: keyof RxDocType,
     /**
      * Current state of the documents
@@ -157,8 +158,7 @@ export function categorizeBulkWriteRows<RxDocType>(
      * The write rows that are passed to
      * RxStorageInstance().bulkWrite().
      */
-    bulkWriteRows: BulkWriteRow<RxDocType>[],
-    getEventKey: (row: BulkWriteRow<RxDocType>) => string
+    bulkWriteRows: BulkWriteRow<RxDocType>[]
 ): {
     bulkInsertDocs: BulkWriteRow<RxDocType>[];
     bulkUpdateDocs: BulkWriteRow<RxDocType>[];
@@ -197,7 +197,7 @@ export function categorizeBulkWriteRows<RxDocType>(
             if (!insertedIsDeleted) {
                 changedDocumentIds.push(id);
                 eventBulk.events.push({
-                    eventId: getEventKey(writeRow),
+                    eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath as any, writeRow),
                     documentId: id as any,
                     change: {
                         doc: writeRow.document,
@@ -281,7 +281,7 @@ export function categorizeBulkWriteRows<RxDocType>(
             } else {
                 changedDocumentIds.push(id);
                 eventBulk.events.push({
-                    eventId: getEventKey(writeRow),
+                    eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath as any, writeRow),
                     documentId: id as any,
                     change,
                     startTime,
@@ -299,6 +299,26 @@ export function categorizeBulkWriteRows<RxDocType>(
         changedDocumentIds,
         eventBulk
     };
+}
+
+/**
+ * Each event is labeled with the id
+ * to make it easy to filter out duplicates.
+ */
+export function getUniqueDeterministicEventKey(
+    storageInstance: RxStorageInstance<any, any, any>,
+    primaryPath: string,
+    writeRow: BulkWriteRow<any>
+): string {
+    const docId = writeRow.document[primaryPath];
+    const binaryValues: boolean[] = [
+        !!writeRow.previous,
+        (writeRow.previous && writeRow.previous._deleted),
+        !!writeRow.document._deleted
+    ];
+    const binary = binaryValues.map(v => v ? '1' : '0').join('');
+    const eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
+    return eventKey;
 }
 
 

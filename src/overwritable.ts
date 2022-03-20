@@ -44,8 +44,9 @@ export const overwritable = {
      */
     tunnelErrorMessage(message: string): string {
         return `RxDB Error-Code ${message}.
-        - To find out what this means, use the dev-mode-plugin https://pubkey.github.io/rxdb/custom-build.html#dev-mode
-        - Or search for this code https://github.com/pubkey/rxdb/search?q=${message}
+        Error messages are not included in RxDB core to reduce build size.
+        - To find out what this error means, either use the dev-mode-plugin https://rxdb.info/dev-mode.html
+        - or search for the error code here: https://github.com/pubkey/rxdb/search?q=${message}
         `;
     }
 };

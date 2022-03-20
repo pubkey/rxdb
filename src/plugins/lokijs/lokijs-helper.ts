@@ -58,22 +58,6 @@ export function stripLokiKey<T>(docData: RxDocumentData<T> & { $loki?: number; }
     return cloned;
 }
 
-export function getLokiEventKey(
-    storageInstance: RxStorageInstanceLoki<any>,
-    primaryPath: string,
-    writeRow: BulkWriteRow<any>
-): string {
-    const docId = writeRow.document[primaryPath];
-    const binaryValues: boolean[] = [
-        !!writeRow.previous,
-        (writeRow.previous && writeRow.previous._deleted),
-        !!writeRow.document._deleted
-    ];
-    const binary = binaryValues.map(v => v ? '1' : '0').join('');
-    const eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
-    return eventKey;
-}
-
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
