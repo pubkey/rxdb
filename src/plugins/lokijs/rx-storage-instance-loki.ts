@@ -1,6 +1,3 @@
-import type {
-    ChangeEvent
-} from 'event-reduce-js';
 import {
     Subject,
     Observable
@@ -10,7 +7,8 @@ import {
     flatClone,
     now,
     ensureNotFalsy,
-    randomCouchString, isMaybeReadonlyArray
+    isMaybeReadonlyArray,
+    getFromMapOrThrow
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type {
@@ -20,7 +18,6 @@ import type {
     RxDocumentData,
     BulkWriteRow,
     RxStorageBulkWriteResponse,
-    RxStorageBulkWriteError,
     RxStorageQueryResult,
     ChangeStreamOnceOptions,
     RxJsonSchema,
@@ -52,6 +49,7 @@ import type {
 } from 'lokijs';
 import type { RxStorageLoki } from './rx-storage-lokijs';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 
 let instanceId = now();
 
@@ -122,7 +120,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 }
             });
         }
-
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'bulkWrite', [documentWrites]);
@@ -133,147 +130,56 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             error: {}
         };
 
-        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
-            id: randomCouchString(10),
-            events: []
-        };
+        const docsInDb: Map<RxDocumentData<RxDocType>[keyof RxDocType], RxDocumentData<RxDocType>> = new Map();
+        const docsInDbWithLokiKey: Map<
+            RxDocumentData<RxDocType>[keyof RxDocType],
+            RxDocumentData<RxDocType> & { $loki: number; }
+        > = new Map();
         documentWrites.forEach(writeRow => {
-            const startTime = now();
-            const id: string = writeRow.document[this.primaryPath] as any;
+            const id = writeRow.document[this.primaryPath];
             const documentInDb = localState.collection.by(this.primaryPath, id);
-
-            if (!documentInDb) {
-                /**
-                 * It is possible to insert already deleted documents,
-                 * this can happen on replication.
-                 */
-                const insertedIsDeleted = writeRow.document._deleted ? true : false;
-
-                const writeDoc = Object.assign(
-                    {},
-                    writeRow.document,
-                    {
-                        _deleted: insertedIsDeleted,
-                        // TODO attachments are currently not working with lokijs
-                        _attachments: {} as any
-                    }
-                );
-                localState.collection.insert(flatClone(writeDoc));
-                if (!insertedIsDeleted) {
-                    this.addChangeDocumentMeta(id);
-                    eventBulk.events.push({
-                        eventId: getLokiEventKey(this, id, writeRow.document._rev),
-                        documentId: id,
-                        change: {
-                            doc: writeDoc,
-                            id,
-                            operation: 'INSERT',
-                            previous: null
-                        },
-                        startTime,
-                        endTime: now()
-                    });
-                }
-                ret.success[id] = writeDoc;
-            } else {
-                // update existing document
-                const revInDb: string = documentInDb._rev;
-
-                // inserting a deleted document is possible
-                // without sending the previous data.
-                if (!writeRow.previous && documentInDb._deleted) {
-                    writeRow.previous = documentInDb;
-                }
-
-                if (
-                    (
-                        !writeRow.previous &&
-                        !documentInDb._deleted
-                    ) ||
-                    (
-                        !!writeRow.previous &&
-                        revInDb !== writeRow.previous._rev
-                    )
-                ) {
-                    // conflict error
-                    const err: RxStorageBulkWriteError<RxDocType> = {
-                        isError: true,
-                        status: 409,
-                        documentId: id,
-                        writeRow: writeRow,
-                        documentInDb
-                    };
-                    ret.error[id] = err;
-                } else {
-                    const isDeleted = !!writeRow.document._deleted;
-                    const writeDoc: any = Object.assign(
-                        {},
-                        writeRow.document,
-                        {
-                            $loki: documentInDb.$loki,
-                            _deleted: isDeleted,
-                            // TODO attachments are currently not working with lokijs
-                            _attachments: {}
-                        }
-                    );
-
-                    localState.collection.update(writeDoc);
-                    this.addChangeDocumentMeta(id);
-
-                    let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
-                    if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
-                        change = {
-                            id,
-                            operation: 'INSERT',
-                            previous: null,
-                            doc: stripLokiKey(writeDoc)
-                        };
-                    } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
-                        change = {
-                            id,
-                            operation: 'UPDATE',
-                            previous: writeRow.previous,
-                            doc: stripLokiKey(writeDoc)
-                        };
-                    } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
-                        /**
-                         * On delete, we send the 'new' rev in the previous property,
-                         * to have the equal behavior as pouchdb.
-                         * TODO do we even need this anymore?
-                         */
-                        const previous = flatClone(writeRow.previous);
-                        previous._rev = writeRow.document._rev;
-                        change = {
-                            id,
-                            operation: 'DELETE',
-                            previous,
-                            doc: null
-                        };
-                    }
-                    if (!change) {
-                        if (
-                            writeRow.previous && writeRow.previous._deleted &&
-                            writeRow.document._deleted
-                        ) {
-                            // deleted doc got overwritten with other deleted doc -> do not send an event
-                        } else {
-                            throw newRxError('SNH', { args: { writeRow } });
-                        }
-                    } else {
-                        eventBulk.events.push({
-                            eventId: getLokiEventKey(this, id, writeRow.document._rev),
-                            documentId: id,
-                            change,
-                            startTime,
-                            endTime: now()
-                        });
-                    }
-                    ret.success[id] = stripLokiKey(writeDoc);
-                }
+            if (documentInDb) {
+                docsInDbWithLokiKey.set(id, documentInDb);
+                docsInDb.set(id, stripLokiKey(documentInDb));
             }
         });
+
+        const categorized = categorizeBulkWriteRows<RxDocType>(
+            this.primaryPath,
+            docsInDb,
+            documentWrites,
+            (writeRow: BulkWriteRow<RxDocType>) => {
+                const id = writeRow.document[this.primaryPath];
+                return getLokiEventKey(this, id as any, writeRow.document._rev)
+            }
+        );
+
+        categorized.bulkInsertDocs.forEach(writeRow => {
+            const docId = writeRow.document[this.primaryPath];
+            localState.collection.insert(flatClone(writeRow.document));
+            ret.success[docId as any] = writeRow.document;
+        });
+        categorized.bulkUpdateDocs.forEach(writeRow => {
+            const docId = writeRow.document[this.primaryPath];
+            const documentInDbWithLokiKey = getFromMapOrThrow(docsInDbWithLokiKey, docId);
+            const writeDoc: any = Object.assign(
+                {},
+                writeRow.document,
+                {
+                    $loki: documentInDbWithLokiKey.$loki
+                }
+            );
+            localState.collection.update(writeDoc);
+            ret.success[docId as any] = writeRow.document;
+        });
+        categorized.errors.forEach(err => {
+            ret.error[err.documentId] = err;
+        });
+        categorized.changedDocumentIds.forEach(docId => {
+            this.addChangeDocumentMeta(docId as any);
+        });
         localState.databaseState.saveQueue.addWrite();
-        this.changes$.next(eventBulk);
+        this.changes$.next(categorized.eventBulk);
 
         return ret;
     }

@@ -2,6 +2,7 @@
  * Helper functions for accessing the RxStorage instances.
  */
 
+import type { ChangeEvent } from 'event-reduce-js';
 import { map } from 'rxjs/operators';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
@@ -28,7 +29,8 @@ import {
     createRevision,
     firstPropertyValueOfObject,
     flatClone,
-    now
+    now,
+    randomCouchString
 } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
@@ -135,6 +137,170 @@ export function throwIfIsStorageWriteError<RxDocType>(
         }
     }
 }
+
+/**
+ * Analyzes a list of BulkWriteRows and determines
+ * which documents must be inserted, updated or deleted
+ * and which events must be emitted and which documents cause a conflict
+ * and must not be written.
+ * Used as helper inside of some RxStorage implementations.
+ */
+export function categorizeBulkWriteRows<RxDocType>(
+    primaryPath: keyof RxDocType,
+    /**
+     * Current state of the documents
+     * inside of the storage. Used to determine
+     * which writes cause conflicts.
+     */
+    docsInDb: Map<RxDocumentData<RxDocType>[keyof RxDocType], RxDocumentData<RxDocType>>,
+    /**
+     * The write rows that are passed to
+     * RxStorageInstance().bulkWrite().
+     */
+    bulkWriteRows: BulkWriteRow<RxDocType>[],
+    getEventKey: (row: BulkWriteRow<RxDocType>) => string
+): {
+    bulkInsertDocs: BulkWriteRow<RxDocType>[];
+    bulkUpdateDocs: BulkWriteRow<RxDocType>[];
+    /**
+     * Ids of all documents that are changed
+     * and so their change must be written into the
+     * sequences table so that they can be fetched via
+     * RxStorageInstance().getChangedDocuments().
+     */
+    changedDocumentIds: RxDocumentData<RxDocType>[keyof RxDocType][];
+    errors: RxStorageBulkWriteError<RxDocType>[];
+    eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
+} {
+    const bulkInsertDocs: BulkWriteRow<RxDocType>[] = [];
+    const bulkUpdateDocs: BulkWriteRow<RxDocType>[] = [];
+    const errors: RxStorageBulkWriteError<RxDocType>[] = [];
+    const changedDocumentIds: RxDocumentData<RxDocType>[keyof RxDocType][] = [];
+    const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
+        id: randomCouchString(10),
+        events: []
+    };
+
+
+    const startTime = now();
+    bulkWriteRows.forEach(writeRow => {
+        const id = writeRow.document[primaryPath];
+        const documentInDb = docsInDb.get(id);
+
+        if (!documentInDb) {
+            /**
+             * It is possible to insert already deleted documents,
+             * this can happen on replication.
+             */
+            const insertedIsDeleted = writeRow.document._deleted ? true : false;
+            bulkInsertDocs.push(writeRow);
+            if (!insertedIsDeleted) {
+                changedDocumentIds.push(id);
+                eventBulk.events.push({
+                    eventId: getEventKey(writeRow),
+                    documentId: id as any,
+                    change: {
+                        doc: writeRow.document,
+                        id: id as any,
+                        operation: 'INSERT',
+                        previous: null
+                    },
+                    startTime,
+                    endTime: now()
+                });
+            }
+        } else {
+            // update existing document
+            const revInDb: string = documentInDb._rev;
+
+            // inserting a deleted document is possible
+            // without sending the previous data.
+            if (!writeRow.previous && documentInDb._deleted) {
+                writeRow.previous = documentInDb;
+            }
+
+            /**
+             * Check for conflict
+             */
+            if (
+                (
+                    !writeRow.previous &&
+                    !documentInDb._deleted
+                ) ||
+                (
+                    !!writeRow.previous &&
+                    revInDb !== writeRow.previous._rev
+                )
+            ) {
+                // is conflict error
+                const err: RxStorageBulkWriteError<RxDocType> = {
+                    isError: true,
+                    status: 409,
+                    documentId: id as any,
+                    writeRow: writeRow,
+                    documentInDb
+                };
+                errors.push(err);
+                return;
+            }
+
+            bulkUpdateDocs.push(writeRow);
+            let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
+            const writeDoc = writeRow.document;
+            if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
+                change = {
+                    id: id as any,
+                    operation: 'INSERT',
+                    previous: null,
+                    doc: writeDoc
+                };
+            } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
+                change = {
+                    id: id as any,
+                    operation: 'UPDATE',
+                    previous: writeRow.previous,
+                    doc: writeDoc
+                };
+            } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
+                change = {
+                    id: id as any,
+                    operation: 'DELETE',
+                    previous: writeRow.previous,
+                    doc: null
+                };
+            }
+            if (!change) {
+                if (
+                    writeRow.previous && writeRow.previous._deleted &&
+                    writeRow.document._deleted
+                ) {
+                    // deleted doc got overwritten with other deleted doc -> do not send an event
+                } else {
+                    throw newRxError('SNH', { args: { writeRow } });
+                }
+            } else {
+                changedDocumentIds.push(id);
+                eventBulk.events.push({
+                    eventId: getEventKey(writeRow),
+                    documentId: id as any,
+                    change,
+                    startTime,
+                    endTime: now()
+                });
+            }
+        }
+    });
+
+
+    return {
+        bulkInsertDocs,
+        bulkUpdateDocs,
+        errors,
+        changedDocumentIds,
+        eventBulk
+    };
+}
+
 
 export function hashAttachmentData(
     attachmentBase64String: string,

@@ -1528,6 +1528,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should update the value', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
+
                     await Promise.all([
                         c.atomicUpsert(docData),
                         c.atomicUpsert(docData),

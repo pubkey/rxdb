@@ -240,7 +240,7 @@ describe('rx-storage-lokijs.test.js', () => {
 
             const localState = await ensureNotFalsy(storageInstance.internals.localState);
             assert.ok(localState.databaseState.database.persistenceAdapter === adapter);
-            await storageInstance.bulkWrite([{
+            const writeResponse = await storageInstance.bulkWrite([{
                 document: {
                     key: 'foobar',
                     _deleted: false,
@@ -251,12 +251,14 @@ describe('rx-storage-lokijs.test.js', () => {
                     _attachments: {}
                 }
             }]);
+            assert.deepStrictEqual(writeResponse.error, {});
 
             /**
              * It should have written the file to the filesystem
              * on the next autosave which is called on close()
              */
             await storageInstance.close();
+            console.log('dbLocation: ' + dbLocation);
             const exists = fs.existsSync(dbLocation + '.db');
             assert.ok(exists);
         });

@@ -1287,7 +1287,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
 
                 let previous: RxDocumentData<TestDocType> | undefined;
-                const writeData = {
+                let writeData = {
                     key: 'foobar',
                     value: 'one',
                     _attachments: {},
@@ -1318,14 +1318,15 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
 
                 // update
-                writeData.value = 'two';
-                writeData._rev = EXAMPLE_REVISION_2;
-                writeData._meta = {
-                    lwt: now()
-                };
                 const updateResult = await storageInstance.bulkWrite([{
                     previous,
-                    document: writeData
+                    document: Object.assign({}, writeData, {
+                        value: 'two',
+                        _rev: EXAMPLE_REVISION_2,
+                        _meta: {
+                            lwt: now()
+                        }
+                    })
                 }]);
                 previous = getFromObjectOrThrow(updateResult.success, writeData.key);
                 const changesAfterUpdate = await storageInstance.getChangedDocuments({
@@ -1341,14 +1342,15 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(firstChangeAfterUpdate.sequence, 2);
 
                 // delete
-                writeData._deleted = true;
-                writeData._rev = EXAMPLE_REVISION_3;
-                writeData._meta = {
-                    lwt: now()
-                };
                 await storageInstance.bulkWrite([{
                     previous,
-                    document: writeData
+                    document: Object.assign({}, writeData, {
+                        _deleted: true,
+                        _rev: EXAMPLE_REVISION_3,
+                        _meta: {
+                            lwt: now()
+                        }
+                    })
                 }]);
                 const changesAfterDelete = await storageInstance.getChangedDocuments({
                     direction: 'after',
@@ -1600,19 +1602,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 await waitUntil(() => emitted.length === 3);
 
-                const lastEvent = lastOfArray(lastOfArray(emitted).events);
+                const emittedEvents = flattenEvents(emitted);
+                const lastEvent = lastOfArray(emittedEvents);
                 if (!lastEvent) {
                     throw new Error('missing last event');
                 }
 
-                /**
-                 * When a doc is deleted, the 'new' revision
-                 * is in the .previous property.
-                 * This is a hack because of pouchdb's strange behavior.
-                 * We might want to change that.
-                 */
                 const lastRevision = parseRevision((lastEvent as any).change.previous._rev);
-                assert.strictEqual(lastRevision.height, 3);
+                assert.strictEqual(lastRevision.height, 2);
 
                 assert.strictEqual(lastEvent.change.operation, 'DELETE');
                 assert.ok(lastEvent.change.previous);

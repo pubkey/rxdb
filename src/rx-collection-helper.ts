@@ -25,6 +25,9 @@ export function fillObjectDataBeforeInsert(
         useJson
     );
     useJson._meta = getDefaultRxDocumentMeta();
+    if (!useJson.hasOwnProperty('_deleted')) {
+        useJson._deleted = false;
+    }
     return useJson;
 }
 
