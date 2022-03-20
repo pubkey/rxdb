@@ -181,10 +181,10 @@ export function pouchStripLocalFlagFromPrimary(str: string): string {
 export function getEventKey(
     pouchDBInstance: PouchDBInstance,
     primary: string,
-    operation: 'INSERT' | 'UPDATE' | 'DELETE',
-    revision: string
+    change: ChangeEvent<RxDocumentData<any>>
 ): string {
-    const eventKey = pouchDBInstance.name + '|' + primary + '|' + '|' + operation + '|' + revision;
+    const useRev = change.doc ? change.doc._rev : change.previous._rev;
+    const eventKey = pouchDBInstance.name + '|' + primary + '|' + '|' + change.operation + '|' + useRev;
     return eventKey;
 }
 

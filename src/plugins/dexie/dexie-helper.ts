@@ -3,7 +3,6 @@ import type {
 } from 'event-reduce-js';
 import mingo from 'mingo';
 import type {
-    BulkWriteRow,
     DexieStorageInternals,
     MangoQuery,
     RxDocumentData,
@@ -13,7 +12,6 @@ import { Dexie } from 'dexie';
 import { DexieSettings } from '../../types';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
-import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';

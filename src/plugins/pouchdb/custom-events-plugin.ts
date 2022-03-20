@@ -603,7 +603,7 @@ export function changeEventToNormal<RxDocType>(
     const doc: RxDocumentData<RxDocType> = change.operation === 'DELETE' ? change.previous as any : change.doc as any;
     const primary: string = (doc as any)[primaryPath];
     const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
-        eventId: getEventKey(pouchDBInstance, primary, change.operation, doc._rev),
+        eventId: getEventKey(pouchDBInstance, primary, change),
         documentId: primary,
         change,
         startTime,
