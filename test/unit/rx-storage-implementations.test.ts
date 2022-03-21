@@ -11,7 +11,6 @@ import {
     blobBufferUtil,
     flattenEvents,
     flatClone,
-    MangoQuery,
     RxJsonSchema,
     ensureNotFalsy,
     getFromObjectOrThrow,
@@ -602,25 +601,48 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         });
         describe('.getSortComparator()', () => {
             it('should sort in the correct order', async () => {
-                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                const storageInstance = await config.storage.getStorage().createStorageInstance<{
+                    _id: string;
+                    age: number;
+                }>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion(0, '_id' as any),
+                    schema: {
+                        version: 0,
+                        type: 'object',
+                        primaryKey: '_id',
+                        properties: {
+                            _id: {
+                                type: 'string'
+                            },
+                            age: {
+                                type: 'number'
+                            }
+                        },
+                        required: [
+                            '_id',
+                            'age'
+                        ]
+                    },
                     options: {},
                     multiInstance: false
                 });
 
-                const query: MangoQuery = {
+                const query: FilledMangoQuery<any> = {
                     selector: {},
                     limit: 1000,
                     sort: [
                         { age: 'asc' }
                     ]
                 };
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                    storageInstance.schema,
+                    query
+                );
 
                 const comparator = config.storage.getStorage().statics.getSortComparator(
                     storageInstance.schema,
-                    query
+                    preparedQuery
                 );
 
                 const doc1: any = schemaObjects.human();
@@ -648,7 +670,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
 
                 const matchingValue = 'foobar';
-                const query: MangoQuery<TestDocType> = {
+                const query: FilledMangoQuery<TestDocType> = {
                     selector: {
                         value: {
                             $eq: matchingValue
@@ -658,10 +680,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         { key: 'asc' }
                     ]
                 };
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                    storageInstance.schema,
+                    query
+                );
 
                 const comparator = config.storage.getStorage().statics.getSortComparator(
                     storageInstance.schema,
-                    query
+                    preparedQuery
                 );
 
                 const docs: TestDocType[] = [
@@ -694,7 +720,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
 
                 const matchingValue = 'aaa';
-                const query: MangoQuery<TestDocType> = {
+                const query: FilledMangoQuery<TestDocType> = {
                     selector: {
                         $or: [
                             {
@@ -713,9 +739,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     ]
                 };
 
-                const comparator = config.storage.getStorage().statics.getSortComparator(
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     query
+                );
+
+                const comparator = config.storage.getStorage().statics.getSortComparator(
+                    storageInstance.schema,
+                    preparedQuery
                 );
 
                 const docs: TestDocType[] = [

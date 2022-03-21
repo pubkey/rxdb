@@ -7,10 +7,11 @@ import {
     DeterministicSortComparator,
     StateResolveFunctionInput
 } from 'event-reduce-js';
-import type { RxQuery, MangoQuery, RxChangeEvent, RxDocumentWriteData } from './types';
+import type { RxQuery, MangoQuery, RxChangeEvent, RxDocumentWriteData, PreparedQuery } from './types';
 import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
-import { ensureNotFalsy } from './util';
+import { clone, ensureNotFalsy } from './util';
+import { normalizeMangoQuery } from './rx-query';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,
@@ -42,7 +43,11 @@ export function getQueryParams<RxDocType>(
 ): QueryParams<RxDocType> {
     if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
         const collection = rxQuery.collection;
-        const queryJson: MangoQuery<RxDocType> = rxQuery.getPreparedQuery();
+        const preparedQuery: PreparedQuery<RxDocType> = rxQuery.getPreparedQuery();
+        const normalizedMangoQuery = normalizeMangoQuery(
+            collection.storageInstance.schema,
+            clone(rxQuery.mangoQuery)
+        );
         const primaryKey = collection.schema.primaryPath;
 
         /**
@@ -52,7 +57,7 @@ export function getQueryParams<RxDocType>(
          */
         const sortComparator = collection.database.storage.statics.getSortComparator(
             collection.storageInstance.schema,
-            queryJson
+            preparedQuery
         );
 
         const useSortComparator: DeterministicSortComparator<RxDocType> = (docA: RxDocType, docB: RxDocType) => {
@@ -72,7 +77,7 @@ export function getQueryParams<RxDocType>(
          */
         const queryMatcher = collection.database.storage.statics.getQueryMatcher(
             collection.storageInstance.schema,
-            queryJson
+            preparedQuery
         );
         const useQueryMatcher: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
             const queryMatcherData = {
@@ -84,11 +89,12 @@ export function getQueryParams<RxDocType>(
             return queryMatcher(queryMatcherData.doc);
         };
 
+
         const ret: QueryParams<any> = {
             primaryKey: rxQuery.collection.schema.primaryPath as any,
-            skip: queryJson.skip,
-            limit: queryJson.limit,
-            sortFields: getSortFieldsOfQuery(primaryKey, rxQuery.mangoQuery) as string[],
+            skip: normalizedMangoQuery.skip,
+            limit: normalizedMangoQuery.limit,
+            sortFields: getSortFieldsOfQuery(primaryKey, normalizedMangoQuery) as string[],
             sortComparator: useSortComparator,
             queryMatcher: useQueryMatcher
         };

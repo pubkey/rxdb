@@ -46,7 +46,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                 );
                 const docB = schemaObjects.human(
                     randomCouchString(10),
-                    2
+                    2 
                 );
                 const query: MangoQuery = {
                     selector: {},
