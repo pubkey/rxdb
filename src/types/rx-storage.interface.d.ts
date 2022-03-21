@@ -8,7 +8,6 @@ import type {
     EventBulk,
     PreparedQuery,
     RxDocumentData,
-    RxDocumentWriteData,
     RxStorageBulkWriteResponse,
     RxStorageChangedDocumentMeta,
     RxStorageChangeEvent,
@@ -143,7 +142,7 @@ export type RxStorageStatics = Readonly<{
      */
     getSortComparator<DocumentData>(
         schema: RxJsonSchema<DocumentData>,
-        query: MangoQuery<DocumentData>
+        preparedQuery: PreparedQuery<DocumentData>
     ): DeterministicSortComparator<DocumentData>;
 
     /**
@@ -154,8 +153,8 @@ export type RxStorageStatics = Readonly<{
      */
     getQueryMatcher<DocumentData>(
         schema: RxJsonSchema<DocumentData>,
-        query: MangoQuery<DocumentData>
-    ): QueryMatcher<RxDocumentWriteData<DocumentData>>;
+        preparedQuery: PreparedQuery<DocumentData>
+    ): QueryMatcher<RxDocumentData<DocumentData>>;
 }>;
 
 

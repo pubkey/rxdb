@@ -4,7 +4,7 @@ import type {
 } from 'event-reduce-js';
 import type {
     MangoQuery,
-    RxDocumentWriteData,
+    RxDocumentData,
     RxJsonSchema,
     RxStorage,
     RxStorageInstanceCreationParams,
@@ -72,9 +72,9 @@ export const RxStorageDexieStatics: RxStorageStatics = {
     getQueryMatcher<RxDocType>(
         _schema: RxJsonSchema<RxDocType>,
         query: MangoQuery<RxDocType>
-    ): QueryMatcher<RxDocumentWriteData<RxDocType>> {
+    ): QueryMatcher<RxDocumentData<RxDocType>> {
         const mingoQuery = new MingoQuery(query.selector ? query.selector : {});
-        const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
+        const fun: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
             if (doc._deleted) {
                 return false;
             }

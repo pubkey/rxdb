@@ -24,7 +24,11 @@ import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
-import { HumanDocumentType, humanMinimal, humanSchemaLiteral } from '../helper/schemas';
+import {
+    HumanDocumentType,
+    humanMinimal,
+    humanSchemaLiteral
+} from '../helper/schemas';
 
 /**
  * RxStoragePouch specific tests
@@ -50,8 +54,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         { age: 'asc' }
                     ]
                 }
-                const comparator = RxStorageDexieStatics.getSortComparator(
-                    humanMinimal,
+                const comparator = RxStorageDexieStatics.getSortComparator<HumanDocumentType>(
+                    humanMinimal as any,
                     query
                 );
                 const sortResult = comparator(docA, docB);
