@@ -184,7 +184,7 @@ export function getEventKey(
     change: ChangeEvent<RxDocumentData<any>>
 ): string {
     const useRev = change.doc ? change.doc._rev : change.previous._rev;
-    const eventKey = pouchDBInstance.name + '|' + primary + '|' + '|' + change.operation + '|' + useRev;
+    const eventKey = pouchDBInstance.name + '|' + primary + '|' + change.operation + '|' + useRev;
     return eventKey;
 }
 

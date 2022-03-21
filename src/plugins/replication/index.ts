@@ -605,9 +605,7 @@ export function replicateRxCollection<RxDocType>(
                         return;
                     }
                     const doc = getDocumentDataOfRxChangeEvent(changeEvent);
-                    const rev = doc._rev;
                     if (
-                        rev &&
                         /**
                          * Do not run() if the change
                          * was from a pull-replication cycle.
