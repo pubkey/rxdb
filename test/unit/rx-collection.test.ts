@@ -1023,6 +1023,10 @@ config.parallel('rx-collection.test.js', () => {
                 });
             });
             describe('.regex()', () => {
+                if (!config.storage.hasRegexSupport) {
+                    return;
+                }
+
                 describe('positive', () => {
                     it('find the one where the regex matches', async () => {
                         const c = await humansCollection.create(10);
@@ -1071,6 +1075,10 @@ config.parallel('rx-collection.test.js', () => {
                      * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
                      */
                     it('regex on primary should throw', async () => {
+                        if (!config.storage.hasRegexSupport) {
+                            return;
+                        }
+
                         // TODO run this check in dev-mode so it behaves equal on all storage implementations.
                         if (config.storage.name !== 'pouchdb') {
                             return;

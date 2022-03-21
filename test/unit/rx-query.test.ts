@@ -113,6 +113,10 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
         it('ISSUE #190: should contain the regex', async () => {
+            if (!config.storage.hasRegexSupport) {
+                return;
+            }
+
             const col = await humansCollection.create(0);
             const queryWithoutRegex = col.find();
             const queryWithRegex = queryWithoutRegex.where('color').regex(new RegExp(/foobar/g));
