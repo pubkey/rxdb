@@ -11,7 +11,7 @@ import type { RxQuery, MangoQuery, RxChangeEvent, RxDocumentWriteData, PreparedQ
 import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
 import { clone, ensureNotFalsy } from './util';
-import { normalizeMangoQuery } from './rx-query';
+import { normalizeMangoQuery } from './rx-query-helper';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true,

@@ -2001,7 +2001,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const docs = await storageInstance2.findDocumentsById(['foobar'], false);
                 assert.strictEqual(Object.keys(docs).length, 0);
 
-                storageInstance.close();
                 storageInstance2.close();
             });
         });

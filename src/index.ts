@@ -53,9 +53,9 @@ export {
 } from './rx-document-prototype-merge';
 
 export {
-    isInstanceOf as isRxQuery,
-    normalizeMangoQuery
+    isInstanceOf as isRxQuery
 } from './rx-query';
+export * from './rx-query-helper';
 
 export {
     isInstanceOf as isRxSchema,
