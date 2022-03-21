@@ -1344,9 +1344,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 if (!firstChangeAfterWrite) {
                     throw new Error('missing change');
                 }
-                assert.ok(firstChangeAfterWrite.id === 'foobar');
+                assert.strictEqual(firstChangeAfterWrite.id, 'foobar');
                 assert.strictEqual(firstChangeAfterWrite.sequence, 1);
-
 
                 // update
                 const updateResult = await storageInstance.bulkWrite([{
@@ -1369,7 +1368,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     throw new Error('missing change');
                 }
 
-                assert.ok(firstChangeAfterUpdate.id === 'foobar');
+                assert.strictEqual(firstChangeAfterUpdate.id, 'foobar');
                 assert.strictEqual(firstChangeAfterUpdate.sequence, 2);
 
                 // delete
@@ -1391,7 +1390,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 if (!firstChangeAfterDelete) {
                     throw new Error('missing change');
                 }
-                assert.ok(firstChangeAfterDelete.id === 'foobar');
+                assert.strictEqual(firstChangeAfterDelete.id, 'foobar');
 
                 assert.strictEqual(firstChangeAfterDelete.sequence, 3);
                 assert.strictEqual(changesAfterDelete.lastSequence, 3);
