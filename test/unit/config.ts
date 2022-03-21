@@ -72,7 +72,8 @@ export function setDefaultStorage(storageKey: string) {
                     return getRxStoragePouch('memory');
                 },
                 hasCouchDBReplication: true,
-                hasAttachments: true
+                hasAttachments: true,
+                hasRegexSupport: true
             };
             break;
         case 'lokijs':
@@ -80,7 +81,8 @@ export function setDefaultStorage(storageKey: string) {
                 name: 'lokijs',
                 getStorage: () => getRxStorageLoki(),
                 hasCouchDBReplication: false,
-                hasAttachments: false
+                hasAttachments: false,
+                hasRegexSupport: true
             };
             break;
         case 'lokijs-worker':
@@ -98,7 +100,8 @@ export function setDefaultStorage(storageKey: string) {
                     }
                 ),
                 hasCouchDBReplication: false,
-                hasAttachments: false
+                hasAttachments: false,
+                hasRegexSupport: true
             };
             break;
         case 'dexie':
@@ -111,7 +114,8 @@ export function setDefaultStorage(storageKey: string) {
                     IDBKeyRange
                 }),
                 hasCouchDBReplication: false,
-                hasAttachments: false
+                hasAttachments: false,
+                hasRegexSupport: true
             };
             break;
         default:

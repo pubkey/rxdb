@@ -10,4 +10,6 @@ export type RxTestStorage = {
     readonly getStorage: () => RxStorage<any, any>;
     readonly hasCouchDBReplication: boolean;
     readonly hasAttachments: boolean;
+    // true if the storage supports $regex queries, false if not.
+    readonly hasRegexSupport: boolean;
 }

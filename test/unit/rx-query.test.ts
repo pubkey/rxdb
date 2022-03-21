@@ -361,6 +361,9 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
         it('BUG should not match regex', async () => {
+            if (!config.storage.hasRegexSupport) {
+                return;
+            }
             const col = await humansCollection.create(0);
 
 
@@ -1358,6 +1361,10 @@ config.parallel('rx-query.test.js', () => {
          * via gitter at 11 November 2019 10:10
          */
         it('gitter: query with regex does not return correct results', async () => {
+            if (!config.storage.hasRegexSupport) {
+                return;
+            }
+
             // create a schema
             const mySchema = {
                 version: 0,
