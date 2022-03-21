@@ -1,7 +1,7 @@
 /// <reference types="pouchdb-core" />
 /// <reference types="node" />
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import type { LokiDatabaseSettings, LokiSettings, LokiStorageInternals, MangoQuery, RxDocumentWriteData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
+import type { LokiDatabaseSettings, LokiSettings, LokiStorageInternals, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
 import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import type { LeaderElector } from 'broadcast-channel';
 export declare const RxStorageLokiStatics: RxStorageStatics;
@@ -13,8 +13,8 @@ export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, Lo
         hashKey: string;
         doesBroadcastChangestream(): boolean;
         prepareQuery<DocumentData>(schema: RxJsonSchema<DocumentData>, mutateableQuery: import("../../types").FilledMangoQuery<DocumentData>): any;
-        getSortComparator<DocumentData_1>(schema: RxJsonSchema<DocumentData_1>, query: MangoQuery<DocumentData_1>): DeterministicSortComparator<DocumentData_1>;
-        getQueryMatcher<DocumentData_2>(schema: RxJsonSchema<DocumentData_2>, query: MangoQuery<DocumentData_2>): QueryMatcher<RxDocumentWriteData<DocumentData_2>>;
+        getSortComparator<DocumentData_1>(schema: RxJsonSchema<DocumentData_1>, preparedQuery: any): DeterministicSortComparator<DocumentData_1>;
+        getQueryMatcher<DocumentData_2>(schema: RxJsonSchema<DocumentData_2>, preparedQuery: any): QueryMatcher<import("../../types").RxDocumentData<DocumentData_2>>;
     }>;
     /**
      * Create one leader elector by db name.
