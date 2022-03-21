@@ -59,7 +59,8 @@ if (detect().name === 'node') {
 
 export function setDefaultStorage(storageKey: string) {
     if (storageKey === CUSTOM_STORAGE.name) {
-        return CUSTOM_STORAGE;
+        config.storage = CUSTOM_STORAGE;
+        return;
     }
 
     switch (storageKey) {
