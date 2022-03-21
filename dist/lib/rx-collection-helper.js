@@ -32,6 +32,11 @@ function fillObjectDataBeforeInsert(collection, data) {
   var useJson = collection.schema.fillObjectWithDefaults(data);
   useJson = (0, _rxSchemaHelper.fillPrimaryKey)(collection.schema.primaryPath, collection.schema.jsonSchema, useJson);
   useJson._meta = (0, _util.getDefaultRxDocumentMeta)();
+
+  if (!useJson.hasOwnProperty('_deleted')) {
+    useJson._deleted = false;
+  }
+
   return useJson;
 }
 //# sourceMappingURL=rx-collection-helper.js.map

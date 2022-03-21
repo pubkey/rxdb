@@ -177,8 +177,4 @@ export function getDexieStoreSchema(rxJsonSchema) {
     }
   }).join(', ');
 }
-export function getDexieEventKey(storageInstance, primary, revision) {
-  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + primary + '|' + revision;
-  return eventKey;
-}
 //# sourceMappingURL=dexie-helper.js.map

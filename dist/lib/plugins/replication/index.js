@@ -947,14 +947,18 @@ function replicateRxCollection(_ref) {
           }
 
           var doc = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
-          var rev = doc._rev;
 
-          if (rev &&
+          if (
           /**
            * Do not run() if the change
            * was from a pull-replication cycle.
            */
-          !(0, _revisionFlag.wasLastWriteFromPullReplication)(replicationState.replicationIdentifierHash, doc)) {
+          !(0, _revisionFlag.wasLastWriteFromPullReplication)(replicationState.replicationIdentifierHash, doc) ||
+          /**
+           * If the event is a delete, we still have to run the replication
+           * because wasLastWriteFromPullReplication() will give the wrong answer.
+           */
+          changeEvent.operation === 'DELETE') {
             replicationState.run();
           }
         });

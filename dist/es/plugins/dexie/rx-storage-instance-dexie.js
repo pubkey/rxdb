@@ -1,9 +1,10 @@
 import { Subject } from 'rxjs';
-import { lastOfArray, flatClone, now, randomCouchString, PROMISE_RESOLVE_VOID } from '../../util';
+import { lastOfArray, now, randomCouchString, PROMISE_RESOLVE_VOID } from '../../util';
 import { newRxError } from '../../rx-error';
-import { closeDexieDb, getDexieDbWithTables, getDexieEventKey, getDocsInDb } from './dexie-helper';
+import { closeDexieDb, getDexieDbWithTables, getDocsInDb } from './dexie-helper';
 import { dexieQuery } from './query/dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
 export var createDexieStorageInstance = function createDexieStorageInstance(storage, params, settings) {
   try {
     var _internals = getDexieDbWithTables(params.databaseName, params.collectionName, settings, params.schema);
@@ -106,7 +107,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                   } else {
                     bulkPutDocs.push(writeDoc);
                     eventBulk.events.push({
-                      eventId: getDexieEventKey(_this4, id, writeRow.document._rev),
+                      eventId: getUniqueDeterministicEventKey(_this4, _this4.primaryPath, writeRow),
                       documentId: id,
                       change: {
                         doc: writeDoc,
@@ -181,18 +182,10 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                        */
                       bulkPutDeletedDocs.push(_writeDoc);
                       bulkRemoveDocs.push(id);
-                      /**
-                       * On delete, we send the 'new' rev in the previous property,
-                       * to have the equal behavior as pouchdb.
-                       * TODO do we even need this anymore?
-                       */
-
-                      var previous = flatClone(writeRow.previous);
-                      previous._rev = writeRow.document._rev;
                       change = {
                         id: id,
                         operation: 'DELETE',
-                        previous: previous,
+                        previous: writeRow.previous,
                         doc: null
                       };
                     } else if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {
@@ -211,7 +204,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                       }
                     } else {
                       eventBulk.events.push({
-                        eventId: getDexieEventKey(_this4, id, writeRow.document._rev),
+                        eventId: getUniqueDeterministicEventKey(_this4, _this4.primaryPath, writeRow),
                         documentId: id,
                         change: change,
                         startTime: startTime,

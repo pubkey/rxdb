@@ -510,11 +510,6 @@ var _exportNames = {
   getFinalFields: true,
   getPreviousVersions: true,
   toTypedRxJsonSchema: true,
-  getSingleDocument: true,
-  getAllDocuments: true,
-  writeSingle: true,
-  hashAttachmentData: true,
-  getAttachmentSize: true,
   _clearHook: true
 };
 Object.defineProperty(exports, "INTERNAL_CONTEXT_COLLECTION", {
@@ -607,18 +602,6 @@ Object.defineProperty(exports, "flattenEvents", {
     return _rxChangeEvent.flattenEvents;
   }
 });
-Object.defineProperty(exports, "getAllDocuments", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.getAllDocuments;
-  }
-});
-Object.defineProperty(exports, "getAttachmentSize", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.getAttachmentSize;
-  }
-});
 Object.defineProperty(exports, "getDocumentOrmPrototype", {
   enumerable: true,
   get: function get() {
@@ -653,18 +636,6 @@ Object.defineProperty(exports, "getPrimaryKeyOfInternalDocument", {
   enumerable: true,
   get: function get() {
     return _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument;
-  }
-});
-Object.defineProperty(exports, "getSingleDocument", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.getSingleDocument;
-  }
-});
-Object.defineProperty(exports, "hashAttachmentData", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.hashAttachmentData;
   }
 });
 Object.defineProperty(exports, "isRxCollection", {
@@ -727,12 +698,6 @@ Object.defineProperty(exports, "toTypedRxJsonSchema", {
     return _rxSchema.toTypedRxJsonSchema;
   }
 });
-Object.defineProperty(exports, "writeSingle", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.writeSingle;
-  }
-});
 
 require("./types/modules/graphql-client.d");
 
@@ -777,6 +742,18 @@ Object.keys(_rxSchemaHelper).forEach(function (key) {
 });
 
 var _rxStorageHelper = require("./rx-storage-helper");
+
+Object.keys(_rxStorageHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxStorageHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxStorageHelper[key];
+    }
+  });
+});
 
 var _hooks = require("./hooks");
 
@@ -857,7 +834,7 @@ var overwritable = {
    * overwritte to map error-codes to text-messages
    */
   tunnelErrorMessage: function tunnelErrorMessage(message) {
-    return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the dev-mode-plugin https://pubkey.github.io/rxdb/custom-build.html#dev-mode\n        - Or search for this code https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
+    return "RxDB Error-Code " + message + ".\n        Error messages are not included in RxDB core to reduce build size.\n        - To find out what this error means, either use the dev-mode-plugin https://rxdb.info/dev-mode.html\n        - or search for the error code here: https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
 };
 exports.overwritable = overwritable;
@@ -1238,8 +1215,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                           // Is this a hack? idk.
                           return Promise.resolve((0, _pouchdbHelper.writeAttachmentsToAttachments)(writeRow.previous._attachments)).then(function (attachments) {
                             var previousDoc = Object.assign({}, writeRow.previous, {
-                              _attachments: attachments,
-                              _rev: resultRow.rev
+                              _attachments: attachments
                             });
                             event = {
                               operation: 'DELETE',
@@ -1589,7 +1565,7 @@ function changeEventToNormal(pouchDBInstance, primaryPath, change, startTime, en
   var doc = change.operation === 'DELETE' ? change.previous : change.doc;
   var primary = doc[primaryPath];
   var storageChangeEvent = {
-    eventId: (0, _pouchdbHelper.getEventKey)(pouchDBInstance, primary, doc._rev),
+    eventId: (0, _pouchdbHelper.getEventKey)(pouchDBInstance, primary, change),
     documentId: primary,
     change: change,
     startTime: startTime,
@@ -2262,8 +2238,9 @@ function pouchStripLocalFlagFromPrimary(str) {
   return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
 
-function getEventKey(pouchDBInstance, primary, revision) {
-  var eventKey = pouchDBInstance.name + '|' + primary + '|' + revision;
+function getEventKey(pouchDBInstance, primary, change) {
+  var useRev = change.doc ? change.doc._rev : change.previous._rev;
+  var eventKey = pouchDBInstance.name + '|' + primary + '|' + change.operation + '|' + useRev;
   return eventKey;
 }
 
@@ -3474,6 +3451,11 @@ function fillObjectDataBeforeInsert(collection, data) {
   var useJson = collection.schema.fillObjectWithDefaults(data);
   useJson = (0, _rxSchemaHelper.fillPrimaryKey)(collection.schema.primaryPath, collection.schema.jsonSchema, useJson);
   useJson._meta = (0, _util.getDefaultRxDocumentMeta)();
+
+  if (!useJson.hasOwnProperty('_deleted')) {
+    useJson._deleted = false;
+  }
+
   return useJson;
 }
 
@@ -7556,9 +7538,12 @@ function toTypedRxJsonSchema(schema) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAllDocuments = exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = void 0;
+exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = void 0;
+exports.categorizeBulkWriteRows = categorizeBulkWriteRows;
+exports.getAllDocuments = void 0;
 exports.getAttachmentSize = getAttachmentSize;
 exports.getSingleDocument = void 0;
+exports.getUniqueDeterministicEventKey = getUniqueDeterministicEventKey;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
 exports.hashAttachmentData = hashAttachmentData;
 exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
@@ -7688,6 +7673,160 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
       throw error;
     }
   }
+}
+/**
+ * Analyzes a list of BulkWriteRows and determines
+ * which documents must be inserted, updated or deleted
+ * and which events must be emitted and which documents cause a conflict
+ * and must not be written.
+ * Used as helper inside of some RxStorage implementations.
+ */
+
+
+function categorizeBulkWriteRows(storageInstance, primaryPath,
+/**
+ * Current state of the documents
+ * inside of the storage. Used to determine
+ * which writes cause conflicts.
+ */
+docsInDb,
+/**
+ * The write rows that are passed to
+ * RxStorageInstance().bulkWrite().
+ */
+bulkWriteRows) {
+  var bulkInsertDocs = [];
+  var bulkUpdateDocs = [];
+  var errors = [];
+  var changedDocumentIds = [];
+  var eventBulk = {
+    id: (0, _util.randomCouchString)(10),
+    events: []
+  };
+  var startTime = (0, _util.now)();
+  bulkWriteRows.forEach(function (writeRow) {
+    var id = writeRow.document[primaryPath];
+    var documentInDb = docsInDb.get(id);
+
+    if (!documentInDb) {
+      /**
+       * It is possible to insert already deleted documents,
+       * this can happen on replication.
+       */
+      var insertedIsDeleted = writeRow.document._deleted ? true : false;
+      bulkInsertDocs.push(writeRow);
+
+      if (!insertedIsDeleted) {
+        changedDocumentIds.push(id);
+        eventBulk.events.push({
+          eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
+          documentId: id,
+          change: {
+            doc: writeRow.document,
+            id: id,
+            operation: 'INSERT',
+            previous: null
+          },
+          startTime: startTime,
+          endTime: (0, _util.now)()
+        });
+      }
+    } else {
+      // update existing document
+      var revInDb = documentInDb._rev; // inserting a deleted document is possible
+      // without sending the previous data.
+
+      if (!writeRow.previous && documentInDb._deleted) {
+        writeRow.previous = documentInDb;
+      }
+      /**
+       * Check for conflict
+       */
+
+
+      if (!writeRow.previous && !documentInDb._deleted || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
+        // is conflict error
+        var err = {
+          isError: true,
+          status: 409,
+          documentId: id,
+          writeRow: writeRow,
+          documentInDb: documentInDb
+        };
+        errors.push(err);
+        return;
+      }
+
+      bulkUpdateDocs.push(writeRow);
+      var change = null;
+      var writeDoc = writeRow.document;
+
+      if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
+        change = {
+          id: id,
+          operation: 'INSERT',
+          previous: null,
+          doc: writeDoc
+        };
+      } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
+        change = {
+          id: id,
+          operation: 'UPDATE',
+          previous: writeRow.previous,
+          doc: writeDoc
+        };
+      } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
+        change = {
+          id: id,
+          operation: 'DELETE',
+          previous: writeRow.previous,
+          doc: null
+        };
+      }
+
+      if (!change) {
+        if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {// deleted doc got overwritten with other deleted doc -> do not send an event
+        } else {
+          throw (0, _rxError.newRxError)('SNH', {
+            args: {
+              writeRow: writeRow
+            }
+          });
+        }
+      } else {
+        changedDocumentIds.push(id);
+        eventBulk.events.push({
+          eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
+          documentId: id,
+          change: change,
+          startTime: startTime,
+          endTime: (0, _util.now)()
+        });
+      }
+    }
+  });
+  return {
+    bulkInsertDocs: bulkInsertDocs,
+    bulkUpdateDocs: bulkUpdateDocs,
+    errors: errors,
+    changedDocumentIds: changedDocumentIds,
+    eventBulk: eventBulk
+  };
+}
+/**
+ * Each event is labeled with the id
+ * to make it easy to filter out duplicates.
+ */
+
+
+function getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow) {
+  var docId = writeRow.document[primaryPath];
+  var binaryValues = [!!writeRow.previous, writeRow.previous && writeRow.previous._deleted, !!writeRow.document._deleted];
+  var binary = binaryValues.map(function (v) {
+    return v ? '1' : '0';
+  }).join('');
+  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
+  return eventKey;
 }
 
 function hashAttachmentData(attachmentBase64String, storageStatics) {

@@ -482,10 +482,6 @@ export function stripLokiKey(docData) {
   delete cloned.$loki;
   return cloned;
 }
-export function getLokiEventKey(storageInstance, primary, revision) {
-  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + primary + '|' + revision;
-  return eventKey;
-}
 /**
  * Used to check in tests if all instances have been cleaned up.
  */

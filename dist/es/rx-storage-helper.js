@@ -6,7 +6,7 @@ import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { createRevision, firstPropertyValueOfObject, flatClone, now } from './util';
+import { createRevision, firstPropertyValueOfObject, flatClone, now, randomCouchString } from './util';
 
 /**
  * Writes a single document,
@@ -104,6 +104,158 @@ export function throwIfIsStorageWriteError(collection, documentId, writeData, er
       throw error;
     }
   }
+}
+/**
+ * Analyzes a list of BulkWriteRows and determines
+ * which documents must be inserted, updated or deleted
+ * and which events must be emitted and which documents cause a conflict
+ * and must not be written.
+ * Used as helper inside of some RxStorage implementations.
+ */
+
+export function categorizeBulkWriteRows(storageInstance, primaryPath,
+/**
+ * Current state of the documents
+ * inside of the storage. Used to determine
+ * which writes cause conflicts.
+ */
+docsInDb,
+/**
+ * The write rows that are passed to
+ * RxStorageInstance().bulkWrite().
+ */
+bulkWriteRows) {
+  var bulkInsertDocs = [];
+  var bulkUpdateDocs = [];
+  var errors = [];
+  var changedDocumentIds = [];
+  var eventBulk = {
+    id: randomCouchString(10),
+    events: []
+  };
+  var startTime = now();
+  bulkWriteRows.forEach(function (writeRow) {
+    var id = writeRow.document[primaryPath];
+    var documentInDb = docsInDb.get(id);
+
+    if (!documentInDb) {
+      /**
+       * It is possible to insert already deleted documents,
+       * this can happen on replication.
+       */
+      var insertedIsDeleted = writeRow.document._deleted ? true : false;
+      bulkInsertDocs.push(writeRow);
+
+      if (!insertedIsDeleted) {
+        changedDocumentIds.push(id);
+        eventBulk.events.push({
+          eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
+          documentId: id,
+          change: {
+            doc: writeRow.document,
+            id: id,
+            operation: 'INSERT',
+            previous: null
+          },
+          startTime: startTime,
+          endTime: now()
+        });
+      }
+    } else {
+      // update existing document
+      var revInDb = documentInDb._rev; // inserting a deleted document is possible
+      // without sending the previous data.
+
+      if (!writeRow.previous && documentInDb._deleted) {
+        writeRow.previous = documentInDb;
+      }
+      /**
+       * Check for conflict
+       */
+
+
+      if (!writeRow.previous && !documentInDb._deleted || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
+        // is conflict error
+        var err = {
+          isError: true,
+          status: 409,
+          documentId: id,
+          writeRow: writeRow,
+          documentInDb: documentInDb
+        };
+        errors.push(err);
+        return;
+      }
+
+      bulkUpdateDocs.push(writeRow);
+      var change = null;
+      var writeDoc = writeRow.document;
+
+      if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
+        change = {
+          id: id,
+          operation: 'INSERT',
+          previous: null,
+          doc: writeDoc
+        };
+      } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
+        change = {
+          id: id,
+          operation: 'UPDATE',
+          previous: writeRow.previous,
+          doc: writeDoc
+        };
+      } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
+        change = {
+          id: id,
+          operation: 'DELETE',
+          previous: writeRow.previous,
+          doc: null
+        };
+      }
+
+      if (!change) {
+        if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {// deleted doc got overwritten with other deleted doc -> do not send an event
+        } else {
+          throw newRxError('SNH', {
+            args: {
+              writeRow: writeRow
+            }
+          });
+        }
+      } else {
+        changedDocumentIds.push(id);
+        eventBulk.events.push({
+          eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
+          documentId: id,
+          change: change,
+          startTime: startTime,
+          endTime: now()
+        });
+      }
+    }
+  });
+  return {
+    bulkInsertDocs: bulkInsertDocs,
+    bulkUpdateDocs: bulkUpdateDocs,
+    errors: errors,
+    changedDocumentIds: changedDocumentIds,
+    eventBulk: eventBulk
+  };
+}
+/**
+ * Each event is labeled with the id
+ * to make it easy to filter out duplicates.
+ */
+
+export function getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow) {
+  var docId = writeRow.document[primaryPath];
+  var binaryValues = [!!writeRow.previous, writeRow.previous && writeRow.previous._deleted, !!writeRow.document._deleted];
+  var binary = binaryValues.map(function (v) {
+    return v ? '1' : '0';
+  }).join('');
+  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
+  return eventKey;
 }
 export function hashAttachmentData(attachmentBase64String, storageStatics) {
   return storageStatics.hash(atob(attachmentBase64String));

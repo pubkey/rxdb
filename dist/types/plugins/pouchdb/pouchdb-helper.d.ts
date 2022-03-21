@@ -45,7 +45,7 @@ export declare function pouchSwapPrimaryToId<RxDocType>(primaryKey: keyof RxDocT
  * out: 'foobar'
  */
 export declare function pouchStripLocalFlagFromPrimary(str: string): string;
-export declare function getEventKey(pouchDBInstance: PouchDBInstance, primary: string, revision: string): string;
+export declare function getEventKey(pouchDBInstance: PouchDBInstance, primary: string, change: ChangeEvent<RxDocumentData<any>>): string;
 export declare function pouchChangeRowToChangeEvent<DocumentData>(primaryKey: keyof DocumentData, pouchDoc: any): ChangeEvent<RxDocumentData<DocumentData>>;
 export declare function pouchChangeRowToChangeStreamEvent<DocumentData>(primaryKey: keyof DocumentData, pouchRow: PouchChangeRow): ChangeStreamEvent<DocumentData>;
 /**

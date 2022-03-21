@@ -1,8 +1,9 @@
 import { Subject } from 'rxjs';
-import { lastOfArray, flatClone, now, ensureNotFalsy, randomCouchString, isMaybeReadonlyArray } from '../../util';
+import { lastOfArray, flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow } from '../../util';
 import { newRxError } from '../../rx-error';
-import { CHANGES_COLLECTION_SUFFIX, closeLokiCollections, getLokiDatabase, getLokiEventKey, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, removeLokiLeaderElectorReference, requestRemoteInstance, mustUseLocalState, handleRemoteRequest } from './lokijs-helper';
+import { CHANGES_COLLECTION_SUFFIX, closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, removeLokiLeaderElectorReference, requestRemoteInstance, mustUseLocalState, handleRemoteRequest } from './lokijs-helper';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 export var createLokiStorageInstance = function createLokiStorageInstance(storage, params, databaseSettings) {
   try {
     var _temp7 = function _temp7() {
@@ -179,137 +180,41 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
           success: {},
           error: {}
         };
-        var eventBulk = {
-          id: randomCouchString(10),
-          events: []
-        };
+        var docsInDb = new Map();
+        var docsInDbWithLokiKey = new Map();
         documentWrites.forEach(function (writeRow) {
-          var startTime = now();
           var id = writeRow.document[_this5.primaryPath];
           var documentInDb = localState.collection.by(_this5.primaryPath, id);
 
-          if (!documentInDb) {
-            /**
-             * It is possible to insert already deleted documents,
-             * this can happen on replication.
-             */
-            var insertedIsDeleted = writeRow.document._deleted ? true : false;
-            var writeDoc = Object.assign({}, writeRow.document, {
-              _deleted: insertedIsDeleted,
-              // TODO attachments are currently not working with lokijs
-              _attachments: {}
-            });
-            localState.collection.insert(flatClone(writeDoc));
-
-            if (!insertedIsDeleted) {
-              _this5.addChangeDocumentMeta(id);
-
-              eventBulk.events.push({
-                eventId: getLokiEventKey(_this5, id, writeRow.document._rev),
-                documentId: id,
-                change: {
-                  doc: writeDoc,
-                  id: id,
-                  operation: 'INSERT',
-                  previous: null
-                },
-                startTime: startTime,
-                endTime: now()
-              });
-            }
-
-            ret.success[id] = writeDoc;
-          } else {
-            // update existing document
-            var revInDb = documentInDb._rev; // inserting a deleted document is possible
-            // without sending the previous data.
-
-            if (!writeRow.previous && documentInDb._deleted) {
-              writeRow.previous = documentInDb;
-            }
-
-            if (!writeRow.previous && !documentInDb._deleted || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
-              // conflict error
-              var err = {
-                isError: true,
-                status: 409,
-                documentId: id,
-                writeRow: writeRow,
-                documentInDb: documentInDb
-              };
-              ret.error[id] = err;
-            } else {
-              var isDeleted = !!writeRow.document._deleted;
-
-              var _writeDoc = Object.assign({}, writeRow.document, {
-                $loki: documentInDb.$loki,
-                _deleted: isDeleted,
-                // TODO attachments are currently not working with lokijs
-                _attachments: {}
-              });
-
-              localState.collection.update(_writeDoc);
-
-              _this5.addChangeDocumentMeta(id);
-
-              var change = null;
-
-              if (writeRow.previous && writeRow.previous._deleted && !_writeDoc._deleted) {
-                change = {
-                  id: id,
-                  operation: 'INSERT',
-                  previous: null,
-                  doc: stripLokiKey(_writeDoc)
-                };
-              } else if (writeRow.previous && !writeRow.previous._deleted && !_writeDoc._deleted) {
-                change = {
-                  id: id,
-                  operation: 'UPDATE',
-                  previous: writeRow.previous,
-                  doc: stripLokiKey(_writeDoc)
-                };
-              } else if (writeRow.previous && !writeRow.previous._deleted && _writeDoc._deleted) {
-                /**
-                 * On delete, we send the 'new' rev in the previous property,
-                 * to have the equal behavior as pouchdb.
-                 * TODO do we even need this anymore?
-                 */
-                var previous = flatClone(writeRow.previous);
-                previous._rev = writeRow.document._rev;
-                change = {
-                  id: id,
-                  operation: 'DELETE',
-                  previous: previous,
-                  doc: null
-                };
-              }
-
-              if (!change) {
-                if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {// deleted doc got overwritten with other deleted doc -> do not send an event
-                } else {
-                  throw newRxError('SNH', {
-                    args: {
-                      writeRow: writeRow
-                    }
-                  });
-                }
-              } else {
-                eventBulk.events.push({
-                  eventId: getLokiEventKey(_this5, id, writeRow.document._rev),
-                  documentId: id,
-                  change: change,
-                  startTime: startTime,
-                  endTime: now()
-                });
-              }
-
-              ret.success[id] = stripLokiKey(_writeDoc);
-            }
+          if (documentInDb) {
+            docsInDbWithLokiKey.set(id, documentInDb);
+            docsInDb.set(id, stripLokiKey(documentInDb));
           }
+        });
+        var categorized = categorizeBulkWriteRows(_this5, _this5.primaryPath, docsInDb, documentWrites);
+        categorized.bulkInsertDocs.forEach(function (writeRow) {
+          var docId = writeRow.document[_this5.primaryPath];
+          localState.collection.insert(flatClone(writeRow.document));
+          ret.success[docId] = writeRow.document;
+        });
+        categorized.bulkUpdateDocs.forEach(function (writeRow) {
+          var docId = writeRow.document[_this5.primaryPath];
+          var documentInDbWithLokiKey = getFromMapOrThrow(docsInDbWithLokiKey, docId);
+          var writeDoc = Object.assign({}, writeRow.document, {
+            $loki: documentInDbWithLokiKey.$loki
+          });
+          localState.collection.update(writeDoc);
+          ret.success[docId] = writeRow.document;
+        });
+        categorized.errors.forEach(function (err) {
+          ret.error[err.documentId] = err;
+        });
+        categorized.changedDocumentIds.forEach(function (docId) {
+          _this5.addChangeDocumentMeta(docId);
         });
         localState.databaseState.saveQueue.addWrite();
 
-        _this5.changes$.next(eventBulk);
+        _this5.changes$.next(categorized.eventBulk);
 
         return ret;
       });

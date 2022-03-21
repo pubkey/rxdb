@@ -1,7 +1,6 @@
 import type { DeterministicSortComparator } from 'event-reduce-js';
 import type { DexieStorageInternals, MangoQuery, RxDocumentData, RxJsonSchema } from '../../types';
 import { DexieSettings } from '../../types';
-import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 export declare const DEXIE_DOCS_TABLE_NAME = "docs";
 export declare const DEXIE_DELETED_DOCS_TABLE_NAME = "deleted-docs";
 export declare const DEXIE_CHANGES_TABLE_NAME = "changes";
@@ -24,7 +23,6 @@ export declare function dexieReplaceIfStartsWithPipe(str: string): string;
  * @link https://dexie.org/docs/API-Reference#quick-reference
  */
 export declare function getDexieStoreSchema(rxJsonSchema: RxJsonSchema<any>): string;
-export declare function getDexieEventKey(storageInstance: RxStorageInstanceDexie<any>, primary: string, revision: string): string;
 /**
  * Returns all documents in the database.
  * Non-deleted plus deleted ones.

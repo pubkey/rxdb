@@ -7,7 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.closeLokiCollections = exports.OPEN_LOKIJS_STORAGE_INSTANCES = exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = exports.CHANGES_COLLECTION_SUFFIX = void 0;
 exports.getLokiDatabase = getLokiDatabase;
-exports.getLokiEventKey = getLokiEventKey;
 exports.getLokiLeaderElector = getLokiLeaderElector;
 exports.getLokiSortComparator = getLokiSortComparator;
 exports.mustUseLocalState = exports.handleRemoteRequest = void 0;
@@ -521,11 +520,6 @@ function stripLokiKey(docData) {
 
   delete cloned.$loki;
   return cloned;
-}
-
-function getLokiEventKey(storageInstance, primary, revision) {
-  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + primary + '|' + revision;
-  return eventKey;
 }
 /**
  * Used to check in tests if all instances have been cleaned up.

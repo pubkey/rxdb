@@ -8,7 +8,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.closeDexieDb = exports.DEXIE_PIPE_SUBSTITUTE = exports.DEXIE_DOCS_TABLE_NAME = exports.DEXIE_DELETED_DOCS_TABLE_NAME = exports.DEXIE_CHANGES_TABLE_NAME = void 0;
 exports.dexieReplaceIfStartsWithPipe = dexieReplaceIfStartsWithPipe;
 exports.getDexieDbWithTables = getDexieDbWithTables;
-exports.getDexieEventKey = getDexieEventKey;
 exports.getDexieSortComparator = getDexieSortComparator;
 exports.getDexieStoreSchema = getDexieStoreSchema;
 exports.getDocsInDb = void 0;
@@ -209,10 +208,5 @@ function getDexieStoreSchema(rxJsonSchema) {
       return '[' + part.join('+') + ']';
     }
   }).join(', ');
-}
-
-function getDexieEventKey(storageInstance, primary, revision) {
-  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + primary + '|' + revision;
-  return eventKey;
 }
 //# sourceMappingURL=dexie-helper.js.map

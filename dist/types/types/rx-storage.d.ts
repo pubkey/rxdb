@@ -269,7 +269,7 @@ export type EventBulk<EventType> = {
     events: EventType[];
 }
 
-export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<DocumentData>> & {
+export type ChangeStreamEvent<DocType> = ChangeEvent<RxDocumentData<DocType>> & {
     /**
      * An integer that is increasing
      * and unique per event.
@@ -304,6 +304,8 @@ export type RxStorageChangeEvent<DocType> = {
      * and when it was finished.
      * This is optional because we do not have this time
      * for events that come from inside of the storage instance.
+     * 
+     * TODO do we even need this values?
      */
     startTime?: number;
     endTime?: number;

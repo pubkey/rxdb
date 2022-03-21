@@ -3,9 +3,12 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAllDocuments = exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = void 0;
+exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = void 0;
+exports.categorizeBulkWriteRows = categorizeBulkWriteRows;
+exports.getAllDocuments = void 0;
 exports.getAttachmentSize = getAttachmentSize;
 exports.getSingleDocument = void 0;
+exports.getUniqueDeterministicEventKey = getUniqueDeterministicEventKey;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
 exports.hashAttachmentData = hashAttachmentData;
 exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
@@ -135,6 +138,160 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
       throw error;
     }
   }
+}
+/**
+ * Analyzes a list of BulkWriteRows and determines
+ * which documents must be inserted, updated or deleted
+ * and which events must be emitted and which documents cause a conflict
+ * and must not be written.
+ * Used as helper inside of some RxStorage implementations.
+ */
+
+
+function categorizeBulkWriteRows(storageInstance, primaryPath,
+/**
+ * Current state of the documents
+ * inside of the storage. Used to determine
+ * which writes cause conflicts.
+ */
+docsInDb,
+/**
+ * The write rows that are passed to
+ * RxStorageInstance().bulkWrite().
+ */
+bulkWriteRows) {
+  var bulkInsertDocs = [];
+  var bulkUpdateDocs = [];
+  var errors = [];
+  var changedDocumentIds = [];
+  var eventBulk = {
+    id: (0, _util.randomCouchString)(10),
+    events: []
+  };
+  var startTime = (0, _util.now)();
+  bulkWriteRows.forEach(function (writeRow) {
+    var id = writeRow.document[primaryPath];
+    var documentInDb = docsInDb.get(id);
+
+    if (!documentInDb) {
+      /**
+       * It is possible to insert already deleted documents,
+       * this can happen on replication.
+       */
+      var insertedIsDeleted = writeRow.document._deleted ? true : false;
+      bulkInsertDocs.push(writeRow);
+
+      if (!insertedIsDeleted) {
+        changedDocumentIds.push(id);
+        eventBulk.events.push({
+          eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
+          documentId: id,
+          change: {
+            doc: writeRow.document,
+            id: id,
+            operation: 'INSERT',
+            previous: null
+          },
+          startTime: startTime,
+          endTime: (0, _util.now)()
+        });
+      }
+    } else {
+      // update existing document
+      var revInDb = documentInDb._rev; // inserting a deleted document is possible
+      // without sending the previous data.
+
+      if (!writeRow.previous && documentInDb._deleted) {
+        writeRow.previous = documentInDb;
+      }
+      /**
+       * Check for conflict
+       */
+
+
+      if (!writeRow.previous && !documentInDb._deleted || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
+        // is conflict error
+        var err = {
+          isError: true,
+          status: 409,
+          documentId: id,
+          writeRow: writeRow,
+          documentInDb: documentInDb
+        };
+        errors.push(err);
+        return;
+      }
+
+      bulkUpdateDocs.push(writeRow);
+      var change = null;
+      var writeDoc = writeRow.document;
+
+      if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
+        change = {
+          id: id,
+          operation: 'INSERT',
+          previous: null,
+          doc: writeDoc
+        };
+      } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
+        change = {
+          id: id,
+          operation: 'UPDATE',
+          previous: writeRow.previous,
+          doc: writeDoc
+        };
+      } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
+        change = {
+          id: id,
+          operation: 'DELETE',
+          previous: writeRow.previous,
+          doc: null
+        };
+      }
+
+      if (!change) {
+        if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {// deleted doc got overwritten with other deleted doc -> do not send an event
+        } else {
+          throw (0, _rxError.newRxError)('SNH', {
+            args: {
+              writeRow: writeRow
+            }
+          });
+        }
+      } else {
+        changedDocumentIds.push(id);
+        eventBulk.events.push({
+          eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
+          documentId: id,
+          change: change,
+          startTime: startTime,
+          endTime: (0, _util.now)()
+        });
+      }
+    }
+  });
+  return {
+    bulkInsertDocs: bulkInsertDocs,
+    bulkUpdateDocs: bulkUpdateDocs,
+    errors: errors,
+    changedDocumentIds: changedDocumentIds,
+    eventBulk: eventBulk
+  };
+}
+/**
+ * Each event is labeled with the id
+ * to make it easy to filter out duplicates.
+ */
+
+
+function getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow) {
+  var docId = writeRow.document[primaryPath];
+  var binaryValues = [!!writeRow.previous, writeRow.previous && writeRow.previous._deleted, !!writeRow.document._deleted];
+  var binary = binaryValues.map(function (v) {
+    return v ? '1' : '0';
+  }).join('');
+  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
+  return eventKey;
 }
 
 function hashAttachmentData(attachmentBase64String, storageStatics) {

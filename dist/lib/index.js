@@ -34,11 +34,6 @@ var _exportNames = {
   getFinalFields: true,
   getPreviousVersions: true,
   toTypedRxJsonSchema: true,
-  getSingleDocument: true,
-  getAllDocuments: true,
-  writeSingle: true,
-  hashAttachmentData: true,
-  getAttachmentSize: true,
   _clearHook: true
 };
 Object.defineProperty(exports, "INTERNAL_CONTEXT_COLLECTION", {
@@ -131,18 +126,6 @@ Object.defineProperty(exports, "flattenEvents", {
     return _rxChangeEvent.flattenEvents;
   }
 });
-Object.defineProperty(exports, "getAllDocuments", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.getAllDocuments;
-  }
-});
-Object.defineProperty(exports, "getAttachmentSize", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.getAttachmentSize;
-  }
-});
 Object.defineProperty(exports, "getDocumentOrmPrototype", {
   enumerable: true,
   get: function get() {
@@ -177,18 +160,6 @@ Object.defineProperty(exports, "getPrimaryKeyOfInternalDocument", {
   enumerable: true,
   get: function get() {
     return _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument;
-  }
-});
-Object.defineProperty(exports, "getSingleDocument", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.getSingleDocument;
-  }
-});
-Object.defineProperty(exports, "hashAttachmentData", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.hashAttachmentData;
   }
 });
 Object.defineProperty(exports, "isRxCollection", {
@@ -251,12 +222,6 @@ Object.defineProperty(exports, "toTypedRxJsonSchema", {
     return _rxSchema.toTypedRxJsonSchema;
   }
 });
-Object.defineProperty(exports, "writeSingle", {
-  enumerable: true,
-  get: function get() {
-    return _rxStorageHelper.writeSingle;
-  }
-});
 
 require("./types/modules/graphql-client.d");
 
@@ -301,6 +266,18 @@ Object.keys(_rxSchemaHelper).forEach(function (key) {
 });
 
 var _rxStorageHelper = require("./rx-storage-helper");
+
+Object.keys(_rxStorageHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxStorageHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxStorageHelper[key];
+    }
+  });
+});
 
 var _hooks = require("./hooks");
 

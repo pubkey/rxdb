@@ -14,7 +14,6 @@ export declare const LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = "rxdb-loki
 export declare function stripLokiKey<T>(docData: RxDocumentData<T> & {
     $loki?: number;
 }): T;
-export declare function getLokiEventKey(storageInstance: RxStorageInstanceLoki<any>, primary: string, revision: string): string;
 /**
  * Used to check in tests if all instances have been cleaned up.
  */

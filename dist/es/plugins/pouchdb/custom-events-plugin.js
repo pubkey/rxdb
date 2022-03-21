@@ -173,8 +173,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                           // Is this a hack? idk.
                           return Promise.resolve(writeAttachmentsToAttachments(writeRow.previous._attachments)).then(function (attachments) {
                             var previousDoc = Object.assign({}, writeRow.previous, {
-                              _attachments: attachments,
-                              _rev: resultRow.rev
+                              _attachments: attachments
                             });
                             event = {
                               operation: 'DELETE',
@@ -518,7 +517,7 @@ export function changeEventToNormal(pouchDBInstance, primaryPath, change, startT
   var doc = change.operation === 'DELETE' ? change.previous : change.doc;
   var primary = doc[primaryPath];
   var storageChangeEvent = {
-    eventId: getEventKey(pouchDBInstance, primary, doc._rev),
+    eventId: getEventKey(pouchDBInstance, primary, change),
     documentId: primary,
     change: change,
     startTime: startTime,

@@ -235,8 +235,9 @@ function pouchStripLocalFlagFromPrimary(str) {
   return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
 
-function getEventKey(pouchDBInstance, primary, revision) {
-  var eventKey = pouchDBInstance.name + '|' + primary + '|' + revision;
+function getEventKey(pouchDBInstance, primary, change) {
+  var useRev = change.doc ? change.doc._rev : change.previous._rev;
+  var eventKey = pouchDBInstance.name + '|' + primary + '|' + change.operation + '|' + useRev;
   return eventKey;
 }
 
