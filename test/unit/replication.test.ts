@@ -479,6 +479,61 @@ describe('replication.test.js', () => {
             remoteCollection.database.destroy();
         });
     });
+    config.parallel('live replication', () => {
+        it('should replicate all writes', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            replicationState.error$.subscribe(err => {
+                console.log('got error :');
+                console.dir(err);
+            });
+            await replicationState.awaitInitialReplication();
+
+            const docsRemoteQuery = await remoteCollection.findOne();
+
+            // insert
+            console.log('INSERT');
+            const id = 'foobar';
+            const docData = schemaObjects.humanWithTimestamp({
+                id
+            });
+            const doc = await localCollection.insert(docData);
+            await waitUntil(async () => {
+                const remoteDoc = await docsRemoteQuery.exec();
+                return !!remoteDoc;
+            });
+
+            // UPDATE
+            await doc.atomicPatch({
+                age: 100
+            });
+            await waitUntil(async () => {
+                const remoteDoc = await docsRemoteQuery.exec(true);
+                return remoteDoc.age === 100;
+            });
+
+            // DELETE
+            await doc.remove();
+            await waitUntil(async () => {
+                const remoteDoc = await docsRemoteQuery.exec();
+                return !remoteDoc;
+            });
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+    });
     config.parallel('other', () => {
         describe('.awaitInSync()', () => {
             it('should resolve after some time', async () => {

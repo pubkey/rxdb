@@ -1,7 +1,6 @@
 import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import lokijs, { Collection } from 'lokijs';
 import type {
-    BulkWriteRow,
     LokiDatabaseSettings,
     LokiDatabaseState,
     LokiLocalDatabaseState,

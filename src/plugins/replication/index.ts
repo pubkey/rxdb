@@ -605,6 +605,7 @@ export function replicateRxCollection<RxDocType>(
                         return;
                     }
                     const doc = getDocumentDataOfRxChangeEvent(changeEvent);
+
                     if (
                         /**
                          * Do not run() if the change
@@ -613,7 +614,12 @@ export function replicateRxCollection<RxDocType>(
                         !wasLastWriteFromPullReplication(
                             replicationState.replicationIdentifierHash,
                             doc
-                        )
+                        ) ||
+                        /**
+                         * If the event is a delete, we still have to run the replication
+                         * because wasLastWriteFromPullReplication() will give the wrong answer.
+                         */
+                        changeEvent.operation === 'DELETE'
                     ) {
                         replicationState.run();
                     }
