@@ -53,10 +53,10 @@ config.parallel('key-compression.test.js', () => {
             }
             const c = await humansCollection.create(0);
             const query: any = c.find()
-                .where('foobar').eq(5)
+                .where('age').eq(5)
                 .getPreparedQuery();
 
-            assert.strictEqual(query.selector.foobar, 5);
+            assert.strictEqual(query.selector.age, 5);
             c.database.destroy();
         });
     });

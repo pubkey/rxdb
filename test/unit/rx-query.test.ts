@@ -942,7 +942,7 @@ config.parallel('rx-query.test.js', () => {
             const c = await humansCollection.create(2);
             const foundDocs = await c.find({
                 selector: {
-                    foobar: null
+                    passportId: null
                 }
             }).exec();
             assert.ok(Array.isArray(foundDocs));

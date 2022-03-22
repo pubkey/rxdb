@@ -503,7 +503,6 @@ describe('replication.test.js', () => {
             const docsRemoteQuery = await remoteCollection.findOne();
 
             // insert
-            console.log('INSERT');
             const id = 'foobar';
             const docData = schemaObjects.humanWithTimestamp({
                 id
