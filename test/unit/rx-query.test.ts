@@ -408,7 +408,7 @@ config.parallel('rx-query.test.js', () => {
     describe('.exec()', () => {
         it('reusing exec should not make a execOverDatabase', async () => {
             const col = await humansCollection.create(2);
-            const q = col.find().where('name').ne('Alice');
+            const q = col.find().where('passportId').ne('Alice');
 
 
             let results = await q.exec();
