@@ -149,6 +149,7 @@ export const RxDBKeyCompressionPlugin: RxPlugin = {
                     compressionState.table,
                     mangoQuery as any
                 );
+
                 input.mangoQuery = compressedQuery as any;
             }
         },

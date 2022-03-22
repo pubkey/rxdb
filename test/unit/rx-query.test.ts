@@ -295,7 +295,7 @@ config.parallel('rx-query.test.js', () => {
             const col = await humansCollection.create(1);
             const query = col.find({
                 selector: {
-                    name: {
+                    firstName: {
                         $ne: 'foobar'
                     }
                 }

@@ -84,6 +84,44 @@ config.parallel('key-compression.test.js', () => {
             c.database.destroy();
         });
     });
+    describe('query', () => {
+        it('should properly run the compressed query', async () => {
+            const col = await humansCollection.create(0);
+            assert.ok(col.schema.normalized.keyCompression);
+
+            // add one matching and one non-matching doc
+            await col.bulkInsert([
+                {
+                    firstName: 'aaa',
+                    lastName: 'aaa',
+                    passportId: 'aaa',
+                    age: 0
+                },
+                {
+                    firstName: 'bbb',
+                    lastName: 'bbb',
+                    passportId: 'bbb',
+                    age: 0
+                }
+            ]);
+            const query = col.find({
+                selector: {
+                    firstName: {
+                        $ne: 'aaa'
+                    }
+                }
+            });
+            const docs = await query.exec();
+            const doc = docs[0];
+            if (!doc) {
+                throw new Error('doc missing');
+            }
+
+            assert.strictEqual(doc.passportId, 'bbb');
+
+            col.database.destroy();
+        });
+    });
     describe('issues', () => {
         it('#50 compress string array properly', async () => {
             const mySchema: RxJsonSchema<{ likes: any[], id: string }> = {
