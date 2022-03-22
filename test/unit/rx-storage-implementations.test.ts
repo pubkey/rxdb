@@ -230,10 +230,20 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }))
                     .map(document => ({ document }));
                 // start a write but to not await it
-                storageInstance.bulkWrite(insertRows);
+                const writePromise = storageInstance.bulkWrite(insertRows);
 
-                // run close() while the write is running
+                /**
+                 * Run close() while the write is running.
+                 * The storage must be implemented in a way to await
+                 * running writes before actually closign the storage.
+                 */
                 await storageInstance.close();
+
+                /**
+                 * After the closing, we await the promise
+                 * to ensure that the correct test fails on error.
+                 */
+                await writePromise;
             });
             it('should error on conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
