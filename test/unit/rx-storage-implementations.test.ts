@@ -168,26 +168,19 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
                 await storageInstance.close();
             });
-            it('open two different instances on the same database name', async () => {
+            it('open many instances on the same database name', async () => {
                 const databaseName = randomCouchString(12);
-                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName,
-                    collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {},
-                    multiInstance: false
-                });
-                const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName,
-                    collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {},
-                    multiInstance: false
-                });
-                await Promise.all([
-                    storageInstance.close(),
-                    storageInstance2.close()
-                ]);
+                const amount = 20;
+                const instances = await Promise.all(
+                    new Array(amount).fill(0).map(() => config.storage.getStorage().createStorageInstance<TestDocType>({
+                        databaseName,
+                        collectionName: randomCouchString(12),
+                        schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                        options: {},
+                        multiInstance: false
+                    }))
+                );
+                await Promise.all(instances.map(instance => instance.close()));
             });
         });
         describe('.bulkWrite()', () => {
