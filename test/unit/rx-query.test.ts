@@ -406,6 +406,39 @@ config.parallel('rx-query.test.js', () => {
         });
     });
     describe('.exec()', () => {
+        it('should throw if top level field is not known to the schema', async () => {
+            const col = await humansCollection.create(0);
+
+            await AsyncTestUtil.assertThrows(
+                () => col.find({
+                    selector: {
+                        asdfasdfasdf: 'asdf'
+                    }
+                }).exec(),
+                'RxError',
+                'QU13'
+            );
+
+            // should also detect wrong fields inside of $and
+            await AsyncTestUtil.assertThrows(
+                () => col.find({
+                    selector: {
+                        $and: [
+                            {
+                                asdfasdfasdf: 'asdf'
+                            },
+                            {
+                                asdfasdfasdf: 'asdf'
+                            }
+                        ]
+                    }
+                }).exec(),
+                'RxError',
+                'QU13'
+            );
+
+            col.database.destroy();
+        });
         it('reusing exec should not make a execOverDatabase', async () => {
             const col = await humansCollection.create(2);
             const q = col.find().where('passportId').ne('Alice');
@@ -745,7 +778,7 @@ config.parallel('rx-query.test.js', () => {
             });
             it('dont crash when findOne with no result', async () => {
                 const c = await humansCollection.create(2);
-                const query = c.findOne().where('agt').gt(1000000);
+                const query = c.findOne().where('age').gt(1000000);
                 await query.update({
                     $set: {
                         firstName: 'new first name'
