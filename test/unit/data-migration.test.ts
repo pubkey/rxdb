@@ -426,8 +426,12 @@ config.parallel('data-migration.test.js', () => {
 
                     // this should no crash because existing doc will be overwritten
                     await _migrateDocuments(oldCol as any, [tryDoc]);
-                    oldCollections.forEach(c => c.storageInstance.close());
-                    col.database.destroy();
+
+                    await Promise.all(
+                        oldCollections.map(c => c.storageInstance.close())
+                    );
+
+                    await col.database.destroy();
                 });
             });
             describe('.migrate()', () => {

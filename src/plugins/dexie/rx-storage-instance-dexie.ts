@@ -389,6 +389,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     }
 
     async close(): Promise<void> {
+        if (this.closed) {
+            throw newRxError('SNH', {
+                database: this.databaseName,
+                collection: this.collectionName
+            });
+        }
         this.closed = true;
         this.changes$.complete();
         closeDexieDb(this.internals);
