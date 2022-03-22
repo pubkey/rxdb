@@ -214,6 +214,25 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.deepStrictEqual(docData, first);
                 storageInstance.close();
             });
+            it('close while write should not crash', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const insertRows = new Array(100)
+                    .fill(0)
+                    .map(() => getWriteData())
+                    .map(document => ({ document }));
+                // start a write but to not await it
+                storageInstance.bulkWrite(insertRows);
+
+                // run close() while the write is running
+                await storageInstance.close();
+            });
             it('should error on conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),

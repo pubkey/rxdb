@@ -434,13 +434,6 @@ export class RxDatabaseBase<
      * destroys the database-instance and all collections
      */
     public async destroy(): Promise<boolean> {
-        /**
-         * Always await the creation of the storage token
-         * because otherwise it might randomly fail if the write
-         * is still running.
-         */
-        await this.storageToken;
-
         if (this.destroyed) {
             return PROMISE_RESOLVE_FALSE;
         }
