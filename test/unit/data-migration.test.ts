@@ -430,7 +430,6 @@ config.parallel('data-migration.test.js', () => {
                     await Promise.all(
                         oldCollections.map(c => c.storageInstance.close())
                     );
-
                     await col.database.destroy();
                 });
             });
@@ -441,8 +440,10 @@ config.parallel('data-migration.test.js', () => {
                     const oldCol = lastOfArray(oldCollections);
 
                     await migratePromise(oldCol as any);
-                    oldCollections.forEach(c => c.storageInstance.close());
-                    col.database.destroy();
+                    await Promise.all(
+                        oldCollections.map(c => c.storageInstance.close())
+                    );
+                    await col.database.destroy();
                 });
                 it('should resolve finished when some docs are in the collection', async () => {
                     if (!config.storage.name.includes('pouchdb')) {
@@ -469,8 +470,10 @@ config.parallel('data-migration.test.js', () => {
                     // check if in new collection
                     const docs = await col.find().exec();
                     assert.strictEqual(docs.length, 10);
-                    oldCollections.forEach(c => c.storageInstance.close());
-                    col.database.destroy();
+                    await Promise.all(
+                        oldCollections.map(c => c.storageInstance.close())
+                    );
+                    await col.database.destroy();
                 });
                 it('should emit status for every handled document', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
@@ -498,8 +501,10 @@ config.parallel('data-migration.test.js', () => {
 
                     await pw8.promise;
                     assert.strictEqual(states.length, 10);
-                    oldCollections.forEach(c => c.storageInstance.close());
-                    col.database.destroy();
+                    await Promise.all(
+                        oldCollections.map(c => c.storageInstance.close())
+                    );
+                    await col.database.destroy();
                 });
 
                 it('should emit "deleted" when migration-strategy returns null', async () => {
@@ -534,8 +539,10 @@ config.parallel('data-migration.test.js', () => {
                         () => migratePromise(oldCol as any),
                         Error
                     );
-                    oldCollections.forEach(c => c.storageInstance.close());
-                    col.database.destroy();
+                    await Promise.all(
+                        oldCollections.map(c => c.storageInstance.close())
+                    );
+                    await col.database.destroy();
                 });
             });
         });
