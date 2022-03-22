@@ -225,7 +225,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 const insertRows = new Array(100)
                     .fill(0)
-                    .map(() => getWriteData())
+                    .map((_n, idx) => getWriteData({
+                        key: 'close-while-write-' + idx
+                    }))
                     .map(document => ({ document }));
                 // start a write but to not await it
                 storageInstance.bulkWrite(insertRows);
