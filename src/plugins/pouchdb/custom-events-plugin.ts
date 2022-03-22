@@ -77,7 +77,21 @@ export function getCustomEventEmitterByPouch<RxDocType>(
 }
 
 
+/**
+ * Counter, used to debug stuff.
+ */
 let i = 0;
+
+
+/**
+ * Because we cannot force pouchdb to await bulkDocs runs
+ * inside of a transaction, like done with the other RxStorage implementations,
+ * we have to ensure the calls to bulkDocs() do not run in parallel. 
+ * 
+ * TODO this is somehow a hack. Instead of doing that, inspect how
+ * PouchDB runs bulkDocs internally and adapt that transaction handling.
+ */
+const BULK_DOC_RUN_QUEUE: WeakMap<PouchDBInstance, Promise<any>> = new WeakMap();
 
 /**
  * PouchDB is like a minefield,
@@ -93,14 +107,41 @@ export function addCustomEventsPluginToPouch() {
     addedToPouch = true;
 
     const oldBulkDocs: any = PouchDBCore.prototype.bulkDocs;
+
+    /**
+     * Ensure we do not run bulkDocs() in parallel on the same PouchDB instance.
+     */
     const newBulkDocs = async function (
         this: PouchDBInstance,
         body: any[] | { docs: any[], new_edits?: boolean },
         options: PouchBulkDocOptions,
         callback: Function
     ) {
+        let queue = BULK_DOC_RUN_QUEUE.get(this);
+        if (!queue) {
+            queue = PROMISE_RESOLVE_VOID;
+        }
+        queue = queue.then(async () => {
+            const ret = await newBulkDocsInner.bind(this)(
+                body,
+                options,
+                callback
+            );
+            return ret;
+        });
+        BULK_DOC_RUN_QUEUE.set(this, queue);
+        return queue;
+    };
+
+
+    const newBulkDocsInner = async function (
+        this: PouchDBInstance,
+        body: any[] | { docs: any[], new_edits?: boolean },
+        options: PouchBulkDocOptions,
+        callback: Function
+    ) {
         const startTime = now();
-        const t = i++;
+        const runId = i++;
 
         // normalize input
         if (typeof options === 'function') {
@@ -316,7 +357,7 @@ export function addCustomEventsPluginToPouch() {
                             if (!options.isDeeper) {
                                 const endTime = now();
                                 const emitData = {
-                                    emitId: t,
+                                    emitId: runId,
                                     writeDocs: docs,
                                     writeOptions: options,
                                     writeResult: usePouchResult,

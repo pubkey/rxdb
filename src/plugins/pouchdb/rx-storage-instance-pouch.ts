@@ -183,7 +183,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             success: {},
             error: {}
         };
-
         await Promise.all(
             pouchResult.map(async (resultRow) => {
                 const writeRow = getFromMapOrThrow(writeRowById, resultRow.id);

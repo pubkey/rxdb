@@ -269,6 +269,50 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 storageInstance.close();
             });
+            it('when inserting the same document at the same time, the first call must succeed while the seconds has a conflict', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const writeData: RxDocumentWriteData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'barfoo',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+
+
+                const [first, second] = await Promise.all([
+                    storageInstance.bulkWrite(
+                        [{
+                            document: Object.assign({}, writeData, {
+                                value: 'first'
+                            })
+                        }]
+                    ),
+                    storageInstance.bulkWrite(
+                        [{
+                            document: Object.assign({}, writeData, {
+                                value: 'second'
+                            })
+                        }]
+                    )
+                ]);
+
+                assert.deepStrictEqual(first.error, {});
+                assert.strictEqual(getFromObjectOrThrow(first.success, 'foobar').value, 'first');
+                assert.strictEqual(getFromObjectOrThrow(second.error, 'foobar').status, 409);
+
+                storageInstance.close();
+            });
             it('should not find the deleted document', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
