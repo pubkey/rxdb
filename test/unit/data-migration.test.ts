@@ -331,6 +331,9 @@ config.parallel('data-migration.test.js', () => {
             });
             describe('.remove()', () => {
                 it('should delete the pouchdb with all its content', async () => {
+                    if (!config.storage.name.includes('pouchdb')) {
+                        return;
+                    }
                     const dbName = randomCouchString(10);
                     const col = await humansCollection.createMigrationCollection(10, {}, dbName);
                     const oldCollections = await _getOldCollections(col.getDataMigrator());
@@ -438,6 +441,9 @@ config.parallel('data-migration.test.js', () => {
                     col.database.destroy();
                 });
                 it('should resolve finished when some docs are in the collection', async () => {
+                    if (!config.storage.name.includes('pouchdb')) {
+                        return;
+                    }
                     const col = await humansCollection.createMigrationCollection(10, {
                         3: (doc: any) => {
                             doc.age = parseInt(doc.age, 10);
