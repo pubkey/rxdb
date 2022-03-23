@@ -59,6 +59,7 @@ import {
 } from './rx-collection';
 import {
     getSingleDocument,
+    getWrappedStorageInstance,
     INTERNAL_STORAGE_NAME
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
@@ -111,10 +112,32 @@ export class RxDatabaseBase<
         public readonly broadcastChannel?: BroadcastChannel<RxChangeEventBulk<any>>,
         public readonly cleanupPolicy?: Partial<RxCleanupPolicy>
     ) {
-        this.collections = {} as any;
         DB_COUNT++;
 
+        /**
+         * In the dev-mode, we create a pseudoInstance
+         * to get all properties of RxDatabase and ensure they do not
+         * conflict with the collection names etc.
+         * So only if it is not pseudoInstance,
+         * we have all values to prepare a real RxDatabase.
+         */
         if (this.name !== 'pseudoInstance') {
+            /**
+             * Wrap the internal store
+             * to ensure that calls to it also end up in
+             * calculation of the idle state and the hooks.
+             */
+            this.internalStore = getWrappedStorageInstance(
+                this.asRxDatabase,
+                internalStore,
+                INTERNAL_STORE_SCHEMA
+            );
+
+            /**
+             * Start writing the storage token.
+             * Do not await the creation because it would run
+             * in a critical path that increases startup time.
+             */
             this.storageToken = ensureStorageTokenExists(this.asRxDatabase);
         }
     }
@@ -126,7 +149,7 @@ export class RxDatabaseBase<
     public readonly token: string = randomCouchString(10);
     public _subs: Subscription[] = [];
     public destroyed: boolean = false;
-    public collections: Collections;
+    public collections: Collections = {} as any;
     public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
     private observable$: Observable<RxChangeEvent<any>> = this.eventBulks$
         .pipe(
@@ -191,12 +214,10 @@ export class RxDatabaseBase<
         writeDoc._rev = createRevision(writeDoc, doc);
         writeDoc._meta = { lwt: now() };
 
-        await this.lockedRun(
-            () => this.internalStore.bulkWrite([{
-                document: writeDoc,
-                previous: doc
-            }])
-        );
+        await this.internalStore.bulkWrite([{
+            document: writeDoc,
+            previous: doc
+        }]);
     }
 
     /**
@@ -283,9 +304,7 @@ export class RxDatabaseBase<
             useArgsByCollectionName[collectionName] = useArgs;
         });
 
-        const putDocsResult = await this.lockedRun(
-            () => this.internalStore.bulkWrite(bulkPutDocs)
-        );
+        const putDocsResult = await this.internalStore.bulkWrite(bulkPutDocs);
 
         Object.entries(putDocsResult.error).forEach(([_id, error]) => {
             const docInDb: RxDocumentData<InternalStoreCollectionDocType> = error.documentInDb;
@@ -460,7 +479,9 @@ export class RxDatabaseBase<
             return PROMISE_RESOLVE_FALSE;
         }
 
-        // first wait until db is idle
+        /**
+         * First wait until the database is idle
+         */
         return this.requestIdlePromise()
             // destroy all collections
             .then(() => Promise.all(
@@ -559,9 +580,7 @@ export async function _removeAllOfCollection(
     rxDatabase: RxDatabaseBase<any, any, any>,
     collectionName: string
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
-    const docs = await rxDatabase.lockedRun(
-        () => getAllCollectionDocuments(rxDatabase.internalStore, rxDatabase.storage)
-    );
+    const docs = await getAllCollectionDocuments(rxDatabase.internalStore, rxDatabase.storage);
     const relevantDocs = docs
         .filter((doc) => {
             const name = doc.key.split('-')[0];
@@ -577,9 +596,9 @@ export async function _removeAllOfCollection(
             document: writeDoc
         };
     });
-    return rxDatabase.lockedRun(
-        () => rxDatabase.internalStore.bulkWrite(writeRows)
-    ).then(() => relevantDocs);
+    return rxDatabase.internalStore
+        .bulkWrite(writeRows)
+        .then(() => relevantDocs);
 }
 
 function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collections>): void {

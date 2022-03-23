@@ -849,7 +849,7 @@ export class RxCollectionBase<
         return ret;
     }
 
-    destroy(): Promise<boolean> {
+    async destroy(): Promise<boolean> {
         if (this.destroyed) {
             return PROMISE_RESOLVE_FALSE;
         }
@@ -870,7 +870,16 @@ export class RxCollectionBase<
         if (this._changeEventBuffer) {
             this._changeEventBuffer.destroy();
         }
-        return this.storageInstance.close()
+        /**
+         * First wait until the whole database is idle.
+         * This ensures that the storage does not get closed
+         * while some operation is running.
+         * It is important that we do not intercept a running call
+         * because it might lead to undefined behavior like when a doc is written
+         * but the change is not added to the changes collection.
+         */
+        return this.database.requestIdlePromise()
+            .then(() => this.storageInstance.close())
             .then(() => {
                 delete this.database.collections[this.name];
                 return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);

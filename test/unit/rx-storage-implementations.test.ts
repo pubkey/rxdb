@@ -214,37 +214,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.deepStrictEqual(docData, first);
                 storageInstance.close();
             });
-            it('close while write should not crash', async () => {
-                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {},
-                    multiInstance: false
-                });
-
-                const insertRows = new Array(100)
-                    .fill(0)
-                    .map((_n, idx) => getWriteData({
-                        key: 'close-while-write-' + idx
-                    }))
-                    .map(document => ({ document }));
-                // start a write but to not await it
-                const writePromise = storageInstance.bulkWrite(insertRows);
-
-                /**
-                 * Run close() while the write is running.
-                 * The storage must be implemented in a way to await
-                 * running writes before actually closign the storage.
-                 */
-                await storageInstance.close();
-
-                /**
-                 * After the closing, we await the promise
-                 * to ensure that the correct test fails on error.
-                 */
-                await writePromise;
-            });
             it('should error on conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
