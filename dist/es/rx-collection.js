@@ -757,43 +757,58 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   };
 
   _proto.destroy = function destroy() {
-    var _this16 = this;
+    try {
+      var _this17 = this;
 
-    if (this.destroyed) {
-      return PROMISE_RESOLVE_FALSE;
-    }
-    /**
-     * Settings destroyed = true
-     * must be the first thing to do,
-     * so for example the replication can directly stop
-     * instead of sending requests to a closed storage.
-     */
+      if (_this17.destroyed) {
+        return Promise.resolve(PROMISE_RESOLVE_FALSE);
+      }
+      /**
+       * Settings destroyed = true
+       * must be the first thing to do,
+       * so for example the replication can directly stop
+       * instead of sending requests to a closed storage.
+       */
 
 
-    this.destroyed = true;
+      _this17.destroyed = true;
 
-    if (this._onDestroyCall) {
-      this._onDestroyCall();
-    }
+      if (_this17._onDestroyCall) {
+        _this17._onDestroyCall();
+      }
 
-    Array.from(this.timeouts).forEach(function (timeout) {
-      return clearTimeout(timeout);
-    });
-
-    this._subs.forEach(function (sub) {
-      return sub.unsubscribe();
-    });
-
-    if (this._changeEventBuffer) {
-      this._changeEventBuffer.destroy();
-    }
-
-    return this.storageInstance.close().then(function () {
-      delete _this16.database.collections[_this16.name];
-      return runAsyncPluginHooks('postDestroyRxCollection', _this16).then(function () {
-        return true;
+      Array.from(_this17.timeouts).forEach(function (timeout) {
+        return clearTimeout(timeout);
       });
-    });
+
+      _this17._subs.forEach(function (sub) {
+        return sub.unsubscribe();
+      });
+
+      if (_this17._changeEventBuffer) {
+        _this17._changeEventBuffer.destroy();
+      }
+      /**
+       * First wait until the whole database is idle.
+       * This ensures that the storage does not get closed
+       * while some operation is running.
+       * It is important that we do not intercept a running call
+       * because it might lead to undefined behavior like when a doc is written
+       * but the change is not added to the changes collection.
+       */
+
+
+      return Promise.resolve(_this17.database.requestIdlePromise().then(function () {
+        return _this17.storageInstance.close();
+      }).then(function () {
+        delete _this17.database.collections[_this17.name];
+        return runAsyncPluginHooks('postDestroyRxCollection', _this17).then(function () {
+          return true;
+        });
+      }));
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
   /**
    * remove all data of the collection
@@ -828,11 +843,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this17 = this;
+      var _this18 = this;
 
       if (!this._onDestroy) {
         this._onDestroy = new Promise(function (res) {
-          return _this17._onDestroyCall = res;
+          return _this18._onDestroyCall = res;
         });
       }
 

@@ -2,13 +2,13 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'fast-deep-equal';
 import { BehaviorSubject, firstValueFrom, merge } from 'rxjs';
 import { mergeMap, filter, map, startWith, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, flatClone, firstPropertyNameOfObject, ensureNotFalsy } from './util';
+import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy } from './util';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { createRxDocuments } from './rx-document-prototype-merge';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
+import { normalizeMangoQuery } from './rx-query-helper';
 
 /**
  * Runs the query over the storage instance
@@ -518,57 +518,7 @@ function __ensureEqual(rxQuery) {
 
   return Promise.resolve(ret); // true if results have changed
 }
-/**
- * Normalize the query to ensure we have all fields set
- * and queries that represent the same query logic are detected as equal by the caching.
- */
 
-
-export function normalizeMangoQuery(schema, mangoQuery) {
-  var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-  mangoQuery = flatClone(mangoQuery);
-  /**
-   * To ensure a deterministic sorting,
-   * we have to ensure the primary key is always part
-   * of the sort query.
-   * Primary sorting is added as last sort parameter,
-   * similiar to how we add the primary key to indexes that do not have it.
-   */
-
-  if (!mangoQuery.sort) {
-    var _ref;
-
-    mangoQuery.sort = [(_ref = {}, _ref[primaryKey] = 'asc', _ref)];
-  } else {
-    var isPrimaryInSort = mangoQuery.sort.find(function (p) {
-      return firstPropertyNameOfObject(p) === primaryKey;
-    });
-
-    if (!isPrimaryInSort) {
-      var _mangoQuery$sort$push;
-
-      mangoQuery.sort = mangoQuery.sort.slice(0);
-      mangoQuery.sort.push((_mangoQuery$sort$push = {}, _mangoQuery$sort$push[primaryKey] = 'asc', _mangoQuery$sort$push));
-    }
-  }
-  /**
-   * Ensure that if an index is specified,
-   * the primaryKey is inside of it.
-   */
-
-
-  if (mangoQuery.index) {
-    var indexAr = Array.isArray(mangoQuery.index) ? mangoQuery.index.slice(0) : [mangoQuery.index];
-
-    if (!indexAr.includes(primaryKey)) {
-      indexAr.push(primaryKey);
-    }
-
-    mangoQuery.index = indexAr;
-  }
-
-  return mangoQuery;
-}
 export function isFindOneByIdQuery(primaryPath, query) {
   if (query.limit === 1 && !query.skip && query.selector && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
     if (typeof query.selector[primaryPath] === 'string') {

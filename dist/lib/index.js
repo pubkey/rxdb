@@ -25,7 +25,6 @@ var _exportNames = {
   getDocumentOrmPrototype: true,
   getDocumentPrototype: true,
   isRxQuery: true,
-  normalizeMangoQuery: true,
   isRxSchema: true,
   createRxSchema: true,
   RxSchema: true,
@@ -192,12 +191,6 @@ Object.defineProperty(exports, "isRxSchema", {
     return _rxSchema.isInstanceOf;
   }
 });
-Object.defineProperty(exports, "normalizeMangoQuery", {
-  enumerable: true,
-  get: function get() {
-    return _rxQuery.normalizeMangoQuery;
-  }
-});
 Object.defineProperty(exports, "normalizeRxJsonSchema", {
   enumerable: true,
   get: function get() {
@@ -248,6 +241,20 @@ var _rxChangeEvent = require("./rx-change-event");
 var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
 
 var _rxQuery = require("./rx-query");
+
+var _rxQueryHelper = require("./rx-query-helper");
+
+Object.keys(_rxQueryHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxQueryHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxQueryHelper[key];
+    }
+  });
+});
 
 var _rxSchema = require("./rx-schema");
 

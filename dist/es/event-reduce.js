@@ -1,7 +1,8 @@
 import { calculateActionName, runAction } from 'event-reduce-js';
 import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
-import { ensureNotFalsy } from './util';
+import { clone, ensureNotFalsy } from './util';
+import { normalizeMangoQuery } from './rx-query-helper';
 export function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
     return [primaryKey];
@@ -15,7 +16,8 @@ export var RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
 export function getQueryParams(rxQuery) {
   if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
     var collection = rxQuery.collection;
-    var queryJson = rxQuery.getPreparedQuery();
+    var preparedQuery = rxQuery.getPreparedQuery();
+    var normalizedMangoQuery = normalizeMangoQuery(collection.storageInstance.schema, clone(rxQuery.mangoQuery));
     var primaryKey = collection.schema.primaryPath;
     /**
      * Create a custom sort comparator
@@ -23,7 +25,7 @@ export function getQueryParams(rxQuery) {
      * we send for example compressed documents to be sorted by compressed queries.
      */
 
-    var sortComparator = collection.database.storage.statics.getSortComparator(collection.storageInstance.schema, queryJson);
+    var sortComparator = collection.database.storage.statics.getSortComparator(collection.storageInstance.schema, preparedQuery);
 
     var useSortComparator = function useSortComparator(docA, docB) {
       var sortComparatorData = {
@@ -41,7 +43,7 @@ export function getQueryParams(rxQuery) {
      */
 
 
-    var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.storageInstance.schema, queryJson);
+    var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.storageInstance.schema, preparedQuery);
 
     var useQueryMatcher = function useQueryMatcher(doc) {
       var queryMatcherData = {
@@ -54,9 +56,9 @@ export function getQueryParams(rxQuery) {
 
     var ret = {
       primaryKey: rxQuery.collection.schema.primaryPath,
-      skip: queryJson.skip,
-      limit: queryJson.limit,
-      sortFields: getSortFieldsOfQuery(primaryKey, rxQuery.mangoQuery),
+      skip: normalizedMangoQuery.skip,
+      limit: normalizedMangoQuery.limit,
+      sortFields: getSortFieldsOfQuery(primaryKey, normalizedMangoQuery),
       sortComparator: useSortComparator,
       queryMatcher: useQueryMatcher
     };

@@ -399,6 +399,13 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     try {
       var _this14 = this;
 
+      if (_this14.closed) {
+        throw (0, _rxError.newRxError)('SNH', {
+          database: _this14.databaseName,
+          collection: _this14.collectionName
+        });
+      }
+
       _this14.closed = true;
 
       _this14.changes$.complete();

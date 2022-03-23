@@ -9,9 +9,7 @@ import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } f
 import { newRxError } from '../rx-error';
 import { isInstanceOf as isInstanceOfPouchDB, addPouchPlugin } from '../plugins/pouchdb';
 import { isRxCollection } from '../rx-collection';
-import { runPluginHooks } from '../hooks'; // add pouchdb-replication-plugin
-
-addPouchPlugin(PouchReplicationPlugin);
+import { runPluginHooks } from '../hooks';
 /**
  * Contains all pouchdb instances that
  * are used inside of RxDB by collections or databases.
@@ -303,6 +301,10 @@ export function syncCouchDB(_ref2) {
 export var RxDBReplicationCouchDBPlugin = {
   name: 'replication-couchdb',
   rxdb: true,
+  init: function init() {
+    // add pouchdb-replication-plugin
+    addPouchPlugin(PouchReplicationPlugin);
+  },
   prototypes: {
     RxCollection: function RxCollection(proto) {
       proto.syncCouchDB = syncCouchDB;

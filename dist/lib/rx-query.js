@@ -10,7 +10,6 @@ exports._getDefaultQuery = _getDefaultQuery;
 exports.createRxQuery = createRxQuery;
 exports.isFindOneByIdQuery = isFindOneByIdQuery;
 exports.isInstanceOf = isInstanceOf;
-exports.normalizeMangoQuery = normalizeMangoQuery;
 exports.queryCollection = void 0;
 exports.tunnelQueryCache = tunnelQueryCache;
 
@@ -34,7 +33,7 @@ var _eventReduce = require("./event-reduce");
 
 var _queryCache = require("./query-cache");
 
-var _rxSchemaHelper = require("./rx-schema-helper");
+var _rxQueryHelper = require("./rx-query-helper");
 
 /**
  * Runs the query over the storage instance
@@ -251,7 +250,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     var hookInput = {
       rxQuery: this,
       // can be mutated by the hooks so we have to deep clone first.
-      mangoQuery: normalizeMangoQuery(this.collection.schema.normalized, (0, _util.clone)(this.mangoQuery))
+      mangoQuery: (0, _rxQueryHelper.normalizeMangoQuery)(this.collection.schema.normalized, (0, _util.clone)(this.mangoQuery))
     };
     (0, _hooks.runPluginHooks)('prePrepareQuery', hookInput);
     var value = this.collection.database.storage.statics.prepareQuery(this.collection.storageInstance.schema, hookInput.mangoQuery);
@@ -402,7 +401,7 @@ var RxQueryBase = /*#__PURE__*/function () {
        * like the key compression.
        */
 
-      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, normalizeMangoQuery(this.collection.schema.normalized, (0, _util.clone)(this.mangoQuery)));
+      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, (0, _rxQueryHelper.normalizeMangoQuery)(this.collection.schema.normalized, (0, _util.clone)(this.mangoQuery)));
       return (0, _util.overwriteGetterForCaching)(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(schema, usePreparedQuery));
     }
   }, {
@@ -550,57 +549,6 @@ function __ensureEqual(rxQuery) {
   }
 
   return Promise.resolve(ret); // true if results have changed
-}
-/**
- * Normalize the query to ensure we have all fields set
- * and queries that represent the same query logic are detected as equal by the caching.
- */
-
-
-function normalizeMangoQuery(schema, mangoQuery) {
-  var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
-  mangoQuery = (0, _util.flatClone)(mangoQuery);
-  /**
-   * To ensure a deterministic sorting,
-   * we have to ensure the primary key is always part
-   * of the sort query.
-   * Primary sorting is added as last sort parameter,
-   * similiar to how we add the primary key to indexes that do not have it.
-   */
-
-  if (!mangoQuery.sort) {
-    var _ref;
-
-    mangoQuery.sort = [(_ref = {}, _ref[primaryKey] = 'asc', _ref)];
-  } else {
-    var isPrimaryInSort = mangoQuery.sort.find(function (p) {
-      return (0, _util.firstPropertyNameOfObject)(p) === primaryKey;
-    });
-
-    if (!isPrimaryInSort) {
-      var _mangoQuery$sort$push;
-
-      mangoQuery.sort = mangoQuery.sort.slice(0);
-      mangoQuery.sort.push((_mangoQuery$sort$push = {}, _mangoQuery$sort$push[primaryKey] = 'asc', _mangoQuery$sort$push));
-    }
-  }
-  /**
-   * Ensure that if an index is specified,
-   * the primaryKey is inside of it.
-   */
-
-
-  if (mangoQuery.index) {
-    var indexAr = Array.isArray(mangoQuery.index) ? mangoQuery.index.slice(0) : [mangoQuery.index];
-
-    if (!indexAr.includes(primaryKey)) {
-      indexAr.push(primaryKey);
-    }
-
-    mangoQuery.index = indexAr;
-  }
-
-  return mangoQuery;
 }
 
 function isFindOneByIdQuery(primaryPath, query) {

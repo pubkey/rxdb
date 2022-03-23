@@ -16,7 +16,7 @@ var _rxChangeEvent = require("./rx-change-event");
 
 var _util = require("./util");
 
-var _rxQuery = require("./rx-query");
+var _rxQueryHelper = require("./rx-query-helper");
 
 function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
@@ -35,7 +35,7 @@ function getQueryParams(rxQuery) {
   if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
     var collection = rxQuery.collection;
     var preparedQuery = rxQuery.getPreparedQuery();
-    var normalizedMangoQuery = (0, _rxQuery.normalizeMangoQuery)(collection.storageInstance.schema, (0, _util.clone)(rxQuery.mangoQuery));
+    var normalizedMangoQuery = (0, _rxQueryHelper.normalizeMangoQuery)(collection.storageInstance.schema, (0, _util.clone)(rxQuery.mangoQuery));
     var primaryKey = collection.schema.primaryPath;
     /**
      * Create a custom sort comparator

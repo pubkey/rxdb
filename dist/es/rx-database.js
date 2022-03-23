@@ -9,7 +9,7 @@ import { runPluginHooks, runAsyncPluginHooks } from './hooks';
 import { Subject } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { createRxCollection } from './rx-collection';
-import { getSingleDocument, INTERNAL_STORAGE_NAME } from './rx-storage-helper';
+import { getSingleDocument, getWrappedStorageInstance, INTERNAL_STORAGE_NAME } from './rx-storage-helper';
 import { createRxCollectionStorageInstance } from './rx-collection-helper';
 import { ObliviousSet } from 'oblivious-set';
 import { ensureStorageTokenExists, getAllCollectionDocuments, getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_COLLECTION, INTERNAL_STORE_SCHEMA } from './rx-database-internal-store';
@@ -98,9 +98,7 @@ var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(s
  */
 export var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collectionName) {
   try {
-    return Promise.resolve(rxDatabase.lockedRun(function () {
-      return getAllCollectionDocuments(rxDatabase.internalStore, rxDatabase.storage);
-    })).then(function (docs) {
+    return Promise.resolve(getAllCollectionDocuments(rxDatabase.internalStore, rxDatabase.storage)).then(function (docs) {
       var relevantDocs = docs.filter(function (doc) {
         var name = doc.key.split('-')[0];
         return name === collectionName;
@@ -117,9 +115,7 @@ export var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, 
           document: writeDoc
         };
       });
-      return rxDatabase.lockedRun(function () {
-        return rxDatabase.internalStore.bulkWrite(writeRows);
-      }).then(function () {
+      return rxDatabase.internalStore.bulkWrite(writeRows).then(function () {
         return relevantDocs;
       });
     });
@@ -152,6 +148,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.token = randomCouchString(10);
     this._subs = [];
     this.destroyed = false;
+    this.collections = {};
     this.eventBulks$ = new Subject();
     this.observable$ = this.eventBulks$.pipe(mergeMap(function (changeEventBulk) {
       return changeEventBulk.events;
@@ -169,10 +166,28 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.internalStore = internalStore;
     this.broadcastChannel = broadcastChannel;
     this.cleanupPolicy = cleanupPolicy;
-    this.collections = {};
     DB_COUNT++;
+    /**
+     * In the dev-mode, we create a pseudoInstance
+     * to get all properties of RxDatabase and ensure they do not
+     * conflict with the collection names etc.
+     * So only if it is not pseudoInstance,
+     * we have all values to prepare a real RxDatabase.
+     */
 
     if (this.name !== 'pseudoInstance') {
+      /**
+       * Wrap the internal store
+       * to ensure that calls to it also end up in
+       * calculation of the idle state and the hooks.
+       */
+      this.internalStore = getWrappedStorageInstance(this.asRxDatabase, internalStore, INTERNAL_STORE_SCHEMA);
+      /**
+       * Start writing the storage token.
+       * Do not await the creation because it would run
+       * in a critical path that increases startup time.
+       */
+
       this.storageToken = ensureStorageTokenExists(this.asRxDatabase);
     }
   }
@@ -220,12 +235,10 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
         writeDoc._meta = {
           lwt: now()
         };
-        return Promise.resolve(_this2.lockedRun(function () {
-          return _this2.internalStore.bulkWrite([{
-            document: writeDoc,
-            previous: doc
-          }]);
-        })).then(function () {});
+        return Promise.resolve(_this2.internalStore.bulkWrite([{
+          document: writeDoc,
+          previous: doc
+        }])).then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);
@@ -304,9 +317,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
         runPluginHooks('preCreateRxCollection', hookData);
         useArgsByCollectionName[collectionName] = useArgs;
       });
-      return Promise.resolve(_this4.lockedRun(function () {
-        return _this4.internalStore.bulkWrite(bulkPutDocs);
-      })).then(function (putDocsResult) {
+      return Promise.resolve(_this4.internalStore.bulkWrite(bulkPutDocs)).then(function (putDocsResult) {
         Object.entries(putDocsResult.error).forEach(function (_ref2) {
           var _id = _ref2[0],
               error = _ref2[1];

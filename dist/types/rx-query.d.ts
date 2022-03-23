@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxJsonSchema, RxDocumentData, FilledMangoQuery } from './types';
+import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData } from './types';
 import type { QueryMatcher } from 'event-reduce-js';
 export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocument<RxDocumentType[]> | RxDocument<RxDocumentType>> {
     op: RxQueryOP;
@@ -112,11 +112,6 @@ export declare function _getDefaultQuery(): MangoQuery;
  */
 export declare function tunnelQueryCache<RxDocumentType, RxQueryResult>(rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>): RxQuery<RxDocumentType, RxQueryResult>;
 export declare function createRxQuery(op: RxQueryOP, queryObj: MangoQuery, collection: RxCollection): RxQueryBase<any, any>;
-/**
- * Normalize the query to ensure we have all fields set
- * and queries that represent the same query logic are detected as equal by the caching.
- */
-export declare function normalizeMangoQuery<RxDocType>(schema: RxJsonSchema<RxDocType>, mangoQuery: MangoQuery<RxDocType>): FilledMangoQuery<RxDocType>;
 /**
  * Runs the query over the storage instance
  * of the collection.

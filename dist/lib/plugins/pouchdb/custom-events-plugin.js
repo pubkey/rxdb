@@ -255,8 +255,22 @@ function getCustomEventEmitterByPouch(pouch) {
 
   return emitter;
 }
+/**
+ * Counter, used to debug stuff.
+ */
+
 
 var i = 0;
+/**
+ * Because we cannot force pouchdb to await bulkDocs runs
+ * inside of a transaction, like done with the other RxStorage implementations,
+ * we have to ensure the calls to bulkDocs() do not run in parallel. 
+ * 
+ * TODO this is somehow a hack. Instead of doing that, inspect how
+ * PouchDB runs bulkDocs internally and adapt that transaction handling.
+ */
+
+var BULK_DOC_RUN_QUEUE = new WeakMap();
 /**
  * PouchDB is like a minefield,
  * where stuff randomly does not work dependend on some conditions.
@@ -272,8 +286,35 @@ function addCustomEventsPluginToPouch() {
 
   addedToPouch = true;
   var oldBulkDocs = _pouchdbCore["default"].prototype.bulkDocs;
+  /**
+   * Ensure we do not run bulkDocs() in parallel on the same PouchDB instance.
+   */
 
   var newBulkDocs = function newBulkDocs(body, options, callback) {
+    try {
+      var _this2 = this;
+
+      var queue = BULK_DOC_RUN_QUEUE.get(_this2);
+
+      if (!queue) {
+        queue = _util.PROMISE_RESOLVE_VOID;
+      }
+
+      queue = queue.then(function () {
+        try {
+          return Promise.resolve(newBulkDocsInner.bind(_this2)(body, options, callback));
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      });
+      BULK_DOC_RUN_QUEUE.set(_this2, queue);
+      return Promise.resolve(queue);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var newBulkDocsInner = function newBulkDocsInner(body, options, callback) {
     try {
       var _temp4 = function _temp4() {
         /**
@@ -351,7 +392,7 @@ function addCustomEventsPluginToPouch() {
         deeperOptions.isDeeper = true;
         var callReturn;
         var callPromise = new Promise(function (res, rej) {
-          callReturn = oldBulkDocs.call(_this2, docs, deeperOptions, function (err, result) {
+          callReturn = oldBulkDocs.call(_this4, docs, deeperOptions, function (err, result) {
             if (err) {
               callback ? callback(err) : rej(err);
             } else {
@@ -371,7 +412,7 @@ function addCustomEventsPluginToPouch() {
                   if (!options.isDeeper) {
                     var endTime = (0, _util.now)();
                     var emitData = {
-                      emitId: t,
+                      emitId: runId,
                       writeDocs: docs,
                       writeOptions: options,
                       writeResult: usePouchResult,
@@ -379,12 +420,12 @@ function addCustomEventsPluginToPouch() {
                       startTime: startTime,
                       endTime: endTime
                     };
-                    eventsPromise = eventEmitDataToStorageEvents(_this2, '_id', emitData).then(function (events) {
+                    eventsPromise = eventEmitDataToStorageEvents(_this4, '_id', emitData).then(function (events) {
                       var eventBulk = {
                         id: (0, _util.randomCouchString)(10),
                         events: events
                       };
-                      var emitter = getCustomEventEmitterByPouch(_this2);
+                      var emitter = getCustomEventEmitterByPouch(_this4);
                       emitter.subject.next(eventBulk);
                     });
                   }
@@ -409,10 +450,10 @@ function addCustomEventsPluginToPouch() {
         return options.custom ? callPromise : callReturn;
       };
 
-      var _this2 = this;
+      var _this4 = this;
 
       var startTime = (0, _util.now)();
-      var t = i++; // normalize input
+      var runId = i++; // normalize input
 
       if (typeof options === 'function') {
         callback = options;
@@ -457,7 +498,7 @@ function addCustomEventsPluginToPouch() {
 
       var _temp5 = function () {
         if (options.hasOwnProperty('new_edits') && options.new_edits === false) {
-          return Promise.resolve(_this2.bulkGet({
+          return Promise.resolve(_this4.bulkGet({
             docs: docs.map(function (doc) {
               return {
                 id: doc._id
@@ -485,7 +526,7 @@ function addCustomEventsPluginToPouch() {
 
             var _temp = function () {
               if (mustRefetchBecauseDeleted.length > 0) {
-                return Promise.resolve(_this2.allDocs({
+                return Promise.resolve(_this4.allDocs({
                   keys: mustRefetchBecauseDeleted,
                   include_docs: true,
                   conflicts: true
@@ -497,7 +538,7 @@ function addCustomEventsPluginToPouch() {
                       rev: row.value.rev
                     });
                   });
-                  return Promise.resolve(_this2.bulkGet({
+                  return Promise.resolve(_this4.bulkGet({
                     docs: idsWithRevs,
                     revs: true,
                     latest: true

@@ -31,14 +31,12 @@ var _hooks = require("../hooks");
  * this plugin adds the RxCollection.sync()-function to rxdb
  * you can use it to sync collections with remote or local couchdb-instances
  */
-// add pouchdb-replication-plugin
-(0, _pouchdb.addPouchPlugin)(_pouchdbReplication["default"]);
+
 /**
  * Contains all pouchdb instances that
  * are used inside of RxDB by collections or databases.
  * Used to ensure the remote of a replication cannot be an internal pouchdb.
  */
-
 var INTERNAL_POUCHDBS = new WeakSet();
 
 var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
@@ -332,6 +330,10 @@ function syncCouchDB(_ref2) {
 var RxDBReplicationCouchDBPlugin = {
   name: 'replication-couchdb',
   rxdb: true,
+  init: function init() {
+    // add pouchdb-replication-plugin
+    (0, _pouchdb.addPouchPlugin)(_pouchdbReplication["default"]);
+  },
   prototypes: {
     RxCollection: function RxCollection(proto) {
       proto.syncCouchDB = syncCouchDB;

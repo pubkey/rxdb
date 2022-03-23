@@ -376,7 +376,6 @@ var spawnServer = function spawnServer(_ref) {
 
 
 exports.spawnServer = spawnServer;
-(0, _pouchdb.addPouchPlugin)(_pouchdbAdapterHttp["default"]);
 var ExpressPouchDB;
 
 try {
@@ -488,6 +487,7 @@ var RxDBServerPlugin = {
   name: 'server',
   rxdb: true,
   init: function init() {
+    (0, _pouchdb.addPouchPlugin)(_pouchdbAdapterHttp["default"]);
     (0, _index.addRxPlugin)(_replicationCouchdb.RxDBReplicationCouchDBPlugin);
   },
   prototypes: {
