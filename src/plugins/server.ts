@@ -27,7 +27,6 @@ import { adapterObject, addRxPlugin } from '../index';
 import {
     flatClone, PROMISE_RESOLVE_VOID
 } from '../util';
-addPouchPlugin(PouchAdapterHttp);
 
 let ExpressPouchDB: any;
 try {
@@ -247,6 +246,7 @@ export const RxDBServerPlugin: RxPlugin = {
     name: 'server',
     rxdb: true,
     init() {
+        addPouchPlugin(PouchAdapterHttp);
         addRxPlugin(RxDBReplicationCouchDBPlugin);
     },
     prototypes: {

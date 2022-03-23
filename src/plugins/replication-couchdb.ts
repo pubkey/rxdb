@@ -46,9 +46,6 @@ import type {
 } from '../types';
 import { runPluginHooks } from '../hooks';
 
-// add pouchdb-replication-plugin
-addPouchPlugin(PouchReplicationPlugin);
-
 /**
  * Contains all pouchdb instances that
  * are used inside of RxDB by collections or databases.
@@ -380,6 +377,10 @@ export function syncCouchDB(
 export const RxDBReplicationCouchDBPlugin: RxPlugin = {
     name: 'replication-couchdb',
     rxdb: true,
+    init() {
+        // add pouchdb-replication-plugin
+        addPouchPlugin(PouchReplicationPlugin);
+    },
     prototypes: {
         RxCollection: (proto: any) => {
             proto.syncCouchDB = syncCouchDB;
