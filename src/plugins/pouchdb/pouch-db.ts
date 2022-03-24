@@ -36,6 +36,12 @@ export function isInstanceOf(obj: any) {
     return obj instanceof PouchDBCore;
 }
 
+/**
+ * Adding a PouchDB plugin multiple times,
+ * can sometimes error. So we have to check if the plugin
+ * was added before.
+ */
+const ADDED_POUCH_PLUGINS: Set<any> = new Set();
 
 /**
  * Add a pouchdb plugin to the pouchdb library.
@@ -54,7 +60,11 @@ export function addPouchPlugin(plugin: any) {
     if (typeof plugin === 'object' && plugin.default) {
         plugin = plugin.default;
     }
-    PouchDBCore.plugin(plugin);
+
+    if (!ADDED_POUCH_PLUGINS.has(plugin)) {
+        ADDED_POUCH_PLUGINS.add(plugin);
+        PouchDBCore.plugin(plugin);
+    }
 }
 
 

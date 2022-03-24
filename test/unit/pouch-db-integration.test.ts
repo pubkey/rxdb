@@ -23,7 +23,7 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 import PouchDBFind from 'pouchdb-find';
-
+import PouchReplicationPlugin from 'pouchdb-replication';
 
 import * as schemaObjects from './../helper/schema-objects';
 
@@ -32,8 +32,10 @@ config.parallel('pouch-db-integration.test.js', () => {
         return;
     }
 
+
     describe('init', () => {
         it('should export the pouchDB-module', () => {
+            addPouchPlugin(PouchReplicationPlugin);
             assert.strictEqual(typeof PouchDB, 'function');
         });
     });
