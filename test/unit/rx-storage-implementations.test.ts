@@ -2155,6 +2155,79 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 await instances.b.close();
             });
+            it('should not mix up documents stored with different schema versions', async () => {
+                const storageInstanceV0 = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+                const storageInstanceV1 = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(1, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const writeResponseV0 = await storageInstanceV0.bulkWrite(
+                    [{
+                        document: {
+                            key: 'foobar0',
+                            value: '0',
+                            _deleted: false,
+                            _meta: {
+                                lwt: now()
+                            },
+                            _rev: EXAMPLE_REVISION_1,
+                            _attachments: {}
+                        }
+                    }]
+                );
+                const writeResponseV1 = await storageInstanceV1.bulkWrite(
+                    [{
+                        document: {
+                            key: 'foobar1',
+                            value: '1',
+                            _deleted: false,
+                            _meta: {
+                                lwt: now()
+                            },
+                            _rev: EXAMPLE_REVISION_1,
+                            _attachments: {}
+                        }
+                    }]
+                );
+                assert.deepStrictEqual(writeResponseV0.error, {});
+                assert.deepStrictEqual(writeResponseV1.error, {});
+
+
+                const plainQuery = {
+                    selector: {},
+                    sort: [{ key: 'asc' }]
+                };
+                const preparedQueryV0 = config.storage.getStorage().statics.prepareQuery(
+                    getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    clone(plainQuery)
+                );
+                const resultV0 = await storageInstanceV0.query(preparedQueryV0);
+                assert.strictEqual(resultV0.documents.length, 1);
+                assert.strictEqual(resultV0.documents[0].value, '0');
+
+
+                const preparedQueryV1 = config.storage.getStorage().statics.prepareQuery(
+                    getPseudoSchemaForVersion<TestDocType>(1, 'key'),
+                    clone(plainQuery)
+                );
+                const resultV1 = await storageInstanceV1.query(preparedQueryV1);
+                assert.strictEqual(resultV1.documents.length, 1);
+                assert.strictEqual(resultV1.documents[0].value, '1');
+
+
+                storageInstanceV0.close();
+                storageInstanceV1.close();
+            });
         });
     });
 });
