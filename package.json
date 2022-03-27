@@ -176,7 +176,7 @@
     "@typescript-eslint/parser": "4.33.0",
     "assert": "2.0.0",
     "async-test-util": "2.0.0",
-    "babel-loader": "8.2.3",
+    "babel-loader": "8.2.4",
     "babel-plugin-transform-class-properties": "6.24.1",
     "brfs": "2.0.2",
     "browserify": "17.0.0",
