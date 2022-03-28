@@ -21,7 +21,7 @@ import { planQuery } from './pouchdb-find-query-planer/query-planner';
  */
 export function getPouchQueryPlan<RxDocType>(
     schema: RxJsonSchema<RxDocType>,
-    query: PreparedQuery<RxDocType>
+    query: MangoQuery<RxDocType>
 ) {
     const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
 
@@ -203,7 +203,6 @@ export async function dexieQuery<RxDocType>(
                 }
                 index = store.index(indexName);
             }
-
 
             const cursorReq = index.openCursor(keyRange);
             await new Promise<void>(res => {
