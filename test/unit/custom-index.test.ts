@@ -217,7 +217,6 @@ config.parallel('custom-index.test.ts', () => {
                     index,
                     doc
                 );
-                console.log('isIndexStr: ' + isIndexStr);
                 return isIndexStr <= upperBoundString;
             });
 

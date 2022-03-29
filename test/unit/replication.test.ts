@@ -523,6 +523,7 @@ describe('replication.test.js', () => {
             });
 
             // DELETE
+            await wait(100);
             await doc.remove();
             await waitUntil(async () => {
                 const remoteDoc = await docsRemoteQuery.exec();
