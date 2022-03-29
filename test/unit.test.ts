@@ -14,6 +14,7 @@ import './unit/rx-storage-pouchdb.test.js';
 import './unit/rx-storage-lokijs.test.js';
 import './unit/rx-storage-dexie.test.js';
 
+import './unit/custom-index.test.js';
 
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';

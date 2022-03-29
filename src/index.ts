@@ -71,6 +71,8 @@ export * from './rx-schema-helper';
 
 export * from './rx-storage-helper';
 
+export * from './custom-index';
+
 export {
     _clearHook // used in tests
 } from './hooks';
