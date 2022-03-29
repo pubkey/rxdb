@@ -1,4 +1,4 @@
-import type { PreparedQuery, RxJsonSchema, RxStorageQueryResult } from '../../../types';
+import type { MangoQuery, PreparedQuery, RxJsonSchema, RxStorageQueryResult } from '../../../types';
 import type { RxStorageInstanceDexie } from '../rx-storage-instance-dexie';
 /**
  * Use the pouchdb query planner to determine which index
@@ -9,7 +9,7 @@ import type { RxStorageInstanceDexie } from '../rx-storage-instance-dexie';
  * TODO use batched cursor
  * @link https://nolanlawson.com/2021/08/22/speeding-up-indexeddb-reads-and-writes/
  */
-export declare function getPouchQueryPlan<RxDocType>(schema: RxJsonSchema<RxDocType>, query: PreparedQuery<RxDocType>): {
+export declare function getPouchQueryPlan<RxDocType>(schema: RxJsonSchema<RxDocType>, query: MangoQuery<RxDocType>): {
     queryOpts: any;
     index: any;
     inMemoryFields: any[];

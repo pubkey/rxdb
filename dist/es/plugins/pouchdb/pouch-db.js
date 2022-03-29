@@ -29,6 +29,13 @@ export function isInstanceOf(obj) {
   return obj instanceof PouchDBCore;
 }
 /**
+ * Adding a PouchDB plugin multiple times,
+ * can sometimes error. So we have to check if the plugin
+ * was added before.
+ */
+
+var ADDED_POUCH_PLUGINS = new Set();
+/**
  * Add a pouchdb plugin to the pouchdb library.
  */
 
@@ -49,7 +56,10 @@ export function addPouchPlugin(plugin) {
     plugin = plugin["default"];
   }
 
-  PouchDBCore.plugin(plugin);
+  if (!ADDED_POUCH_PLUGINS.has(plugin)) {
+    ADDED_POUCH_PLUGINS.add(plugin);
+    PouchDBCore.plugin(plugin);
+  }
 }
 export var PouchDB = PouchDBCore;
 //# sourceMappingURL=pouch-db.js.map

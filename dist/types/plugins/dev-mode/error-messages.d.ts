@@ -127,6 +127,11 @@ export declare const ERROR_MESSAGES: {
     SC30: string;
     SC32: string;
     SC33: string;
+    SC34: string;
+    SC35: string;
+    SC36: string;
+    SC37: string;
+    SC38: string;
     DEV1: string;
     VD1: string;
     VD2: string;

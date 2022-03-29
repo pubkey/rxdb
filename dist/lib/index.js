@@ -286,6 +286,20 @@ Object.keys(_rxStorageHelper).forEach(function (key) {
   });
 });
 
+var _customIndex = require("./custom-index");
+
+Object.keys(_customIndex).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _customIndex[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _customIndex[key];
+    }
+  });
+});
+
 var _hooks = require("./hooks");
 
 var _queryCache = require("./query-cache");

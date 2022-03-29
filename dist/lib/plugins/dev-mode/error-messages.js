@@ -158,6 +158,11 @@ var ERROR_MESSAGES = {
   SC30: 'SchemaCheck: primaryKey is required',
   SC32: 'SchemaCheck: primary field must have the type string/number/integer',
   SC33: 'SchemaCheck: used primary key is not a property in the schema',
+  SC34: 'Fields of type string that are used in an index, must have set the maxLength attribute in the schema',
+  SC35: 'Fields of type number/integer that are used in an index, must have set the multipleOf attribute in the schema',
+  SC36: 'A field of this type cannot be used as index',
+  SC37: 'Fields of type number that are used in an index, must have set the minimum and maxiumum attribute in the schema',
+  SC38: 'Fields of type boolean that are used in an index, must be required in the schema',
   // plugins/dev-mode
   DEV1: 'dev-mode added multiple times',
   // plugins/validate.js

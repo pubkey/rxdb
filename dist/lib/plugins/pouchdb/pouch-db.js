@@ -44,9 +44,16 @@ function isInstanceOf(obj) {
   return obj instanceof _pouchdbCore["default"];
 }
 /**
- * Add a pouchdb plugin to the pouchdb library.
+ * Adding a PouchDB plugin multiple times,
+ * can sometimes error. So we have to check if the plugin
+ * was added before.
  */
 
+
+var ADDED_POUCH_PLUGINS = new Set();
+/**
+ * Add a pouchdb plugin to the pouchdb library.
+ */
 
 function addPouchPlugin(plugin) {
   if (plugin.rxdb) {
@@ -65,7 +72,11 @@ function addPouchPlugin(plugin) {
     plugin = plugin["default"];
   }
 
-  _pouchdbCore["default"].plugin(plugin);
+  if (!ADDED_POUCH_PLUGINS.has(plugin)) {
+    ADDED_POUCH_PLUGINS.add(plugin);
+
+    _pouchdbCore["default"].plugin(plugin);
+  }
 }
 
 var PouchDB = _pouchdbCore["default"];

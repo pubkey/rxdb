@@ -19,6 +19,7 @@ export * from './rx-query-helper';
 export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, normalizeRxJsonSchema, getFinalFields, getPreviousVersions, toTypedRxJsonSchema } from './rx-schema';
 export * from './rx-schema-helper';
 export * from './rx-storage-helper';
+export * from './custom-index';
 export { _clearHook } from './hooks';
 export * from './query-cache';
 export * from './util';
