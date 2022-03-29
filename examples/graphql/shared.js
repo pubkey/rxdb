@@ -22,13 +22,18 @@ export const heroSchema = {
             type: 'string'
         },
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         color: {
-            type: 'string'
+            type: 'string',
+            maxLength: 30
         },
         updatedAt: {
-            type: 'number'
+            type: 'number',
+            minimum: 0,
+            maximum: 1000000000000000,
+            multipleOf: 1
         }
     },
     indexes: ['name', 'color', 'updatedAt'],

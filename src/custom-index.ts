@@ -56,8 +56,8 @@ export function getIndexableString<RxDocType>(
                     });
                 }
 
-                const maximum = schemaPart.maximum;
-                const minimum = schemaPart.minimum;
+                // const maximum = schemaPart.maximum;
+                // const minimum = schemaPart.minimum;
 
                 break;
         }
