@@ -900,7 +900,10 @@ config.parallel('rx-query.test.js', () => {
                             type: 'string'
                         },
                         value: {
-                            type: 'number'
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 1000000,
+                            multipleOf: 1
                         }
                     },
                     indexes: ['value']
@@ -1016,7 +1019,8 @@ config.parallel('rx-query.test.js', () => {
                         type: 'object',
                         properties: {
                             title: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 1000
                             },
                         },
                     }
@@ -1099,7 +1103,8 @@ config.parallel('rx-query.test.js', () => {
                         type: 'string'
                     },
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     }
                 },
                 indexes: ['passportId']
@@ -1160,7 +1165,10 @@ config.parallel('rx-query.test.js', () => {
                         type: 'string'
                     },
                     created_at: {
-                        type: 'number'
+                        type: 'number',
+                        minimum: 0,
+                        maximum: 10000000000000000,
+                        multipleOf: 1
                     }
                 },
                 indexes: ['created_at']

@@ -29,6 +29,7 @@
 - Added `RxStorageInstance.cleanup()`
 - Added cleanup plugin
 - dev-mode: Add check to ensure all top-level fields in a query are defined in the schema.
+- Support for array field based indexes like `data.[].subfield` was removed.
 
 ### 11.6.0 (4 February 2022)
 

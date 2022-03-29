@@ -39,10 +39,12 @@ export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         lastName: {
             type: 'string'
@@ -71,7 +73,8 @@ export const humanDefault: RxJsonSchema<HumanDocumentType> = overwritable.deepFr
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'
@@ -99,7 +102,8 @@ export const humanFinal: RxJsonSchema<HumanDocumentType> = overwritable.deepFree
     primaryKey: 'passportId',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'
@@ -128,10 +132,12 @@ export const simpleHuman: RxJsonSchema<SimpleHumanV3DocumentType> = overwritable
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         age: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         oneOptional: {
             type: 'string'
@@ -150,10 +156,14 @@ export const simpleHumanV3: RxJsonSchema<SimpleHumanV3DocumentType> = overwritab
     primaryKey: 'passportId',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         age: {
-            type: 'number'
+            type: 'number',
+            minimum: 0,
+            maximum: 1000,
+            multipleOf: 1
         },
         oneOptional: {
             type: 'string'
@@ -172,7 +182,8 @@ export const humanAgeIndex: RxJsonSchema<HumanDocumentType> = overwritable.deepF
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'
@@ -184,38 +195,12 @@ export const humanAgeIndex: RxJsonSchema<HumanDocumentType> = overwritable.deepF
             description: 'Age in years',
             type: 'integer',
             minimum: 0,
-            maximum: 150
+            maximum: 150,
+            multipleOf: 1
         }
     },
     required: ['firstName', 'lastName', 'age'],
     indexes: ['age']
-});
-
-export const humanArrayIndex: RxJsonSchema<{ passportId: string; jobs: { name: string }[] }> = overwritable.deepFreezeWhenDevMode({
-    title: 'human schema',
-    version: 0,
-    keyCompression: true,
-    description: 'describes a human being',
-    primaryKey: 'passportId',
-    type: 'object',
-    properties: {
-        passportId: {
-            type: 'string'
-        },
-        jobs: {
-            type: 'array',
-            items: {
-                type: 'object',
-                properties: {
-                    name: {
-                        type: 'string'
-                    }
-                }
-            }
-        }
-    },
-    required: [],
-    indexes: ['jobs.[].name']
 });
 
 export const humanSubIndex: RxJsonSchema<HumanWithSubOtherDocumentType> = overwritable.deepFreezeWhenDevMode({
@@ -227,7 +212,8 @@ export const humanSubIndex: RxJsonSchema<HumanWithSubOtherDocumentType> = overwr
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         other: {
             type: 'object',
@@ -236,7 +222,8 @@ export const humanSubIndex: RxJsonSchema<HumanWithSubOtherDocumentType> = overwr
                     description: 'Age in years',
                     type: 'integer',
                     minimum: 0,
-                    maximum: 150
+                    maximum: 150,
+                    multipleOf: 1
                 }
             }
         }
@@ -260,19 +247,23 @@ export const humanWithAllIndex: RxJsonSchema<HumanDocumentType> = overwritable.d
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         lastName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         age: {
             description: 'age in years',
             type: 'integer',
             minimum: 0,
-            maximum: 150
+            maximum: 150,
+            multipleOf: 1
         }
     },
     indexes: ['firstName', 'lastName', 'age'],
@@ -288,10 +279,12 @@ export const nestedHuman: RxJsonSchema<NestedHumanDocumentType> = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         mainSkill: {
             type: 'object',
@@ -321,7 +314,8 @@ export const deepNestedHuman: RxJsonSchema<DeepNestedHumanDocumentType> = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         mainSkill: {
             type: 'object',
@@ -357,7 +351,8 @@ export const noIndexHuman: RxJsonSchema<NoIndexHumanDocumentType> = overwritable
     type: 'object',
     properties: {
         firstName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         lastName: {
             type: 'string'
@@ -374,7 +369,8 @@ export const noStringIndex: RxJsonSchema<NostringIndexDocumentType> = overwritab
     type: 'object',
     properties: {
         passportId: {
-            type: 'object'
+            type: 'object',
+            maxLength: 100
         },
         firstName: {
             type: 'string'
@@ -394,13 +390,16 @@ export const bigHuman: RxJsonSchema<BigHumanDocumentType> = overwritable.deepFre
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         dnaHash: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         lastName: {
             type: 'string'
@@ -424,13 +423,15 @@ export const encryptedHuman: RxJsonSchema<EncryptedHumanDocumentType> = {
     keyCompression: true,
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'
         },
         secret: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         }
     },
     indexes: [],
@@ -447,7 +448,8 @@ export const encryptedObjectHuman: RxJsonSchema<EncryptedObjectHumanDocumentType
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'
@@ -478,7 +480,8 @@ export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = 
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'
@@ -541,7 +544,8 @@ export const notExistingIndex: RxJsonSchema<{ passportId: string; address: { str
     keyCompression: true,
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         address: {
             type: 'object',
@@ -565,13 +569,18 @@ export const compoundIndex: RxJsonSchema<CompoundIndexDocumentType> = overwritab
     keyCompression: true,
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         passportCountry: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         age: {
-            type: 'integer'
+            type: 'integer',
+            minimum: 0,
+            maximum: 150,
+            multipleOf: 1
         }
     },
     required: [
@@ -591,7 +600,8 @@ export const compoundIndexNoString: RxJsonSchema<CompoundIndexNoStringDocumentTy
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         passportCountry: {
             type: 'object'
@@ -614,7 +624,8 @@ export const wrongCompoundFormat: RxJsonSchema<CompoundIndexDocumentType> = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         passportCountry: {
             type: 'string'
@@ -638,7 +649,8 @@ export const empty: RxJsonSchema<any> = {
     primaryKey: 'id',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         }
     },
     required: ['id']
@@ -653,7 +665,8 @@ export const heroArray: RxJsonSchema<HeroArrayDocumentType> = overwritable.deepF
     type: 'object',
     properties: {
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         skills: {
             type: 'array',
@@ -686,7 +699,8 @@ export const simpleArrayHero: RxJsonSchema<SimpleHeroArrayDocumentType> = overwr
     type: 'object',
     properties: {
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         skills: {
             type: 'array',
@@ -712,18 +726,21 @@ export const primaryHumanLiteral = overwritable.deepFreezeWhenDevMode({
     properties: {
         passportId: {
             type: 'string',
-            minLength: 4
+            minLength: 4,
+            maxLength: 100
         },
         firstName: {
             type: 'string'
         },
         lastName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 1000
         },
         age: {
             type: 'integer',
             minimum: 0,
-            maximum: 150
+            maximum: 150,
+            multipleOf: 1
         }
     },
     required: ['passportId', 'firstName', 'lastName']
@@ -742,13 +759,15 @@ export const humanNormalizeSchema1Literal = overwritable.deepFreezeWhenDevMode({
     properties: {
         passportId: {
             type: 'string',
-            minLength: 4
+            minLength: 4,
+            maxLength: 100
         },
         age: {
             description: 'age in years',
             type: 'integer',
             minimum: 0,
-            maximum: 150
+            maximum: 150,
+            multipleOf: 1
         }
     },
     required: ['age', 'passportId']
@@ -766,13 +785,15 @@ export const humanNormalizeSchema2: RxJsonSchema<AgeHumanDocumentType> = overwri
     properties: {
         passportId: {
             type: 'string',
-            minLength: 4
+            minLength: 4,
+            maxLength: 100
         },
         age: {
             minimum: 0,
             type: 'integer',
             description: 'age in years',
-            maximum: 150
+            maximum: 150,
+            multipleOf: 1
         }
     },
     description: 'describes a human being',
@@ -787,7 +808,8 @@ export const refHuman: RxJsonSchema<RefHumanDocumentType> = overwritable.deepFre
     type: 'object',
     properties: {
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         bestFriend: {
             ref: 'human',
@@ -815,10 +837,12 @@ export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = {
     type: 'object',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         lastName: {
             type: 'string'
@@ -853,7 +877,8 @@ export const refHumanNested: RxJsonSchema<RefHumanNestedDocumentType> = overwrit
     type: 'object',
     properties: {
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         foo: {
             type: 'object',
@@ -882,19 +907,25 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
         keyCompression: true,
         properties: {
             id: {
-                type: 'string'
+                type: 'string',
+                maxLength: 100
             },
             var1: {
-                type: 'string'
+                type: 'string',
+                maxLength: 100
             },
             var2: {
                 type: 'number',
+                minimum: 0,
+                maximum: 1000000,
+                multipleOf: 1
             },
             deep: {
                 type: 'object',
                 properties: {
                     deep1: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     deep2: {
                         type: 'string'
@@ -940,7 +971,8 @@ export const point: RxJsonSchema<PointDocumentType> = overwritable.deepFreezeWhe
     type: 'object',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         x: {
             type: 'number'
@@ -961,7 +993,8 @@ export const humanMinimal: RxJsonSchema<SimpleHumanV3DocumentType> = overwritabl
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         age: {
             type: 'integer'
@@ -983,7 +1016,8 @@ export const humanMinimalBroken: RxJsonSchema<{ passportId: string; broken: numb
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         broken: {
             type: 'integer'
@@ -1004,16 +1038,22 @@ export const humanWithTimestamp: RxJsonSchema<HumanWithTimestampDocumentType> = 
     primaryKey: 'id',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 1000
         },
         age: {
             type: 'number'
         },
         updatedAt: {
-            type: 'number'
+            type: 'number',
+            minimum: 0,
+            maximum: 10000000000000000,
+            multipleOf: 1
+
         },
         deletedAt: {
             type: 'number'
@@ -1033,16 +1073,24 @@ export const humanWithTimestampAllIndex: RxJsonSchema<HumanWithTimestampDocument
     primaryKey: 'id',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         age: {
-            type: 'number'
+            type: 'number',
+            minimum: 0,
+            maximum: 1500,
+            multipleOf: 1
         },
         updatedAt: {
-            type: 'number'
+            type: 'number',
+            minimum: 0,
+            maximum: 10000000000000000,
+            multipleOf: 1
         },
         deletedAt: {
             type: 'number'
@@ -1064,19 +1112,30 @@ export const humanWithSimpleAndCompoundIndexes: RxJsonSchema<{
     type: 'object',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         age: {
-            type: 'number'
+            type: 'number',
+            minimum: 0,
+            maximum: 1500,
+            multipleOf: 1
         },
         createdAt: {
-            type: 'number'
+            type: 'number',
+            minimum: 0,
+            maximum: 10000000000000000,
+            multipleOf: 1
         },
         updatedAt: {
-            type: 'number'
+            type: 'number',
+            minimum: 0,
+            maximum: 10000000000000000,
+            multipleOf: 1
         }
     },
     indexes: [
@@ -1093,22 +1152,26 @@ export const humanWithDeepNestedIndexes: RxJsonSchema<{ id: string; name: string
     type: 'object',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         job: {
             type: 'object',
             properties: {
                 name: {
-                    type: 'string'
+                    type: 'string',
+                    maxLength: 100
                 },
                 manager: {
                     type: 'object',
                     properties: {
                         fullName: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         previousJobs: {
                             type: 'array',
@@ -1116,7 +1179,8 @@ export const humanWithDeepNestedIndexes: RxJsonSchema<{ id: string; name: string
                                 type: 'object',
                                 properties: {
                                     name: {
-                                        type: 'string'
+                                        type: 'string',
+                                        maxLength: 100
                                     }
                                 }
                             }
@@ -1129,7 +1193,11 @@ export const humanWithDeepNestedIndexes: RxJsonSchema<{ id: string; name: string
     required: [
         'id'
     ],
-    indexes: ['name', 'job.name', 'job.manager.fullName', 'job.manager.previousJobs.[].name']
+    indexes: [
+        'name',
+        'job.name',
+        'job.manager.fullName'
+    ]
 });
 
 export const humanIdAndAgeIndex: RxJsonSchema<{ id: string; name: string; age: number; }> = overwritable.deepFreezeWhenDevMode({
@@ -1139,7 +1207,8 @@ export const humanIdAndAgeIndex: RxJsonSchema<{ id: string; name: string; age: n
     type: 'object',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         name: {
             type: 'string'
@@ -1148,7 +1217,8 @@ export const humanIdAndAgeIndex: RxJsonSchema<{ id: string; name: string; age: n
             description: 'Age in years',
             type: 'integer',
             minimum: 0,
-            maximum: 150
+            maximum: 150,
+            multipleOf: 1
         }
     },
     required: ['id', 'name', 'age'],

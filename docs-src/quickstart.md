@@ -31,7 +31,8 @@ const mySchema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100 // <- the primary key must have set maxLength
         },
         firstName: {
             type: 'string'
@@ -42,8 +43,11 @@ const mySchema = {
         age: {
             description: 'age in years',
             type: 'integer',
+
+            // number fields that are used in an index, must have set minium, maximum and multipleOf
             minimum: 0,
-            maximum: 150
+            maximum: 150,
+            multipleOf: '1'
         }
     },
     required: ['firstName', 'lastName', 'passportId'],

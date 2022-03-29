@@ -50,12 +50,6 @@ config.parallel('rx-schema.test.js', () => {
                 assert.ok(Array.isArray(indexes[0]));
                 assert.deepStrictEqual(indexes[0], ['age', 'passportCountry']);
             });
-            it('get index from array', () => {
-                const indexes = getIndexes(schemas.humanArrayIndex);
-                assert.ok(Array.isArray(indexes));
-                assert.ok(Array.isArray(indexes[0]));
-                assert.deepStrictEqual(indexes[0], ['jobs.[].name']);
-            });
         });
         describe('.checkSchema()', () => {
             describe('positive', () => {
@@ -836,7 +830,10 @@ config.parallel('rx-schema.test.js', () => {
                                 type: 'object',
                                 properties: {
                                     time: {
-                                        type: 'number'
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 10000,
+                                        multipleOf: 1
                                     }
                                 }
                             }
@@ -887,13 +884,15 @@ config.parallel('rx-schema.test.js', () => {
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     firstName: {
                         type: 'string'
                     },
                     lastName: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     age: {
                         type: 'integer',
@@ -927,16 +926,19 @@ config.parallel('rx-schema.test.js', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     properties: {
                         type: 'object',
                         properties: {
                             name: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             content: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             }
                         }
                     },
@@ -972,16 +974,19 @@ config.parallel('rx-schema.test.js', () => {
                 primaryKey: 'id',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     properties: {
                         type: 'object',
                         properties: {
                             name: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             properties: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             }
                         }
                     },

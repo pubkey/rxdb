@@ -184,7 +184,8 @@ config.parallel('encryption.test.ts', () => {
                 type: 'object',
                 properties: {
                     name: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     color: {
                         type: 'string'
