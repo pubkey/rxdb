@@ -174,7 +174,7 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
       case 'number':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
 
-        if (bound === null) {
+        if (bound === null || bound === MAX_CHAR) {
           str += '9'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);
