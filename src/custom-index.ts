@@ -187,7 +187,7 @@ export function getStartIndexStringFromUpperBound(
                 const parsedLengths = getStringLengthOfIndexNumber(
                     schemaPart
                 );
-                if (bound === null) {
+                if (bound === null || bound === MAX_CHAR) {
                     str += '9'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
                 } else {
                     str += getNumberIndexString(

@@ -222,7 +222,6 @@ config.parallel('custom-index.test.ts', () => {
             });
 
             matchingDocs.forEach(doc => {
-                console.dir(doc);
                 assert.strictEqual(doc.bool, false);
                 assert.ok(doc.num <= 30);
             });
