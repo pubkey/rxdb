@@ -87,10 +87,12 @@ function getTestDataSchema(): RxJsonSchema<RxDocumentData<TestDocType>> {
         primaryKey: 'key',
         properties: {
             key: {
-                type: 'string'
+                type: 'string',
+                maxLength: 100
             },
             value: {
-                type: 'string'
+                type: 'string',
+                maxLength: 100
             }
         },
         required: [
@@ -110,13 +112,15 @@ function getNestedDocSchema() {
         type: 'object',
         properties: {
             id: {
-                type: 'string'
+                type: 'string',
+                maxLength: 100
             },
             nes: {
                 type: 'object',
                 properties: {
                     ted: {
-                        type: 'String'
+                        type: 'string',
+                        maxLength: 100
                     }
                 },
                 required: [
