@@ -24,7 +24,8 @@ export function getPseudoSchemaForVersion<T = any>(
         primaryKey: primaryKey as any,
         properties: {
             [primaryKey]: {
-                type: 'string'
+                type: 'string',
+                maxLength: 100
             }
         } as any,
         required: [primaryKey]
