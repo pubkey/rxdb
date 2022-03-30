@@ -15,6 +15,7 @@ import type {
     RxPlugin,
     RxDocumentData
 } from '../types';
+import { fillObjectDataBeforeInsert } from '../rx-collection-helper';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -102,7 +103,7 @@ function importDumpRxCollection<RxDocType>(
 
     const docs: RxDocumentData<RxDocType>[] = exportedJSON.docs
         // validate schema
-        .map((doc: any) => this.schema.validate(doc));
+        .map((doc: any) => this.schema.validate(fillObjectDataBeforeInsert(this.schema, doc)));
 
     return this.storageInstance.bulkWrite(docs.map(document => ({ document })));
 }

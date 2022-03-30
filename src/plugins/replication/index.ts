@@ -44,6 +44,7 @@ import { setLastWritePullReplication, wasLastWriteFromPullReplication } from './
 import { newRxError } from '../../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import { RxReplicationError, RxReplicationPullError, RxReplicationPushError } from './rx-replication-error';
+import { fillObjectDataBeforeInsert } from '../../rx-collection-helper';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationStateBase<any>[]> = new WeakMap();
@@ -356,9 +357,12 @@ export class RxReplicationStateBase<RxDocType> {
         if (overwritable.isDevMode()) {
             try {
                 pulledDocuments.forEach((doc: any) => {
-                    const withoutDeleteFlag = flatClone(doc);
-                    delete withoutDeleteFlag._deleted;
-                    this.collection.schema.validate(withoutDeleteFlag);
+                    this.collection.schema.validate(
+                        fillObjectDataBeforeInsert(
+                            this.collection.schema,
+                            doc
+                        )
+                    );
                 });
             } catch (err: any) {
                 this.subjects.error.next(err);
