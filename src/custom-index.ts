@@ -7,6 +7,7 @@
 import { getSchemaByObjectPath } from './rx-schema-helper';
 import { JsonSchema, RxDocumentData, RxJsonSchema } from './types';
 import objectPath from 'object-path';
+import { ensureNotFalsy } from './util';
 
 
 /**
@@ -113,11 +114,11 @@ export function getStartIndexStringFromLowerBound(
 
         switch (type) {
             case 'string':
-                const maxLength = schemaPart.maxLength as number;
-                if (bound === null || typeof bound === 'undefined') {
-                    str += ''.padStart(maxLength, ' ');
-                } else {
+                const maxLength = ensureNotFalsy(schemaPart.maxLength);
+                if (typeof bound === 'string') {
                     str += (bound as string).padStart(maxLength, ' ');
+                } else {
+                    str += ''.padStart(maxLength, ' ');
                 }
                 break;
             case 'boolean':
@@ -167,11 +168,11 @@ export function getStartIndexStringFromUpperBound(
 
         switch (type) {
             case 'string':
-                const maxLength = schemaPart.maxLength as number;
-                if (bound === null || typeof bound === 'undefined') {
-                    str += ''.padStart(maxLength, MAX_CHAR);
-                } else {
+                const maxLength = ensureNotFalsy(schemaPart.maxLength);
+                if (typeof bound === 'string') {
                     str += (bound as string).padStart(maxLength, MAX_CHAR);
+                } else {
+                    str += ''.padStart(maxLength, MAX_CHAR);
                 }
                 break;
             case 'boolean':

@@ -16,6 +16,8 @@ var _rxSchemaHelper = require("./rx-schema-helper");
 
 var _objectPath = _interopRequireDefault(require("object-path"));
 
+var _util = require("./util");
+
 /**
  * For some RxStorage implementations,
  * we need to use our custom crafted indexes
@@ -99,12 +101,12 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
 
     switch (type) {
       case 'string':
-        var maxLength = schemaPart.maxLength;
+        var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
 
-        if (bound === null || typeof bound === 'undefined') {
-          str += ''.padStart(maxLength, ' ');
-        } else {
+        if (typeof bound === 'string') {
           str += bound.padStart(maxLength, ' ');
+        } else {
+          str += ''.padStart(maxLength, ' ');
         }
 
         break;
@@ -149,12 +151,12 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
 
     switch (type) {
       case 'string':
-        var maxLength = schemaPart.maxLength;
+        var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
 
-        if (bound === null || typeof bound === 'undefined') {
-          str += ''.padStart(maxLength, MAX_CHAR);
-        } else {
+        if (typeof bound === 'string') {
           str += bound.padStart(maxLength, MAX_CHAR);
+        } else {
+          str += ''.padStart(maxLength, MAX_CHAR);
         }
 
         break;

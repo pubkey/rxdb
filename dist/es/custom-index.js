@@ -5,6 +5,7 @@
  */
 import { getSchemaByObjectPath } from './rx-schema-helper';
 import objectPath from 'object-path';
+import { ensureNotFalsy } from './util';
 /**
  * Crafts an indexable string that can be used
  * to check if a document would be sorted below or above 
@@ -78,12 +79,12 @@ export function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
 
     switch (type) {
       case 'string':
-        var maxLength = schemaPart.maxLength;
+        var maxLength = ensureNotFalsy(schemaPart.maxLength);
 
-        if (bound === null || typeof bound === 'undefined') {
-          str += ''.padStart(maxLength, ' ');
-        } else {
+        if (typeof bound === 'string') {
           str += bound.padStart(maxLength, ' ');
+        } else {
+          str += ''.padStart(maxLength, ' ');
         }
 
         break;
@@ -125,12 +126,12 @@ export function getStartIndexStringFromUpperBound(schema, index, upperBound) {
 
     switch (type) {
       case 'string':
-        var maxLength = schemaPart.maxLength;
+        var maxLength = ensureNotFalsy(schemaPart.maxLength);
 
-        if (bound === null || typeof bound === 'undefined') {
-          str += ''.padStart(maxLength, MAX_CHAR);
-        } else {
+        if (typeof bound === 'string') {
           str += bound.padStart(maxLength, MAX_CHAR);
+        } else {
+          str += ''.padStart(maxLength, MAX_CHAR);
         }
 
         break;
