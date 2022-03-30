@@ -193,6 +193,11 @@ function getIndexableString(schema, index, docData) {
     switch (type) {
       case 'string':
         var maxLength = schemaPart.maxLength;
+
+        if (!fieldValue) {
+          fieldValue = '';
+        }
+
         str += fieldValue.padStart(maxLength, ' ');
         break;
 
@@ -204,6 +209,11 @@ function getIndexableString(schema, index, docData) {
       case 'number':
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
+
+        if (!fieldValue) {
+          fieldValue = 0;
+        }
+
         str += getNumberIndexString(parsedLengths, fieldValue);
         break;
 
