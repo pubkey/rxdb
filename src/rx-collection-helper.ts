@@ -1,32 +1,38 @@
 import type {
-    RxCollection,
     RxDatabase,
+    RxDocumentData,
     RxStorageInstance,
     RxStorageInstanceCreationParams
 } from './types';
-import { RxCollectionBase } from './rx-collection';
-import { getDefaultRxDocumentMeta } from './util';
+import { createRevision, getDefaultRxDocumentMeta } from './util';
 import {
     fillPrimaryKey
 } from './rx-schema-helper';
+import { RxSchema } from './rx-schema';
 
 /**
  * fills in the default data.
  * This also clones the data.
  */
-export function fillObjectDataBeforeInsert(
-    collection: RxCollection | RxCollectionBase<any>,
-    data: any
+export function fillObjectDataBeforeInsert<RxDocType>(
+    schema: RxSchema<RxDocType>,
+    data: Partial<RxDocumentData<RxDocType>> | any
 ): any {
-    let useJson = collection.schema.fillObjectWithDefaults(data);
+    let useJson = schema.fillObjectWithDefaults(data);
     useJson = fillPrimaryKey(
-        collection.schema.primaryPath,
-        collection.schema.jsonSchema,
+        schema.primaryPath,
+        schema.jsonSchema,
         useJson
     );
     useJson._meta = getDefaultRxDocumentMeta();
     if (!useJson.hasOwnProperty('_deleted')) {
         useJson._deleted = false;
+    }
+    if (!useJson.hasOwnProperty('_attachments')) {
+        useJson._attachments = {};
+    }
+    if (!useJson.hasOwnProperty('_rev')) {
+        useJson._rev = createRevision(useJson);
     }
     return useJson;
 }

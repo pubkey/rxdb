@@ -19,6 +19,8 @@ import {
     getFinalFields,
     getPreviousVersions,
     getSchemaByObjectPath,
+    fillWithDefaultSettings,
+    fillObjectDataBeforeInsert,
 } from '../../';
 
 config.parallel('rx-schema.test.js', () => {
@@ -416,7 +418,7 @@ config.parallel('rx-schema.test.js', () => {
                 });
             });
         });
-        describe('.normalizeRxJsonSchema()', () => {
+        describe('.fillWithDefaultSettings() / .normalizeRxJsonSchema()', () => {
             it('should sort array with objects and strings', () => {
                 const val = ['firstName', 'lastName', {
                     name: 2
@@ -438,7 +440,7 @@ config.parallel('rx-schema.test.js', () => {
                 assert.deepStrictEqual(schema.indexes, schemas.humanWithSimpleAndCompoundIndexes.indexes);
             });
             it('should have added the primaryKey to indexes that did not contain it', () => {
-                const schema: RxJsonSchema<any> = {
+                const schema: RxJsonSchema<any> = fillWithDefaultSettings({
                     primaryKey: 'id',
                     version: 0,
                     type: 'object',
@@ -453,8 +455,12 @@ config.parallel('rx-schema.test.js', () => {
                         ['foo', 'bar'],
                         ['bar', 'id', 'foo']
                     ]
-                }
+                });
                 const normalizedSchema = normalizeRxJsonSchema(schema);
+
+
+                console.dir(normalizedSchema);
+
                 assert.deepStrictEqual(
                     normalizedSchema.indexes,
                     [
@@ -538,13 +544,6 @@ config.parallel('rx-schema.test.js', () => {
         });
     });
     describe('instance', () => {
-        describe('.normalized', () => {
-            it('should normalize if schema has not been normalized yet', () => {
-                const schema = createRxSchema(schemas.humanNormalizeSchema1);
-                const normalized = schema.normalized;
-                assert.notStrictEqual(normalized, null);
-            });
-        });
         describe('.getPreviousVersions()', () => {
             it('get empty array when current==0', () => {
                 const schema = createRxSchema({
@@ -603,23 +602,23 @@ config.parallel('rx-schema.test.js', () => {
                 it('validate one human', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj: any = schemaObjects.human();
-                    schema.validate(obj);
+                    schema.validate(fillObjectDataBeforeInsert(schema, obj));
                 });
                 it('validate one point', () => {
                     const schema = createRxSchema(schemas.point);
                     const obj: any = schemaObjects.point();
-                    schema.validate(obj);
+                    schema.validate(fillObjectDataBeforeInsert(schema, obj));
                 });
                 it('validate without non-required', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj: any = schemaObjects.human();
                     delete obj.age;
-                    schema.validate(obj);
+                    schema.validate(fillObjectDataBeforeInsert(schema, obj));
                 });
                 it('validate nested', () => {
                     const schema = createRxSchema(schemas.nestedHuman);
                     const obj: any = schemaObjects.nestedHuman();
-                    schema.validate(obj);
+                    schema.validate(fillObjectDataBeforeInsert(schema, obj));
                 });
             });
             describe('negative', () => {
@@ -647,7 +646,7 @@ config.parallel('rx-schema.test.js', () => {
                 it('::after', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj: any = schemaObjects.human();
-                    schema.validate(obj);
+                    schema.validate(fillObjectDataBeforeInsert(schema, obj));
                 });
                 it('accessible error-parameters', () => {
                     const schema = createRxSchema(schemas.human);
@@ -655,7 +654,7 @@ config.parallel('rx-schema.test.js', () => {
                     (obj as any)['foobar'] = 'barfoo';
                     let hasThrown = false;
                     try {
-                        schema.validate(obj);
+                        schema.validate(fillObjectDataBeforeInsert(schema, obj));
                     } catch (err) {
                         const message = (err as any).parameters.errors[0].message;
                         assert.ok(message.includes('additional'));
@@ -680,7 +679,7 @@ config.parallel('rx-schema.test.js', () => {
 
                     let hasThrown = false;
                     try {
-                        schema.validate(obj);
+                        schema.validate(fillObjectDataBeforeInsert(schema, obj));
                     } catch (err) {
                         const message = (err as any).parameters.errors[0].message;
                         assert.strictEqual(message, 'has additional properties');
@@ -697,7 +696,7 @@ config.parallel('rx-schema.test.js', () => {
                         lastName: 'bar'
                     };
                     try {
-                        schema.validate(obj);
+                        schema.validate(fillObjectDataBeforeInsert(schema, obj));
                     } catch (err) {
                         const deepParam = (err as any).parameters.errors[0].field;
                         assert.strictEqual(deepParam, 'data.age');
@@ -709,11 +708,11 @@ config.parallel('rx-schema.test.js', () => {
                     const schema = createRxSchema(schemas.humanFinal);
                     let error = null;
                     try {
-                        schema.validate({
+                        schema.validate(fillObjectDataBeforeInsert(schema, {
                             foo: 'bar',
                             noval: undefined,
                             nr: 7
-                        });
+                        }));
                     } catch (err) {
                         error = err;
                     }
@@ -1015,8 +1014,8 @@ config.parallel('rx-schema.test.js', () => {
 
             assert.deepStrictEqual(
                 [
-                    ['properties.name'],
-                    ['properties.properties']
+                    ['properties.name', 'id'],
+                    ['properties.properties', 'id']
                 ],
                 collections.test.schema.indexes
             );

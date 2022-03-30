@@ -348,7 +348,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
      * The original RxJsonSchema
      * before it was mutated by hooks.
      */
-    rxJsonSchema: RxJsonSchema<RxDocType>
+    rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>
 ): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
     overwritable.deepFreezeWhenDevMode(rxJsonSchema);
     const primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);

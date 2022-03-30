@@ -276,7 +276,7 @@ export class RxCollectionBase<
             json = tempDoc.toJSON() as any;
         }
 
-        const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this as any, json);
+        const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this.schema, json);
         const writeResult = await this.bulkInsert([useJson]);
 
         const isError = writeResult.error[0];
@@ -309,10 +309,9 @@ export class RxCollectionBase<
         }
 
         const useDocs: RxDocumentType[] = docsData.map(docData => {
-            const useDocData = fillObjectDataBeforeInsert(this as any, docData);
+            const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
             return useDocData;
         });
-
         const docs = await Promise.all(
             useDocs.map(doc => {
                 return this._runHooks('pre', 'insert', doc).then(() => {
@@ -441,7 +440,7 @@ export class RxCollectionBase<
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
         docsData.forEach(docData => {
-            const useJson = fillObjectDataBeforeInsert(this.asRxCollection, docData);
+            const useJson = fillObjectDataBeforeInsert(this.schema, docData);
             const primary = useJson[this.schema.primaryPath];
             if (!primary) {
                 throw newRxError('COL3', {
@@ -480,7 +479,7 @@ export class RxCollectionBase<
      * upserts to a RxDocument, uses atomicUpdate if document already exists
      */
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        const useJson = fillObjectDataBeforeInsert(this as any, json);
+        const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary = useJson[this.schema.primaryPath];
         if (!primary) {
             throw newRxError('COL4', {
@@ -994,7 +993,7 @@ export function createRxCollection(
     const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
         databaseName: database.name,
         collectionName: name,
-        schema: schema.normalized,
+        schema: schema.jsonSchema,
         options: instanceCreationOptions,
         multiInstance: database.multiInstance
     };

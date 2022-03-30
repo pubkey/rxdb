@@ -1,9 +1,9 @@
 import { getGraphqlSchemaFromJsonSchema } from 'get-graphql-from-jsonschema';
 
 import { scalarTypes } from 'get-graphql-from-jsonschema/build/lib/scalarTypes';
+import { fillWithDefaultSettings } from '../../rx-schema-helper';
 
 import { RxJsonSchema } from '../../types';
-import { fillWithDefaultSettings } from '../../rx-schema';
 import { clone, ucfirst } from '../../util';
 
 export type Prefixes = {

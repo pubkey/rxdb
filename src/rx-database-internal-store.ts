@@ -1,4 +1,4 @@
-import { getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
+import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
 import { writeSingle } from './rx-storage-helper';
 import type {
     RxDatabase,
@@ -15,7 +15,7 @@ export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 export const INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
 export const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 
-export const INTERNAL_STORE_SCHEMA: RxJsonSchema<InternalStoreDocType<any>> = {
+export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDocType<any>>> = fillWithDefaultSettings({
     version: 0,
     primaryKey: {
         key: 'id',
@@ -55,7 +55,7 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<InternalStoreDocType<any>> = {
         'data'
     ],
     additionalProperties: false
-};
+});
 
 export type InternalStoreDocType<Data = any> = {
     id: string;

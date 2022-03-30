@@ -61,20 +61,20 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
      * that can contain the internal database
      * For example the PouchDB instance
      */
-    createStorageInstance<DocumentData>(
-        params: RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions>
-    ): Promise<RxStorageInstance<DocumentData, Internals, InstanceCreationOptions>>;
+    createStorageInstance<RxDocType>(
+        params: RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions>
+    ): Promise<RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>>;
 }
 
 
-export type FilledMangoQuery<DocumentData> = MangoQuery<DocumentData> & {
+export type FilledMangoQuery<RxDocType> = MangoQuery<RxDocType> & {
     /**
      * In contrast to the user-provided MangoQuery,
      * the sorting is required here because
      * RxDB has to ensure that the primary key is always
      * part of the sort params.
      */
-    sort: MangoQuerySortPart<DocumentData>[];
+    sort: MangoQuerySortPart<RxDocType>[];
 }
 
 /**
@@ -127,23 +127,23 @@ export type RxStorageStatics = Readonly<{
      *
      * @returns a format of the query that can be used with the storage
      */
-    prepareQuery<DocumentData>(
-        schema: RxJsonSchema<DocumentData>,
+    prepareQuery<RxDocType>(
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         /**
          * a query that can be mutated by the function without side effects.
          */
-        mutateableQuery: FilledMangoQuery<DocumentData>
-    ): PreparedQuery<DocumentData>;
+        mutateableQuery: FilledMangoQuery<RxDocType>
+    ): PreparedQuery<RxDocType>;
 
     /**
      * Returns the sort-comparator,
      * which is able to sort documents in the same way
      * a query over the db would do.
      */
-    getSortComparator<DocumentData>(
-        schema: RxJsonSchema<DocumentData>,
-        preparedQuery: PreparedQuery<DocumentData>
-    ): DeterministicSortComparator<DocumentData>;
+    getSortComparator<RxDocType>(
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+        preparedQuery: PreparedQuery<RxDocType>
+    ): DeterministicSortComparator<RxDocType>;
 
     /**
      * Returns a function
@@ -151,10 +151,10 @@ export type RxStorageStatics = Readonly<{
      * matches the query.
      *  
      */
-    getQueryMatcher<DocumentData>(
-        schema: RxJsonSchema<DocumentData>,
-        preparedQuery: PreparedQuery<DocumentData>
-    ): QueryMatcher<RxDocumentData<DocumentData>>;
+    getQueryMatcher<RxDocType>(
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+        preparedQuery: PreparedQuery<RxDocType>
+    ): QueryMatcher<RxDocumentData<RxDocType>>;
 }>;
 
 
@@ -163,8 +163,10 @@ export interface RxStorageInstance<
     /**
      * The type of the documents that can be stored in this instance.
      * All documents in an instance must comply to the same schema.
+     * Also all documents are RxDocumentData with the meta properties like
+     * _deleted or _rev etc.
      */
-    DocumentData,
+    RxDocType,
     Internals,
     InstanceCreationOptions
     > {
@@ -175,7 +177,12 @@ export interface RxStorageInstance<
      */
     readonly internals: Readonly<Internals>;
     readonly options: Readonly<InstanceCreationOptions>;
-    readonly schema: Readonly<RxJsonSchema<DocumentData>>;
+    /**
+     * The schema that defines the documents that are stored in this instance.
+     * Notice that the schema must be enhanced with the meta properties like
+     * _meta, _rev and _deleted etc. which are added by fillWithDefaultSettings()
+     */
+    readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>;
     readonly collectionName: string;
 
     /**
@@ -189,12 +196,12 @@ export interface RxStorageInstance<
      * and others error. We need this to have a similar behavior as most NoSQL databases.
      */
     bulkWrite(
-        documentWrites: BulkWriteRow<DocumentData>[]
+        documentWrites: BulkWriteRow<RxDocType>[]
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.
          */
-        RxStorageBulkWriteResponse<DocumentData>
+        RxStorageBulkWriteResponse<RxDocType>
     >;
 
     /**
@@ -212,7 +219,7 @@ export interface RxStorageInstance<
          */
         withDeleted: boolean
     ): Promise<{
-        [documentId: string]: RxDocumentData<DocumentData>
+        [documentId: string]: RxDocumentData<RxDocType>
     }>;
 
     /**
@@ -232,8 +239,8 @@ export interface RxStorageInstance<
          * This makes it easier to have good performance
          * when transformations of the query must be done.
          */
-        preparedQuery: PreparedQuery<DocumentData>
-    ): Promise<RxStorageQueryResult<DocumentData>>;
+        preparedQuery: PreparedQuery<RxDocType>
+    ): Promise<RxStorageQueryResult<RxDocType>>;
 
 
     /**
@@ -267,7 +274,7 @@ export interface RxStorageInstance<
      * storage instance.
      * Do not forget to unsubscribe.
      */
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
 
     /**
      * Runs a cleanup that removes all tompstones

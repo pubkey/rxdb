@@ -308,7 +308,7 @@ config.parallel('rx-database.test.js', () => {
                 });
                 const colDoc = await (db.internalStore.internals.pouch as any).get('collection|human0-' + schemas.human.version);
                 const compareSchema = createRxSchema(schemas.human);
-                assert.deepStrictEqual(compareSchema.normalized, colDoc.data.schema);
+                assert.deepStrictEqual(compareSchema.jsonSchema, colDoc.data.schema);
                 db.destroy();
             });
             it('use encrypted db', async () => {

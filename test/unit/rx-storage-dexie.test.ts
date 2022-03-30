@@ -5,6 +5,7 @@ import {
     addRxPlugin,
     clone,
     ensureNotFalsy,
+    fillWithDefaultSettings,
     MangoQuery,
     normalizeMangoQuery,
     normalizeRxJsonSchema,
@@ -80,7 +81,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     }
                 };
                 const matcher = RxStorageDexieStatics.getQueryMatcher(
-                    humanMinimal,
+                    fillWithDefaultSettings(humanMinimal),
                     query
                 );
                 const matching = matcher(docMatching as any);

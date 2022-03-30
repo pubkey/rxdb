@@ -269,7 +269,7 @@ export class RxDatabaseBase<
                 data: {
                     name: collectionName as any,
                     schemaHash: schema.hash,
-                    schema: schema.normalized,
+                    schema: schema.jsonSchema,
                     version: schema.version,
                 },
                 _deleted: false,

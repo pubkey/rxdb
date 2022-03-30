@@ -40,7 +40,7 @@ export const RxStorageDexieStatics: RxStorageStatics = {
         return false;
     },
     prepareQuery<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: MangoQuery<RxDocType>
     ) {
 
@@ -63,7 +63,7 @@ export const RxStorageDexieStatics: RxStorageStatics = {
     },
 
     getSortComparator<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         query: MangoQuery<RxDocType>
     ): DeterministicSortComparator<RxDocType> {
         return getDexieSortComparator(schema, query);

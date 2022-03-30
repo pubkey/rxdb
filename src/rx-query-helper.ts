@@ -1,5 +1,5 @@
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import type { FilledMangoQuery, MangoQuery, RxJsonSchema } from './types';
+import type { FilledMangoQuery, MangoQuery, RxDocumentData, RxJsonSchema } from './types';
 import { firstPropertyNameOfObject, flatClone } from './util';
 
 /**
@@ -7,7 +7,7 @@ import { firstPropertyNameOfObject, flatClone } from './util';
  * and queries that represent the same query logic are detected as equal by the caching.
  */
 export function normalizeMangoQuery<RxDocType>(
-    schema: RxJsonSchema<RxDocType>,
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     mangoQuery: MangoQuery<RxDocType>
 ): FilledMangoQuery<RxDocType> {
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as string;

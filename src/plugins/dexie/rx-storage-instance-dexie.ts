@@ -54,12 +54,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         public readonly storage: RxStorageDexie,
         public readonly databaseName: string,
         public readonly collectionName: string,
-        public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
+        public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
         public readonly internals: DexieStorageInternals,
         public readonly options: Readonly<DexieSettings>,
         public readonly settings: DexieSettings
     ) {
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
     }
 
     /**

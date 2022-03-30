@@ -71,19 +71,19 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
 }
 
 
-export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<DocumentData, WorkerStorageInternals, any> {
+export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxDocType, WorkerStorageInternals, any> {
 
     /**
      * threads.js uses observable-fns instead of rxjs
      * so we have to transform it.
      */
-    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     private subs: Subscription[] = [];
 
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
-        public readonly schema: Readonly<RxJsonSchema<DocumentData>>,
+        public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
         public readonly internals: WorkerStorageInternals,
         public readonly options: Readonly<any>
     ) {
@@ -95,20 +95,20 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
 
     }
 
-    bulkWrite(documentWrites: BulkWriteRow<DocumentData>[]): Promise<RxStorageBulkWriteResponse<DocumentData>> {
+    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         return this.internals.worker.bulkWrite(
             this.internals.instanceId,
             documentWrites
         );
     }
-    findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<DocumentData> }> {
+    findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
         return this.internals.worker.findDocumentsById(
             this.internals.instanceId,
             ids,
             deleted
         );
     }
-    query(preparedQuery: any): Promise<RxStorageQueryResult<DocumentData>> {
+    query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {
         return this.internals.worker.query(
             this.internals.instanceId,
             preparedQuery
@@ -127,7 +127,7 @@ export class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<
             options
         );
     }
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
         return this.changes$.asObservable();
     }
     cleanup(minDeletedTime: number) {

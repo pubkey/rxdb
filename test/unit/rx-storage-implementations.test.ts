@@ -19,7 +19,8 @@ import {
     getSingleDocument,
     hashAttachmentData,
     parseRevision,
-    getAttachmentSize
+    getAttachmentSize,
+    fillWithDefaultSettings
 } from '../../';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -79,8 +80,8 @@ function getWriteData(
     );
 }
 
-function getTestDataSchema(): RxJsonSchema<TestDocType> {
-    return {
+function getTestDataSchema(): RxJsonSchema<RxDocumentData<TestDocType>> {
+    return fillWithDefaultSettings({
         version: 0,
         type: 'object',
         primaryKey: 'key',
@@ -99,11 +100,11 @@ function getTestDataSchema(): RxJsonSchema<TestDocType> {
         indexes: [
             'value'
         ]
-    };
+    });
 }
 
 function getNestedDocSchema() {
-    const schema: RxJsonSchema<NestedDoc> = {
+    const schema: RxJsonSchema<RxDocumentData<NestedDoc>> = fillWithDefaultSettings({
         version: 0,
         primaryKey: 'id',
         type: 'object',
@@ -130,7 +131,7 @@ function getNestedDocSchema() {
             'id',
             'nes'
         ]
-    };
+    });
     return schema;
 }
 
@@ -644,7 +645,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 }>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: {
+                    schema: fillWithDefaultSettings({
                         version: 0,
                         type: 'object',
                         primaryKey: '_id',
@@ -660,7 +661,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             '_id',
                             'age'
                         ]
-                    },
+                    }),
                     options: {},
                     multiInstance: false
                 });
@@ -1028,7 +1029,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
              * we must ensure we there is always a deterministic sort order.
              */
             it('should have the same deterministic order of .query() and .getSortComparator()', async () => {
-                const schema: RxJsonSchema<RandomDoc> = {
+                const schema: RxJsonSchema<RxDocumentData<RandomDoc>> = fillWithDefaultSettings({
                     version: 0,
                     primaryKey: 'id',
                     type: 'object',
@@ -1069,7 +1070,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         'increment',
                         'random'
                     ]
-                }
+                });
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<RandomDoc>({

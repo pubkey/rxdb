@@ -94,7 +94,7 @@ function sortDirectionToMingo(direction: 'asc' | 'desc'): 1 | -1 {
  * because we need it in multiple places.
  */
 export function getDexieSortComparator<RxDocType>(
-    _schema: RxJsonSchema<RxDocType>,
+    _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: MangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
     const mingoSortObject: {

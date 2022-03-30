@@ -8,6 +8,7 @@ import type {
     LokiSettings,
     LokiStorageInternals,
     MangoQuery,
+    RxDocumentData,
     RxDocumentWriteData,
     RxJsonSchema,
     RxStorage,
@@ -41,7 +42,7 @@ export const RxStorageLokiStatics: RxStorageStatics = {
         return false;
     },
     prepareQuery<RxDocType>(
-        _schema: RxJsonSchema<RxDocType>,
+        _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: MangoQuery<RxDocType>
     ) {
         if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
@@ -64,7 +65,7 @@ export const RxStorageLokiStatics: RxStorageStatics = {
 
 
     getSortComparator<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         query: MangoQuery<RxDocType>
     ): DeterministicSortComparator<RxDocType> {
         return getLokiSortComparator(schema, query);

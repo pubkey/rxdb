@@ -196,7 +196,7 @@ export async function closeLokiCollections(
  * because we need it in multiple places.
  */
 export function getLokiSortComparator<RxDocType>(
-    _schema: RxJsonSchema<RxDocType>,
+    _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: MangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
     if (!query.sort) {

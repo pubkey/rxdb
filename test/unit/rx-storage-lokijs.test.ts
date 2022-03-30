@@ -4,6 +4,7 @@ import config from './config';
 import {
     addRxPlugin,
     ensureNotFalsy,
+    fillWithDefaultSettings,
     getPseudoSchemaForVersion,
     now,
     randomCouchString
@@ -347,7 +348,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     collectionName: randomCouchString(12),
                     multiInstance: false,
                     options: {},
-                    schema: schemas.human
+                    schema: fillWithDefaultSettings(schemas.human)
                 });
 
                 const firstDocData = Object.assign(schemaObjects.human(), {
@@ -377,7 +378,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     }
                 ]);
                 const preparedQuery = storage.statics.prepareQuery(
-                    schemas.human,
+                    fillWithDefaultSettings(schemas.human),
                     {
                         selector: {},
                         sort: [{

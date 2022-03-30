@@ -69,12 +69,12 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         public readonly storage: RxStorageLoki,
         public readonly databaseName: string,
         public readonly collectionName: string,
-        public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
+        public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
         public readonly internals: LokiStorageInternals,
         public readonly options: Readonly<LokiSettings>,
         public readonly databaseSettings: LokiDatabaseSettings
     ) {
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
         if (this.internals.leaderElector) {
             this.internals.leaderElector.awaitLeadership().then(() => {

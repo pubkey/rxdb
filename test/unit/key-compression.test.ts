@@ -87,7 +87,7 @@ config.parallel('key-compression.test.js', () => {
     describe('query', () => {
         it('should properly run the compressed query', async () => {
             const col = await humansCollection.create(0);
-            assert.ok(col.schema.normalized.keyCompression);
+            assert.ok(col.schema.jsonSchema.keyCompression);
 
             // add one matching and one non-matching doc
             await col.bulkInsert([

@@ -48,7 +48,7 @@ export function checkQuery(args: RxPluginPreCreateRxQueryArgs) {
 
 
 export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
-    const schema = args.rxQuery.collection.schema.normalized;
+    const schema = args.rxQuery.collection.schema.jsonSchema;
 
     /**
      * Ensure that all top level fields are included in the schema.

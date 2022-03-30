@@ -291,7 +291,7 @@ export class RxQueryBase<
      * @overwrites itself with the actual value
      */
     get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocumentType>> {
-        const schema = this.collection.schema.normalized;
+        const schema = this.collection.schema.jsonSchema;
 
 
         /**
@@ -303,7 +303,7 @@ export class RxQueryBase<
         const usePreparedQuery = this.collection.database.storage.statics.prepareQuery(
             schema,
             normalizeMangoQuery(
-                this.collection.schema.normalized,
+                this.collection.schema.jsonSchema,
                 clone(this.mangoQuery)
             )
         );
@@ -343,7 +343,7 @@ export class RxQueryBase<
             rxQuery: this,
             // can be mutated by the hooks so we have to deep clone first.
             mangoQuery: normalizeMangoQuery<RxDocumentType>(
-                this.collection.schema.normalized,
+                this.collection.schema.jsonSchema,
                 clone(this.mangoQuery)
             )
         };

@@ -59,12 +59,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     constructor(
         public readonly databaseName: string,
         public readonly collectionName: string,
-        public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
+        public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
         public readonly internals: Readonly<PouchStorageInternals>,
         public readonly options: Readonly<PouchSettings>
     ) {
         OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
 
         /**
          * Instead of listening to pouch.changes,

@@ -285,7 +285,10 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
  * into '_id'
  * @recursive
  */
-export function primarySwapPouchDbQuerySelector<RxDocType>(selector: any, primaryKey: keyof RxDocType): any {
+export function primarySwapPouchDbQuerySelector<RxDocType>(
+    selector: any, 
+    primaryKey: keyof RxDocumentData<RxDocType>
+    ): any {
     if (primaryKey === '_id') {
         return selector;
     }

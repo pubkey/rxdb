@@ -1,6 +1,7 @@
 import { filter } from 'rxjs/operators';
 import { DocCache } from '../../doc-cache';
 import { newRxError } from '../../rx-error';
+import { fillWithDefaultSettings } from '../../rx-schema-helper';
 import {
     getWrappedStorageInstance,
     storageChangeEventToRxChangeEvent
@@ -11,6 +12,7 @@ import type {
     RxChangeEvent,
     RxChangeEventBulk,
     RxDatabase,
+    RxDocumentData,
     RxJsonSchema,
     RxLocalDocument,
     RxLocalDocumentData,
@@ -147,7 +149,7 @@ export function getCollectionLocalInstanceName(collectionName: string): string {
     return 'plugin-local-documents-' + collectionName;
 }
 
-export const RX_LOCAL_DOCUMENT_SCHEMA: RxJsonSchema<RxLocalDocumentData> = {
+export const RX_LOCAL_DOCUMENT_SCHEMA: RxJsonSchema<RxDocumentData<RxLocalDocumentData>> = fillWithDefaultSettings({
     version: 0,
     primaryKey: 'id',
     type: 'object',
@@ -164,4 +166,4 @@ export const RX_LOCAL_DOCUMENT_SCHEMA: RxJsonSchema<RxLocalDocumentData> = {
         'id',
         'data'
     ]
-};
+});
