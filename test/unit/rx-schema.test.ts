@@ -457,10 +457,6 @@ config.parallel('rx-schema.test.js', () => {
                     ]
                 });
                 const normalizedSchema = normalizeRxJsonSchema(schema);
-
-
-                console.dir(normalizedSchema);
-
                 assert.deepStrictEqual(
                     normalizedSchema.indexes,
                     [

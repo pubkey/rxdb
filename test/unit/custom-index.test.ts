@@ -169,6 +169,42 @@ config.parallel('custom-index.test.ts', () => {
                 assert.strictEqual(sorted[0].num, 10.02);
             });
         });
+        describe('special cases', () => {
+            it('indexing a optional field must work', () => {
+                const schema: RxJsonSchema<{ id: string; optional?: string; }> = {
+                    primaryKey: 'id',
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        optional: {
+                            type: 'string',
+                            maxLength: 100
+                        }
+                    },
+                    required: [
+                        'id'
+                    ],
+                    indexes: [
+                        ['id'],
+                        ['optional']
+                    ]
+                };
+                const doc = {
+                    id: 'foo'
+                };
+                const strA = getIndexableString<{ id: string; optional?: string; }>(
+                    schema,
+                    ['optional'],
+                    doc as any
+                );
+                assert.ok(strA);
+                strA.split('').forEach(char => assert.strictEqual(char, ' '));
+            });
+        });
     });
     describe('.getStartIndexStringFromLowerBound()', () => {
         it('should find the correct docs when comparing with the index', () => {

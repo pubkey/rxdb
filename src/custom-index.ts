@@ -26,12 +26,15 @@ export function getIndexableString<RxDocType>(
             schema,
             fieldName
         );
-        const fieldValue = objectPath.get(docData, fieldName);
+        let fieldValue = objectPath.get(docData, fieldName);
         const type = schemaPart.type;
 
         switch (type) {
             case 'string':
                 const maxLength = schemaPart.maxLength as number;
+                if (!fieldValue) {
+                    fieldValue = '';
+                }
                 str += fieldValue.padStart(maxLength, ' ');
                 break;
             case 'boolean':
@@ -43,6 +46,9 @@ export function getIndexableString<RxDocType>(
                 const parsedLengths = getStringLengthOfIndexNumber(
                     schemaPart
                 );
+                if (!fieldValue) {
+                    fieldValue = 0;
+                }
                 str += getNumberIndexString(
                     parsedLengths,
                     fieldValue
