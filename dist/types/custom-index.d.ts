@@ -19,5 +19,5 @@ export declare function getStringLengthOfIndexNumber(schemaPart: JsonSchema): Pa
 export declare function getNumberIndexString(parsedLengths: ParsedLengths, fieldValue: number): string;
 export declare function getStartIndexStringFromLowerBound(schema: RxJsonSchema<any>, index: string[], lowerBound: (string | boolean | number | null)[]): string;
 export declare const MAX_CHAR: string;
-export declare function getStartIndexStringFromUpperBound(schema: RxJsonSchema<any>, index: string[], upperBound: (string | boolean | number | null)[]): string;
+export declare function getStartIndexStringFromUpperBound(schema: RxJsonSchema<any>, index: string[], upperBound: (string | boolean | number | null | undefined)[]): string;
 export {};

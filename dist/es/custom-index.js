@@ -80,7 +80,7 @@ export function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
       case 'string':
         var maxLength = schemaPart.maxLength;
 
-        if (bound === null) {
+        if (bound === null || typeof bound === 'undefined') {
           str += ''.padStart(maxLength, ' ');
         } else {
           str += bound.padStart(maxLength, ' ');
@@ -127,10 +127,10 @@ export function getStartIndexStringFromUpperBound(schema, index, upperBound) {
       case 'string':
         var maxLength = schemaPart.maxLength;
 
-        if (bound === null) {
-          str += MAX_CHAR.padStart(maxLength, ' ');
+        if (bound === null || typeof bound === 'undefined') {
+          str += ''.padStart(maxLength, MAX_CHAR);
         } else {
-          str += bound.padStart(maxLength, ' ');
+          str += bound.padStart(maxLength, MAX_CHAR);
         }
 
         break;
