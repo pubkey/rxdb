@@ -656,7 +656,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         properties: {
                             _id: {
                                 type: 'string',
-                                minLength: 100
+                                maxLength: 100
                             },
                             age: {
                                 type: 'number'
@@ -1041,11 +1041,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     properties: {
                         id: {
                             type: 'string',
-                            minLength: 100
+                            maxLength: 100
                         },
                         equal: {
                             type: 'string',
-                            minLength: 20,
+                            maxLength: 20,
                             enum: ['foobar']
                         },
                         increment: {
@@ -1056,7 +1056,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         },
                         random: {
                             type: 'string',
-                            minLength: 100
+                            maxLength: 100
                         }
                     },
                     indexes: [
