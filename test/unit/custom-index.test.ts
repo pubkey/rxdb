@@ -9,7 +9,8 @@ import {
     RxDocumentData,
     RxJsonSchema,
     getStringLengthOfIndexNumber,
-    getStartIndexStringFromLowerBound
+    getStartIndexStringFromLowerBound,
+    getStartIndexStringFromUpperBound
 } from '../../';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import config from './config';
@@ -203,7 +204,7 @@ config.parallel('custom-index.test.ts', () => {
             const docs = new Array(100).fill(0).map(() => getIndexTestDoc());
             const index = ['bool', 'num'];
 
-            const upperBoundString = getStartIndexStringFromLowerBound(
+            const upperBoundString = getStartIndexStringFromUpperBound(
                 schema,
                 index,
                 [
@@ -225,6 +226,36 @@ config.parallel('custom-index.test.ts', () => {
                 assert.strictEqual(doc.bool, false);
                 assert.ok(doc.num <= 30);
             });
+        });
+        it('should match the correct docs if bound is undefined', () => {
+            const docs = new Array(100).fill(0).map(() => getIndexTestDoc());
+            const index = ['id'];
+
+            const upperBoundString = getStartIndexStringFromUpperBound(
+                schema,
+                index,
+                [
+                    undefined
+                ]
+            );
+
+            const matchingDocs = docs.filter(doc => {
+                const isIndexStr = getIndexableString(
+                    schema,
+                    index,
+                    doc
+                );
+                return isIndexStr <= upperBoundString;
+            });
+
+            /**
+             * Because the bound was 'undefined',
+             * all docs must match.
+             */
+            assert.strictEqual(
+                docs.length,
+                matchingDocs.length
+            );
         });
     });
 });

@@ -114,7 +114,7 @@ export function getStartIndexStringFromLowerBound(
         switch (type) {
             case 'string':
                 const maxLength = schemaPart.maxLength as number;
-                if (bound === null) {
+                if (bound === null || typeof bound === 'undefined') {
                     str += ''.padStart(maxLength, ' ');
                 } else {
                     str += (bound as string).padStart(maxLength, ' ');
@@ -153,9 +153,10 @@ export const MAX_CHAR = String.fromCharCode(65535);
 export function getStartIndexStringFromUpperBound(
     schema: RxJsonSchema<any>,
     index: string[],
-    upperBound: (string | boolean | number | null)[]
+    upperBound: (string | boolean | number | null | undefined)[]
 ): string {
     let str = '';
+
     index.forEach((fieldName, idx) => {
         const schemaPart = getSchemaByObjectPath(
             schema,
@@ -167,10 +168,10 @@ export function getStartIndexStringFromUpperBound(
         switch (type) {
             case 'string':
                 const maxLength = schemaPart.maxLength as number;
-                if (bound === null) {
-                    str += MAX_CHAR.padStart(maxLength, ' ');
+                if (bound === null || typeof bound === 'undefined') {
+                    str += ''.padStart(maxLength, MAX_CHAR);
                 } else {
-                    str += (bound as string).padStart(maxLength, ' ');
+                    str += (bound as string).padStart(maxLength, MAX_CHAR);
                 }
                 break;
             case 'boolean':
