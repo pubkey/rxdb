@@ -1,4 +1,4 @@
-import { getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
+import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
 import { writeSingle } from './rx-storage-helper';
 import { createRevision, getDefaultRevision, now, randomCouchString } from './util';
 
@@ -97,7 +97,7 @@ export var INTERNAL_CONTEXT_COLLECTION = 'collection';
 export var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 export var INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
 export var INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
-export var INTERNAL_STORE_SCHEMA = {
+export var INTERNAL_STORE_SCHEMA = fillWithDefaultSettings({
   version: 0,
   primaryKey: {
     key: 'id',
@@ -124,7 +124,7 @@ export var INTERNAL_STORE_SCHEMA = {
   indexes: [],
   required: ['key', 'context', 'data'],
   additionalProperties: false
-};
+});
 export function getPrimaryKeyOfInternalDocument(key, context) {
   return getComposedPrimaryKeyOfDocumentData(INTERNAL_STORE_SCHEMA, {
     key: key,

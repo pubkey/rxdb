@@ -223,7 +223,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     var hookInput = {
       rxQuery: this,
       // can be mutated by the hooks so we have to deep clone first.
-      mangoQuery: normalizeMangoQuery(this.collection.schema.normalized, clone(this.mangoQuery))
+      mangoQuery: normalizeMangoQuery(this.collection.schema.jsonSchema, clone(this.mangoQuery))
     };
     runPluginHooks('prePrepareQuery', hookInput);
     var value = this.collection.database.storage.statics.prepareQuery(this.collection.storageInstance.schema, hookInput.mangoQuery);
@@ -366,7 +366,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
   }, {
     key: "queryMatcher",
     get: function get() {
-      var schema = this.collection.schema.normalized;
+      var schema = this.collection.schema.jsonSchema;
       /**
        * Instead of calling this.getPreparedQuery(),
        * we have to prepare the query for the query matcher
@@ -374,7 +374,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
        * like the key compression.
        */
 
-      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, normalizeMangoQuery(this.collection.schema.normalized, clone(this.mangoQuery)));
+      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, normalizeMangoQuery(this.collection.schema.jsonSchema, clone(this.mangoQuery)));
       return overwriteGetterForCaching(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(schema, usePreparedQuery));
     }
   }, {

@@ -4,14 +4,14 @@ import { PouchStorageInternals } from './pouchdb-helper';
 export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<RxDocType, PouchStorageInternals, PouchSettings> {
     readonly databaseName: string;
     readonly collectionName: string;
-    readonly schema: Readonly<RxJsonSchema<RxDocType>>;
+    readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>;
     readonly internals: Readonly<PouchStorageInternals>;
     readonly options: Readonly<PouchSettings>;
     readonly id: number;
     private changes$;
     private subs;
     private primaryPath;
-    constructor(databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocType>>, internals: Readonly<PouchStorageInternals>, options: Readonly<PouchSettings>);
+    constructor(databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: Readonly<PouchStorageInternals>, options: Readonly<PouchSettings>);
     close(): Promise<void>;
     remove(): Promise<void>;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;

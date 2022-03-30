@@ -291,7 +291,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
           data: {
             name: collectionName,
             schemaHash: schema.hash,
-            schema: schema.normalized,
+            schema: schema.jsonSchema,
             version: schema.version
           },
           _deleted: false,

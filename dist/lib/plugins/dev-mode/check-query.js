@@ -47,7 +47,7 @@ function checkQuery(args) {
 }
 
 function checkMangoQuery(args) {
-  var schema = args.rxQuery.collection.schema.normalized;
+  var schema = args.rxQuery.collection.schema.jsonSchema;
   /**
    * Ensure that all top level fields are included in the schema.
    * TODO this check can be augmented to also check sub-fields.

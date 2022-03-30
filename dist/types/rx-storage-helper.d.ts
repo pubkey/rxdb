@@ -66,4 +66,4 @@ export declare function getWrappedStorageInstance<RxDocType, Internals, Instance
  * The original RxJsonSchema
  * before it was mutated by hooks.
  */
-rxJsonSchema: RxJsonSchema<RxDocType>): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>;
+rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>;

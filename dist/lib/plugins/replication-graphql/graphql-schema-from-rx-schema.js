@@ -11,7 +11,7 @@ var _getGraphqlFromJsonschema = require("get-graphql-from-jsonschema");
 
 var _scalarTypes = require("get-graphql-from-jsonschema/build/lib/scalarTypes");
 
-var _rxSchema = require("../../rx-schema");
+var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var _util = require("../../util");
 
@@ -102,7 +102,7 @@ function graphQLSchemaFromRxSchema(input) {
 }
 
 function fillUpOptionals(input) {
-  var schema = (0, _rxSchema.fillWithDefaultSettings)(input.schema); // strip internal attributes
+  var schema = (0, _rxSchemaHelper.fillWithDefaultSettings)(input.schema); // strip internal attributes
 
   Object.keys(schema.properties).forEach(function (key) {
     if (key.startsWith('_')) {

@@ -29,8 +29,6 @@ var _exportNames = {
   createRxSchema: true,
   RxSchema: true,
   getIndexes: true,
-  normalizeRxJsonSchema: true,
-  getFinalFields: true,
   getPreviousVersions: true,
   toTypedRxJsonSchema: true,
   _clearHook: true
@@ -137,12 +135,6 @@ Object.defineProperty(exports, "getDocumentPrototype", {
     return _rxDocumentPrototypeMerge.getDocumentPrototype;
   }
 });
-Object.defineProperty(exports, "getFinalFields", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.getFinalFields;
-  }
-});
 Object.defineProperty(exports, "getIndexes", {
   enumerable: true,
   get: function get() {
@@ -189,12 +181,6 @@ Object.defineProperty(exports, "isRxSchema", {
   enumerable: true,
   get: function get() {
     return _rxSchema.isInstanceOf;
-  }
-});
-Object.defineProperty(exports, "normalizeRxJsonSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.normalizeRxJsonSchema;
   }
 });
 Object.defineProperty(exports, "overwritable", {

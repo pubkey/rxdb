@@ -5,7 +5,7 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     readonly storage: RxStorageLoki;
     readonly databaseName: string;
     readonly collectionName: string;
-    readonly schema: Readonly<RxJsonSchema<RxDocType>>;
+    readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>;
     readonly internals: LokiStorageInternals;
     readonly options: Readonly<LokiSettings>;
     readonly databaseSettings: LokiDatabaseSettings;
@@ -14,7 +14,7 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     private lastChangefeedSequence;
     readonly instanceId: number;
     closed: boolean;
-    constructor(storage: RxStorageLoki, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocType>>, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings);
+    constructor(storage: RxStorageLoki, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings);
     /**
      * Adds an entry to the changes feed
      * that can be queried to check which documents have been

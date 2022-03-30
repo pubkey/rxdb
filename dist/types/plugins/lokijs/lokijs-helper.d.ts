@@ -25,7 +25,7 @@ export declare function closeLokiCollections(databaseName: string, collections: 
  * This function is at lokijs-helper
  * because we need it in multiple places.
  */
-export declare function getLokiSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocType>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
+export declare function getLokiSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
 export declare function getLokiLeaderElector(storage: RxStorageLoki, databaseName: string): LeaderElector;
 export declare function removeLokiLeaderElectorReference(storage: RxStorageLoki, databaseName: string): void;
 /**

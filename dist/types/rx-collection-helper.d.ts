@@ -1,10 +1,10 @@
-import type { RxCollection, RxDatabase, RxStorageInstance, RxStorageInstanceCreationParams } from './types';
-import { RxCollectionBase } from './rx-collection';
+import type { RxDatabase, RxDocumentData, RxStorageInstance, RxStorageInstanceCreationParams } from './types';
+import { RxSchema } from './rx-schema';
 /**
  * fills in the default data.
  * This also clones the data.
  */
-export declare function fillObjectDataBeforeInsert(collection: RxCollection | RxCollectionBase<any>, data: any): any;
+export declare function fillObjectDataBeforeInsert<RxDocType>(schema: RxSchema<RxDocType>, data: Partial<RxDocumentData<RxDocType>> | any): any;
 /**
  * Creates the storage instances that are used internally in the collection
  */

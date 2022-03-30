@@ -151,7 +151,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         json = tempDoc.toJSON();
       }
 
-      var useJson = fillObjectDataBeforeInsert(_this4, json);
+      var useJson = fillObjectDataBeforeInsert(_this4.schema, json);
       return Promise.resolve(_this4.bulkInsert([useJson])).then(function (writeResult) {
         var isError = writeResult.error[0];
         throwIfIsStorageWriteError(_this4, useJson[_this4.schema.primaryPath], json, isError);
@@ -186,7 +186,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       }
 
       var useDocs = docsData.map(function (docData) {
-        var useDocData = fillObjectDataBeforeInsert(_this6, docData);
+        var useDocData = fillObjectDataBeforeInsert(_this6.schema, docData);
         return useDocData;
       });
       return Promise.resolve(Promise.all(useDocs.map(function (doc) {
@@ -303,7 +303,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       var insertData = [];
       var useJsonByDocId = new Map();
       docsData.forEach(function (docData) {
-        var useJson = fillObjectDataBeforeInsert(_this10.asRxCollection, docData);
+        var useJson = fillObjectDataBeforeInsert(_this10.schema, docData);
         var primary = useJson[_this10.schema.primaryPath];
 
         if (!primary) {
@@ -354,7 +354,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   _proto.atomicUpsert = function atomicUpsert(json) {
     var _this11 = this;
 
-    var useJson = fillObjectDataBeforeInsert(this, json);
+    var useJson = fillObjectDataBeforeInsert(this.schema, json);
     var primary = useJson[this.schema.primaryPath];
 
     if (!primary) {
@@ -958,7 +958,7 @@ export function createRxCollection(_ref3) {
   var storageInstanceCreationParams = {
     databaseName: database.name,
     collectionName: name,
-    schema: schema.normalized,
+    schema: schema.jsonSchema,
     options: instanceCreationOptions,
     multiInstance: database.multiInstance
   };

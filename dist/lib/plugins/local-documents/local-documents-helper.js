@@ -17,6 +17,8 @@ var _docCache = require("../../doc-cache");
 
 var _rxError = require("../../rx-error");
 
+var _rxSchemaHelper = require("../../rx-schema-helper");
+
 var _rxStorageHelper = require("../../rx-storage-helper");
 
 var removeLocalDocumentsStorageInstance = function removeLocalDocumentsStorageInstance(storage, databaseName, collectionName) {
@@ -140,7 +142,7 @@ function getCollectionLocalInstanceName(collectionName) {
   return 'plugin-local-documents-' + collectionName;
 }
 
-var RX_LOCAL_DOCUMENT_SCHEMA = {
+var RX_LOCAL_DOCUMENT_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   version: 0,
   primaryKey: 'id',
   type: 'object',
@@ -154,6 +156,6 @@ var RX_LOCAL_DOCUMENT_SCHEMA = {
     }
   },
   required: ['id', 'data']
-};
+});
 exports.RX_LOCAL_DOCUMENT_SCHEMA = RX_LOCAL_DOCUMENT_SCHEMA;
 //# sourceMappingURL=local-documents-helper.js.map

@@ -1,12 +1,11 @@
-import type { DeepMutable, DeepReadonly, JsonSchema, MaybeReadonly, RxJsonSchema } from './types';
+import type { DeepMutable, DeepReadonly, MaybeReadonly, RxDocumentData, RxJsonSchema } from './types';
 export declare class RxSchema<T = any> {
-    readonly jsonSchema: RxJsonSchema<T>;
+    readonly jsonSchema: RxJsonSchema<RxDocumentData<T>>;
     indexes: MaybeReadonly<string[]>[];
     primaryPath: keyof T;
     finalFields: string[];
-    constructor(jsonSchema: RxJsonSchema<T>);
+    constructor(jsonSchema: RxJsonSchema<RxDocumentData<T>>);
     get version(): number;
-    get normalized(): RxJsonSchema<T>;
     get defaultValues(): {
         [P in keyof T]: T[P];
     };
@@ -50,30 +49,6 @@ export declare function getIndexes<T = any>(jsonSchema: RxJsonSchema<T>): MaybeR
  * array with previous version-numbers
  */
 export declare function getPreviousVersions(schema: RxJsonSchema<any>): number[];
-/**
- * returns the final-fields of the schema
- * @return field-names of the final-fields
- */
-export declare function getFinalFields<T = any>(jsonSchema: RxJsonSchema<T>): string[];
-/**
- * Normalize the RxJsonSchema.
- * We need this to ensure everything is set up properly
- * and we have the same hash on schemas that represent the same value but
- * have different json.
- *
- * - Orders the schemas attributes by alphabetical order
- * - Adds the primaryKey to all indexes that do not contain the primaryKey
- *   - We need this for determinstic sort order on all queries, which is required for event-reduce to work.
- *
- * @return RxJsonSchema - ordered and filled
- */
-export declare function normalizeRxJsonSchema<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T>;
-export declare const RX_META_SCHEMA: JsonSchema;
-/**
- * fills the schema-json with default-settings
- * @return cloned schemaObj
- */
-export declare function fillWithDefaultSettings<T = any>(schemaObj: RxJsonSchema<T>): RxJsonSchema<T>;
 export declare function createRxSchema<T>(jsonSchema: RxJsonSchema<T>, runPreCreateHooks?: boolean): RxSchema<T>;
 export declare function isInstanceOf(obj: any): boolean;
 /**

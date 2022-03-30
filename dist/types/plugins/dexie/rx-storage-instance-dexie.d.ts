@@ -6,7 +6,7 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     readonly storage: RxStorageDexie;
     readonly databaseName: string;
     readonly collectionName: string;
-    readonly schema: Readonly<RxJsonSchema<RxDocType>>;
+    readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>;
     readonly internals: DexieStorageInternals;
     readonly options: Readonly<DexieSettings>;
     readonly settings: DexieSettings;
@@ -14,7 +14,7 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     private changes$;
     readonly instanceId: number;
     closed: boolean;
-    constructor(storage: RxStorageDexie, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocType>>, internals: DexieStorageInternals, options: Readonly<DexieSettings>, settings: DexieSettings);
+    constructor(storage: RxStorageDexie, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: DexieStorageInternals, options: Readonly<DexieSettings>, settings: DexieSettings);
     /**
      * Adds entries to the changes feed
      * that can be queried to check which documents have been

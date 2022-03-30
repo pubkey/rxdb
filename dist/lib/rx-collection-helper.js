@@ -28,13 +28,21 @@ exports.createRxCollectionStorageInstance = createRxCollectionStorageInstance;
  * fills in the default data.
  * This also clones the data.
  */
-function fillObjectDataBeforeInsert(collection, data) {
-  var useJson = collection.schema.fillObjectWithDefaults(data);
-  useJson = (0, _rxSchemaHelper.fillPrimaryKey)(collection.schema.primaryPath, collection.schema.jsonSchema, useJson);
+function fillObjectDataBeforeInsert(schema, data) {
+  var useJson = schema.fillObjectWithDefaults(data);
+  useJson = (0, _rxSchemaHelper.fillPrimaryKey)(schema.primaryPath, schema.jsonSchema, useJson);
   useJson._meta = (0, _util.getDefaultRxDocumentMeta)();
 
   if (!useJson.hasOwnProperty('_deleted')) {
     useJson._deleted = false;
+  }
+
+  if (!useJson.hasOwnProperty('_attachments')) {
+    useJson._attachments = {};
+  }
+
+  if (!useJson.hasOwnProperty('_rev')) {
+    useJson._rev = (0, _util.createRevision)(useJson);
   }
 
   return useJson;

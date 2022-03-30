@@ -9,6 +9,8 @@ var _rxQuery = require("../rx-query");
 
 var _rxError = require("../rx-error");
 
+var _rxCollectionHelper = require("../rx-collection-helper");
+
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
@@ -89,7 +91,7 @@ function importDumpRxCollection(exportedJSON) {
 
   var docs = exportedJSON.docs // validate schema
   .map(function (doc) {
-    return _this3.schema.validate(doc);
+    return _this3.schema.validate((0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this3.schema, doc));
   });
   return this.storageInstance.bulkWrite(docs.map(function (document) {
     return {

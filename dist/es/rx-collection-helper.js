@@ -1,9 +1,5 @@
-import { getDefaultRxDocumentMeta } from './util';
+import { createRevision, getDefaultRxDocumentMeta } from './util';
 import { fillPrimaryKey } from './rx-schema-helper';
-/**
- * fills in the default data.
- * This also clones the data.
- */
 
 /**
  * Creates the storage instances that are used internally in the collection
@@ -16,13 +12,26 @@ export var createRxCollectionStorageInstance = function createRxCollectionStorag
     return Promise.reject(e);
   }
 };
-export function fillObjectDataBeforeInsert(collection, data) {
-  var useJson = collection.schema.fillObjectWithDefaults(data);
-  useJson = fillPrimaryKey(collection.schema.primaryPath, collection.schema.jsonSchema, useJson);
+
+/**
+ * fills in the default data.
+ * This also clones the data.
+ */
+export function fillObjectDataBeforeInsert(schema, data) {
+  var useJson = schema.fillObjectWithDefaults(data);
+  useJson = fillPrimaryKey(schema.primaryPath, schema.jsonSchema, useJson);
   useJson._meta = getDefaultRxDocumentMeta();
 
   if (!useJson.hasOwnProperty('_deleted')) {
     useJson._deleted = false;
+  }
+
+  if (!useJson.hasOwnProperty('_attachments')) {
+    useJson._attachments = {};
+  }
+
+  if (!useJson.hasOwnProperty('_rev')) {
+    useJson._rev = createRevision(useJson);
   }
 
   return useJson;

@@ -16,7 +16,7 @@ export { flattenEvents } from './rx-change-event';
 export { getDocumentOrmPrototype, getDocumentPrototype } from './rx-document-prototype-merge';
 export { isInstanceOf as isRxQuery } from './rx-query';
 export * from './rx-query-helper';
-export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, normalizeRxJsonSchema, getFinalFields, getPreviousVersions, toTypedRxJsonSchema } from './rx-schema';
+export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, getPreviousVersions, toTypedRxJsonSchema } from './rx-schema';
 export * from './rx-schema-helper';
 export * from './rx-storage-helper';
 export * from './custom-index';

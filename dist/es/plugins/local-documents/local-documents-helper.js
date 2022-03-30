@@ -1,6 +1,7 @@
 import { filter } from 'rxjs/operators';
 import { DocCache } from '../../doc-cache';
 import { newRxError } from '../../rx-error';
+import { fillWithDefaultSettings } from '../../rx-schema-helper';
 import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent } from '../../rx-storage-helper';
 export var removeLocalDocumentsStorageInstance = function removeLocalDocumentsStorageInstance(storage, databaseName, collectionName) {
   try {
@@ -115,7 +116,7 @@ export function closeStateByParent(parent) {
 export function getCollectionLocalInstanceName(collectionName) {
   return 'plugin-local-documents-' + collectionName;
 }
-export var RX_LOCAL_DOCUMENT_SCHEMA = {
+export var RX_LOCAL_DOCUMENT_SCHEMA = fillWithDefaultSettings({
   version: 0,
   primaryKey: 'id',
   type: 'object',
@@ -129,5 +130,5 @@ export var RX_LOCAL_DOCUMENT_SCHEMA = {
     }
   },
   required: ['id', 'data']
-};
+});
 //# sourceMappingURL=local-documents-helper.js.map

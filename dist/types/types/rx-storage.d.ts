@@ -203,10 +203,10 @@ export type RxStorageQueryResult<RxDocType> = {
     documents: RxDocumentData<RxDocType>[];
 }
 
-export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions> = {
+export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> = {
     databaseName: string;
     collectionName: string;
-    schema: RxJsonSchema<DocumentData>;
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>;
     options: InstanceCreationOptions;
     /**
      * If multiInstance is true, there can be more

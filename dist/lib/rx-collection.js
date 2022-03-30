@@ -176,7 +176,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
         json = tempDoc.toJSON();
       }
 
-      var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this4, json);
+      var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this4.schema, json);
       return Promise.resolve(_this4.bulkInsert([useJson])).then(function (writeResult) {
         var isError = writeResult.error[0];
         (0, _rxStorageHelper.throwIfIsStorageWriteError)(_this4, useJson[_this4.schema.primaryPath], json, isError);
@@ -211,7 +211,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       }
 
       var useDocs = docsData.map(function (docData) {
-        var useDocData = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this6, docData);
+        var useDocData = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this6.schema, docData);
         return useDocData;
       });
       return Promise.resolve(Promise.all(useDocs.map(function (doc) {
@@ -328,7 +328,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       var insertData = [];
       var useJsonByDocId = new Map();
       docsData.forEach(function (docData) {
-        var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this10.asRxCollection, docData);
+        var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this10.schema, docData);
         var primary = useJson[_this10.schema.primaryPath];
 
         if (!primary) {
@@ -379,7 +379,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto.atomicUpsert = function atomicUpsert(json) {
     var _this11 = this;
 
-    var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this, json);
+    var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this.schema, json);
     var primary = useJson[this.schema.primaryPath];
 
     if (!primary) {
@@ -985,7 +985,7 @@ function createRxCollection(_ref3) {
   var storageInstanceCreationParams = {
     databaseName: database.name,
     collectionName: name,
-    schema: schema.normalized,
+    schema: schema.jsonSchema,
     options: instanceCreationOptions,
     multiInstance: database.multiInstance
   };

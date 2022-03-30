@@ -11,9 +11,9 @@ export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, 
         hash(data: string | Blob | Buffer): Promise<string>;
         hashKey: string;
         doesBroadcastChangestream(): boolean;
-        prepareQuery<DocumentData>(schema: RxJsonSchema<DocumentData>, mutateableQuery: import("../../types").FilledMangoQuery<DocumentData>): any;
-        getSortComparator<DocumentData_1>(schema: RxJsonSchema<DocumentData_1>, preparedQuery: any): import("event-reduce-js").DeterministicSortComparator<DocumentData_1>;
-        getQueryMatcher<DocumentData_2>(schema: RxJsonSchema<DocumentData_2>, preparedQuery: any): import("event-reduce-js").QueryMatcher<import("../../types").RxDocumentData<DocumentData_2>>;
+        prepareQuery<RxDocType>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
+        getSortComparator<RxDocType_1>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType_1>>, preparedQuery: any): import("event-reduce-js").DeterministicSortComparator<RxDocType_1>;
+        getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType_2>>, preparedQuery: any): import("event-reduce-js").QueryMatcher<import("../../types").RxDocumentData<RxDocType_2>>;
     }>;
     constructor(adapter: any, pouchSettings?: PouchSettings);
     private createPouch;

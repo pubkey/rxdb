@@ -3,7 +3,7 @@ export declare const INTERNAL_CONTEXT_COLLECTION = "collection";
 export declare const INTERNAL_CONTEXT_STORAGE_TOKEN = "storage-token";
 export declare const INTERNAL_CONTEXT_ENCRYPTION = "plugin-encryption";
 export declare const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = "plugin-replication-primitives";
-export declare const INTERNAL_STORE_SCHEMA: RxJsonSchema<InternalStoreDocType<any>>;
+export declare const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDocType<any>>>;
 export declare type InternalStoreDocType<Data = any> = {
     id: string;
     key: string;

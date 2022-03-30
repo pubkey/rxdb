@@ -65,6 +65,8 @@ Object.keys(_rxReplicationError).forEach(function (key) {
   });
 });
 
+var _rxCollectionHelper = require("../../rx-collection-helper");
+
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -655,10 +657,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
               if (_overwritable.overwritable.isDevMode()) {
                 try {
                   pulledDocuments.forEach(function (doc) {
-                    var withoutDeleteFlag = (0, _util.flatClone)(doc);
-                    delete withoutDeleteFlag._deleted;
-
-                    _this9.collection.schema.validate(withoutDeleteFlag);
+                    _this9.collection.schema.validate((0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this9.collection.schema, doc));
                   });
                 } catch (err) {
                   _this9.subjects.error.next(err);

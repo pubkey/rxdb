@@ -1,6 +1,6 @@
 import { getGraphqlSchemaFromJsonSchema } from 'get-graphql-from-jsonschema';
 import { scalarTypes } from 'get-graphql-from-jsonschema/build/lib/scalarTypes';
-import { fillWithDefaultSettings } from '../../rx-schema';
+import { fillWithDefaultSettings } from '../../rx-schema-helper';
 import { clone, ucfirst } from '../../util';
 // we use two spaces because get-graphql-from-jsonschema does also
 export var SPACING = '  ';

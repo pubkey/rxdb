@@ -115,7 +115,7 @@ var INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
 exports.INTERNAL_CONTEXT_ENCRYPTION = INTERNAL_CONTEXT_ENCRYPTION;
 var INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = INTERNAL_CONTEXT_REPLICATION_PRIMITIVES;
-var INTERNAL_STORE_SCHEMA = {
+var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   version: 0,
   primaryKey: {
     key: 'id',
@@ -142,7 +142,7 @@ var INTERNAL_STORE_SCHEMA = {
   indexes: [],
   required: ['key', 'context', 'data'],
   additionalProperties: false
-};
+});
 exports.INTERNAL_STORE_SCHEMA = INTERNAL_STORE_SCHEMA;
 
 function getPrimaryKeyOfInternalDocument(key, context) {

@@ -53,7 +53,7 @@ export declare function pouchChangeRowToChangeStreamEvent<DocumentData>(primaryK
  * into '_id'
  * @recursive
  */
-export declare function primarySwapPouchDbQuerySelector<RxDocType>(selector: any, primaryKey: keyof RxDocType): any;
+export declare function primarySwapPouchDbQuerySelector<RxDocType>(selector: any, primaryKey: keyof RxDocumentData<RxDocType>): any;
 export declare function pouchHash(data: Buffer | Blob | string): Promise<string>;
 export declare function writeAttachmentsToAttachments(attachments: {
     [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;

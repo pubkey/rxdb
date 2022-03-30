@@ -12,9 +12,9 @@ export declare class RxStorageDexie implements RxStorage<DexieStorageInternals, 
         hash(data: string | Blob | Buffer): Promise<string>;
         hashKey: string;
         doesBroadcastChangestream(): boolean;
-        prepareQuery<DocumentData>(schema: RxJsonSchema<DocumentData>, mutateableQuery: import("../../types").FilledMangoQuery<DocumentData>): any;
-        getSortComparator<DocumentData_1>(schema: RxJsonSchema<DocumentData_1>, preparedQuery: any): DeterministicSortComparator<DocumentData_1>;
-        getQueryMatcher<DocumentData_2>(schema: RxJsonSchema<DocumentData_2>, preparedQuery: any): QueryMatcher<RxDocumentData<DocumentData_2>>;
+        prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
+        getSortComparator<RxDocType_1>(schema: RxJsonSchema<RxDocumentData<RxDocType_1>>, preparedQuery: any): DeterministicSortComparator<RxDocType_1>;
+        getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<RxDocumentData<RxDocType_2>>, preparedQuery: any): QueryMatcher<RxDocumentData<RxDocType_2>>;
     }>;
     constructor(settings: DexieSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>): Promise<RxStorageInstanceDexie<RxDocType>>;
