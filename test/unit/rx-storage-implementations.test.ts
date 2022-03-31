@@ -1178,7 +1178,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         options: {},
                         multiInstance: false
                     });
-                await storageInstance.bulkWrite([
+                const insertResult = await storageInstance.bulkWrite([
                     {
                         document: {
                             id: 'foobar',
@@ -1194,6 +1194,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }
                 ]);
+                assert.deepStrictEqual(insertResult.error, {});
 
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery<NestedDoc>(
                     schema,
