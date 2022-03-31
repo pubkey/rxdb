@@ -1500,9 +1500,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                  * So we add more indexes here to ensure this is never broken.
                  */
                 const useSchema = getTestDataSchema();
-                ensureNotFalsy(useSchema.indexes as any).push(['key']);
-                ensureNotFalsy(useSchema.indexes as any).push(['key', 'value']);
-
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
@@ -1523,7 +1520,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     sinceSequence: 0,
                     limit
                 });
-
 
                 /**
                  * Because we did many writes, the result should be 'full'.
