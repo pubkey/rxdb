@@ -16,7 +16,7 @@ import { ensureNotFalsy } from './util';
  * another documents, dependent on the index values.
  */
 export function getIndexableString<RxDocType>(
-    schema: RxJsonSchema<RxDocType>,
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     index: string[],
     docData: RxDocumentData<RxDocType>
 ): string {
@@ -107,7 +107,7 @@ export function getNumberIndexString(
 export function getStartIndexStringFromLowerBound(
     schema: RxJsonSchema<any>,
     index: string[],
-    lowerBound: (string | boolean | number | null)[]
+    lowerBound: (string | boolean | number | null | undefined)[]
 ): string {
     let str = '';
     index.forEach((fieldName, idx) => {

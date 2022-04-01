@@ -1,5 +1,6 @@
 import assert from 'assert';
 import {
+    clone,
     randomBoolean,
     randomNumber,
     randomString
@@ -10,7 +11,9 @@ import {
     RxJsonSchema,
     getStringLengthOfIndexNumber,
     getStartIndexStringFromLowerBound,
-    getStartIndexStringFromUpperBound
+    getStartIndexStringFromUpperBound,
+    fillWithDefaultSettings,
+    now
 } from '../../';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import config from './config';
@@ -22,7 +25,7 @@ config.parallel('custom-index.test.ts', () => {
         num: number;
         bool: boolean;
     };
-    const schema: RxJsonSchema<IndexTestDocType> = {
+    const schema: RxJsonSchema<RxDocumentData<IndexTestDocType>> = fillWithDefaultSettings({
         primaryKey: 'id',
         version: 0,
         type: 'object',
@@ -55,7 +58,7 @@ config.parallel('custom-index.test.ts', () => {
                 'num'
             ]
         ]
-    };
+    });
 
     function getIndexTestDoc(partial?: Partial<IndexTestDocType>): RxDocumentData<IndexTestDocType> {
         return Object.assign({
@@ -291,6 +294,53 @@ config.parallel('custom-index.test.ts', () => {
                 docs.length,
                 matchingDocs.length
             );
+        });
+        /**
+         * This index is used by some RxStorage implementations
+         * when running a cleanup().
+         */
+        it('should find the correct string for the _deleted+_meta.lwt index', () => {
+            const useSchema = clone(schema);
+            const index = ['_deleted', '_meta.lwt'];
+            useSchema.indexes.push(index);
+
+            const lowerBoundString = getStartIndexStringFromLowerBound(
+                useSchema,
+                index,
+                [
+                    true,
+                    1
+                ]
+            );
+
+            const doc = getIndexTestDoc();
+            doc._deleted = true;
+            doc._meta.lwt = now();
+            const docIndexString = getIndexableString(
+                useSchema,
+                index,
+                doc
+            );
+            assert.ok(lowerBoundString < docIndexString);
+            const upperBoundString = getStartIndexStringFromUpperBound(
+                useSchema,
+                index,
+                [
+                    true,
+                    now() + 1000 * 10
+                ]
+            );
+            assert.ok(upperBoundString.startsWith('1'));
+            assert.ok(docIndexString < upperBoundString);
+            const upperBoundString2 = getStartIndexStringFromUpperBound(
+                useSchema,
+                index,
+                [
+                    true,
+                    now() + 1000 * 100
+                ]
+            );
+            assert.ok(upperBoundString2 > upperBoundString);
         });
     });
 });

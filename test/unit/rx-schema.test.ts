@@ -816,7 +816,8 @@ config.parallel('rx-schema.test.js', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     fileInfo: {
                         type: 'object',
