@@ -19,7 +19,8 @@ export const heroSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         name: {
             type: 'string',
