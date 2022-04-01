@@ -2243,16 +2243,17 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         it('documents that are stored on different schema versions, should not interfer', async () => {
             const storage = config.storage.getStorage();
             const databaseName = randomCouchString(12);
+            const collectionName = randomCouchString(12);
             const storageInstanceZero = await storage.createStorageInstance<TestDocType>({
                 databaseName,
-                collectionName: randomCouchString(12),
+                collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                 options: {},
                 multiInstance: false
             });
             const storageInstanceOne = await storage.createStorageInstance<TestDocType>({
                 databaseName,
-                collectionName: randomCouchString(12),
+                collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(1, 'key'),
                 options: {},
                 multiInstance: false

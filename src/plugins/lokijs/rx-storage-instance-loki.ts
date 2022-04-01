@@ -334,7 +334,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (!localState) {
             return requestRemoteInstance(this, 'remove', []);
         }
-        localState.databaseState.database.removeCollection(this.collectionName);
+        localState.databaseState.database.removeCollection(localState.collection.name);
         localState.databaseState.database.removeCollection(localState.changesCollection.name);
         return this.close();
     }
@@ -372,9 +372,10 @@ export async function createLokiLocalState<RxDocType>(
     const primaryKey = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
     indices.push(primaryKey as string);
 
+    const lokiCollectionName = params.collectionName + '-' + params.schema.version;
     const collectionOptions: Partial<CollectionOptions<RxDocumentData<RxDocType>>> = Object.assign(
         {},
-        params.options.collection,
+        lokiCollectionName,
         {
             indices: indices as string[],
             unique: [primaryKey]
@@ -383,12 +384,12 @@ export async function createLokiLocalState<RxDocType>(
     );
 
     const collection: Collection = databaseState.database.addCollection(
-        params.collectionName,
+        lokiCollectionName,
         collectionOptions as any
     );
     databaseState.collections[params.collectionName] = collection;
 
-    const changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
+    const changesCollectionName = lokiCollectionName + CHANGES_COLLECTION_SUFFIX;
     const changesCollectionOptions = Object.assign({
         unique: ['eventId'],
         indices: ['sequence']

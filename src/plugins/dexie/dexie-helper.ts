@@ -28,7 +28,7 @@ export function getDexieDbWithTables(
     schema: RxJsonSchema<any>
 ): DexieStorageInternals {
     const primaryPath: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
-    const dexieDbName = 'rxdb-dexie-' + databaseName + '--' + collectionName;
+    const dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
     let state = DEXIE_STATE_DB_BY_NAME.get(dexieDbName);
     if (!state) {
         state = (async () => {
