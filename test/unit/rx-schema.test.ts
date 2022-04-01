@@ -88,7 +88,8 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'object',
                         properties: {
                             id: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             name: {
                                 type: 'string',
@@ -123,7 +124,8 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'object',
                         properties: {
                             id: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             name: {
                                 type: 'string',
@@ -141,7 +143,8 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'object',
                         properties: {
                             _asdf: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             firstName: {
                                 type: 'string'
@@ -171,7 +174,8 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'object',
                         properties: {
                             'my.field': {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             }
                         }
                     }), Error);
@@ -185,7 +189,8 @@ config.parallel('rx-schema.test.js', () => {
                         properties: {
                             'myfield': {
                                 type: 'string',
-                                required: true
+                                required: true,
+                                maxLength: 100
                             } as any
                         }
                     }), Error);
@@ -203,6 +208,7 @@ config.parallel('rx-schema.test.js', () => {
                         properties: {
                             id: {
                                 type: 'string',
+                                maxLength: 100
                             },
                             'firstName$': {
                                 type: 'string'
@@ -218,6 +224,7 @@ config.parallel('rx-schema.test.js', () => {
                         properties: {
                             id: {
                                 type: 'string',
+                                maxLength: 100
                             },
                             'first$Name': {
                                 type: 'string'
@@ -235,6 +242,7 @@ config.parallel('rx-schema.test.js', () => {
                         properties: {
                             id: {
                                 type: 'string',
+                                maxLength: 100
                             },
                             'things': {
                                 type: 'object',
@@ -255,6 +263,7 @@ config.parallel('rx-schema.test.js', () => {
                         properties: {
                             id: {
                                 type: 'string',
+                                maxLength: 100
                             },
                             'things': {
                                 type: 'object',
@@ -277,6 +286,7 @@ config.parallel('rx-schema.test.js', () => {
                         properties: {
                             id: {
                                 type: 'string',
+                                maxLength: 100
                             },
                             'firstName_': {
                                 type: 'string'
@@ -293,6 +303,7 @@ config.parallel('rx-schema.test.js', () => {
                         properties: {
                             id: {
                                 type: 'string',
+                                maxLength: 100
                             },
                             'foo': {
                                 type: 'object',
@@ -314,7 +325,8 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'object',
                         properties: {
                             'collection': {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             }
                         }
                     }), Error);
@@ -328,7 +340,8 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'object',
                         properties: {
                             'save': {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             }
                         }
                     }), Error);
@@ -354,7 +367,8 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'object',
                         properties: {
                             'foobar': {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             }
                         }
                     }), Error);
@@ -367,7 +381,8 @@ config.parallel('rx-schema.test.js', () => {
                         primaryKey: 'foobar',
                         properties: {
                             'foobar': {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             }
                         }
                     } as any), Error);
@@ -381,7 +396,8 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'object',
                         properties: {
                             foobar: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             deeper: {
                                 type: 'object',
@@ -404,7 +420,8 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'object',
                         properties: {
                             userId: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             _id: {
                                 type: 'string',
@@ -446,7 +463,8 @@ config.parallel('rx-schema.test.js', () => {
                     type: 'object',
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         }
                     },
                     required: ['id'],
@@ -499,7 +517,8 @@ config.parallel('rx-schema.test.js', () => {
                         type: 'object',
                         properties: {
                             foo: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             language: {
                                 type: 'string'
@@ -518,6 +537,7 @@ config.parallel('rx-schema.test.js', () => {
                     properties: {
                         myField: {
                             type: 'string',
+                            maxLength: 100,
                             final: true
                         }
                     }
@@ -531,7 +551,8 @@ config.parallel('rx-schema.test.js', () => {
                     type: 'object',
                     properties: {
                         myField: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         }
                     }
                 });
@@ -549,7 +570,8 @@ config.parallel('rx-schema.test.js', () => {
                     type: 'object',
                     properties: {
                         'foobar': {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         }
                     }
                 });
@@ -566,7 +588,8 @@ config.parallel('rx-schema.test.js', () => {
                     type: 'object',
                     properties: {
                         'foobar': {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         }
                     }
                 });

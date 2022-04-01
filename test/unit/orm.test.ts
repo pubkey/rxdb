@@ -385,7 +385,8 @@ config.parallel('orm.test.js', () => {
                 primaryKey: 'name',
                 properties: {
                     name: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     nested: {
                         type: 'object',

@@ -797,7 +797,8 @@ config.parallel('rx-query.test.js', () => {
                     type: 'object',
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         childProperty: {
                             type: 'string',
@@ -842,7 +843,8 @@ config.parallel('rx-query.test.js', () => {
                     type: 'object',
                     properties: {
                         user_id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         user_pwd: {
                             type: 'string',
@@ -897,7 +899,8 @@ config.parallel('rx-query.test.js', () => {
                     type: 'object',
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         value: {
                             type: 'number',
@@ -1013,7 +1016,8 @@ config.parallel('rx-query.test.js', () => {
                 keyCompression: false,
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     info: {
                         type: 'object',
@@ -1100,7 +1104,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     name: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     passportId: {
                         type: 'string',
@@ -1156,7 +1161,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     event_id: {
                         type: 'number'
@@ -1277,7 +1283,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     roomId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     sessionId: {
                         type: 'string'
@@ -1333,7 +1340,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     firstName: {
                         type: 'string'
@@ -1417,7 +1425,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     firstName: {
                         type: 'string'
@@ -1593,7 +1602,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     field: {
                         type: 'boolean'

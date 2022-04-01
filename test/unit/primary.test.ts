@@ -521,7 +521,8 @@ config.parallel('primary.test.js', () => {
                 type: 'object',
                 properties: {
                     _id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     firstName: {
                         type: 'string'

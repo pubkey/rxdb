@@ -432,7 +432,8 @@ config.parallel('attachments.test.ts', () => {
                 primaryKey: 'id',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     }
                 },
                 attachments: {},
@@ -500,7 +501,8 @@ config.parallel('attachments.test.ts', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     }
                 },
                 attachments: {},
@@ -560,7 +562,8 @@ config.parallel('attachments.test.ts', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     }
                 },
                 attachments: {},
@@ -667,7 +670,8 @@ config.parallel('attachments.test.ts', () => {
                 type: 'object',
                 properties: {
                     name: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                 },
                 attachments: {

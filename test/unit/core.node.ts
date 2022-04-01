@@ -33,7 +33,8 @@ const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: st
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'

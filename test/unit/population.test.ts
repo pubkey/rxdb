@@ -28,7 +28,8 @@ config.parallel('population.test.js', () => {
                     properties: {
                         bestFriend: {
                             ref: 'human',
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         }
                     }
                 });
@@ -47,7 +48,8 @@ config.parallel('population.test.js', () => {
                     properties: {
                         bestFriend: {
                             ref: 'human',
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         }
                     }
                 });
@@ -61,6 +63,7 @@ config.parallel('population.test.js', () => {
                     properties: {
                         id: {
                             type: 'string',
+                            maxLength: 100
                         },
                         foo: {
                             type: 'object',
@@ -82,7 +85,8 @@ config.parallel('population.test.js', () => {
                     type: 'object',
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         friends: {
                             type: 'array',
@@ -102,7 +106,8 @@ config.parallel('population.test.js', () => {
                     type: 'object',
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         friends: {
                             type: 'array',
@@ -125,7 +130,8 @@ config.parallel('population.test.js', () => {
                         type: 'object',
                         properties: {
                             id: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             bestFriend: {
                                 ref: 'human'
@@ -143,7 +149,8 @@ config.parallel('population.test.js', () => {
                         type: 'object',
                         properties: {
                             id: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             friends: {
                                 type: 'array',
@@ -189,7 +196,8 @@ config.parallel('population.test.js', () => {
                             type: 'object',
                             properties: {
                                 name: {
-                                    type: 'string'
+                                    type: 'string',
+                                    maxLength: 100
                                 },
                                 friends: {
                                     type: 'array',
@@ -236,6 +244,7 @@ config.parallel('population.test.js', () => {
                     properties: {
                         name: {
                             type: 'string',
+                            maxLength: 100,
                             ref: 'human2'
                         }
                     }
@@ -299,7 +308,8 @@ config.parallel('population.test.js', () => {
                         version: 0,
                         properties: {
                             name: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             refB: {
                                 ref: 'docb', // refers to collection human
@@ -315,7 +325,8 @@ config.parallel('population.test.js', () => {
                         type: 'object',
                         properties: {
                             name: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             },
                             somevalue: {
                                 type: 'string'

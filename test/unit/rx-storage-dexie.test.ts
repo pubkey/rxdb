@@ -101,7 +101,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     version: 0,
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         }
                     }
                 });
@@ -114,7 +115,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     version: 0,
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         age: {
                             type: 'number'
@@ -137,7 +139,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     type: 'object',
                     properties: {
                         key: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         age: {
                             type: 'number'

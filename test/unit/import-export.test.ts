@@ -374,7 +374,8 @@ config.parallel('import-export.test.js', () => {
                 type: 'object',
                 properties: {
                     firstName: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     time: {
                         type: 'string'

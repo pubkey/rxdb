@@ -135,7 +135,8 @@ config.parallel('key-compression.test.js', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     likes: {
                         type: 'array',
@@ -176,7 +177,8 @@ config.parallel('key-compression.test.js', () => {
                 type: 'object',
                 properties: {
                     key: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     nested: {
                         type: 'object'

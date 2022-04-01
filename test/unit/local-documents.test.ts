@@ -569,7 +569,8 @@ config.parallel('local-documents.test.js', () => {
                 primaryKey: 'id',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     boudariesGrp: {
                         type: 'array',

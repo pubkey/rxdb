@@ -306,7 +306,8 @@ config.parallel('rx-document.test.js', () => {
                     required: ['id'],
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         childProperty: {
                             type: 'string',
@@ -958,7 +959,8 @@ config.parallel('rx-document.test.js', () => {
                 type: 'object',
                 properties: {
                     key: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     value: {
                         type: 'object'
@@ -997,7 +999,8 @@ config.parallel('rx-document.test.js', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     children: {
                         type: 'array',

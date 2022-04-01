@@ -1957,7 +1957,8 @@ config.parallel('rx-collection.test.js', () => {
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     weight: {
                         type: 'number',
@@ -1988,7 +1989,8 @@ config.parallel('rx-collection.test.js', () => {
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     firstName: {
                         type: 'string'
@@ -2060,7 +2062,8 @@ config.parallel('rx-collection.test.js', () => {
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     weight: {
                         type: 'number',

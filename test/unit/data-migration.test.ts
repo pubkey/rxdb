@@ -705,7 +705,8 @@ config.parallel('data-migration.test.js', () => {
                     type: 'object',
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         }
                     },
                     required: ['id']
@@ -716,7 +717,8 @@ config.parallel('data-migration.test.js', () => {
                     type: 'object',
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         name: {
                             type: 'string'
@@ -1017,7 +1019,8 @@ config.parallel('data-migration.test.js', () => {
                     type: 'object',
                     properties: {
                         name: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         color: {
                             type: 'string'
@@ -1033,7 +1036,8 @@ config.parallel('data-migration.test.js', () => {
                     type: 'object',
                     properties: {
                         name: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         color: {
                             type: 'string'
