@@ -2239,4 +2239,61 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             });
         });
     });
+    describe('migration', () => {
+        it('documents that are stored on different schema versions, should not interfer', async () => {
+            const storage = config.storage.getStorage();
+            const databaseName = randomCouchString(12);
+            const storageInstanceZero = await storage.createStorageInstance<TestDocType>({
+                databaseName,
+                collectionName: randomCouchString(12),
+                schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                options: {},
+                multiInstance: false
+            });
+            const storageInstanceOne = await storage.createStorageInstance<TestDocType>({
+                databaseName,
+                collectionName: randomCouchString(12),
+                schema: getPseudoSchemaForVersion<TestDocType>(1, 'key'),
+                options: {},
+                multiInstance: false
+            });
+
+            const writeResultZero = await storageInstanceZero.bulkWrite([{ document: getWriteData({ value: 'zero' }) }]);
+            assert.deepStrictEqual(writeResultZero.error, {});
+
+            const writeResultOne = await storageInstanceOne.bulkWrite([{ document: getWriteData({ value: 'one' }) }]);
+            assert.deepStrictEqual(writeResultOne.error, {});
+
+            const docsZero = await storageInstanceZero.query(
+                storage.statics.prepareQuery(
+                    storageInstanceZero.schema,
+                    {
+                        selector: {},
+                        sort: [
+                            { key: 'asc' }
+                        ]
+                    }
+                )
+            );
+            assert.strictEqual(docsZero.documents.length, 1);
+            assert.strictEqual(docsZero.documents[0].value, 'zero');
+
+            const docsOne = await storageInstanceOne.query(
+                storage.statics.prepareQuery(
+                    storageInstanceOne.schema,
+                    {
+                        selector: {},
+                        sort: [
+                            { key: 'asc' }
+                        ]
+                    }
+                )
+            );
+            assert.strictEqual(docsOne.documents.length, 1);
+            assert.strictEqual(docsOne.documents[0].value, 'one');
+
+            storageInstanceZero.close();
+            storageInstanceOne.close();
+        });
+    });
 });
