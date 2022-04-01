@@ -136,6 +136,7 @@ export function getStartIndexStringFromLowerBound(
                 }
                 break;
             case 'number':
+            case 'integer':
                 const parsedLengths = getStringLengthOfIndexNumber(
                     schemaPart
                 );
@@ -190,6 +191,7 @@ export function getStartIndexStringFromUpperBound(
                 }
                 break;
             case 'number':
+            case 'integer':
                 const parsedLengths = getStringLengthOfIndexNumber(
                     schemaPart
                 );
