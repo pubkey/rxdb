@@ -119,4 +119,4 @@ await localState.databaseState.saveQueue.addWrite();
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./rx-storage-worker.md)
+If you are new to RxDB, you should continue [here](./rx-storage-indexeddb.md)
