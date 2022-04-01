@@ -174,7 +174,7 @@ config.parallel('custom-index.test.ts', () => {
         });
         describe('special cases', () => {
             it('indexing a optional field must work', () => {
-                const schema: RxJsonSchema<{ id: string; optional?: string; }> = {
+                const schema: RxJsonSchema<RxDocumentData<{ id: string; optional?: string; }>> = fillWithDefaultSettings({
                     primaryKey: 'id',
                     version: 0,
                     type: 'object',
@@ -195,7 +195,7 @@ config.parallel('custom-index.test.ts', () => {
                         ['id'],
                         ['optional']
                     ]
-                };
+                });
                 const doc = {
                     id: 'foo'
                 };

@@ -65,7 +65,17 @@ export {
     getPreviousVersions,
     toTypedRxJsonSchema
 } from './rx-schema';
-export * from './rx-schema-helper';
+export {
+    getPseudoSchemaForVersion,
+    getSchemaByObjectPath,
+    fillPrimaryKey,
+    getPrimaryFieldOfPrimaryKey,
+    getComposedPrimaryKeyOfDocumentData,
+    normalizeRxJsonSchema,
+    fillWithDefaultSettings,
+    RX_META_SCHEMA,
+    getFinalFields
+} from './rx-schema-helper';
 
 export * from './rx-storage-helper';
 
