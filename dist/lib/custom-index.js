@@ -132,6 +132,7 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
         break;
 
       case 'number':
+      case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
 
         if (bound === null) {
@@ -182,6 +183,7 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
         break;
 
       case 'number':
+      case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
 
         if (bound === null || bound === MAX_CHAR) {

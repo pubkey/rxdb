@@ -107,7 +107,8 @@ export var INTERNAL_STORE_SCHEMA = fillWithDefaultSettings({
   type: 'object',
   properties: {
     id: {
-      type: 'string'
+      type: 'string',
+      maxLength: 200
     },
     key: {
       type: 'string'

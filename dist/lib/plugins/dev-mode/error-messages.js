@@ -163,6 +163,7 @@ var ERROR_MESSAGES = {
   SC36: 'A field of this type cannot be used as index',
   SC37: 'Fields of type number that are used in an index, must have set the minimum and maxiumum attribute in the schema',
   SC38: 'Fields of type boolean that are used in an index, must be required in the schema',
+  SC39: 'The primary key must have the maxLength attribute set',
   // plugins/dev-mode
   DEV1: 'dev-mode added multiple times',
   // plugins/validate.js

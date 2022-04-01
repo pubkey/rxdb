@@ -125,7 +125,8 @@ var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   type: 'object',
   properties: {
     id: {
-      type: 'string'
+      type: 'string',
+      maxLength: 200
     },
     key: {
       type: 'string'

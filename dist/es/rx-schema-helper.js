@@ -14,7 +14,8 @@ export function getPseudoSchemaForVersion(version, primaryKey) {
     type: 'object',
     primaryKey: primaryKey,
     properties: (_properties = {}, _properties[primaryKey] = {
-      type: 'string'
+      type: 'string',
+      maxLength: 100
     }, _properties),
     required: [primaryKey]
   });
@@ -202,6 +203,10 @@ export var RX_META_SCHEMA = {
      */
     lwt: {
       type: 'number',
+
+      /**
+       * We use 1 as minimum so that the value is never falsy.
+       */
       minimum: 1,
       maximum: 1000000000000000,
       multipleOf: 1

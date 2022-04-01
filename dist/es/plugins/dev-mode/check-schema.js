@@ -193,6 +193,24 @@ export function checkPrimaryKey(jsonSchema) {
       validatePrimarySchemaPart(schemaPart);
     });
   }
+  /**
+   * The primary key must have a maxLength set
+   * which is required by some RxStorage implementations
+   * to ensure we can craft custom index strings.
+   */
+
+
+  var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
+  var primaryPathSchemaPart = jsonSchema.properties[primaryPath];
+
+  if (!primaryPathSchemaPart.maxLength) {
+    throw newRxError('SC39', {
+      schema: jsonSchema,
+      args: {
+        primaryPathSchemaPart: primaryPathSchemaPart
+      }
+    });
+  }
 }
 /**
  * computes real path of the object path in the collection schema

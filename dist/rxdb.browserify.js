@@ -284,6 +284,7 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
         break;
 
       case 'number':
+      case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
 
         if (bound === null) {
@@ -334,6 +335,7 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
         break;
 
       case 'number':
+      case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
 
         if (bound === null || bound === MAX_CHAR) {
@@ -4907,7 +4909,8 @@ var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   type: 'object',
   properties: {
     id: {
-      type: 'string'
+      type: 'string',
+      maxLength: 200
     },
     key: {
       type: 'string'
@@ -7419,7 +7422,8 @@ function getPseudoSchemaForVersion(version, primaryKey) {
     type: 'object',
     primaryKey: primaryKey,
     properties: (_properties = {}, _properties[primaryKey] = {
-      type: 'string'
+      type: 'string',
+      maxLength: 100
     }, _properties),
     required: [primaryKey]
   });
@@ -7616,6 +7620,10 @@ var RX_META_SCHEMA = {
      */
     lwt: {
       type: 'number',
+
+      /**
+       * We use 1 as minimum so that the value is never falsy.
+       */
       minimum: 1,
       maximum: 1000000000000000,
       multipleOf: 1
