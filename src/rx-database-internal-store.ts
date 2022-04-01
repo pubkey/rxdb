@@ -28,7 +28,8 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDoc
     type: 'object',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 200
         },
         key: {
             type: 'string'

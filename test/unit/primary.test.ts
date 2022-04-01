@@ -445,6 +445,7 @@ config.parallel('primary.test.js', () => {
                     properties: {
                         id: {
                             type: 'string',
+                            maxLength: 200
                         },
                         passportId: {
                             type: 'string',
