@@ -31,9 +31,9 @@ const db = await createRxDatabase({
 ```
 
 
-## Overwrite/Polyfil the native IndexedDB
+## Overwrite/Polyfill the native IndexedDB
 
-Node.js has no IndexedDB API. To still run the Dexie `RxStorage` in Node.js, for example to run unit tests, you have to polyfil it.
+Node.js has no IndexedDB API. To still run the Dexie `RxStorage` in Node.js, for example to run unit tests, you have to polyfill it.
 You can do that by using the [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB) module and pass it to the `getRxStorageDexie()` function.
 
 ```ts

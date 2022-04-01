@@ -119,6 +119,8 @@
 
 * [RxStorage LokiJS](./rx-storage-lokijs.md)
 
+* [RxStorage IndexedDB](./rx-storage-indexeddb.md)
+
 * [RxStorage Worker](./rx-storage-worker.md)
 
 * [Replication CouchDB](./replication-couchdb.md)
