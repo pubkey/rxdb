@@ -1,7 +1,7 @@
 import { getRxStorageLoki } from '../../lokijs';
-import { wrappedRxStorage } from '../../worker';
+import { wrappedWorkerRxStorage } from '../../worker';
 
 const storage = getRxStorageLoki();
-wrappedRxStorage({
+wrappedWorkerRxStorage({
     storage
 });

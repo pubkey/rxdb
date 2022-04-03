@@ -55,7 +55,7 @@ export type InWorkerStorage = {
     remove(instanceId: number): Promise<void>;
 }
 
-export function wrappedRxStorage<T, D>(
+export function wrappedWorkerRxStorage<T, D>(
     args: {
         storage: RxStorage<T, D>
     }

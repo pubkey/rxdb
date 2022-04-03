@@ -1,10 +1,10 @@
 import { getRxStoragePouch, addPouchPlugin } from '../../pouchdb';
-import { wrappedRxStorage } from '../../worker';
+import { wrappedWorkerRxStorage } from '../../worker';
 
 addPouchPlugin(require('pouchdb-adapter-memory'));
 const storage = getRxStoragePouch({
     adapter: 'memory'
 });
-wrappedRxStorage({
+wrappedWorkerRxStorage({
     storage
 });
