@@ -170,6 +170,14 @@ export interface RxStorageInstance<
     Internals,
     InstanceCreationOptions
     > {
+
+    /**
+     * The RxStorage which was used to create the given instance.
+     * We need this here to make it easy to get access static methods and stuff
+     * when working with the RxStorageInstance.
+     */
+    readonly storage: RxStorage<Internals, InstanceCreationOptions>;
+
     readonly databaseName: string;
     /**
      * Returns the internal data that is used by the storage engine.

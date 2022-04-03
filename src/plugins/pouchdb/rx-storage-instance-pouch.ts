@@ -16,6 +16,7 @@ import type {
     PreparedQuery,
     RxDocumentData,
     RxJsonSchema,
+    RxStorage,
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -51,12 +52,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     PouchSettings
 > {
     public readonly id: number = lastId++;
-
+    
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     private subs: Subscription[] = [];
     private primaryPath: keyof RxDocType;
-
+    
     constructor(
+        public readonly storage: RxStorage<PouchStorageInternals, PouchSettings>,
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,

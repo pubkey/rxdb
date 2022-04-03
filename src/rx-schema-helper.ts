@@ -8,7 +8,7 @@ import type {
     RxJsonSchema,
     StringKeys
 } from './types';
-import { clone, flatClone, isMaybeReadonlyArray, sortObject, trimDots } from './util';
+import { clone, flatClone, isMaybeReadonlyArray, RX_META_LWT_MINIMUM, sortObject, trimDots } from './util';
 
 /**
  * Helper function to create a valid RxJsonSchema
@@ -248,7 +248,7 @@ export const RX_META_SCHEMA: JsonSchema = {
             /**
              * We use 1 as minimum so that the value is never falsy.
              */
-            minimum: 1,
+            minimum: RX_META_LWT_MINIMUM,
             maximum: 1000000000000000,
             multipleOf: 1
         }

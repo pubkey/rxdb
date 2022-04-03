@@ -57,6 +57,7 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
         const worker = await this.workerPromise;
         const instanceId = await worker.createStorageInstance(params);
         return new RxStorageInstanceWorker(
+            this,
             params.databaseName,
             params.collectionName,
             params.schema,
@@ -81,6 +82,7 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
     private subs: Subscription[] = [];
 
     constructor(
+        public readonly storage: RxStorage<WorkerStorageInternals, any>,
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,

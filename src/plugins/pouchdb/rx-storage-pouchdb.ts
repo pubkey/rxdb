@@ -84,6 +84,7 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         );
         await createIndexesOnPouch(pouch, params.schema);
         return new RxStorageInstancePouch(
+            this,
             params.databaseName,
             params.collectionName,
             params.schema,

@@ -366,6 +366,7 @@ export function firstPropertyValueOfObject<T>(obj: { [k: string]: T }): T {
 
 
 import isElectron from 'is-electron';
+import { RX_META_SCHEMA } from './rx-schema-helper';
 export const isElectronRenderer = isElectron();
 
 
@@ -668,6 +669,12 @@ export const RXJS_SHARE_REPLAY_DEFAULTS = {
     refCount: true
 }
 
+/**
+ * We use 1 as minimum so that the value is never falsy.
+ * This const is used in several places because querying
+ * with a value lower then the minimum could give false results.
+ */
+export const RX_META_LWT_MINIMUM = 1;
 
 export function getDefaultRxDocumentMeta(): RxDocumentMeta {
     return {
@@ -677,7 +684,7 @@ export function getDefaultRxDocumentMeta(): RxDocumentMeta {
          * The storage wrappers will anyway update
          * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
          */
-        lwt: 1
+        lwt: RX_META_LWT_MINIMUM
     }
 }
 

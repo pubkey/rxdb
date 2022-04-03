@@ -121,7 +121,6 @@ export class DataMigrator {
                         this.nonMigratedOldCollections
                             .map(oldCol => getAllDocuments(
                                 oldCol.schema.primaryPath,
-                                this.database.storage,
                                 oldCol.storageInstance
                             ).then(allDocs => allDocs.length))
                     );
