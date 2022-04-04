@@ -4,12 +4,10 @@
  */
 import type {
     BulkWriteRow,
-    ChangeStreamOnceOptions,
     EventBulk,
     RxDocumentData,
     RxStorage,
     RxStorageBulkWriteResponse,
-    RxStorageChangedDocumentMeta,
     RxStorageChangeEvent,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult

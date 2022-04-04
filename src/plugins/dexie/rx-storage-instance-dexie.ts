@@ -9,7 +9,9 @@ import {
     lastOfArray,
     now,
     randomCouchString,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    RX_META_LWT_MINIMUM,
+    sortDocumentsByLastWriteTime
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type {
@@ -20,12 +22,11 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageBulkWriteError,
     RxStorageQueryResult,
-    ChangeStreamOnceOptions,
     RxJsonSchema,
-    RxStorageChangedDocumentMeta,
     RxStorageInstanceCreationParams,
     EventBulk,
-    PreparedQuery
+    PreparedQuery,
+    DexieChangesCheckpoint
 } from '../../types';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageDexie } from './rx-storage-dexie';
@@ -62,17 +63,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
     }
 
-    /**
-     * Adds entries to the changes feed
-     * that can be queried to check which documents have been
-     * changed since sequence X.
-     */
-    private async addChangeDocumentsMeta(ids: string[]) {
-        const state = await this.internals;
-        const addDocs = ids.map(id => ({ id }));
-        return state.dexieChangesTable.bulkPut(addDocs);
-    }
-
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
@@ -89,7 +79,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             'rw',
             state.dexieTable,
             state.dexieDeletedTable,
-            state.dexieChangesTable,
             async () => {
                 const docsInDb = await getDocsInDb<RxDocType>(this.internals, documentKeys);
 
@@ -256,8 +245,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID,
                     bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID,
                     bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs) : PROMISE_RESOLVE_VOID,
-                    bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID,
-                    changesIds.length > 0 ? this.addChangeDocumentsMeta(changesIds) : PROMISE_RESOLVE_VOID
+                    bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID
                 ]);
             });
 
@@ -307,59 +295,57 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     }
 
     async getChangedDocumentsSince(
-        _limit: number,
-        _checkpoint?: any
+        limit: number,
+        checkpoint?: DexieChangesCheckpoint
     ): Promise<{
         documents: RxDocumentData<RxDocType>[];
-        checkpoint?: any;
+        checkpoint?: DexieChangesCheckpoint;
     }> {
-        throw new Error('not implemented');
-    }
-
-    async getChangedDocuments(
-        options: ChangeStreamOnceOptions
-    ): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[];
-        lastSequence: number;
-    }> {
+        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
+        const sinceId = checkpoint ? checkpoint.id : '';
         const state = await this.internals;
-        let lastSequence: number = 0;
 
-        let query;
-        if (options.direction === 'before') {
-            query = state.dexieChangesTable
-                .where('sequence')
-                .below(options.sinceSequence)
-                .reverse();
-        } else {
-            query = state.dexieChangesTable
-                .where('sequence')
-                .above(options.sinceSequence);
+
+        const [changedDocsNormal, changedDocsDeleted] = await Promise.all(
+            [
+                state.dexieTable,
+                state.dexieDeletedTable
+            ].map(async (table) => {
+                const query = table
+                    .where('[_meta.lwt+' + this.primaryPath + ']')
+                    .above([sinceLwt, sinceId])
+                    .limit(limit);
+                const changedDocuments: RxDocumentData<RxDocType>[] = await query.toArray();
+                return changedDocuments;
+            })
+        );
+        let changedDocs = changedDocsNormal.concat(changedDocsDeleted);
+        // optimization shortcut
+        if (changedDocs.length === 0) {
+            return {
+                documents: [],
+                checkpoint
+            }
         }
 
-        if (options.limit) {
-            query = (query as any).limit(options.limit);
-        }
+        changedDocs = sortDocumentsByLastWriteTime(this.primaryPath as any, changedDocs);
+        changedDocs = changedDocs.slice(0, limit);
 
-        const changedDocuments: RxStorageChangedDocumentMeta[] = await query.toArray();
-
-        if (changedDocuments.length === 0) {
-            lastSequence = options.sinceSequence;
-        } else {
-            const useForLastSequence = options.direction === 'after' ? lastOfArray(changedDocuments) : changedDocuments[0];
-            lastSequence = useForLastSequence.sequence;
-        }
+        const useForCheckpoint = lastOfArray(changedDocs);
 
         return {
-            lastSequence,
-            changedDocuments
-        }
+            documents: changedDocs,
+            checkpoint: {
+                id: useForCheckpoint[this.primaryPath] as any,
+                lwt: useForCheckpoint._meta.lwt
+            }
+        };
     }
 
     async remove(): Promise<void> {
         const state = await this.internals;
         await Promise.all([
-            state.dexieChangesTable.clear(),
+            state.dexieDeletedTable.clear(),
             state.dexieTable.clear()
         ]);
         return this.close();

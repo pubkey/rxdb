@@ -7,7 +7,6 @@ import {
 import { newRxError } from '../../rx-error';
 import type {
     BulkWriteRow,
-    ChangeStreamOnceOptions,
     EventBulk,
     PouchBulkDocResultRow,
     PouchChangedDocumentsSinceCheckpoint,

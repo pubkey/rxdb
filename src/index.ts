@@ -148,10 +148,8 @@ export type {
     RxStorageQueryResult,
     RxStorageInstanceCreationParams,
     ChangeStreamOptions,
-    ChangeStreamOnceOptions,
     EventBulk,
     ChangeStreamEvent,
-    RxStorageChangedDocumentMeta,
     RxStorageChangeEvent,
     RxStorageInstance,
 

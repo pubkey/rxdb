@@ -23,7 +23,6 @@ import type {
     RxJsonSchema,
     MangoQuery,
     LokiStorageInternals,
-    RxStorageChangedDocumentMeta,
     RxStorageInstanceCreationParams,
     LokiDatabaseSettings,
     LokiLocalDatabaseState,
@@ -246,7 +245,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     async getChangedDocuments(
         options: ChangeStreamOnceOptions
     ): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[];
+        changedDocuments: any[];
         lastSequence: number;
     }> {
         const localState = await mustUseLocalState(this);
@@ -271,7 +270,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         if (options.limit) {
             query = query.limit(options.limit);
         }
-        const changedDocuments: RxStorageChangedDocumentMeta[] = query
+        const changedDocuments: any[] = query
             .data()
             .map(result => ({
                 id: result.id,
@@ -281,7 +280,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         const useForLastSequence = !desc ? lastOfArray(changedDocuments) : changedDocuments[0];
 
         const ret: {
-            changedDocuments: RxStorageChangedDocumentMeta[];
+            changedDocuments: any[];
             lastSequence: number;
         } = {
             changedDocuments,

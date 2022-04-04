@@ -4,7 +4,6 @@ import type {
 } from 'lokijs';
 import { AddReturn } from 'unload';
 import { LokiSaveQueue } from '../../plugins/lokijs/loki-save-queue';
-import type { RxStorageChangedDocumentMeta } from '../rx-storage';
 
 export type LokiDatabaseSettings = Partial<LokiConstructorOptions & LokiConfigOptions> & {};
 
@@ -66,5 +65,5 @@ export type LokiLocalDatabaseState = {
      * or queryable changefeed. So we keep our own changefeed
      * in the changesCollection.
      */
-    changesCollection: Collection<RxStorageChangedDocumentMeta>;
+    changesCollection: Collection<any>;
 }

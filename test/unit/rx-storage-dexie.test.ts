@@ -47,7 +47,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                 );
                 const docB = schemaObjects.human(
                     randomCouchString(10),
-                    2 
+                    2
                 );
                 const query: MangoQuery = {
                     selector: {},
@@ -106,9 +106,9 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         }
                     }
                 });
-                assert.strictEqual(dexieSchema, 'id');
+                assert.ok(dexieSchema.startsWith('id'));
             });
-            it('should contains the indees', () => {
+            it('should contains the indexes', () => {
                 const dexieSchema = getDexieStoreSchema({
                     primaryKey: 'id',
                     type: 'object',
@@ -126,7 +126,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         ['age', 'id']
                     ]
                 });
-                assert.strictEqual(dexieSchema, 'id, [age+id]');
+                assert.ok(dexieSchema.startsWith('id, [age+id]'));
             });
         });
     });

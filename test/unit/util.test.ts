@@ -9,7 +9,9 @@ import {
     sortObject,
     now,
     blobBufferUtil,
-    createRevision
+    createRevision,
+    sortDocumentsByLastWriteTime,
+    RxDocumentData
 } from '../../';
 
 import {
@@ -19,6 +21,7 @@ import {
 import {
     rev as pouchCreateRevisison
 } from 'pouchdb-utils';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
@@ -240,6 +243,78 @@ describe('util.test.js', () => {
             };
             const frozen = deepFreezeWhenDevMode(obj);
             assert.ok(obj === frozen);
+        });
+    });
+    describe('.sortDocumentsByLastWriteTime()', () => {
+        type SortDocType = { id: string };
+        const sortDocPrimary = 'id';
+        it('should sort correctly by lwt', () => {
+            const docs: RxDocumentData<SortDocType>[] = [
+                {
+                    id: 'a',
+                    _meta: {
+                        lwt: 1000
+                    },
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1
+                },
+                {
+                    id: 'a',
+                    _meta: {
+                        lwt: 999
+                    },
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1
+                },
+                {
+                    id: 'a',
+                    _meta: {
+                        lwt: 1001
+                    },
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1
+                }
+            ];
+            const sorted = sortDocumentsByLastWriteTime(sortDocPrimary, docs);
+            assert.strictEqual(sorted[0]._meta.lwt, 999);
+            assert.strictEqual(sorted[1]._meta.lwt, 1000);
+        });
+        it('should sort correctly by id', () => {
+            const docs: RxDocumentData<SortDocType>[] = [
+                {
+                    id: 'b',
+                    _meta: {
+                        lwt: 1000
+                    },
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1
+                },
+                {
+                    id: 'a',
+                    _meta: {
+                        lwt: 999
+                    },
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1
+                },
+                {
+                    id: 'c',
+                    _meta: {
+                        lwt: 1001
+                    },
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1
+                }
+            ];
+            const sorted = sortDocumentsByLastWriteTime(sortDocPrimary, docs);
+            assert.strictEqual(sorted[0].id, 'a');
+            assert.strictEqual(sorted[1].id, 'b');
         });
     });
 });

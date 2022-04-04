@@ -10,7 +10,6 @@ import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     BulkWriteRow,
-    ChangeStreamOnceOptions,
     EventBulk,
     RxChangeEvent,
     RxCollection,

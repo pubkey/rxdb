@@ -49,8 +49,10 @@ export function getDexieDbWithTables(
                  * by primary key.
                  * This increases performance because it is way easier for the query planner to select
                  * a good index and we also do not have to add the _deleted field to every index.
+                 * 
+                 * We also need the [_meta.lwt+' + primaryPath + '] index for getChangedDocumentsSince()
                  */
-                [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt'
+                [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']'
             });
             await dexieDb.open();
             return {
@@ -166,6 +168,8 @@ export function getDexieStoreSchema(
         });
     }
 
+    // we also need the _meta.lwt+primaryKey index for the getChangedDocumentsSince() method.
+    parts.push(['_meta.lwt', primaryKey]);
 
     /**
      * It is not possible to set non-javascript-variable-syntax

@@ -4,12 +4,10 @@ import type {
 } from 'event-reduce-js';
 import type {
     BulkWriteRow,
-    ChangeStreamOnceOptions,
     EventBulk,
     PreparedQuery,
     RxDocumentData,
     RxStorageBulkWriteResponse,
-    RxStorageChangedDocumentMeta,
     RxStorageChangeEvent,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult

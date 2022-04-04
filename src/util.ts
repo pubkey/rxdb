@@ -700,3 +700,20 @@ export function getDefaultRevision(): string {
      */
     return '';
 }
+
+export function sortDocumentsByLastWriteTime<RxDocType>(
+    primaryPath: string,
+    docs: RxDocumentData<RxDocType>[]
+): RxDocumentData<RxDocType>[] {
+    return docs.sort((a, b) => {
+        if (a._meta.lwt === b._meta.lwt) {
+            if ((b as any)[primaryPath] < (a as any)[primaryPath]) {
+                return 1;
+            } else {
+                return -1;
+            }
+        } else {
+            return a._meta.lwt - b._meta.lwt;
+        }
+    });
+}
