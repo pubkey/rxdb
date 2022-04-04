@@ -13,6 +13,7 @@
 - Added `withDeleted` parameter to `RxStorageKeyObjectInstance.findLocalDocumentsById()`
 - The `_deleted` field is now required for each data interaction with `RxStorage`.
 - `RxStorageInstance` must have the `RxStorage` in the `storage` property.
+- Removed `RxStorageInstance.getChangedDocuments()` and added `RxStorageInstance.getChangedDocumentsSince()` for better performance.
 
 - Removed the `core` plugin. The default export `from 'rxdb'` now exports only the RxDB core without plugins.
 - Added optional `init()` function to `RxPlugin`.

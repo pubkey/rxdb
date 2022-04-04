@@ -22,10 +22,10 @@ import type {
     WithDeleted
 } from '../../types';
 import {
-    getChangesSinceLastPushSequence,
+    getChangesSinceLastPushCheckpoint,
     getLastPullDocument,
     setLastPullDocument,
-    setLastPushSequence
+    setLastPushCheckpoint
 } from './replication-checkpoint';
 import {
     ensureNotFalsy,
@@ -327,7 +327,7 @@ export class RxReplicationStateBase<RxDocType> {
             if (this.isStopped()) {
                 return Promise.resolve('ok');
             }
-            const localWritesInBetween = await getChangesSinceLastPushSequence<RxDocType>(
+            const localWritesInBetween = await getChangesSinceLastPushCheckpoint<RxDocType>(
                 this.collection,
                 this.replicationIdentifierHash,
                 () => this.isStopped(),
@@ -468,7 +468,7 @@ export class RxReplicationStateBase<RxDocType> {
         }
 
         const batchSize = this.push.batchSize ? this.push.batchSize : 5;
-        const changesResult = await getChangesSinceLastPushSequence<RxDocType>(
+        const changesResult = await getChangesSinceLastPushCheckpoint<RxDocType>(
             this.collection,
             this.replicationIdentifierHash,
             () => this.isStopped(),
@@ -515,10 +515,10 @@ export class RxReplicationStateBase<RxDocType> {
             return true;
         }
 
-        await setLastPushSequence(
+        await setLastPushCheckpoint(
             this.collection,
             this.replicationIdentifierHash,
-            changesResult.lastSequence
+            changesResult.checkpoint
         );
 
         // batch had documents so there might be more changes to replicate

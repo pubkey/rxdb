@@ -15,7 +15,6 @@ import {
     getDefaultRevision,
     now
 } from '../../util';
-import { newRxError } from '../../rx-error';
 import { wasLastWriteFromPullReplication } from './revision-flag';
 import {
     getPrimaryKeyOfInternalDocument,
@@ -32,10 +31,10 @@ const pullLastDocumentKey = (replicationIdentifierHash: string) => 'replication-
 /**
  * Get the last push checkpoint
  */
-export function getLastPushSequence(
+export function getLastPushCheckpoint(
     collection: RxCollection,
     replicationIdentifierHash: string
-): Promise<number> {
+): Promise<any | undefined> {
     return getSingleDocument<InternalStoreReplicationPushDocType>(
         collection.database.internalStore,
         getPrimaryKeyOfInternalDocument(
@@ -44,17 +43,17 @@ export function getLastPushSequence(
         )
     ).then(doc => {
         if (!doc) {
-            return 0;
+            return undefined;
         } else {
-            return doc.data.lastPushSequence;
+            return doc.data.checkpoint;
         }
     });
 }
 
-export async function setLastPushSequence(
+export async function setLastPushCheckpoint(
     collection: RxCollection,
     replicationIdentifierHash: string,
-    sequence: number
+    checkpoint: any
 ): Promise<RxDocumentData<InternalStoreReplicationPushDocType>> {
     const docId = getPrimaryKeyOfInternalDocument(
         pushSequenceDocumentKey(replicationIdentifierHash),
@@ -71,7 +70,7 @@ export async function setLastPushSequence(
             key: pushSequenceDocumentKey(replicationIdentifierHash),
             context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
             data: {
-                lastPushSequence: sequence
+                checkpoint
             },
             _deleted: false,
             _meta: {
@@ -89,16 +88,12 @@ export async function setLastPushSequence(
         );
         return res;
     } else {
-        const newDoc = flatClone(doc);
-        newDoc.data = {
-            lastPushSequence: sequence
-        };
         const docData = {
             id: docId,
             key: pushSequenceDocumentKey(replicationIdentifierHash),
             context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
             data: {
-                lastPushSequence: sequence
+                checkpoint
             },
             _meta: {
                 lwt: now()
@@ -119,9 +114,7 @@ export async function setLastPushSequence(
     }
 }
 
-
-
-export async function getChangesSinceLastPushSequence<RxDocType>(
+export async function getChangesSinceLastPushCheckpoint<RxDocType>(
     collection: RxCollection<RxDocType, any>,
     replicationIdentifierHash: string,
     /**
@@ -137,21 +130,19 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
     changedDocs: Map<string, {
         id: string;
         doc: RxDocumentData<RxDocType>;
-        sequence: number;
     }>;
-    lastSequence: number;
+    checkpoint: any;
 }> {
-    let lastPushSequence = await getLastPushSequence(
+    const primaryPath = collection.schema.primaryPath;
+    let lastPushCheckpoint = await getLastPushCheckpoint(
         collection,
         replicationIdentifierHash
     );
-
     let retry = true;
-    let lastSequence: number = lastPushSequence;
+    let lastCheckpoint: any = lastPushCheckpoint;
     const changedDocs: Map<string, {
         id: string;
         doc: RxDocumentData<RxDocType>;
-        sequence: number;
     }> = new Map();
     const changedDocIds: Set<string> = new Set();
 
@@ -162,40 +153,29 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
      * until we reach the end of it
      */
     while (retry && !isStopped()) {
-        const changesResults = await collection.storageInstance.getChangedDocuments({
-            sinceSequence: lastPushSequence,
-            limit: batchSize,
-            direction: 'after'
-        });
+        const changesResults = await collection.storageInstance.getChangedDocumentsSince(
+            batchSize,
+            lastPushCheckpoint
+        );
 
-        lastSequence = changesResults.lastSequence;
+        lastCheckpoint = changesResults.checkpoint;
 
         // optimisation shortcut, do not proceed if there are no changed documents
-        if (changesResults.changedDocuments.length === 0) {
+        if (changesResults.documents.length === 0) {
             retry = false;
             continue;
         }
 
-        const docIds = changesResults.changedDocuments.map(row => row.id);
 
         if (isStopped()) {
             break;
         }
 
 
-        const docs = await collection.storageInstance.findDocumentsById(
-            docIds,
-            true
-        );
-
-        changesResults.changedDocuments.forEach((row) => {
-            const id = row.id;
-            if (changedDocs.has(id)) {
+        changesResults.documents.forEach(docData => {
+            const docId: string = docData[primaryPath] as any;
+            if (changedDocs.has(docId)) {
                 return;
-            }
-            const changedDoc = docs[id];
-            if (!changedDoc) {
-                throw newRxError('SNH', { args: { docs, docIds } });
             }
 
             /**
@@ -205,25 +185,24 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             if (
                 wasLastWriteFromPullReplication(
                     replicationIdentifierHash,
-                    changedDoc
+                    docData
                 )
             ) {
                 return false;
             }
-            changedDocIds.add(id);
-            changedDocs.set(id, {
-                id,
-                doc: changedDoc,
-                sequence: row.sequence
+            changedDocIds.add(docId);
+            changedDocs.set(docId, {
+                id: docId,
+                doc: docData
             });
         });
 
         if (
             changedDocs.size < batchSize &&
-            changesResults.changedDocuments.length === batchSize
+            changesResults.documents.length === batchSize
         ) {
             // no pushable docs found but also not reached the end -> re-run
-            lastPushSequence = lastSequence;
+            lastPushCheckpoint = lastCheckpoint;
             retry = true;
         } else {
             retry = false;
@@ -232,7 +211,7 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
     return {
         changedDocIds,
         changedDocs,
-        lastSequence
+        checkpoint: lastCheckpoint
     };
 }
 

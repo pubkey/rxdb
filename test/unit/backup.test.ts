@@ -94,8 +94,12 @@ describe('backup.test.ts', () => {
                 directory,
                 attachments: true
             };
+
+            console.log('--- 1');
             const backupState = collection.database.backup(options);
+            console.log('--- 2');
             await backupState.awaitInitialBackup();
+            console.log('--- 3');
 
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary)));
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary, 'attachments', 'cat.txt')));
@@ -106,7 +110,7 @@ describe('backup.test.ts', () => {
             );
 
             const meta: BackupMetaFileContent = await getMeta(options);
-            assert.ok(meta.collectionStates.human.lastSequence > 0);
+            assert.ok(meta.collectionStates.human.checkpoint);
 
             collection.database.destroy();
         });

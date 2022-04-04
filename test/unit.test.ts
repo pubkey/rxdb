@@ -14,7 +14,9 @@ import './unit/rx-storage-pouchdb.test.js';
 import './unit/rx-storage-lokijs.test.js';
 import './unit/rx-storage-dexie.test.js';
 
-import './unit/custom-index.test.js';
+import './unit/backup.test.js';
+import './unit/replication-graphql.test.js';
+import './unit/replication.test.js';
 
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
@@ -42,11 +44,9 @@ import './unit/cleanup.test.js';
 import './unit/hooks.test.js';
 import './unit/orm.test.js';
 import './unit/population.test.js';
-import './unit/backup.test.js';
 import './unit/leader-election.test.js';
-import './unit/replication.test.js';
+import './unit/custom-index.test.js';
 import './unit/replication-couchdb.test.js';
-import './unit/replication-graphql.test.js';
 import './unit/import-export.test.js';
 import './unit/cross-instance.test.js';
 import './unit/server.test.js';

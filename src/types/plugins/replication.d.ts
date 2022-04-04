@@ -10,7 +10,7 @@ import type {
 
 
 export type InternalStoreReplicationPushDocType = InternalStoreDocType<{
-    lastPushSequence: number;
+    checkpoint: any;
 }>;
 export type InternalStoreReplicationPullDocType<RxDocType> = InternalStoreDocType<{
     lastPulledDoc: RxDocumentData<RxDocType>;

@@ -20,7 +20,8 @@ import {
     hashAttachmentData,
     parseRevision,
     getAttachmentSize,
-    fillWithDefaultSettings
+    fillWithDefaultSettings,
+    createRevision
 } from '../../';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
@@ -63,8 +64,8 @@ declare type MultiInstanceInstances = {
 };
 
 function getWriteData(
-    ownParams: Partial<RxDocumentWriteData<TestDocType>> = {}
-): RxDocumentWriteData<TestDocType> {
+    ownParams: Partial<RxDocumentData<TestDocType>> = {}
+): RxDocumentData<TestDocType> {
     return Object.assign(
         {
             key: randomString(10),
@@ -1300,8 +1301,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 storageInstance.close();
             });
         });
-        describe('.getChangedDocuments()', () => {
-            it('should get the latest sequence', async () => {
+        describe('.getChangedDocumentsSince()', () => {
+            it('should get the latests change', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{ key: string }>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
@@ -1309,19 +1310,19 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
-                assert.ok(storageInstance);
-                async function getSequenceAfter(since: number): Promise<number> {
-                    const changesResult = await storageInstance.getChangedDocuments({
-                        direction: 'after',
-                        limit: 1,
-                        sinceSequence: since
-                    });
-                    return changesResult.lastSequence;
+                let checkpoint: any;
+                async function getChanges(): Promise<RxDocumentData<{ key: string }>[]> {
+                    const res = await storageInstance.getChangedDocumentsSince(10, checkpoint);
+                    checkpoint = res.checkpoint;
+                    return res.documents;
                 }
-                const latestBefore = await getSequenceAfter(0);
-                assert.strictEqual(latestBefore, 0);
 
-                await storageInstance.bulkWrite([
+                // should not return anything if nothing has happened
+                const docsEmpty = await getChanges();
+                assert.strictEqual(docsEmpty.length, 0);
+
+                // insert one
+                const insertResult = await storageInstance.bulkWrite([
                     {
                         document: {
                             key: 'foobar',
@@ -1334,137 +1335,39 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }
                 ]);
-                const latestMiddle = await getSequenceAfter(0);
-                assert.strictEqual(latestMiddle, 1);
+                const docsAfterInsert = await getChanges();
+                assert.strictEqual(docsAfterInsert.length, 1);
+                assert.strictEqual(docsAfterInsert[0].key, 'foobar');
 
+                // delete one
                 await storageInstance.bulkWrite([
                     {
+                        previous: getFromObjectOrThrow(insertResult.success, 'foobar'),
                         document: {
-                            key: 'foobar2',
-                            _deleted: false,
+                            key: 'foobar',
+                            _deleted: true,
                             _attachments: {},
-                            _rev: EXAMPLE_REVISION_1,
+                            _rev: EXAMPLE_REVISION_2,
                             _meta: {
                                 lwt: now()
                             }
                         }
                     }
                 ]);
-                const latestAfter = await getSequenceAfter(1);
-                assert.strictEqual(latestAfter, 2);
+                const docsAfterDelete = await getChanges();
+                assert.strictEqual(docsAfterDelete.length, 1);
+                assert.strictEqual(docsAfterDelete[0].key, 'foobar');
+                assert.strictEqual(docsAfterDelete[0]._deleted, true);
 
-                const docsInDbResult = await storageInstance.findDocumentsById(['foobar'], true);
-                getFromObjectOrThrow(docsInDbResult, 'foobar');
-
-                storageInstance.close();
-            });
-            it('should get the correct changes', async () => {
-                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {},
-                    multiInstance: false
-                });
-
-                let previous: RxDocumentData<TestDocType> | undefined;
-                const writeData = {
-                    key: 'foobar',
-                    value: 'one',
-                    _attachments: {},
-                    _rev: EXAMPLE_REVISION_1,
-                    _deleted: false,
-                    _meta: {
-                        lwt: now()
-                    }
-                };
-
-                // insert
-                const firstWriteResult = await storageInstance.bulkWrite([{
-                    previous,
-                    document: writeData
-                }]);
-                previous = getFromObjectOrThrow(firstWriteResult.success, writeData.key);
-
-                const changesAfterWrite = await storageInstance.getChangedDocuments({
-                    direction: 'after',
-                    sinceSequence: 0
-                });
-                const firstChangeAfterWrite = changesAfterWrite.changedDocuments[0];
-                if (!firstChangeAfterWrite) {
-                    throw new Error('missing change');
-                }
-                assert.strictEqual(firstChangeAfterWrite.id, 'foobar');
-                assert.strictEqual(firstChangeAfterWrite.sequence, 1);
-
-                // update
-                const updateResult = await storageInstance.bulkWrite([{
-                    previous,
-                    document: Object.assign({}, writeData, {
-                        value: 'two',
-                        _rev: EXAMPLE_REVISION_2,
-                        _meta: {
-                            lwt: now()
-                        }
-                    })
-                }]);
-                previous = getFromObjectOrThrow(updateResult.success, writeData.key);
-                const changesAfterUpdate = await storageInstance.getChangedDocuments({
-                    direction: 'after',
-                    sinceSequence: 1
-                });
-                const firstChangeAfterUpdate = changesAfterUpdate.changedDocuments[0];
-                if (!firstChangeAfterUpdate) {
-                    throw new Error('missing change');
-                }
-
-                assert.strictEqual(firstChangeAfterUpdate.id, 'foobar');
-                assert.strictEqual(firstChangeAfterUpdate.sequence, 2);
-
-                // delete
-                await storageInstance.bulkWrite([{
-                    previous,
-                    document: Object.assign({}, writeData, {
-                        _deleted: true,
-                        _rev: EXAMPLE_REVISION_3,
-                        _meta: {
-                            lwt: now()
-                        }
-                    })
-                }]);
-                const changesAfterDelete = await storageInstance.getChangedDocuments({
-                    direction: 'after',
-                    sinceSequence: 2
-                });
-                const firstChangeAfterDelete = changesAfterDelete.changedDocuments[0];
-                if (!firstChangeAfterDelete) {
-                    throw new Error('missing change');
-                }
-                assert.strictEqual(firstChangeAfterDelete.id, 'foobar');
-
-                assert.strictEqual(firstChangeAfterDelete.sequence, 3);
-                assert.strictEqual(changesAfterDelete.lastSequence, 3);
-
-                // itterate over the sequences
-                let done = false;
-                let lastSequence = 0;
-                while (!done) {
-                    const changesResults = await storageInstance.getChangedDocuments({
-                        sinceSequence: lastSequence,
-                        limit: 1,
-                        direction: 'after'
-                    });
-                    if (changesResults.changedDocuments.length === 0) {
-                        done = true;
-                        continue;
-                    }
-                    lastSequence = changesResults.lastSequence;
-                }
-                assert.strictEqual(lastSequence, 3);
+                // get only the last change when requesting with empty checkpoint
+                const resTotal = await storageInstance.getChangedDocumentsSince(100);
+                assert.strictEqual(resTotal.documents.length, 1);
+                assert.strictEqual(resTotal.documents[0].key, 'foobar');
+                assert.strictEqual(resTotal.documents[0]._deleted, true);
 
                 storageInstance.close();
             });
-            it('should sort correctly by sequence', async () => {
+            it('should return the correct amount of documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
@@ -1473,60 +1376,85 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const insertDocs = new Array(10).fill(0).map(() => getWriteData());
-                for (const insertDoc of insertDocs) {
-                    await storageInstance.bulkWrite([
-                        { document: insertDoc }
+                let previous: any;
+                const insertResult = await storageInstance.bulkWrite([
+                    {
+                        document: getWriteData({ key: 'foobar', value: '0' })
+                    },
+                    // also add another random document
+                    {
+                        document: getWriteData()
+                    }
+                ]);
+                assert.deepStrictEqual(insertResult.error, {});
+                previous = getFromObjectOrThrow(insertResult.success, 'foobar');
+
+                // update the document many times
+                let t = 0;
+                while (t < 10) {
+                    t++;
+                    const newDoc = clone(previous);
+                    newDoc.value = t + '';
+                    const newRev = createRevision(newDoc, previous);
+                    newDoc._rev = newRev;
+                    newDoc._meta.lwt = now();
+                    const updateResult = await storageInstance.bulkWrite([
+                        {
+                            previous,
+                            document: newDoc
+                        }
                     ]);
+                    assert.deepStrictEqual(updateResult.error, {});
+                    previous = getFromObjectOrThrow(updateResult.success, 'foobar');
                 }
 
-                const first5Ids = insertDocs.slice(0, 5).map(d => d.key);
+                // should return both documents when called without checkpoint
+                const resultWithoutCheckpoint = await storageInstance.getChangedDocumentsSince(10);
+                assert.strictEqual(resultWithoutCheckpoint.documents.length, 2);
+                // the foobar-doc must have the latest value
+                const foobarDoc = resultWithoutCheckpoint.documents.find(d => d.key === 'foobar');
+                assert.strictEqual(ensureNotFalsy(foobarDoc).value, '10');
 
-                const changesResults = await storageInstance.getChangedDocuments({
-                    sinceSequence: 0,
-                    limit: 5,
-                    direction: 'after'
-                });
-                const resultIds = Array.from(changesResults.changedDocuments.values()).map(d => d.id);
-                assert.deepStrictEqual(first5Ids[0], resultIds[0]);
-
-                storageInstance.close();
-            });
-            it('should get the full amount of change documents', async () => {
-
-                /**
-                 * PouchDB failed this test when we have indexes
-                 * because it stores meta documents that contain info about the indexes.
-                 * So we add more indexes here to ensure this is never broken.
-                 */
-                const useSchema = getTestDataSchema();
-                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema: useSchema,
-                    options: {},
-                    multiInstance: false
-                });
-
-                // run many inserts
-                const insertDocs = new Array(10).fill(0).map(() => getWriteData());
-                await storageInstance.bulkWrite(
-                    insertDocs.map(d => ({ document: d }))
+                // insert many more documents
+                const insertManyResult = await storageInstance.bulkWrite(
+                    new Array(10)
+                        .fill(0)
+                        .map(() => ({ document: getWriteData() }))
                 );
+                assert.deepStrictEqual(insertManyResult.error, {});
 
-                const limit = 5;
-                const result = await storageInstance.getChangedDocuments({
-                    direction: 'after',
-                    sinceSequence: 0,
-                    limit
-                });
+                // should return both documents when called without checkpoint
+                const resultManyWithoutCheckpoint = await storageInstance.getChangedDocumentsSince(100);
+                assert.strictEqual(resultManyWithoutCheckpoint.documents.length, 12);
 
-                /**
-                 * Because we did many writes, the result should be 'full'.
-                 * This is important so that the caller of getChangedDocuments()
-                 * can know if there might be more changes to be fetched.
-                 */
-                assert.strictEqual(result.changedDocuments.length, limit);
+
+                // first get 5 and then another 5 and then again.
+                const resultFirstFive = await storageInstance.getChangedDocumentsSince(5);
+                const resultSecondFive = await storageInstance.getChangedDocumentsSince(5, resultFirstFive.checkpoint);
+                const resultThirdFive = await storageInstance.getChangedDocumentsSince(5, resultSecondFive.checkpoint);
+                assert.strictEqual(resultFirstFive.documents.length + resultSecondFive.documents.length + resultThirdFive.documents.length, 12);
+                const resultFourthFive = await storageInstance.getChangedDocumentsSince(5, resultThirdFive.checkpoint);
+                assert.strictEqual(resultFourthFive.documents.length, 0);
+
+
+                // delete the document
+                const newDoc = clone(previous);
+                newDoc.value = t + '';
+                newDoc._deleted = true;
+                newDoc._meta.lwt = now();
+                const newRev = createRevision(newDoc, previous);
+                newDoc._rev = newRev;
+                const deleteResult = await storageInstance.bulkWrite([
+                    {
+                        previous,
+                        document: newDoc
+                    }
+                ]);
+                assert.deepStrictEqual(deleteResult.error, {});
+
+                const resultAfterDelete = await storageInstance.getChangedDocumentsSince(5, resultFourthFive.checkpoint);
+                assert.strictEqual(resultAfterDelete.documents.length, 1);
+                assert.strictEqual(resultAfterDelete.documents[0]._deleted, true);
 
                 storageInstance.close();
             });
@@ -1808,15 +1736,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(firstEventAttachment.length, dataLength);
                 assert.ok(!(firstEventAttachment as any).data);
 
-                const changesResult = await storageInstance.getChangedDocuments({
-                    sinceSequence: 0,
-                    direction: 'after'
-                });
-                const firstChange = changesResult.changedDocuments[0];
+                const changesResult = await storageInstance.getChangedDocumentsSince(1000);
+                const firstChange = changesResult.documents[0];
                 if (!firstChange) {
                     throw new Error('first change missing');
                 }
-                assert.strictEqual(firstChange.id, 'foobar');
+                assert.strictEqual(firstChange.key, 'foobar');
 
                 sub.unsubscribe();
                 storageInstance.close();

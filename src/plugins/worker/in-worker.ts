@@ -40,12 +40,13 @@ export type InWorkerStorage = {
         documentId: string,
         attachmentId: string
     ): Promise<string>;
-    getChangedDocuments(
+    getChangedDocumentsSince<RxDocType>(
         instanceId: number,
-        options: ChangeStreamOnceOptions
+        limit: number,
+        checkpoint: any
     ): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[];
-        lastSequence: number;
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint?: any;
     }>;
     changeStream<DocumentData>(
         instanceById: number
@@ -106,16 +107,18 @@ export function wrappedWorkerRxStorage<T, D>(
                 attachmentId
             );
         },
-        getChangedDocuments(
+        getChangedDocumentsSince<RxDocType>(
             instanceId: number,
-            options: ChangeStreamOnceOptions
+            limit: number,
+            checkpoint: any
         ): Promise<{
-            changedDocuments: RxStorageChangedDocumentMeta[];
-            lastSequence: number;
+            documents: RxDocumentData<RxDocType>[];
+            checkpoint?: any;
         }> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
-            return instance.getChangedDocuments(
-                options
+            return instance.getChangedDocumentsSince(
+                limit,
+                checkpoint
             );
         },
         changeStream<DocumentData>(

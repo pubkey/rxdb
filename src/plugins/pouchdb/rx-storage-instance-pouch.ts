@@ -10,6 +10,7 @@ import type {
     ChangeStreamOnceOptions,
     EventBulk,
     PouchBulkDocResultRow,
+    PouchChangedDocumentsSinceCheckpoint,
     PouchChangesOptionsNonLive,
     PouchSettings,
     PouchWriteError,
@@ -52,11 +53,11 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     PouchSettings
 > {
     public readonly id: number = lastId++;
-    
+
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     private subs: Subscription[] = [];
     private primaryPath: keyof RxDocType;
-    
+
     constructor(
         public readonly storage: RxStorage<PouchStorageInternals, PouchSettings>,
         public readonly databaseName: string,
@@ -324,21 +325,23 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             .then(() => false);
     }
 
-    async getChangedDocuments(
-        options: ChangeStreamOnceOptions
+    async getChangedDocumentsSince(
+        limit: number,
+        checkpoint?: PouchChangedDocumentsSinceCheckpoint
     ): Promise<{
-        changedDocuments: {
-            id: string;
-            sequence: number;
-        }[];
-        lastSequence: number;
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint?: PouchChangedDocumentsSinceCheckpoint;
     }> {
+        if (!limit || typeof limit !== 'number') {
+            throw new Error('wrong limit');
+        }
+
         const pouchChangesOpts: PouchChangesOptionsNonLive = {
             live: false,
-            limit: options.limit,
+            limit: limit,
             include_docs: false,
-            since: options.sinceSequence,
-            descending: options.direction === 'before' ? true : false
+            since: checkpoint ? checkpoint.sequence : 0,
+            descending: false
         };
 
         let lastSequence = 0;
@@ -375,9 +378,27 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             pouchChangesOpts.limit = skippedDesignDocuments;
         }
 
+        const documentsData = await this.findDocumentsById(
+            changedDocuments.map(o => o.id),
+            true
+        );
+
+        if (
+            Object.keys(documentsData).length > 0 &&
+            checkpoint && checkpoint.sequence === lastSequence
+        ) {
+            /**
+             * When documents are returned, it makes no sense
+             * if the sequence is equal to the one given at the checkpoint.
+             */
+            throw new Error('same sequence');
+        }
+
         return {
-            changedDocuments,
-            lastSequence
-        };
+            documents: Object.values(documentsData),
+            checkpoint: {
+                sequence: lastSequence
+            }
+        }
     }
 }

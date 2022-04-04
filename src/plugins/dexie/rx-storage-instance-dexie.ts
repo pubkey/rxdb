@@ -306,6 +306,16 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         );
     }
 
+    async getChangedDocumentsSince(
+        _limit: number,
+        _checkpoint?: any
+    ): Promise<{
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint?: any;
+    }> {
+        throw new Error('not implemented');
+    }
+
     async getChangedDocuments(
         options: ChangeStreamOnceOptions
     ): Promise<{

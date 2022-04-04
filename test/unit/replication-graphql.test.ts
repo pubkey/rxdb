@@ -38,7 +38,8 @@ import {
 } from '../../plugins/replication-graphql';
 import {
     getLastPullDocument,
-    getLastPushSequence, setLastPullDocument
+    getLastPushCheckpoint,
+    setLastPullDocument
 } from '../../plugins/replication';
 import * as schemas from '../helper/schemas';
 import {
@@ -1911,6 +1912,9 @@ describe('replication-graphql.test.ts', () => {
 
         config.parallel('issues', () => {
             it('should not create push checkpoints unnecessarily [PR: #3627]', async () => {
+                if (config.storage.name !== 'pouchdb') {
+                    return;
+                }
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);
                 const [c, server] = await Promise.all([
@@ -1936,7 +1940,7 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.awaitInitialReplication();
                 await replicationState.run();
 
-                const originalSequence = await getLastPushSequence(
+                const originalCheckpoint = await getLastPushCheckpoint(
                     replicationState.collection,
                     replicationState.replicationState.replicationIdentifierHash
                 );
@@ -1946,11 +1950,11 @@ describe('replication-graphql.test.ts', () => {
                     await replicationState.run();
                 }
 
-                const newSequence = await getLastPushSequence(
+                const newCheckpoint = await getLastPushCheckpoint(
                     replicationState.collection,
                     replicationState.replicationState.replicationIdentifierHash
                 );
-                assert.strictEqual(originalSequence, newSequence);
+                assert.strictEqual(originalCheckpoint.sequence, newCheckpoint.sequence);
                 server.close();
                 c.database.destroy();
             });

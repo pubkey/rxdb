@@ -166,7 +166,7 @@ export function categorizeBulkWriteRows<RxDocType>(
      * Ids of all documents that are changed
      * and so their change must be written into the
      * sequences table so that they can be fetched via
-     * RxStorageInstance().getChangedDocuments().
+     * RxStorageInstance().getChangedDocumentsSince().
      */
     changedDocumentIds: RxDocumentData<RxDocType>[keyof RxDocType][];
     errors: RxStorageBulkWriteError<RxDocType>[];
@@ -550,10 +550,16 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                 () => storageInstance.getAttachmentData(documentId, attachmentId)
             );
         },
-        getChangedDocuments(options: ChangeStreamOnceOptions) {
+        getChangedDocumentsSince(limit: number, checkpoint?: any) {
             return database.lockedRun(
-                () => storageInstance.getChangedDocuments(options)
-            );
+                () => storageInstance.getChangedDocumentsSince(limit, checkpoint)
+            ).then(result => {
+                const documents = result.documents.map(d => transformDocumentDataFromRxStorageToRxDB(d));
+                return {
+                    documents,
+                    checkpoint: result.checkpoint
+                };
+            });
         },
         cleanup(minDeletedTime: number) {
             return database.lockedRun(

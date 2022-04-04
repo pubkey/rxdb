@@ -231,6 +231,18 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
         throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
     }
+
+
+    async getChangedDocumentsSince(
+        _limit: number,
+        _checkpoint?: any
+    ): Promise<{
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint?: any;
+    }> {
+        throw new Error('not implemented');
+    }
+
     async getChangedDocuments(
         options: ChangeStreamOnceOptions
     ): Promise<{

@@ -28,15 +28,15 @@ import {
 } from '../../';
 
 import {
-    setLastPushSequence,
-    getLastPushSequence,
-    getChangesSinceLastPushSequence,
     setLastPullDocument,
     getLastPullDocument,
     replicateRxCollection,
     wasLastWriteFromPullReplication,
     setLastWritePullReplication,
-    getPullReplicationFlag
+    getPullReplicationFlag,
+    setLastPushCheckpoint,
+    getLastPushCheckpoint,
+    getChangesSinceLastPushCheckpoint
 } from '../../plugins/replication';
 
 import type {
@@ -167,10 +167,10 @@ describe('replication.test.js', () => {
         });
     });
     config.parallel('replication-checkpoints', () => {
-        describe('.setLastPushSequence()', () => {
+        describe('.setLastPushCheckpoint()', () => {
             it('should set the last push sequence', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                const ret = await setLastPushSequence(
+                const ret = await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     1
@@ -180,12 +180,12 @@ describe('replication.test.js', () => {
             });
             it('should be able to run multiple times', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                await setLastPushSequence(
+                await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     1
                 );
-                await setLastPushSequence(
+                await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     2
@@ -193,24 +193,24 @@ describe('replication.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('.getLastPushSequence()', () => {
-            it('should get null if not set before', async () => {
+        describe('.getLastPushCheckpoint()', () => {
+            it('should get undefined if not set before', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                const ret = await getLastPushSequence(
+                const ret = await getLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST
                 );
-                assert.strictEqual(ret, 0);
+                assert.strictEqual(typeof ret, 'undefined');
                 c.database.destroy();
             });
             it('should get the value if set before', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                await setLastPushSequence(
+                await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     5
                 );
-                const ret = await getLastPushSequence(
+                const ret = await getLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST
                 );
@@ -219,23 +219,23 @@ describe('replication.test.js', () => {
             });
             it('should get the value if set multiple times', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                await setLastPushSequence(
+                await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     5
                 );
-                const ret = await getLastPushSequence(
+                const ret = await getLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST
                 );
                 assert.strictEqual(ret, 5);
 
-                await setLastPushSequence(
+                await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     10
                 );
-                const ret2 = await getLastPushSequence(
+                const ret2 = await getLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST
                 );
@@ -243,11 +243,11 @@ describe('replication.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('.getChangesSinceLastPushSequence()', () => {
+        describe('.getChangesSinceLastPushCheckpoint()', () => {
             it('should get all changes', async () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
@@ -263,7 +263,7 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(amount);
                 const oneDoc = await c.findOne().exec(true);
                 await oneDoc.atomicPatch({ age: 1 });
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
@@ -275,7 +275,7 @@ describe('replication.test.js', () => {
             it('should not get more changes then the limit', async () => {
                 const amount = 30;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
@@ -293,7 +293,7 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(amount);
                 const oneDoc = await c.findOne().exec(true);
                 await oneDoc.remove();
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
@@ -316,7 +316,7 @@ describe('replication.test.js', () => {
             it('should have resolved the primary', async () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
@@ -355,7 +355,7 @@ describe('replication.test.js', () => {
                 const allDocs = await c.find().exec();
 
                 assert.strictEqual(allDocs.length, amount + 1);
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
@@ -365,13 +365,6 @@ describe('replication.test.js', () => {
                 assert.strictEqual(changesResult.changedDocs.size, amount);
                 const shouldNotBeFound = Array.from(changesResult.changedDocs.values()).find((change) => change.id === docId);
                 assert.ok(!shouldNotBeFound);
-
-                /**
-                 * lastSequence must be >= amount
-                 * Not == because there might be hidden change documents
-                 * like when pouchdb adds one while creating an index.
-                 */
-                assert.ok(changesResult.lastSequence >= amount);
 
                 c.database.destroy();
             });
@@ -460,7 +453,6 @@ describe('replication.test.js', () => {
                 console.log('got error :');
                 console.dir(err);
             });
-
             await replicationState.awaitInitialReplication();
 
             const docsLocal = await localCollection.find().exec();
@@ -608,7 +600,7 @@ describe('replication.test.js', () => {
             await replicationState.awaitInitialReplication();
             await replicationState.run();
 
-            const originalSequence = await getLastPushSequence(
+            const originalSequence = await getLastPushCheckpoint(
                 localCollection,
                 REPLICATION_IDENTIFIER_TEST
             );
@@ -617,7 +609,7 @@ describe('replication.test.js', () => {
                 await replicationState.run()
             }
 
-            const newSequence = await getLastPushSequence(
+            const newSequence = await getLastPushCheckpoint(
                 localCollection,
                 REPLICATION_IDENTIFIER_TEST
             );
