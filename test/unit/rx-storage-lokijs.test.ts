@@ -259,7 +259,6 @@ describe('rx-storage-lokijs.test.js', () => {
              * on the next autosave which is called on close()
              */
             await storageInstance.close();
-            console.log('dbLocation: ' + dbLocation);
             const exists = fs.existsSync(dbLocation + '.db');
             assert.ok(exists);
         });

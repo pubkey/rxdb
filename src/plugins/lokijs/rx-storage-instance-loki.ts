@@ -8,7 +8,9 @@ import {
     now,
     ensureNotFalsy,
     isMaybeReadonlyArray,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    getSortDocumentsByLastWriteTimeComparator,
+    RX_META_LWT_MINIMUM
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type {
@@ -19,17 +21,16 @@ import type {
     BulkWriteRow,
     RxStorageBulkWriteResponse,
     RxStorageQueryResult,
-    ChangeStreamOnceOptions,
     RxJsonSchema,
     MangoQuery,
     LokiStorageInternals,
     RxStorageInstanceCreationParams,
     LokiDatabaseSettings,
     LokiLocalDatabaseState,
-    EventBulk
+    EventBulk,
+    LokiChangesCheckpoint
 } from '../../types';
 import {
-    CHANGES_COLLECTION_SUFFIX,
     closeLokiCollections,
     getLokiDatabase,
     OPEN_LOKIJS_STORAGE_INSTANCES,
@@ -82,32 +83,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                     .addEventListener('message', async (msg) => handleRemoteRequest(this, msg));
             });
         }
-    }
-
-    /**
-     * Adds an entry to the changes feed
-     * that can be queried to check which documents have been
-     * changed since sequence X.
-     */
-    private async addChangeDocumentMeta(id: string) {
-        const localState = await ensureNotFalsy(this.internals.localState);
-        if (!this.lastChangefeedSequence) {
-            const lastDoc = localState.changesCollection
-                .chain()
-                .simplesort('sequence', true)
-                .limit(1)
-                .data()[0];
-            if (lastDoc) {
-                this.lastChangefeedSequence = lastDoc.sequence;
-            }
-        }
-
-        const nextFeedSequence = this.lastChangefeedSequence + 1;
-        localState.changesCollection.insert({
-            id,
-            sequence: nextFeedSequence
-        });
-        this.lastChangefeedSequence = nextFeedSequence;
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
@@ -170,9 +145,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         categorized.errors.forEach(err => {
             ret.error[err.documentId] = err;
         });
-        categorized.changedDocumentIds.forEach(docId => {
-            this.addChangeDocumentMeta(docId as any);
-        });
         localState.databaseState.saveQueue.addWrite();
         this.changes$.next(categorized.eventBulk);
 
@@ -233,62 +205,57 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
 
     async getChangedDocumentsSince(
-        _limit: number,
-        _checkpoint?: any
+        limit: number,
+        checkpoint?: LokiChangesCheckpoint
     ): Promise<{
         documents: RxDocumentData<RxDocType>[];
-        checkpoint?: any;
-    }> {
-        throw new Error('not implemented');
-    }
-
-    async getChangedDocuments(
-        options: ChangeStreamOnceOptions
-    ): Promise<{
-        changedDocuments: any[];
-        lastSequence: number;
+        checkpoint?: LokiChangesCheckpoint;
     }> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
-            return requestRemoteInstance(this, 'getChangedDocuments', [options]);
+            return requestRemoteInstance(this, 'getChangedDocumentsSince', [limit, checkpoint]);
         }
 
-        const desc = options.direction === 'before';
-        const operator = options.direction === 'after' ? '$gt' : '$lt';
-
-        let query = localState.changesCollection
+        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
+        const query = localState.collection
             .chain()
             .find({
-                sequence: {
-                    [operator]: options.sinceSequence
+                '_meta.lwt': {
+                    $gte: sinceLwt
                 }
             })
-            .simplesort(
-                'sequence',
-                desc
-            );
-        if (options.limit) {
-            query = query.limit(options.limit);
-        }
-        const changedDocuments: any[] = query
-            .data()
-            .map(result => ({
-                id: result.id,
-                sequence: result.sequence
-            }));
+            .sort(getSortDocumentsByLastWriteTimeComparator(this.primaryPath as any));
+        let changedDocs = query.data();
 
-        const useForLastSequence = !desc ? lastOfArray(changedDocuments) : changedDocuments[0];
-
-        const ret: {
-            changedDocuments: any[];
-            lastSequence: number;
-        } = {
-            changedDocuments,
-            lastSequence: useForLastSequence ? useForLastSequence.sequence : options.sinceSequence
+        const first = changedDocs[0];
+        if (
+            checkpoint &&
+            first &&
+            first[this.primaryPath] === checkpoint.id &&
+            first._meta.lwt === checkpoint.lwt
+        ) {
+            changedDocs.shift();
         }
 
-        return ret;
+        // optimization shortcut
+        if (changedDocs.length === 0) {
+            return {
+                documents: [],
+                checkpoint
+            }
+        }
+
+        changedDocs = changedDocs.slice(0, limit);
+        const useForCheckpoint = lastOfArray(changedDocs);
+        return {
+            documents: changedDocs.map(d => stripLokiKey(d)),
+            checkpoint: {
+                id: useForCheckpoint[this.primaryPath] as any,
+                lwt: useForCheckpoint._meta.lwt
+            }
+        };
     }
+
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
         return this.changes$.asObservable();
     }
@@ -333,8 +300,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             await closeLokiCollections(
                 this.databaseName,
                 [
-                    localState.collection,
-                    localState.changesCollection
+                    localState.collection
                 ]
             );
         }
@@ -346,7 +312,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             return requestRemoteInstance(this, 'remove', []);
         }
         localState.databaseState.database.removeCollection(localState.collection.name);
-        localState.databaseState.database.removeCollection(localState.changesCollection.name);
         return this.close();
     }
 }
@@ -399,22 +364,9 @@ export async function createLokiLocalState<RxDocType>(
         collectionOptions as any
     );
     databaseState.collections[params.collectionName] = collection;
-
-    const changesCollectionName = lokiCollectionName + CHANGES_COLLECTION_SUFFIX;
-    const changesCollectionOptions = Object.assign({
-        unique: ['eventId'],
-        indices: ['sequence']
-    }, LOKIJS_COLLECTION_DEFAULT_OPTIONS)
-    const changesCollection: Collection = databaseState.database.addCollection(
-        changesCollectionName,
-        changesCollectionOptions
-    );
-    databaseState.collections[params.collectionName] = changesCollection;
-
     const ret: LokiLocalDatabaseState = {
         databaseState,
-        collection,
-        changesCollection
+        collection
     };
 
     return ret;

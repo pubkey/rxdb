@@ -701,11 +701,9 @@ export function getDefaultRevision(): string {
     return '';
 }
 
-export function sortDocumentsByLastWriteTime<RxDocType>(
-    primaryPath: string,
-    docs: RxDocumentData<RxDocType>[]
-): RxDocumentData<RxDocType>[] {
-    return docs.sort((a, b) => {
+
+export function getSortDocumentsByLastWriteTimeComparator<RxDocType>(primaryPath: string) {
+    return (a: RxDocumentData<RxDocType>, b: RxDocumentData<RxDocType>) => {
         if (a._meta.lwt === b._meta.lwt) {
             if ((b as any)[primaryPath] < (a as any)[primaryPath]) {
                 return 1;
@@ -715,5 +713,11 @@ export function sortDocumentsByLastWriteTime<RxDocType>(
         } else {
             return a._meta.lwt - b._meta.lwt;
         }
-    });
+    };
+}
+export function sortDocumentsByLastWriteTime<RxDocType>(
+    primaryPath: string,
+    docs: RxDocumentData<RxDocType>[]
+): RxDocumentData<RxDocType>[] {
+    return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
 }

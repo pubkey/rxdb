@@ -1361,7 +1361,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 // get only the last change when requesting with empty checkpoint
                 const resTotal = await storageInstance.getChangedDocumentsSince(100);
-                console.dir(resTotal);
                 assert.strictEqual(resTotal.documents.length, 1);
                 assert.strictEqual(resTotal.documents[0].key, 'foobar');
                 assert.strictEqual(resTotal.documents[0]._deleted, true);

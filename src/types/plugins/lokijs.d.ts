@@ -60,10 +60,9 @@ export type LokiDatabaseState = {
 export type LokiLocalDatabaseState = {
     databaseState: LokiDatabaseState;
     collection: Collection<any>;
-    /**
-     * LokiJS has no persistend, observable
-     * or queryable changefeed. So we keep our own changefeed
-     * in the changesCollection.
-     */
-    changesCollection: Collection<any>;
 }
+
+export type LokiChangesCheckpoint = {
+    id: string;
+    lwt: number;
+};
