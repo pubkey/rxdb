@@ -366,7 +366,6 @@ export function firstPropertyValueOfObject<T>(obj: { [k: string]: T }): T {
 
 
 import isElectron from 'is-electron';
-import { RX_META_SCHEMA } from './rx-schema-helper';
 export const isElectronRenderer = isElectron();
 
 
