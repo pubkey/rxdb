@@ -12,7 +12,7 @@ var storage = (0, _dexie.getRxStorageDexie)({
   indexedDB: indexedDB,
   IDBKeyRange: IDBKeyRange
 });
-(0, _worker.wrappedRxStorage)({
+(0, _worker.wrappedWorkerRxStorage)({
   storage: storage
 });
 //# sourceMappingURL=dexie-memory.worker.js.map

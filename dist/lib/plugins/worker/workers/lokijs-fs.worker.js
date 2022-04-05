@@ -10,7 +10,7 @@ var adapter = new lfsa();
 var storage = (0, _lokijs.getRxStorageLoki)({
   adapter: adapter
 });
-(0, _worker.wrappedRxStorage)({
+(0, _worker.wrappedWorkerRxStorage)({
   storage: storage
 });
 //# sourceMappingURL=lokijs-fs.worker.js.map

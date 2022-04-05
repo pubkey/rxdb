@@ -8,7 +8,7 @@ var _worker = require("../../worker");
 var storage = (0, _pouchdb.getRxStoragePouch)({
   adapter: 'memory'
 });
-(0, _worker.wrappedRxStorage)({
+(0, _worker.wrappedWorkerRxStorage)({
   storage: storage
 });
 //# sourceMappingURL=pouchdb-memory.worker.js.map

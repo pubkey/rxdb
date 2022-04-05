@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RXDB_HASH_SALT = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
+exports.RX_META_LWT_MINIMUM = exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RXDB_HASH_SALT = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
 exports.adapterObject = adapterObject;
 exports.batchArray = batchArray;
 exports.clone = exports.blobBufferUtil = void 0;
@@ -21,6 +21,7 @@ exports.getDefaultRxDocumentMeta = getDefaultRxDocumentMeta;
 exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.getFromObjectOrThrow = getFromObjectOrThrow;
 exports.getHeightOfRevision = getHeightOfRevision;
+exports.getSortDocumentsByLastWriteTimeComparator = getSortDocumentsByLastWriteTimeComparator;
 exports.hash = hash;
 exports.isElectronRenderer = void 0;
 exports.isFolderPath = isFolderPath;
@@ -39,6 +40,7 @@ exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.requestIdlePromise = requestIdlePromise;
 exports.runXTimes = runXTimes;
 exports.shuffleArray = shuffleArray;
+exports.sortDocumentsByLastWriteTime = sortDocumentsByLastWriteTime;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
 exports.toPromise = toPromise;
@@ -746,7 +748,15 @@ var RXJS_SHARE_REPLAY_DEFAULTS = {
   bufferSize: 1,
   refCount: true
 };
+/**
+ * We use 1 as minimum so that the value is never falsy.
+ * This const is used in several places because querying
+ * with a value lower then the minimum could give false results.
+ */
+
 exports.RXJS_SHARE_REPLAY_DEFAULTS = RXJS_SHARE_REPLAY_DEFAULTS;
+var RX_META_LWT_MINIMUM = 1;
+exports.RX_META_LWT_MINIMUM = RX_META_LWT_MINIMUM;
 
 function getDefaultRxDocumentMeta() {
   return {
@@ -756,7 +766,7 @@ function getDefaultRxDocumentMeta() {
      * The storage wrappers will anyway update
      * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
      */
-    lwt: 1
+    lwt: RX_META_LWT_MINIMUM
   };
 }
 /**
@@ -773,5 +783,23 @@ function getDefaultRevision() {
    * when the revision is not replaced downstream.
    */
   return '';
+}
+
+function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
+  return function (a, b) {
+    if (a._meta.lwt === b._meta.lwt) {
+      if (b[primaryPath] < a[primaryPath]) {
+        return 1;
+      } else {
+        return -1;
+      }
+    } else {
+      return a._meta.lwt - b._meta.lwt;
+    }
+  };
+}
+
+function sortDocumentsByLastWriteTime(primaryPath, docs) {
+  return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
 }
 //# sourceMappingURL=util.js.map

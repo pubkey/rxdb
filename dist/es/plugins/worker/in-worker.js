@@ -4,7 +4,7 @@
  */
 import { expose } from 'threads/worker';
 import { getFromMapOrThrow } from '../../util';
-export function wrappedRxStorage(args) {
+export function wrappedWorkerRxStorage(args) {
   var nextId = 0;
   var instanceById = new Map();
   var exposeMe = {
@@ -39,9 +39,9 @@ export function wrappedRxStorage(args) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.getAttachmentData(documentId, attachmentId);
     },
-    getChangedDocuments: function getChangedDocuments(instanceId, options) {
+    getChangedDocumentsSince: function getChangedDocumentsSince(instanceId, limit, checkpoint) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
-      return instance.getChangedDocuments(options);
+      return instance.getChangedDocumentsSince(limit, checkpoint);
     },
     changeStream: function changeStream(instanceId) {
       var instance = getFromMapOrThrow(instanceById, instanceId);

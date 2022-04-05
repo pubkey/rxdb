@@ -2,7 +2,7 @@
  * This file contains everything
  * that is supposed to run inside of the worker.
  */
-import type { BulkWriteRow, ChangeStreamOnceOptions, EventBulk, RxDocumentData, RxStorage, RxStorageBulkWriteResponse, RxStorageChangedDocumentMeta, RxStorageChangeEvent, RxStorageInstanceCreationParams, RxStorageQueryResult } from '../../types';
+import type { BulkWriteRow, EventBulk, RxDocumentData, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstanceCreationParams, RxStorageQueryResult } from '../../types';
 import { Observable } from 'rxjs';
 export declare type InWorkerStorage = {
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<number>;
@@ -12,15 +12,15 @@ export declare type InWorkerStorage = {
     }>;
     query<DocumentData>(instanceId: number, preparedQuery: any): Promise<RxStorageQueryResult<DocumentData>>;
     getAttachmentData(instanceId: number, documentId: string, attachmentId: string): Promise<string>;
-    getChangedDocuments(instanceId: number, options: ChangeStreamOnceOptions): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[];
-        lastSequence: number;
+    getChangedDocumentsSince<RxDocType>(instanceId: number, limit: number, checkpoint: any): Promise<{
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint?: any;
     }>;
     changeStream<DocumentData>(instanceById: number): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
     cleanup(instanceId: number, minDeletedTime: number): Promise<boolean>;
     close(instanceId: number): Promise<void>;
     remove(instanceId: number): Promise<void>;
 };
-export declare function wrappedRxStorage<T, D>(args: {
+export declare function wrappedWorkerRxStorage<T, D>(args: {
     storage: RxStorage<T, D>;
 }): void;

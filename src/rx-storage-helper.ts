@@ -28,8 +28,7 @@ import {
     firstPropertyValueOfObject,
     flatClone,
     now,
-    randomCouchString,
-    RX_META_LWT_MINIMUM
+    randomCouchString
 } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
@@ -332,74 +331,6 @@ export function getAttachmentSize(
 ): number {
     return atob(attachmentBase64String).length;
 }
-
-
-/**
- * Returns the documents that have been changed since
- * the last-write-time of the given document.
- * Sorted by _meta.lwt ascending.
- * This is used in several plugins where RxDB has to known what
- * happened after timestamp X in the database state.
- * For example on replication or when making a backup,
- * this can be used to ensure we do not miss out any changes.
- * 
- * Before RxDB version 12, we used a change-event sequence, similar to PouchDB/CouchDB,
- * but it has been learned that we can use the _meta.lwt timestamp which makes the implementation
- * of RxStorage much easier and the writes much faster because we just need to maintain another index
- * instead of storing sequences in a separate table/collection.
- */
-export async function getChangeDocumentsSinceCheckpointDocument<RxDocType>(
-    storageInstance: RxStorageInstance<RxDocType, any, any>,
-    limit: number,
-    checkpointDocument: RxDocumentData<RxDocType>
-): Promise<RxDocumentData<RxDocType>[]> {
-    const storage = storageInstance.storage;
-    const primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
-
-
-    const checkpointPrimaryKey = checkpointDocument ? checkpointDocument[primaryPath] : '';
-    const checkpointLwt: number = checkpointDocument ? checkpointDocument._meta.lwt : RX_META_LWT_MINIMUM;
-
-    const preparedQuery = storage.statics.prepareQuery<any>(
-        storageInstance.schema,
-        {
-            selector: {
-                $or: [
-                    {
-                        '_meta.lwt': {
-                            $gte: checkpointLwt
-                        },
-                        [primaryPath]: {
-                            $ne: checkpointPrimaryKey
-                        }
-                    },
-                    /**
-                     * If a write occured to the checkpoint document,
-                     * we have to return it again, which means that the _meta.lwt
-                     * of it is $gt before.
-                     */
-                    {
-                        '_meta.lwt': {
-                            $gt: checkpointLwt
-                        },
-                        [primaryPath]: {
-                            $eq: checkpointPrimaryKey
-                        }
-                    }
-                ]
-            },
-            index: ['_meta.lwt', primaryPath as any],
-            sort: [
-                { '_meta.lwt': 'asc' },
-                { primaryPath: 'asc' }
-            ],
-            limit
-        }
-    );
-    const result = await storageInstance.query(preparedQuery);
-    return result.documents;
-}
-
 
 /**
  * Wraps the normal storageInstance of a RxCollection

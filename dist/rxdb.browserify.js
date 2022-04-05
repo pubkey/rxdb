@@ -2915,12 +2915,13 @@ function _for(test, update, body) {
 var lastId = 0;
 
 var RxStorageInstancePouch = /*#__PURE__*/function () {
-  function RxStorageInstancePouch(databaseName, collectionName, schema, internals, options) {
+  function RxStorageInstancePouch(storage, databaseName, collectionName, schema, internals, options) {
     var _this = this;
 
     this.id = lastId++;
     this.changes$ = new _rxjs.Subject();
     this.subs = [];
+    this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
     this.schema = schema;
@@ -3215,23 +3216,41 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     });
   };
 
-  _proto.getChangedDocuments = function getChangedDocuments(options) {
+  _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
       var _temp13 = function _temp13() {
-        return {
-          changedDocuments: changedDocuments,
-          lastSequence: lastSequence
-        };
+        return Promise.resolve(_this13.findDocumentsById(changedDocuments.map(function (o) {
+          return o.id;
+        }), true)).then(function (documentsData) {
+          if (Object.keys(documentsData).length > 0 && checkpoint && checkpoint.sequence === lastSequence) {
+            /**
+             * When documents are returned, it makes no sense
+             * if the sequence is equal to the one given at the checkpoint.
+             */
+            throw new Error('same sequence');
+          }
+
+          return {
+            documents: Object.values(documentsData),
+            checkpoint: {
+              sequence: lastSequence
+            }
+          };
+        });
       };
 
       var _this13 = this;
 
+      if (!limit || typeof limit !== 'number') {
+        throw new Error('wrong limit');
+      }
+
       var pouchChangesOpts = {
         live: false,
-        limit: options.limit,
+        limit: limit,
         include_docs: false,
-        since: options.sinceSequence,
-        descending: options.direction === 'before' ? true : false
+        since: checkpoint ? checkpoint.sequence : 0,
+        descending: false
       };
       var lastSequence = 0;
       var first = true;
@@ -3423,7 +3442,7 @@ var RxStoragePouch = /*#__PURE__*/function () {
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this4.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
-          return new _rxStorageInstancePouch.RxStorageInstancePouch(params.databaseName, params.collectionName, params.schema, {
+          return new _rxStorageInstancePouch.RxStorageInstancePouch(_this4, params.databaseName, params.collectionName, params.schema, {
             pouch: pouch
           }, params.options);
         });
@@ -7675,7 +7694,7 @@ var RX_META_SCHEMA = {
       /**
        * We use 1 as minimum so that the value is never falsy.
        */
-      minimum: 1,
+      minimum: _util.RX_META_LWT_MINIMUM,
       maximum: 1000000000000000,
       multipleOf: 1
     }
@@ -7999,10 +8018,11 @@ exports.getSingleDocument = getSingleDocument;
  * Returns all non-deleted documents
  * of the storage.
  */
-var getAllDocuments = function getAllDocuments(primaryKey, storage, storageInstance) {
+var getAllDocuments = function getAllDocuments(primaryKey, storageInstance) {
   try {
     var _ref;
 
+    var storage = storageInstance.storage;
     var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
       selector: {},
       sort: [(_ref = {}, _ref[primaryKey] = 'asc', _ref)]
@@ -8303,6 +8323,7 @@ rxJsonSchema) {
   }
 
   var ret = {
+    storage: storageInstance.storage,
     schema: storageInstance.schema,
     internals: storageInstance.internals,
     collectionName: storageInstance.collectionName,
@@ -8361,9 +8382,17 @@ rxJsonSchema) {
         return storageInstance.getAttachmentData(documentId, attachmentId);
       });
     },
-    getChangedDocuments: function getChangedDocuments(options) {
+    getChangedDocumentsSince: function getChangedDocumentsSince(limit, checkpoint) {
       return database.lockedRun(function () {
-        return storageInstance.getChangedDocuments(options);
+        return storageInstance.getChangedDocumentsSince(limit, checkpoint);
+      }).then(function (result) {
+        var documents = result.documents.map(function (d) {
+          return transformDocumentDataFromRxStorageToRxDB(d);
+        });
+        return {
+          documents: documents,
+          checkpoint: result.checkpoint
+        };
       });
     },
     cleanup: function cleanup(minDeletedTime) {
@@ -8425,7 +8454,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RXDB_HASH_SALT = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
+exports.RX_META_LWT_MINIMUM = exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RXDB_HASH_SALT = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
 exports.adapterObject = adapterObject;
 exports.batchArray = batchArray;
 exports.clone = exports.blobBufferUtil = void 0;
@@ -8441,6 +8470,7 @@ exports.getDefaultRxDocumentMeta = getDefaultRxDocumentMeta;
 exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.getFromObjectOrThrow = getFromObjectOrThrow;
 exports.getHeightOfRevision = getHeightOfRevision;
+exports.getSortDocumentsByLastWriteTimeComparator = getSortDocumentsByLastWriteTimeComparator;
 exports.hash = hash;
 exports.isElectronRenderer = void 0;
 exports.isFolderPath = isFolderPath;
@@ -8459,6 +8489,7 @@ exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.requestIdlePromise = requestIdlePromise;
 exports.runXTimes = runXTimes;
 exports.shuffleArray = shuffleArray;
+exports.sortDocumentsByLastWriteTime = sortDocumentsByLastWriteTime;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
 exports.toPromise = toPromise;
@@ -9166,7 +9197,15 @@ var RXJS_SHARE_REPLAY_DEFAULTS = {
   bufferSize: 1,
   refCount: true
 };
+/**
+ * We use 1 as minimum so that the value is never falsy.
+ * This const is used in several places because querying
+ * with a value lower then the minimum could give false results.
+ */
+
 exports.RXJS_SHARE_REPLAY_DEFAULTS = RXJS_SHARE_REPLAY_DEFAULTS;
+var RX_META_LWT_MINIMUM = 1;
+exports.RX_META_LWT_MINIMUM = RX_META_LWT_MINIMUM;
 
 function getDefaultRxDocumentMeta() {
   return {
@@ -9176,7 +9215,7 @@ function getDefaultRxDocumentMeta() {
      * The storage wrappers will anyway update
      * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
      */
-    lwt: 1
+    lwt: RX_META_LWT_MINIMUM
   };
 }
 /**
@@ -9193,6 +9232,24 @@ function getDefaultRevision() {
    * when the revision is not replaced downstream.
    */
   return '';
+}
+
+function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
+  return function (a, b) {
+    if (a._meta.lwt === b._meta.lwt) {
+      if (b[primaryPath] < a[primaryPath]) {
+        return 1;
+      } else {
+        return -1;
+      }
+    } else {
+      return a._meta.lwt - b._meta.lwt;
+    }
+  };
+}
+
+function sortDocumentsByLastWriteTime(primaryPath, docs) {
+  return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)

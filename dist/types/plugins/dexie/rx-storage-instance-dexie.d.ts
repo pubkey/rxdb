@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, ChangeStreamOnceOptions, RxJsonSchema, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, EventBulk, PreparedQuery } from '../../types';
+import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, RxStorageInstanceCreationParams, EventBulk, PreparedQuery, DexieChangesCheckpoint } from '../../types';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageDexie } from './rx-storage-dexie';
 export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<RxDocType, DexieStorageInternals, DexieSettings> {
@@ -15,20 +15,14 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     readonly instanceId: number;
     closed: boolean;
     constructor(storage: RxStorageDexie, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: DexieStorageInternals, options: Readonly<DexieSettings>, settings: DexieSettings);
-    /**
-     * Adds entries to the changes feed
-     * that can be queried to check which documents have been
-     * changed since sequence X.
-     */
-    private addChangeDocumentsMeta;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<{
         [documentId: string]: RxDocumentData<RxDocType>;
     }>;
     query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
-    getChangedDocuments(options: ChangeStreamOnceOptions): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[];
-        lastSequence: number;
+    getChangedDocumentsSince(limit: number, checkpoint?: DexieChangesCheckpoint): Promise<{
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint?: DexieChangesCheckpoint;
     }>;
     remove(): Promise<void>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;

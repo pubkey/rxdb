@@ -4,12 +4,10 @@ import type {
 } from 'event-reduce-js';
 import type {
     BulkWriteRow,
-    ChangeStreamOnceOptions,
     EventBulk,
     PreparedQuery,
     RxDocumentData,
     RxStorageBulkWriteResponse,
-    RxStorageChangedDocumentMeta,
     RxStorageChangeEvent,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
@@ -170,6 +168,14 @@ export interface RxStorageInstance<
     Internals,
     InstanceCreationOptions
     > {
+
+    /**
+     * The RxStorage which was used to create the given instance.
+     * We need this here to make it easy to get access static methods and stuff
+     * when working with the RxStorageInstance.
+     */
+    readonly storage: RxStorage<Internals, InstanceCreationOptions>;
+
     readonly databaseName: string;
     /**
      * Returns the internal data that is used by the storage engine.
@@ -251,21 +257,21 @@ export interface RxStorageInstance<
         attachmentId: string
     ): Promise<string>;
 
+
     /**
-     * Returns the ids of all documents that have been
-     * changed since the given sinceSequence.
+     * Returns the current (not the old!) data of all documents that have been changed AFTER the given checkpoint.
+     * This might return the same document multiple times when paginating over the checkpoint depending on the RxStorage.
+     * If the returned array does not reach the limit, it can be assumed that the "end" is reached.
+     * Also returns a new checkpoint which can be used to continue with the pagination.
+     * This is used by RxDB to known what has changed since X so these docs can be handled by the backup or the replication
+     * plugin.
      */
-    getChangedDocuments(
-        options: ChangeStreamOnceOptions
+    getChangedDocumentsSince(
+        limit: number,
+        checkpoint?: any
     ): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[],
-        /**
-         * The last sequence number is returned in a separate field
-         * because the storage instance might have left out some events
-         * that it does not want to send out to the user.
-         * But still we need to know that they are there for a gapless pagination.
-         */
-        lastSequence: number;
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint?: any;
     }>;
 
     /**

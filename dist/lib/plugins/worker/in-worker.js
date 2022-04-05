@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.wrappedRxStorage = wrappedRxStorage;
+exports.wrappedWorkerRxStorage = wrappedWorkerRxStorage;
 
 var _worker = require("threads/worker");
 
@@ -13,7 +13,7 @@ var _util = require("../../util");
  * This file contains everything
  * that is supposed to run inside of the worker.
  */
-function wrappedRxStorage(args) {
+function wrappedWorkerRxStorage(args) {
   var nextId = 0;
   var instanceById = new Map();
   var exposeMe = {
@@ -48,9 +48,9 @@ function wrappedRxStorage(args) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
       return instance.getAttachmentData(documentId, attachmentId);
     },
-    getChangedDocuments: function getChangedDocuments(instanceId, options) {
+    getChangedDocumentsSince: function getChangedDocumentsSince(instanceId, limit, checkpoint) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
-      return instance.getChangedDocuments(options);
+      return instance.getChangedDocumentsSince(limit, checkpoint);
     },
     changeStream: function changeStream(instanceId) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);

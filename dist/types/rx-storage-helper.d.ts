@@ -1,14 +1,14 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, EventBulk, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorage, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageStatics } from './types';
+import type { BulkWriteRow, EventBulk, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageStatics } from './types';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
 /**
  * Returns all non-deleted documents
  * of the storage.
  */
-export declare function getAllDocuments<RxDocType>(primaryKey: keyof RxDocType, storage: RxStorage<any, any>, storageInstance: RxStorageInstance<RxDocType, any, any>): Promise<RxDocumentData<RxDocType>[]>;
+export declare function getAllDocuments<RxDocType>(primaryKey: keyof RxDocType, storageInstance: RxStorageInstance<RxDocType, any, any>): Promise<RxDocumentData<RxDocType>[]>;
 export declare function getSingleDocument<RxDocType>(storageInstance: RxStorageInstance<RxDocType, any, any>, documentId: string): Promise<RxDocumentData<RxDocType> | null>;
 /**
  * Writes a single document,
@@ -42,7 +42,7 @@ bulkWriteRows: BulkWriteRow<RxDocType>[]): {
      * Ids of all documents that are changed
      * and so their change must be written into the
      * sequences table so that they can be fetched via
-     * RxStorageInstance().getChangedDocuments().
+     * RxStorageInstance().getChangedDocumentsSince().
      */
     changedDocumentIds: RxDocumentData<RxDocType>[keyof RxDocType][];
     errors: RxStorageBulkWriteError<RxDocType>[];

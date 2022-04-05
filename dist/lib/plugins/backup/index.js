@@ -337,45 +337,41 @@ var RxBackupState = /*#__PURE__*/function () {
       var _this4 = this;
 
       return Promise.resolve((0, _fileUtil.getMeta)(_this4.options)).then(function (meta) {
-        return Promise.resolve(Promise.all(Object.keys(_this4.database.collections).map(function (collectionName) {
+        return Promise.resolve(Promise.all(Object.entries(_this4.database.collections).map(function (_ref) {
           try {
+            var collectionName = _ref[0],
+                collection = _ref[1];
+            var primaryKey = collection.schema.primaryPath;
             var processedDocuments = new Set();
-            var collection = _this4.database.collections[collectionName];
             return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
               function _temp3() {
-                meta.collectionStates[collectionName].lastSequence = lastSequence;
+                meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
                 return Promise.resolve((0, _fileUtil.setMeta)(_this4.options, meta)).then(function () {});
               }
 
               if (!meta.collectionStates[collectionName]) {
-                meta.collectionStates[collectionName] = {
-                  lastSequence: 0
-                };
+                meta.collectionStates[collectionName] = {};
               }
 
-              var lastSequence = meta.collectionStates[collectionName].lastSequence;
+              var lastCheckpoint = meta.collectionStates[collectionName].checkpoint;
               var hasMore = true;
 
               var _temp2 = _for(function () {
                 return !!hasMore && !_this4.isStopped;
               }, void 0, function () {
                 return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
-                  return Promise.resolve(collection.storageInstance.getChangedDocuments({
-                    sinceSequence: lastSequence,
-                    limit: _this4.options.batchSize,
-                    direction: 'after'
-                  })).then(function (changesResult) {
-                    lastSequence = changesResult.lastSequence;
-                    meta.collectionStates[collectionName].lastSequence = lastSequence;
-                    var docIds = changesResult.changedDocuments.filter(function (changedDocument) {
-                      if (processedDocuments.has(changedDocument.id)) {
+                  return Promise.resolve(collection.storageInstance.getChangedDocumentsSince(_this4.options.batchSize ? _this4.options.batchSize : 0, lastCheckpoint)).then(function (changesResult) {
+                    lastCheckpoint = changesResult.checkpoint;
+                    meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
+                    var docIds = changesResult.documents.map(function (docData) {
+                      return docData[primaryKey];
+                    }).filter(function (id) {
+                      if (processedDocuments.has(id)) {
                         return false;
                       } else {
-                        processedDocuments.add(changedDocument.id);
+                        processedDocuments.add(id);
                         return true;
                       }
-                    }).map(function (r) {
-                      return r.id;
                     }).filter(function (elem, pos, arr) {
                       return arr.indexOf(elem) === pos;
                     }); // unique

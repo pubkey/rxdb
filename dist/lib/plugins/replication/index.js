@@ -735,7 +735,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
                   return _Promise$resolve6;
                 }
 
-                return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this9.collection, _this9.replicationIdentifierHash, function () {
+                return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushCheckpoint)(_this9.collection, _this9.replicationIdentifierHash, function () {
                   return _this9.isStopped();
                 }, 1)).then(function (localWritesInBetween) {
                   /**
@@ -817,7 +817,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
       }
 
       var batchSize = _this11.push.batchSize ? _this11.push.batchSize : 5;
-      return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushSequence)(_this11.collection, _this11.replicationIdentifierHash, function () {
+      return Promise.resolve((0, _replicationCheckpoint.getChangesSinceLastPushCheckpoint)(_this11.collection, _this11.replicationIdentifierHash, function () {
         return _this11.isStopped();
       }, batchSize)).then(function (changesResult) {
         var _exit6 = false;
@@ -827,7 +827,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
           pushDocs.forEach(function (pushDoc) {
             return _this11.subjects.send.next(pushDoc);
           });
-          return _this11.isStopped() ? true : Promise.resolve((0, _replicationCheckpoint.setLastPushSequence)(_this11.collection, _this11.replicationIdentifierHash, changesResult.lastSequence)).then(function () {
+          return _this11.isStopped() ? true : Promise.resolve((0, _replicationCheckpoint.setLastPushCheckpoint)(_this11.collection, _this11.replicationIdentifierHash, changesResult.checkpoint)).then(function () {
             return changesResult.changedDocs.size !== 0 ? _this11.runPush() : true;
           });
         }

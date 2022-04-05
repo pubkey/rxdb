@@ -1,7 +1,8 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, ChangeStreamOnceOptions, EventBulk, PouchSettings, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
+import type { BulkWriteRow, EventBulk, PouchChangedDocumentsSinceCheckpoint, PouchSettings, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
 import { PouchStorageInternals } from './pouchdb-helper';
 export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<RxDocType, PouchStorageInternals, PouchSettings> {
+    readonly storage: RxStorage<PouchStorageInternals, PouchSettings>;
     readonly databaseName: string;
     readonly collectionName: string;
     readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>;
@@ -11,7 +12,7 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     private changes$;
     private subs;
     private primaryPath;
-    constructor(databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: Readonly<PouchStorageInternals>, options: Readonly<PouchSettings>);
+    constructor(storage: RxStorage<PouchStorageInternals, PouchSettings>, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: Readonly<PouchStorageInternals>, options: Readonly<PouchSettings>);
     close(): Promise<void>;
     remove(): Promise<void>;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
@@ -22,11 +23,8 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
     cleanup(_minimumDeletedTime: number): Promise<boolean>;
-    getChangedDocuments(options: ChangeStreamOnceOptions): Promise<{
-        changedDocuments: {
-            id: string;
-            sequence: number;
-        }[];
-        lastSequence: number;
+    getChangedDocumentsSince(limit: number, checkpoint?: PouchChangedDocumentsSinceCheckpoint): Promise<{
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint?: PouchChangedDocumentsSinceCheckpoint;
     }>;
 }

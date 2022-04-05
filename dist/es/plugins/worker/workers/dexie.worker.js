@@ -1,7 +1,7 @@
 import { getRxStorageDexie } from '../../dexie';
-import { wrappedRxStorage } from '../../worker';
+import { wrappedWorkerRxStorage } from '../../worker';
 var storage = getRxStorageDexie();
-wrappedRxStorage({
+wrappedWorkerRxStorage({
   storage: storage
 });
 //# sourceMappingURL=dexie.worker.js.map

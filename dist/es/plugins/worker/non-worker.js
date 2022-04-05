@@ -31,7 +31,7 @@ export var RxStorageWorker = /*#__PURE__*/function () {
 
       return Promise.resolve(_this2.workerPromise).then(function (worker) {
         return Promise.resolve(worker.createStorageInstance(params)).then(function (instanceId) {
-          return new RxStorageInstanceWorker(params.databaseName, params.collectionName, params.schema, {
+          return new RxStorageInstanceWorker(_this2, params.databaseName, params.collectionName, params.schema, {
             rxStorage: _this2,
             instanceId: instanceId,
             worker: worker
@@ -50,11 +50,12 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
    * threads.js uses observable-fns instead of rxjs
    * so we have to transform it.
    */
-  function RxStorageInstanceWorker(databaseName, collectionName, schema, internals, options) {
+  function RxStorageInstanceWorker(storage, databaseName, collectionName, schema, internals, options) {
     var _this3 = this;
 
     this.changes$ = new Subject();
     this.subs = [];
+    this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
     this.schema = schema;
@@ -83,8 +84,14 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
     return this.internals.worker.getAttachmentData(this.internals.instanceId, documentId, attachmentId);
   };
 
-  _proto2.getChangedDocuments = function getChangedDocuments(options) {
-    return this.internals.worker.getChangedDocuments(this.internals.instanceId, options);
+  _proto2.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
+    try {
+      var _this5 = this;
+
+      return Promise.resolve(_this5.internals.worker.getChangedDocumentsSince(_this5.internals.instanceId, limit, checkpoint));
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   _proto2.changeStream = function changeStream() {

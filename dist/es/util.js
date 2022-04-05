@@ -648,6 +648,13 @@ export var RXJS_SHARE_REPLAY_DEFAULTS = {
   bufferSize: 1,
   refCount: true
 };
+/**
+ * We use 1 as minimum so that the value is never falsy.
+ * This const is used in several places because querying
+ * with a value lower then the minimum could give false results.
+ */
+
+export var RX_META_LWT_MINIMUM = 1;
 export function getDefaultRxDocumentMeta() {
   return {
     /**
@@ -656,7 +663,7 @@ export function getDefaultRxDocumentMeta() {
      * The storage wrappers will anyway update
      * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
      */
-    lwt: 1
+    lwt: RX_META_LWT_MINIMUM
   };
 }
 /**
@@ -672,5 +679,21 @@ export function getDefaultRevision() {
    * when the revision is not replaced downstream.
    */
   return '';
+}
+export function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
+  return function (a, b) {
+    if (a._meta.lwt === b._meta.lwt) {
+      if (b[primaryPath] < a[primaryPath]) {
+        return 1;
+      } else {
+        return -1;
+      }
+    } else {
+      return a._meta.lwt - b._meta.lwt;
+    }
+  };
+}
+export function sortDocumentsByLastWriteTime(primaryPath, docs) {
+  return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
 }
 //# sourceMappingURL=util.js.map

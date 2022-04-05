@@ -260,7 +260,7 @@ export var DataMigrator = /*#__PURE__*/function () {
         _this.nonMigratedOldCollections = ret;
         _this.allOldCollections = _this.nonMigratedOldCollections.slice(0);
         var countAll = Promise.all(_this.nonMigratedOldCollections.map(function (oldCol) {
-          return getAllDocuments(oldCol.schema.primaryPath, _this.database.storage, oldCol.storageInstance).then(function (allDocs) {
+          return getAllDocuments(oldCol.schema.primaryPath, oldCol.storageInstance).then(function (allDocs) {
             return allDocs.length;
           });
         }));

@@ -70,7 +70,7 @@ var REF_COUNT_PER_DEXIE_DB = new Map();
 
 function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
-  var dexieDbName = 'rxdb-dexie-' + databaseName + '--' + collectionName;
+  var dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
   var state = DEXIE_STATE_DB_BY_NAME.get(dexieDbName);
 
   if (!state) {
@@ -86,7 +86,7 @@ function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
         var useSettings = (0, _util.flatClone)(settings);
         useSettings.autoOpen = false;
         var dexieDb = new _dexie.Dexie(dexieDbName, useSettings);
-        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',_meta.lwt', _dexieDb$version$stor));
+        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']', _dexieDb$version$stor));
         return Promise.resolve(dexieDb.open()).then(function () {
           return {
             dexieDb: dexieDb,
@@ -188,13 +188,15 @@ function getDexieStoreSchema(rxJsonSchema) {
       var arIndex = Array.isArray(index) ? index : [index];
       parts.push(arIndex);
     });
-  }
+  } // we also need the _meta.lwt+primaryKey index for the getChangedDocumentsSince() method.
+
+
+  parts.push(['_meta.lwt', primaryKey]);
   /**
    * It is not possible to set non-javascript-variable-syntax
    * keys as IndexedDB indexes. So we have to substitute the pipe-char
    * which comes from the key-compression plugin.
    */
-
 
   parts = parts.map(function (part) {
     return part.map(function (str) {

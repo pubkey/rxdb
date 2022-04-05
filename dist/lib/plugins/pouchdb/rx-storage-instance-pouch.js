@@ -211,12 +211,13 @@ function _for(test, update, body) {
 var lastId = 0;
 
 var RxStorageInstancePouch = /*#__PURE__*/function () {
-  function RxStorageInstancePouch(databaseName, collectionName, schema, internals, options) {
+  function RxStorageInstancePouch(storage, databaseName, collectionName, schema, internals, options) {
     var _this = this;
 
     this.id = lastId++;
     this.changes$ = new _rxjs.Subject();
     this.subs = [];
+    this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
     this.schema = schema;
@@ -511,23 +512,41 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     });
   };
 
-  _proto.getChangedDocuments = function getChangedDocuments(options) {
+  _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
       var _temp13 = function _temp13() {
-        return {
-          changedDocuments: changedDocuments,
-          lastSequence: lastSequence
-        };
+        return Promise.resolve(_this13.findDocumentsById(changedDocuments.map(function (o) {
+          return o.id;
+        }), true)).then(function (documentsData) {
+          if (Object.keys(documentsData).length > 0 && checkpoint && checkpoint.sequence === lastSequence) {
+            /**
+             * When documents are returned, it makes no sense
+             * if the sequence is equal to the one given at the checkpoint.
+             */
+            throw new Error('same sequence');
+          }
+
+          return {
+            documents: Object.values(documentsData),
+            checkpoint: {
+              sequence: lastSequence
+            }
+          };
+        });
       };
 
       var _this13 = this;
 
+      if (!limit || typeof limit !== 'number') {
+        throw new Error('wrong limit');
+      }
+
       var pouchChangesOpts = {
         live: false,
-        limit: options.limit,
+        limit: limit,
         include_docs: false,
-        since: options.sinceSequence,
-        descending: options.direction === 'before' ? true : false
+        since: checkpoint ? checkpoint.sequence : 0,
+        descending: false
       };
       var lastSequence = 0;
       var first = true;

@@ -234,24 +234,6 @@ export type ChangeStreamOptions = {
     limit?: number;
 }
 
-export type ChangeStreamOnceOptions = ChangeStreamOptions & {
-    /**
-     * sinceSequence is not optional
-     * on one time changes.
-     */
-    sinceSequence: number;
-
-    /**
-     * On one-time change stream results,
-     * we can define the sort order
-     * to either get events before sinceSequence
-     * or events after sinceSequence.
-     */
-    direction: 'before' | 'after';
-
-    limit?: number;
-};
-
 /**
  * In the past we handles each RxChangeEvent by its own.
  * But it has been shown that this take way more performance then needed,
@@ -283,12 +265,6 @@ export type ChangeStreamEvent<DocType> = ChangeEvent<RxDocumentData<DocType>> & 
      */
     id: string;
 };
-
-export type RxStorageChangedDocumentMeta = {
-    id: string;
-    sequence: number;
-}
-
 
 export type RxStorageChangeEvent<DocType> = {
     /**

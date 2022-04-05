@@ -209,7 +209,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { getChangesSinceLastPushSequence, getLastPullDocument, setLastPullDocument, setLastPushSequence } from './replication-checkpoint';
+import { getChangesSinceLastPushCheckpoint, getLastPullDocument, setLastPullDocument, setLastPushCheckpoint } from './replication-checkpoint';
 import { ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getHeightOfRevision, hash, lastOfArray, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
 import { overwritable } from '../../overwritable';
 import { setLastWritePullReplication, wasLastWriteFromPullReplication } from './revision-flag';
@@ -674,7 +674,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
                   return _Promise$resolve6;
                 }
 
-                return Promise.resolve(getChangesSinceLastPushSequence(_this9.collection, _this9.replicationIdentifierHash, function () {
+                return Promise.resolve(getChangesSinceLastPushCheckpoint(_this9.collection, _this9.replicationIdentifierHash, function () {
                   return _this9.isStopped();
                 }, 1)).then(function (localWritesInBetween) {
                   /**
@@ -756,7 +756,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
       }
 
       var batchSize = _this11.push.batchSize ? _this11.push.batchSize : 5;
-      return Promise.resolve(getChangesSinceLastPushSequence(_this11.collection, _this11.replicationIdentifierHash, function () {
+      return Promise.resolve(getChangesSinceLastPushCheckpoint(_this11.collection, _this11.replicationIdentifierHash, function () {
         return _this11.isStopped();
       }, batchSize)).then(function (changesResult) {
         var _exit6 = false;
@@ -766,7 +766,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
           pushDocs.forEach(function (pushDoc) {
             return _this11.subjects.send.next(pushDoc);
           });
-          return _this11.isStopped() ? true : Promise.resolve(setLastPushSequence(_this11.collection, _this11.replicationIdentifierHash, changesResult.lastSequence)).then(function () {
+          return _this11.isStopped() ? true : Promise.resolve(setLastPushCheckpoint(_this11.collection, _this11.replicationIdentifierHash, changesResult.checkpoint)).then(function () {
             return changesResult.changedDocs.size !== 0 ? _this11.runPush() : true;
           });
         }

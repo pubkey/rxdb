@@ -138,7 +138,7 @@ var RxStoragePouch = /*#__PURE__*/function () {
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this4.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
-          return new _rxStorageInstancePouch.RxStorageInstancePouch(params.databaseName, params.collectionName, params.schema, {
+          return new _rxStorageInstancePouch.RxStorageInstancePouch(_this4, params.databaseName, params.collectionName, params.schema, {
             pouch: pouch
           }, params.options);
         });

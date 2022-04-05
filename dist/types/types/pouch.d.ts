@@ -228,6 +228,10 @@ export type PouchBulkDocResultRow = {
     rev: string;
 }
 
+export type PouchChangedDocumentsSinceCheckpoint = {
+    sequence: number;
+}
+
 export type PouchBulkDocOptions = {
     new_edits?: boolean;
 

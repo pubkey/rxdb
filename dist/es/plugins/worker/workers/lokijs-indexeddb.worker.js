@@ -1,12 +1,12 @@
 import { getRxStorageLoki } from '../../lokijs';
-import { wrappedRxStorage } from '../../worker';
+import { wrappedWorkerRxStorage } from '../../worker';
 
 var LokiIndexedDBAdapter = require('lokijs/src/loki-indexed-adapter');
 
 var storage = getRxStorageLoki({
   adapter: new LokiIndexedDBAdapter()
 });
-wrappedRxStorage({
+wrappedWorkerRxStorage({
   storage: storage
 });
 //# sourceMappingURL=lokijs-indexeddb.worker.js.map

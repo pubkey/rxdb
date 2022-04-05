@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
-import { lastOfArray, flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow } from '../../util';
+import { lastOfArray, flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow, getSortDocumentsByLastWriteTimeComparator, RX_META_LWT_MINIMUM } from '../../util';
 import { newRxError } from '../../rx-error';
-import { CHANGES_COLLECTION_SUFFIX, closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, removeLokiLeaderElectorReference, requestRemoteInstance, mustUseLocalState, handleRemoteRequest } from './lokijs-helper';
+import { closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, removeLokiLeaderElectorReference, requestRemoteInstance, mustUseLocalState, handleRemoteRequest } from './lokijs-helper';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 export var createLokiStorageInstance = function createLokiStorageInstance(storage, params, databaseSettings) {
@@ -69,23 +69,16 @@ export var createLokiLocalState = function createLokiLocalState(params, database
 
       var primaryKey = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
       indices.push(primaryKey);
-      var collectionOptions = Object.assign({}, params.options.collection, {
+      var lokiCollectionName = params.collectionName + '-' + params.schema.version;
+      var collectionOptions = Object.assign({}, lokiCollectionName, {
         indices: indices,
         unique: [primaryKey]
       }, LOKIJS_COLLECTION_DEFAULT_OPTIONS);
-      var collection = databaseState.database.addCollection(params.collectionName, collectionOptions);
+      var collection = databaseState.database.addCollection(lokiCollectionName, collectionOptions);
       databaseState.collections[params.collectionName] = collection;
-      var changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
-      var changesCollectionOptions = Object.assign({
-        unique: ['eventId'],
-        indices: ['sequence']
-      }, LOKIJS_COLLECTION_DEFAULT_OPTIONS);
-      var changesCollection = databaseState.database.addCollection(changesCollectionName, changesCollectionOptions);
-      databaseState.collections[params.collectionName] = changesCollection;
       var ret = {
         databaseState: databaseState,
-        collection: collection,
-        changesCollection: changesCollection
+        collection: collection
       };
       return ret;
     });
@@ -125,43 +118,12 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
       });
     }
   }
-  /**
-   * Adds an entry to the changes feed
-   * that can be queried to check which documents have been
-   * changed since sequence X.
-   */
-
 
   var _proto = RxStorageInstanceLoki.prototype;
 
-  _proto.addChangeDocumentMeta = function addChangeDocumentMeta(id) {
-    try {
-      var _this3 = this;
-
-      return Promise.resolve(ensureNotFalsy(_this3.internals.localState)).then(function (localState) {
-        if (!_this3.lastChangefeedSequence) {
-          var lastDoc = localState.changesCollection.chain().simplesort('sequence', true).limit(1).data()[0];
-
-          if (lastDoc) {
-            _this3.lastChangefeedSequence = lastDoc.sequence;
-          }
-        }
-
-        var nextFeedSequence = _this3.lastChangefeedSequence + 1;
-        localState.changesCollection.insert({
-          id: id,
-          sequence: nextFeedSequence
-        });
-        _this3.lastChangefeedSequence = nextFeedSequence;
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
   _proto.bulkWrite = function bulkWrite(documentWrites) {
     try {
-      var _this5 = this;
+      var _this3 = this;
 
       if (documentWrites.length === 0) {
         throw newRxError('P2', {
@@ -171,9 +133,9 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         });
       }
 
-      return Promise.resolve(mustUseLocalState(_this5)).then(function (localState) {
+      return Promise.resolve(mustUseLocalState(_this3)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this5, 'bulkWrite', [documentWrites]);
+          return requestRemoteInstance(_this3, 'bulkWrite', [documentWrites]);
         }
 
         var ret = {
@@ -183,22 +145,22 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         var docsInDb = new Map();
         var docsInDbWithLokiKey = new Map();
         documentWrites.forEach(function (writeRow) {
-          var id = writeRow.document[_this5.primaryPath];
-          var documentInDb = localState.collection.by(_this5.primaryPath, id);
+          var id = writeRow.document[_this3.primaryPath];
+          var documentInDb = localState.collection.by(_this3.primaryPath, id);
 
           if (documentInDb) {
             docsInDbWithLokiKey.set(id, documentInDb);
             docsInDb.set(id, stripLokiKey(documentInDb));
           }
         });
-        var categorized = categorizeBulkWriteRows(_this5, _this5.primaryPath, docsInDb, documentWrites);
+        var categorized = categorizeBulkWriteRows(_this3, _this3.primaryPath, docsInDb, documentWrites);
         categorized.bulkInsertDocs.forEach(function (writeRow) {
-          var docId = writeRow.document[_this5.primaryPath];
+          var docId = writeRow.document[_this3.primaryPath];
           localState.collection.insert(flatClone(writeRow.document));
           ret.success[docId] = writeRow.document;
         });
         categorized.bulkUpdateDocs.forEach(function (writeRow) {
-          var docId = writeRow.document[_this5.primaryPath];
+          var docId = writeRow.document[_this3.primaryPath];
           var documentInDbWithLokiKey = getFromMapOrThrow(docsInDbWithLokiKey, docId);
           var writeDoc = Object.assign({}, writeRow.document, {
             $loki: documentInDbWithLokiKey.$loki
@@ -209,12 +171,9 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         categorized.errors.forEach(function (err) {
           ret.error[err.documentId] = err;
         });
-        categorized.changedDocumentIds.forEach(function (docId) {
-          _this5.addChangeDocumentMeta(docId);
-        });
         localState.databaseState.saveQueue.addWrite();
 
-        _this5.changes$.next(categorized.eventBulk);
+        _this3.changes$.next(categorized.eventBulk);
 
         return ret;
       });
@@ -225,16 +184,16 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
     try {
-      var _this7 = this;
+      var _this5 = this;
 
-      return Promise.resolve(mustUseLocalState(_this7)).then(function (localState) {
+      return Promise.resolve(mustUseLocalState(_this5)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this7, 'findDocumentsById', [ids, deleted]);
+          return requestRemoteInstance(_this5, 'findDocumentsById', [ids, deleted]);
         }
 
         var ret = {};
         ids.forEach(function (id) {
-          var documentInDb = localState.collection.by(_this7.primaryPath, id);
+          var documentInDb = localState.collection.by(_this5.primaryPath, id);
 
           if (documentInDb && (!documentInDb._deleted || deleted)) {
             ret[id] = stripLokiKey(documentInDb);
@@ -249,17 +208,17 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.query = function query(preparedQuery) {
     try {
-      var _this9 = this;
+      var _this7 = this;
 
-      return Promise.resolve(mustUseLocalState(_this9)).then(function (localState) {
+      return Promise.resolve(mustUseLocalState(_this7)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this9, 'query', [preparedQuery]);
+          return requestRemoteInstance(_this7, 'query', [preparedQuery]);
         }
 
         var query = localState.collection.chain().find(preparedQuery.selector);
 
         if (preparedQuery.sort) {
-          query = query.sort(getLokiSortComparator(_this9.schema, preparedQuery));
+          query = query.sort(getLokiSortComparator(_this7.schema, preparedQuery));
         }
         /**
          * Offset must be used before limit in LokiJS
@@ -291,39 +250,47 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
   };
 
-  _proto.getChangedDocuments = function getChangedDocuments(options) {
+  _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
-      var _this11 = this;
+      var _this9 = this;
 
-      return Promise.resolve(mustUseLocalState(_this11)).then(function (localState) {
-        var _sequence;
-
+      return Promise.resolve(mustUseLocalState(_this9)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this11, 'getChangedDocuments', [options]);
+          return requestRemoteInstance(_this9, 'getChangedDocumentsSince', [limit, checkpoint]);
         }
 
-        var desc = options.direction === 'before';
-        var operator = options.direction === 'after' ? '$gt' : '$lt';
-        var query = localState.changesCollection.chain().find({
-          sequence: (_sequence = {}, _sequence[operator] = options.sinceSequence, _sequence)
-        }).simplesort('sequence', desc);
+        var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
+        var query = localState.collection.chain().find({
+          '_meta.lwt': {
+            $gte: sinceLwt
+          }
+        }).sort(getSortDocumentsByLastWriteTimeComparator(_this9.primaryPath));
+        var changedDocs = query.data();
+        var first = changedDocs[0];
 
-        if (options.limit) {
-          query = query.limit(options.limit);
-        }
+        if (checkpoint && first && first[_this9.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
+          changedDocs.shift();
+        } // optimization shortcut
 
-        var changedDocuments = query.data().map(function (result) {
+
+        if (changedDocs.length === 0) {
           return {
-            id: result.id,
-            sequence: result.sequence
+            documents: [],
+            checkpoint: checkpoint
           };
-        });
-        var useForLastSequence = !desc ? lastOfArray(changedDocuments) : changedDocuments[0];
-        var ret = {
-          changedDocuments: changedDocuments,
-          lastSequence: useForLastSequence ? useForLastSequence.sequence : options.sinceSequence
+        }
+
+        changedDocs = changedDocs.slice(0, limit);
+        var useForCheckpoint = lastOfArray(changedDocs);
+        return {
+          documents: changedDocs.map(function (d) {
+            return stripLokiKey(d);
+          }),
+          checkpoint: {
+            id: useForCheckpoint[_this9.primaryPath],
+            lwt: useForCheckpoint._meta.lwt
+          }
         };
-        return ret;
       });
     } catch (e) {
       return Promise.reject(e);
@@ -336,11 +303,11 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     try {
-      var _this13 = this;
+      var _this11 = this;
 
-      return Promise.resolve(mustUseLocalState(_this13)).then(function (localState) {
+      return Promise.resolve(mustUseLocalState(_this11)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this13, 'cleanup', [minimumDeletedTime]);
+          return requestRemoteInstance(_this11, 'cleanup', [minimumDeletedTime]);
         }
 
         var deleteAmountPerRun = 10;
@@ -368,23 +335,23 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   _proto.close = function close() {
     try {
       var _temp3 = function _temp3() {
-        removeLokiLeaderElectorReference(_this15.storage, _this15.databaseName);
+        removeLokiLeaderElectorReference(_this13.storage, _this13.databaseName);
       };
 
-      var _this15 = this;
+      var _this13 = this;
 
-      _this15.closed = true;
+      _this13.closed = true;
 
-      _this15.changes$.complete();
+      _this13.changes$.complete();
 
-      OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this15);
+      OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this13);
 
       var _temp4 = function () {
-        if (_this15.internals.localState) {
-          return Promise.resolve(_this15.internals.localState).then(function (localState) {
-            return Promise.resolve(getLokiDatabase(_this15.databaseName, _this15.databaseSettings)).then(function (dbState) {
+        if (_this13.internals.localState) {
+          return Promise.resolve(_this13.internals.localState).then(function (localState) {
+            return Promise.resolve(getLokiDatabase(_this13.databaseName, _this13.databaseSettings)).then(function (dbState) {
               return Promise.resolve(dbState.saveQueue.run()).then(function () {
-                return Promise.resolve(closeLokiCollections(_this15.databaseName, [localState.collection, localState.changesCollection])).then(function () {});
+                return Promise.resolve(closeLokiCollections(_this13.databaseName, [localState.collection])).then(function () {});
               });
             });
           });
@@ -399,16 +366,15 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.remove = function remove() {
     try {
-      var _this17 = this;
+      var _this15 = this;
 
-      return Promise.resolve(mustUseLocalState(_this17)).then(function (localState) {
+      return Promise.resolve(mustUseLocalState(_this15)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this17, 'remove', []);
+          return requestRemoteInstance(_this15, 'remove', []);
         }
 
-        localState.databaseState.database.removeCollection(_this17.collectionName);
-        localState.databaseState.database.removeCollection(localState.changesCollection.name);
-        return _this17.close();
+        localState.databaseState.database.removeCollection(localState.collection.name);
+        return _this15.close();
       });
     } catch (e) {
       return Promise.reject(e);

@@ -9,7 +9,7 @@ var LokiIndexedDBAdapter = require('lokijs/src/loki-indexed-adapter');
 var storage = (0, _lokijs.getRxStorageLoki)({
   adapter: new LokiIndexedDBAdapter()
 });
-(0, _worker.wrappedRxStorage)({
+(0, _worker.wrappedWorkerRxStorage)({
   storage: storage
 });
 //# sourceMappingURL=lokijs-indexeddb.worker.js.map

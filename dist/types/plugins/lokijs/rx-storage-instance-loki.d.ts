@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, ChangeStreamOnceOptions, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk } from '../../types';
+import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk, LokiChangesCheckpoint } from '../../types';
 import type { RxStorageLoki } from './rx-storage-lokijs';
 export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<RxDocType, LokiStorageInternals, LokiSettings> {
     readonly storage: RxStorageLoki;
@@ -15,21 +15,15 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     readonly instanceId: number;
     closed: boolean;
     constructor(storage: RxStorageLoki, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings);
-    /**
-     * Adds an entry to the changes feed
-     * that can be queried to check which documents have been
-     * changed since sequence X.
-     */
-    private addChangeDocumentMeta;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<{
         [documentId: string]: RxDocumentData<RxDocType>;
     }>;
     query(preparedQuery: MangoQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
-    getChangedDocuments(options: ChangeStreamOnceOptions): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[];
-        lastSequence: number;
+    getChangedDocumentsSince(limit: number, checkpoint?: LokiChangesCheckpoint): Promise<{
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint?: LokiChangesCheckpoint;
     }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;

@@ -75,10 +75,11 @@ exports.getSingleDocument = getSingleDocument;
  * Returns all non-deleted documents
  * of the storage.
  */
-var getAllDocuments = function getAllDocuments(primaryKey, storage, storageInstance) {
+var getAllDocuments = function getAllDocuments(primaryKey, storageInstance) {
   try {
     var _ref;
 
+    var storage = storageInstance.storage;
     var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
       selector: {},
       sort: [(_ref = {}, _ref[primaryKey] = 'asc', _ref)]
@@ -379,6 +380,7 @@ rxJsonSchema) {
   }
 
   var ret = {
+    storage: storageInstance.storage,
     schema: storageInstance.schema,
     internals: storageInstance.internals,
     collectionName: storageInstance.collectionName,
@@ -437,9 +439,17 @@ rxJsonSchema) {
         return storageInstance.getAttachmentData(documentId, attachmentId);
       });
     },
-    getChangedDocuments: function getChangedDocuments(options) {
+    getChangedDocumentsSince: function getChangedDocumentsSince(limit, checkpoint) {
       return database.lockedRun(function () {
-        return storageInstance.getChangedDocuments(options);
+        return storageInstance.getChangedDocumentsSince(limit, checkpoint);
+      }).then(function (result) {
+        var documents = result.documents.map(function (d) {
+          return transformDocumentDataFromRxStorageToRxDB(d);
+        });
+        return {
+          documents: documents,
+          checkpoint: result.checkpoint
+        };
       });
     },
     cleanup: function cleanup(minDeletedTime) {
