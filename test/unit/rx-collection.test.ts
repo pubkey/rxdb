@@ -991,7 +991,7 @@ config.parallel('rx-collection.test.js', () => {
                     // This test failed randomly, so we run it more often.
                     new Array(config.isFastMode() ? 3 : 10)
                         .fill(0).forEach(() => {
-                            it('skip first and limit with ' + config.storage.name, async () => {
+                            it('skip first and limit (storage: ' + config.storage.name + ')', async () => {
                                 /**
                                  * TODO this test is broken in pouchdb
                                  * @link https://github.com/pouchdb/pouchdb/pull/8371

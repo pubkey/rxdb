@@ -15,7 +15,7 @@ The IndexedDB `RxStorage` is based on plain IndexedDB and can be used in browser
 
 ### Cons
 
-- It is part of the `rxdb-premium` plugin that must be purchased.
+- It is part of the [RxDB Premium](./premium.md) plugin that must be purchased.
 - Does not support CouchDB replication.
 - Only runs on runtimes that support [IndexedDB v2](https://caniuse.com/indexeddb2), so it does not work on Internet Explorer. 
 
@@ -73,4 +73,4 @@ const db = await createRxDatabase({
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./rx-storage-worker.md)
+If you are new to RxDB, you should continue [here](./rx-storage-sqlite.md)

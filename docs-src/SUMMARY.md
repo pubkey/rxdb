@@ -121,7 +121,11 @@
 
 * [RxStorage IndexedDB](./rx-storage-indexeddb.md)
 
+* [RxStorage SQLite](./rx-storage-sqlite.md)
+
 * [RxStorage Worker](./rx-storage-worker.md)
+
+* [RxStorage Sharding](./rx-storage-sharding.md)
 
 * [Replication CouchDB](./replication-couchdb.md)
 
