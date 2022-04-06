@@ -22,9 +22,9 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     query(preparedQuery: MangoQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
     getChangedDocumentsSince(limit: number, checkpoint?: LokiChangesCheckpoint): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint?: LokiChangesCheckpoint;
-    }>;
+        document: RxDocumentData<RxDocType>;
+        checkpoint: LokiChangesCheckpoint;
+    }[]>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;

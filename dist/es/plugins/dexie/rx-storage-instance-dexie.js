@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { lastOfArray, now, randomCouchString, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWriteTime } from '../../util';
+import { now, randomCouchString, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWriteTime } from '../../util';
 import { newRxError } from '../../rx-error';
 import { closeDexieDb, getDexieDbWithTables, getDocsInDb } from './dexie-helper';
 import { dexieQuery } from './query/dexie-query';
@@ -281,25 +281,18 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
         }))).then(function (_ref) {
           var changedDocsNormal = _ref[0],
               changedDocsDeleted = _ref[1];
-          var changedDocs = changedDocsNormal.concat(changedDocsDeleted); // optimization shortcut
-
-          if (changedDocs.length === 0) {
-            return {
-              documents: [],
-              checkpoint: checkpoint
-            };
-          }
-
+          var changedDocs = changedDocsNormal.concat(changedDocsDeleted);
           changedDocs = sortDocumentsByLastWriteTime(_this6.primaryPath, changedDocs);
           changedDocs = changedDocs.slice(0, limit);
-          var useForCheckpoint = lastOfArray(changedDocs);
-          return {
-            documents: changedDocs,
-            checkpoint: {
-              id: useForCheckpoint[_this6.primaryPath],
-              lwt: useForCheckpoint._meta.lwt
-            }
-          };
+          return changedDocs.map(function (docData) {
+            return {
+              document: docData,
+              checkpoint: {
+                id: docData[_this6.primaryPath],
+                lwt: docData._meta.lwt
+              }
+            };
+          });
         });
       });
     } catch (e) {

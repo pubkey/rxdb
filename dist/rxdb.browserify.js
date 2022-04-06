@@ -3230,12 +3230,14 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             throw new Error('same sequence');
           }
 
-          return {
-            documents: Object.values(documentsData),
-            checkpoint: {
-              sequence: lastSequence
-            }
-          };
+          return changedDocuments.map(function (changeRow) {
+            return {
+              checkpoint: {
+                sequence: changeRow.sequence
+              },
+              document: (0, _util.getFromObjectOrThrow)(documentsData, changeRow.id)
+            };
+          });
         });
       };
 
@@ -4943,7 +4945,8 @@ var getAllCollectionDocuments = function getAllCollectionDocuments(storageInstan
       },
       sort: [{
         id: 'asc'
-      }]
+      }],
+      skip: 0
     });
     return Promise.resolve(storageInstance.query(getAllQueryPrepared)).then(function (queryResult) {
       var allDocs = queryResult.documents;
@@ -6843,6 +6846,10 @@ var _util = require("./util");
 function normalizeMangoQuery(schema, mangoQuery) {
   var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   mangoQuery = (0, _util.flatClone)(mangoQuery);
+
+  if (typeof mangoQuery.skip !== 'number') {
+    mangoQuery.skip = 0;
+  }
   /**
    * To ensure a deterministic sorting,
    * we have to ensure the primary key is always part
@@ -6850,6 +6857,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
    * Primary sorting is added as last sort parameter,
    * similiar to how we add the primary key to indexes that do not have it.
    */
+
 
   if (!mangoQuery.sort) {
     var _ref;
@@ -8025,7 +8033,8 @@ var getAllDocuments = function getAllDocuments(primaryKey, storageInstance) {
     var storage = storageInstance.storage;
     var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
       selector: {},
-      sort: [(_ref = {}, _ref[primaryKey] = 'asc', _ref)]
+      sort: [(_ref = {}, _ref[primaryKey] = 'asc', _ref)],
+      skip: 0
     });
     return Promise.resolve(storageInstance.query(getAllQueryPrepared)).then(function (queryResult) {
       var allDocs = queryResult.documents;
@@ -8386,13 +8395,12 @@ rxJsonSchema) {
       return database.lockedRun(function () {
         return storageInstance.getChangedDocumentsSince(limit, checkpoint);
       }).then(function (result) {
-        var documents = result.documents.map(function (d) {
-          return transformDocumentDataFromRxStorageToRxDB(d);
+        return result.map(function (row) {
+          return {
+            checkpoint: row.checkpoint,
+            document: transformDocumentDataFromRxStorageToRxDB(row.document)
+          };
         });
-        return {
-          documents: documents,
-          checkpoint: result.checkpoint
-        };
       });
     },
     cleanup: function cleanup(minDeletedTime) {

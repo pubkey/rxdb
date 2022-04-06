@@ -54,7 +54,8 @@ export var getAllDocuments = function getAllDocuments(primaryKey, storageInstanc
     var storage = storageInstance.storage;
     var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
       selector: {},
-      sort: [(_ref = {}, _ref[primaryKey] = 'asc', _ref)]
+      sort: [(_ref = {}, _ref[primaryKey] = 'asc', _ref)],
+      skip: 0
     });
     return Promise.resolve(storageInstance.query(getAllQueryPrepared)).then(function (queryResult) {
       var allDocs = queryResult.documents;
@@ -403,13 +404,12 @@ rxJsonSchema) {
       return database.lockedRun(function () {
         return storageInstance.getChangedDocumentsSince(limit, checkpoint);
       }).then(function (result) {
-        var documents = result.documents.map(function (d) {
-          return transformDocumentDataFromRxStorageToRxDB(d);
+        return result.map(function (row) {
+          return {
+            checkpoint: row.checkpoint,
+            document: transformDocumentDataFromRxStorageToRxDB(row.document)
+          };
         });
-        return {
-          documents: documents,
-          checkpoint: result.checkpoint
-        };
       });
     },
     cleanup: function cleanup(minDeletedTime) {

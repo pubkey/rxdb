@@ -290,27 +290,18 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
         if (checkpoint && first && first[_this9.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
           changedDocs.shift();
-        } // optimization shortcut
-
-
-        if (changedDocs.length === 0) {
-          return {
-            documents: [],
-            checkpoint: checkpoint
-          };
         }
 
         changedDocs = changedDocs.slice(0, limit);
-        var useForCheckpoint = (0, _util.lastOfArray)(changedDocs);
-        return {
-          documents: changedDocs.map(function (d) {
-            return (0, _lokijsHelper.stripLokiKey)(d);
-          }),
-          checkpoint: {
-            id: useForCheckpoint[_this9.primaryPath],
-            lwt: useForCheckpoint._meta.lwt
-          }
-        };
+        return changedDocs.map(function (docData) {
+          return {
+            document: (0, _lokijsHelper.stripLokiKey)(docData),
+            checkpoint: {
+              id: docData[_this9.primaryPath],
+              lwt: docData._meta.lwt
+            }
+          };
+        });
       });
     } catch (e) {
       return Promise.reject(e);

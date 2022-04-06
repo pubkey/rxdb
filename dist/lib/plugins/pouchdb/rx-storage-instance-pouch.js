@@ -526,12 +526,14 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             throw new Error('same sequence');
           }
 
-          return {
-            documents: Object.values(documentsData),
-            checkpoint: {
-              sequence: lastSequence
-            }
-          };
+          return changedDocuments.map(function (changeRow) {
+            return {
+              checkpoint: {
+                sequence: changeRow.sequence
+              },
+              document: (0, _util.getFromObjectOrThrow)(documentsData, changeRow.id)
+            };
+          });
         });
       };
 

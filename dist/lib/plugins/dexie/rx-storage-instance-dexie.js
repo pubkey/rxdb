@@ -298,25 +298,18 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
         }))).then(function (_ref) {
           var changedDocsNormal = _ref[0],
               changedDocsDeleted = _ref[1];
-          var changedDocs = changedDocsNormal.concat(changedDocsDeleted); // optimization shortcut
-
-          if (changedDocs.length === 0) {
-            return {
-              documents: [],
-              checkpoint: checkpoint
-            };
-          }
-
+          var changedDocs = changedDocsNormal.concat(changedDocsDeleted);
           changedDocs = (0, _util.sortDocumentsByLastWriteTime)(_this6.primaryPath, changedDocs);
           changedDocs = changedDocs.slice(0, limit);
-          var useForCheckpoint = (0, _util.lastOfArray)(changedDocs);
-          return {
-            documents: changedDocs,
-            checkpoint: {
-              id: useForCheckpoint[_this6.primaryPath],
-              lwt: useForCheckpoint._meta.lwt
-            }
-          };
+          return changedDocs.map(function (docData) {
+            return {
+              document: docData,
+              checkpoint: {
+                id: docData[_this6.primaryPath],
+                lwt: docData._meta.lwt
+              }
+            };
+          });
         });
       });
     } catch (e) {

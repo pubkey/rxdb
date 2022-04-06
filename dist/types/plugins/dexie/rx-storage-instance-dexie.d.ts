@@ -21,9 +21,9 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     }>;
     query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     getChangedDocumentsSince(limit: number, checkpoint?: DexieChangesCheckpoint): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint?: DexieChangesCheckpoint;
-    }>;
+        document: RxDocumentData<RxDocType>;
+        checkpoint: DexieChangesCheckpoint;
+    }[]>;
     remove(): Promise<void>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;

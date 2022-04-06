@@ -65,14 +65,23 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
 }
 
 
+/**
+ * User provided mango queries will be filled up by RxDB via normalizeMangoQuery()
+ * so we do not have to do many if-field-exist tests in the internals.
+ */
 export type FilledMangoQuery<RxDocType> = MangoQuery<RxDocType> & {
     /**
-     * In contrast to the user-provided MangoQuery,
-     * the sorting is required here because
-     * RxDB has to ensure that the primary key is always
-     * part of the sort params.
-     */
+ * In contrast to the user-provided MangoQuery,
+ * the sorting is required here because
+ * RxDB has to ensure that the primary key is always
+ * part of the sort params.
+ */
     sort: MangoQuerySortPart<RxDocType>[];
+
+    /**
+     * Skip must be set which defaults to 0
+     */
+    skip: number;
 }
 
 /**
@@ -260,9 +269,9 @@ export interface RxStorageInstance<
 
     /**
      * Returns the current (not the old!) data of all documents that have been changed AFTER the given checkpoint.
-     * This might return the same document multiple times when paginating over the checkpoint depending on the RxStorage.
-     * If the returned array does not reach the limit, it can be assumed that the "end" is reached.
-     * Also returns a new checkpoint which can be used to continue with the pagination.
+     * If the returned array does not reach the limit, it can be assumed that the "end" is reached, when paginating over the changes.
+     * Also returns a new checkpoint for each document which can be used to continue with the pagination from that change on.
+     * Must never return the same document multiple times in the same call operation.
      * This is used by RxDB to known what has changed since X so these docs can be handled by the backup or the replication
      * plugin.
      */
@@ -270,9 +279,15 @@ export interface RxStorageInstance<
         limit: number,
         checkpoint?: any
     ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint?: any;
-    }>;
+        document: RxDocumentData<RxDocType>;
+        /**
+         * For each document, an own checkpoint is returned.
+         * This is usefull when RxDB does only need a part of the returned changes
+         * but still wants to be able to continue the pagination
+         * from the correct document on.
+         */
+        checkpoint: any;
+    }[]>;
 
     /**
      * Returns an ongoing stream

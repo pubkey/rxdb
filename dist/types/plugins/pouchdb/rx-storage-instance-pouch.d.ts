@@ -24,7 +24,7 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
     cleanup(_minimumDeletedTime: number): Promise<boolean>;
     getChangedDocumentsSince(limit: number, checkpoint?: PouchChangedDocumentsSinceCheckpoint): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint?: PouchChangedDocumentsSinceCheckpoint;
-    }>;
+        document: RxDocumentData<RxDocType>;
+        checkpoint: PouchChangedDocumentsSinceCheckpoint;
+    }[]>;
 }

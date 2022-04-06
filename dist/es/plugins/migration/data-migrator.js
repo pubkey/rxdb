@@ -405,7 +405,8 @@ export function getBatchOfOldCollection(oldCollection, batchSize) {
   var preparedQuery = storage.statics.prepareQuery(storageInstance.schema, {
     selector: {},
     sort: [(_ref = {}, _ref[oldCollection.schema.primaryPath] = 'asc', _ref)],
-    limit: batchSize
+    limit: batchSize,
+    skip: 0
   });
   return storageInstance.query(preparedQuery).then(function (result) {
     return result.documents.map(function (doc) {

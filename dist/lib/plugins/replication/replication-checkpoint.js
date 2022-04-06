@@ -287,9 +287,12 @@ isStopped) {
         return !_interrupt && !!retry && !isStopped();
       }, void 0, function () {
         return Promise.resolve(collection.storageInstance.getChangedDocumentsSince(batchSize, lastPushCheckpoint)).then(function (changesResults) {
-          lastCheckpoint = changesResults.checkpoint; // optimisation shortcut, do not proceed if there are no changed documents
+          if (changesResults.length > 0) {
+            lastCheckpoint = (0, _util.lastOfArray)(changesResults).checkpoint;
+          } // optimisation shortcut, do not proceed if there are no changed documents
 
-          if (changesResults.documents.length === 0) {
+
+          if (changesResults.length === 0) {
             retry = false;
             return;
           }
@@ -299,7 +302,8 @@ isStopped) {
             return;
           }
 
-          changesResults.documents.forEach(function (docData) {
+          changesResults.forEach(function (row) {
+            var docData = row.document;
             var docId = docData[primaryPath];
 
             if (changedDocs.has(docId)) {
@@ -322,7 +326,7 @@ isStopped) {
             });
           });
 
-          if (changedDocs.size < batchSize && changesResults.documents.length === batchSize) {
+          if (changedDocs.size < batchSize && changesResults.length === batchSize) {
             // no pushable docs found but also not reached the end -> re-run
             lastPushCheckpoint = lastCheckpoint;
             retry = true;

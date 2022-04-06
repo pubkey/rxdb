@@ -89,7 +89,8 @@ var getAllCollectionDocuments = function getAllCollectionDocuments(storageInstan
       },
       sort: [{
         id: 'asc'
-      }]
+      }],
+      skip: 0
     });
     return Promise.resolve(storageInstance.query(getAllQueryPrepared)).then(function (queryResult) {
       var allDocs = queryResult.documents;

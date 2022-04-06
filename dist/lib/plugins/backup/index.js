@@ -361,10 +361,10 @@ var RxBackupState = /*#__PURE__*/function () {
               }, void 0, function () {
                 return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
                   return Promise.resolve(collection.storageInstance.getChangedDocumentsSince(_this4.options.batchSize ? _this4.options.batchSize : 0, lastCheckpoint)).then(function (changesResult) {
-                    lastCheckpoint = changesResult.checkpoint;
+                    lastCheckpoint = changesResult.length > 0 ? (0, _util.lastOfArray)(changesResult).checkpoint : lastCheckpoint;
                     meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
-                    var docIds = changesResult.documents.map(function (docData) {
-                      return docData[primaryKey];
+                    var docIds = changesResult.map(function (row) {
+                      return row.document[primaryKey];
                     }).filter(function (id) {
                       if (processedDocuments.has(id)) {
                         return false;

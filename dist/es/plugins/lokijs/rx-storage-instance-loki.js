@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { lastOfArray, flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow, getSortDocumentsByLastWriteTimeComparator, RX_META_LWT_MINIMUM } from '../../util';
+import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow, getSortDocumentsByLastWriteTimeComparator, RX_META_LWT_MINIMUM } from '../../util';
 import { newRxError } from '../../rx-error';
 import { closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, removeLokiLeaderElectorReference, requestRemoteInstance, mustUseLocalState, handleRemoteRequest } from './lokijs-helper';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
@@ -270,27 +270,18 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
         if (checkpoint && first && first[_this9.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
           changedDocs.shift();
-        } // optimization shortcut
-
-
-        if (changedDocs.length === 0) {
-          return {
-            documents: [],
-            checkpoint: checkpoint
-          };
         }
 
         changedDocs = changedDocs.slice(0, limit);
-        var useForCheckpoint = lastOfArray(changedDocs);
-        return {
-          documents: changedDocs.map(function (d) {
-            return stripLokiKey(d);
-          }),
-          checkpoint: {
-            id: useForCheckpoint[_this9.primaryPath],
-            lwt: useForCheckpoint._meta.lwt
-          }
-        };
+        return changedDocs.map(function (docData) {
+          return {
+            document: stripLokiKey(docData),
+            checkpoint: {
+              id: docData[_this9.primaryPath],
+              lwt: docData._meta.lwt
+            }
+          };
+        });
       });
     } catch (e) {
       return Promise.reject(e);

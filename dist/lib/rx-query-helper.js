@@ -16,6 +16,10 @@ var _util = require("./util");
 function normalizeMangoQuery(schema, mangoQuery) {
   var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   mangoQuery = (0, _util.flatClone)(mangoQuery);
+
+  if (typeof mangoQuery.skip !== 'number') {
+    mangoQuery.skip = 0;
+  }
   /**
    * To ensure a deterministic sorting,
    * we have to ensure the primary key is always part
@@ -23,6 +27,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
    * Primary sorting is added as last sort parameter,
    * similiar to how we add the primary key to indexes that do not have it.
    */
+
 
   if (!mangoQuery.sort) {
     var _ref;
