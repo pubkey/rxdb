@@ -43,7 +43,7 @@ export type InWorkerStorage = {
         limit: number,
         checkpoint: any
     ): Promise<{
-        documents: RxDocumentData<RxDocType>;
+        document: RxDocumentData<RxDocType>;
         checkpoint: any;
     }[]>;
     changeStream<DocumentData>(
