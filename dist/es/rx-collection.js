@@ -526,11 +526,17 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           var _temp6 = function _temp6(_result) {
             if (_exit2) return _result;
             firstEmitDone = true;
-            return resultMap;
+            return currentValue;
           };
 
           var _exit2 = false;
-          var resultMap = ensureNotFalsy(currentValue);
+
+          /**
+           * We first have to clone the Map
+           * to ensure we do not create side effects by mutating
+           * a Map that has already been returned before.
+           */
+          currentValue = new Map(ensureNotFalsy(currentValue));
 
           var missedChangeEvents = _this14._changeEventBuffer.getFrom(lastChangeEvent + 1);
 
@@ -544,11 +550,8 @@ export var RxCollectionBase = /*#__PURE__*/function () {
                */
               return Promise.resolve(_this14.findByIds(ids)).then(function (newResult) {
                 lastChangeEvent = _this14._changeEventBuffer.counter;
-                Array.from(newResult.entries()).forEach(function (_ref2) {
-                  var k = _ref2[0],
-                      v = _ref2[1];
-                  return resultMap.set(k, v);
-                });
+                _exit2 = true;
+                return newResult;
               });
             } else {
               var resultHasChanged = false;
@@ -565,11 +568,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
                 if (op === 'INSERT' || op === 'UPDATE') {
                   resultHasChanged = true;
                   var rxDocument = createRxDocument(_this14.asRxCollection, rxChangeEvent.documentData);
-                  resultMap.set(docId, rxDocument);
+                  ensureNotFalsy(currentValue).set(docId, rxDocument);
                 } else {
-                  if (resultMap.has(docId)) {
+                  if (ensureNotFalsy(currentValue).has(docId)) {
                     resultHasChanged = true;
-                    resultMap["delete"](docId);
+                    ensureNotFalsy(currentValue)["delete"](docId);
                   }
                 }
               }); // nothing happened that affects the result -> do not emit
@@ -933,28 +936,28 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
  */
 
 
-export function createRxCollection(_ref3) {
-  var database = _ref3.database,
-      name = _ref3.name,
-      schema = _ref3.schema,
-      _ref3$instanceCreatio = _ref3.instanceCreationOptions,
-      instanceCreationOptions = _ref3$instanceCreatio === void 0 ? {} : _ref3$instanceCreatio,
-      _ref3$migrationStrate = _ref3.migrationStrategies,
-      migrationStrategies = _ref3$migrationStrate === void 0 ? {} : _ref3$migrationStrate,
-      _ref3$autoMigrate = _ref3.autoMigrate,
-      autoMigrate = _ref3$autoMigrate === void 0 ? true : _ref3$autoMigrate,
-      _ref3$statics = _ref3.statics,
-      statics = _ref3$statics === void 0 ? {} : _ref3$statics,
-      _ref3$methods = _ref3.methods,
-      methods = _ref3$methods === void 0 ? {} : _ref3$methods,
-      _ref3$attachments = _ref3.attachments,
-      attachments = _ref3$attachments === void 0 ? {} : _ref3$attachments,
-      _ref3$options = _ref3.options,
-      options = _ref3$options === void 0 ? {} : _ref3$options,
-      _ref3$localDocuments = _ref3.localDocuments,
-      localDocuments = _ref3$localDocuments === void 0 ? false : _ref3$localDocuments,
-      _ref3$cacheReplacemen = _ref3.cacheReplacementPolicy,
-      cacheReplacementPolicy = _ref3$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref3$cacheReplacemen;
+export function createRxCollection(_ref2) {
+  var database = _ref2.database,
+      name = _ref2.name,
+      schema = _ref2.schema,
+      _ref2$instanceCreatio = _ref2.instanceCreationOptions,
+      instanceCreationOptions = _ref2$instanceCreatio === void 0 ? {} : _ref2$instanceCreatio,
+      _ref2$migrationStrate = _ref2.migrationStrategies,
+      migrationStrategies = _ref2$migrationStrate === void 0 ? {} : _ref2$migrationStrate,
+      _ref2$autoMigrate = _ref2.autoMigrate,
+      autoMigrate = _ref2$autoMigrate === void 0 ? true : _ref2$autoMigrate,
+      _ref2$statics = _ref2.statics,
+      statics = _ref2$statics === void 0 ? {} : _ref2$statics,
+      _ref2$methods = _ref2.methods,
+      methods = _ref2$methods === void 0 ? {} : _ref2$methods,
+      _ref2$attachments = _ref2.attachments,
+      attachments = _ref2$attachments === void 0 ? {} : _ref2$attachments,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {} : _ref2$options,
+      _ref2$localDocuments = _ref2.localDocuments,
+      localDocuments = _ref2$localDocuments === void 0 ? false : _ref2$localDocuments,
+      _ref2$cacheReplacemen = _ref2.cacheReplacementPolicy,
+      cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref2$cacheReplacemen;
   var storageInstanceCreationParams = {
     databaseName: database.name,
     collectionName: name,
@@ -967,9 +970,9 @@ export function createRxCollection(_ref3) {
     var collection = new RxCollectionBase(database, name, schema, storageInstance, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
     return collection.prepare().then(function () {
       // ORM add statics
-      Object.entries(statics).forEach(function (_ref4) {
-        var funName = _ref4[0],
-            fun = _ref4[1];
+      Object.entries(statics).forEach(function (_ref3) {
+        var funName = _ref3[0],
+            fun = _ref3[1];
         Object.defineProperty(collection, funName, {
           get: function get() {
             return fun.bind(collection);
