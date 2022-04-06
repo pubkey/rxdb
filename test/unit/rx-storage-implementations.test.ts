@@ -1428,7 +1428,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(resultWithoutCheckpoint.length, 2);
                 // the foobar-doc must have the latest value
                 const foobarRow = resultWithoutCheckpoint.find(row => row.document.key === 'foobar');
-                assert.strictEqual(ensureNotFalsy(foobarRow.document).value, '10');
+                assert.strictEqual(ensureNotFalsy(foobarRow).document.value, '10');
 
                 // insert many more documents
                 const insertManyResult = await storageInstance.bulkWrite(
