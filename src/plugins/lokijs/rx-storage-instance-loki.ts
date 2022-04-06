@@ -3,7 +3,6 @@ import {
     Observable
 } from 'rxjs';
 import {
-    lastOfArray,
     flatClone,
     now,
     ensureNotFalsy,
@@ -208,9 +207,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: LokiChangesCheckpoint
     ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint?: LokiChangesCheckpoint;
-    }> {
+        document: RxDocumentData<RxDocType>;
+        checkpoint: LokiChangesCheckpoint;
+    }[]> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'getChangedDocumentsSince', [limit, checkpoint]);
@@ -237,23 +236,14 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             changedDocs.shift();
         }
 
-        // optimization shortcut
-        if (changedDocs.length === 0) {
-            return {
-                documents: [],
-                checkpoint
-            }
-        }
-
         changedDocs = changedDocs.slice(0, limit);
-        const useForCheckpoint = lastOfArray(changedDocs);
-        return {
-            documents: changedDocs.map(d => stripLokiKey(d)),
+        return changedDocs.map(docData => ({
+            document: stripLokiKey(docData),
             checkpoint: {
-                id: useForCheckpoint[this.primaryPath] as any,
-                lwt: useForCheckpoint._meta.lwt
+                id: docData[this.primaryPath] as any,
+                lwt: docData._meta.lwt
             }
-        };
+        }));
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {

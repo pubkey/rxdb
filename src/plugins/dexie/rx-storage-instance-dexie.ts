@@ -6,7 +6,6 @@ import {
     Observable
 } from 'rxjs';
 import {
-    lastOfArray,
     now,
     randomCouchString,
     PROMISE_RESOLVE_VOID,
@@ -298,9 +297,9 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: DexieChangesCheckpoint
     ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint?: DexieChangesCheckpoint;
-    }> {
+        document: RxDocumentData<RxDocType>;
+        checkpoint: DexieChangesCheckpoint;
+    }[]> {
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const sinceId = checkpoint ? checkpoint.id : '';
         const state = await this.internals;
@@ -320,26 +319,16 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             })
         );
         let changedDocs = changedDocsNormal.concat(changedDocsDeleted);
-        // optimization shortcut
-        if (changedDocs.length === 0) {
-            return {
-                documents: [],
-                checkpoint
-            }
-        }
 
         changedDocs = sortDocumentsByLastWriteTime(this.primaryPath as any, changedDocs);
         changedDocs = changedDocs.slice(0, limit);
-
-        const useForCheckpoint = lastOfArray(changedDocs);
-
-        return {
-            documents: changedDocs,
+        return changedDocs.map(docData => ({
+            document: docData,
             checkpoint: {
-                id: useForCheckpoint[this.primaryPath] as any,
-                lwt: useForCheckpoint._meta.lwt
+                id: docData[this.primaryPath] as any,
+                lwt: docData._meta.lwt
             }
-        };
+        }));
     }
 
     async remove(): Promise<void> {

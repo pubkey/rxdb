@@ -485,11 +485,10 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             return database.lockedRun(
                 () => storageInstance.getChangedDocumentsSince(limit, checkpoint)
             ).then(result => {
-                const documents = result.documents.map(d => transformDocumentDataFromRxStorageToRxDB(d));
-                return {
-                    documents,
-                    checkpoint: result.checkpoint
-                };
+                return result.map(row => ({
+                    checkpoint: row.checkpoint,
+                    document: transformDocumentDataFromRxStorageToRxDB(row.document)
+                }));
             });
         },
         cleanup(minDeletedTime: number) {

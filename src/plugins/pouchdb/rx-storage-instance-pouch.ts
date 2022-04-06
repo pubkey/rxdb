@@ -36,6 +36,7 @@ import {
     blobBufferUtil,
     flatClone,
     getFromMapOrThrow,
+    getFromObjectOrThrow,
     PROMISE_RESOLVE_VOID
 } from '../../util';
 import {
@@ -328,9 +329,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: PouchChangedDocumentsSinceCheckpoint
     ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint?: PouchChangedDocumentsSinceCheckpoint;
-    }> {
+        document: RxDocumentData<RxDocType>;
+        checkpoint: PouchChangedDocumentsSinceCheckpoint;
+    }[]> {
         if (!limit || typeof limit !== 'number') {
             throw new Error('wrong limit');
         }
@@ -393,11 +394,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             throw new Error('same sequence');
         }
 
-        return {
-            documents: Object.values(documentsData),
-            checkpoint: {
-                sequence: lastSequence
-            }
-        }
+        return changedDocuments.map(changeRow => {
+            return {
+                checkpoint: {
+                    sequence: changeRow.sequence
+                },
+                document: getFromObjectOrThrow(documentsData, changeRow.id)
+            };
+        });
     }
 }

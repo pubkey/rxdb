@@ -125,9 +125,9 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
         limit: number,
         checkpoint?: any
     ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint?: any;
-    }> {
+        document: RxDocumentData<RxDocType>;
+        checkpoint: any;
+    }[]> {
         return this.internals.worker.getChangedDocumentsSince(
             this.internals.instanceId,
             limit,

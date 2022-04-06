@@ -1326,8 +1326,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 let checkpoint: any;
                 async function getChanges(): Promise<RxDocumentData<{ key: string }>[]> {
                     const res = await storageInstance.getChangedDocumentsSince(10, checkpoint);
-                    checkpoint = res.checkpoint;
-                    return res.documents;
+                    if(res.length > 0){
+                        checkpoint = lastOfArray(res).checkpoint;
+                    }
+                    return res.map(r => r.document);
                 }
 
                 // should not return anything if nothing has happened
@@ -1374,9 +1376,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 // get only the last change when requesting with empty checkpoint
                 const resTotal = await storageInstance.getChangedDocumentsSince(100);
-                assert.strictEqual(resTotal.documents.length, 1);
-                assert.strictEqual(resTotal.documents[0].key, 'foobar');
-                assert.strictEqual(resTotal.documents[0]._deleted, true);
+                assert.strictEqual(resTotal.length, 1);
+                assert.strictEqual(resTotal[0].document.key, 'foobar');
+                assert.strictEqual(resTotal[0].document._deleted, true);
 
                 storageInstance.close();
             });
@@ -1423,10 +1425,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 // should return both documents when called without checkpoint
                 const resultWithoutCheckpoint = await storageInstance.getChangedDocumentsSince(10);
-                assert.strictEqual(resultWithoutCheckpoint.documents.length, 2);
+                assert.strictEqual(resultWithoutCheckpoint.length, 2);
                 // the foobar-doc must have the latest value
-                const foobarDoc = resultWithoutCheckpoint.documents.find(d => d.key === 'foobar');
-                assert.strictEqual(ensureNotFalsy(foobarDoc).value, '10');
+                const foobarRow = resultWithoutCheckpoint.find(row => row.document.key === 'foobar');
+                assert.strictEqual(ensureNotFalsy(foobarRow.document).value, '10');
 
                 // insert many more documents
                 const insertManyResult = await storageInstance.bulkWrite(
@@ -1438,16 +1440,16 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 // should return both documents when called without checkpoint
                 const resultManyWithoutCheckpoint = await storageInstance.getChangedDocumentsSince(100);
-                assert.strictEqual(resultManyWithoutCheckpoint.documents.length, 12);
+                assert.strictEqual(resultManyWithoutCheckpoint.length, 12);
 
 
                 // first get 5 and then another 5 and then again.
                 const resultFirstFive = await storageInstance.getChangedDocumentsSince(5);
-                const resultSecondFive = await storageInstance.getChangedDocumentsSince(5, resultFirstFive.checkpoint);
-                const resultThirdFive = await storageInstance.getChangedDocumentsSince(5, resultSecondFive.checkpoint);
-                assert.strictEqual(resultFirstFive.documents.length + resultSecondFive.documents.length + resultThirdFive.documents.length, 12);
-                const resultFourthFive = await storageInstance.getChangedDocumentsSince(5, resultThirdFive.checkpoint);
-                assert.strictEqual(resultFourthFive.documents.length, 0);
+                const resultSecondFive = await storageInstance.getChangedDocumentsSince(5, lastOfArray(resultFirstFive).checkpoint);
+                const resultThirdFive = await storageInstance.getChangedDocumentsSince(5, lastOfArray(resultSecondFive).checkpoint);
+                assert.strictEqual(resultFirstFive.length + resultSecondFive.length + resultThirdFive.length, 12);
+                const resultFourthFive = await storageInstance.getChangedDocumentsSince(5, lastOfArray(resultThirdFive).checkpoint);
+                assert.strictEqual(resultFourthFive.length, 0);
 
 
                 // delete the document
@@ -1465,9 +1467,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 ]);
                 assert.deepStrictEqual(deleteResult.error, {});
 
-                const resultAfterDelete = await storageInstance.getChangedDocumentsSince(5, resultFourthFive.checkpoint);
-                assert.strictEqual(resultAfterDelete.documents.length, 1);
-                assert.strictEqual(resultAfterDelete.documents[0]._deleted, true);
+                const resultAfterDelete = await storageInstance.getChangedDocumentsSince(5, lastOfArray(resultThirdFive).checkpoint);
+                assert.strictEqual(resultAfterDelete.length, 1);
+                assert.strictEqual(resultAfterDelete[0].document._deleted, true);
 
                 storageInstance.close();
             });
@@ -1751,7 +1753,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.ok(!(firstEventAttachment as any).data);
 
                 const changesResult = await storageInstance.getChangedDocumentsSince(1000);
-                const firstChange = changesResult.documents[0];
+                const firstChange = changesResult[0].document;
                 if (!firstChange) {
                     throw new Error('first change missing');
                 }

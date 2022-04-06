@@ -13,6 +13,7 @@ import {
     createRevision,
     flatClone,
     getDefaultRevision,
+    lastOfArray,
     now
 } from '../../util';
 import { wasLastWriteFromPullReplication } from './revision-flag';
@@ -158,10 +159,12 @@ export async function getChangesSinceLastPushCheckpoint<RxDocType>(
             lastPushCheckpoint
         );
 
-        lastCheckpoint = changesResults.checkpoint;
+        if (changesResults.length > 0) {
+            lastCheckpoint = lastOfArray(changesResults).checkpoint;
+        }
 
         // optimisation shortcut, do not proceed if there are no changed documents
-        if (changesResults.documents.length === 0) {
+        if (changesResults.length === 0) {
             retry = false;
             continue;
         }
@@ -172,7 +175,8 @@ export async function getChangesSinceLastPushCheckpoint<RxDocType>(
         }
 
 
-        changesResults.documents.forEach(docData => {
+        changesResults.forEach(row => {
+            const docData = row.document;
             const docId: string = docData[primaryPath] as any;
             if (changedDocs.has(docId)) {
                 return;
@@ -199,7 +203,7 @@ export async function getChangesSinceLastPushCheckpoint<RxDocType>(
 
         if (
             changedDocs.size < batchSize &&
-            changesResults.documents.length === batchSize
+            changesResults.length === batchSize
         ) {
             // no pushable docs found but also not reached the end -> re-run
             lastPushCheckpoint = lastCheckpoint;
