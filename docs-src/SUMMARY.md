@@ -114,6 +114,7 @@
 * [RxStorage](./rx-storage.md)
 
 * [RxStorage PouchDB](./rx-storage-pouchdb.md)
+* [PouchDB Adapters](./adapters.md)
 
 * [RxStorage Dexie.js](./rx-storage-dexie.md)
 
@@ -145,8 +146,7 @@
 
 * [Creating Plugins](./plugins.md)
 
-* [Adapters](./adapters.md)
-
+* [RxDB Premium](./premium.md)
 
 
 * Tutorials

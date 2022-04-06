@@ -1,6 +1,6 @@
 # PouchDB Adapters
 
-When you use the PouchDB RxStorage, there are many adapters that define where the data has to be stored.
+When you use the PouchDB `RxStorage`, there are many adapters that define where the data has to be stored.
 Depending on which environment you work in, you can choose between different adapters. For example in the browser you want to store the data inside of IndexedDB but on NodeJs you want to store the data on the filesystem.
 
 This page is an overview over the different adapters with recommendations on what to use where.
