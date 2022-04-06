@@ -677,7 +677,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     limit: 1000,
                     sort: [
                         { age: 'asc' }
-                    ]
+                    ],
+                    skip: 0
                 };
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
@@ -722,7 +723,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                     sort: [
                         { key: 'asc' }
-                    ]
+                    ],
+                    skip: 0
                 };
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
@@ -780,7 +782,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                     sort: [
                         { key: 'asc' }
-                    ]
+                    ],
+                    skip: 0
                 };
 
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
@@ -835,7 +838,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         {
                             _id: 'asc'
                         }
-                    ]
+                    ],
+                    skip: 0
                 };
 
                 const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
@@ -871,7 +875,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     selector: {},
                     sort: [
                         { _id: 'asc' }
-                    ]
+                    ],
+                    skip: 0
                 };
 
                 const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
@@ -901,7 +906,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     },
                     sort: [
                         { id: 'asc' }
-                    ]
+                    ],
+                    skip: 0
                 };
 
                 const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
@@ -980,7 +986,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     storageInstance.schema,
                     {
                         selector: {},
-                        sort: [{ key: 'asc' }]
+                        sort: [{ key: 'asc' }],
+                        skip: 0
                     }
                 );
                 const allDocs = await storageInstance.query(preparedQuery);
@@ -1019,7 +1026,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         selector: {},
                         sort: [
                             { value: 'desc' }
-                        ]
+                        ],
+                        skip: 0
                     }
                 );
                 const allDocs = await storageInstance.query(preparedQuery);
@@ -1133,7 +1141,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         selector: {},
                         sort: [
                             { id: 'asc' }
-                        ]
+                        ],
+                        skip: 0
                     },
                     {
                         selector: {},
@@ -1144,14 +1153,16 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                              * if the primary key is not used in the sorting before.
                              */
                             { id: 'asc' }
-                        ]
+                        ],
+                        skip: 0
                     },
                     {
                         selector: {},
                         sort: [
                             { increment: 'desc' },
                             { id: 'asc' }
-                        ]
+                        ],
+                        skip: 0
                     },
                     {
                         selector: {},
@@ -1159,7 +1170,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             { equal: 'asc' },
                             { increment: 'desc' },
                             { id: 'asc' }
-                        ]
+                        ],
+                        skip: 0
                     }
                 ];
                 for (const query of queries) {
@@ -1208,7 +1220,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         sort: [
                             { 'nes.ted': 'asc' },
                             { id: 'asc' }
-                        ]
+                        ],
+                        skip: 0
                     }
                 );
 
@@ -1716,7 +1729,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             selector: {},
                             sort: [
                                 { key: 'asc' }
-                            ]
+                            ],
+                            skip: 0
                         }
                     )
                 );
@@ -2044,7 +2058,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     {
                         selector: {},
                         limit: 1,
-                        sort: [{ key: 'asc' }]
+                        sort: [{ key: 'asc' }],
+                        skip: 0
                     }
                 );
 
@@ -2073,7 +2088,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     {
                         selector: {},
                         limit: 1,
-                        sort: [{ key: 'asc' }]
+                        sort: [{ key: 'asc' }],
+                        skip: 0
                     }
                 );
 
@@ -2197,7 +2213,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         selector: {},
                         sort: [
                             { key: 'asc' }
-                        ]
+                        ],
+                        skip: 0
                     }
                 )
             );
@@ -2211,7 +2228,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         selector: {},
                         sort: [
                             { key: 'asc' }
-                        ]
+                        ],
+                        skip: 0
                     }
                 )
             );

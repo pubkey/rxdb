@@ -382,7 +382,8 @@ describe('rx-storage-lokijs.test.js', () => {
                         selector: {},
                         sort: [{
                             passportId: 'asc'
-                        }]
+                        }],
+                        skip: 0
                     }
                 );
                 await storageInstance.query(preparedQuery);

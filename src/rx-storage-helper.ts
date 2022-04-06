@@ -47,7 +47,8 @@ export async function getAllDocuments<RxDocType>(
         storageInstance.schema,
         {
             selector: {},
-            sort: [{ [primaryKey]: 'asc' } as any]
+            sort: [{ [primaryKey]: 'asc' } as any],
+            skip: 0
         }
     );
     const queryResult = await storageInstance.query(getAllQueryPrepared);

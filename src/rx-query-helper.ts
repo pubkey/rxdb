@@ -13,6 +13,9 @@ export function normalizeMangoQuery<RxDocType>(
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as string;
     mangoQuery = flatClone(mangoQuery);
 
+    if (typeof mangoQuery.skip !== 'number') {
+        mangoQuery.skip = 0;
+    }
 
     /**
      * To ensure a deterministic sorting,

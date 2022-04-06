@@ -333,7 +333,8 @@ export function getBatchOfOldCollection(
         {
             selector: {},
             sort: [{ [oldCollection.schema.primaryPath]: 'asc' } as any],
-            limit: batchSize
+            limit: batchSize,
+            skip: 0
         }
     );
 

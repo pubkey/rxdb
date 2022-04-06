@@ -403,7 +403,8 @@ config.parallel('rx-database.test.js', () => {
                             selector: {
                                 context: 'collection'
                             },
-                            sort: [{ id: 'asc' }]
+                            sort: [{ id: 'asc' }],
+                            skip: 0
                         }
                     )
                 );

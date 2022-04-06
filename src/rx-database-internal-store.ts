@@ -115,7 +115,8 @@ export async function getAllCollectionDocuments(
             selector: {
                 context: INTERNAL_CONTEXT_COLLECTION
             },
-            sort: [{ id: 'asc' }]
+            sort: [{ id: 'asc' }],
+            skip: 0
         }
     );
     const queryResult = await storageInstance.query(getAllQueryPrepared);

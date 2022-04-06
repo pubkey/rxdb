@@ -65,14 +65,23 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
 }
 
 
+/**
+ * User provided mango queries will be filled up by RxDB via normalizeMangoQuery()
+ * so we do not have to do many if-field-exist tests in the internals.
+ */
 export type FilledMangoQuery<RxDocType> = MangoQuery<RxDocType> & {
-    /**
+        /**
      * In contrast to the user-provided MangoQuery,
      * the sorting is required here because
      * RxDB has to ensure that the primary key is always
      * part of the sort params.
      */
     sort: MangoQuerySortPart<RxDocType>[];
+
+    /**
+     * Skip must be set which defaults to 0
+     */
+    skip: number;
 }
 
 /**
