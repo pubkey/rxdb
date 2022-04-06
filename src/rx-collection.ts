@@ -649,7 +649,12 @@ export class RxCollectionBase<
              */
             mergeMap(() => {
                 queue = queue.then(async () => {
-                    const resultMap = ensureNotFalsy(currentValue);
+                    /**
+                     * We first have to clone the Map
+                     * to ensure we do not create side effects by mutating
+                     * a Map that has already been returned before.
+                     */
+                    currentValue = new Map(ensureNotFalsy(currentValue));
                     const missedChangeEvents = this._changeEventBuffer.getFrom(lastChangeEvent + 1);
                     lastChangeEvent = this._changeEventBuffer.counter;
                     if (missedChangeEvents === null) {
@@ -659,7 +664,7 @@ export class RxCollectionBase<
                          */
                         const newResult = await this.findByIds(ids);
                         lastChangeEvent = this._changeEventBuffer.counter;
-                        Array.from(newResult.entries()).forEach(([k, v]) => resultMap.set(k, v));
+                        return newResult;
                     } else {
                         let resultHasChanged = false;
                         missedChangeEvents
@@ -676,11 +681,11 @@ export class RxCollectionBase<
                                         this.asRxCollection,
                                         rxChangeEvent.documentData
                                     );
-                                    resultMap.set(docId, rxDocument);
+                                    ensureNotFalsy(currentValue).set(docId, rxDocument);
                                 } else {
-                                    if (resultMap.has(docId)) {
+                                    if (ensureNotFalsy(currentValue).has(docId)) {
                                         resultHasChanged = true;
-                                        resultMap.delete(docId);
+                                        ensureNotFalsy(currentValue).delete(docId);
                                     }
                                 }
                             });
@@ -691,7 +696,7 @@ export class RxCollectionBase<
                         }
                     }
                     firstEmitDone = true;
-                    return resultMap;
+                    return currentValue;
                 });
                 return queue;
             }),

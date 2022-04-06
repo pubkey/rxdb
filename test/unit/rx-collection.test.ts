@@ -23,7 +23,8 @@ import {
     RxCollection,
     ensureNotFalsy,
     lastOfArray,
-    now
+    now,
+    RxDocument
 } from '../../';
 
 import {
@@ -953,7 +954,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('skip first in order', async () => {
                         /**
                          * TODO this test fails on pouchdb when the schema contains an index.
-                         * Likely because pouchdb then skipps the internal index-document, not the
+                         * Likely because pouchdb then skips the internal index-document, not the
                          * human documents, which then returns wrong results.
                          * Wait for the next pouchdb release and then try again,
                          * or create an issue at the pouchdb repo.
@@ -2114,7 +2115,7 @@ config.parallel('rx-collection.test.js', () => {
             const collection = await humansCollection.create(0);
 
             //  Record subscription
-            const updates: any[] = [];
+            const emitted: Map<string, RxDocument<HumanDocumentType>>[] = [];
 
             function createObject(id: string): RxDocumentData<HumanDocumentType> {
                 const ret: RxDocumentData<HumanDocumentType> = Object.assign(
@@ -2133,20 +2134,21 @@ config.parallel('rx-collection.test.js', () => {
             }
 
             const matchingIds = ['a', 'b', 'c', 'd'];
+
             const sub = collection.findByIds$(matchingIds).subscribe(data => {
-                updates.push(data);
+                emitted.push(data);
             });
 
             //  test we have a map and no error
-            await AsyncTestUtil.waitUntil(() => updates.length > 0);
+            await AsyncTestUtil.waitUntil(() => emitted.length > 0);
             await AsyncTestUtil.wait(100);
-            assert.strictEqual(updates.length, 1);
+            assert.strictEqual(emitted.length, 1);
 
             /**
              * Non-existing documents should not be in the map at all
              * (also not with undefined value)
              */
-            assert.strictEqual(updates[0].size, 0);
+            assert.strictEqual(emitted[0].size, 0);
 
 
             //  Simulate a write from a primitive replication
@@ -2161,29 +2163,45 @@ config.parallel('rx-collection.test.js', () => {
             );
 
             //  Now we should have 2 updates
-            await AsyncTestUtil.waitUntil(() => updates.length > 1);
+            await AsyncTestUtil.waitUntil(() => lastOfArray(emitted).size === matchingIds.length);
+
+            // wait a bit more
+            await AsyncTestUtil.wait(config.isFastMode() ? 50 : 150);
+            assert.strictEqual(lastOfArray(emitted).size, matchingIds.length);
+
 
             /**
-             * Should have emited 2 times,
-             * one initial and one for the bulk-writes.
+             * Each emitted result must have a higher amount of documents,
+             * because findByIds$ must only emit when data has actually changed.
+             * We cannot just cound the updates.length here because some RxStorage implementations
+             * might return multiple RxChangeEventBulks for a single bulkWrite() operation.
              */
-            assert.strictEqual(updates.length, 2);
-            //  The map should be of size 4
-            assert.strictEqual(updates[1].size, 4);
+            let lastCount: number;
+            emitted.forEach(oneResult => {
+                if (typeof lastCount === 'undefined') {
+                    lastCount = oneResult.size;
+                } else {
+                    if (oneResult.size <= lastCount) {
+                        throw new Error('emitted data not newer ' + oneResult.size + '- lastCount: ' + lastCount);
+                    }
+                    lastCount = oneResult.size;
+                }
+            });
 
             // should have the same result set as running findByIds() once.
             const singleQueryDocs = await collection.findByIds(matchingIds);
             const singleQueryDocsData = Array.from(singleQueryDocs.values()).map((d: any) => d.toJSON(true));
-            const observedResultData = Array.from(lastOfArray(updates).values()).map((d: any) => d.toJSON(true));
+            const observedResultData = Array.from(lastOfArray(emitted).values()).map((d: any) => d.toJSON(true));
             assert.deepStrictEqual(observedResultData, singleQueryDocsData);
 
             //  And contains the right data
-            assert.strictEqual(updates[1].get('a')?.passportId, 'a');
-            assert.strictEqual(updates[1].get('b')?.passportId, 'b');
-            assert.strictEqual(updates[1].get('c')?.passportId, 'c');
-            assert.strictEqual(updates[1].get('d')?.passportId, 'd');
+            assert.strictEqual(lastOfArray(emitted).get('a')?.passportId, 'a');
+            assert.strictEqual(lastOfArray(emitted).get('b')?.passportId, 'b');
+            assert.strictEqual(lastOfArray(emitted).get('c')?.passportId, 'c');
+            assert.strictEqual(lastOfArray(emitted).get('d')?.passportId, 'd');
 
             //  Let's try to update something different that should be ignored
+            const sizeBeforeRandomInserts = lastOfArray(emitted).size;
             await collection.storageInstance.bulkWrite(
                 [
                     createObject('e'),
@@ -2195,9 +2213,10 @@ config.parallel('rx-collection.test.js', () => {
 
             //  Wait a bit to see if we catch anything
             await wait(config.isFastMode() ? 100 : 300);
+            const sizeAfterRandomInserts = lastOfArray(emitted).size;
 
             //  Verify that the subscription has not been triggered and no error has been added
-            assert.strictEqual(updates.length, 2);
+            assert.strictEqual(sizeBeforeRandomInserts, sizeAfterRandomInserts);
 
             // clean up afterwards
             sub.unsubscribe();
