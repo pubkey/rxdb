@@ -9,7 +9,7 @@ The IndexedDB `RxStorage` is based on plain IndexedDB and can be used in browser
 
 ### Pros
 
-- It is really fast because it uses all of the known performance optimizations for IndexedDB.
+- It is really fast because it uses many [performance optimizations](./slow-indexeddb.md) for IndexedDB.
 - It has a small build size.
 - It allows to use boolean values as index.
 
