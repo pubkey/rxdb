@@ -125,6 +125,11 @@ When you use IndexedDB in a browser, there is of course no way to split the load
 As shown in the performance test results, sharding should always be done by `IDBObjectStore` and not by database. Running a batched cursor over the whole dataset with 10 store shards in parallel is about **28% faster** then running it over a single store. Initialization time increases minimal from `9` to `17` milliseconds.
 Getting a quarter of the dataset by batched iterating over an index, is even **43%** faster with sharding then when a single store is queried.
 
+As downside, getting 10k documents by their id is slower when it has to run over the shards.
+Also it can be much effort to recombined the results from the different shards into the required query result. When a query without a limit is done, the sharding method might cause a data load huge overhead.
+
+
+
 Sharding can be used with RxDB with the [Sharding Plugin](./rx-storage-sharding.md).
 
 
