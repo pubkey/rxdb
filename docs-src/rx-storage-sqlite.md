@@ -1,8 +1,7 @@
-# SQLite RxStorage
+# SQLite RxStorage (beta)
 
 This storage is based on [SQLite](https://www.sqlite.org/index.html) and is made to work with **Node.js**, **Electron**, **React Native**, **Cordova** and **Capacitor**.
 
-## Pros & Cons
 
 ### Pros
 

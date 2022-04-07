@@ -1,11 +1,7 @@
-# RxStorage IndexedDB
+# IndexedDB RxStorage (beta)
 
 The IndexedDB `RxStorage` is based on plain IndexedDB and can be used in browsers, electron or hybrid apps.
 
-
-
-
-## Pros & Cons
 
 ### Pros
 

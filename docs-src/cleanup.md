@@ -54,7 +54,7 @@ const db = await createRxDatabase({
        * when they might not have already been replicated.
        * [default=true]
        */
-      awaitReplicationsInSync: boolean;
+      awaitReplicationsInSync: true,
       /**
        * If true, it will only start the cleanup
        * when the current instance is also the leader.

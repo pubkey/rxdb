@@ -3,9 +3,6 @@
 Instead of using PouchDB or [Dexie.js](./rx-storage-dexie.md) as underlying storage engine, you can also use [LokiJS](https://github.com/techfort/LokiJS).
 LokiJS has the main benefit of having a better performance. It can do this because it is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached.
 
-
-## Pros & Cons
-
 ### Pros
 
 - Queries can run faster because all data is processed in memory.
