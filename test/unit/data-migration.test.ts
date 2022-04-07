@@ -1126,5 +1126,76 @@ config.parallel('data-migration.test.js', () => {
             olds.forEach(oldCol => oldCol.storageInstance.close());
             col.database.destroy();
         });
+
+        it('run migrations when multiple instances are present', async () => {
+            const dbName = randomCouchString(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    }
+                },
+                required: ['id']
+            };
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    }
+                },
+                required: ['id', 'name']
+            };
+            const db = await createRxDatabase({
+                ignoreDuplicate: true,
+                name: dbName,
+                storage: config.storage.getPersistendStorage(),
+            });
+            const cols = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
+            });
+            const col = cols.heroes;
+            await col.insert({
+                id: 'niven'
+            });
+
+            const db2 = await createRxDatabase({
+                ignoreDuplicate: true,
+                name: dbName,
+                storage: config.storage.getPersistendStorage(),
+            });
+            const cols2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            oldDoc.name = (oldDoc.id as string).toUpperCase();
+                            return oldDoc;
+                        }
+                    }
+                }
+            });
+            const col2 = cols2.heroes;
+
+            const doc = await col2.findOne().exec();
+
+            assert.ok(doc);
+            assert.strictEqual(doc.id, 'niven');
+            assert.strictEqual(doc.name, 'NIVEN');
+            db.destroy();
+            db2.destroy();
+        });
     });
 });
