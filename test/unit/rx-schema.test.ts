@@ -19,8 +19,7 @@ import {
     getFinalFields,
     getPreviousVersions,
     getSchemaByObjectPath,
-    fillWithDefaultSettings,
-    fillObjectDataBeforeInsert,
+    fillWithDefaultSettings
 } from '../../';
 
 config.parallel('rx-schema.test.js', () => {

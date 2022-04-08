@@ -15,7 +15,6 @@ import type {
     RxPlugin,
     RxDocumentData
 } from '../types';
-import { fillObjectDataBeforeInsert } from '../rx-collection-helper';
 
 function dumpRxDatabase(
     this: RxDatabase,

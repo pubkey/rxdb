@@ -22,8 +22,7 @@ import {
     isRxDocument,
     RxCollection,
     getFromObjectOrThrow,
-    RxJsonSchema,
-    fillObjectDataBeforeInsert
+    RxJsonSchema
 } from '../../';
 import {
     getRxStoragePouch
