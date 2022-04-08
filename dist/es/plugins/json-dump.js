@@ -3,7 +3,6 @@
  */
 import { createRxQuery, queryCollection, _getDefaultQuery } from '../rx-query';
 import { newRxError } from '../rx-error';
-import { fillObjectDataBeforeInsert } from '../rx-collection-helper';
 
 function dumpRxDatabase(collections) {
   var _this = this;
@@ -82,7 +81,7 @@ function importDumpRxCollection(exportedJSON) {
 
   var docs = exportedJSON.docs // validate schema
   .map(function (doc) {
-    return _this3.schema.validate(fillObjectDataBeforeInsert(_this3.schema, doc));
+    return _this3.schema.validate(doc);
   });
   return this.storageInstance.bulkWrite(docs.map(function (document) {
     return {

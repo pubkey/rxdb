@@ -1,5 +1,12 @@
-import { RxQuery, RxQueryOP, MangoQuery } from './rx-query';
-import { RxCollection, RxCollectionCreator } from './rx-collection';
+import {
+    RxQuery,
+    RxQueryOP,
+    MangoQuery
+} from './rx-query';
+import type {
+    RxCollection,
+    RxCollectionCreator
+} from './rx-collection';
 import {
     RxAttachmentData,
     RxStorageInstanceCreationParams
@@ -8,9 +15,11 @@ import type {
     DeepReadonly,
     RxDatabase,
     RxDatabaseCreator,
+    RxDocument,
     RxJsonSchema,
     RxStorage
 } from '../types'
+import type { RxSchema } from '../rx-schema';
 
 export type RxPluginPreCreateRxQueryArgs = {
     op: RxQueryOP;
@@ -71,11 +80,11 @@ export interface RxPlugin {
     init?(): any;
 
     prototypes?: {
-        RxSchema?: Function,
-        RxDocument?: Function,
-        RxQuery?: Function,
-        RxCollection?: Function,
-        RxDatabase?: Function
+        RxSchema?: (proto: RxSchema) => void,
+        RxDocument?: (proto: RxDocument) => void,
+        RxQuery?: (proto: RxQuery) => void,
+        RxCollection?: (proto: RxCollection) => void,
+        RxDatabase?: (proto: RxDatabase) => void
     };
     overwritable?: {
         isDevMode?: () => boolean;

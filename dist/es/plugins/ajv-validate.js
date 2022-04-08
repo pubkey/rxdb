@@ -31,11 +31,14 @@ export function _getValidator(rxSchema) {
  * validates the given object against the schema
  */
 
-function validate(obj) {
+function validateFullDocumentData(obj) {
   var useValidator = _getValidator(this);
 
   var isValid = useValidator(obj);
-  if (isValid) return obj;else {
+
+  if (isValid) {
+    return obj;
+  } else {
     throw newRxError('VD2', {
       errors: useValidator.errors,
       obj: obj,
@@ -59,7 +62,7 @@ export var RxDBAjvValidatePlugin = {
      * set validate-function for the RxSchema.prototype
      */
     RxSchema: function RxSchema(proto) {
-      proto.validate = validate;
+      proto.validateFullDocumentData = validateFullDocumentData;
     }
   },
   hooks: {

@@ -45,7 +45,7 @@ function _getValidator(rxSchema) {
  */
 
 
-var validate = function validate(obj) {
+function validateFullDocumentData(obj) {
   var useValidator = _getValidator(this);
 
   var isValid = useValidator(obj);
@@ -56,7 +56,7 @@ var validate = function validate(obj) {
       schema: this.jsonSchema
     });
   }
-};
+}
 
 var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   // pre-generate the isMyJsonValid-validator from the schema
@@ -75,7 +75,7 @@ var RxDBValidatePlugin = {
      */
     RxSchema: function RxSchema(proto) {
       proto._getValidator = _getValidator;
-      proto.validate = validate;
+      proto.validateFullDocumentData = validateFullDocumentData;
     }
   },
   hooks: {

@@ -1,13 +1,13 @@
 import type { DeepMutable, DeepReadonly, MaybeReadonly, RxDocumentData, RxJsonSchema } from './types';
-export declare class RxSchema<T = any> {
-    readonly jsonSchema: RxJsonSchema<RxDocumentData<T>>;
+export declare class RxSchema<RxDocType = any> {
+    readonly jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>;
     indexes: MaybeReadonly<string[]>[];
-    primaryPath: keyof T;
+    readonly primaryPath: keyof RxDocType;
     finalFields: string[];
-    constructor(jsonSchema: RxJsonSchema<RxDocumentData<T>>);
+    constructor(jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>);
     get version(): number;
     get defaultValues(): {
-        [P in keyof T]: T[P];
+        [P in keyof RxDocType]: RxDocType[P];
     };
     /**
         * true if schema contains at least one encrypted path
@@ -26,13 +26,17 @@ export declare class RxSchema<T = any> {
      */
     validateChange(dataBefore: any, dataAfter: any): void;
     /**
-     * validate if the obj matches the schema
-     * @overwritten by plugin (required)
-     * @param schemaPath if given, validates agains deep-path of schema
+     * validate if the given document data matches the schema
+     * @param schemaPath if given, validates against deep-path of schema
      * @throws {Error} if not valid
      * @param obj equal to input-obj
+     *
      */
-    validate(_obj: any, _schemaPath?: string): void;
+    validate(obj: Partial<RxDocType> | any, schemaPath?: string): void;
+    /**
+     * @overwritten by the given validation plugin
+     */
+    validateFullDocumentData(_docData: RxDocumentData<RxDocType>, _schemaPath?: string): void;
     /**
      * fills all unset fields with default-values if set
      */
@@ -42,9 +46,9 @@ export declare class RxSchema<T = any> {
      * see RxCollection.getDocumentPrototype()
      */
     getDocumentPrototype(): any;
-    getPrimaryOfDocumentData(documentData: Partial<T>): string;
+    getPrimaryOfDocumentData(documentData: Partial<RxDocType>): string;
 }
-export declare function getIndexes<T = any>(jsonSchema: RxJsonSchema<T>): MaybeReadonly<string[]>[];
+export declare function getIndexes<RxDocType = any>(jsonSchema: RxJsonSchema<RxDocType>): MaybeReadonly<string[]>[];
 /**
  * array with previous version-numbers
  */

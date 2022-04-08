@@ -12,10 +12,7 @@ export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, 
         hashKey: string;
         doesBroadcastChangestream(): boolean;
         prepareQuery<RxDocType>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
-        getSortComparator<RxDocType_1>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType_1>>, preparedQuery: any): import("event-reduce-js").DeterministicSortComparator<RxDocType_1>; /**
-         * TODO we might have even better performance by doing a pouch.bulkDocs()
-         * on index creation
-         */
+        getSortComparator<RxDocType_1>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType_1>>, preparedQuery: any): import("event-reduce-js").DeterministicSortComparator<RxDocType_1>;
         getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType_2>>, preparedQuery: any): import("event-reduce-js").QueryMatcher<import("../../types").RxDocumentData<RxDocType_2>>;
     }>;
     constructor(adapter: any, pouchSettings?: PouchSettings);

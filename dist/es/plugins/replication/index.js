@@ -216,7 +216,6 @@ import { setLastWritePullReplication, wasLastWriteFromPullReplication } from './
 import { newRxError } from '../../rx-error';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import { RxReplicationPullError, RxReplicationPushError } from './rx-replication-error';
-import { fillObjectDataBeforeInsert } from '../../rx-collection-helper';
 export var REPLICATION_STATE_BY_COLLECTION = new WeakMap();
 export var RxReplicationStateBase = /*#__PURE__*/function () {
   /**
@@ -596,7 +595,7 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
               if (overwritable.isDevMode()) {
                 try {
                   pulledDocuments.forEach(function (doc) {
-                    _this9.collection.schema.validate(fillObjectDataBeforeInsert(_this9.collection.schema, doc));
+                    _this9.collection.schema.validate(doc);
                   });
                 } catch (err) {
                   _this9.subjects.error.next(err);

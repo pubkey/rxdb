@@ -65,8 +65,6 @@ Object.keys(_rxReplicationError).forEach(function (key) {
   });
 });
 
-var _rxCollectionHelper = require("../../rx-collection-helper");
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -657,7 +655,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
               if (_overwritable.overwritable.isDevMode()) {
                 try {
                   pulledDocuments.forEach(function (doc) {
-                    _this9.collection.schema.validate((0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this9.collection.schema, doc));
+                    _this9.collection.schema.validate(doc);
                   });
                 } catch (err) {
                   _this9.subjects.error.next(err);

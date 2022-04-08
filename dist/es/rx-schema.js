@@ -6,6 +6,7 @@ import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData, getFinalFields, getPrimaryFieldOfPrimaryKey, normalizeRxJsonSchema } from './rx-schema-helper';
 import { overwritable } from './overwritable';
+import { fillObjectDataBeforeInsert } from './rx-collection-helper';
 export var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonSchema) {
     this.jsonSchema = jsonSchema;
@@ -39,18 +40,32 @@ export var RxSchema = /*#__PURE__*/function () {
     });
   }
   /**
-   * validate if the obj matches the schema
-   * @overwritten by plugin (required)
-   * @param schemaPath if given, validates agains deep-path of schema
+   * validate if the given document data matches the schema
+   * @param schemaPath if given, validates against deep-path of schema
    * @throws {Error} if not valid
    * @param obj equal to input-obj
+   *
    */
   ;
 
-  _proto.validate = function validate(_obj, _schemaPath) {
+  _proto.validate = function validate(obj, schemaPath) {
+    if (!this.validateFullDocumentData) {
+      return;
+    } else {
+      var fullDocData = fillObjectDataBeforeInsert(this, obj);
+      return this.validateFullDocumentData(fullDocData, schemaPath);
+    }
+  }
+  /**
+   * @overwritten by the given validation plugin
+   */
+  ;
+
+  _proto.validateFullDocumentData = function validateFullDocumentData(_docData, _schemaPath) {
     /**
      * This method might be overwritten by a validation plugin,
-     * otherwise do nothing.
+     * otherwise do nothing, because if not validation plugin
+     * was added to RxDB, we assume all given data is valid.
      */
   }
   /**
