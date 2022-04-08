@@ -123,16 +123,16 @@ export type RxStorageStatics = Readonly<{
      * PouchDB and others have some bugs
      * and behaviors that must be worked arround
      * before querying the db.
+     * 
+     * Also some storages do optimizations
+     * and other things related to query planning.
+     * 
      * For performance reason this preparation
      * runs in a single step so it can be cached
      * when the query is used multiple times.
-     * 
-     * If your custom storage engine is capable of running
-     * all valid mango queries properly, just return the
-     * mutateableQuery here.
-     * 
      *
      * @returns a format of the query that can be used with the storage
+     * when calling .query()
      */
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
