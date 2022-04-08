@@ -441,7 +441,7 @@ export class RxCollectionBase<
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
         docsData.forEach(docData => {
             const useJson = fillObjectDataBeforeInsert(this.schema, docData);
-            const primary = useJson[this.schema.primaryPath];
+            const primary: string = useJson[this.schema.primaryPath] as any;
             if (!primary) {
                 throw newRxError('COL3', {
                     primaryPath: this.schema.primaryPath as string,
@@ -480,7 +480,7 @@ export class RxCollectionBase<
      */
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
-        const primary = useJson[this.schema.primaryPath];
+        const primary: string = useJson[this.schema.primaryPath] as any;
         if (!primary) {
             throw newRxError('COL4', {
                 data: json
