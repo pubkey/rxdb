@@ -17,6 +17,8 @@ import {
     lastOfArray,
     getAllDocuments,
     RxCollection,
+    RxJsonSchema,
+    MigrationStrategies,
 } from '../../';
 
 import {
@@ -34,6 +36,7 @@ import {
     migrateOldCollection,
     migratePromise
 } from '../../plugins/migration';
+import { replicateRxCollection } from '../../plugins/replication';
 import {
     SimpleHumanV3DocumentType,
     simpleHumanV3
@@ -1196,6 +1199,91 @@ config.parallel('data-migration.test.js', () => {
             assert.strictEqual(doc.name, 'NIVEN');
             db.destroy();
             db2.destroy();
+        });
+
+        it('data migration should not toggle replication', async () => {
+            let pushCount = 0;
+            async function createDbWithReplication(dbName: string, schema: RxJsonSchema<any>, migrationStrategies?: MigrationStrategies) {
+                const db = await createRxDatabase({
+                    ignoreDuplicate: true,
+                    name: dbName,
+                    storage: config.storage.getPersistendStorage(),
+                });
+                await db.addCollections({
+                    heroes: {
+                        schema: schema,
+                        migrationStrategies
+                    }
+                });
+
+
+                const replicationState = replicateRxCollection({
+                    collection: db.collections.heroes,
+                    replicationIdentifier: 'replication-ident-tests',
+                    live: true,
+                    pull: {
+                        handler: () => Promise.resolve({documents: [], hasMoreDocuments: false})
+                    },
+                    push: {
+                        batchSize: 5,
+                        handler: async () => {
+                            pushCount++;
+                            return Promise.resolve()
+                        }
+                    }
+                });
+
+                await replicationState.awaitInitialReplication()
+                return { db, replicationState }
+            }
+
+
+            const dbName = randomCouchString(10);
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    }
+                },
+                required: ['id']
+            };
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    name: {
+                        type: 'string'
+                    }
+                },
+                required: ['id', 'name']
+            };
+
+            const { db, replicationState } = await createDbWithReplication(dbName, schema0)
+            await db.collections.heroes.insert({
+                id: 'niven'
+            });
+            await replicationState.awaitInSync()
+            db.destroy()
+            assert.strictEqual(pushCount, 1) // push new document once
+
+            const { db: db2 } = await createDbWithReplication(dbName, schema1, {
+                1: (oldDoc: any) => {
+                    oldDoc.name = (oldDoc.id as string).toUpperCase();
+                    return oldDoc;
+                }
+            })
+
+            assert.strictEqual(pushCount, 1) // Should not replicate documents changed by migration
+            db2.destroy()
         });
     });
 });
