@@ -8,7 +8,7 @@ import { createRevision, getDefaultRxDocumentMeta } from './util';
 import {
     fillPrimaryKey
 } from './rx-schema-helper';
-import { RxSchema } from './rx-schema';
+import type { RxSchema } from './rx-schema';
 
 /**
  * fills in the default data.
@@ -17,7 +17,7 @@ import { RxSchema } from './rx-schema';
 export function fillObjectDataBeforeInsert<RxDocType>(
     schema: RxSchema<RxDocType>,
     data: Partial<RxDocumentData<RxDocType>> | any
-): any {
+): RxDocumentData<RxDocType> {
     let useJson = schema.fillObjectWithDefaults(data);
     useJson = fillPrimaryKey(
         schema.primaryPath,

@@ -103,7 +103,7 @@ function importDumpRxCollection<RxDocType>(
 
     const docs: RxDocumentData<RxDocType>[] = exportedJSON.docs
         // validate schema
-        .map((doc: any) => this.schema.validate(fillObjectDataBeforeInsert(this.schema, doc)));
+        .map((doc: any) => this.schema.validate(doc));
 
     return this.storageInstance.bulkWrite(docs.map(document => ({ document })));
 }

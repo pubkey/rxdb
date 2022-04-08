@@ -72,7 +72,7 @@ config.parallel('primary.test.js', () => {
                 it('should validate the human', () => {
                     const schema = createRxSchema(schemas.primaryHuman);
                     const obj = schemaObjects.simpleHuman();
-                    assert.ok(schema.validate(fillObjectDataBeforeInsert(schema, obj)));
+                    assert.ok(schema.validate(obj));
                 });
             });
 
@@ -83,7 +83,7 @@ config.parallel('primary.test.js', () => {
                         firstName: randomCouchString(10),
                         lastName: randomCouchString(10)
                     };
-                    assert.throws(() => schema.validate(fillObjectDataBeforeInsert(schema, obj)), Error);
+                    assert.throws(() => schema.validate(obj), Error);
                 });
                 it('should not validate with primary object', () => {
                     const schema = createRxSchema(schemas.primaryHuman);
@@ -92,7 +92,7 @@ config.parallel('primary.test.js', () => {
                         firstName: randomCouchString(10),
                         lastName: randomCouchString(10)
                     };
-                    assert.throws(() => schema.validate(fillObjectDataBeforeInsert(schema, obj)), Error);
+                    assert.throws(() => schema.validate(obj), Error);
                 });
             });
         });

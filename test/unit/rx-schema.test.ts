@@ -621,23 +621,23 @@ config.parallel('rx-schema.test.js', () => {
                 it('validate one human', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj: any = schemaObjects.human();
-                    schema.validate(fillObjectDataBeforeInsert(schema, obj));
+                    schema.validate(obj);
                 });
                 it('validate one point', () => {
                     const schema = createRxSchema(schemas.point);
                     const obj: any = schemaObjects.point();
-                    schema.validate(fillObjectDataBeforeInsert(schema, obj));
+                    schema.validate(obj);
                 });
                 it('validate without non-required', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj: any = schemaObjects.human();
                     delete obj.age;
-                    schema.validate(fillObjectDataBeforeInsert(schema, obj));
+                    schema.validate(obj);
                 });
                 it('validate nested', () => {
                     const schema = createRxSchema(schemas.nestedHuman);
                     const obj: any = schemaObjects.nestedHuman();
-                    schema.validate(fillObjectDataBeforeInsert(schema, obj));
+                    schema.validate(obj);
                 });
             });
             describe('negative', () => {
@@ -665,7 +665,7 @@ config.parallel('rx-schema.test.js', () => {
                 it('::after', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj: any = schemaObjects.human();
-                    schema.validate(fillObjectDataBeforeInsert(schema, obj));
+                    schema.validate(obj);
                 });
                 it('accessible error-parameters', () => {
                     const schema = createRxSchema(schemas.human);
@@ -673,7 +673,7 @@ config.parallel('rx-schema.test.js', () => {
                     (obj as any)['foobar'] = 'barfoo';
                     let hasThrown = false;
                     try {
-                        schema.validate(fillObjectDataBeforeInsert(schema, obj));
+                        schema.validate(obj);
                     } catch (err) {
                         const message = (err as any).parameters.errors[0].message;
                         assert.ok(message.includes('additional'));
@@ -698,7 +698,7 @@ config.parallel('rx-schema.test.js', () => {
 
                     let hasThrown = false;
                     try {
-                        schema.validate(fillObjectDataBeforeInsert(schema, obj));
+                        schema.validate(obj);
                     } catch (err) {
                         const message = (err as any).parameters.errors[0].message;
                         assert.strictEqual(message, 'has additional properties');
@@ -715,7 +715,7 @@ config.parallel('rx-schema.test.js', () => {
                         lastName: 'bar'
                     };
                     try {
-                        schema.validate(fillObjectDataBeforeInsert(schema, obj));
+                        schema.validate(obj);
                     } catch (err) {
                         const deepParam = (err as any).parameters.errors[0].field;
                         assert.strictEqual(deepParam, 'data.age');
@@ -727,11 +727,11 @@ config.parallel('rx-schema.test.js', () => {
                     const schema = createRxSchema(schemas.humanFinal);
                     let error = null;
                     try {
-                        schema.validate(fillObjectDataBeforeInsert(schema, {
+                        schema.validate({
                             foo: 'bar',
                             noval: undefined,
                             nr: 7
-                        }));
+                        });
                     } catch (err) {
                         error = err;
                     }

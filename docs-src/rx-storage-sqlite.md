@@ -39,7 +39,7 @@ import sqlite3 from 'sqlite3';
  * This is needed because different runtimes have different ways of loading
  * the SQLite library.
  */
-const databaseCreator = (name: string) => Promise.resolve(new sqlite3.Database(name));
+const databaseCreator = (name) => Promise.resolve(new sqlite3.Database(name));
 
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
@@ -51,7 +51,7 @@ const myRxDatabase = await createRxDatabase({
          * This is needed because different runtimes have different ways of loading
          * the SQLite library.
          */
-        databaseCreator: (name: string) => Promise.resolve(new sqlite3.Database(name))
+        databaseCreator: (name) => Promise.resolve(new sqlite3.Database(name))
     })
 });
 ```

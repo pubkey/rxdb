@@ -47,7 +47,7 @@ function _getValidator(
  * @param  schemaPath if given, the sub-schema will be validated
  * @throws {RxError} if not valid
  */
-const validate = function (
+function validateFullDocumentData(
     this: RxSchema,
     obj: any
 ): any {
@@ -71,7 +71,7 @@ const validate = function (
             schema: this.jsonSchema
         });
     }
-};
+}
 
 const runAfterSchemaCreated = (rxSchema: RxSchema) => {
     // pre-generate the validator-z-schema from the schema
@@ -87,7 +87,7 @@ export const RxDBValidateZSchemaPlugin: RxPlugin = {
          */
         RxSchema: (proto: any) => {
             proto._getValidator = _getValidator;
-            proto.validate = validate;
+            proto.validateFullDocumentData = validateFullDocumentData;
         }
     },
     hooks: {

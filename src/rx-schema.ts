@@ -30,14 +30,15 @@ import {
     normalizeRxJsonSchema
 } from './rx-schema-helper';
 import { overwritable } from './overwritable';
+import { fillObjectDataBeforeInsert } from './rx-collection-helper';
 
-export class RxSchema<T = any> {
+export class RxSchema<RxDocType = any> {
     public indexes: MaybeReadonly<string[]>[];
-    public primaryPath: keyof T;
+    public readonly primaryPath: keyof RxDocType;
     public finalFields: string[];
 
     constructor(
-        public readonly jsonSchema: RxJsonSchema<RxDocumentData<T>>
+        public readonly jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>
     ) {
         this.indexes = getIndexes(this.jsonSchema);
 
@@ -51,8 +52,8 @@ export class RxSchema<T = any> {
         return this.jsonSchema.version;
     }
 
-    public get defaultValues(): { [P in keyof T]: T[P] } {
-        const values = {} as { [P in keyof T]: T[P] };
+    public get defaultValues(): { [P in keyof RxDocType]: RxDocType[P] } {
+        const values = {} as { [P in keyof RxDocType]: RxDocType[P] };
         Object
             .entries(this.jsonSchema.properties)
             .filter(([, v]) => (v as any).hasOwnProperty('default'))
@@ -110,16 +111,32 @@ export class RxSchema<T = any> {
     }
 
     /**
-     * validate if the obj matches the schema
-     * @overwritten by plugin (required)
-     * @param schemaPath if given, validates agains deep-path of schema
+     * validate if the given document data matches the schema
+     * @param schemaPath if given, validates against deep-path of schema
      * @throws {Error} if not valid
      * @param obj equal to input-obj
+     *
      */
-    public validate(_obj: any, _schemaPath?: string): void {
+    public validate(obj: Partial<RxDocType> | any, schemaPath?: string): void {
+        if (!this.validateFullDocumentData) {
+            return;
+        } else {
+            const fullDocData = fillObjectDataBeforeInsert(this, obj);
+            return this.validateFullDocumentData(fullDocData, schemaPath);
+        }
+    }
+
+    /**
+     * @overwritten by the given validation plugin
+     */
+    public validateFullDocumentData(
+        _docData: RxDocumentData<RxDocType>,
+        _schemaPath?: string
+    ) {
         /**
          * This method might be overwritten by a validation plugin,
-         * otherwise do nothing.
+         * otherwise do nothing, because if not validation plugin
+         * was added to RxDB, we assume all given data is valid.
          */
     }
 
@@ -152,7 +169,7 @@ export class RxSchema<T = any> {
 
 
     getPrimaryOfDocumentData(
-        documentData: Partial<T>
+        documentData: Partial<RxDocType>
     ): string {
         return getComposedPrimaryKeyOfDocumentData(
             this.jsonSchema,
@@ -161,8 +178,8 @@ export class RxSchema<T = any> {
     }
 }
 
-export function getIndexes<T = any>(
-    jsonSchema: RxJsonSchema<T>
+export function getIndexes<RxDocType = any>(
+    jsonSchema: RxJsonSchema<RxDocType>
 ): MaybeReadonly<string[]>[] {
     return (jsonSchema.indexes || []).map(index => isMaybeReadonlyArray(index) ? index : [index]);
 }

@@ -357,12 +357,7 @@ export class RxReplicationStateBase<RxDocType> {
         if (overwritable.isDevMode()) {
             try {
                 pulledDocuments.forEach((doc: any) => {
-                    this.collection.schema.validate(
-                        fillObjectDataBeforeInsert(
-                            this.collection.schema,
-                            doc
-                        )
-                    );
+                    this.collection.schema.validate(doc);
                 });
             } catch (err: any) {
                 this.subjects.error.next(err);
