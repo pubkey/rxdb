@@ -177,8 +177,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             it('open many instances on the same database name', async () => {
                 const databaseName = randomCouchString(12);
                 const amount = 20;
+                const storage = config.storage.getStorage();
                 const instances = await Promise.all(
-                    new Array(amount).fill(0).map(() => config.storage.getStorage().createStorageInstance<TestDocType>({
+                    new Array(amount).fill(0).map(() => storage.createStorageInstance<TestDocType>({
                         databaseName,
                         collectionName: randomCouchString(12),
                         schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
@@ -1326,7 +1327,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 let checkpoint: any;
                 async function getChanges(): Promise<RxDocumentData<{ key: string }>[]> {
                     const res = await storageInstance.getChangedDocumentsSince(10, checkpoint);
-                    if(res.length > 0){
+                    if (res.length > 0) {
                         checkpoint = lastOfArray(res).checkpoint;
                     }
                     return res.map(r => r.document);
