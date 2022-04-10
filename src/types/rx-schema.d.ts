@@ -120,12 +120,34 @@ export type RxJsonSchema<
         keyCompression?: boolean;
         /**
          * if not set, rxdb will set 'false' as default
-         * true is not allwed on the root level
+         * Having additionalProperties: true is not allwed on the root level to ensure
+         * that property names do not clash with properties of the RxDocument class
+         * or ORM methods.
          */
         additionalProperties?: false;
         attachments?: {
             encrypted?: boolean;
         };
+        /**
+         * Options for the sharding plugin of rxdb-premium.
+         * We set these on the schema because changing the shard amount or mode
+         * will require a migration.
+         * @link https://rxdb.info/rx-storage-sharding.html
+         */
+        sharding?: {
+            /**
+             * Amount of shards. 
+             * This value cannot be changed after you have stored data,
+             * if you change it anyway, you will loose the existing data.
+             */
+            shards: number;
+            /**
+             * Either shard by collection or by database.
+             * For most use cases (IndexedDB based storages), sharding by collection is the way to go
+             * because it has a faster initial load time.
+             */
+            mode: 'database' | 'collection';
+        }
     }
 
 /**
