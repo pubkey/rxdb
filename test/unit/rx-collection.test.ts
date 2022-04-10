@@ -24,7 +24,8 @@ import {
     ensureNotFalsy,
     lastOfArray,
     now,
-    RxDocument
+    RxDocument,
+    getFromMapOrThrow
 } from '../../';
 
 import {
@@ -2142,6 +2143,11 @@ config.parallel('rx-collection.test.js', () => {
             //  test we have a map and no error
             await AsyncTestUtil.waitUntil(() => emitted.length > 0);
             await AsyncTestUtil.wait(100);
+
+            /**
+             * Should have emitted exactly once with an empty map
+             * because we have no document at all in the storage.
+             */
             assert.strictEqual(emitted.length, 1);
 
             /**
@@ -2162,7 +2168,8 @@ config.parallel('rx-collection.test.js', () => {
                     })
             );
 
-            //  Now we should have 2 updates
+            // Now we should have more updates and at some point all documents
+            // are in the result set.
             await AsyncTestUtil.waitUntil(() => lastOfArray(emitted).size === matchingIds.length);
 
             // wait a bit more
@@ -2190,15 +2197,17 @@ config.parallel('rx-collection.test.js', () => {
 
             // should have the same result set as running findByIds() once.
             const singleQueryDocs = await collection.findByIds(matchingIds);
-            const singleQueryDocsData = Array.from(singleQueryDocs.values()).map((d: any) => d.toJSON(true));
-            const observedResultData = Array.from(lastOfArray(emitted).values()).map((d: any) => d.toJSON(true));
-            assert.deepStrictEqual(observedResultData, singleQueryDocsData);
+
+            const singleResultPlain = matchingIds.map(id => getFromMapOrThrow(singleQueryDocs, id).toJSON())
+            const observedResultPlain = matchingIds.map(id => getFromMapOrThrow(lastOfArray(emitted), id).toJSON())
+            assert.deepStrictEqual(singleResultPlain, observedResultPlain);
 
             //  And contains the right data
-            assert.strictEqual(lastOfArray(emitted).get('a')?.passportId, 'a');
-            assert.strictEqual(lastOfArray(emitted).get('b')?.passportId, 'b');
-            assert.strictEqual(lastOfArray(emitted).get('c')?.passportId, 'c');
-            assert.strictEqual(lastOfArray(emitted).get('d')?.passportId, 'd');
+            const lastEmit = lastOfArray(emitted);
+            assert.strictEqual(lastEmit.get('a')?.passportId, 'a');
+            assert.strictEqual(lastEmit.get('b')?.passportId, 'b');
+            assert.strictEqual(lastEmit.get('c')?.passportId, 'c');
+            assert.strictEqual(lastEmit.get('d')?.passportId, 'd');
 
             //  Let's try to update something different that should be ignored
             const sizeBeforeRandomInserts = lastOfArray(emitted).size;
