@@ -55,7 +55,18 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDoc
         'context',
         'data'
     ],
-    additionalProperties: false
+    additionalProperties: false,
+    /**
+     * If the sharding plugin is used,
+     * it must not shard on the internal RxStorageInstance
+     * because that one anyway has only a small amount of documents
+     * and also its creation is in the hot path of the initial page load,
+     * so we should spend less time creating multiple RxStorageInstances.
+     */
+    sharding: {
+        shards: 1,
+        mode: 'collection'
+    }
 });
 
 export type InternalStoreDocType<Data = any> = {

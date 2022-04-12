@@ -15,7 +15,7 @@ To make RxDB a sustainable Project, some plugins are not part of the RxDB open s
 
 ### As a company
 
-If you use RxDB in your company project, you can get access by contacting me via [Chat](https://gitter.im/pubkey) or [Twitter](https://twitter.com/rxdbjs)
+If you use RxDB in your company project, you can purchase access by contacting me via [Chat](https://gitter.im/pubkey) or [Twitter](https://twitter.com/rxdbjs)
 
 ### For your side project
 
