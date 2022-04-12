@@ -9,6 +9,13 @@ A basic plugins:
 const myPlugin = {
         rxdb: true, // this must be true so rxdb knows that this is a rxdb-plugin and not a pouchdb-plugin
         /**
+         * (optional) init() method
+         * that is called when the plugin is added to RxDB for the first time.
+         */
+        init(){
+            // import other plugins or initialize stuff
+        },
+        /**
          * every value in this object can manipulate the prototype of the keynames class
          * You can manipulate every prototype in this list:
          * @link https://github.com/pubkey/rxdb/blob/master/src/plugin.ts#L22

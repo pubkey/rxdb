@@ -2,36 +2,36 @@
 
 ### X.X.X (comming soon)
 
-### 12.0.0-beta.13 (comming soon) BREAKING
+### 12.0.0-beta.XX (comming soon) BREAKING
 
 - All indexes that do not contain the primaryKey, get the primary key added.
 - You can now set a custom index when doing a query.
-
 - Unified the replication primitives and the GraphQL replication plugin.
 - Removed the deprecated in-memory plugin.
-- Refactor usage of RxCollection.storageInstance to ensure all hooks run properly.
-- Added `withDeleted` parameter to `RxStorageKeyObjectInstance.findLocalDocumentsById()`
-- The `_deleted` field is now required for each data interaction with `RxStorage`.
-- `RxStorageInstance` must have the `RxStorage` in the `storage` property.
-- Removed `RxStorageInstance.getChangedDocuments()` and added `RxStorageInstance.getChangedDocumentsSince()` for better performance.
-
-- Removed the `core` plugin. The default export `from 'rxdb'` now exports only the RxDB core without plugins.
-- Added optional `init()` function to `RxPlugin`.
-- Added `doesBroadcastChangestream()` to `RxStorageStatics`
-- Fix (replication primitives) only drop pulled documents when a relevant document was changed locally.
-- Add `_meta` property to stored document data.
-
-- Attachments are now internally handled as string instead of `Blob` or `Buffer`
-- RxPlugin hooks now can be defined as running `before` or `after` other plugin hooks.
-- Removed the encrypted export from the json-import-export plugin. This was barely used and made everything more complex. All exports are no non-encrypted. If you need them encrypted, you can still run by encryption after the export is done.
-- Refactor the encryption plugin so no more plugin specific code is in the RxDB core.
+- Added cleanup plugin
 - Refactor local documents plugin to only create a storage instance for local documents when needed.
+- Removed the `core` plugin. The default export `from 'rxdb'` now exports only the RxDB core without plugins.
+
 - Added `RxDocument().toMutableJSON()`
 - Added `RxCollection().bulkUpsert()`
-- Added `RxStorageInstance.cleanup()`
-- Added cleanup plugin
+- Added optional `init()` function to `RxPlugin`.
 - dev-mode: Add check to ensure all top-level fields in a query are defined in the schema.
-- Support for array field based indexes like `data.[].subfield` was removed.
+- Support for array field based indexes like `data.[].subfield` was removed, as it anyway never really worked.
+- Refactored the usage of RxCollection.storageInstance to ensure all hooks run properly.
+- Refactored the encryption plugin so no more plugin specific code is in the RxDB core.
+- Removed the encrypted export from the json-import-export plugin. This was barely used and made everything more complex. All exports are no non-encrypted. If you need them encrypted, you can still run by encryption after the export is done.
+- RxPlugin hooks now can be defined as running `before` or `after` other plugin hooks.
+- Attachments are now internally handled as string instead of `Blob` or `Buffer`
+- Fix (replication primitives) only drop pulled documents when a relevant document was changed locally.
+
+Changes to `RxStorageInterface`:
+- `RxStorageInstance` must have the `RxStorage` in the `storage` property.
+- The `_deleted` field is now required for each data interaction with `RxStorage`.
+- Removed `RxStorageInstance.getChangedDocuments()` and added `RxStorageInstance.getChangedDocumentsSince()` for better performance.
+- Added `doesBroadcastChangestream()` to `RxStorageStatics`
+- Added `withDeleted` parameter to `RxStorageKeyObjectInstance.findLocalDocumentsById()`
+- Added internal `_meta` property to stored document data that contains internal document related data like last-write-time and replication checkpoints.
+
 
 ### 11.6.0 (4 February 2022)
 
