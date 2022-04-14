@@ -236,7 +236,7 @@
     "rollup": "2.70.1",
     "rollup-plugin-commonjs": "10.1.0",
     "rollup-plugin-node-resolve": "5.2.0",
-    "rxjs": "7.5.4",
+    "rxjs": "7.5.5",
     "shelljs": "0.8.5",
     "source-map-support": "0.5.21",
     "stream": "0.0.2",
