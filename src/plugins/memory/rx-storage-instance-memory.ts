@@ -1,25 +1,45 @@
 import { Observable, Subject } from 'rxjs';
+import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound, MAX_CHAR } from '../../custom-index';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import type {
     BulkWriteRow,
     EventBulk,
+    MangoQuery,
     RxDocumentData,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
-    RxStorageInstanceCreationParams
+    RxStorageInstanceCreationParams,
+    RxStorageQueryResult
 } from '../../types';
-import { ensureNotRemoved, getMemoryCollectionKey } from './memory-helper';
-import { addIndexesToInternalsState } from './memory-indexes';
+import { ensureNotFalsy, now, RX_META_LWT_MINIMUM } from '../../util';
+import { getDexieKeyRange } from '../dexie/query/dexie-query';
+import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
+import { pouchSwapIdToPrimaryString } from '../pouchdb';
+import { compareDocsWithIndex, ensureNotRemoved, findPositionByLowerBoundIndexString, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
+import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';
 import type {
+    DocWithIndexString,
+    MemoryChangesCheckpoint,
+    MemoryPreparedQuery,
     MemoryStorageInternals,
     RxStorageMemory,
     RxStorageMemoryInstanceCreationOptions,
     RxStorageMemorySettings
 } from './memory-types';
+
+import {
+    gt as boundGT,
+    ge as boundGE
+} from 'binary-search-bounds';
+
+
+// TODO we should not need this here
+const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+
 
 export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -43,7 +63,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
     }
 
-    async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         ensureNotRemoved(this);
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
@@ -76,11 +96,246 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
          */
         categorized.bulkInsertDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
-            this.internals.documents.set(docId as any, writeRow.document);
-
+            putWriteRowToState(
+                this.primaryPath as any,
+                this.schema,
+                this.internals,
+                writeRow,
+                undefined
+            );
             ret.success[docId as any] = writeRow.document;
         });
+
+        categorized.bulkUpdateDocs.forEach(writeRow => {
+            const docId = writeRow.document[this.primaryPath];
+            putWriteRowToState(
+                this.primaryPath as any,
+                this.schema,
+                this.internals,
+                writeRow,
+                docsInDb.get(docId)
+            );
+            ret.success[docId as any] = writeRow.document;
+        });
+
+        this.changes$.next(categorized.eventBulk);
+
+        return Promise.resolve(ret);
     }
+
+    async findDocumentsById(
+        docIds: string[],
+        withDeleted: boolean
+    ): Promise<{ [documentId: string]: RxDocumentData<RxDocType>; }> {
+        const ret: { [documentId: string]: RxDocumentData<RxDocType>; } = {};
+        docIds.forEach(docId => {
+            const docInDb = this.internals.documents.get(docId);
+            if (
+                docInDb &&
+                (
+                    !docInDb._deleted ||
+                    withDeleted
+                )
+            ) {
+                ret[docId] = docInDb;
+            }
+        });
+        return Promise.resolve(ret);
+    }
+
+    async query(preparedQuery: MemoryPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+        console.dir(preparedQuery);
+
+        const skip = preparedQuery.skip ? preparedQuery.skip : 0;
+        const limit = preparedQuery.limit ? preparedQuery.limit : Infinity;
+        const skipPlusLimit = skip + limit;
+        const queryPlan = (preparedQuery as any).pouchQueryPlan;
+
+        const queryMatcher = RxStorageDexieStatics.getQueryMatcher(
+            this.schema,
+            preparedQuery
+        );
+        const sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
+
+
+        const keyRange = getDexieKeyRange(
+            queryPlan,
+            Number.NEGATIVE_INFINITY,
+            MAX_CHAR,
+            IDBKeyRange
+        );
+
+        const queryPlanFields: string[] = queryPlan.index.def.fields
+            .map((fieldObj: any) => Object.keys(fieldObj)[0])
+            .map((field: any) => pouchSwapIdToPrimaryString(this.primaryPath, field));
+
+        const sortFields = ensureNotFalsy((preparedQuery as MangoQuery<RxDocType>).sort)
+            .map(sortPart => Object.keys(sortPart)[0]);
+
+        /**
+         * If the cursor iterated over the same index that
+         * would be used for sorting, we do not have to sort the results.
+         */
+        const sortFieldsSameAsIndexFields = queryPlanFields.join(',') === sortFields.join(',');
+        /**
+         * Also manually sort if one part of the sort is in descending order
+         * because all our indexes are ascending.
+         * TODO should we be able to define descending indexes?
+         */
+        const isOneSortDescending = preparedQuery.sort.find((sortPart: any) => Object.values(sortPart)[0] === 'desc');
+        const mustManuallyResort = isOneSortDescending || !sortFieldsSameAsIndexFields;
+
+
+        const index: string[] | undefined = ['_deleted'].concat(queryPlanFields);
+        let lowerBound = Array.isArray(keyRange.lower) ? keyRange.lower : [keyRange.lower];
+        lowerBound = [false].concat(lowerBound);
+        console.log(JSON.stringify(queryPlan, null, 4));
+
+        const lowerBoundString = getStartIndexStringFromLowerBound(
+            this.schema,
+            index,
+            lowerBound
+        );
+
+        let upperBound = Array.isArray(keyRange.upper) ? keyRange.upper : [keyRange.upper];
+        upperBound = [false].concat(upperBound);
+        const upperBoundString = getStartIndexStringFromUpperBound(
+            this.schema,
+            index,
+            upperBound
+        );
+
+
+        console.log('lowerBoundString: ' + lowerBoundString);
+        console.log('upperBoundString: ' + upperBoundString);
+        console.log('idnex name: ' + getMemoryIndexName(index));
+        console.dir(this.internals.byIndex);
+
+        const docsWithIndex = this.internals.byIndex[getMemoryIndexName(index)].docsWithIndex;
+        let indexOfLower = findPositionByLowerBoundIndexString(
+            docsWithIndex,
+            lowerBoundString
+        );
+        console.log('indexOfLower: ' + indexOfLower);
+
+        let rows: RxDocumentData<RxDocType>[] = [];
+        while (rows.length < skipPlusLimit && indexOfLower < docsWithIndex.length) {
+            const currentDoc = docsWithIndex[indexOfLower];
+            if (queryMatcher(currentDoc.doc)) {
+                rows.push(currentDoc.doc);
+            }
+
+            indexOfLower++;
+        }
+
+
+        if (mustManuallyResort) {
+            rows = rows.sort(sortComparator);
+        }
+
+        // apply skip and limit boundaries.
+        rows = rows.slice(skip, skipPlusLimit);
+
+
+        return {
+            documents: rows
+        };
+    }
+
+    async getChangedDocumentsSince(
+        limit: number,
+        checkpoint?: MemoryChangesCheckpoint
+    ): Promise<{
+        document: RxDocumentData<RxDocType>;
+        checkpoint: MemoryChangesCheckpoint;
+    }[]> {
+        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
+        const sinceId = checkpoint ? checkpoint.id : '';
+
+        const index = ['_meta.lwt', this.primaryPath as any];
+        const indexName = getMemoryIndexName(index);
+
+        const lowerBoundString = getStartIndexStringFromLowerBound(
+            this.schema,
+            ['_meta.lwt', this.primaryPath as any],
+            [
+                sinceLwt,
+                sinceId
+            ]
+        );
+
+        const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+
+
+
+        let indexOfLower = boundGT(
+            docsWithIndex,
+            {
+                indexString: lowerBoundString
+            },
+            compareDocsWithIndex
+        );
+
+        // TODO use array.slice() so we do not have to iterate here
+        const rows: RxDocumentData<RxDocType>[] = [];
+        while (rows.length < limit && indexOfLower < docsWithIndex.length) {
+            const currentDoc = docsWithIndex[indexOfLower];
+            rows.push(currentDoc.doc);
+            indexOfLower++;
+        }
+
+        return rows.map(docData => ({
+            document: docData,
+            checkpoint: {
+                id: docData[this.primaryPath] as any,
+                lwt: docData._meta.lwt
+            }
+        }));
+    }
+
+    async cleanup(minimumDeletedTime: number): Promise<boolean> {
+        const maxDeletionTime = now() - minimumDeletedTime;
+        const index = ['_deleted', '_meta.lwt', this.primaryPath as any];
+        const indexName = getMemoryIndexName(index);
+        const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+
+        const lowerBoundString = getStartIndexStringFromLowerBound(
+            this.schema,
+            index,
+            [
+                true,
+                0,
+                ''
+            ]
+        );
+
+        let indexOfLower = boundGT(
+            docsWithIndex,
+            {
+                indexString: lowerBoundString
+            },
+            compareDocsWithIndex
+        );
+
+        let done = false;
+        while (!done) {
+            const currentDoc = docsWithIndex[indexOfLower];
+            if (!currentDoc || currentDoc.doc._meta.lwt > maxDeletionTime) {
+                done = true;
+            } else {
+                removeDocFromState(
+                    this.primaryPath,
+                    this.schema,
+                    this.internals,
+                    currentDoc.doc
+                );
+                indexOfLower++;
+            }
+        }
+
+        return true;
+    }
+
 
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
         ensureNotRemoved(this);

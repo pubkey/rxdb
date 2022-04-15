@@ -1,4 +1,4 @@
-import type { RxDocumentData, RxStorage } from '../../types';
+import type { PreparedQuery, RxDocumentData, RxStorage } from '../../types';
 
 export type RxStorageMemorySettings = {};
 export type RxStorageMemoryInstanceCreationOptions = {};
@@ -40,10 +40,21 @@ export type MemoryStorageInternals<RxDocType> = {
          */
         [indexName: string]: {
             index: string[];
-            docsWithIndex: {
-                doc: RxDocumentData<RxDocType>;
-                indexString: string;
-            }[];
+            docsWithIndex: DocWithIndexString<RxDocType>[];
         }
     }
+};
+
+
+export type DocWithIndexString<RxDocType> = {
+    id: string;
+    doc: RxDocumentData<RxDocType>;
+    indexString: string;
+};
+
+export type MemoryPreparedQuery<DocType> = PreparedQuery<DocType>;
+
+export type MemoryChangesCheckpoint = {
+    id: string;
+    lwt: number;
 };

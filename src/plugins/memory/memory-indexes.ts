@@ -9,12 +9,17 @@ export function addIndexesToInternalsState<RxDocType>(
     const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
     const useIndexes: string[][] = !schema.indexes ? [] : schema.indexes.map(row => Array.isArray(row) ? row.slice(0) : [row]) as any;
 
+    // we need this as default index
+    useIndexes.push([
+        primaryPath
+    ]);
 
     // we need this index for running cleanup()
     useIndexes.push([
         '_meta.lwt',
         primaryPath
     ]);
+
 
     useIndexes.forEach(indexAr => {
         /**
@@ -29,6 +34,18 @@ export function addIndexesToInternalsState<RxDocType>(
             docsWithIndex: []
         };
     });
+
+    // we need this index for the changes()
+    const changesIndex = [
+        '_meta.lwt',
+        primaryPath
+    ];
+    const indexName = getMemoryIndexName(changesIndex);
+    state.byIndex[indexName] = {
+        index: changesIndex,
+        docsWithIndex: []
+    };
+
 }
 
 

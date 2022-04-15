@@ -11,6 +11,7 @@ import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
 import { getRxStorageLoki, RxStorageLokiStatics } from '../../plugins/lokijs';
 import { getRxStorageDexie } from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
+import { getRxStorageMemory } from '../../plugins/memory';
 import { RxTestStorage } from './types';
 import { CUSTOM_STORAGE } from './custom-storage';
 
@@ -73,6 +74,15 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasCouchDBReplication: true,
                 hasAttachments: true,
+                hasRegexSupport: true
+            };
+            break;
+        case 'memory':
+            config.storage = {
+                name: 'memory',
+                getStorage: () => getRxStorageMemory(),
+                hasCouchDBReplication: false,
+                hasAttachments: false,
                 hasRegexSupport: true
             };
             break;
