@@ -224,7 +224,7 @@
     "pouchdb-adapter-localstorage": "7.3.0",
     "pouchdb-adapter-memory": "7.3.0",
     "pouchdb-adapter-websql": "7.0.0",
-    "pouchdb-debug": "7.3.0",
+    "pouchdb-debug": "7.2.1",
     "pouchdb-utils": "7.3.0",
     "pre-commit": "1.2.2",
     "random-int": "3.0.0",
