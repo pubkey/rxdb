@@ -833,3 +833,101 @@ Build-Size (minified+gzip):
 
 Without externalHelpers: 70732
 With externalHelpers: 
+
+
+
+
+## 28.02.2022
+
+BEFORE: 
+{
+  "storage": "pouchdb",
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 29323.446457,
+    "perInstance": 29.323446457
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7082.087827,
+    "perBlock": 3.5410439135000003
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 2235.385865,
+    "perDocument": 0.22353858650000002
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3841.661595
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 2821.622409
+  }
+}
+
+AFTER:
+
+{
+  "storage": "pouchdb",
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 17822.879896,
+    "perInstance": 17.822879896
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 4327.567031,
+    "perBlock": 2.1637835154999996
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1483.613512,
+    "perDocument": 0.1483613512
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 2639.312311
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 1738.548941
+  }
+}
+
+
+## 05.03.2022
+
+{
+  "storage": "pouchdb",
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 18651.573212,
+    "perInstance": 18.651573212
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 6650.861714,
+    "perBlock": 3.3254308569999997
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1156.847967,
+    "perDocument": 0.1156847967
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 1833.045903
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 2059.198253
+  }
+}

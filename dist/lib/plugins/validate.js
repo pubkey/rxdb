@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.rxdb = exports.prototypes = exports.hooks = exports.RxDBValidatePlugin = void 0;
+exports.RxDBValidatePlugin = void 0;
 
 var _isMyJsonValid = _interopRequireDefault(require("is-my-json-valid"));
 
@@ -45,7 +45,7 @@ function _getValidator(rxSchema) {
  */
 
 
-var validate = function validate(obj) {
+function validateFullDocumentData(obj) {
   var useValidator = _getValidator(this);
 
   var isValid = useValidator(obj);
@@ -56,7 +56,7 @@ var validate = function validate(obj) {
       schema: this.jsonSchema
     });
   }
-};
+}
 
 var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   // pre-generate the isMyJsonValid-validator from the schema
@@ -65,28 +65,24 @@ var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   });
 };
 
-var rxdb = true;
-exports.rxdb = rxdb;
-var prototypes = {
-  /**
-   * set validate-function for the RxSchema.prototype
-   * @param prototype of RxSchema
-   */
-  RxSchema: function RxSchema(proto) {
-    proto._getValidator = _getValidator;
-    proto.validate = validate;
-  }
-};
-exports.prototypes = prototypes;
-var hooks = {
-  createRxSchema: runAfterSchemaCreated
-};
-exports.hooks = hooks;
 var RxDBValidatePlugin = {
   name: 'validate',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  hooks: hooks
+  rxdb: true,
+  prototypes: {
+    /**
+     * set validate-function for the RxSchema.prototype
+     * @param prototype of RxSchema
+     */
+    RxSchema: function RxSchema(proto) {
+      proto._getValidator = _getValidator;
+      proto.validateFullDocumentData = validateFullDocumentData;
+    }
+  },
+  hooks: {
+    createRxSchema: {
+      after: runAfterSchemaCreated
+    }
+  }
 };
 exports.RxDBValidatePlugin = RxDBValidatePlugin;
 //# sourceMappingURL=validate.js.map

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil, {
-    clone, wait
+    clone, wait, waitUntil
 } from 'async-test-util';
 import GraphQLClient from 'graphql-client';
 
@@ -29,16 +29,17 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-
 import {
     RxDBReplicationGraphQLPlugin,
     graphQLSchemaFromRxSchema,
     pullQueryBuilderFromRxSchema,
-    pushQueryBuilderFromRxSchema
+    pushQueryBuilderFromRxSchema,
+    RxGraphQLReplicationState
 } from '../../plugins/replication-graphql';
 import {
     getLastPullDocument,
-    getLastPushSequence, setLastPullDocument
+    getLastPushCheckpoint,
+    setLastPullDocument
 } from '../../plugins/replication';
 import * as schemas from '../helper/schemas';
 import {
@@ -60,7 +61,7 @@ import { RxDocumentData } from '../../src/types';
 
 declare type WithDeleted<T> = T & { deleted: boolean };
 
-describe('replication-graphql.test.js', () => {
+describe('replication-graphql.test.ts', () => {
     // for port see karma.config.js
     const browserServerUrl = 'http://localhost:18000' + GRAPHQL_PATH;
 
@@ -1085,7 +1086,7 @@ describe('replication-graphql.test.js', () => {
                 await c.database.destroy();
             });
             it('should work with multiInstance', async () => {
-                if(config.isFastMode()){
+                if (config.isFastMode()) {
                     // TODO this test randomly fails in fast mode with lokijs storage.
                     return;
                 }
@@ -1237,6 +1238,64 @@ describe('replication-graphql.test.js', () => {
                 errSub.unsubscribe();
                 server.close();
                 db.destroy();
+            });
+            it('should not do more requests then needed', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+
+                let pullCount = 0;
+                let pushCount = 0;
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize: 20,
+                        queryBuilder: args => {
+                            pushCount++;
+                            return pushQueryBuilder(args);
+                        }
+                    },
+                    pull: {
+                        batchSize: 20,
+                        queryBuilder: args => {
+                            pullCount++;
+                            return queryBuilder(args);
+                        }
+                    },
+                    live: true,
+                    deletedFlag: 'deleted',
+                    liveInterval: 60 * 1000
+                });
+
+                await replicationState.awaitInitialReplication();
+
+                // pullCount should be exactly 1 because pull was started on replication start
+                assert.strictEqual(pullCount, 1);
+                assert.strictEqual(pushCount, 0);
+
+                // insert one document at the client
+                await c.insert(schemaObjects.humanWithTimestamp());
+
+                /**
+                 * After the insert,
+                 * exactly one push must be triggered
+                 * and then one pull should have happened afterwards
+                 */
+                await waitUntil(() => pushCount === 1);
+                await waitUntil(() => pullCount === 2);
+
+                /**
+                 * Even after some time,
+                 * no more requests should have happened
+                 */
+                await wait(250);
+                assert.strictEqual(pullCount, 2);
+                assert.strictEqual(pushCount, 1);
+
+
+                server.close();
+                c.database.destroy();
             });
         });
 
@@ -1621,7 +1680,7 @@ describe('replication-graphql.test.js', () => {
                     ignoreDuplicate: true,
                     password: randomCouchString(10)
                 });
-                const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestamp);
+                const schema: RxJsonSchema<HumanWithTimestampDocumentType> = clone(schemas.humanWithTimestamp);
                 schema.encrypted = ['name'];
                 const collections = await db.addCollections({
                     humans: {
@@ -1634,7 +1693,7 @@ describe('replication-graphql.test.js', () => {
                 testData[0].name = 'Alice';
                 const server = await SpawnServer.spawn(testData);
 
-                const replicationState = collection.syncGraphQL({
+                const replicationState: RxGraphQLReplicationState<HumanWithTimestampDocumentType> = collection.syncGraphQL({
                     url: server.url,
                     pull: {
                         batchSize,
@@ -1853,6 +1912,9 @@ describe('replication-graphql.test.js', () => {
 
         config.parallel('issues', () => {
             it('should not create push checkpoints unnecessarily [PR: #3627]', async () => {
+                if (config.storage.name !== 'pouchdb') {
+                    return;
+                }
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);
                 const [c, server] = await Promise.all([
@@ -1878,9 +1940,9 @@ describe('replication-graphql.test.js', () => {
                 await replicationState.awaitInitialReplication();
                 await replicationState.run();
 
-                const originalSequence = await getLastPushSequence(
+                const originalCheckpoint = await getLastPushCheckpoint(
                     replicationState.collection,
-                    replicationState.replicationState.replicationIdentifier
+                    replicationState.replicationState.replicationIdentifierHash
                 );
 
                 // call .run() often
@@ -1888,11 +1950,11 @@ describe('replication-graphql.test.js', () => {
                     await replicationState.run();
                 }
 
-                const newSequence = await getLastPushSequence(
+                const newCheckpoint = await getLastPushCheckpoint(
                     replicationState.collection,
-                    replicationState.replicationState.replicationIdentifier
+                    replicationState.replicationState.replicationIdentifierHash
                 );
-                assert.strictEqual(originalSequence, newSequence);
+                assert.strictEqual(originalCheckpoint.sequence, newCheckpoint.sequence);
                 server.close();
                 c.database.destroy();
             });
@@ -1922,8 +1984,7 @@ describe('replication-graphql.test.js', () => {
                         .map(d => collection.insert(d))
                 );
 
-                const testData = getTestData(0);
-                const server = await SpawnServer.spawn(testData);
+                const server = await SpawnServer.spawn(getTestData(0));
 
                 const replicationState = collection.syncGraphQL({
                     url: server.url,
@@ -2183,7 +2244,7 @@ describe('replication-graphql.test.js', () => {
                 docData = clone(docData); // clone to make it mutateable
                 (docData as any).name = 'foobar';
 
-                await setLastPullDocument(c, endpointHash, docData);
+                await setLastPullDocument(c, endpointHash, docData as any);
                 await c.database.remove();
 
                 // recreate the same collection again

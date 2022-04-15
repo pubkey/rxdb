@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageInstance, BlobBuffer, BulkWriteRow, ChangeStreamOnceOptions, RxDocumentData, RxStorageBulkWriteResponse, RxStorageChangedDocumentMeta, RxStorageChangeEvent, RxStorageQueryResult, RxStorageKeyObjectInstance, BulkWriteLocalRow, RxLocalDocumentData, RxLocalStorageBulkWriteResponse, RxKeyObjectStorageInstanceCreationParams, EventBulk, RxStorageStatics } from '../../types';
+import type { RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageInstance, BulkWriteRow, RxDocumentData, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageQueryResult, EventBulk, RxStorageStatics } from '../../types';
 import { InWorkerStorage } from './in-worker';
 declare type WorkerStorageInternals = {
     rxStorage: RxStorageWorker;
@@ -17,12 +17,12 @@ export declare class RxStorageWorker implements RxStorage<WorkerStorageInternals
     readonly workerPromise: Promise<InWorkerStorage>;
     constructor(settings: RxStorageWorkerSettings, statics: RxStorageStatics);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<RxStorageInstanceWorker<RxDocType>>;
-    createKeyObjectStorageInstance(params: RxKeyObjectStorageInstanceCreationParams<any>): Promise<RxStorageKeyObjectInstanceWorker>;
 }
-export declare class RxStorageInstanceWorker<DocumentData> implements RxStorageInstance<DocumentData, WorkerStorageInternals, any> {
+export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxDocType, WorkerStorageInternals, any> {
+    readonly storage: RxStorage<WorkerStorageInternals, any>;
     readonly databaseName: string;
     readonly collectionName: string;
-    readonly schema: Readonly<RxJsonSchema<DocumentData>>;
+    readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>;
     readonly internals: WorkerStorageInternals;
     readonly options: Readonly<any>;
     /**
@@ -31,41 +31,19 @@ export declare class RxStorageInstanceWorker<DocumentData> implements RxStorageI
      */
     private changes$;
     private subs;
-    constructor(databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<DocumentData>>, internals: WorkerStorageInternals, options: Readonly<any>);
-    bulkWrite(documentWrites: BulkWriteRow<DocumentData>[]): Promise<RxStorageBulkWriteResponse<DocumentData>>;
-    bulkAddRevisions(documents: RxDocumentData<DocumentData>[]): Promise<void>;
+    constructor(storage: RxStorage<WorkerStorageInternals, any>, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: WorkerStorageInternals, options: Readonly<any>);
+    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<{
-        [documentId: string]: RxDocumentData<DocumentData>;
+        [documentId: string]: RxDocumentData<RxDocType>;
     }>;
-    query(preparedQuery: any): Promise<RxStorageQueryResult<DocumentData>>;
-    getAttachmentData(documentId: string, attachmentId: string): Promise<BlobBuffer>;
-    getChangedDocuments(options: ChangeStreamOnceOptions): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[];
-        lastSequence: number;
-    }>;
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
-    close(): Promise<void>;
-    remove(): Promise<void>;
-}
-export declare class RxStorageKeyObjectInstanceWorker implements RxStorageKeyObjectInstance<WorkerStorageInternals, any> {
-    readonly databaseName: string;
-    readonly collectionName: string;
-    readonly internals: WorkerStorageInternals;
-    readonly options: Readonly<any>;
-    /**
-     * threads.js uses observable-fns instead of rxjs
-     * so we have to transform it.
-     */
-    private changes$;
-    private subs;
-    constructor(databaseName: string, collectionName: string, internals: WorkerStorageInternals, options: Readonly<any>);
-    bulkWrite<DocumentData>(documentWrites: BulkWriteLocalRow<DocumentData>[]): Promise<RxLocalStorageBulkWriteResponse<DocumentData>>;
-    findLocalDocumentsById<DocumentData>(ids: string[]): Promise<{
-        [documentId: string]: RxLocalDocumentData<DocumentData>;
-    }>;
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData<{
-        [key: string]: any;
-    }>>>>;
+    query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>>;
+    getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
+    getChangedDocumentsSince(limit: number, checkpoint?: any): Promise<{
+        document: RxDocumentData<RxDocType>;
+        checkpoint: any;
+    }[]>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    cleanup(minDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;
     remove(): Promise<void>;
 }

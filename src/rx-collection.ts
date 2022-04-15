@@ -16,11 +16,13 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    getDefaultRevision,
+    nextTick
 } from './util';
 import {
     fillObjectDataBeforeInsert,
-    createRxCollectionStorageInstances
+    createRxCollectionStorageInstance
 } from './rx-collection-helper';
 import {
     createRxQuery,
@@ -34,12 +36,7 @@ import type {
     DataMigrator
 } from './plugins/migration';
 import {
-    Crypter,
-    createCrypter
-} from './crypter';
-import {
-    DocCache,
-    createDocCache
+    DocCache
 } from './doc-cache';
 import {
     QueryCache,
@@ -79,7 +76,6 @@ import type {
     RxDocumentData,
     RxDocumentWriteData,
     RxStorageInstanceCreationParams,
-    RxStorageKeyObjectInstance,
     BulkWriteRow,
     RxChangeEvent,
     RxChangeEventInsert,
@@ -88,7 +84,8 @@ import type {
     RxStorageInstance,
     CollectionsOfDatabase,
     RxChangeEventBulk,
-    RxLocalDocumentData
+    RxLocalDocumentData,
+    RxDocumentBase
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -107,7 +104,6 @@ import {
     getRxDocumentConstructor
 } from './rx-document-prototype-merge';
 import {
-    getWrappedKeyObjectInstance,
     getWrappedStorageInstance,
     storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError
@@ -129,11 +125,6 @@ export class RxCollectionBase<
      * Stores all 'normal' documents
      */
     public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
-    /**
-     * Stores the local documents so that they are not deleted
-     * when a migration runs.
-     */
-    public localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions> = {} as any;
     public readonly timeouts: Set<ReturnType<typeof setTimeout>> = new Set();
 
     constructor(
@@ -141,8 +132,6 @@ export class RxCollectionBase<
         public name: string,
         public schema: RxSchema<RxDocumentType>,
         public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
-        public internalLocalDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>,
-
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
         public migrationStrategies: KeyFunctionMap = {},
         public methods: KeyFunctionMap = {},
@@ -154,12 +143,6 @@ export class RxCollectionBase<
         _applyHookFunctions(this.asRxCollection);
     }
 
-    /**
-     * returns observable
-     */
-    get $(): Observable<RxChangeEvent<any>> {
-        return this._observable$ as any;
-    }
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {
         return this.$.pipe(
             filter(cE => cE.operation === 'INSERT')
@@ -192,11 +175,10 @@ export class RxCollectionBase<
 
     public _docCache: DocCache<
         RxDocument<RxDocumentType, OrmMethods>
-    > = createDocCache();
+    > = new DocCache();
 
     public _queryCache: QueryCache = createQueryCache();
-    public _crypter: Crypter = {} as Crypter;
-    public _observable$: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
+    public $: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
 
     /**
@@ -206,13 +188,13 @@ export class RxCollectionBase<
 
     private _onDestroyCall?: () => void;
     public async prepare(): Promise<void> {
-        this.storageInstance = getWrappedStorageInstance(this as any, this.internalStorageInstance);
-        this.localDocumentsStore = getWrappedKeyObjectInstance(this as any, this.internalLocalDocumentsStore);
+        this.storageInstance = getWrappedStorageInstance(
+            this.database,
+            this.internalStorageInstance,
+            this.schema.jsonSchema
+        );
 
-        // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
-        this._crypter = createCrypter(this.database.password, this.schema);
-
-        this._observable$ = this.database.eventBulks$.pipe(
+        this.$ = this.database.eventBulks$.pipe(
             filter(changeEventBulk => changeEventBulk.collectionName === this.name),
             mergeMap(changeEventBulk => changeEventBulk.events),
         );
@@ -224,12 +206,13 @@ export class RxCollectionBase<
          * single events, we should fully work with event bulks internally
          * to save performance.
          */
+        const databaseStorageToken = await this.database.storageToken;
         const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
             const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
                 id: eventBulk.id,
                 internal: false,
                 collectionName: this.name,
-                storageToken: ensureNotFalsy(this.database.storageToken),
+                storageToken: databaseStorageToken,
                 events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
                     false,
                     ev,
@@ -239,25 +222,7 @@ export class RxCollectionBase<
             };
             this.database.$emit(changeEventBulk);
         });
-
         this._subs.push(subDocs);
-        const subLocalDocs = this.localDocumentsStore.changeStream().subscribe(eventBulk => {
-            const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
-                id: eventBulk.id,
-                internal: false,
-                collectionName: this.name,
-                storageToken: ensureNotFalsy(this.database.storageToken),
-                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
-                    true,
-                    ev,
-                    this as any
-                )),
-                databaseToken: this.database.token
-            };
-            this.database.$emit(changeEventBulk);
-        });
-        this._subs.push(subLocalDocs);
-
 
         /**
          * When a write happens to the collection
@@ -265,7 +230,7 @@ export class RxCollectionBase<
          * and tell it that it has to change its data.
          */
         this._subs.push(
-            this._observable$
+            this.$
                 .pipe(
                     filter((cE: RxChangeEvent<RxDocumentType>) => !cE.isLocal)
                 )
@@ -277,6 +242,8 @@ export class RxCollectionBase<
                     }
                 })
         );
+
+        return PROMISE_RESOLVE_VOID;
     }
 
 
@@ -309,7 +276,7 @@ export class RxCollectionBase<
             json = tempDoc.toJSON() as any;
         }
 
-        const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this as any, json);
+        const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this.schema, json);
         const writeResult = await this.bulkInsert([useJson]);
 
         const isError = writeResult.error[0];
@@ -342,10 +309,9 @@ export class RxCollectionBase<
         }
 
         const useDocs: RxDocumentType[] = docsData.map(docData => {
-            const useDocData = fillObjectDataBeforeInsert(this as any, docData);
+            const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
             return useDocData;
         });
-
         const docs = await Promise.all(
             useDocs.map(doc => {
                 return this._runHooks('pre', 'insert', doc).then(() => {
@@ -362,6 +328,7 @@ export class RxCollectionBase<
                 document: Object.assign(doc, {
                     _attachments: {},
                     _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
                     _deleted: false
                 })
             };
@@ -467,37 +434,53 @@ export class RxCollectionBase<
     }
 
     /**
+     * same as bulkInsert but overwrites existing document with same primary
+     */
+    async bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<RxDocument<RxDocumentType, OrmMethods>[]> {
+        const insertData: RxDocumentType[] = [];
+        const useJsonByDocId: Map<string, RxDocumentType> = new Map();
+        docsData.forEach(docData => {
+            const useJson = fillObjectDataBeforeInsert(this.schema, docData);
+            const primary: string = useJson[this.schema.primaryPath] as any;
+            if (!primary) {
+                throw newRxError('COL3', {
+                    primaryPath: this.schema.primaryPath as string,
+                    data: useJson,
+                    schema: this.schema.jsonSchema
+                });
+            }
+            useJsonByDocId.set(primary, useJson);
+            insertData.push(useJson);
+        });
+
+        const insertResult = await this.bulkInsert(insertData);
+        let ret = insertResult.success.slice(0);
+        const updatedDocs = await Promise.all(
+            insertResult.error.map(error => {
+                const id = error.documentId;
+                const writeData = getFromMapOrThrow(useJsonByDocId, id);
+                const docDataInDb = error.documentInDb;
+                const doc = createRxDocument(this.asRxCollection, docDataInDb);
+                return doc.atomicUpdate(() => writeData);
+            })
+        );
+        ret = ret.concat(updatedDocs);
+        return ret;
+    }
+
+    /**
      * same as insert but overwrites existing document with same primary
      */
     upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        const useJson = fillObjectDataBeforeInsert(this as any, json);
-        const primary = useJson[this.schema.primaryPath];
-        if (!primary) {
-            throw newRxError('COL3', {
-                primaryPath: this.schema.primaryPath as string,
-                data: useJson,
-                schema: this.schema.jsonSchema
-            });
-        }
-
-        return this.findOne(primary).exec()
-            .then((existing: RxDocument<RxDocumentType, OrmMethods> | null) => {
-                if (existing && !existing.deleted) {
-                    useJson._rev = (existing as any)['_rev'];
-                    return existing.atomicUpdate(() => useJson as any)
-                        .then(() => existing);
-                } else {
-                    return this.insert(json as any);
-                }
-            });
+        return this.bulkUpsert([json]).then(result => result[0]);
     }
 
     /**
      * upserts to a RxDocument, uses atomicUpdate if document already exists
      */
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        const useJson = fillObjectDataBeforeInsert(this as any, json);
-        const primary = useJson[this.schema.primaryPath];
+        const useJson = fillObjectDataBeforeInsert(this.schema, json);
+        const primary: string = useJson[this.schema.primaryPath] as any;
         if (!primary) {
             throw newRxError('COL4', {
                 data: json
@@ -666,7 +649,12 @@ export class RxCollectionBase<
              */
             mergeMap(() => {
                 queue = queue.then(async () => {
-                    const resultMap = ensureNotFalsy(currentValue);
+                    /**
+                     * We first have to clone the Map
+                     * to ensure we do not create side effects by mutating
+                     * a Map that has already been returned before.
+                     */
+                    currentValue = new Map(ensureNotFalsy(currentValue));
                     const missedChangeEvents = this._changeEventBuffer.getFrom(lastChangeEvent + 1);
                     lastChangeEvent = this._changeEventBuffer.counter;
                     if (missedChangeEvents === null) {
@@ -676,7 +664,7 @@ export class RxCollectionBase<
                          */
                         const newResult = await this.findByIds(ids);
                         lastChangeEvent = this._changeEventBuffer.counter;
-                        Array.from(newResult.entries()).forEach(([k, v]) => resultMap.set(k, v));
+                        return newResult;
                     } else {
                         let resultHasChanged = false;
                         missedChangeEvents
@@ -693,11 +681,11 @@ export class RxCollectionBase<
                                         this.asRxCollection,
                                         rxChangeEvent.documentData
                                     );
-                                    resultMap.set(docId, rxDocument);
+                                    ensureNotFalsy(currentValue).set(docId, rxDocument);
                                 } else {
-                                    if (resultMap.has(docId)) {
+                                    if (ensureNotFalsy(currentValue).has(docId)) {
                                         resultHasChanged = true;
-                                        resultMap.delete(docId);
+                                        ensureNotFalsy(currentValue).delete(docId);
                                     }
                                 }
                             });
@@ -708,7 +696,7 @@ export class RxCollectionBase<
                         }
                     }
                     firstEmitDone = true;
-                    return resultMap;
+                    return currentValue;
                 });
                 return queue;
             }),
@@ -724,9 +712,9 @@ export class RxCollectionBase<
      * When false or omitted and an interface or type is loaded in this collection,
      * all base properties of the type are typed as `any` since data could be encrypted.
      */
-    exportJSON(_decrypted: boolean): Promise<RxDumpCollection<RxDocumentType>>;
-    exportJSON(_decrypted?: false): Promise<RxDumpCollectionAny<RxDocumentType>>;
-    exportJSON(_decrypted: boolean = false): Promise<any> {
+    exportJSON(): Promise<RxDumpCollection<RxDocumentType>>;
+    exportJSON(): Promise<RxDumpCollectionAny<RxDocumentType>>;
+    exportJSON(): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
@@ -865,7 +853,7 @@ export class RxCollectionBase<
         return ret;
     }
 
-    destroy(): Promise<boolean> {
+    async destroy(): Promise<boolean> {
         if (this.destroyed) {
             return PROMISE_RESOLVE_FALSE;
         }
@@ -886,11 +874,16 @@ export class RxCollectionBase<
         if (this._changeEventBuffer) {
             this._changeEventBuffer.destroy();
         }
-        return Promise
-            .all([
-                this.storageInstance.close(),
-                this.localDocumentsStore.close()
-            ])
+        /**
+         * First wait until the whole database is idle.
+         * This ensures that the storage does not get closed
+         * while some operation is running.
+         * It is important that we do not intercept a running call
+         * because it might lead to undefined behavior like when a doc is written
+         * but the change is not added to the changes collection.
+         */
+        return this.database.requestIdlePromise()
+            .then(() => this.storageInstance.close())
             .then(() => {
                 delete this.database.collections[this.name];
                 return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
@@ -929,12 +922,17 @@ function _applyHookFunctions(
     });
 }
 
-function _atomicUpsertUpdate(doc: any, json: any): Promise<any> {
-    return doc.atomicUpdate((innerDoc: any) => {
-        json._rev = innerDoc._rev;
-        innerDoc._data = json;
-        return innerDoc._data;
-    }).then(() => doc);
+function _atomicUpsertUpdate<RxDocType>(
+    doc: RxDocumentBase<RxDocType>,
+    json: RxDocumentData<RxDocType>
+): Promise<RxDocumentBase<RxDocType>> {
+    return doc.atomicUpdate((_innerDoc: RxDocumentData<RxDocType>) => {
+        return json;
+    })
+        .then(() => nextTick())
+        .then(() => {
+            return doc;
+        });
 }
 
 /**
@@ -993,13 +991,14 @@ export function createRxCollection(
         methods = {},
         attachments = {},
         options = {},
+        localDocuments = false,
         cacheReplacementPolicy = defaultCacheReplacementPolicy
     }: any
 ): Promise<RxCollection> {
     const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
         databaseName: database.name,
         collectionName: name,
-        schema: schema.normalized,
+        schema: schema.jsonSchema,
         options: instanceCreationOptions,
         multiInstance: database.multiInstance
     };
@@ -1009,18 +1008,15 @@ export function createRxCollection(
         storageInstanceCreationParams
     );
 
-    return createRxCollectionStorageInstances(
-        name,
+    return createRxCollectionStorageInstance(
         database,
-        storageInstanceCreationParams,
-        instanceCreationOptions
-    ).then(storageInstances => {
+        storageInstanceCreationParams
+    ).then(storageInstance => {
         const collection = new RxCollectionBase(
             database,
             name,
             schema,
-            storageInstances.storageInstance,
-            storageInstances.localDocumentsStore,
+            storageInstance,
             instanceCreationOptions,
             migrationStrategies,
             methods,
@@ -1049,7 +1045,22 @@ export function createRxCollection(
                 return ret;
             })
             .then(() => {
-                runPluginHooks('createRxCollection', collection);
+                runPluginHooks('createRxCollection', {
+                    collection,
+                    creator: {
+                        name,
+                        schema,
+                        storageInstance,
+                        instanceCreationOptions,
+                        migrationStrategies,
+                        methods,
+                        attachments,
+                        options,
+                        cacheReplacementPolicy,
+                        localDocuments,
+                        statics
+                    }
+                });
                 return collection as any;
             })
             /**
@@ -1057,11 +1068,7 @@ export function createRxCollection(
              * we yet have to close the storage instances.
              */
             .catch(err => {
-                return Promise
-                    .all([
-                        storageInstances.storageInstance.close(),
-                        storageInstances.localDocumentsStore.close()
-                    ])
+                return storageInstance.close()
                     .then(() => Promise.reject(err));
             });
     });

@@ -7,9 +7,6 @@ import {
     RxSchema
 } from './rx-schema';
 import {
-    Crypter
-} from './crypter';
-import {
     basePrototype as RxDocumentPrototype
 } from './rx-document';
 import {
@@ -27,7 +24,8 @@ import type {
 
 import { overwritable } from './overwritable';
 import {
-    HOOKS, runPluginHooks
+    HOOKS,
+    runPluginHooks
 } from './hooks';
 import { newRxTypeError } from './rx-error';
 
@@ -36,7 +34,6 @@ import { newRxTypeError } from './rx-error';
  */
 const PROTOTYPES: { [k: string]: any } = {
     RxSchema: RxSchema.prototype,
-    Crypter: Crypter.prototype,
     RxDocument: RxDocumentPrototype,
     RxQuery: RxQueryBase.prototype,
     RxCollection: RxCollectionBase.prototype,
@@ -93,6 +90,13 @@ export function addRxPlugin(plugin: RxPlugin) {
     if (plugin.hooks) {
         Object
             .entries(plugin.hooks)
-            .forEach(([name, fun]) => HOOKS[name].push(fun));
+            .forEach(([name, hooksObj]) => {
+                if (hooksObj.after) {
+                    HOOKS[name].push(hooksObj.after)
+                }
+                if (hooksObj.before) {
+                    HOOKS[name].unshift(hooksObj.before)
+                }
+            });
     }
 }

@@ -1,13 +1,11 @@
 import { getGraphqlSchemaFromJsonSchema } from 'get-graphql-from-jsonschema';
 import { scalarTypes } from 'get-graphql-from-jsonschema/build/lib/scalarTypes';
-import { fillWithDefaultSettings } from '../../rx-schema';
+import { fillWithDefaultSettings } from '../../rx-schema-helper';
 import { clone, ucfirst } from '../../util';
 // we use two spaces because get-graphql-from-jsonschema does also
 export var SPACING = '  ';
 /**
- * TODO this is in beta mode,
- * use it at your own risk.
- * Fix bugs when you find them.
+ * Create a GraphQL schema from a given RxJsonSchema
  */
 
 export function graphQLSchemaFromRxSchema(input) {

@@ -1,7 +1,8 @@
 import mingo from 'mingo';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { Dexie } from 'dexie';
 import { flatClone } from '../../util';
+import { newRxError } from '../../rx-error';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 /**
  * Returns all documents in the database.
@@ -42,7 +43,7 @@ var DEXIE_STATE_DB_BY_NAME = new Map();
 var REF_COUNT_PER_DEXIE_DB = new Map();
 export function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-  var dexieDbName = 'rxdb-dexie-' + databaseName + '--' + collectionName;
+  var dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
   var state = DEXIE_STATE_DB_BY_NAME.get(dexieDbName);
 
   if (!state) {
@@ -58,7 +59,7 @@ export function getDexieDbWithTables(databaseName, collectionName, settings, sch
         var useSettings = flatClone(settings);
         useSettings.autoOpen = false;
         var dexieDb = new Dexie(dexieDbName, useSettings);
-        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',$lastWriteAt', _dexieDb$version$stor));
+        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']', _dexieDb$version$stor));
         return Promise.resolve(dexieDb.open()).then(function () {
           return {
             dexieDb: dexieDb,
@@ -92,28 +93,20 @@ function sortDirectionToMingo(direction) {
  */
 
 
-export function getDexieSortComparator(schema, query) {
-  var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+export function getDexieSortComparator(_schema, query) {
   var mingoSortObject = {};
-  var wasPrimaryInSort = false;
 
-  if (query.sort) {
-    query.sort.forEach(function (sortBlock) {
-      var key = Object.keys(sortBlock)[0];
-
-      if (key === primaryKey) {
-        wasPrimaryInSort = true;
-      }
-
-      var direction = Object.values(sortBlock)[0];
-      mingoSortObject[key] = sortDirectionToMingo(direction);
+  if (!query.sort) {
+    throw newRxError('SNH', {
+      query: query
     });
-  } // TODO ensuring that the primaryKey is in the sorting, should be done by RxDB, not by the storage.
-
-
-  if (!wasPrimaryInSort) {
-    mingoSortObject[primaryKey] = 1;
   }
+
+  query.sort.forEach(function (sortBlock) {
+    var key = Object.keys(sortBlock)[0];
+    var direction = Object.values(sortBlock)[0];
+    mingoSortObject[key] = sortDirectionToMingo(direction);
+  });
 
   var fun = function fun(a, b) {
     var sorted = mingo.find([a, b], {}).sort(mingoSortObject);
@@ -163,13 +156,15 @@ export function getDexieStoreSchema(rxJsonSchema) {
       var arIndex = Array.isArray(index) ? index : [index];
       parts.push(arIndex);
     });
-  }
+  } // we also need the _meta.lwt+primaryKey index for the getChangedDocumentsSince() method.
+
+
+  parts.push(['_meta.lwt', primaryKey]);
   /**
    * It is not possible to set non-javascript-variable-syntax
    * keys as IndexedDB indexes. So we have to substitute the pipe-char
    * which comes from the key-compression plugin.
    */
-
 
   parts = parts.map(function (part) {
     return part.map(function (str) {
@@ -183,19 +178,5 @@ export function getDexieStoreSchema(rxJsonSchema) {
       return '[' + part.join('+') + ']';
     }
   }).join(', ');
-}
-export function getDexieEventKey(isLocal, primary, revision) {
-  var prefix = isLocal ? 'local' : 'non-local';
-  var eventKey = prefix + '|' + primary + '|' + revision;
-  return eventKey;
-}
-/**
- * Removes all internal fields from the document data
- */
-
-export function stripDexieKey(docData) {
-  var cloned = flatClone(docData);
-  delete cloned.$lastWriteAt;
-  return cloned;
 }
 //# sourceMappingURL=dexie-helper.js.map

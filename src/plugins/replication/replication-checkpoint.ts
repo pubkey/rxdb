@@ -1,96 +1,122 @@
 import type {
     RxCollection,
-    RxLocalDocumentData,
     RxDocumentData,
-    ReplicationCheckpointDocument
+    InternalStoreReplicationPullDocType,
+    InternalStoreReplicationPushDocType,
+    DeepReadonlyObject
 } from '../../types';
 import {
-    findLocalDocument,
-    writeSingleLocal
+    getSingleDocument,
+    writeSingle
 } from '../../rx-storage-helper';
-import { flatClone, getDefaultRxDocumentMeta } from '../../util';
-import { newRxError } from '../../rx-error';
+import {
+    createRevision,
+    flatClone,
+    getDefaultRevision,
+    lastOfArray,
+    now
+} from '../../util';
 import { wasLastWriteFromPullReplication } from './revision-flag';
-import { runPluginHooks } from '../../hooks';
+import {
+    getPrimaryKeyOfInternalDocument,
+    INTERNAL_CONTEXT_REPLICATION_PRIMITIVES
+} from '../../rx-database-internal-store';
 
 //
 // things for the push-checkpoint
 //
 
-const pushSequenceId = (replicationIdentifier: string) => 'replication-checkpoint-push-' + replicationIdentifier;
-const pullLastDocumentId = (replicationIdentifier: string) => 'replication-checkpoint-pull-' + replicationIdentifier;
-
+const pushSequenceDocumentKey = (replicationIdentifierHash: string) => 'replication-checkpoint-push-' + replicationIdentifierHash;
+const pullLastDocumentKey = (replicationIdentifierHash: string) => 'replication-checkpoint-pull-' + replicationIdentifierHash;
 
 /**
  * Get the last push checkpoint
  */
-export async function getLastPushSequence(
+export function getLastPushCheckpoint(
     collection: RxCollection,
-    replicationIdentifier: string
-): Promise<number> {
-    const doc = await findLocalDocument<ReplicationCheckpointDocument>(
-        collection.localDocumentsStore,
-        pushSequenceId(replicationIdentifier),
-        false
-    );
-    if (!doc) {
-        return 0;
-    } else {
-        return doc.value;
-    }
+    replicationIdentifierHash: string
+): Promise<any | undefined> {
+    return getSingleDocument<InternalStoreReplicationPushDocType>(
+        collection.database.internalStore,
+        getPrimaryKeyOfInternalDocument(
+            pushSequenceDocumentKey(replicationIdentifierHash),
+            INTERNAL_CONTEXT_REPLICATION_PRIMITIVES
+        )
+    ).then(doc => {
+        if (!doc) {
+            return undefined;
+        } else {
+            return doc.data.checkpoint;
+        }
+    });
 }
 
-export async function setLastPushSequence(
+export async function setLastPushCheckpoint(
     collection: RxCollection,
-    replicationIdentifier: string,
-    sequence: number
-): Promise<ReplicationCheckpointDocument> {
-    const _id = pushSequenceId(replicationIdentifier);
+    replicationIdentifierHash: string,
+    checkpoint: any
+): Promise<RxDocumentData<InternalStoreReplicationPushDocType>> {
+    const docId = getPrimaryKeyOfInternalDocument(
+        pushSequenceDocumentKey(replicationIdentifierHash),
+        INTERNAL_CONTEXT_REPLICATION_PRIMITIVES
+    );
 
-    const doc = await findLocalDocument<ReplicationCheckpointDocument>(
-        collection.localDocumentsStore,
-        _id,
-        false
+    const doc = await getSingleDocument<InternalStoreReplicationPushDocType>(
+        collection.database.internalStore,
+        docId
     );
     if (!doc) {
-        const res = await writeSingleLocal<ReplicationCheckpointDocument>(
-            collection.localDocumentsStore,
+        const insertData = {
+            id: docId,
+            key: pushSequenceDocumentKey(replicationIdentifierHash),
+            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+            data: {
+                checkpoint
+            },
+            _deleted: false,
+            _meta: {
+                lwt: now()
+            },
+            _rev: getDefaultRevision(),
+            _attachments: {}
+        };
+        insertData._rev = createRevision(insertData);
+        const res = await writeSingle(
+            collection.database.internalStore,
             {
-                document: {
-                    _id,
-                    value: sequence,
-                    _deleted: false,
-                    _meta: getDefaultRxDocumentMeta(),
-                    _attachments: {}
-                }
+                document: insertData
             }
         );
-        return res as any;
+        return res;
     } else {
-        const newDoc = flatClone(doc);
-        newDoc.value = sequence;
-        const res = await writeSingleLocal<ReplicationCheckpointDocument>(
-            collection.localDocumentsStore,
+        const docData = {
+            id: docId,
+            key: pushSequenceDocumentKey(replicationIdentifierHash),
+            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+            data: {
+                checkpoint
+            },
+            _meta: {
+                lwt: now()
+            },
+            _rev: getDefaultRevision(),
+            _deleted: false,
+            _attachments: {}
+        };
+        docData._rev = createRevision(docData, doc);
+        const res = await writeSingle<InternalStoreReplicationPushDocType>(
+            collection.database.internalStore,
             {
                 previous: doc,
-                document: {
-                    _id,
-                    value: sequence,
-                    _meta: getDefaultRxDocumentMeta(),
-                    _deleted: false,
-                    _attachments: {}
-                }
+                document: docData
             }
         );
-        return res as any;
+        return res;
     }
 }
 
-
-
-export async function getChangesSinceLastPushSequence<RxDocType>(
+export async function getChangesSinceLastPushCheckpoint<RxDocType>(
     collection: RxCollection<RxDocType, any>,
-    replicationIdentifier: string,
     replicationIdentifierHash: string,
     /**
      * A function that returns true
@@ -105,22 +131,19 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
     changedDocs: Map<string, {
         id: string;
         doc: RxDocumentData<RxDocType>;
-        sequence: number;
     }>;
-    lastSequence: number;
-    hasChangesSinceLastSequence: boolean;
+    checkpoint: any;
 }> {
-    let lastPushSequence = await getLastPushSequence(
+    const primaryPath = collection.schema.primaryPath;
+    let lastPushCheckpoint = await getLastPushCheckpoint(
         collection,
-        replicationIdentifier
+        replicationIdentifierHash
     );
-
     let retry = true;
-    let lastSequence: number = lastPushSequence;
+    let lastCheckpoint: any = lastPushCheckpoint;
     const changedDocs: Map<string, {
         id: string;
         doc: RxDocumentData<RxDocType>;
-        sequence: number;
     }> = new Map();
     const changedDocIds: Set<string> = new Set();
 
@@ -131,40 +154,32 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
      * until we reach the end of it
      */
     while (retry && !isStopped()) {
-        const changesResults = await collection.storageInstance.getChangedDocuments({
-            sinceSequence: lastPushSequence,
-            limit: batchSize,
-            direction: 'after'
-        });
+        const changesResults = await collection.storageInstance.getChangedDocumentsSince(
+            batchSize,
+            lastPushCheckpoint
+        );
 
-        lastSequence = changesResults.lastSequence;
+        if (changesResults.length > 0) {
+            lastCheckpoint = lastOfArray(changesResults).checkpoint;
+        }
 
         // optimisation shortcut, do not proceed if there are no changed documents
-        if (changesResults.changedDocuments.length === 0) {
+        if (changesResults.length === 0) {
             retry = false;
             continue;
         }
 
-        const docIds = changesResults.changedDocuments.map(row => row.id);
 
         if (isStopped()) {
             break;
         }
 
 
-        const docs = await collection.storageInstance.findDocumentsById(
-            docIds,
-            true
-        );
-
-        changesResults.changedDocuments.forEach((row) => {
-            const id = row.id;
-            if (changedDocs.has(id)) {
+        changesResults.forEach(row => {
+            const docData = row.document;
+            const docId: string = docData[primaryPath] as any;
+            if (changedDocs.has(docId)) {
                 return;
-            }
-            let changedDoc = docs[id];
-            if (!changedDoc) {
-                throw newRxError('SNH', { args: { docs, docIds } });
             }
 
             /**
@@ -174,41 +189,33 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
             if (
                 wasLastWriteFromPullReplication(
                     replicationIdentifierHash,
-                    changedDoc
+                    docData
                 )
             ) {
                 return false;
             }
-
-            const hookParams = {
-                collection,
-                doc: changedDoc
-            };
-            runPluginHooks('postReadFromInstance', hookParams);
-            changedDoc = hookParams.doc;
-
-            changedDocIds.add(id);
-            changedDocs.set(id, {
-                id,
-                doc: changedDoc,
-                sequence: row.sequence
+            changedDocIds.add(docId);
+            changedDocs.set(docId, {
+                id: docId,
+                doc: docData
             });
         });
 
-        if (changedDocs.size < batchSize && changesResults.changedDocuments.length === batchSize) {
+        if (
+            changedDocs.size < batchSize &&
+            changesResults.length === batchSize
+        ) {
             // no pushable docs found but also not reached the end -> re-run
-            lastPushSequence = lastSequence;
+            lastPushCheckpoint = lastCheckpoint;
             retry = true;
         } else {
             retry = false;
         }
     }
-
     return {
         changedDocIds,
         changedDocs,
-        lastSequence,
-        hasChangesSinceLastSequence: lastPushSequence !== lastSequence,
+        checkpoint: lastCheckpoint
     };
 }
 
@@ -218,55 +225,72 @@ export async function getChangesSinceLastPushSequence<RxDocType>(
 // things for pull-checkpoint
 //
 
-export async function getLastPullDocument<RxDocType>(
+export function getLastPullDocument<RxDocType>(
     collection: RxCollection<RxDocType>,
-    replicationIdentifier: string,
+    replicationIdentifierHash: string,
 ): Promise<RxDocumentData<RxDocType> | null> {
-    const localDoc = await findLocalDocument<any>(
-        collection.localDocumentsStore,
-        pullLastDocumentId(replicationIdentifier),
-        false
-    );
-    if (!localDoc) {
-        return null;
-    } else {
-        return localDoc.doc;
-    }
+
+    return getSingleDocument<InternalStoreReplicationPullDocType<RxDocType>>(
+        collection.database.internalStore,
+        getPrimaryKeyOfInternalDocument(
+            pullLastDocumentKey(replicationIdentifierHash),
+            INTERNAL_CONTEXT_REPLICATION_PRIMITIVES
+        )
+    ).then(lastPullCheckpoint => {
+        if (!lastPullCheckpoint) {
+            return null;
+        } else {
+            return lastPullCheckpoint.data.lastPulledDoc;
+        }
+    });
 }
 
-export async function setLastPullDocument(
+export async function setLastPullDocument<RxDocType>(
     collection: RxCollection,
-    replicationIdentifier: string,
-    doc: any
-): Promise<{ _id: string }> {
-    const _id = pullLastDocumentId(replicationIdentifier);
-
-    const localDoc: RxLocalDocumentData = await findLocalDocument<any>(
-        collection.localDocumentsStore,
-        _id,
-        false
+    replicationIdentifierHash: string,
+    lastPulledDoc: RxDocumentData<RxDocType> | DeepReadonlyObject<RxDocumentData<RxDocType>>
+): Promise<RxDocumentData<InternalStoreReplicationPullDocType<RxDocType>>> {
+    const pullCheckpointId = getPrimaryKeyOfInternalDocument(
+        pullLastDocumentKey(replicationIdentifierHash),
+        INTERNAL_CONTEXT_REPLICATION_PRIMITIVES
     );
 
-    if (!localDoc) {
-        return writeSingleLocal(
-            collection.localDocumentsStore,
+    const lastPullCheckpointDoc = await getSingleDocument<InternalStoreReplicationPullDocType<RxDocType>>(
+        collection.database.internalStore,
+        pullCheckpointId
+    );
+
+    if (!lastPullCheckpointDoc) {
+        const insertData = {
+            id: pullCheckpointId,
+            key: pullLastDocumentKey(replicationIdentifierHash),
+            context: INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+            data: {
+                lastPulledDoc: lastPulledDoc as any
+            },
+            _meta: {
+                lwt: now()
+            },
+            _rev: getDefaultRevision(),
+            _deleted: false,
+            _attachments: {}
+        };
+        insertData._rev = createRevision(insertData);
+        return writeSingle<InternalStoreReplicationPullDocType<RxDocType>>(
+            collection.database.internalStore,
             {
-                document: {
-                    _id,
-                    doc,
-                    _meta: getDefaultRxDocumentMeta(),
-                    _deleted: false,
-                    _attachments: {}
-                }
+                document: insertData
             }
         );
     } else {
-        const newDoc = flatClone(localDoc);
-        newDoc.doc = doc;
-        return writeSingleLocal(
-            collection.localDocumentsStore,
+        const newDoc = flatClone(lastPullCheckpointDoc);
+        newDoc.data = { lastPulledDoc: lastPulledDoc as any };
+        newDoc._rev = createRevision(newDoc, lastPullCheckpointDoc);
+        newDoc._meta = { lwt: now() };
+        return writeSingle<InternalStoreReplicationPullDocType<RxDocType>>(
+            collection.database.internalStore,
             {
-                previous: localDoc,
+                previous: lastPullCheckpointDoc,
                 document: newDoc
             }
         );

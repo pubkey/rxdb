@@ -243,6 +243,19 @@ With `awaitInitialReplication()` you can await the initial replication that is d
 await myRxReplicationState.awaitInitialReplication();
 ```
 
+
+### awaitInSync()
+
+Returns a promise that resolves when:
+- `awaitInitialReplication()` has emited.
+- All local data is repliacted with the remote.
+- No replication cycle is running or in retry-state.
+
+```ts
+await myRxReplicationState.awaitInSync();
+```
+
+
 ### cancel()
 
 Cancels the replication.
@@ -263,4 +276,4 @@ await myRxReplicationState.run();
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./in-memory.md)
+If you are new to RxDB, you should continue [here](./cleanup.md)

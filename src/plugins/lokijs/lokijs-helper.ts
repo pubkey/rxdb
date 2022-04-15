@@ -1,8 +1,4 @@
 import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki';
-import {
-    createLokiKeyValueLocalState,
-    RxStorageKeyObjectInstanceLoki
-} from './rx-storage-key-object-instance-loki';
 import lokijs, { Collection } from 'lokijs';
 import type {
     LokiDatabaseSettings,
@@ -61,20 +57,10 @@ export function stripLokiKey<T>(docData: RxDocumentData<T> & { $loki?: number; }
     return cloned;
 }
 
-export function getLokiEventKey(
-    isLocal: boolean,
-    primary: string,
-    revision: string
-): string {
-    const prefix = isLocal ? 'local' : 'non-local';
-    const eventKey = prefix + '|' + primary + '|' + revision;
-    return eventKey;
-}
-
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
-export const OPEN_LOKIJS_STORAGE_INSTANCES: Set<RxStorageKeyObjectInstanceLoki | RxStorageInstanceLoki<any>> = new Set();
+export const OPEN_LOKIJS_STORAGE_INSTANCES: Set<RxStorageInstanceLoki<any>> = new Set();
 
 
 export const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<CollectionOptions<any>> = {
@@ -210,7 +196,7 @@ export async function closeLokiCollections(
  * because we need it in multiple places.
  */
 export function getLokiSortComparator<RxDocType>(
-    _schema: RxJsonSchema<RxDocType>,
+    _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: MangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
     if (!query.sort) {
@@ -293,7 +279,7 @@ export function removeLokiLeaderElectorReference(
  * to the current leading instance over the BroadcastChannel.
  */
 export async function requestRemoteInstance(
-    instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki,
+    instance: RxStorageInstanceLoki<any>,
     operation: string,
     params: any[]
 ): Promise<any | any[]> {
@@ -362,6 +348,7 @@ export async function requestRemoteInstance(
         leaderDeadPromise,
         responsePromise
     ]).then(firstResolved => {
+
         // clean up listeners
         broadcastChannel.removeEventListener('message', responseListener);
         broadcastChannel.removeEventListener('internal', whenDeathListener);
@@ -390,14 +377,11 @@ export async function requestRemoteInstance(
  * Runs the requested operation over the local db instance and sends back the result.
  */
 export async function handleRemoteRequest(
-    instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki,
+    instance: RxStorageInstanceLoki<any>,
     msg: any
 ) {
-    const isRxStorageInstanceLoki = typeof (instance as any).query === 'function';
-    const messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
-
     if (
-        msg.type === messageType &&
+        msg.type === LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE &&
         msg.requestId &&
         msg.databaseName === instance.databaseName &&
         msg.collectionName === instance.collectionName &&
@@ -441,10 +425,8 @@ export async function waitUntilHasLeader(leaderElector: LeaderElector) {
  * Returns false if a remote instance must be used.
  */
 export async function mustUseLocalState(
-    instance: RxStorageInstanceLoki<any> | RxStorageKeyObjectInstanceLoki
+    instance: RxStorageInstanceLoki<any>
 ): Promise<LokiLocalDatabaseState | false> {
-    const isRxStorageInstanceLoki = typeof (instance as any).query === 'function';
-
     if (instance.closed) {
         /**
          * If this happens, it means that RxDB made a call to an already closed storage instance.
@@ -455,8 +437,7 @@ export async function mustUseLocalState(
             args: {
                 instanceClosed: instance.closed,
                 databaseName: instance.databaseName,
-                collectionName: instance.collectionName,
-                isRxStorageInstanceLoki
+                collectionName: instance.collectionName
             }
         });
     }
@@ -481,22 +462,13 @@ export async function mustUseLocalState(
         !instance.internals.localState
     ) {
         // own is leader, use local instance
-        if (isRxStorageInstanceLoki) {
-            instance.internals.localState = createLokiLocalState<any>({
-                databaseName: instance.databaseName,
-                collectionName: instance.collectionName,
-                options: instance.options,
-                schema: (instance as RxStorageInstanceLoki<any>).schema,
-                multiInstance: instance.internals.leaderElector ? true : false
-            }, instance.databaseSettings);
-        } else {
-            instance.internals.localState = createLokiKeyValueLocalState({
-                databaseName: instance.databaseName,
-                collectionName: instance.collectionName,
-                options: instance.options,
-                multiInstance: instance.internals.leaderElector ? true : false
-            }, instance.databaseSettings);
-        }
+        instance.internals.localState = createLokiLocalState<any>({
+            databaseName: instance.databaseName,
+            collectionName: instance.collectionName,
+            options: instance.options,
+            schema: (instance as RxStorageInstanceLoki<any>).schema,
+            multiInstance: instance.internals.leaderElector ? true : false
+        }, instance.databaseSettings);
         return ensureNotFalsy(instance.internals.localState);
     } else {
         // other is leader, send message to remote leading instance

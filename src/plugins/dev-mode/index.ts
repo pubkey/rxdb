@@ -34,8 +34,12 @@ import deepFreeze from 'deep-freeze';
  * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */
 export function deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T> {
-    // direct return if falsy
-    if (!obj) {
+    // direct return if not suitable for deepFreeze()
+    if (
+        !obj ||
+        typeof obj === 'string' ||
+        typeof obj === 'number'
+    ) {
         return obj as any;
     }
 
@@ -61,55 +65,69 @@ export const RxDBDevModePlugin: RxPlugin = {
         }
     },
     hooks: {
-        preAddRxPlugin: (args: RxPluginPreAddRxPluginArgs) => {
-            /**
-             * throw when dev mode is added multiple times
-             * because there is no way that this was done intentional.
-             * Likely the developer has mixed core and default usage of RxDB.
-             */
-            if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
-                throw newRxError('DEV1', {
-                    plugins: args.plugins
-                });
+        preAddRxPlugin: {
+            after: function (args: RxPluginPreAddRxPluginArgs) {
+                /**
+                 * throw when dev mode is added multiple times
+                 * because there is no way that this was done intentional.
+                 * Likely the developer has mixed core and default usage of RxDB.
+                 */
+                if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
+                    throw newRxError('DEV1', {
+                        plugins: args.plugins
+                    });
+                }
             }
         },
-        preCreateRxSchema: checkSchema,
-        preCreateRxDatabase: (args: RxDatabaseCreator<any, any>) => {
-            ensureDatabaseNameIsValid(args);
+        preCreateRxSchema: {
+            after: checkSchema
         },
-        preCreateRxCollection: (args: RxCollectionCreator & { name: string; }) => {
-            ensureCollectionNameValid(args);
-            checkOrmDocumentMethods(args.schema as any, args.methods);
-            if (args.name.charAt(0) === '_') {
-                throw newRxError('DB2', {
-                    name: args.name
-                });
-            }
-            if (!args.schema) {
-                throw newRxError('DB4', {
-                    name: args.name,
-                    args
-                });
+        preCreateRxDatabase: {
+            after: function (args: RxDatabaseCreator<any, any>) {
+                ensureDatabaseNameIsValid(args);
             }
         },
-        preCreateRxQuery: (args) => {
-            checkQuery(args);
+        preCreateRxCollection: {
+            after: function (args: RxCollectionCreator & { name: string; }) {
+                ensureCollectionNameValid(args);
+                checkOrmDocumentMethods(args.schema as any, args.methods);
+                if (args.name.charAt(0) === '_') {
+                    throw newRxError('DB2', {
+                        name: args.name
+                    });
+                }
+                if (!args.schema) {
+                    throw newRxError('DB4', {
+                        name: args.name,
+                        args
+                    });
+                }
+            }
         },
-        prePrepareQuery: (args) => {
-            checkMangoQuery(args);
+        preCreateRxQuery: {
+            after: function (args) {
+                checkQuery(args);
+            }
         },
-        createRxCollection: (args: RxCollectionCreator) => {
-            // check ORM-methods
-            checkOrmMethods(args.statics);
-            checkOrmMethods(args.methods);
-            checkOrmMethods(args.attachments);
+        prePrepareQuery: {
+            after: (args) => {
+                checkMangoQuery(args);
+            }
+        },
+        createRxCollection: {
+            after: (args) => {
+                // check ORM-methods
+                checkOrmMethods(args.creator.statics);
+                checkOrmMethods(args.creator.methods);
+                checkOrmMethods(args.creator.attachments);
 
-            // check migration strategies
-            if (args.schema && args.migrationStrategies) {
-                checkMigrationStrategies(
-                    args.schema,
-                    args.migrationStrategies
-                );
+                // check migration strategies
+                if (args.creator.schema && args.creator.migrationStrategies) {
+                    checkMigrationStrategies(
+                        args.creator.schema,
+                        args.creator.migrationStrategies
+                    );
+                }
             }
         }
     }

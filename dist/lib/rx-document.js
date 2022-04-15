@@ -25,11 +25,11 @@ var _hooks = require("./hooks");
 
 var _rxChangeEvent = require("./rx-change-event");
 
-var _rxCollectionHelper = require("./rx-collection-helper");
-
 var _overwritable = require("./overwritable");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
+
+var _rxStorageHelper = require("./rx-storage-helper");
 
 function _catch(body, recover) {
   try {
@@ -453,10 +453,15 @@ var basePrototype = {
       delete data._rev;
       delete data._attachments;
       delete data._deleted;
+      delete data._meta;
       return _overwritable.overwritable.deepFreezeWhenDevMode(data);
     } else {
       return _overwritable.overwritable.deepFreezeWhenDevMode(this._data);
     }
+  },
+  toMutableJSON: function toMutableJSON() {
+    var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    return (0, _util.clone)(this.toJSON(withMetaFields));
   },
 
   /**
@@ -530,7 +535,7 @@ var basePrototype = {
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
         try {
-          var _temp5 = function _temp5(_result2) {
+          var _temp4 = function _temp4(_result2) {
             if (_exit2) return _result2;
             res(_this2);
           };
@@ -539,12 +544,12 @@ var basePrototype = {
           var done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
           // while still having the option to run a retry on conflicts
 
-          var _temp6 = _for(function () {
+          var _temp5 = _for(function () {
             return !_exit2 && !done;
           }, void 0, function () {
             var oldData = _this2._dataSync$.getValue();
 
-            var _temp2 = _catch(function () {
+            var _temp = _catch(function () {
               // always await because mutationFunction might be async
               return Promise.resolve(mutationFunction((0, _util.clone)(_this2._dataSync$.getValue()), _this2)).then(function (newData) {
                 if (_this2.collection) {
@@ -556,23 +561,16 @@ var basePrototype = {
                 });
               });
             }, function (err) {
-              var _temp = function () {
-                if ((0, _rxError.isPouchdbConflictError)(err)) {
-                  // we need to free the cpu for a tick or the browser tests will fail
-                  return Promise.resolve((0, _util.nextTick)()).then(function () {}); // pouchdb conflict error -> retrying
-                } else {
-                  rej(err);
-                  _exit2 = true;
-                }
-              }();
-
-              return _temp && _temp.then ? _temp.then(function () {}) : void 0;
+              if ((0, _rxError.isPouchdbConflictError)(err)) {} else {
+                rej(err);
+                _exit2 = true;
+              }
             });
 
-            if (_temp2 && _temp2.then) return _temp2.then(function () {});
+            if (_temp && _temp.then) return _temp.then(function () {});
           });
 
-          return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
+          return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(_temp4) : _temp4(_temp5));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -617,10 +615,13 @@ var basePrototype = {
       return Promise.resolve(_this4.collection._runHooks('pre', 'save', newData, _this4)).then(function () {
         _this4.collection.schema.validate(newData);
 
-        return Promise.resolve((0, _rxCollectionHelper.writeToStorageInstance)(_this4.collection, {
+        return Promise.resolve(_this4.collection.storageInstance.bulkWrite([{
           previous: oldData,
           document: newData
-        })).then(function () {
+        }])).then(function (writeResult) {
+          var isError = writeResult.error[_this4.primary];
+          (0, _rxStorageHelper.throwIfIsStorageWriteError)(_this4.collection, _this4.primary, newData, isError);
+          (0, _util.ensureNotFalsy)(writeResult.success[_this4.primary]);
           return _this4.collection._runHooks('post', 'save', newData, _this4);
         });
       });
@@ -665,6 +666,8 @@ var basePrototype = {
   remove: function remove() {
     var _this6 = this;
 
+    var collection = this.collection;
+
     if (this.deleted) {
       return Promise.reject((0, _rxError.newRxError)('DOC13', {
         document: this,
@@ -673,12 +676,20 @@ var basePrototype = {
     }
 
     var deletedData = (0, _util.flatClone)(this._data);
-    return this.collection._runHooks('pre', 'remove', deletedData, this).then(function () {
-      deletedData._deleted = true;
-      return (0, _rxCollectionHelper.writeToStorageInstance)(_this6.collection, {
-        previous: _this6._data,
-        document: deletedData
-      });
+    return collection._runHooks('pre', 'remove', deletedData, this).then(function () {
+      try {
+        deletedData._deleted = true;
+        return Promise.resolve(collection.storageInstance.bulkWrite([{
+          previous: _this6._data,
+          document: deletedData
+        }])).then(function (writeResult) {
+          var isError = writeResult.error[_this6.primary];
+          (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, _this6.primary, deletedData, isError);
+          return (0, _util.ensureNotFalsy)(writeResult.success[_this6.primary]);
+        });
+      } catch (e) {
+        return Promise.reject(e);
+      }
     }).then(function () {
       return _this6.collection._runHooks('post', 'remove', deletedData, _this6);
     }).then(function () {
@@ -771,7 +782,12 @@ function defineGetterSetter(schema, valueObj) {
 }
 
 function createWithConstructor(constructor, collection, jsonData) {
-  if (jsonData[collection.schema.primaryPath] && jsonData[collection.schema.primaryPath].startsWith('_design')) return null;
+  var primary = jsonData[collection.schema.primaryPath];
+
+  if (primary && primary.startsWith('_design')) {
+    return null;
+  }
+
   var doc = new constructor(collection, jsonData);
   (0, _hooks.runPluginHooks)('createRxDocument', doc);
   return doc;

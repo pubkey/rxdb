@@ -2,47 +2,53 @@
  * Helper functions for accessing the RxStorage instances.
  */
 
+import type { ChangeEvent } from 'event-reduce-js';
 import { map } from 'rxjs/operators';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
-import { RxCollectionBase } from './rx-collection';
 import { newRxError } from './rx-error';
+import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
-    BulkWriteLocalRow,
     BulkWriteRow,
-    ChangeStreamOnceOptions,
     EventBulk,
     RxChangeEvent,
     RxCollection,
     RxDatabase,
     RxDocumentData,
     RxDocumentWriteData,
-    RxLocalDocumentData,
-    RxLocalStorageBulkWriteResponse,
-    RxStorage,
+    RxJsonSchema,
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
-    RxStorageKeyObjectInstance
+    RxStorageStatics
 } from './types';
-import { firstPropertyValueOfObject, flatClone } from './util';
+import {
+    createRevision,
+    firstPropertyValueOfObject,
+    flatClone,
+    now,
+    randomCouchString
+} from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
+export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 
 /**
- * returns all NON-LOCAL documents
+ * Returns all non-deleted documents
+ * of the storage.
  */
 export async function getAllDocuments<RxDocType>(
     primaryKey: keyof RxDocType,
-    storage: RxStorage<any, any>,
     storageInstance: RxStorageInstance<RxDocType, any, any>
 ): Promise<RxDocumentData<RxDocType>[]> {
+    const storage = storageInstance.storage;
     const getAllQueryPrepared = storage.statics.prepareQuery(
         storageInstance.schema,
         {
             selector: {},
-            sort: [{ [primaryKey]: 'asc' } as any]
+            sort: [{ [primaryKey]: 'asc' } as any],
+            skip: 0
         }
     );
     const queryResult = await storageInstance.query(getAllQueryPrepared);
@@ -84,41 +90,6 @@ export async function writeSingle<RxDocType>(
     }
 }
 
-/**
- * Writes a single local document,
- * throws RxStorageBulkWriteError on failure
- */
-export async function writeSingleLocal<DocumentData>(
-    instance: RxStorageKeyObjectInstance<any, any>,
-    writeRow: BulkWriteLocalRow<DocumentData>
-): Promise<RxLocalDocumentData<RxLocalDocumentData>> {
-    const writeResult: RxLocalStorageBulkWriteResponse<DocumentData> = await instance.bulkWrite(
-        [writeRow]
-    );
-
-    if (Object.keys(writeResult.error).length > 0) {
-        const error = firstPropertyValueOfObject(writeResult.error);
-        throw error;
-    } else {
-        const ret = firstPropertyValueOfObject(writeResult.success);
-        return ret;
-    }
-}
-
-export async function findLocalDocument<DocType>(
-    instance: RxStorageKeyObjectInstance<any, any>,
-    id: string,
-    withDeleted: boolean
-): Promise<RxDocumentData<RxLocalDocumentData<DocType>> | null> {
-    const docList = await instance.findLocalDocumentsById([id], withDeleted);
-    const doc = docList[id];
-    if (!doc) {
-        return null;
-    } else {
-        return doc;
-    }
-}
-
 export function storageChangeEventToRxChangeEvent<DocType>(
     isLocal: boolean,
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
@@ -146,45 +117,6 @@ export function storageChangeEventToRxChangeEvent<DocType>(
     return ret;
 }
 
-export function transformDocumentDataFromRxDBToRxStorage(
-    col: RxCollection | RxCollectionBase<any, any, any>,
-    data: any,
-    updateLwt: boolean
-) {
-    data = flatClone(data);
-    data._meta = flatClone(data._meta);
-
-    // ensure primary key has not been changed
-    if (overwritable.isDevMode()) {
-        col.schema.fillPrimaryKey(data);
-    }
-
-    data = (col._crypter as any).encrypt(data);
-
-    if (updateLwt) {
-        data._meta.lwt = new Date().getTime();
-    }
-
-    const hookParams = {
-        collection: col,
-        doc: data
-    };
-    runPluginHooks('preWriteToStorageInstance', hookParams);
-    return hookParams.doc;
-}
-
-export function transformDocumentDataFromRxStorageToRxDB(
-    col: RxCollection | RxCollectionBase<any, any, any>,
-    data: any
-) {
-    const hookParams = {
-        collection: col,
-        doc: data
-    };
-    runPluginHooks('postReadFromInstance', hookParams);
-    return (col._crypter as any).decrypt(hookParams.doc);
-}
-
 export function throwIfIsStorageWriteError<RxDocType>(
     collection: RxCollection<RxDocType>,
     documentId: string,
@@ -205,6 +137,201 @@ export function throwIfIsStorageWriteError<RxDocType>(
     }
 }
 
+/**
+ * Analyzes a list of BulkWriteRows and determines
+ * which documents must be inserted, updated or deleted
+ * and which events must be emitted and which documents cause a conflict
+ * and must not be written.
+ * Used as helper inside of some RxStorage implementations.
+ */
+export function categorizeBulkWriteRows<RxDocType>(
+    storageInstance: RxStorageInstance<any, any, any>,
+    primaryPath: keyof RxDocType,
+    /**
+     * Current state of the documents
+     * inside of the storage. Used to determine
+     * which writes cause conflicts.
+     */
+    docsInDb: Map<RxDocumentData<RxDocType>[keyof RxDocType], RxDocumentData<RxDocType>>,
+    /**
+     * The write rows that are passed to
+     * RxStorageInstance().bulkWrite().
+     */
+    bulkWriteRows: BulkWriteRow<RxDocType>[]
+): {
+    bulkInsertDocs: BulkWriteRow<RxDocType>[];
+    bulkUpdateDocs: BulkWriteRow<RxDocType>[];
+    /**
+     * Ids of all documents that are changed
+     * and so their change must be written into the
+     * sequences table so that they can be fetched via
+     * RxStorageInstance().getChangedDocumentsSince().
+     */
+    changedDocumentIds: RxDocumentData<RxDocType>[keyof RxDocType][];
+    errors: RxStorageBulkWriteError<RxDocType>[];
+    eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
+} {
+    const bulkInsertDocs: BulkWriteRow<RxDocType>[] = [];
+    const bulkUpdateDocs: BulkWriteRow<RxDocType>[] = [];
+    const errors: RxStorageBulkWriteError<RxDocType>[] = [];
+    const changedDocumentIds: RxDocumentData<RxDocType>[keyof RxDocType][] = [];
+    const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
+        id: randomCouchString(10),
+        events: []
+    };
+
+
+    const startTime = now();
+    bulkWriteRows.forEach(writeRow => {
+        const id = writeRow.document[primaryPath];
+        const documentInDb = docsInDb.get(id);
+
+        if (!documentInDb) {
+            /**
+             * It is possible to insert already deleted documents,
+             * this can happen on replication.
+             */
+            const insertedIsDeleted = writeRow.document._deleted ? true : false;
+            bulkInsertDocs.push(writeRow);
+            if (!insertedIsDeleted) {
+                changedDocumentIds.push(id);
+                eventBulk.events.push({
+                    eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath as any, writeRow),
+                    documentId: id as any,
+                    change: {
+                        doc: writeRow.document,
+                        id: id as any,
+                        operation: 'INSERT',
+                        previous: null
+                    },
+                    startTime,
+                    endTime: now()
+                });
+            }
+        } else {
+            // update existing document
+            const revInDb: string = documentInDb._rev;
+
+            // inserting a deleted document is possible
+            // without sending the previous data.
+            if (!writeRow.previous && documentInDb._deleted) {
+                writeRow.previous = documentInDb;
+            }
+
+            /**
+             * Check for conflict
+             */
+            if (
+                (
+                    !writeRow.previous &&
+                    !documentInDb._deleted
+                ) ||
+                (
+                    !!writeRow.previous &&
+                    revInDb !== writeRow.previous._rev
+                )
+            ) {
+                // is conflict error
+                const err: RxStorageBulkWriteError<RxDocType> = {
+                    isError: true,
+                    status: 409,
+                    documentId: id as any,
+                    writeRow: writeRow,
+                    documentInDb
+                };
+                errors.push(err);
+                return;
+            }
+
+            bulkUpdateDocs.push(writeRow);
+            let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
+            const writeDoc = writeRow.document;
+            if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
+                change = {
+                    id: id as any,
+                    operation: 'INSERT',
+                    previous: null,
+                    doc: writeDoc
+                };
+            } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
+                change = {
+                    id: id as any,
+                    operation: 'UPDATE',
+                    previous: writeRow.previous,
+                    doc: writeDoc
+                };
+            } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
+                change = {
+                    id: id as any,
+                    operation: 'DELETE',
+                    previous: writeRow.previous,
+                    doc: null
+                };
+            }
+            if (!change) {
+                if (
+                    writeRow.previous && writeRow.previous._deleted &&
+                    writeRow.document._deleted
+                ) {
+                    // deleted doc got overwritten with other deleted doc -> do not send an event
+                } else {
+                    throw newRxError('SNH', { args: { writeRow } });
+                }
+            } else {
+                changedDocumentIds.push(id);
+                eventBulk.events.push({
+                    eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath as any, writeRow),
+                    documentId: id as any,
+                    change,
+                    startTime,
+                    endTime: now()
+                });
+            }
+        }
+    });
+
+
+    return {
+        bulkInsertDocs,
+        bulkUpdateDocs,
+        errors,
+        changedDocumentIds,
+        eventBulk
+    };
+}
+
+/**
+ * Each event is labeled with the id
+ * to make it easy to filter out duplicates.
+ */
+export function getUniqueDeterministicEventKey(
+    storageInstance: RxStorageInstance<any, any, any>,
+    primaryPath: string,
+    writeRow: BulkWriteRow<any>
+): string {
+    const docId = writeRow.document[primaryPath];
+    const binaryValues: boolean[] = [
+        !!writeRow.previous,
+        (writeRow.previous && writeRow.previous._deleted),
+        !!writeRow.document._deleted
+    ];
+    const binary = binaryValues.map(v => v ? '1' : '0').join('');
+    const eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
+    return eventKey;
+}
+
+
+export function hashAttachmentData(
+    attachmentBase64String: string,
+    storageStatics: RxStorageStatics
+): Promise<string> {
+    return storageStatics.hash(atob(attachmentBase64String));
+}
+export function getAttachmentSize(
+    attachmentBase64String: string
+): number {
+    return atob(attachmentBase64String).length;
+}
 
 /**
  * Wraps the normal storageInstance of a RxCollection
@@ -212,39 +339,107 @@ export function throwIfIsStorageWriteError<RxDocType>(
  * and other data transformations and also ensure that database.lockedRun()
  * is used properly.
  */
-export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>(
-    collection: RxCollection<RxDocumentType, {}, {}, InstanceCreationOptions>,
-    storageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>
-): RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> {
-    const database = collection.database;
-    const ret: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = {
+
+export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions>(
+    database: RxDatabase<{}, Internals, InstanceCreationOptions>,
+    storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>,
+    /**
+     * The original RxJsonSchema
+     * before it was mutated by hooks.
+     */
+    rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>
+): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
+    overwritable.deepFreezeWhenDevMode(rxJsonSchema);
+    const primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
+
+    function transformDocumentDataFromRxDBToRxStorage(
+        writeRow: BulkWriteRow<RxDocType>
+    ) {
+        let data = flatClone(writeRow.document);
+        data._meta = flatClone(data._meta);
+
+        // ensure primary key has not been changed
+        if (overwritable.isDevMode()) {
+            data = fillPrimaryKey(
+                primaryPath,
+                rxJsonSchema,
+                data as any
+            );
+        }
+
+        data._meta.lwt = now();
+        const hookParams = {
+            database,
+            primaryPath,
+            schema: rxJsonSchema,
+            doc: data
+        };
+
+
+        /**
+         * Run the hooks once for the previous doc,
+         * once for the new write data
+         */
+        let previous = writeRow.previous;
+        if (previous) {
+            hookParams.doc = previous;
+            runPluginHooks('preWriteToStorageInstance', hookParams);
+            previous = hookParams.doc;
+        }
+
+        hookParams.doc = data;
+        runPluginHooks('preWriteToStorageInstance', hookParams);
+        data = hookParams.doc;
+
+        /**
+         * Update the revision after the hooks have run.
+         * Do not update the revision if no previous is given,
+         * because the migration plugin must be able to do an insert
+         * with a pre-created revision.
+         */
+        if (
+            writeRow.previous ||
+            !data._rev
+        ) {
+            data._rev = createRevision(data, writeRow.previous);
+        }
+
+        return {
+            document: data,
+            previous
+        };
+    }
+
+    function transformDocumentDataFromRxStorageToRxDB(
+        data: any
+    ): any {
+        const hookParams = {
+            database,
+            primaryPath,
+            schema: rxJsonSchema,
+            doc: data
+        };
+
+        runPluginHooks('postReadFromInstance', hookParams);
+        return hookParams.doc;
+    }
+
+    const ret: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
+        storage: storageInstance.storage,
         schema: storageInstance.schema,
         internals: storageInstance.internals,
         collectionName: storageInstance.collectionName,
         databaseName: storageInstance.databaseName,
         options: storageInstance.options,
-        bulkAddRevisions(documents) {
-            const toStorageDocuments = documents.map(doc => transformDocumentDataFromRxDBToRxStorage(collection, doc, true))
-            return database.lockedRun(
-                () => storageInstance.bulkAddRevisions(
-                    toStorageDocuments
-                )
-            );
-        },
-        bulkWrite(rows: BulkWriteRow<RxDocumentType>[]) {
-            const toStorageWriteRows: BulkWriteRow<RxDocumentType>[] = rows.map(row => {
-                return {
-                    document: transformDocumentDataFromRxDBToRxStorage(collection, row.document, true),
-                    previous: row.previous ? transformDocumentDataFromRxDBToRxStorage(collection, row.previous, false) : undefined,
-                }
-            });
-
+        bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
+            const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows
+                .map(row => transformDocumentDataFromRxDBToRxStorage(row));
             return database.lockedRun(
                 () => storageInstance.bulkWrite(
                     toStorageWriteRows
                 )
             ).then(writeResult => {
-                const ret: RxStorageBulkWriteResponse<RxDocumentType> = {
+                const ret: RxStorageBulkWriteResponse<RxDocType> = {
                     success: {},
                     error: {}
                 };
@@ -252,8 +447,9 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                     ret.error[k] = v;
                 });
                 Object.entries(writeResult.success).forEach(([k, v]) => {
-                    ret.success[k] = transformDocumentDataFromRxStorageToRxDB(collection, v);
+                    ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
                 });
+
                 return ret;
             });
         },
@@ -262,7 +458,7 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                 () => storageInstance.query(preparedQuery)
             ).then(queryResult => {
                 return {
-                    documents: queryResult.documents.map(doc => transformDocumentDataFromRxStorageToRxDB(collection, doc))
+                    documents: queryResult.documents.map(doc => transformDocumentDataFromRxStorageToRxDB(doc))
                 };
             });
         },
@@ -270,9 +466,9 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
             return database.lockedRun(
                 () => storageInstance.findDocumentsById(ids, deleted)
             ).then(findResult => {
-                const ret: { [documentId: string]: RxDocumentData<RxDocumentType>; } = {};
+                const ret: { [documentId: string]: RxDocumentData<RxDocType>; } = {};
                 Object.entries(findResult).forEach(([key, doc]) => {
-                    ret[key] = transformDocumentDataFromRxStorageToRxDB(collection, doc);
+                    ret[key] = transformDocumentDataFromRxStorageToRxDB(doc);
                 });
                 return ret;
             });
@@ -285,9 +481,19 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                 () => storageInstance.getAttachmentData(documentId, attachmentId)
             );
         },
-        getChangedDocuments(options: ChangeStreamOnceOptions) {
+        getChangedDocumentsSince(limit: number, checkpoint?: any) {
             return database.lockedRun(
-                () => storageInstance.getChangedDocuments(options)
+                () => storageInstance.getChangedDocumentsSince(limit, checkpoint)
+            ).then(result => {
+                return result.map(row => ({
+                    checkpoint: row.checkpoint,
+                    document: transformDocumentDataFromRxStorageToRxDB(row.document)
+                }));
+            });
+        },
+        cleanup(minDeletedTime: number) {
+            return database.lockedRun(
+                () => storageInstance.cleanup(minDeletedTime)
             );
         },
         remove() {
@@ -303,7 +509,7 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
         changeStream() {
             return storageInstance.changeStream().pipe(
                 map(eventBulk => {
-                    const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocumentType>>> = {
+                    const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
                         id: eventBulk.id,
                         events: eventBulk.events.map(event => {
                             return {
@@ -314,8 +520,8 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                                 change: {
                                     id: event.change.id,
                                     operation: event.change.operation,
-                                    doc: event.change.doc ? transformDocumentDataFromRxStorageToRxDB(collection, event.change.doc) : undefined,
-                                    previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(collection, event.change.previous) : undefined
+                                    doc: event.change.doc ? transformDocumentDataFromRxStorageToRxDB(event.change.doc) : undefined,
+                                    previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(event.change.previous) : undefined
                                 }
                             }
 
@@ -324,133 +530,6 @@ export function getWrappedStorageInstance<RxDocumentType, Internals, InstanceCre
                     return ret;
                 })
             )
-        }
-    };
-    return ret;
-}
-
-
-
-export function transformLocalDocumentDataFromRxDBToRxStorage<D>(
-    parent: RxCollection | RxDatabase,
-    data: RxLocalDocumentData<D>,
-    updateLwt: boolean
-): RxLocalDocumentData<D> {
-    data = flatClone(data);
-    data._meta = flatClone(data._meta);
-
-    if (updateLwt) {
-        data._meta.lwt = new Date().getTime();
-    }
-
-    return data;
-}
-
-export function transformLocalDocumentDataFromRxStorageToRxDB<D>(
-    parent: RxCollection | RxDatabase,
-    data: RxLocalDocumentData<D>
-): RxLocalDocumentData<D> {
-    return data;
-}
-
-
-/**
- * Does the same as getWrappedStorageInstance()
- * but for a key->object store.
- */
-export function getWrappedKeyObjectInstance<Internals, InstanceCreationOptions>(
-    parent: RxCollection | RxDatabase,
-    keyObjectInstance: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
-): RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> {
-    const database: RxDatabase = parent.database ? parent.database as any : parent as any;
-    const ret: RxStorageKeyObjectInstance<Internals, InstanceCreationOptions> = {
-        databaseName: database.name,
-        internals: keyObjectInstance.internals,
-        options: keyObjectInstance.options,
-        bulkWrite<D = any>(rows: BulkWriteLocalRow<D>[]): Promise<RxLocalStorageBulkWriteResponse<D>> {
-            const toStorageWriteRows: BulkWriteLocalRow<D>[] = rows.map(row => {
-                return {
-                    document: transformLocalDocumentDataFromRxDBToRxStorage(parent, row.document, true),
-                    previous: row.previous ? transformLocalDocumentDataFromRxDBToRxStorage(parent, row.previous, false) : undefined,
-                }
-            });
-
-            return database.lockedRun(
-                () => keyObjectInstance.bulkWrite(
-                    toStorageWriteRows
-                )
-            ).then(writeResult => {
-                const ret: RxLocalStorageBulkWriteResponse<D> = {
-                    success: {},
-                    error: {}
-                };
-                Object.entries(writeResult.error).forEach(([k, v]) => {
-                    ret.error[k] = v;
-                });
-                Object.entries(writeResult.success).forEach(([k, v]) => {
-                    ret.success[k] = transformLocalDocumentDataFromRxStorageToRxDB(parent, v);
-                });
-                return ret;
-            });
-        },
-        findLocalDocumentsById<D = any>(
-            ids: string[],
-            withDeleted: boolean
-        ): Promise<{
-            [documentId: string]: RxLocalDocumentData<D>
-        }> {
-            return database.lockedRun(
-                () => keyObjectInstance.findLocalDocumentsById(ids, withDeleted)
-            ).then(findResult => {
-                const ret: { [documentId: string]: RxLocalDocumentData<D>; } = {};
-                Object.entries(findResult).forEach(([key, doc]) => {
-                    ret[key] = transformLocalDocumentDataFromRxStorageToRxDB(parent, doc);
-                });
-                return ret;
-            });
-        },
-        changeStream() {
-            return keyObjectInstance.changeStream().pipe(
-                map(eventBulk => {
-                    const ret: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>> = {
-                        id: eventBulk.id,
-                        events: eventBulk.events.map(event => {
-                            const changeDoc = event.change.doc;
-
-                            if (changeDoc && !changeDoc._meta) {
-                                console.dir(changeDoc);
-                                console.error('local changeSTream meta is missing');
-                                // process.exit(1);
-                            }
-
-                            return {
-                                eventId: event.eventId,
-                                documentId: event.documentId,
-                                endTime: event.endTime,
-                                startTime: event.startTime,
-                                change: {
-                                    id: event.change.id,
-                                    operation: event.change.operation,
-                                    doc: event.change.doc ? transformLocalDocumentDataFromRxStorageToRxDB(parent, event.change.doc) as any : undefined,
-                                    previous: event.change.previous ? transformLocalDocumentDataFromRxStorageToRxDB(parent, event.change.previous as any) : undefined
-                                }
-                            }
-
-                        })
-                    };
-                    return ret;
-                })
-            )
-        },
-        remove() {
-            return database.lockedRun(
-                () => keyObjectInstance.remove()
-            );
-        },
-        close() {
-            return database.lockedRun(
-                () => keyObjectInstance.close()
-            );
         }
     };
     return ret;

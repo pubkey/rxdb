@@ -1,25 +1,22 @@
-import type { RxCollection, RxDocumentData, ReplicationCheckpointDocument } from '../../types';
+import type { RxCollection, RxDocumentData, InternalStoreReplicationPullDocType, InternalStoreReplicationPushDocType, DeepReadonlyObject } from '../../types';
 /**
  * Get the last push checkpoint
  */
-export declare function getLastPushSequence(collection: RxCollection, replicationIdentifier: string): Promise<number>;
-export declare function setLastPushSequence(collection: RxCollection, replicationIdentifier: string, sequence: number): Promise<ReplicationCheckpointDocument>;
-export declare function getChangesSinceLastPushSequence<RxDocType>(collection: RxCollection<RxDocType, any>, replicationIdentifier: string, replicationIdentifierHash: string, 
+export declare function getLastPushCheckpoint(collection: RxCollection, replicationIdentifierHash: string): Promise<any | undefined>;
+export declare function setLastPushCheckpoint(collection: RxCollection, replicationIdentifierHash: string, checkpoint: any): Promise<RxDocumentData<InternalStoreReplicationPushDocType>>;
+export declare function getChangesSinceLastPushCheckpoint<RxDocType>(collection: RxCollection<RxDocType, any>, replicationIdentifierHash: string, 
 /**
  * A function that returns true
  * when the underlaying RxReplication is stopped.
  * So that we do not run requests against a close RxStorageInstance.
  */
 isStopped: () => boolean, batchSize?: number): Promise<{
+    changedDocIds: Set<string>;
     changedDocs: Map<string, {
         id: string;
         doc: RxDocumentData<RxDocType>;
-        sequence: number;
     }>;
-    lastSequence: number;
-    hasChangesSinceLastSequence: boolean;
+    checkpoint: any;
 }>;
-export declare function getLastPullDocument<RxDocType>(collection: RxCollection<RxDocType>, replicationIdentifier: string): Promise<RxDocumentData<RxDocType> | null>;
-export declare function setLastPullDocument(collection: RxCollection, replicationIdentifier: string, doc: any): Promise<{
-    _id: string;
-}>;
+export declare function getLastPullDocument<RxDocType>(collection: RxCollection<RxDocType>, replicationIdentifierHash: string): Promise<RxDocumentData<RxDocType> | null>;
+export declare function setLastPullDocument<RxDocType>(collection: RxCollection, replicationIdentifierHash: string, lastPulledDoc: RxDocumentData<RxDocType> | DeepReadonlyObject<RxDocumentData<RxDocType>>): Promise<RxDocumentData<InternalStoreReplicationPullDocType<RxDocType>>>;

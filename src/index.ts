@@ -17,6 +17,13 @@ export {
     dbCount,
     _collectionNamePrimary // used in tests
 } from './rx-database';
+export {
+    INTERNAL_CONTEXT_COLLECTION,
+    INTERNAL_CONTEXT_ENCRYPTION,
+    INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
+    getPrimaryKeyOfInternalDocument,
+    STORAGE_TOKEN_DOCUMENT_KEY
+} from './rx-database-internal-store';
 
 export {
     overwritable
@@ -46,40 +53,37 @@ export {
 } from './rx-document-prototype-merge';
 
 export {
-    isInstanceOf as isRxQuery,
-    normalizeMangoQuery
+    isInstanceOf as isRxQuery
 } from './rx-query';
+export * from './rx-query-helper';
 
 export {
     isInstanceOf as isRxSchema,
     createRxSchema,
     RxSchema,
     getIndexes,
-    normalizeRxJsonSchema,
-    getFinalFields,
     getPreviousVersions,
     toTypedRxJsonSchema
 } from './rx-schema';
 export {
     getPseudoSchemaForVersion,
-    getSchemaByObjectPath
+    getSchemaByObjectPath,
+    fillPrimaryKey,
+    getPrimaryFieldOfPrimaryKey,
+    getComposedPrimaryKeyOfDocumentData,
+    normalizeRxJsonSchema,
+    fillWithDefaultSettings,
+    RX_META_SCHEMA,
+    getFinalFields
 } from './rx-schema-helper';
 
-export {
-    findLocalDocument,
-    getSingleDocument,
-    getAllDocuments,
-    writeSingleLocal,
-    writeSingle
-} from './rx-storage-helper';
+export * from './rx-storage-helper';
+
+export * from './custom-index';
 
 export {
     _clearHook // used in tests
 } from './hooks';
-
-export {
-    createCrypter // used in tests
-} from './crypter';
 
 export * from './query-cache';
 
@@ -127,6 +131,28 @@ export type {
     ExtractDTcol,
     RxDatabaseGenerated,
     RxDocumentBase,
+
+    // stuff from the RxStorage interface
+    RxDocumentData,
+    RxDocumentWriteData,
+    WithDeleted,
+    BulkWriteRow,
+    RxAttachmentDataMeta,
+    RxAttachmentData,
+    RxAttachmentWriteData,
+    RxStorage,
+    RxStorageStatics,
+    RxStorageBulkWriteError,
+    RxStorageBulkWriteResponse,
+    PreparedQuery,
+    RxStorageQueryResult,
+    RxStorageInstanceCreationParams,
+    ChangeStreamOptions,
+    EventBulk,
+    ChangeStreamEvent,
+    RxStorageChangeEvent,
+    RxStorageInstance,
+
     RxDumpCollectionBase,
     RxDumpDatabaseAny,
     RxDumpDatabaseBase,
@@ -149,8 +175,6 @@ export type {
     SyncOptionsGraphQL,
     MigrationStrategy,
     MigrationStrategies,
-    RxStorage,
-    RxStorageStatics,
     FilledMangoQuery,
     OldRxCollection,
     WithAttachmentsData

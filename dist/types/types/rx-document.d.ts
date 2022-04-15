@@ -12,11 +12,34 @@ import {
 } from './rx-attachment';
 import { RxDocumentData } from './rx-storage';
 import { RxChangeEvent } from './rx-change-event';
-import { DeepReadonly } from './util';
+import { DeepReadonly, PlainJsonValue } from './util';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
-declare type AtomicUpdateFunction<RxDocumentType> = (doc: RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
+declare type AtomicUpdateFunction<RxDocumentType> = (
+    doc: RxDocumentData<RxDocumentType>,
+    rxDocument: RxDocument<RxDocumentType>
+) => RxDocumentType | Promise<RxDocumentType>;
+
+/**
+ * Meta data that is attached to each document by RxDB.
+ * TODO in the next major release,
+ * we should move the other meta fields
+ * _rev, _deleted, _attachments into this property.
+ */
+export type RxDocumentMeta = {
+    /**
+     * Last write time.
+     * Unix epoch in milliseconds.
+     */
+    lwt: number;
+
+    /**
+     * Any other value can be attached to the _meta data.
+     * Mostly done by plugins to mark documents.
+     */
+    [k: string]: PlainJsonValue;
+};
 
 export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     isInstanceOfRxDocument: true;
@@ -81,12 +104,9 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     toJSON(withRevAndAttachments: true): DeepReadonly<RxDocumentData<RxDocumentType>>;
     toJSON(withRevAndAttachments: false): DeepReadonly<RxDocumentType>;
 
+    toMutableJSON(): RxDocumentType;
+    toMutableJSON(withRevAndAttachments: true): RxDocumentData<RxDocumentType>;
+    toMutableJSON(withRevAndAttachments: false): RxDocumentType;
+
     destroy(): void;
-}
-
-declare type LocalDocWithType<LocalDocType> = RxDocumentBase<LocalDocType> & LocalDocType;
-
-export declare type RxLocalDocument<Parent, LocalDocType = any> = RxDocumentBase<LocalDocType> & LocalDocType & {
-    readonly parent: Parent;
-    isLocal(): true;
 }

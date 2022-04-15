@@ -44,10 +44,7 @@ import type {
     SyncOptions,
     PouchDBInstance
 } from '../types';
-import { transformDocumentDataFromRxStorageToRxDB } from '../rx-storage-helper';
-
-// add pouchdb-replication-plugin
-addPouchPlugin(PouchReplicationPlugin);
+import { runPluginHooks } from '../hooks';
 
 /**
  * Contains all pouchdb instances that
@@ -171,7 +168,17 @@ export function setPouchEventEmitter(
 
                 (ev as any).change.docs
                     .filter((doc: any) => doc.language !== 'query') // remove internal docs
-                    .map((doc: any) => transformDocumentDataFromRxStorageToRxDB(rxRepState.collection, doc)) // do primary-swap and keycompression
+                    .map((doc: any) => {
+                        const hookParams = {
+                            database: rxRepState.collection.database,
+                            primaryPath: rxRepState.collection.schema.primaryPath,
+                            schema: rxRepState.collection.schema.jsonSchema,
+                            doc
+                        };
+
+                        runPluginHooks('postReadFromInstance', hookParams);
+                        return hookParams.doc;
+                    }) // do primary-swap and keycompression
                     .forEach((doc: any) => rxRepState._subjects.docs.next(doc));
             }));
 
@@ -365,27 +372,29 @@ export function syncCouchDB(
     return repState;
 }
 
-export const rxdb = true;
-export const prototypes = {
-    RxCollection: (proto: any) => {
-        proto.syncCouchDB = syncCouchDB;
-    }
-};
 
-export const hooks = {
-    createRxCollection: function (
-        collection: RxCollection
-    ) {
-        const pouch: PouchDBInstance | undefined = collection.storageInstance.internals.pouch;
-        if (pouch) {
-            INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
-        }
-    }
-};
 
 export const RxDBReplicationCouchDBPlugin: RxPlugin = {
     name: 'replication-couchdb',
-    rxdb,
-    prototypes,
-    hooks
+    rxdb: true,
+    init() {
+        // add pouchdb-replication-plugin
+        addPouchPlugin(PouchReplicationPlugin);
+    },
+    prototypes: {
+        RxCollection: (proto: any) => {
+            proto.syncCouchDB = syncCouchDB;
+        }
+    },
+    hooks: {
+        createRxCollection: {
+            after: args => {
+                const collection = args.collection;
+                const pouch: PouchDBInstance | undefined = collection.storageInstance.internals.pouch;
+                if (pouch) {
+                    INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
+                }
+            }
+        }
+    }
 };

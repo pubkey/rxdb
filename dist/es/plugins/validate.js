@@ -33,7 +33,7 @@ function _getValidator(rxSchema) {
  */
 
 
-var validate = function validate(obj) {
+function validateFullDocumentData(obj) {
   var useValidator = _getValidator(this);
 
   var isValid = useValidator(obj);
@@ -44,7 +44,7 @@ var validate = function validate(obj) {
       schema: this.jsonSchema
     });
   }
-};
+}
 
 var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   // pre-generate the isMyJsonValid-validator from the schema
@@ -53,24 +53,23 @@ var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   });
 };
 
-export var rxdb = true;
-export var prototypes = {
-  /**
-   * set validate-function for the RxSchema.prototype
-   * @param prototype of RxSchema
-   */
-  RxSchema: function RxSchema(proto) {
-    proto._getValidator = _getValidator;
-    proto.validate = validate;
-  }
-};
-export var hooks = {
-  createRxSchema: runAfterSchemaCreated
-};
 export var RxDBValidatePlugin = {
   name: 'validate',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  hooks: hooks
+  rxdb: true,
+  prototypes: {
+    /**
+     * set validate-function for the RxSchema.prototype
+     * @param prototype of RxSchema
+     */
+    RxSchema: function RxSchema(proto) {
+      proto._getValidator = _getValidator;
+      proto.validateFullDocumentData = validateFullDocumentData;
+    }
+  },
+  hooks: {
+    createRxSchema: {
+      after: runAfterSchemaCreated
+    }
+  }
 };
 //# sourceMappingURL=validate.js.map

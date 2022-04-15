@@ -21,10 +21,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
 
       - name: install npm dependencies
         run: npm install
@@ -47,10 +47,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
 
       - name: install npm dependencies
         run: npm install
@@ -76,10 +76,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
         uses: actions/cache@v2
@@ -111,10 +111,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
         uses: actions/cache@v2
@@ -146,10 +146,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
 
       - name: install npm dependencies
         run: npm install
@@ -169,10 +169,10 @@ jobs:
       - uses: actions/checkout@v2
       #- name: install dependencies
       #  run: sudo apt-get update && sudo apt-get install -y chromium-browser
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
         uses: actions/cache@v2
@@ -217,10 +217,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
       - name: prepare core
         run: |
           npm install
@@ -237,10 +237,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
       - name: prepare core
         run: |
           npm install
@@ -261,10 +261,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
 
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
@@ -301,10 +301,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: prepare core
@@ -329,10 +329,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
         uses: actions/cache@v2
@@ -368,10 +368,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
       - name: prepare core
         run: |
           npm install --legacy-peer-deps
@@ -397,10 +397,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
       - name: prepare core
         run: |
           npm install --legacy-peer-deps
@@ -425,10 +425,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
       - name: prepare core
         run: |
           npm install --legacy-peer-deps
@@ -483,10 +483,10 @@ jobs:
       - name: start couchdb container
         run: docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
 
       - name: prepare core
         run: |
@@ -506,10 +506,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
       - name: prepare core
         run: |
           npm install
@@ -524,10 +524,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
       - name: prepare core
         run: |
           npm install
@@ -541,10 +541,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.5.1
+      - name: Set node version
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.5.0
+          node-version-file: '.nvmrc'
       - name: prepare core
         run: |
           npm install

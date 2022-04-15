@@ -1,7 +1,7 @@
 import { getRxStorageLoki } from '../../lokijs';
-import { wrappedRxStorage } from '../../worker';
+import { wrappedWorkerRxStorage } from '../../worker';
 var storage = getRxStorageLoki();
-wrappedRxStorage({
+wrappedWorkerRxStorage({
   storage: storage
 });
 //# sourceMappingURL=lokijs-memory.worker.js.map

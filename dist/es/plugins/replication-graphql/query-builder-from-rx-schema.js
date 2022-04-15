@@ -1,7 +1,7 @@
 import { fillUpOptionals, SPACING } from './graphql-schema-from-rx-schema';
 import { ucfirst } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 export function pullQueryBuilderFromRxSchema(collectionName, input, batchSize) {
   input = fillUpOptionals(input);
   var schema = input.schema;

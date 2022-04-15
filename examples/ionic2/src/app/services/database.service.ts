@@ -1,7 +1,7 @@
-import {Injectable} from "@angular/core";
+import { Injectable } from "@angular/core";
 
 import * as RxDB from "../../../../../";
-import {QueryChangeDetector, RxDatabase} from "../../../../../";
+import { QueryChangeDetector, RxDatabase } from "../../../../../";
 
 QueryChangeDetector.enable();
 QueryChangeDetector.enableDebugging();
@@ -59,7 +59,7 @@ export class DatabaseService {
 
     // hooks
     console.log('DatabaseService: add hooks');
-    db.collections.hero.preInsert(function(docObj) {
+    db.collections.hero.preInsert(function (docObj) {
       const color = docObj.color;
       return db.collections.hero.findOne({ color }).exec()
         .then(has => {

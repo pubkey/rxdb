@@ -8,19 +8,19 @@ Object.defineProperty(exports, "__esModule", {
 exports.closeDexieDb = exports.DEXIE_PIPE_SUBSTITUTE = exports.DEXIE_DOCS_TABLE_NAME = exports.DEXIE_DELETED_DOCS_TABLE_NAME = exports.DEXIE_CHANGES_TABLE_NAME = void 0;
 exports.dexieReplaceIfStartsWithPipe = dexieReplaceIfStartsWithPipe;
 exports.getDexieDbWithTables = getDexieDbWithTables;
-exports.getDexieEventKey = getDexieEventKey;
 exports.getDexieSortComparator = getDexieSortComparator;
 exports.getDexieStoreSchema = getDexieStoreSchema;
 exports.getDocsInDb = void 0;
-exports.stripDexieKey = stripDexieKey;
 
 var _mingo = _interopRequireDefault(require("mingo"));
-
-var _rxSchema = require("../../rx-schema");
 
 var _dexie = require("dexie");
 
 var _util = require("../../util");
+
+var _rxError = require("../../rx-error");
+
+var _rxSchemaHelper = require("../../rx-schema-helper");
 
 /**
  * Returns all documents in the database.
@@ -69,8 +69,8 @@ var DEXIE_STATE_DB_BY_NAME = new Map();
 var REF_COUNT_PER_DEXIE_DB = new Map();
 
 function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
-  var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
-  var dexieDbName = 'rxdb-dexie-' + databaseName + '--' + collectionName;
+  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+  var dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
   var state = DEXIE_STATE_DB_BY_NAME.get(dexieDbName);
 
   if (!state) {
@@ -86,7 +86,7 @@ function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
         var useSettings = (0, _util.flatClone)(settings);
         useSettings.autoOpen = false;
         var dexieDb = new _dexie.Dexie(dexieDbName, useSettings);
-        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',$lastWriteAt', _dexieDb$version$stor));
+        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']', _dexieDb$version$stor));
         return Promise.resolve(dexieDb.open()).then(function () {
           return {
             dexieDb: dexieDb,
@@ -120,28 +120,20 @@ function sortDirectionToMingo(direction) {
  */
 
 
-function getDexieSortComparator(schema, query) {
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+function getDexieSortComparator(_schema, query) {
   var mingoSortObject = {};
-  var wasPrimaryInSort = false;
 
-  if (query.sort) {
-    query.sort.forEach(function (sortBlock) {
-      var key = Object.keys(sortBlock)[0];
-
-      if (key === primaryKey) {
-        wasPrimaryInSort = true;
-      }
-
-      var direction = Object.values(sortBlock)[0];
-      mingoSortObject[key] = sortDirectionToMingo(direction);
+  if (!query.sort) {
+    throw (0, _rxError.newRxError)('SNH', {
+      query: query
     });
-  } // TODO ensuring that the primaryKey is in the sorting, should be done by RxDB, not by the storage.
-
-
-  if (!wasPrimaryInSort) {
-    mingoSortObject[primaryKey] = 1;
   }
+
+  query.sort.forEach(function (sortBlock) {
+    var key = Object.keys(sortBlock)[0];
+    var direction = Object.values(sortBlock)[0];
+    mingoSortObject[key] = sortDirectionToMingo(direction);
+  });
 
   var fun = function fun(a, b) {
     var sorted = _mingo["default"].find([a, b], {}).sort(mingoSortObject);
@@ -188,7 +180,7 @@ function getDexieStoreSchema(rxJsonSchema) {
    * @link https://github.com/dexie/Dexie.js/issues/1307#issuecomment-846590912
    */
 
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
+  var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
   parts.push([primaryKey]); // add other indexes
 
   if (rxJsonSchema.indexes) {
@@ -196,13 +188,15 @@ function getDexieStoreSchema(rxJsonSchema) {
       var arIndex = Array.isArray(index) ? index : [index];
       parts.push(arIndex);
     });
-  }
+  } // we also need the _meta.lwt+primaryKey index for the getChangedDocumentsSince() method.
+
+
+  parts.push(['_meta.lwt', primaryKey]);
   /**
    * It is not possible to set non-javascript-variable-syntax
    * keys as IndexedDB indexes. So we have to substitute the pipe-char
    * which comes from the key-compression plugin.
    */
-
 
   parts = parts.map(function (part) {
     return part.map(function (str) {
@@ -216,21 +210,5 @@ function getDexieStoreSchema(rxJsonSchema) {
       return '[' + part.join('+') + ']';
     }
   }).join(', ');
-}
-
-function getDexieEventKey(isLocal, primary, revision) {
-  var prefix = isLocal ? 'local' : 'non-local';
-  var eventKey = prefix + '|' + primary + '|' + revision;
-  return eventKey;
-}
-/**
- * Removes all internal fields from the document data
- */
-
-
-function stripDexieKey(docData) {
-  var cloned = (0, _util.flatClone)(docData);
-  delete cloned.$lastWriteAt;
-  return cloned;
 }
 //# sourceMappingURL=dexie-helper.js.map

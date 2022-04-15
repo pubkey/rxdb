@@ -26,7 +26,8 @@ In this example-schema we define a hero-collection with the following settings:
     "type": "object",
     "properties": {
         "name": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 100 // <- the primary key must have set maxLength
         },
         "color": {
             "type": "string"
@@ -118,7 +119,8 @@ const mySchema = {
   type: 'object',
   properties: {
       id: {
-          type: 'string'
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
       },
       firstName: {
           type: 'string'
@@ -181,7 +183,8 @@ const mySchema = {
   type: 'object',
   properties: {
       id: {
-          type: 'string'
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
       },
       firstName: {
           type: 'string'
@@ -202,7 +205,12 @@ const mySchema = {
 ## Indexes
 RxDB supports secondary indexes which are defined at the schema-level of the collection.
 
-Index is only allowed on field types `string`, `integer` and `number`
+Index is only allowed on field types `string`, `integer` and `number`. Some RxStorages allow to use `boolean` fields as index.
+
+Depending on the field type, you must have set some meta attributes like `maxLength` or `minimum`. This is required so that RxDB
+is able to know the maximum string representation length of a field, which is needed to craft custom indexes on several `RxStorage` implementations.
+
+**NOTICE:** RxDB will always append the `primaryKey` to all indexes to ensure a deterministic sort order of query results. You do not have to add the `primaryKey` to any index.
 
 ### Index-example
 
@@ -215,17 +223,30 @@ const schemaWithIndexes = {
   type: 'object',
   properties: {
       id: {
-          type: 'string'
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
       },
       firstName: {
-          type: 'string'
+          type: 'string',
+          maxLength: 100 // <- string-fields that are used as an index, must have set maxLength.
       },
       lastName: {
           type: 'string'
       },
+      active: {
+          type: 'boolean'
+      }
       familyName: {
           type: 'string'
       },
+      balance: {
+          type: 'number',
+
+          // number fields that are used in an index, must have set minium, maximum and multipleOf
+          minimum: 0,
+          maximum: 100000,
+          multipleOf: '0.01'
+      }
       creditCards: {
           type: 'array',
           items: {
@@ -238,11 +259,14 @@ const schemaWithIndexes = {
           }       
       }
   },
-  required: ['id'],
+  required: [
+      'id',
+      'active' // <- boolean fields that are used in an index, must be required. 
+  ],
   indexes: [
     'firstName', // <- this will create a simple index for the `firstName` field
-    'creditCards.[].cvc',
-    ['lastName', 'familyName'] // <- this will create a compound-index for these two fields
+    ['active', 'firstName'], // <- this will create a compound-index for these two fields
+    'active'
   ]
 };
 ```
@@ -261,7 +285,8 @@ const schemaWithDefaultAge = {
   type: 'object',
   properties: {
       id: {
-          type: 'string'
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
       },
       firstName: {
           type: 'string'
@@ -294,7 +319,8 @@ const schemaWithFinalAge = {
   type: 'object',
   properties: {
       id: {
-          type: 'string'
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
       },
       firstName: {
           type: 'string'
@@ -336,7 +362,8 @@ const schemaWithDefaultAge = {
   type: 'object',
   properties: {
       id: {
-          type: 'string'
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
       },
       secret: {
           type: 'string'

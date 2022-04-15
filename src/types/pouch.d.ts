@@ -228,6 +228,10 @@ export type PouchBulkDocResultRow = {
     rev: string;
 }
 
+export type PouchChangedDocumentsSinceCheckpoint = {
+    sequence: number;
+}
+
 export type PouchBulkDocOptions = {
     new_edits?: boolean;
 
@@ -348,7 +352,7 @@ export declare class PouchDBInstance {
         docId: string,
         attachmentId: string,
         options?: { rev?: string },
-    ): Promise<any>;
+    ): Promise<BlobBuffer>;
     removeAttachment(
         docId: string,
         attachmentId: string,

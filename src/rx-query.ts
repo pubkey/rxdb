@@ -22,8 +22,6 @@ import {
     now,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    flatClone,
-    firstPropertyNameOfObject,
     ensureNotFalsy
 } from './util';
 import {
@@ -43,9 +41,7 @@ import type {
     PreparedQuery,
     RxChangeEvent,
     RxDocumentWriteData,
-    RxJsonSchema,
-    RxDocumentData,
-    FilledMangoQuery
+    RxDocumentData
 } from './types';
 
 import {
@@ -54,7 +50,7 @@ import {
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
 import type { QueryMatcher } from 'event-reduce-js';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema';
+import { normalizeMangoQuery } from './rx-query-helper';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -295,7 +291,7 @@ export class RxQueryBase<
      * @overwrites itself with the actual value
      */
     get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocumentType>> {
-        const schema = this.collection.schema.normalized;
+        const schema = this.collection.schema.jsonSchema;
 
 
         /**
@@ -307,7 +303,7 @@ export class RxQueryBase<
         const usePreparedQuery = this.collection.database.storage.statics.prepareQuery(
             schema,
             normalizeMangoQuery(
-                this.collection.schema.normalized,
+                this.collection.schema.jsonSchema,
                 clone(this.mangoQuery)
             )
         );
@@ -347,11 +343,12 @@ export class RxQueryBase<
             rxQuery: this,
             // can be mutated by the hooks so we have to deep clone first.
             mangoQuery: normalizeMangoQuery<RxDocumentType>(
-                this.collection.schema.normalized,
+                this.collection.schema.jsonSchema,
                 clone(this.mangoQuery)
             )
         };
         runPluginHooks('prePrepareQuery', hookInput);
+
         const value = this.collection.database.storage.statics.prepareQuery(
             this.collection.storageInstance.schema,
             hookInput.mangoQuery
@@ -572,53 +569,6 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
     }
     return Promise.resolve(ret); // true if results have changed
 }
-
-
-/**
- * Normalize the query to ensure we have all fields set
- * and queries that represent the same query logic are detected as equal by the caching.
- */
-export function normalizeMangoQuery<RxDocType>(
-    schema: RxJsonSchema<RxDocType>,
-    mangoQuery: MangoQuery<RxDocType>
-): FilledMangoQuery<RxDocType> {
-    const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as string;
-    mangoQuery = flatClone(mangoQuery);
-
-
-    /**
-     * To ensure a deterministic sorting,
-     * we have to ensure the primary key is always part
-     * of the sort query.
-     * Primary sorting is added as last sort parameter,
-     * similiar to how we add the primary key to indexes that do not have it.
-     */
-    if (!mangoQuery.sort) {
-        mangoQuery.sort = [{ [primaryKey]: 'asc' }] as any;
-    } else {
-        const isPrimaryInSort = mangoQuery.sort
-            .find(p => firstPropertyNameOfObject(p) === primaryKey);
-        if (!isPrimaryInSort) {
-            mangoQuery.sort = mangoQuery.sort.slice(0);
-            mangoQuery.sort.push({ [primaryKey]: 'asc' } as any);
-        }
-    }
-
-    /**
-     * Ensure that if an index is specified,
-     * the primaryKey is inside of it.
-     */
-    if (mangoQuery.index) {
-        const indexAr = Array.isArray(mangoQuery.index) ? mangoQuery.index.slice(0) : [mangoQuery.index];
-        if (!indexAr.includes(primaryKey)) {
-            indexAr.push(primaryKey);
-        }
-        mangoQuery.index = indexAr;
-    }
-
-    return mangoQuery as any;
-}
-
 
 /**
  * Runs the query over the storage instance

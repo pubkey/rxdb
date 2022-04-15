@@ -209,7 +209,7 @@ config.parallel('cache-replacement-policy.test.js', () => {
                     .map(async (_v, i) => {
                         const q = col.find({
                             selector: {
-                                foo: 'old-bar' + i
+                                passportId: 'old-bar' + i
                             }
                         });
                         await q.exec();
@@ -221,7 +221,7 @@ config.parallel('cache-replacement-policy.test.js', () => {
                 new Array(amount).fill(0).map(async (_v, i) => {
                     const q = col.find({
                         selector: {
-                            foo: 'new-bar' + i
+                            passportId: 'new-bar' + i
                         }
                     });
                     await q.exec();

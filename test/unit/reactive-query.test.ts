@@ -310,7 +310,8 @@ config.parallel('reactive-query.test.js', () => {
                 primaryKey: 'key',
                 properties: {
                     key: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     state: {
                         type: 'object'

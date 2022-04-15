@@ -8,21 +8,20 @@ import {
     getPouchIndexDesignDocNameByIndex,
     pouchHash,
     pouchSwapPrimaryToId,
-    POUCH_HASH_KEY,
     primarySwapPouchDbQuerySelector
 } from './pouchdb-helper';
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import { getSchemaByObjectPath } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import type {
     MangoQuery,
     MangoQuerySortDirection,
     MangoQuerySortPart,
     PreparedQuery,
+    RxDocumentData,
     RxDocumentWriteData,
     RxJsonSchema,
     RxStorageStatics
 } from '../../types';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { overwritable } from '../../overwritable';
 import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
 
@@ -35,15 +34,15 @@ export const RxStoragePouchStatics: RxStorageStatics = {
     hash(data: Buffer | Blob | string): Promise<string> {
         return pouchHash(data);
     },
-    hashKey: POUCH_HASH_KEY,
+    hashKey: 'md5',
     doesBroadcastChangestream() {
         return false;
     },
     getSortComparator<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         query: MangoQuery<RxDocType>
     ): DeterministicSortComparator<RxDocType> {
-        const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+        const primaryPath: keyof RxDocType = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
         const sortOptions: MangoQuerySortPart[] = query.sort ? (query.sort as any) : [{
             [primaryPath]: 'asc'
         }];
@@ -129,7 +128,7 @@ export const RxStoragePouchStatics: RxStorageStatics = {
      * and transforms it to one that fits for pouchdb
      */
     prepareQuery<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: MangoQuery<RxDocType>
     ): PreparedQuery<RxDocType> {
         return preparePouchDbQuery(
@@ -145,7 +144,7 @@ export const RxStoragePouchStatics: RxStorageStatics = {
      * and transforms it to one that fits for pouchdb
      */
 export function preparePouchDbQuery<RxDocType>(
-    schema: RxJsonSchema<RxDocType>,
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     mutateableQuery: MangoQuery<RxDocType>
 ): PreparedQuery<RxDocType> {
     const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);

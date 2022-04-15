@@ -41,14 +41,15 @@ export function _getValidator(
 /**
  * validates the given object against the schema
  */
-function validate(
+function validateFullDocumentData(
     this: RxSchema,
     obj: any
 ) {
     const useValidator = _getValidator(this);
     const isValid = useValidator(obj);
-    if (isValid) return obj;
-    else {
+    if (isValid) {
+        return obj;
+    } else {
         throw newRxError('VD2', {
             errors: useValidator.errors,
             obj,
@@ -62,22 +63,22 @@ const runAfterSchemaCreated = (rxSchema: RxSchema) => {
     requestIdleCallbackIfAvailable(() => _getValidator(rxSchema));
 };
 
-export const rxdb = true;
-export const prototypes = {
-    /**
-     * set validate-function for the RxSchema.prototype
-     */
-    RxSchema: (proto: any) => {
-        proto.validate = validate;
-    }
-};
-export const hooks = {
-    createRxSchema: runAfterSchemaCreated
-};
+
 
 export const RxDBAjvValidatePlugin: RxPlugin = {
     name: 'ajv-validate',
-    rxdb,
-    prototypes,
-    hooks
+    rxdb: true,
+    prototypes: {
+        /**
+         * set validate-function for the RxSchema.prototype
+         */
+        RxSchema: (proto) => {
+            proto.validateFullDocumentData = validateFullDocumentData;
+        }
+    },
+    hooks: {
+        createRxSchema: {
+            after: runAfterSchemaCreated
+        }
+    }
 };

@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -15,15 +17,17 @@ var _pouchDb = require("./pouch-db");
 
 var _rxError = require("../../rx-error");
 
-var _rxSchema = require("../../rx-schema");
-
 var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
-
-var _rxStorageKeyObjectInstancePouch = require("./rx-storage-key-object-instance-pouch");
 
 var _pouchdbHelper = require("./pouchdb-helper");
 
+var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
+
 var _pouchStatics = require("./pouch-statics");
+
+var _rxSchemaHelper = require("../../rx-schema-helper");
+
+var _customEventsPlugin = require("./custom-events-plugin");
 
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
@@ -35,7 +39,7 @@ var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
       return Promise.resolve();
     }
 
-    var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+    var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
     return Promise.resolve(pouch.getIndexes()).then(function (before) {
       var existingIndexes = new Set(before.indexes.map(function (idx) {
         return idx.name;
@@ -134,35 +138,10 @@ var RxStoragePouch = /*#__PURE__*/function () {
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this4.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
-          return new _rxStorageInstancePouch.RxStorageInstancePouch(params.databaseName, params.collectionName, params.schema, {
+          return new _rxStorageInstancePouch.RxStorageInstancePouch(_this4, params.databaseName, params.collectionName, params.schema, {
             pouch: pouch
           }, params.options);
         });
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
-  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
-    try {
-      var _this6 = this;
-
-      var useOptions = (0, _util.flatClone)(params.options); // no compaction because this only stores local documents
-
-      useOptions.auto_compaction = false;
-      useOptions.revs_limit = 1;
-      /**
-       * TODO shouldnt we use a different location
-       * for the local storage? Or at least make sure we
-       * reuse the same pouchdb instance?
-       */
-
-      var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, 0);
-      return Promise.resolve(_this6.createPouch(pouchLocation, params.options)).then(function (pouch) {
-        return new _rxStorageKeyObjectInstancePouch.RxStorageKeyObjectInstancePouch(params.databaseName, params.collectionName, {
-          pouch: pouch
-        }, params.options);
       });
     } catch (e) {
       return Promise.reject(e);
@@ -181,7 +160,6 @@ exports.RxStoragePouch = RxStoragePouch;
 
 function checkPouchAdapter(adapter) {
   if (typeof adapter === 'string') {
-    // TODO make a function hasAdapter()
     if (!_pouchDb.PouchDB.adapters || !_pouchDb.PouchDB.adapters[adapter]) {
       throw (0, _rxError.newRxError)('DB9', {
         adapter: adapter
@@ -213,7 +191,15 @@ function getPouchLocation(dbName, collectionName, schemaVersion) {
   }
 }
 
+var addedRxDBPouchPlugins = false;
+
 function getRxStoragePouch(adapter, pouchSettings) {
+  if (!addedRxDBPouchPlugins) {
+    addedRxDBPouchPlugins = true;
+    (0, _pouchDb.addPouchPlugin)(_pouchdbFind["default"]);
+    (0, _customEventsPlugin.addCustomEventsPluginToPouch)();
+  }
+
   if (!adapter) {
     throw new Error('adapter missing');
   }

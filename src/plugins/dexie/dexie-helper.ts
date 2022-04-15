@@ -2,7 +2,6 @@ import type {
     DeterministicSortComparator
 } from 'event-reduce-js';
 import mingo from 'mingo';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
     DexieStorageInternals,
     MangoQuery,
@@ -13,6 +12,7 @@ import { Dexie } from 'dexie';
 import { DexieSettings } from '../../types';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
@@ -28,7 +28,7 @@ export function getDexieDbWithTables(
     schema: RxJsonSchema<any>
 ): DexieStorageInternals {
     const primaryPath: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
-    const dexieDbName = 'rxdb-dexie-' + databaseName + '--' + collectionName;
+    const dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
     let state = DEXIE_STATE_DB_BY_NAME.get(dexieDbName);
     if (!state) {
         state = (async () => {
@@ -49,8 +49,10 @@ export function getDexieDbWithTables(
                  * by primary key.
                  * This increases performance because it is way easier for the query planner to select
                  * a good index and we also do not have to add the _deleted field to every index.
+                 * 
+                 * We also need the [_meta.lwt+' + primaryPath + '] index for getChangedDocumentsSince()
                  */
-                [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt'
+                [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']'
             });
             await dexieDb.open();
             return {
@@ -94,7 +96,7 @@ function sortDirectionToMingo(direction: 'asc' | 'desc'): 1 | -1 {
  * because we need it in multiple places.
  */
 export function getDexieSortComparator<RxDocType>(
-    _schema: RxJsonSchema<RxDocType>,
+    _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: MangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
     const mingoSortObject: {
@@ -166,6 +168,8 @@ export function getDexieStoreSchema(
         });
     }
 
+    // we also need the _meta.lwt+primaryKey index for the getChangedDocumentsSince() method.
+    parts.push(['_meta.lwt', primaryKey]);
 
     /**
      * It is not possible to set non-javascript-variable-syntax
@@ -176,8 +180,6 @@ export function getDexieStoreSchema(
         return part.map(str => dexieReplaceIfStartsWithPipe(str))
     });
 
-
-
     return parts.map(part => {
         if (part.length === 1) {
             return part[0];
@@ -185,16 +187,6 @@ export function getDexieStoreSchema(
             return '[' + part.join('+') + ']';
         }
     }).join(', ');
-}
-
-export function getDexieEventKey(
-    isLocal: boolean,
-    primary: string,
-    revision: string
-): string {
-    const prefix = isLocal ? 'local' : 'non-local';
-    const eventKey = prefix + '|' + primary + '|' + revision;
-    return eventKey;
 }
 
 /**

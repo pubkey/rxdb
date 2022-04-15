@@ -4,21 +4,15 @@
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-import PouchDBCore from 'pouchdb-core'; // pouchdb-find
-
-import PouchDBFind from 'pouchdb-find';
+import PouchDBCore from 'pouchdb-core';
 /*
 // comment in to debug
 const pouchdbDebug = require('pouchdb-debug');
 PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
-// TODO we can delete most of these functions in the file because it was migrated to rx-storage-pouchdb
 
 import { newRxError, newRxTypeError } from '../../rx-error';
-import { addCustomEventsPluginToPouch } from './custom-events-plugin';
-addPouchPlugin(PouchDBFind);
-addCustomEventsPluginToPouch();
 /**
  * check if the given module is a leveldown-adapter
  * throws if not
@@ -31,29 +25,16 @@ export function isLevelDown(adapter) {
     });
   }
 }
-/**
- * get the correct function-name for pouchdb-replication
- */
-
-export function pouchReplicationFunction(pouch, _ref) {
-  var _ref$pull = _ref.pull,
-      pull = _ref$pull === void 0 ? true : _ref$pull,
-      _ref$push = _ref.push,
-      push = _ref$push === void 0 ? true : _ref$push;
-  if (pull && push) return pouch.sync.bind(pouch);
-  if (!pull && push) return pouch.replicate.to.bind(pouch);
-  if (pull && !push) return pouch.replicate.from.bind(pouch);
-
-  if (!pull && !push) {
-    throw newRxError('UT3', {
-      pull: pull,
-      push: push
-    });
-  }
-}
 export function isInstanceOf(obj) {
   return obj instanceof PouchDBCore;
 }
+/**
+ * Adding a PouchDB plugin multiple times,
+ * can sometimes error. So we have to check if the plugin
+ * was added before.
+ */
+
+var ADDED_POUCH_PLUGINS = new Set();
 /**
  * Add a pouchdb plugin to the pouchdb library.
  */
@@ -75,7 +56,10 @@ export function addPouchPlugin(plugin) {
     plugin = plugin["default"];
   }
 
-  PouchDBCore.plugin(plugin);
+  if (!ADDED_POUCH_PLUGINS.has(plugin)) {
+    ADDED_POUCH_PLUGINS.add(plugin);
+    PouchDBCore.plugin(plugin);
+  }
 }
 export var PouchDB = PouchDBCore;
 //# sourceMappingURL=pouch-db.js.map

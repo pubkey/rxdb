@@ -5,6 +5,7 @@ import {
     addRxPlugin,
     clone,
     ensureNotFalsy,
+    fillWithDefaultSettings,
     MangoQuery,
     normalizeMangoQuery,
     normalizeRxJsonSchema,
@@ -24,7 +25,11 @@ import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
-import { HumanDocumentType, humanMinimal, humanSchemaLiteral } from '../helper/schemas';
+import {
+    HumanDocumentType,
+    humanMinimal,
+    humanSchemaLiteral
+} from '../helper/schemas';
 
 /**
  * RxStoragePouch specific tests
@@ -50,8 +55,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         { age: 'asc' }
                     ]
                 }
-                const comparator = RxStorageDexieStatics.getSortComparator(
-                    humanMinimal,
+                const comparator = RxStorageDexieStatics.getSortComparator<HumanDocumentType>(
+                    humanMinimal as any,
                     query
                 );
                 const sortResult = comparator(docA, docB);
@@ -76,7 +81,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     }
                 };
                 const matcher = RxStorageDexieStatics.getQueryMatcher(
-                    humanMinimal,
+                    fillWithDefaultSettings(humanMinimal),
                     query
                 );
                 const matching = matcher(docMatching as any);
@@ -96,20 +101,22 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     version: 0,
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         }
                     }
                 });
-                assert.strictEqual(dexieSchema, 'id');
+                assert.ok(dexieSchema.startsWith('id'));
             });
-            it('should contains the indees', () => {
+            it('should contains the indexes', () => {
                 const dexieSchema = getDexieStoreSchema({
                     primaryKey: 'id',
                     type: 'object',
                     version: 0,
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         age: {
                             type: 'number'
@@ -119,7 +126,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         ['age', 'id']
                     ]
                 });
-                assert.strictEqual(dexieSchema, 'id, [age+id]');
+                assert.ok(dexieSchema.startsWith('id, [age+id]'));
             });
         });
     });
@@ -132,7 +139,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     type: 'object',
                     properties: {
                         key: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         age: {
                             type: 'number'

@@ -14,8 +14,6 @@ var _pouchdbHelper = require("./pouchdb-helper");
 
 var _rxSchemaHelper = require("../../rx-schema-helper");
 
-var _rxSchema = require("../../rx-schema");
-
 var _overwritable = require("../../overwritable");
 
 var _util = require("../../util");
@@ -28,13 +26,17 @@ var RxStoragePouchStatics = {
   hash: function hash(data) {
     return (0, _pouchdbHelper.pouchHash)(data);
   },
-  hashKey: _pouchdbHelper.POUCH_HASH_KEY,
+  hashKey: 'md5',
+  doesBroadcastChangestream: function doesBroadcastChangestream() {
+    return false;
+  },
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
 
-    var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+    var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
     var sortOptions = query.sort ? query.sort : [(_ref = {}, _ref[primaryPath] = 'asc', _ref)];
-    var inMemoryFields = Object.keys(query.selector).filter(function (key) {
+    var selector = query.selector ? query.selector : {};
+    var inMemoryFields = Object.keys(selector).filter(function (key) {
       return !key.startsWith('$');
     });
 
@@ -90,8 +92,9 @@ var RxStoragePouchStatics = {
    * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
    */
   getQueryMatcher: function getQueryMatcher(schema, query) {
-    var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
-    var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(query.selector);
+    var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+    var selector = query.selector ? query.selector : {};
+    var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(selector);
 
     var fun = function fun(doc) {
       if (doc._deleted) {
@@ -104,7 +107,7 @@ var RxStoragePouchStatics = {
       };
       var rowsMatched = (0, _pouchdbSelectorCore.filterInMemoryFields)([row], {
         selector: massagedSelector
-      }, Object.keys(query.selector));
+      }, Object.keys(selector));
       var ret = rowsMatched && rowsMatched.length === 1;
       return ret;
     };
@@ -130,7 +133,7 @@ var RxStoragePouchStatics = {
 exports.RxStoragePouchStatics = RxStoragePouchStatics;
 
 function preparePouchDbQuery(schema, mutateableQuery) {
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+  var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   var query = mutateableQuery;
   /**
    * because sort wont work on unused keys we have to workaround
@@ -142,9 +145,9 @@ function preparePouchDbQuery(schema, mutateableQuery) {
     query.sort.forEach(function (sortPart) {
       var key = Object.keys(sortPart)[0];
       var comparisonOperators = ['$gt', '$gte', '$lt', '$lte', '$eq'];
-      var keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
+      var keyUsed = query.selector && query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
         return comparisonOperators.includes(op);
-      }) || false; // TODO why we need this '|| false' ?
+      });
 
       if (!keyUsed) {
         var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, key);
@@ -155,6 +158,10 @@ function preparePouchDbQuery(schema, mutateableQuery) {
             key: key,
             schema: schema
           });
+        }
+
+        if (!query.selector) {
+          query.selector = {};
         }
 
         if (!query.selector[key]) {
@@ -190,7 +197,7 @@ function preparePouchDbQuery(schema, mutateableQuery) {
   } // regex does not work over the primary key
 
 
-  if (_overwritable.overwritable.isDevMode() && query.selector[primaryKey] && query.selector[primaryKey].$regex) {
+  if (_overwritable.overwritable.isDevMode() && query.selector && query.selector[primaryKey] && query.selector[primaryKey].$regex) {
     throw (0, _rxError.newRxError)('QU4', {
       path: primaryKey,
       query: mutateableQuery
@@ -212,12 +219,12 @@ function preparePouchDbQuery(schema, mutateableQuery) {
   } // strip empty selectors
 
 
-  Object.entries(query.selector).forEach(function (_ref2) {
+  Object.entries((0, _util.ensureNotFalsy)(query.selector)).forEach(function (_ref2) {
     var k = _ref2[0],
         v = _ref2[1];
 
     if (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0) {
-      delete query.selector[k];
+      delete (0, _util.ensureNotFalsy)(query.selector)[k];
     }
   });
   /**

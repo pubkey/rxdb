@@ -228,6 +228,10 @@ export type PouchBulkDocResultRow = {
     rev: string;
 }
 
+export type PouchChangedDocumentsSinceCheckpoint = {
+    sequence: number;
+}
+
 export type PouchBulkDocOptions = {
     new_edits?: boolean;
 
@@ -286,7 +290,6 @@ export declare class PouchDBInstance {
 
     static plugin(p: any): void;
     static isInstanceOf(instance: any): boolean;
-    static countAllUndeleted(pouchdb: PouchDBInstance): Promise<number>;
     info(): Promise<any>;
 
     allDocs(options?: PouchAllDocsOptions): Promise<{
@@ -349,7 +352,7 @@ export declare class PouchDBInstance {
         docId: string,
         attachmentId: string,
         options?: { rev?: string },
-    ): Promise<any>;
+    ): Promise<BlobBuffer>;
     removeAttachment(
         docId: string,
         attachmentId: string,

@@ -208,14 +208,16 @@ config.parallel('plugin.test.js', () => {
     describe('hooks', () => {
         it('createRxDatabase', async () => {
 
-            const createRxDatabase = (db: any) => {
-                db.foo = 'bar_createRxDatabase';
+            const createRxDatabase = (args: any) => {
+                args.database.foo = 'bar_createRxDatabase';
             };
             const plugin: RxPlugin = {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    createRxDatabase
+                    createRxDatabase: {
+                        after: createRxDatabase
+                    }
                 }
             };
             addRxPlugin(plugin);
@@ -226,14 +228,16 @@ config.parallel('plugin.test.js', () => {
             _clearHook('createRxDatabase', createRxDatabase);
         });
         it('createRxCollection', async () => {
-            const createRxCollection = (c: any) => {
-                c.foo = 'bar_createRxCollection';
+            const createRxCollection = (args: any) => {
+                args.collection.foo = 'bar_createRxCollection';
             };
             const plugin: RxPlugin = {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    createRxCollection
+                    createRxCollection: {
+                        after: createRxCollection
+                    }
                 }
             };
             addRxPlugin(plugin);
@@ -250,7 +254,9 @@ config.parallel('plugin.test.js', () => {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    createRxSchema
+                    createRxSchema: {
+                        after: createRxSchema
+                    }
                 }
             };
             addRxPlugin(plugin);
@@ -267,7 +273,9 @@ config.parallel('plugin.test.js', () => {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    createRxQuery
+                    createRxQuery: {
+                        after: createRxQuery
+                    }
                 }
             };
             addRxPlugin(plugin);
@@ -285,7 +293,9 @@ config.parallel('plugin.test.js', () => {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    createRxDocument
+                    createRxDocument: {
+                        after: createRxDocument
+                    }
                 }
             };
             addRxPlugin(plugin);
@@ -303,7 +313,9 @@ config.parallel('plugin.test.js', () => {
                 rxdb: true,
                 name: randomCouchString(12),
                 hooks: {
-                    postCreateRxDocument
+                    postCreateRxDocument: {
+                        after: postCreateRxDocument
+                    }
                 }
             };
             addRxPlugin(plugin);

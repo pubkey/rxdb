@@ -3,8 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createRevisionForPulledDocument = createRevisionForPulledDocument;
-exports.wasRevisionfromPullReplication = wasRevisionfromPullReplication;
+exports.getPullReplicationFlag = getPullReplicationFlag;
+exports.setLastWritePullReplication = setLastWritePullReplication;
+exports.wasLastWriteFromPullReplication = wasLastWriteFromPullReplication;
 
 var _util = require("../../util");
 
@@ -15,22 +16,35 @@ var _util = require("../../util");
  * To determine this, we 'flag' the document
  * by setting a specially crafted revision string.
  */
-
+function getPullReplicationFlag(replicationIdentifierHash) {
+  return 'rep-' + replicationIdentifierHash;
+}
 /**
- * Returns a new revision key without the revision height.
- * The revision is crafted for the graphql replication
- * and contains the information that this document data was pulled
- * from the remote server and not saved by the client.
+ * Sets the pull replication flag to the _meta
+ * to contain the next revision height.
+ * Used to identify the document as 'pulled-from-remote'
+ * so we do not send it to remote again.
  */
-function createRevisionForPulledDocument(replicationIdentifierHash, doc) {
-  var dataHash = (0, _util.hash)(doc);
-  var ret = dataHash.substring(0, 8) + replicationIdentifierHash.substring(0, 30);
-  return ret;
+
+
+function setLastWritePullReplication(replicationIdentifierHash, documentData,
+/**
+ * Height of the revision
+ * with which the pull flag will be saved.
+ */
+revisionHeight) {
+  documentData._meta[getPullReplicationFlag(replicationIdentifierHash)] = revisionHeight;
 }
 
-function wasRevisionfromPullReplication(replicationIdentifierHash, revision) {
-  var useFromHash = replicationIdentifierHash.substring(0, 30);
-  var ret = revision.endsWith(useFromHash);
-  return ret;
+function wasLastWriteFromPullReplication(replicationIdentifierHash, documentData) {
+  var lastRevision = (0, _util.parseRevision)(documentData._rev);
+
+  var replicationFlagValue = documentData._meta[getPullReplicationFlag(replicationIdentifierHash)];
+
+  if (replicationFlagValue && lastRevision.height === replicationFlagValue) {
+    return true;
+  } else {
+    return false;
+  }
 }
 //# sourceMappingURL=revision-flag.js.map

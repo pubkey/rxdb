@@ -22,11 +22,13 @@ export type DexieStorageInternals = Promise<{
     dexieTable: DexieTable;
     /**
      * Contains all docs with _deleted: true
+     * We need this because with dexie it is not possible to use a boolean field as index
+     * which could be used to filter out deleted docs in queries.
      */
     dexieDeletedTable: DexieTable;
-    /**
-     * Contains the changes flags
-     * to enable RxDB to get all changes since X.
-     */
-    dexieChangesTable: DexieTable;
 }>;
+
+export type DexieChangesCheckpoint = {
+    id: string;
+    lwt: number;
+};

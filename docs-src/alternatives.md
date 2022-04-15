@@ -188,9 +188,10 @@ The last commit to NeDB was in **2016**.
 ### Dexie.js
 
 Dexie.js is a minimalistic wrapper for IndexedDB. While providing a better API then plain IndexedDB, Dexie also improves performance by batching transactions and other optimizations. It also ads additional non-IndexedDB features like observable queries or multi tab support or react hooks.
+Compared to RxDB, Dexie.js does not support complex (MongoDB-like) queries and requires a lot of fiddling when a document range of a specific index must be fetched.
 Dexie.js is used by Whatsapp Web, Microsoft To Do and Github Desktop.
 
-RxDB supports using [Dexie.js as RxStorage](./rx-storage-dexie.md).
+RxDB supports using [Dexie.js as RxStorage](./rx-storage-dexie.md) which enhances IndexedDB with RxDB features like MongoDB-like queries etc.
 
 ### MongoDB Realm
 

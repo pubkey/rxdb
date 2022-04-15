@@ -1,6 +1,8 @@
 import { binaryMd5 } from 'pouchdb-md5';
 import { blobBufferUtil, flatClone, getHeightOfRevision } from '../../util';
 import { newRxError } from '../../rx-error';
+import { getAttachmentSize, hashAttachmentData } from '../../rx-storage-helper';
+import { RxStoragePouchStatics } from './pouch-statics';
 export var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attachments) {
   try {
     if (!attachments) {
@@ -20,26 +22,37 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
             }
           });
         }
+        /**
+         * Is write attachment,
+         * so we have to remove the data to have a
+         * non-write attachment.
+         */
 
-        var _temp2 = function () {
+
+        var _temp4 = function () {
           if (obj.data) {
-            var asWrite = obj;
-            return Promise.resolve(Promise.all([pouchHash(asWrite.data), blobBufferUtil.toString(asWrite.data)])).then(function (_ref5) {
-              var hash = _ref5[0],
-                  asString = _ref5[1];
-              var length = asString.length;
-              ret[key] = {
-                digest: POUCH_HASH_KEY + '-' + hash,
-                length: length,
-                type: asWrite.type
-              };
-            });
+            var _temp5 = function _temp5(dataAsBase64String) {
+              return Promise.resolve(hashAttachmentData(dataAsBase64String, RxStoragePouchStatics)).then(function (hash) {
+                var length = getAttachmentSize(dataAsBase64String);
+                ret[key] = {
+                  digest: 'md5-' + hash,
+                  length: length,
+                  type: _asWrite.type
+                };
+              });
+            };
+
+            var _asWrite = obj;
+
+            var _temp6 = typeof _asWrite.data === 'string';
+
+            return _temp6 ? _temp5(_asWrite.data) : Promise.resolve(blobBufferUtil.toBase64String(_asWrite.data)).then(_temp5);
           } else {
             ret[key] = obj;
           }
         }();
 
-        return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+        return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
       } catch (e) {
         return Promise.reject(e);
       }
@@ -60,6 +73,7 @@ export var OPEN_POUCHDB_STORAGE_INSTANCES = new Set();
  */
 
 export var POUCHDB_LOCAL_PREFIX = '_local/';
+export var POUCHDB_LOCAL_PREFIX_LENGTH = POUCHDB_LOCAL_PREFIX.length;
 /**
  * Pouchdb stores indexes as design documents,
  * we have to filter them out and not return the
@@ -67,6 +81,13 @@ export var POUCHDB_LOCAL_PREFIX = '_local/';
  */
 
 export var POUCHDB_DESIGN_PREFIX = '_design/';
+/**
+ * PouchDB does not allow to add custom properties
+ * that start with lodash like RxDB's _meta field.
+ * So we have to map this field into a non-lodashed field.
+ */
+
+export var POUCHDB_META_FIELDNAME = 'rxdbMeta';
 export function pouchSwapIdToPrimary(primaryKey, docData) {
   if (primaryKey === '_id' || docData[primaryKey]) {
     return docData;
@@ -88,7 +109,9 @@ export function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
   var useDoc = pouchSwapIdToPrimary(primaryKey, pouchDoc); // always flat clone becaues we mutate the _attachments property.
 
   useDoc = flatClone(useDoc);
-  delete useDoc._revisions;
+  delete useDoc._revisions; // ensure deleted flag is set.
+
+  useDoc._deleted = !!useDoc._deleted;
   useDoc._attachments = {};
 
   if (pouchDoc._attachments) {
@@ -112,6 +135,8 @@ export function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
     });
   }
 
+  useDoc._meta = useDoc[POUCHDB_META_FIELDNAME];
+  delete useDoc[POUCHDB_META_FIELDNAME];
   return useDoc;
 }
 export function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
@@ -142,6 +167,8 @@ export function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
     });
   }
 
+  pouchDoc[POUCHDB_META_FIELDNAME] = pouchDoc._meta;
+  delete pouchDoc._meta;
   return pouchDoc;
 }
 /**
@@ -169,14 +196,9 @@ export function pouchSwapPrimaryToId(primaryKey, docData) {
 export function pouchStripLocalFlagFromPrimary(str) {
   return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
-export function getEventKey(isLocal, primary, revision) {
-  // TODO remove this check this should never happen
-  if (!primary) {
-    throw new Error('primary missing !!');
-  }
-
-  var prefix = isLocal ? 'local' : 'non-local';
-  var eventKey = prefix + '|' + primary + '|' + revision;
+export function getEventKey(pouchDBInstance, primary, change) {
+  var useRev = change.doc ? change.doc._rev : change.previous._rev;
+  var eventKey = pouchDBInstance.name + '|' + primary + '|' + change.operation + '|' + useRev;
   return eventKey;
 }
 export function pouchChangeRowToChangeEvent(primaryKey, pouchDoc) {
@@ -230,7 +252,6 @@ export function pouchChangeRowToChangeStreamEvent(primaryKey, pouchRow) {
 
   if (pouchRow.deleted) {
     var previousDoc = flatClone(pouchDocumentDataToRxDocumentData(primaryKey, pouchRow.doc));
-    delete previousDoc._deleted;
     var ev = {
       sequence: pouchRow.seq,
       id: pouchRow.id,
@@ -302,9 +323,15 @@ export function pouchHash(data) {
     });
   });
 }
-export var POUCH_HASH_KEY = 'md5';
 export function getPouchIndexDesignDocNameByIndex(index) {
   var indexName = 'idx-rxdb-index-' + index.join(',');
   return indexName;
 }
+/**
+ * PouchDB has not way to read deleted local documents
+ * out of the database.
+ * So instead of deleting them, we set a custom deleted flag.
+ */
+
+export var RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted';
 //# sourceMappingURL=pouchdb-helper.js.map

@@ -1,11 +1,11 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, BlobBuffer, ChangeStreamOnceOptions, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageChangedDocumentMeta, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk } from '../../types';
+import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk, LokiChangesCheckpoint } from '../../types';
 import type { RxStorageLoki } from './rx-storage-lokijs';
 export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<RxDocType, LokiStorageInternals, LokiSettings> {
     readonly storage: RxStorageLoki;
     readonly databaseName: string;
     readonly collectionName: string;
-    readonly schema: Readonly<RxJsonSchema<RxDocType>>;
+    readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>;
     readonly internals: LokiStorageInternals;
     readonly options: Readonly<LokiSettings>;
     readonly databaseSettings: LokiDatabaseSettings;
@@ -14,25 +14,19 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     private lastChangefeedSequence;
     readonly instanceId: number;
     closed: boolean;
-    constructor(storage: RxStorageLoki, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocType>>, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings);
-    /**
-     * Adds an entry to the changes feed
-     * that can be queried to check which documents have been
-     * changed since sequence X.
-     */
-    private addChangeDocumentMeta;
+    constructor(storage: RxStorageLoki, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings);
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
-    bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<{
         [documentId: string]: RxDocumentData<RxDocType>;
     }>;
     query(preparedQuery: MangoQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<BlobBuffer>;
-    getChangedDocuments(options: ChangeStreamOnceOptions): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[];
-        lastSequence: number;
-    }>;
+    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
+    getChangedDocumentsSince(limit: number, checkpoint?: LokiChangesCheckpoint): Promise<{
+        document: RxDocumentData<RxDocType>;
+        checkpoint: LokiChangesCheckpoint;
+    }[]>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    cleanup(minimumDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;
     remove(): Promise<void>;
 }

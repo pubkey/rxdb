@@ -37,8 +37,6 @@ var _rxDatabaseProperties;
 
 function rxDatabaseProperties() {
   if (!_rxDatabaseProperties) {
-    // TODO instead of using the pseudoInstance,
-    // we should get the properties from the prototype of the class
     var pseudoInstance = new _rxDatabase.RxDatabaseBase('pseudoInstance', 'memory');
     var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
     var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));

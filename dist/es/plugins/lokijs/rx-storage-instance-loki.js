@@ -1,8 +1,9 @@
 import { Subject } from 'rxjs';
-import { createRevision, getHeightOfRevision, parseRevision, lastOfArray, flatClone, now, ensureNotFalsy, randomCouchString, isMaybeReadonlyArray } from '../../util';
+import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow, getSortDocumentsByLastWriteTimeComparator, RX_META_LWT_MINIMUM } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
-import { CHANGES_COLLECTION_SUFFIX, closeLokiCollections, getLokiDatabase, getLokiEventKey, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, removeLokiLeaderElectorReference, requestRemoteInstance, mustUseLocalState, handleRemoteRequest } from './lokijs-helper';
+import { closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, removeLokiLeaderElectorReference, requestRemoteInstance, mustUseLocalState, handleRemoteRequest } from './lokijs-helper';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 export var createLokiStorageInstance = function createLokiStorageInstance(storage, params, databaseSettings) {
   try {
     var _temp7 = function _temp7() {
@@ -13,7 +14,9 @@ export var createLokiStorageInstance = function createLokiStorageInstance(storag
 
       if (params.multiInstance) {
         ensureNotFalsy(_internals.leaderElector).awaitLeadership().then(function () {
-          return mustUseLocalState(instance);
+          if (!instance.closed) {
+            mustUseLocalState(instance);
+          }
         });
       }
 
@@ -66,27 +69,16 @@ export var createLokiLocalState = function createLokiLocalState(params, database
 
       var primaryKey = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
       indices.push(primaryKey);
-      /**
-       * TODO disable stuff we do not need from CollectionOptions
-       */
-
-      var collectionOptions = Object.assign({}, params.options.collection, {
+      var lokiCollectionName = params.collectionName + '-' + params.schema.version;
+      var collectionOptions = Object.assign({}, lokiCollectionName, {
         indices: indices,
         unique: [primaryKey]
       }, LOKIJS_COLLECTION_DEFAULT_OPTIONS);
-      var collection = databaseState.database.addCollection(params.collectionName, collectionOptions);
+      var collection = databaseState.database.addCollection(lokiCollectionName, collectionOptions);
       databaseState.collections[params.collectionName] = collection;
-      var changesCollectionName = params.collectionName + CHANGES_COLLECTION_SUFFIX;
-      var changesCollectionOptions = Object.assign({
-        unique: ['eventId'],
-        indices: ['sequence']
-      }, LOKIJS_COLLECTION_DEFAULT_OPTIONS);
-      var changesCollection = databaseState.database.addCollection(changesCollectionName, changesCollectionOptions);
-      databaseState.collections[params.collectionName] = changesCollection;
       var ret = {
         databaseState: databaseState,
-        collection: collection,
-        changesCollection: changesCollection
+        collection: collection
       };
       return ret;
     });
@@ -126,43 +118,12 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
       });
     }
   }
-  /**
-   * Adds an entry to the changes feed
-   * that can be queried to check which documents have been
-   * changed since sequence X.
-   */
-
 
   var _proto = RxStorageInstanceLoki.prototype;
 
-  _proto.addChangeDocumentMeta = function addChangeDocumentMeta(id) {
-    try {
-      var _this3 = this;
-
-      return Promise.resolve(ensureNotFalsy(_this3.internals.localState)).then(function (localState) {
-        if (!_this3.lastChangefeedSequence) {
-          var lastDoc = localState.changesCollection.chain().simplesort('sequence', true).limit(1).data()[0];
-
-          if (lastDoc) {
-            _this3.lastChangefeedSequence = lastDoc.sequence;
-          }
-        }
-
-        var nextFeedSequence = _this3.lastChangefeedSequence + 1;
-        localState.changesCollection.insert({
-          id: id,
-          sequence: nextFeedSequence
-        });
-        _this3.lastChangefeedSequence = nextFeedSequence;
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
   _proto.bulkWrite = function bulkWrite(documentWrites) {
     try {
-      var _this5 = this;
+      var _this3 = this;
 
       if (documentWrites.length === 0) {
         throw newRxError('P2', {
@@ -172,152 +133,47 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         });
       }
 
-      return Promise.resolve(mustUseLocalState(_this5)).then(function (localState) {
+      return Promise.resolve(mustUseLocalState(_this3)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this5, 'bulkWrite', [documentWrites]);
+          return requestRemoteInstance(_this3, 'bulkWrite', [documentWrites]);
         }
 
         var ret = {
           success: {},
           error: {}
         };
-        var eventBulk = {
-          id: randomCouchString(10),
-          events: []
-        };
+        var docsInDb = new Map();
+        var docsInDbWithLokiKey = new Map();
         documentWrites.forEach(function (writeRow) {
-          var startTime = now();
-          var id = writeRow.document[_this5.primaryPath];
-          var documentInDb = localState.collection.by(_this5.primaryPath, id);
+          var id = writeRow.document[_this3.primaryPath];
+          var documentInDb = localState.collection.by(_this3.primaryPath, id);
 
-          if (!documentInDb) {
-            // insert new document
-            var newRevision = '1-' + createRevision(writeRow.document);
-            /**
-             * It is possible to insert already deleted documents,
-             * this can happen on replication.
-             */
-
-            var insertedIsDeleted = writeRow.document._deleted ? true : false;
-            var writeDoc = Object.assign({}, writeRow.document, {
-              _rev: newRevision,
-              _deleted: insertedIsDeleted,
-              // TODO attachments are currently not working with lokijs
-              _attachments: {}
-            });
-            var insertData = flatClone(writeDoc);
-            insertData.$lastWriteAt = startTime;
-            localState.collection.insert(insertData);
-
-            if (!insertedIsDeleted) {
-              _this5.addChangeDocumentMeta(id);
-
-              eventBulk.events.push({
-                eventId: getLokiEventKey(false, id, newRevision),
-                documentId: id,
-                change: {
-                  doc: writeDoc,
-                  id: id,
-                  operation: 'INSERT',
-                  previous: null
-                },
-                startTime: startTime,
-                endTime: now()
-              });
-            }
-
-            ret.success[id] = writeDoc;
-          } else {
-            // update existing document
-            var revInDb = documentInDb._rev; // inserting a deleted document is possible
-            // without sending the previous data.
-
-            if (!writeRow.previous && documentInDb._deleted) {
-              writeRow.previous = documentInDb;
-            }
-
-            if (!writeRow.previous && !documentInDb._deleted || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
-              // conflict error
-              var err = {
-                isError: true,
-                status: 409,
-                documentId: id,
-                writeRow: writeRow
-              };
-              ret.error[id] = err;
-            } else {
-              var newRevHeight = getHeightOfRevision(revInDb) + 1;
-
-              var _newRevision = newRevHeight + '-' + createRevision(writeRow.document);
-
-              var isDeleted = !!writeRow.document._deleted;
-
-              var _writeDoc = Object.assign({}, writeRow.document, {
-                $loki: documentInDb.$loki,
-                $lastWriteAt: startTime,
-                _rev: _newRevision,
-                _deleted: isDeleted,
-                // TODO attachments are currently not working with lokijs
-                _attachments: {}
-              });
-
-              localState.collection.update(_writeDoc);
-
-              _this5.addChangeDocumentMeta(id);
-
-              var change = null;
-
-              if (writeRow.previous && writeRow.previous._deleted && !_writeDoc._deleted) {
-                change = {
-                  id: id,
-                  operation: 'INSERT',
-                  previous: null,
-                  doc: stripLokiKey(_writeDoc)
-                };
-              } else if (writeRow.previous && !writeRow.previous._deleted && !_writeDoc._deleted) {
-                change = {
-                  id: id,
-                  operation: 'UPDATE',
-                  previous: writeRow.previous,
-                  doc: stripLokiKey(_writeDoc)
-                };
-              } else if (writeRow.previous && !writeRow.previous._deleted && _writeDoc._deleted) {
-                /**
-                 * On delete, we send the 'new' rev in the previous property,
-                 * to have the equal behavior as pouchdb.
-                 */
-                var previous = flatClone(writeRow.previous);
-                previous._rev = _newRevision;
-                change = {
-                  id: id,
-                  operation: 'DELETE',
-                  previous: previous,
-                  doc: null
-                };
-              }
-
-              if (!change) {
-                throw newRxError('SNH', {
-                  args: {
-                    writeRow: writeRow
-                  }
-                });
-              }
-
-              eventBulk.events.push({
-                eventId: getLokiEventKey(false, id, _newRevision),
-                documentId: id,
-                change: change,
-                startTime: startTime,
-                endTime: now()
-              });
-              ret.success[id] = stripLokiKey(_writeDoc);
-            }
+          if (documentInDb) {
+            docsInDbWithLokiKey.set(id, documentInDb);
+            docsInDb.set(id, stripLokiKey(documentInDb));
           }
+        });
+        var categorized = categorizeBulkWriteRows(_this3, _this3.primaryPath, docsInDb, documentWrites);
+        categorized.bulkInsertDocs.forEach(function (writeRow) {
+          var docId = writeRow.document[_this3.primaryPath];
+          localState.collection.insert(flatClone(writeRow.document));
+          ret.success[docId] = writeRow.document;
+        });
+        categorized.bulkUpdateDocs.forEach(function (writeRow) {
+          var docId = writeRow.document[_this3.primaryPath];
+          var documentInDbWithLokiKey = getFromMapOrThrow(docsInDbWithLokiKey, docId);
+          var writeDoc = Object.assign({}, writeRow.document, {
+            $loki: documentInDbWithLokiKey.$loki
+          });
+          localState.collection.update(writeDoc);
+          ret.success[docId] = writeRow.document;
+        });
+        categorized.errors.forEach(function (err) {
+          ret.error[err.documentId] = err;
         });
         localState.databaseState.saveQueue.addWrite();
 
-        _this5.changes$.next(eventBulk);
+        _this3.changes$.next(categorized.eventBulk);
 
         return ret;
       });
@@ -326,133 +182,18 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     }
   };
 
-  _proto.bulkAddRevisions = function bulkAddRevisions(documents) {
-    try {
-      var _this7 = this;
-
-      if (documents.length === 0) {
-        throw newRxError('P3', {
-          args: {
-            documents: documents
-          }
-        });
-      }
-
-      return Promise.resolve(mustUseLocalState(_this7)).then(function (localState) {
-        if (!localState) {
-          return requestRemoteInstance(_this7, 'bulkAddRevisions', [documents]);
-        }
-
-        var eventBulk = {
-          id: randomCouchString(10),
-          events: []
-        };
-        documents.forEach(function (docData) {
-          var startTime = now();
-          var id = docData[_this7.primaryPath];
-          var documentInDb = localState.collection.by(_this7.primaryPath, id);
-
-          if (!documentInDb) {
-            // document not here, so we can directly insert
-            var insertData = flatClone(docData);
-            insertData.$lastWriteAt = startTime;
-            localState.collection.insert(insertData);
-            eventBulk.events.push({
-              documentId: id,
-              eventId: getLokiEventKey(false, id, docData._rev),
-              change: {
-                doc: docData,
-                id: id,
-                operation: 'INSERT',
-                previous: null
-              },
-              startTime: startTime,
-              endTime: now()
-            });
-
-            _this7.addChangeDocumentMeta(id);
-          } else {
-            var newWriteRevision = parseRevision(docData._rev);
-            var oldRevision = parseRevision(documentInDb._rev);
-            var mustUpdate = false;
-
-            if (newWriteRevision.height !== oldRevision.height) {
-              // height not equal, compare base on height
-              if (newWriteRevision.height > oldRevision.height) {
-                mustUpdate = true;
-              }
-            } else if (newWriteRevision.hash > oldRevision.hash) {
-              // equal height but new write has the 'winning' hash
-              mustUpdate = true;
-            }
-
-            if (mustUpdate) {
-              var storeAtLoki = flatClone(docData);
-              storeAtLoki.$loki = documentInDb.$loki;
-              storeAtLoki.$lastWriteAt = startTime;
-              localState.collection.update(storeAtLoki);
-              var change = null;
-
-              if (documentInDb._deleted && !docData._deleted) {
-                change = {
-                  id: id,
-                  operation: 'INSERT',
-                  previous: null,
-                  doc: docData
-                };
-              } else if (!documentInDb._deleted && !docData._deleted) {
-                change = {
-                  id: id,
-                  operation: 'UPDATE',
-                  previous: stripLokiKey(documentInDb),
-                  doc: docData
-                };
-              } else if (!documentInDb._deleted && docData._deleted) {
-                change = {
-                  id: id,
-                  operation: 'DELETE',
-                  previous: stripLokiKey(documentInDb),
-                  doc: null
-                };
-              } else if (documentInDb._deleted && docData._deleted) {
-                change = null;
-              }
-
-              if (change) {
-                eventBulk.events.push({
-                  documentId: id,
-                  eventId: getLokiEventKey(false, id, docData._rev),
-                  change: change,
-                  startTime: startTime,
-                  endTime: now()
-                });
-
-                _this7.addChangeDocumentMeta(id);
-              }
-            }
-          }
-        });
-        localState.databaseState.saveQueue.addWrite();
-
-        _this7.changes$.next(eventBulk);
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
   _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
     try {
-      var _this9 = this;
+      var _this5 = this;
 
-      return Promise.resolve(mustUseLocalState(_this9)).then(function (localState) {
+      return Promise.resolve(mustUseLocalState(_this5)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this9, 'findDocumentsById', [ids, deleted]);
+          return requestRemoteInstance(_this5, 'findDocumentsById', [ids, deleted]);
         }
 
         var ret = {};
         ids.forEach(function (id) {
-          var documentInDb = localState.collection.by(_this9.primaryPath, id);
+          var documentInDb = localState.collection.by(_this5.primaryPath, id);
 
           if (documentInDb && (!documentInDb._deleted || deleted)) {
             ret[id] = stripLokiKey(documentInDb);
@@ -467,17 +208,17 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.query = function query(preparedQuery) {
     try {
-      var _this11 = this;
+      var _this7 = this;
 
-      return Promise.resolve(mustUseLocalState(_this11)).then(function (localState) {
+      return Promise.resolve(mustUseLocalState(_this7)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this11, 'query', [preparedQuery]);
+          return requestRemoteInstance(_this7, 'query', [preparedQuery]);
         }
 
         var query = localState.collection.chain().find(preparedQuery.selector);
 
         if (preparedQuery.sort) {
-          query = query.sort(getLokiSortComparator(_this11.schema, preparedQuery));
+          query = query.sort(getLokiSortComparator(_this7.schema, preparedQuery));
         }
         /**
          * Offset must be used before limit in LokiJS
@@ -509,39 +250,38 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
   };
 
-  _proto.getChangedDocuments = function getChangedDocuments(options) {
+  _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
-      var _this13 = this;
+      var _this9 = this;
 
-      return Promise.resolve(mustUseLocalState(_this13)).then(function (localState) {
-        var _sequence;
-
+      return Promise.resolve(mustUseLocalState(_this9)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this13, 'getChangedDocuments', [options]);
+          return requestRemoteInstance(_this9, 'getChangedDocumentsSince', [limit, checkpoint]);
         }
 
-        var desc = options.direction === 'before';
-        var operator = options.direction === 'after' ? '$gt' : '$lt';
-        var query = localState.changesCollection.chain().find({
-          sequence: (_sequence = {}, _sequence[operator] = options.sinceSequence, _sequence)
-        }).simplesort('sequence', desc);
+        var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
+        var query = localState.collection.chain().find({
+          '_meta.lwt': {
+            $gte: sinceLwt
+          }
+        }).sort(getSortDocumentsByLastWriteTimeComparator(_this9.primaryPath));
+        var changedDocs = query.data();
+        var first = changedDocs[0];
 
-        if (options.limit) {
-          query = query.limit(options.limit);
+        if (checkpoint && first && first[_this9.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
+          changedDocs.shift();
         }
 
-        var changedDocuments = query.data().map(function (result) {
+        changedDocs = changedDocs.slice(0, limit);
+        return changedDocs.map(function (docData) {
           return {
-            id: result.id,
-            sequence: result.sequence
+            document: stripLokiKey(docData),
+            checkpoint: {
+              id: docData[_this9.primaryPath],
+              lwt: docData._meta.lwt
+            }
           };
         });
-        var useForLastSequence = !desc ? lastOfArray(changedDocuments) : changedDocuments[0];
-        var ret = {
-          changedDocuments: changedDocuments,
-          lastSequence: useForLastSequence ? useForLastSequence.sequence : options.sinceSequence
-        };
-        return ret;
       });
     } catch (e) {
       return Promise.reject(e);
@@ -552,26 +292,57 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     return this.changes$.asObservable();
   };
 
+  _proto.cleanup = function cleanup(minimumDeletedTime) {
+    try {
+      var _this11 = this;
+
+      return Promise.resolve(mustUseLocalState(_this11)).then(function (localState) {
+        if (!localState) {
+          return requestRemoteInstance(_this11, 'cleanup', [minimumDeletedTime]);
+        }
+
+        var deleteAmountPerRun = 10;
+        var maxDeletionTime = now() - minimumDeletedTime;
+        var query = localState.collection.chain().find({
+          _deleted: true,
+          '_meta.lwt': {
+            $lt: maxDeletionTime
+          }
+        }).limit(deleteAmountPerRun);
+        var foundDocuments = query.data();
+
+        if (foundDocuments.length > 0) {
+          localState.collection.remove(foundDocuments);
+          localState.databaseState.saveQueue.addWrite();
+        }
+
+        return foundDocuments.length !== deleteAmountPerRun;
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
   _proto.close = function close() {
     try {
       var _temp3 = function _temp3() {
-        removeLokiLeaderElectorReference(_this15.storage, _this15.databaseName);
+        removeLokiLeaderElectorReference(_this13.storage, _this13.databaseName);
       };
 
-      var _this15 = this;
+      var _this13 = this;
 
-      _this15.closed = true;
+      _this13.closed = true;
 
-      _this15.changes$.complete();
+      _this13.changes$.complete();
 
-      OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this15);
+      OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this13);
 
       var _temp4 = function () {
-        if (_this15.internals.localState) {
-          return Promise.resolve(_this15.internals.localState).then(function (localState) {
-            return Promise.resolve(getLokiDatabase(_this15.databaseName, _this15.databaseSettings)).then(function (dbState) {
+        if (_this13.internals.localState) {
+          return Promise.resolve(_this13.internals.localState).then(function (localState) {
+            return Promise.resolve(getLokiDatabase(_this13.databaseName, _this13.databaseSettings)).then(function (dbState) {
               return Promise.resolve(dbState.saveQueue.run()).then(function () {
-                return Promise.resolve(closeLokiCollections(_this15.databaseName, [localState.collection, localState.changesCollection])).then(function () {});
+                return Promise.resolve(closeLokiCollections(_this13.databaseName, [localState.collection])).then(function () {});
               });
             });
           });
@@ -586,16 +357,15 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.remove = function remove() {
     try {
-      var _this17 = this;
+      var _this15 = this;
 
-      return Promise.resolve(mustUseLocalState(_this17)).then(function (localState) {
+      return Promise.resolve(mustUseLocalState(_this15)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this17, 'remove', []);
+          return requestRemoteInstance(_this15, 'remove', []);
         }
 
-        localState.databaseState.database.removeCollection(_this17.collectionName);
-        localState.databaseState.database.removeCollection(localState.changesCollection.name);
-        return _this17.close();
+        localState.databaseState.database.removeCollection(localState.collection.name);
+        return _this15.close();
       });
     } catch (e) {
       return Promise.reject(e);

@@ -7,11 +7,11 @@ import objectPath from 'object-path';
 import {
     newRxError
 } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
-import { getSchemaByObjectPath } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import type {
     CompositePrimaryKey,
     JsonSchema,
+    JsonSchemaTypes,
     RxJsonSchema,
     TopLevelProperty
 } from '../../types';
@@ -192,6 +192,8 @@ export function checkPrimaryKey(
         throw newRxError('SC30', { schema: jsonSchema });
     }
 
+
+
     function validatePrimarySchemaPart(
         schemaPart: JsonSchema | TopLevelProperty
     ) {
@@ -222,6 +224,18 @@ export function checkPrimaryKey(
             const schemaPart = getSchemaByObjectPath(jsonSchema, field);
             validatePrimarySchemaPart(schemaPart);
         });
+    }
+
+
+    /**
+     * The primary key must have a maxLength set
+     * which is required by some RxStorage implementations
+     * to ensure we can craft custom index strings.
+     */
+    const primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
+    const primaryPathSchemaPart = jsonSchema.properties[primaryPath as any];
+    if (!primaryPathSchemaPart.maxLength) {
+        throw newRxError('SC39', { schema: jsonSchema, args: { primaryPathSchemaPart } });
     }
 }
 
@@ -341,6 +355,93 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                     }
                 }
             }
+
+            /**
+             * To be able to craft custom indexable string with compound fields,
+             * we need to know the maximum fieldlength of the fields values
+             * when they are transformed to strings.
+             * Therefore we need to enforce some properties inside of the schema.
+             */
+            const indexAsArray = isMaybeReadonlyArray(index) ? index : [index];
+            indexAsArray.forEach(fieldName => {
+                const schemaPart = getSchemaByObjectPath(
+                    jsonSchema,
+                    fieldName
+                );
+
+
+                const type: JsonSchemaTypes = schemaPart.type as any;
+                switch (type) {
+                    case 'string':
+                        const maxLength = schemaPart.maxLength;
+                        if (!maxLength) {
+                            throw newRxError('SC34', {
+                                index,
+                                field: fieldName,
+                                schema: jsonSchema
+                            });
+                        }
+                        break;
+                    case 'number':
+                    case 'integer':
+                        const multipleOf = schemaPart.multipleOf;
+                        if (!multipleOf) {
+                            throw newRxError('SC35', {
+                                index,
+                                field: fieldName,
+                                schema: jsonSchema
+                            });
+                        }
+                        const maximum = schemaPart.maximum;
+                        const minimum = schemaPart.minimum;
+                        if (
+                            typeof maximum === 'undefined' ||
+                            typeof minimum === 'undefined'
+                        ) {
+                            throw newRxError('SC37', {
+                                index,
+                                field: fieldName,
+                                schema: jsonSchema
+                            });
+                        }
+                        break;
+                    case 'boolean':
+                        /**
+                         * If a boolean field is used as an index,
+                         * it must be required.
+                         */
+                        let parentPath = '';
+                        let lastPathPart = fieldName;
+                        if (fieldName.includes('.')) {
+                            const partParts = fieldName.split('.');
+                            lastPathPart = partParts.pop();
+                            parentPath = partParts.join('.');
+                        }
+                        const parentSchemaPart = getSchemaByObjectPath(
+                            jsonSchema,
+                            parentPath
+                        );
+                        if (
+                            !parentSchemaPart.required ||
+                            !parentSchemaPart.required.includes(lastPathPart)
+                        ) {
+                            throw newRxError('SC38', {
+                                index,
+                                field: fieldName,
+                                schema: jsonSchema
+                            });
+                        }
+                        break;
+
+                    default:
+                        throw newRxError('SC36', {
+                            fieldName,
+                            type: schemaPart.type as any,
+                            schema: jsonSchema,
+                        });
+                }
+            });
+
         });
     }
 

@@ -17,11 +17,6 @@ import {
     randomCouchString
 } from '../../';
 
-import {
-    getRxStoragePouch,
-} from '../../plugins/pouchdb';
-
-
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
 
@@ -43,7 +38,8 @@ describe('bug-report.test.js', () => {
             type: 'object',
             properties: {
                 passportId: {
-                    type: 'string'
+                    type: 'string',
+                    maxLength: 100
                 },
                 firstName: {
                     type: 'string'
@@ -65,7 +61,11 @@ describe('bug-report.test.js', () => {
         // create a database
         const db = await createRxDatabase({
             name,
-            storage: getRxStoragePouch('memory'),
+            /**
+             * By calling config.storage.getStorage(),
+             * we can ensure that all variations of RxStorage are tested in the CI.
+             */
+            storage: config.storage.getStorage(),
             eventReduce: true,
             ignoreDuplicate: true
         });
@@ -90,7 +90,7 @@ describe('bug-report.test.js', () => {
          */
         const dbInOtherTab = await createRxDatabase({
             name,
-            storage: getRxStoragePouch('memory'),
+            storage: config.storage.getStorage(),
             eventReduce: true,
             ignoreDuplicate: true
         });

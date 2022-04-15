@@ -11,10 +11,10 @@ In theory you can put any `RxStorage` implementation into a worker. For now this
 ```ts
 // worker.ts
 
-import { wrappedRxStorage } from 'rxdb/plugins/worker';
+import { wrappedWorkerRxStorage } from 'rxdb/plugins/worker';
 import { getRxStorageLoki } from 'rxdb/plugins/lokijs';
 
-wrappedRxStorage({
+wrappedWorkerRxStorage({
     /**
      * You can wrap any implementation of the RxStorage interface
      * into a worker.
@@ -87,4 +87,4 @@ const database = await createRxDatabase({
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./replication-couchdb.md)
+If you are new to RxDB, you should continue [here](./rx-storage-sharding.md)

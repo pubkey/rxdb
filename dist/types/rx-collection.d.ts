@@ -1,11 +1,9 @@
-import { RxQueryBase } from './rx-query';
 import type { DataMigrator } from './plugins/migration';
-import { Crypter } from './crypter';
 import { DocCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
 import { Subscription, Observable } from 'rxjs';
-import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxStorageKeyObjectInstance, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase } from './types';
+import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase } from './types';
 import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
 export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = {
@@ -16,15 +14,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>;
     name: string;
     schema: RxSchema<RxDocumentType>;
-    /**
-     * Stores all 'normal' documents
-     */
-    storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
-    /**
-     * Stores the local documents so that they are not deleted
-     * when a migration runs.
-     */
-    localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>;
+    internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
     instanceCreationOptions: InstanceCreationOptions;
     migrationStrategies: KeyFunctionMap;
     methods: KeyFunctionMap;
@@ -32,59 +22,35 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     options: any;
     cacheReplacementPolicy: RxCacheReplacementPolicy;
     statics: KeyFunctionMap;
-    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, 
     /**
      * Stores all 'normal' documents
      */
-    storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, 
-    /**
-     * Stores the local documents so that they are not deleted
-     * when a migration runs.
-     */
-    localDocumentsStore: RxStorageKeyObjectInstance<any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap);
-    /**
-     * returns observable
-     */
-    get $(): Observable<RxChangeEvent<any>>;
+    storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
+    readonly timeouts: Set<ReturnType<typeof setTimeout>>;
+    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap);
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
     get remove$(): Observable<RxChangeEventDelete<RxDocumentType>>;
     get onDestroy(): Promise<void>;
-    _isInMemory: boolean;
     destroyed: boolean;
-    _atomicUpsertQueues: Map<any, any>;
+    _atomicUpsertQueues: Map<string, Promise<any>>;
     synced: boolean;
     hooks: any;
     _subs: Subscription[];
-    _repStates: Set<RxCouchDBReplicationState>;
     _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>>;
     _queryCache: QueryCache;
-    _crypter: Crypter;
-    _observable$: Observable<RxChangeEvent<RxDocumentType>>;
+    $: Observable<RxChangeEvent<RxDocumentType>>;
     _changeEventBuffer: ChangeEventBuffer;
     /**
      * returns a promise that is resolved when the collection gets destroyed
      */
     private _onDestroy?;
     private _onDestroyCall?;
-    prepare(
-    /**
-     * TODO is this still needed?
-     * set to true if the collection data already exists on this storage adapter
-     */
-    _wasCreatedBefore: boolean): Promise<void>;
+    prepare(): Promise<void>;
     migrationNeeded(): Promise<boolean>;
     getDataMigrator(): DataMigrator;
     migrate(batchSize?: number): Observable<MigrationState>;
     migratePromise(batchSize?: number): Promise<any>;
-    /**
-     * wrapps the query function of the storage instance.
-     */
-    _queryStorageInstance(rxQuery: RxQuery | RxQueryBase, limit?: number, noDecrypt?: boolean): Promise<any[]>;
-    /**
-     * TODO internally call bulkInsert
-     * to not have duplicated code.
-     */
     insert(json: RxDocumentType | RxDocument): Promise<RxDocument<RxDocumentType, OrmMethods>>;
     bulkInsert(docsData: RxDocumentType[]): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
@@ -94,6 +60,10 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageBulkWriteError<RxDocumentType>[];
     }>;
+    /**
+     * same as bulkInsert but overwrites existing document with same primary
+     */
+    bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<RxDocument<RxDocumentType, OrmMethods>[]>;
     /**
      * same as insert but overwrites existing document with same primary
      */
@@ -121,8 +91,8 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * When false or omitted and an interface or type is loaded in this collection,
      * all base properties of the type are typed as `any` since data could be encrypted.
      */
-    exportJSON(_decrypted: boolean): Promise<RxDumpCollection<RxDocumentType>>;
-    exportJSON(_decrypted?: false): Promise<RxDumpCollectionAny<RxDocumentType>>;
+    exportJSON(): Promise<RxDumpCollection<RxDocumentType>>;
+    exportJSON(): Promise<RxDumpCollectionAny<RxDocumentType>>;
     /**
      * Import the parsed JSON export into the collection.
      * @param _exportedJSON The previously exported data from the `<collection>.exportJSON()` method.
@@ -137,10 +107,6 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      */
     syncGraphQL(_options: SyncOptionsGraphQL<RxDocumentType>): RxGraphQLReplicationState<RxDocumentType>;
     /**
-     * Create a replicated in-memory-collection
-     */
-    inMemory(): Promise<RxCollection<RxDocumentType, OrmMethods>>;
-    /**
      * HOOKS
      */
     addHook(when: string, key: string, fun: any, parallel?: boolean): void;
@@ -154,6 +120,12 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * creates a temporaryDocument which can be saved later
      */
     newDocument(docData?: Partial<RxDocumentType>): RxDocument<RxDocumentType, OrmMethods>;
+    /**
+     * Returns a promise that resolves after the given time.
+     * Ensures that is properly cleans up when the collection is destroyed
+     * so that no running timeouts prevent the exit of the JavaScript process.
+     */
+    promiseWait(time: number): Promise<void>;
     destroy(): Promise<boolean>;
     /**
      * remove all data of the collection
@@ -164,5 +136,5 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
 /**
  * creates and prepares a new collection
  */
-export declare function createRxCollection({ database, name, schema, instanceCreationOptions, migrationStrategies, autoMigrate, statics, methods, attachments, options, cacheReplacementPolicy }: any, wasCreatedBefore: boolean): Promise<RxCollection>;
+export declare function createRxCollection({ database, name, schema, instanceCreationOptions, migrationStrategies, autoMigrate, statics, methods, attachments, options, localDocuments, cacheReplacementPolicy }: any): Promise<RxCollection>;
 export declare function isRxCollection(obj: any): boolean;

@@ -5,19 +5,18 @@ import {
     Subscription
 } from 'rxjs';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
-    BlobBuffer,
     BulkWriteRow,
-    ChangeStreamOnceOptions,
     EventBulk,
     PouchBulkDocResultRow,
+    PouchChangedDocumentsSinceCheckpoint,
     PouchChangesOptionsNonLive,
     PouchSettings,
     PouchWriteError,
     PreparedQuery,
     RxDocumentData,
     RxJsonSchema,
+    RxStorage,
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -34,13 +33,16 @@ import {
     writeAttachmentsToAttachments
 } from './pouchdb-helper';
 import {
+    blobBufferUtil,
     flatClone,
     getFromMapOrThrow,
+    getFromObjectOrThrow,
     PROMISE_RESOLVE_VOID
 } from '../../util';
 import {
     getCustomEventEmitterByPouch
 } from './custom-events-plugin';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
 
 let lastId = 0;
@@ -57,14 +59,15 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     private primaryPath: keyof RxDocType;
 
     constructor(
+        public readonly storage: RxStorage<PouchStorageInternals, PouchSettings>,
         public readonly databaseName: string,
         public readonly collectionName: string,
-        public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
+        public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
         public readonly internals: Readonly<PouchStorageInternals>,
         public readonly options: Readonly<PouchSettings>
     ) {
         OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
 
         /**
          * Instead of listening to pouch.changes,
@@ -126,35 +129,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
         await this.internals.pouch.destroy();
     }
-
-    public async bulkAddRevisions(
-        documents: RxDocumentData<RxDocType>[]
-    ): Promise<void> {
-        if (documents.length === 0) {
-            throw newRxError('P3', {
-                args: {
-                    documents
-                }
-            });
-        }
-
-        const writeData = documents.map(doc => {
-            return rxDocumentDataToPouchDocumentData(
-                this.primaryPath,
-                doc
-            );
-        });
-
-        // we do not need the response here because pouchdb returns an empty array on new_edits: false
-        await this.internals.pouch.bulkDocs(
-            writeData,
-            {
-                new_edits: false,
-                set_new_edit_as_latest_revision: true
-            }
-        );
-    }
-
     public async bulkWrite(
         documentWrites: BulkWriteRow<RxDocType>[]
     ): Promise<
@@ -169,27 +143,42 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         }
 
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
-        const insertDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
+        const insertDocsById: Map<string, any> = new Map();
+        const writeDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
+
+            /**
+             * Ensure that _meta.lwt is set correctly
+             */
+            if (
+                writeData.document._meta.lwt < 1000 ||
+                (
+                    writeData.previous &&
+                    writeData.previous._meta.lwt >= writeData.document._meta.lwt
+                )
+            ) {
+                throw newRxError('SNH', {
+                    args: writeData
+                });
+            }
+
             const primary: string = (writeData.document as any)[this.primaryPath];
             writeRowById.set(primary, writeData);
-
             const storeDocumentData: any = rxDocumentDataToPouchDocumentData<RxDocType>(
                 this.primaryPath,
                 writeData.document
             );
-
-            // if previous document exists, we have to send the previous revision to pouchdb.
-            if (writeData.previous) {
-                storeDocumentData._rev = writeData.previous._rev;
-            }
-
+            insertDocsById.set(primary, storeDocumentData);
             return storeDocumentData;
         });
 
-        const pouchResult = await this.internals.pouch.bulkDocs(insertDocs, {
+        const previousDocsInDb: Map<string, RxDocumentData<any>> = new Map();
+        const pouchResult = await this.internals.pouch.bulkDocs(writeDocs, {
+            new_edits: false,
             custom: {
                 primaryPath: this.primaryPath,
-                writeRowById
+                writeRowById,
+                insertDocsById,
+                previousDocsInDb
             }
         } as any);
 
@@ -197,16 +186,20 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             success: {},
             error: {}
         };
-
         await Promise.all(
             pouchResult.map(async (resultRow) => {
                 const writeRow = getFromMapOrThrow(writeRowById, resultRow.id);
                 if ((resultRow as PouchWriteError).error) {
+                    const previousDoc = getFromMapOrThrow(previousDocsInDb, resultRow.id);
                     const err: RxStorageBulkWriteError<RxDocType> = {
                         isError: true,
                         status: 409,
                         documentId: resultRow.id,
-                        writeRow
+                        writeRow,
+                        documentInDb: pouchDocumentDataToRxDocumentData(
+                            this.primaryPath,
+                            previousDoc
+                        )
                     };
                     ret.error[resultRow.id] = err;
                 } else {
@@ -225,7 +218,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 }
             })
         );
-
         return ret;
     }
 
@@ -248,12 +240,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     async getAttachmentData(
         documentId: string,
         attachmentId: string
-    ): Promise<BlobBuffer> {
+    ): Promise<string> {
         const attachmentData = await this.internals.pouch.getAttachment(
             documentId,
             attachmentId
         );
-        return attachmentData;
+        const ret = await blobBufferUtil.toBase64String(attachmentData);
+        return ret;
     }
 
     async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
@@ -320,21 +313,35 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return this.changes$.asObservable();
     }
 
-    async getChangedDocuments(
-        options: ChangeStreamOnceOptions
+    cleanup(_minimumDeletedTime: number): Promise<boolean> {
+        /**
+         * PouchDB does not support purging documents.
+         * So instead we run a compaction that might at least help a bit
+         * in freeing up disc space.
+         * @link https://github.com/pouchdb/pouchdb/issues/802
+         */
+        return this.internals.pouch
+            .compact()
+            .then(() => false);
+    }
+
+    async getChangedDocumentsSince(
+        limit: number,
+        checkpoint?: PouchChangedDocumentsSinceCheckpoint
     ): Promise<{
-        changedDocuments: {
-            id: string;
-            sequence: number;
-        }[];
-        lastSequence: number;
-    }> {
+        document: RxDocumentData<RxDocType>;
+        checkpoint: PouchChangedDocumentsSinceCheckpoint;
+    }[]> {
+        if (!limit || typeof limit !== 'number') {
+            throw new Error('wrong limit');
+        }
+
         const pouchChangesOpts: PouchChangesOptionsNonLive = {
             live: false,
-            limit: options.limit,
+            limit: limit,
             include_docs: false,
-            since: options.sinceSequence,
-            descending: options.direction === 'before' ? true : false
+            since: checkpoint ? checkpoint.sequence : 0,
+            descending: false
         };
 
         let lastSequence = 0;
@@ -371,9 +378,29 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             pouchChangesOpts.limit = skippedDesignDocuments;
         }
 
-        return {
-            changedDocuments,
-            lastSequence
-        };
+        const documentsData = await this.findDocumentsById(
+            changedDocuments.map(o => o.id),
+            true
+        );
+
+        if (
+            Object.keys(documentsData).length > 0 &&
+            checkpoint && checkpoint.sequence === lastSequence
+        ) {
+            /**
+             * When documents are returned, it makes no sense
+             * if the sequence is equal to the one given at the checkpoint.
+             */
+            throw new Error('same sequence');
+        }
+
+        return changedDocuments.map(changeRow => {
+            return {
+                checkpoint: {
+                    sequence: changeRow.sequence
+                },
+                document: getFromObjectOrThrow(documentsData, changeRow.id)
+            };
+        });
     }
 }

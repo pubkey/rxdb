@@ -100,29 +100,6 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
       docEventMap[changeEvent.documentId] = changeEvent;
     });
     return Object.values(docEventMap);
-  }
-  /**
-   * use this to check if a change has already been handled
-   * @returns true if change with revision exists
-   * TODO only used in the in-memory plugin, we should move it there.
-   *
-   */
-  ;
-
-  _proto.hasChangeWithRevision = function hasChangeWithRevision(revision) {
-    // we loop from behind because its more likely that the searched event is at the end
-    var t = this.buffer.length;
-
-    while (t > 0) {
-      t--;
-      var cE = this.buffer[t];
-
-      if (cE.documentData && cE.documentData._rev === revision) {
-        return true;
-      }
-    }
-
-    return false;
   };
 
   _proto.destroy = function destroy() {

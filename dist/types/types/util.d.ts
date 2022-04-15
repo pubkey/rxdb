@@ -1,6 +1,10 @@
 export type MaybePromise<T> = Promise<T> | T;
 
 
+export type PlainJsonValue = string | number | boolean | PlainSimpleJsonObject | PlainSimpleJsonObject[] | PlainJsonValue[];
+export type PlainSimpleJsonObject = {
+    [k: string]: PlainJsonValue | PlainJsonValue[];
+};
 
 /**
  * @link https://stackoverflow.com/a/49670389/3443137
@@ -11,7 +15,7 @@ type DeepReadonly<T> =
     T extends object ? DeepReadonlyObject<T> :
     T;
 
-interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}
+interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
 
 type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
@@ -25,10 +29,10 @@ export type MaybeReadonly<T> = T | Readonly<T>;
  * makes everything mutable again.
  */
 type DeepMutable<T> = (
-    T extends object 
+    T extends object
     ? {
         -readonly [K in keyof T]: (
-            T[K] extends object 
+            T[K] extends object
             ? DeepMutable<T[K]>
             : T[K]
         )
@@ -42,3 +46,9 @@ type DeepMutable<T> = (
  * @link https://stackoverflow.com/a/51808262/3443137
  */
 export type StringKeys<X> = Extract<keyof X, string>;
+
+
+/**
+ * @link https://dev.to/vborodulin/ts-how-to-override-properties-with-type-intersection-554l
+ */
+export type Override<T1, T2> = Omit<T1, keyof T2> & T2;

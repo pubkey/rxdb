@@ -18,7 +18,6 @@ import {
 import { RxDBReplicationCouchDBPlugin } from '../plugins/replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 
-addPouchPlugin(require('pouchdb-adapter-memory'));
 addPouchPlugin(require('pouchdb-adapter-http'));
 import request from 'request-promise-native';
 
@@ -26,6 +25,7 @@ import * as humansCollection from './helper/humans-collection';
 import * as schemaObjects from './helper/schema-objects';
 
 describe('couchdb-db-integration.test.js', () => {
+    addPouchPlugin(require('pouchdb-adapter-memory'));
     const COUCHDB_URL = 'http://127.0.0.1:5984/';
 
     it('reach couchdb server', async function () {

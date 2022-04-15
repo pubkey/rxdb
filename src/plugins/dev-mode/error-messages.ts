@@ -19,9 +19,9 @@ export const ERROR_MESSAGES = {
     PL2: 'You tried importy a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
 
     // pouch-db.js
-    // removed ind 12.0.0 - P1: 'PouchDB.getBatch: limit must be > 2',
+    // removed in 12.0.0 - P1: 'PouchDB.getBatch: limit must be > 2',
     P2: 'bulkWrite() cannot be called with an empty array',
-    P3: 'bulkAddRevisions cannot be called with an empty array',
+    // removed in 12.0.0 - P3: 'bulkAddRevisions cannot be called with an empty array',
 
     // rx-query
     QU1: 'RxQuery._execOverDatabase(): op not known',
@@ -36,6 +36,7 @@ export const ERROR_MESSAGES = {
     QU10: 'result empty and throwIfMissing: true',
     QU11: 'RxQuery: no valid query params given',
     QU12: 'Given index is not in schema',
+    QU13: 'A top level field of the query is not included in the schema',
 
     // mquery.js
     MQ1: 'path must be a string or object',
@@ -57,8 +58,8 @@ export const ERROR_MESSAGES = {
     DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
     DB8: 'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' +
         'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
-    DB9: 'createRxDatabase(): Adapter not added. Use RxDB.plugin(require(\'pouchdb-adapter-[adaptername]\'));',
-    DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use RxDB.plugin(require(\'pouchdb-adapter-leveldb\'));',
+    DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
+    DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addRxPlugin(require(\'pouchdb-adapter-leveldb\'));',
     DB11: 'createRxDatabase(): Invalid db-name, folder-paths must not have an ending slash',
 
     // rx-collection
@@ -130,6 +131,7 @@ export const ERROR_MESSAGES = {
     LD5: 'RxDocument.set() id cannot be modified',
     LD6: 'LocalDocument: Function is not useable on local documents',
     LD7: 'Local document already exists',
+    LD8: 'localDocuments not activated. Set localDocuments=true on creation, when you want to store local documents on the RxDatabase or RxCollection.',
 
     // plugins/replication.js
     RC1: 'Replication: already added',
@@ -169,6 +171,12 @@ export const ERROR_MESSAGES = {
     SC30: 'SchemaCheck: primaryKey is required',
     SC32: 'SchemaCheck: primary field must have the type string/number/integer',
     SC33: 'SchemaCheck: used primary key is not a property in the schema',
+    SC34: 'Fields of type string that are used in an index, must have set the maxLength attribute in the schema',
+    SC35: 'Fields of type number/integer that are used in an index, must have set the multipleOf attribute in the schema',
+    SC36: 'A field of this type cannot be used as index',
+    SC37: 'Fields of type number that are used in an index, must have set the minimum and maxiumum attribute in the schema',
+    SC38: 'Fields of type boolean that are used in an index, must be required in the schema',
+    SC39: 'The primary key must have the maxLength attribute set',
 
     // plugins/dev-mode
     DEV1: 'dev-mode added multiple times',

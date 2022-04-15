@@ -1,10 +1,9 @@
 import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
 import { newRxError } from '../../rx-error';
-import { getPouchIndexDesignDocNameByIndex, pouchHash, pouchSwapPrimaryToId, POUCH_HASH_KEY, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
-import { getSchemaByObjectPath } from '../../rx-schema-helper';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
+import { getPouchIndexDesignDocNameByIndex, pouchHash, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
+import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import { overwritable } from '../../overwritable';
-import { isMaybeReadonlyArray } from '../../util';
+import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
 export var RxStoragePouchStatics = {
   /**
    * create the same diggest as an attachment with that data
@@ -13,13 +12,17 @@ export var RxStoragePouchStatics = {
   hash: function hash(data) {
     return pouchHash(data);
   },
-  hashKey: POUCH_HASH_KEY,
+  hashKey: 'md5',
+  doesBroadcastChangestream: function doesBroadcastChangestream() {
+    return false;
+  },
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
 
     var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     var sortOptions = query.sort ? query.sort : [(_ref = {}, _ref[primaryPath] = 'asc', _ref)];
-    var inMemoryFields = Object.keys(query.selector).filter(function (key) {
+    var selector = query.selector ? query.selector : {};
+    var inMemoryFields = Object.keys(selector).filter(function (key) {
       return !key.startsWith('$');
     });
 
@@ -76,7 +79,8 @@ export var RxStoragePouchStatics = {
    */
   getQueryMatcher: function getQueryMatcher(schema, query) {
     var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-    var massagedSelector = massageSelector(query.selector);
+    var selector = query.selector ? query.selector : {};
+    var massagedSelector = massageSelector(selector);
 
     var fun = function fun(doc) {
       if (doc._deleted) {
@@ -89,7 +93,7 @@ export var RxStoragePouchStatics = {
       };
       var rowsMatched = filterInMemoryFields([row], {
         selector: massagedSelector
-      }, Object.keys(query.selector));
+      }, Object.keys(selector));
       var ret = rowsMatched && rowsMatched.length === 1;
       return ret;
     };
@@ -125,9 +129,9 @@ export function preparePouchDbQuery(schema, mutateableQuery) {
     query.sort.forEach(function (sortPart) {
       var key = Object.keys(sortPart)[0];
       var comparisonOperators = ['$gt', '$gte', '$lt', '$lte', '$eq'];
-      var keyUsed = query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
+      var keyUsed = query.selector && query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
         return comparisonOperators.includes(op);
-      }) || false; // TODO why we need this '|| false' ?
+      });
 
       if (!keyUsed) {
         var schemaObj = getSchemaByObjectPath(schema, key);
@@ -138,6 +142,10 @@ export function preparePouchDbQuery(schema, mutateableQuery) {
             key: key,
             schema: schema
           });
+        }
+
+        if (!query.selector) {
+          query.selector = {};
         }
 
         if (!query.selector[key]) {
@@ -173,7 +181,7 @@ export function preparePouchDbQuery(schema, mutateableQuery) {
   } // regex does not work over the primary key
 
 
-  if (overwritable.isDevMode() && query.selector[primaryKey] && query.selector[primaryKey].$regex) {
+  if (overwritable.isDevMode() && query.selector && query.selector[primaryKey] && query.selector[primaryKey].$regex) {
     throw newRxError('QU4', {
       path: primaryKey,
       query: mutateableQuery
@@ -195,12 +203,12 @@ export function preparePouchDbQuery(schema, mutateableQuery) {
   } // strip empty selectors
 
 
-  Object.entries(query.selector).forEach(function (_ref2) {
+  Object.entries(ensureNotFalsy(query.selector)).forEach(function (_ref2) {
     var k = _ref2[0],
         v = _ref2[1];
 
     if (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0) {
-      delete query.selector[k];
+      delete ensureNotFalsy(query.selector)[k];
     }
   });
   /**

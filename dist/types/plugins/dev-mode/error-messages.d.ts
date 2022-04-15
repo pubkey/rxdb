@@ -10,9 +10,7 @@ export declare const ERROR_MESSAGES: {
     UT4: string;
     PL1: string;
     PL2: string;
-    P1: string;
     P2: string;
-    P3: string;
     QU1: string;
     QU4: string;
     QU5: string;
@@ -21,6 +19,7 @@ export declare const ERROR_MESSAGES: {
     QU10: string;
     QU11: string;
     QU12: string;
+    QU13: string;
     MQ1: string;
     MQ2: string;
     MQ3: string;
@@ -93,6 +92,7 @@ export declare const ERROR_MESSAGES: {
     LD5: string;
     LD6: string;
     LD7: string;
+    LD8: string;
     RC1: string;
     RC2: string;
     RC3: string;
@@ -127,6 +127,12 @@ export declare const ERROR_MESSAGES: {
     SC30: string;
     SC32: string;
     SC33: string;
+    SC34: string;
+    SC35: string;
+    SC36: string;
+    SC37: string;
+    SC38: string;
+    SC39: string;
     DEV1: string;
     VD1: string;
     VD2: string;

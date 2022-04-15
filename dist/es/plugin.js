@@ -4,7 +4,6 @@
  * by passing them to the plugins-functions
  */
 import { RxSchema } from './rx-schema';
-import { Crypter } from './crypter';
 import { basePrototype as RxDocumentPrototype } from './rx-document';
 import { RxQueryBase } from './rx-query';
 import { RxCollectionBase } from './rx-collection';
@@ -18,7 +17,6 @@ import { newRxTypeError } from './rx-error';
 
 var PROTOTYPES = {
   RxSchema: RxSchema.prototype,
-  Crypter: Crypter.prototype,
   RxDocument: RxDocumentPrototype,
   RxQuery: RxQueryBase.prototype,
   RxCollection: RxCollectionBase.prototype,
@@ -52,6 +50,10 @@ export function addRxPlugin(plugin) {
     throw newRxTypeError('PL1', {
       plugin: plugin
     });
+  }
+
+  if (plugin.init) {
+    plugin.init();
   } // prototype-overwrites
 
 
@@ -72,8 +74,15 @@ export function addRxPlugin(plugin) {
   if (plugin.hooks) {
     Object.entries(plugin.hooks).forEach(function (_ref2) {
       var name = _ref2[0],
-          fun = _ref2[1];
-      return HOOKS[name].push(fun);
+          hooksObj = _ref2[1];
+
+      if (hooksObj.after) {
+        HOOKS[name].push(hooksObj.after);
+      }
+
+      if (hooksObj.before) {
+        HOOKS[name].unshift(hooksObj.before);
+      }
     });
   }
 }

@@ -31,6 +31,11 @@ export type RxCollectionCreator = {
     methods?: KeyFunctionMap;
     attachments?: KeyFunctionMap;
     options?: any;
+    /**
+     * Set this to true if you want to store local documents
+     * in the RxCollection instance.
+     */
+    localDocuments?: boolean;
     cacheReplacementPolicy?: RxCacheReplacementPolicy;
 }
 

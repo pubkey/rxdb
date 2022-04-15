@@ -3,24 +3,16 @@ import type {
     QueryMatcher
 } from 'event-reduce-js';
 import type {
-    BulkWriteLocalRow,
     BulkWriteRow,
-    ChangeStreamOnceOptions,
     EventBulk,
     PreparedQuery,
     RxDocumentData,
-    RxDocumentWriteData,
-    RxKeyObjectStorageInstanceCreationParams,
-    RxLocalDocumentData,
-    RxLocalStorageBulkWriteResponse,
     RxStorageBulkWriteResponse,
-    RxStorageChangedDocumentMeta,
     RxStorageChangeEvent,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
 } from './rx-storage';
 import type {
-    BlobBuffer,
     MangoQuery,
     MangoQuerySortPart,
     RxJsonSchema
@@ -67,28 +59,29 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
      * that can contain the internal database
      * For example the PouchDB instance
      */
-    createStorageInstance<DocumentData>(
-        params: RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions>
-    ): Promise<RxStorageInstance<DocumentData, Internals, InstanceCreationOptions>>;
-
-    /**
-     * Creates the internal storage instance
-     * that is only cappable of saving schemaless key-object sets.
-     */
-    createKeyObjectStorageInstance(
-        params: RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions>
-    ): Promise<RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>>;
+    createStorageInstance<RxDocType>(
+        params: RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions>
+    ): Promise<RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>>;
 }
 
 
-export type FilledMangoQuery<DocumentData> = MangoQuery<DocumentData> & {
+/**
+ * User provided mango queries will be filled up by RxDB via normalizeMangoQuery()
+ * so we do not have to do many if-field-exist tests in the internals.
+ */
+export type FilledMangoQuery<RxDocType> = MangoQuery<RxDocType> & {
     /**
-     * In contrast to the user-provided MangoQuery,
-     * the sorting is required here because
-     * RxDB has to ensure that the primary key is always
-     * part of the sort params.
+ * In contrast to the user-provided MangoQuery,
+ * the sorting is required here because
+ * RxDB has to ensure that the primary key is always
+ * part of the sort params.
+ */
+    sort: MangoQuerySortPart<RxDocType>[];
+
+    /**
+     * Skip must be set which defaults to 0
      */
-    sort: MangoQuerySortPart<DocumentData>[];
+    skip: number;
 }
 
 /**
@@ -130,34 +123,34 @@ export type RxStorageStatics = Readonly<{
      * PouchDB and others have some bugs
      * and behaviors that must be worked arround
      * before querying the db.
+     * 
+     * Also some storages do optimizations
+     * and other things related to query planning.
+     * 
      * For performance reason this preparation
      * runs in a single step so it can be cached
      * when the query is used multiple times.
-     * 
-     * If your custom storage engine is capable of running
-     * all valid mango queries properly, just return the
-     * mutateableQuery here.
-     * 
      *
      * @returns a format of the query that can be used with the storage
+     * when calling .query()
      */
-    prepareQuery<DocumentData>(
-        schema: RxJsonSchema<DocumentData>,
+    prepareQuery<RxDocType>(
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         /**
          * a query that can be mutated by the function without side effects.
          */
-        mutateableQuery: FilledMangoQuery<DocumentData>
-    ): PreparedQuery<DocumentData>;
+        mutateableQuery: FilledMangoQuery<RxDocType>
+    ): PreparedQuery<RxDocType>;
 
     /**
      * Returns the sort-comparator,
      * which is able to sort documents in the same way
      * a query over the db would do.
      */
-    getSortComparator<DocumentData>(
-        schema: RxJsonSchema<DocumentData>,
-        query: MangoQuery<DocumentData>
-    ): DeterministicSortComparator<DocumentData>;
+    getSortComparator<RxDocType>(
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+        preparedQuery: PreparedQuery<RxDocType>
+    ): DeterministicSortComparator<RxDocType>;
 
     /**
      * Returns a function
@@ -165,14 +158,33 @@ export type RxStorageStatics = Readonly<{
      * matches the query.
      *  
      */
-    getQueryMatcher<DocumentData>(
-        schema: RxJsonSchema<DocumentData>,
-        query: MangoQuery<DocumentData>
-    ): QueryMatcher<RxDocumentWriteData<DocumentData>>;
+    getQueryMatcher<RxDocType>(
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+        preparedQuery: PreparedQuery<RxDocType>
+    ): QueryMatcher<RxDocumentData<RxDocType>>;
 }>;
 
 
-export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {
+
+export interface RxStorageInstance<
+    /**
+     * The type of the documents that can be stored in this instance.
+     * All documents in an instance must comply to the same schema.
+     * Also all documents are RxDocumentData with the meta properties like
+     * _deleted or _rev etc.
+     */
+    RxDocType,
+    Internals,
+    InstanceCreationOptions
+    > {
+
+    /**
+     * The RxStorage which was used to create the given instance.
+     * We need this here to make it easy to get access static methods and stuff
+     * when working with the RxStorageInstance.
+     */
+    readonly storage: RxStorage<Internals, InstanceCreationOptions>;
+
     readonly databaseName: string;
     /**
      * Returns the internal data that is used by the storage engine.
@@ -180,91 +192,16 @@ export interface RxStorageInstanceBase<Internals, InstanceCreationOptions> {
      */
     readonly internals: Readonly<Internals>;
     readonly options: Readonly<InstanceCreationOptions>;
-
     /**
-     * Closes the storage instance so it cannot be used
-     * anymore and should clear all memory.
-     * The returned promise must resolve when everything is cleaned up.
+     * The schema that defines the documents that are stored in this instance.
+     * Notice that the schema must be enhanced with the meta properties like
+     * _meta, _rev and _deleted etc. which are added by fillWithDefaultSettings()
      */
-    close(): Promise<void>;
-
-    /**
-     * Remove the database and
-     * deletes all of its data.
-     */
-    remove(): Promise<void>;
-}
-
-/**
- * A StorageInstance that is only capable of saving key-object relations,
- * cannot be queried and has no schema.
- * In the past we saved normal and local documents into the same instance of pouchdb.
- * This was bad because it means that on migration or deletion, we always
- * will remove the local documents. Now this is splitted into
- * as separate RxStorageKeyObjectInstance that only stores the local documents
- * aka key->object sets.
- */
-export interface RxStorageKeyObjectInstance<Internals, InstanceCreationOptions>
-    extends RxStorageInstanceBase<Internals, InstanceCreationOptions> {
-
-    /**
-     * Writes multiple local documents to the storage instance.
-     * The write for each single document is atomic, there
-     * is not transaction arround all documents.
-     * It must be possible that some document writes succeed
-     * and others error.
-     * We need this to have a similar behavior as most NoSQL databases.
-     * Local documents always have _id as primary and cannot have attachments.
-     * They can only be queried directly by their primary _id.
-     */
-    bulkWrite<D = any>(
-        documentWrites: BulkWriteLocalRow<D>[]
-    ): Promise<
-        /**
-         * returns the response, splitted into success and error lists.
-         */
-        RxLocalStorageBulkWriteResponse<D>
-    >;
-
-    /**
-     * Get Multiple local documents by their primary value.
-     */
-    findLocalDocumentsById<D = any>(
-        /**
-         * List of primary values
-         * of the documents to find.
-         */
-        ids: string[],
-        /**
-         * If set to true, deleted documents will also be returned.
-         */
-        withDeleted: boolean
-    ): Promise<{
-        [documentId: string]: RxLocalDocumentData<D>
-    }>;
-
-    /**
-     * Emits all changes to the local documents.
-     */
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxLocalDocumentData>>>;
-}
-
-export interface RxStorageInstance<
-    /**
-     * The type of the documents that can be stored in this instance.
-     * All documents in an instance must comply to the same schema.
-     */
-    DocumentData,
-    Internals,
-    InstanceCreationOptions
-    >
-    extends RxStorageInstanceBase<Internals, InstanceCreationOptions> {
-
-    readonly schema: Readonly<RxJsonSchema<DocumentData>>;
+    readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>;
     readonly collectionName: string;
 
     /**
-     * Writes multiple non-local documents to the storage instance.
+     * Writes multiple documents to the storage instance.
      * The write for each single document is atomic, there
      * is no transaction arround all documents.
      * The written documents must be the newest revision of that documents data.
@@ -274,27 +211,13 @@ export interface RxStorageInstance<
      * and others error. We need this to have a similar behavior as most NoSQL databases.
      */
     bulkWrite(
-        documentWrites: BulkWriteRow<DocumentData>[]
+        documentWrites: BulkWriteRow<RxDocType>[]
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.
          */
-        RxStorageBulkWriteResponse<DocumentData>
+        RxStorageBulkWriteResponse<RxDocType>
     >;
-
-    /**
-     * Adds revisions of documents to the storage instance.
-     * The revisions do not have to be the newest ones but can also be past
-     * states of the documents.
-     * Adding revisions can never cause conflicts.
-     * 
-     * Notice: When a revisions of a document is added and the storage instance
-     * decides that this is now the newest revision, the changeStream() must emit an event
-     * based on what the previous newest revision of the document was.
-     */
-    bulkAddRevisions(
-        documents: RxDocumentData<DocumentData>[]
-    ): Promise<void>;
 
     /**
      * Get Multiple documents by their primary value.
@@ -311,7 +234,7 @@ export interface RxStorageInstance<
          */
         withDeleted: boolean
     ): Promise<{
-        [documentId: string]: RxDocumentData<DocumentData>
+        [documentId: string]: RxDocumentData<RxDocType>
     }>;
 
     /**
@@ -331,8 +254,8 @@ export interface RxStorageInstance<
          * This makes it easier to have good performance
          * when transformations of the query must be done.
          */
-        preparedQuery: PreparedQuery<DocumentData>
-    ): Promise<RxStorageQueryResult<DocumentData>>;
+        preparedQuery: PreparedQuery<RxDocType>
+    ): Promise<RxStorageQueryResult<RxDocType>>;
 
 
     /**
@@ -341,24 +264,30 @@ export interface RxStorageInstance<
     getAttachmentData(
         documentId: string,
         attachmentId: string
-    ): Promise<BlobBuffer>;
+    ): Promise<string>;
+
 
     /**
-     * Returns the ids of all documents that have been
-     * changed since the given sinceSequence.
+     * Returns the current (not the old!) data of all documents that have been changed AFTER the given checkpoint.
+     * If the returned array does not reach the limit, it can be assumed that the "end" is reached, when paginating over the changes.
+     * Also returns a new checkpoint for each document which can be used to continue with the pagination from that change on.
+     * Must never return the same document multiple times in the same call operation.
+     * This is used by RxDB to known what has changed since X so these docs can be handled by the backup or the replication
+     * plugin.
      */
-    getChangedDocuments(
-        options: ChangeStreamOnceOptions
+    getChangedDocumentsSince(
+        limit: number,
+        checkpoint?: any
     ): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[],
+        document: RxDocumentData<RxDocType>;
         /**
-         * The last sequence number is returned in a separate field
-         * because the storage instance might have left out some events
-         * that it does not want to send out to the user.
-         * But still we need to know that they are there for a gapless pagination.
+         * For each document, an own checkpoint is returned.
+         * This is usefull when RxDB does only need a part of the returned changes
+         * but still wants to be able to continue the pagination
+         * from the correct document on.
          */
-        lastSequence: number;
-    }>;
+        checkpoint: any;
+    }[]>;
 
     /**
      * Returns an ongoing stream
@@ -366,5 +295,42 @@ export interface RxStorageInstance<
      * storage instance.
      * Do not forget to unsubscribe.
      */
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+
+    /**
+     * Runs a cleanup that removes all tompstones
+     * of documents that have _deleted set to true
+     * to free up disc space.
+     * 
+     * Returns true if all cleanable documents have been removed.
+     * Returns false if there are more documents to be cleaned up,
+     * but not all have been purged because that would block the storage for too long.
+     */
+    cleanup(
+        /**
+         * The minimum time in milliseconds
+         * of how long a document must have been deleted
+         * until it is purged by the cleanup.
+         */
+        minimumDeletedTime: number
+    ): Promise<
+        /**
+         * True if all docs cleaned up,
+         * false if there are more docs to clean up
+         */
+        boolean
+    >;
+
+    /**
+     * Closes the storage instance so it cannot be used
+     * anymore and should clear all memory.
+     * The returned promise must resolve when everything is cleaned up.
+     */
+    close(): Promise<void>;
+
+    /**
+     * Remove the database and
+     * deletes all of its data.
+     */
+    remove(): Promise<void>;
 }

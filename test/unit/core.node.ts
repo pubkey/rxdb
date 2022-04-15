@@ -20,8 +20,8 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-
-addRxPlugin(require('../../plugins/validate'));
+import { RxDBValidatePlugin } from '../../plugins/validate';
+addRxPlugin(RxDBValidatePlugin);
 addPouchPlugin(require('pouchdb-adapter-memory'));
 
 const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string }> = {
@@ -33,7 +33,8 @@ const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: st
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'

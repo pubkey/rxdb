@@ -50,19 +50,15 @@ import {
     getPreviousVersions
 } from '../../rx-schema';
 import {
-    createCrypter
-} from '../../crypter';
-import {
     getMigrationStateByDatabase,
     MigrationStateWithCollection
 } from './migration-state';
 import { map } from 'rxjs/operators';
 import {
     getAllDocuments,
-    getSingleDocument,
     getWrappedStorageInstance
 } from '../../rx-storage-helper';
-import { InternalStoreDocumentData } from '../../rx-database';
+import { getPrimaryKeyOfInternalDocument, InternalStoreCollectionDocType, INTERNAL_CONTEXT_COLLECTION } from '../../rx-database-internal-store';
 
 export class DataMigrator {
 
@@ -125,7 +121,6 @@ export class DataMigrator {
                         this.nonMigratedOldCollections
                             .map(oldCol => getAllDocuments(
                                 oldCol.schema.primaryPath,
-                                this.database.storage,
                                 oldCol.storageInstance
                             ).then(allDocs => allDocs.length))
                     );
@@ -221,8 +216,6 @@ export async function createOldCollection(
     dataMigrator: DataMigrator
 ): Promise<OldRxCollection> {
     const database = dataMigrator.newestCollection.database;
-    const schema = createRxSchema(schemaObj, false);
-
     const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
         databaseName: database.name,
         collectionName: dataMigrator.newestCollection.name,
@@ -244,28 +237,33 @@ export async function createOldCollection(
         newestCollection: dataMigrator.newestCollection,
         database,
         schema: createRxSchema(schemaObj, false),
-        storageInstance,
-        _crypter: createCrypter(
-            database.password,
-            schema
-        )
+        storageInstance
     };
 
-    ret.storageInstance = getWrappedStorageInstance(ret as any, storageInstance);
+    ret.storageInstance = getWrappedStorageInstance(
+        ret.database,
+        storageInstance,
+        schemaObj
+    );
 
     return ret;
 }
 
 
-export async function getOldCollectionDocs(
+export function getOldCollectionDocs(
     dataMigrator: DataMigrator
-): Promise<RxDocumentData<InternalStoreDocumentData>[]> {
-    return Promise.all(
-        getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
-            .map(v => getSingleDocument<InternalStoreDocumentData>(dataMigrator.database.internalStore, dataMigrator.name + '-' + v))
-            .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
-    )
-        .then(oldCollectionDocs => (oldCollectionDocs as any).filter((d: any) => !!d));
+): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
+
+    const collectionDocKeys = getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
+        .map(version => dataMigrator.name + '-' + version);
+
+    return dataMigrator.database.internalStore.findDocumentsById(
+        collectionDocKeys.map(key => getPrimaryKeyOfInternalDocument(
+            key,
+            INTERNAL_CONTEXT_COLLECTION
+        )),
+        false
+    ).then(docsObj => Object.values(docsObj));
 }
 
 /**
@@ -283,8 +281,8 @@ export async function _getOldCollections(
                     return null as any;
                 }
                 return createOldCollection(
-                    colDoc.schema.version,
-                    colDoc.schema,
+                    colDoc.data.schema.version,
+                    colDoc.data.schema,
                     dataMigrator
                 );
             })
@@ -335,7 +333,8 @@ export function getBatchOfOldCollection(
         {
             selector: {},
             sort: [{ [oldCollection.schema.primaryPath]: 'asc' } as any],
-            limit: batchSize
+            limit: batchSize,
+            skip: 0
         }
     );
 
@@ -457,7 +456,7 @@ export async function _migrateDocuments(
     );
 
 
-    const bulkWriteToStorageInput: any[] = [];
+    const bulkWriteToStorageInput: RxDocumentData<any>[] = [];
     const actions: any[] = [];
 
     documentsData.forEach((docData, idx) => {
@@ -524,7 +523,9 @@ export async function _migrateDocuments(
      * runs on multiple nodes which must lead to the equal storage state.
      */
     if (bulkWriteToStorageInput.length) {
-        await oldCollection.newestCollection.storageInstance.bulkAddRevisions(bulkWriteToStorageInput);
+        await oldCollection.newestCollection.storageInstance.bulkWrite(
+            bulkWriteToStorageInput.map(document => ({ document }))
+        );
     }
 
     // run hooks

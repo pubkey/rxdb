@@ -12,7 +12,6 @@ import {
     trimDots,
     getHeightOfRevision,
     pluginMissing,
-    nextTick,
     flatClone,
     PROMISE_RESOLVE_NULL,
     PROMISE_RESOLVE_VOID,
@@ -251,6 +250,9 @@ export const basePrototype = {
             return overwritable.deepFreezeWhenDevMode(this._data);
         }
     },
+    toMutableJSON(this: RxDocument, withMetaFields = false) {
+        return clone(this.toJSON(withMetaFields as any));
+    },
 
     /**
      * set data by objectPath
@@ -332,6 +334,7 @@ export const basePrototype = {
                             if (this.collection) {
                                 newData = this.collection.schema.fillObjectWithDefaults(newData);
                             }
+
                             await this._saveData(newData, oldData);
                             done = true;
                         } catch (err) {
@@ -343,8 +346,6 @@ export const basePrototype = {
                              * we can just re-run the mutation until there is no conflict
                              */
                             if (isPouchdbConflictError(err as any)) {
-                                // we need to free the cpu for a tick or the browser tests will fail
-                                await nextTick();
                                 // pouchdb conflict error -> retrying
                             } else {
                                 rej(err);

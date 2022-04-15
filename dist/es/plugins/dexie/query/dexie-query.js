@@ -1,8 +1,8 @@
-import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema';
+import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema-helper';
 import { clone, ensureNotFalsy } from '../../../util';
 import { getPouchIndexDesignDocNameByIndex, POUCHDB_DESIGN_PREFIX, pouchSwapIdToPrimaryString } from '../../pouchdb';
 import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';
-import { DEXIE_DOCS_TABLE_NAME, stripDexieKey } from '../dexie-helper';
+import { DEXIE_DOCS_TABLE_NAME } from '../dexie-helper';
 import { RxStorageDexieStatics } from '../rx-storage-dexie';
 import { generateKeyRange } from './pouchdb-find-query-planer/indexeddb-find';
 import { planQuery } from './pouchdb-find-query-planer/query-planner';
@@ -123,14 +123,6 @@ export var dexieQuery = function dexieQuery(instance, preparedQuery) {
 
 
         rows = rows.slice(skip, skipPlusLimit);
-        /**
-         * Strip internal keys as last operation
-         * so it has to run over less documents.
-         */
-
-        rows = rows.map(function (docData) {
-          return stripDexieKey(docData);
-        });
         /**
          * Comment this in for debugging to check all fields in the database.
          */

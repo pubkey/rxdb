@@ -306,7 +306,8 @@ config.parallel('rx-document.test.js', () => {
                     required: ['id'],
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         childProperty: {
                             type: 'string',
@@ -745,6 +746,15 @@ config.parallel('rx-document.test.js', () => {
             db.destroy();
         });
     });
+    describe('.toMutableJSON()', () => {
+        it('should be able to mutate the output', async () => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec(true);
+            const json = doc.toMutableJSON();
+            json.firstName = 'alice';
+            c.database.destroy();
+        });
+    });
     describe('pseudo-Proxy', () => {
         describe('get', () => {
             it('top-value', async () => {
@@ -932,7 +942,7 @@ config.parallel('rx-document.test.js', () => {
             const newSkill = 'newSikSkill';
             await doc.atomicPatch({ skills: doc.skills.concat(newSkill) });
 
-            const colDump = await col.exportJSON(true);
+            const colDump = await col.exportJSON();
             const afterSkills = colDump.docs[0].skills;
             assert.strictEqual(afterSkills.length, 4);
             assert.ok(afterSkills.includes(newSkill));
@@ -949,7 +959,8 @@ config.parallel('rx-document.test.js', () => {
                 type: 'object',
                 properties: {
                     key: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     value: {
                         type: 'object'
@@ -988,7 +999,8 @@ config.parallel('rx-document.test.js', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     children: {
                         type: 'array',

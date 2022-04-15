@@ -1,11 +1,12 @@
-import { flatClone, adapterObject, isMaybeReadonlyArray } from '../../util';
-import { isLevelDown, PouchDB } from './pouch-db';
+import { adapterObject, isMaybeReadonlyArray } from '../../util';
+import { addPouchPlugin, isLevelDown, PouchDB } from './pouch-db';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
-import { RxStorageKeyObjectInstancePouch } from './rx-storage-key-object-instance-pouch';
 import { getPouchIndexDesignDocNameByIndex } from './pouchdb-helper';
+import PouchDBFind from 'pouchdb-find';
 import { RxStoragePouchStatics } from './pouch-statics';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { addCustomEventsPluginToPouch } from './custom-events-plugin';
 
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
@@ -113,35 +114,10 @@ export var RxStoragePouch = /*#__PURE__*/function () {
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this4.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
-          return new RxStorageInstancePouch(params.databaseName, params.collectionName, params.schema, {
+          return new RxStorageInstancePouch(_this4, params.databaseName, params.collectionName, params.schema, {
             pouch: pouch
           }, params.options);
         });
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
-  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
-    try {
-      var _this6 = this;
-
-      var useOptions = flatClone(params.options); // no compaction because this only stores local documents
-
-      useOptions.auto_compaction = false;
-      useOptions.revs_limit = 1;
-      /**
-       * TODO shouldnt we use a different location
-       * for the local storage? Or at least make sure we
-       * reuse the same pouchdb instance?
-       */
-
-      var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, 0);
-      return Promise.resolve(_this6.createPouch(pouchLocation, params.options)).then(function (pouch) {
-        return new RxStorageKeyObjectInstancePouch(params.databaseName, params.collectionName, {
-          pouch: pouch
-        }, params.options);
       });
     } catch (e) {
       return Promise.reject(e);
@@ -157,7 +133,6 @@ export var RxStoragePouch = /*#__PURE__*/function () {
 
 export function checkPouchAdapter(adapter) {
   if (typeof adapter === 'string') {
-    // TODO make a function hasAdapter()
     if (!PouchDB.adapters || !PouchDB.adapters[adapter]) {
       throw newRxError('DB9', {
         adapter: adapter
@@ -187,7 +162,14 @@ export function getPouchLocation(dbName, collectionName, schemaVersion) {
     return ret;
   }
 }
+var addedRxDBPouchPlugins = false;
 export function getRxStoragePouch(adapter, pouchSettings) {
+  if (!addedRxDBPouchPlugins) {
+    addedRxDBPouchPlugins = true;
+    addPouchPlugin(PouchDBFind);
+    addCustomEventsPluginToPouch();
+  }
+
   if (!adapter) {
     throw new Error('adapter missing');
   }

@@ -7,7 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxDBUpdatePlugin = void 0;
 exports.RxQueryUpdate = RxQueryUpdate;
-exports.rxdb = exports.prototypes = void 0;
 exports.update = update;
 
 var _modifyjs = _interopRequireDefault(require("modifyjs"));
@@ -44,21 +43,17 @@ function RxQueryUpdate(updateObj) {
   });
 }
 
-var rxdb = true;
-exports.rxdb = rxdb;
-var prototypes = {
-  RxDocument: function RxDocument(proto) {
-    proto.update = update;
-  },
-  RxQuery: function RxQuery(proto) {
-    proto.update = RxQueryUpdate;
-  }
-};
-exports.prototypes = prototypes;
 var RxDBUpdatePlugin = {
   name: 'update',
-  rxdb: rxdb,
-  prototypes: prototypes
+  rxdb: true,
+  prototypes: {
+    RxDocument: function RxDocument(proto) {
+      proto.update = update;
+    },
+    RxQuery: function RxQuery(proto) {
+      proto.update = RxQueryUpdate;
+    }
+  }
 };
 exports.RxDBUpdatePlugin = RxDBUpdatePlugin;
 //# sourceMappingURL=update.js.map

@@ -6,7 +6,7 @@ A collection stores documents of the same type.
 To create one or more collections you need a RxDatabase object which has the `.addCollections()`-method. Every collection needs a collection name and a valid `RxJsonSchema`. Other attributes are optional.
 
 ```js
-const myCollection = await myDatabase.addCollections({
+const myCollections = await myDatabase.addCollections({
   // key = collectionName
   humans: {
     schema: mySchema,
@@ -145,6 +145,23 @@ const doc = await myCollection.upsert({
 });
 ```
 
+### bulkUpsert()
+Same as `upsert()` but runs over multiple documents. Improves performance compared to running many `upsert()` calls.
+
+```js
+const docs = await myCollection.bulkUpsert([
+  {
+    name: 'foo',
+    lastname: 'bar2'
+  },
+  {
+    name: 'bar',
+    lastname: 'foo2'
+  }
+]);
+// > [RxDocument, RxDocument]
+```
+
 ### atomicUpsert()
 
 When you run many upsert operations on the same RxDocument in a very short timespan, you might get a `409 Conflict` error.
@@ -228,7 +245,7 @@ Same as `findByIds()` but returns an `Observable` that emits the `Map` each time
 
 
 ### exportJSON()
-Use this function to create a json export from every document in the collection. You can pass true as a parameter to decrypt the encrypted data fields of your documents.
+Use this function to create a json export from every document in the collection.
 
 
 Before `exportJSON()` and `importJSON()` can be used, you have to add the `json-dump` plugin.
@@ -241,10 +258,6 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
 ```js
 myCollection.exportJSON()
-  .then(json => console.dir(json));
-
-// decrypted dump
-myCollection.exportJSON(true)
   .then(json => console.dir(json));
 ```
 

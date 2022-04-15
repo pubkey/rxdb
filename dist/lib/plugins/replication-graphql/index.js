@@ -19,8 +19,6 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("../../util");
 
-var _core = require("../../core");
-
 var _helper = require("./helper");
 
 Object.keys(_helper).forEach(function (key) {
@@ -44,6 +42,8 @@ var _replication = require("../replication");
 var _rxReplicationError = require("../replication/rx-replication-error");
 
 var _rxError = require("../../rx-error");
+
+var _index = require("../../index");
 
 var _graphqlSchemaFromRxSchema = require("./graphql-schema-from-rx-schema");
 
@@ -77,8 +77,6 @@ Object.keys(_queryBuilderFromRxSchema).forEach(function (key) {
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with remote graphql endpoint
  */
-(0, _core.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
-
 var RxGraphQLReplicationState = /*#__PURE__*/function () {
   function RxGraphQLReplicationState(
   /**
@@ -317,6 +315,9 @@ function syncGraphQL(_ref) {
 
 var RxDBReplicationGraphQLPlugin = {
   name: 'replication-graphql',
+  init: function init() {
+    (0, _index.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
+  },
   rxdb: true,
   prototypes: {
     RxCollection: function RxCollection(proto) {

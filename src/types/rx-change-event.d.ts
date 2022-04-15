@@ -1,4 +1,4 @@
-import { EventBulk } from './rx-storage';
+import { EventBulk, RxDocumentData } from './rx-storage';
 import { DeepReadonly } from './util';
 
 export type RxChangeEventBase = {
@@ -23,20 +23,20 @@ export type RxChangeEventBase = {
 
 export type RxChangeEventInsert<DocType> = RxChangeEventBase & {
     operation: 'INSERT';
-    documentData: DeepReadonly<DocType>;
+    documentData: DeepReadonly<RxDocumentData<DocType>>;
     previousDocumentData: null;
 }
 
 export type RxChangeEventUpdate<DocType> = RxChangeEventBase & {
     operation: 'UPDATE';
-    documentData: DeepReadonly<DocType>;
-    previousDocumentData: DeepReadonly<DocType> | 'UNKNOWN';
+    documentData: DeepReadonly<RxDocumentData<DocType>>;
+    previousDocumentData: DeepReadonly<RxDocumentData<DocType>> | 'UNKNOWN';
 }
 
 export type RxChangeEventDelete<DocType> = RxChangeEventBase & {
     operation: 'DELETE';
     documentData: null;
-    previousDocumentData: DeepReadonly<DocType> | 'UNKNOWN';
+    previousDocumentData: DeepReadonly<RxDocumentData<DocType>> | 'UNKNOWN';
 }
 
 export type RxChangeEvent<DocType> = RxChangeEventInsert<DocType> | RxChangeEventUpdate<DocType> | RxChangeEventDelete<DocType>;

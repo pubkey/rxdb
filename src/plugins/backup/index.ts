@@ -19,7 +19,7 @@ import type {
     RxDocument,
     RxPlugin
 } from '../../types';
-import { getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
+import { getFromMapOrThrow, lastOfArray, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
 import {
     clearFolder,
     deleteFolder,
@@ -126,45 +126,40 @@ export class RxBackupState {
 
         await Promise.all(
             Object
-                .keys(this.database.collections)
-                .map(async (collectionName) => {
+                .entries(this.database.collections)
+                .map(async ([collectionName, collection]) => {
+                    const primaryKey = collection.schema.primaryPath;
                     const processedDocuments: Set<string> = new Set();
-                    const collection: RxCollection = this.database.collections[collectionName];
 
                     await this.database.requestIdlePromise();
 
                     if (!meta.collectionStates[collectionName]) {
-                        meta.collectionStates[collectionName] = {
-                            lastSequence: 0
-                        };
+                        meta.collectionStates[collectionName] = {};
                     }
-                    let lastSequence = meta.collectionStates[collectionName].lastSequence;
+                    let lastCheckpoint = meta.collectionStates[collectionName].checkpoint;
 
                     let hasMore = true;
                     while (hasMore && !this.isStopped) {
                         await this.database.requestIdlePromise();
+                        const changesResult = await collection.storageInstance.getChangedDocumentsSince(
+                            this.options.batchSize ? this.options.batchSize : 0,
+                            lastCheckpoint
+                        );
+                        lastCheckpoint = changesResult.length > 0 ? lastOfArray(changesResult).checkpoint : lastCheckpoint;
+                        meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
 
-                        const changesResult = await collection.storageInstance.getChangedDocuments({
-                            sinceSequence: lastSequence,
-                            limit: this.options.batchSize,
-                            direction: 'after'
-                        });
-                        lastSequence = changesResult.lastSequence;
-
-                        meta.collectionStates[collectionName].lastSequence = lastSequence;
-
-                        const docIds: string[] = changesResult.changedDocuments
-                            .filter(changedDocument => {
+                        const docIds: string[] = changesResult
+                            .map(row => row.document[primaryKey])
+                            .filter(id => {
                                 if (
-                                    processedDocuments.has(changedDocument.id)
+                                    processedDocuments.has(id)
                                 ) {
                                     return false;
                                 } else {
-                                    processedDocuments.add(changedDocument.id);
+                                    processedDocuments.add(id);
                                     return true;
                                 }
                             })
-                            .map(r => r.id)
                             .filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique
                         await this.database.requestIdlePromise();
 
@@ -200,10 +195,8 @@ export class RxBackupState {
                                     });
                                 })
                         );
-
                     }
-
-                    meta.collectionStates[collectionName].lastSequence = lastSequence;
+                    meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
                     await setMeta(this.options, meta);
                 })
         );
@@ -272,10 +265,12 @@ export const RxDBBackupPlugin: RxPlugin = {
         }
     },
     hooks: {
-        preDestroyRxDatabase(db: RxDatabase) {
-            const states = BACKUP_STATES_BY_DB.get(db);
-            if (states) {
-                states.forEach(state => state.cancel());
+        preDestroyRxDatabase: {
+            after: function preDestroyRxDatabase(db: RxDatabase) {
+                const states = BACKUP_STATES_BY_DB.get(db);
+                if (states) {
+                    states.forEach(state => state.cancel());
+                }
             }
         }
     }

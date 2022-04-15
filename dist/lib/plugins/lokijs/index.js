@@ -42,17 +42,4 @@ Object.keys(_rxStorageInstanceLoki).forEach(function (key) {
     }
   });
 });
-
-var _rxStorageKeyObjectInstanceLoki = require("./rx-storage-key-object-instance-loki");
-
-Object.keys(_rxStorageKeyObjectInstanceLoki).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _rxStorageKeyObjectInstanceLoki[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _rxStorageKeyObjectInstanceLoki[key];
-    }
-  });
-});
 //# sourceMappingURL=index.js.map

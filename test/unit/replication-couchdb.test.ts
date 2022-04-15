@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil, { waitUntil } from 'async-test-util';
+import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
@@ -38,7 +38,6 @@ import {
     filter,
     first
 } from 'rxjs/operators';
-import { RxDocumentData } from '../../src/types';
 import { HumanDocumentType } from '../helper/schemas';
 
 let request: any;
@@ -113,7 +112,7 @@ describe('replication-couchdb.test.js', () => {
                 });
 
                 const obj = schemaObjects.human();
-                await c.insert(obj);
+                const doc = await c.insert(obj);
                 await pw8.promise;
 
                 await AsyncTestUtil.waitUntil(async () => {
@@ -124,6 +123,24 @@ describe('replication-couchdb.test.js', () => {
                 assert.strictEqual(docs.length, 1);
 
                 assert.strictEqual(docs[0].get('firstName'), obj.firstName);
+
+
+                /**
+                 * Also try a delete
+                 */
+                await doc.remove();
+
+
+                await wait(1000);
+                const ds = await c2.find({
+                    selector: {
+                        age: {
+                            $gt: 0
+                        }
+                    }
+                }).exec();
+                assert.strictEqual(ds.length, 0);
+
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -620,7 +637,7 @@ describe('replication-couchdb.test.js', () => {
                     remote: remoteCollection
                 });
 
-                const emitted: RxChangeEvent<RxDocumentData<HumanDocumentType>>[] = [];
+                const emitted: RxChangeEvent<HumanDocumentType>[] = [];
                 const sub = collection.$.subscribe(cE => {
                     emitted.push(cE);
                 });
@@ -662,7 +679,8 @@ describe('replication-couchdb.test.js', () => {
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     firstName: {
                         type: 'string'

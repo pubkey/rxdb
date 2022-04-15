@@ -9,7 +9,7 @@ var LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-
 var storage = (0, _lokijs.getRxStorageLoki)({
   adapter: new LokiIncrementalIndexedDBAdapter()
 });
-(0, _worker.wrappedRxStorage)({
+(0, _worker.wrappedWorkerRxStorage)({
   storage: storage
 });
 //# sourceMappingURL=lokijs-incremental-indexeddb.worker.js.map

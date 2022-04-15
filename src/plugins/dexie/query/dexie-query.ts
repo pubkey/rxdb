@@ -1,5 +1,5 @@
-import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema';
-import type { MangoQuery, PreparedQuery, RxJsonSchema, RxStorageQueryResult } from '../../../types';
+import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema-helper';
+import type { MangoQuery, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorageQueryResult } from '../../../types';
 import { clone, ensureNotFalsy } from '../../../util';
 import { getPouchIndexDesignDocNameByIndex, POUCHDB_DESIGN_PREFIX, pouchSwapIdToPrimaryString } from '../../pouchdb';
 import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';
@@ -20,8 +20,8 @@ import { planQuery } from './pouchdb-find-query-planer/query-planner';
  * @link https://nolanlawson.com/2021/08/22/speeding-up-indexeddb-reads-and-writes/
  */
 export function getPouchQueryPlan<RxDocType>(
-    schema: RxJsonSchema<RxDocType>,
-    query: PreparedQuery<RxDocType>
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    query: MangoQuery<RxDocType>
 ) {
     const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
 
@@ -203,7 +203,6 @@ export async function dexieQuery<RxDocType>(
                 }
                 index = store.index(indexName);
             }
-
 
             const cursorReq = index.openCursor(keyRange);
             await new Promise<void>(res => {

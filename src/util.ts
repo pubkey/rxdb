@@ -2,6 +2,7 @@ import type {
     BlobBuffer,
     DeepReadonlyObject,
     MaybeReadonly,
+    RxDocumentData,
     RxDocumentMeta
 } from './types';
 import {
@@ -406,19 +407,33 @@ export function getHeightOfRevision(revision: string): number {
 }
 
 /**
- * Creates a revision string that does NOT include the revision height
- * Copied and adapted from pouchdb-utils/src/rev.js
- * 
- * We use our own function so RxDB usage without pouchdb RxStorage
- * does not include pouchdb code in the bundle.
+ * Creates the next write revision for a given document.
  */
-export function createRevision(docData: any): string {
+export function createRevision<RxDocType>(
+    docData: RxDocumentData<RxDocType> & {
+        /**
+         * Passing a revision is optional here,
+         * because it is anyway not needed to calculate
+         * the new revision.
+         */
+        _rev?: string;
+    },
+    previousDocData?: RxDocumentData<RxDocType>
+): string {
+
+    const previousRevision = previousDocData ? previousDocData._rev : null;
+    const previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
+    const newRevisionHeight = previousRevisionHeigth + 1;
+
     const docWithoutRev = Object.assign({}, docData, {
+        _rev: undefined,
         _rev_tree: undefined
     });
-
     const diggestString = JSON.stringify(docWithoutRev);
-    return Md5.hash(diggestString);
+    const revisionHash = Md5.hash(diggestString);
+
+
+    return newRevisionHeight + '-' + revisionHash;
 }
 
 /**
@@ -493,6 +508,7 @@ export const blobBufferUtil = {
         data: string,
         type: string
     ): BlobBuffer {
+
         let blobBuffer: any;
         if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer
@@ -511,6 +527,41 @@ export const blobBufferUtil = {
             blobBuffer = Buffer.from(data, {
                 type
             } as any);
+        }
+
+        return blobBuffer;
+    },
+    /**
+     * depending if we are on node or browser,
+     * we have to use Buffer(node) or Blob(browser)
+     */
+    async createBlobBufferFromBase64(
+        base64String: string,
+        type: string
+    ): Promise<BlobBuffer> {
+        let blobBuffer: any;
+        if (isElectronRenderer) {
+            // if we are inside of electron-renderer, always use the node-buffer
+            return Buffer.from(
+                base64String,
+                'base64'
+            );
+        }
+
+        try {
+            /**
+             * For browsers.
+             * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+             */
+            const base64Response = await fetch(`data:${type};base64,${base64String}`);
+            const blob = await base64Response.blob();
+            return blob;
+        } catch (e) {
+            // for node
+            blobBuffer = Buffer.from(
+                base64String,
+                'base64'
+            );
         }
 
         return blobBuffer;
@@ -553,6 +604,48 @@ export const blobBufferUtil = {
             reader.readAsText(blobBuffer as any);
         });
     },
+    toBase64String(blobBuffer: BlobBuffer | string): Promise<string> {
+        if (typeof blobBuffer === 'string') {
+            return Promise.resolve(blobBuffer);
+        }
+        if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
+            // node
+            return nextTick()
+                /**
+                 * We use btoa() instead of blobBuffer.toString('base64')
+                 * to ensure that we have the same behavior in nodejs and the browser.
+                 */
+                .then(() => blobBuffer.toString('base64'));
+        }
+        return new Promise((res, rej) => {
+            /**
+             * Browser
+             * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+             */
+            const reader = new FileReader;
+            reader.onerror = rej;
+            reader.onload = () => {
+                // looks like 'data:plain/text;base64,YWFh...'
+                const fullResult = reader.result as any;
+                const split = fullResult.split(',');
+                split.shift();
+                res(split.join(','));
+            };
+
+            const blobBufferType = Object.prototype.toString.call(blobBuffer);
+
+            /**
+             * in the electron-renderer we have a typed array insteaf of a blob
+             * so we have to transform it.
+             * @link https://github.com/pubkey/rxdb/issues/1371
+             */
+            if (blobBufferType === '[object Uint8Array]') {
+                blobBuffer = new Blob([blobBuffer]);
+            }
+
+            reader.readAsDataURL(blobBuffer as any);
+        });
+    },
     size(blobBuffer: BlobBuffer): number {
         if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
             // node
@@ -575,6 +668,12 @@ export const RXJS_SHARE_REPLAY_DEFAULTS = {
     refCount: true
 }
 
+/**
+ * We use 1 as minimum so that the value is never falsy.
+ * This const is used in several places because querying
+ * with a value lower then the minimum could give false results.
+ */
+export const RX_META_LWT_MINIMUM = 1;
 
 export function getDefaultRxDocumentMeta(): RxDocumentMeta {
     return {
@@ -584,6 +683,41 @@ export function getDefaultRxDocumentMeta(): RxDocumentMeta {
          * The storage wrappers will anyway update
          * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
          */
-        lwt: 1
+        lwt: RX_META_LWT_MINIMUM
     }
+}
+
+/**
+ * Returns a revision that is not valid.
+ * Use this to have correct typings
+ * while the storage wrapper anyway will overwrite the revision.
+ */
+export function getDefaultRevision(): string {
+    /**
+     * Use a non-valid revision format,
+     * to ensure that the RxStorage will throw
+     * when the revision is not replaced downstream.
+     */
+    return '';
+}
+
+
+export function getSortDocumentsByLastWriteTimeComparator<RxDocType>(primaryPath: string) {
+    return (a: RxDocumentData<RxDocType>, b: RxDocumentData<RxDocType>) => {
+        if (a._meta.lwt === b._meta.lwt) {
+            if ((b as any)[primaryPath] < (a as any)[primaryPath]) {
+                return 1;
+            } else {
+                return -1;
+            }
+        } else {
+            return a._meta.lwt - b._meta.lwt;
+        }
+    };
+}
+export function sortDocumentsByLastWriteTime<RxDocType>(
+    primaryPath: string,
+    docs: RxDocumentData<RxDocType>[]
+): RxDocumentData<RxDocType>[] {
+    return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
 }

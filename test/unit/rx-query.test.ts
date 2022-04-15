@@ -113,6 +113,10 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
         it('ISSUE #190: should contain the regex', async () => {
+            if (!config.storage.hasRegexSupport) {
+                return;
+            }
+
             const col = await humansCollection.create(0);
             const queryWithoutRegex = col.find();
             const queryWithRegex = queryWithoutRegex.where('color').regex(new RegExp(/foobar/g));
@@ -291,7 +295,7 @@ config.parallel('rx-query.test.js', () => {
             const col = await humansCollection.create(1);
             const query = col.find({
                 selector: {
-                    name: {
+                    firstName: {
                         $ne: 'foobar'
                     }
                 }
@@ -361,6 +365,9 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
         it('BUG should not match regex', async () => {
+            if (!config.storage.hasRegexSupport) {
+                return;
+            }
             const col = await humansCollection.create(0);
 
 
@@ -399,9 +406,42 @@ config.parallel('rx-query.test.js', () => {
         });
     });
     describe('.exec()', () => {
+        it('should throw if top level field is not known to the schema', async () => {
+            const col = await humansCollection.create(0);
+
+            await AsyncTestUtil.assertThrows(
+                () => col.find({
+                    selector: {
+                        asdfasdfasdf: 'asdf'
+                    }
+                }).exec(),
+                'RxError',
+                'QU13'
+            );
+
+            // should also detect wrong fields inside of $and
+            await AsyncTestUtil.assertThrows(
+                () => col.find({
+                    selector: {
+                        $and: [
+                            {
+                                asdfasdfasdf: 'asdf'
+                            },
+                            {
+                                asdfasdfasdf: 'asdf'
+                            }
+                        ]
+                    }
+                }).exec(),
+                'RxError',
+                'QU13'
+            );
+
+            col.database.destroy();
+        });
         it('reusing exec should not make a execOverDatabase', async () => {
             const col = await humansCollection.create(2);
-            const q = col.find().where('name').ne('Alice');
+            const q = col.find().where('passportId').ne('Alice');
 
 
             let results = await q.exec();
@@ -738,7 +778,7 @@ config.parallel('rx-query.test.js', () => {
             });
             it('dont crash when findOne with no result', async () => {
                 const c = await humansCollection.create(2);
-                const query = c.findOne().where('agt').gt(1000000);
+                const query = c.findOne().where('age').gt(1000000);
                 await query.update({
                     $set: {
                         firstName: 'new first name'
@@ -757,7 +797,8 @@ config.parallel('rx-query.test.js', () => {
                     type: 'object',
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         childProperty: {
                             type: 'string',
@@ -802,7 +843,8 @@ config.parallel('rx-query.test.js', () => {
                     type: 'object',
                     properties: {
                         user_id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         user_pwd: {
                             type: 'string',
@@ -857,10 +899,14 @@ config.parallel('rx-query.test.js', () => {
                     type: 'object',
                     properties: {
                         id: {
-                            type: 'string'
+                            type: 'string',
+                            maxLength: 100
                         },
                         value: {
-                            type: 'number'
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 1000000,
+                            multipleOf: 1
                         }
                     },
                     indexes: ['value']
@@ -902,7 +948,7 @@ config.parallel('rx-query.test.js', () => {
             const c = await humansCollection.create(2);
             const foundDocs = await c.find({
                 selector: {
-                    foobar: null
+                    passportId: null
                 }
             }).exec();
             assert.ok(Array.isArray(foundDocs));
@@ -970,13 +1016,15 @@ config.parallel('rx-query.test.js', () => {
                 keyCompression: false,
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     info: {
                         type: 'object',
                         properties: {
                             title: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 1000
                             },
                         },
                     }
@@ -1056,10 +1104,12 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     name: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     }
                 },
                 indexes: ['passportId']
@@ -1111,7 +1161,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     event_id: {
                         type: 'number'
@@ -1120,7 +1171,10 @@ config.parallel('rx-query.test.js', () => {
                         type: 'string'
                     },
                     created_at: {
-                        type: 'number'
+                        type: 'number',
+                        minimum: 0,
+                        maximum: 10000000000000000,
+                        multipleOf: 1
                     }
                 },
                 indexes: ['created_at']
@@ -1229,7 +1283,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     roomId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     sessionId: {
                         type: 'string'
@@ -1285,7 +1340,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     firstName: {
                         type: 'string'
@@ -1358,6 +1414,10 @@ config.parallel('rx-query.test.js', () => {
          * via gitter at 11 November 2019 10:10
          */
         it('gitter: query with regex does not return correct results', async () => {
+            if (!config.storage.hasRegexSupport) {
+                return;
+            }
+
             // create a schema
             const mySchema = {
                 version: 0,
@@ -1365,7 +1425,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     passportId: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     firstName: {
                         type: 'string'
@@ -1541,7 +1602,8 @@ config.parallel('rx-query.test.js', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     field: {
                         type: 'boolean'

@@ -3,13 +3,10 @@
 Instead of using PouchDB or [Dexie.js](./rx-storage-dexie.md) as underlying storage engine, you can also use [LokiJS](https://github.com/techfort/LokiJS).
 LokiJS has the main benefit of having a better performance. It can do this because it is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached.
 
-
-## Pros & Cons
-
 ### Pros
 
-- It has a much faster initial load time because it loads all data from IndexedDB in a single request.
-- Queries can run faster because all data is processed in memory
+- Queries can run faster because all data is processed in memory.
+- It has a much faster initial load time because it loads all data from IndexedDB in a single request. But this is only true for small datasets. If much data must is stored, the initial load time can be higher then on other RxStorage implementations.
 
 ### Cons
 
@@ -18,7 +15,7 @@ LokiJS has the main benefit of having a better performance. It can do this becau
 - Data can be lost when the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated.
 - All data must fit into the memory.
 - Slow initialisation time when used with `multiInstance: true` because it has to await the leader election process.
-
+- Slow initialisation time when really much data is stored inside of the database.
 
 ## Usage
 
@@ -98,7 +95,7 @@ Only use this when there is no way to achieve your goals via the RxDB API.
 
 ```javascript
 
-const storageInstance = myRxCollection.internalStorageInstance;
+const storageInstance = myRxCollection.storageInstance;
 const localState = await storageInstance.internals.localState;
 localState.collection.insert({
     key: 'foo',
@@ -119,4 +116,4 @@ await localState.databaseState.saveQueue.addWrite();
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./rx-storage-worker.md)
+If you are new to RxDB, you should continue [here](./rx-storage-indexeddb.md)

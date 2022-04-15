@@ -1,4 +1,4 @@
-import type { RxDocument, RxPlugin, BlobBuffer, OldRxCollection, RxAttachmentData, RxDocumentData, RxAttachmentCreator, RxStorageStatics, RxAttachmentDataMeta } from '../types';
+import type { RxDocument, RxPlugin, BlobBuffer, OldRxCollection, RxAttachmentData, RxDocumentData, RxAttachmentCreator } from '../types';
 /**
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
@@ -18,7 +18,7 @@ export declare class RxAttachment {
     getStringData(): Promise<string>;
 }
 export declare function fromStorageInstanceResult(id: string, attachmentData: RxAttachmentData, rxDocument: RxDocument): RxAttachment;
-export declare function putAttachment(this: RxDocument, { id, data, type }: RxAttachmentCreator, 
+export declare function putAttachment(this: RxDocument, attachmentData: RxAttachmentCreator, 
 /**
  * If set to true, the write will be skipped
  * when the attachment already contains the same data.
@@ -37,14 +37,4 @@ export declare function preMigrateDocument<RxDocType>(data: {
     oldCollection: OldRxCollection;
 }): Promise<void>;
 export declare function postMigrateDocument(_action: any): Promise<void>;
-export declare function getAttachmentDataMeta(storageStatics: RxStorageStatics, data: BlobBuffer): Promise<RxAttachmentDataMeta>;
-export declare const rxdb = true;
-export declare const prototypes: {
-    RxDocument: (proto: any) => void;
-};
-export declare const overwritable: {};
-export declare const hooks: {
-    preMigrateDocument: typeof preMigrateDocument;
-    postMigrateDocument: typeof postMigrateDocument;
-};
 export declare const RxDBAttachmentsPlugin: RxPlugin;

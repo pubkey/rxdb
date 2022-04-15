@@ -7,7 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.closeLokiCollections = exports.OPEN_LOKIJS_STORAGE_INSTANCES = exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = exports.CHANGES_COLLECTION_SUFFIX = void 0;
 exports.getLokiDatabase = getLokiDatabase;
-exports.getLokiEventKey = getLokiEventKey;
 exports.getLokiLeaderElector = getLokiLeaderElector;
 exports.getLokiSortComparator = getLokiSortComparator;
 exports.mustUseLocalState = exports.handleRemoteRequest = void 0;
@@ -18,8 +17,6 @@ exports.waitUntilHasLeader = void 0;
 
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
 
-var _rxStorageKeyObjectInstanceLoki = require("./rx-storage-key-object-instance-loki");
-
 var _lokijs = _interopRequireDefault(require("lokijs"));
 
 var _unload = require("unload");
@@ -27,8 +24,6 @@ var _unload = require("unload");
 var _util = require("../../util");
 
 var _lokiSaveQueue = require("./loki-save-queue");
-
-var _rxSchema = require("../../rx-schema");
 
 var _rxError = require("../../rx-error");
 
@@ -244,10 +239,19 @@ function _for(test, update, body) {
 var mustUseLocalState = function mustUseLocalState(instance) {
   try {
     if (instance.closed) {
-      return Promise.resolve(false);
+      /**
+       * If this happens, it means that RxDB made a call to an already closed storage instance.
+       * This must never happen because when RxDB closes a collection or database,
+       * all tasks must be cleared so that no more calls are made the the storage.
+       */
+      throw (0, _rxError.newRxError)('SNH', {
+        args: {
+          instanceClosed: instance.closed,
+          databaseName: instance.databaseName,
+          collectionName: instance.collectionName
+        }
+      });
     }
-
-    var isRxStorageInstanceLoki = typeof instance.query === 'function';
 
     if (instance.internals.localState) {
       return Promise.resolve(instance.internals.localState);
@@ -265,23 +269,13 @@ var mustUseLocalState = function mustUseLocalState(instance) {
 
       if (leaderElector.isLeader && !instance.internals.localState) {
         // own is leader, use local instance
-        if (isRxStorageInstanceLoki) {
-          instance.internals.localState = (0, _rxStorageInstanceLoki.createLokiLocalState)({
-            databaseName: instance.databaseName,
-            collectionName: instance.collectionName,
-            options: instance.options,
-            schema: instance.schema,
-            multiInstance: instance.internals.leaderElector ? true : false
-          }, instance.databaseSettings);
-        } else {
-          instance.internals.localState = (0, _rxStorageKeyObjectInstanceLoki.createLokiKeyValueLocalState)({
-            databaseName: instance.databaseName,
-            collectionName: instance.collectionName,
-            options: instance.options,
-            multiInstance: instance.internals.leaderElector ? true : false
-          }, instance.databaseSettings);
-        }
-
+        instance.internals.localState = (0, _rxStorageInstanceLoki.createLokiLocalState)({
+          databaseName: instance.databaseName,
+          collectionName: instance.collectionName,
+          options: instance.options,
+          schema: instance.schema,
+          multiInstance: instance.internals.leaderElector ? true : false
+        }, instance.databaseSettings);
         return (0, _util.ensureNotFalsy)(instance.internals.localState);
       } else {
         // other is leader, send message to remote leading instance
@@ -319,11 +313,8 @@ exports.waitUntilHasLeader = waitUntilHasLeader;
  */
 var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
   try {
-    var isRxStorageInstanceLoki = typeof instance.query === 'function';
-    var messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
-
     var _temp9 = function () {
-      if (msg.type === messageType && msg.requestId && msg.databaseName === instance.databaseName && msg.collectionName === instance.collectionName && !msg.response) {
+      if (msg.type === LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE && msg.requestId && msg.databaseName === instance.databaseName && msg.collectionName === instance.collectionName && !msg.response) {
         var _temp10 = function _temp10() {
           var response = {
             response: true,
@@ -345,9 +336,9 @@ var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
         var _isError = false;
 
         var _temp11 = _catch(function () {
-          var _ref3;
+          var _ref2;
 
-          return Promise.resolve((_ref3 = instance)[operation].apply(_ref3, params)).then(function (_operation) {
+          return Promise.resolve((_ref2 = instance)[operation].apply(_ref2, params)).then(function (_operation) {
             _result = _operation;
           });
         }, function (err) {
@@ -427,7 +418,7 @@ var requestRemoteInstance = function requestRemoteInstance(instance, operation, 
         broadcastChannel.removeEventListener('internal', whenDeathListener);
 
         if (firstResolved.retry) {
-          var _ref2;
+          var _ref;
 
           /**
            * The leader died while a remote request was running
@@ -436,7 +427,7 @@ var requestRemoteInstance = function requestRemoteInstance(instance, operation, 
            * because the current instance might be the new leader now
            * and then we have to use the local state instead of requesting the remote.
            */
-          return (_ref2 = instance)[operation].apply(_ref2, params);
+          return (_ref = instance)[operation].apply(_ref, params);
         } else {
           if (firstResolved.error) {
             throw firstResolved.error;
@@ -514,15 +505,21 @@ function stripLokiKey(docData) {
   }
 
   var cloned = (0, _util.flatClone)(docData);
-  delete cloned.$loki;
-  delete cloned.$lastWriteAt;
-  return cloned;
-}
+  /**
+   * In RxDB version 12.0.0,
+   * we introduced the _meta field that already contains the last write time.
+   * To be backwards compatible, we have to move the $lastWriteAt to the _meta field.
+   */
 
-function getLokiEventKey(isLocal, primary, revision) {
-  var prefix = isLocal ? 'local' : 'non-local';
-  var eventKey = prefix + '|' + primary + '|' + revision;
-  return eventKey;
+  if (cloned.$lastWriteAt) {
+    cloned._meta = {
+      lwt: cloned.$lastWriteAt
+    };
+    delete cloned.$lastWriteAt;
+  }
+
+  delete cloned.$loki;
+  return cloned;
 }
 /**
  * Used to check in tests if all instances have been cleaned up.
@@ -639,13 +636,14 @@ function getLokiDatabase(databaseName, databaseSettings) {
   return databaseState;
 }
 
-function getLokiSortComparator(schema, query) {
-  var _ref;
+function getLokiSortComparator(_schema, query) {
+  if (!query.sort) {
+    throw (0, _rxError.newRxError)('SNH', {
+      query: query
+    });
+  }
 
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey); // TODO if no sort is given, use sort by primary.
-  // This should be done inside of RxDB and not in the storage implementations.
-
-  var sortOptions = query.sort ? query.sort : [(_ref = {}, _ref[primaryKey] = 'asc', _ref)];
+  var sortOptions = query.sort;
 
   var fun = function fun(a, b) {
     var compareResult = 0; // 1 | -1
@@ -672,9 +670,7 @@ function getLokiSortComparator(schema, query) {
     /**
      * Two different objects should never have the same sort position.
      * We ensure this by having the unique primaryKey in the sort params
-     * at this.prepareQuery()
-     * TODO RxDB should ensure that the primary key is always used in the sort params
-     * to ensure a deterministic sorting.
+     * which is added by RxDB if not existing yet.
      */
 
     if (!compareResult) {

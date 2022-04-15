@@ -1,8 +1,13 @@
 import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
-import type { DeepReadonlyObject, PullRunResult, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxReplicationState, WithDeleted } from '../../types';
+import type { PullRunResult, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxReplicationState } from '../../types';
 import { RxReplicationError } from './rx-replication-error';
+export declare const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationStateBase<any>[]>;
 export declare class RxReplicationStateBase<RxDocType> {
-    readonly replicationIdentifier: string;
+    /**
+     * hash of the identifier, used to flag revisions
+     * and to identify which documents state came from the remote.
+     */
+    readonly replicationIdentifierHash: string;
     readonly collection: RxCollection<RxDocType>;
     readonly pull?: ReplicationPullOptions<RxDocType> | undefined;
     readonly push?: ReplicationPushOptions<RxDocType> | undefined;
@@ -19,7 +24,11 @@ export declare class RxReplicationStateBase<RxDocType> {
         active: BehaviorSubject<boolean>;
         initialReplicationComplete: BehaviorSubject<boolean>;
     };
-    private runningPromise;
+    /**
+     * Queue promise to ensure that run()
+     * does not run in parallel
+     */
+    runningPromise: Promise<void>;
     runQueueCount: number;
     /**
      * Counts how many times the run() method
@@ -32,14 +41,20 @@ export declare class RxReplicationStateBase<RxDocType> {
      * Decrease when the retry-cycle started to run.
      */
     pendingRetries: number;
+    constructor(
     /**
      * hash of the identifier, used to flag revisions
      * and to identify which documents state came from the remote.
      */
-    replicationIdentifierHash: string;
-    constructor(replicationIdentifier: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, liveInterval?: number | undefined, retryTime?: number | undefined);
+    replicationIdentifierHash: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, liveInterval?: number | undefined, retryTime?: number | undefined);
     isStopped(): boolean;
     awaitInitialReplication(): Promise<true>;
+    /**
+     * Returns a promise that resolves when:
+     * - All local data is repliacted with the remote
+     * - No replication cycle is running or in retry-state
+     */
+    awaitInSync(): Promise<true>;
     cancel(): Promise<any>;
     /**
      * Ensures that this._run() does not run in parallel
@@ -58,7 +73,6 @@ export declare class RxReplicationStateBase<RxDocType> {
      * @return true if successfully, false if something errored
      */
     runPull(): Promise<PullRunResult>;
-    handleDocumentsFromRemote(docs: (WithDeleted<RxDocType> | DeepReadonlyObject<WithDeleted<RxDocType>>)[]): Promise<boolean>;
     /**
      * Pushes unreplicated local changes to the remote.
      * @return true if successfull, false if not

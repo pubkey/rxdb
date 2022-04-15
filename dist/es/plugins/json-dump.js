@@ -1,29 +1,17 @@
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
-import { hash } from '../util';
-import { createRxQuery, _getDefaultQuery } from '../rx-query';
+import { createRxQuery, queryCollection, _getDefaultQuery } from '../rx-query';
 import { newRxError } from '../rx-error';
-import { _handleToStorageInstance } from '../rx-collection-helper';
 
-function dumpRxDatabase() {
+function dumpRxDatabase(collections) {
   var _this = this;
 
-  var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-  var collections = arguments.length > 1 ? arguments[1] : undefined;
   var json = {
     name: this.name,
     instanceToken: this.token,
-    encrypted: false,
-    passwordHash: null,
     collections: []
   };
-
-  if (this.password) {
-    json.passwordHash = hash(this.password);
-    if (decrypted) json.encrypted = false;else json.encrypted = true;
-  }
-
   var useCollections = Object.keys(this.collections).filter(function (colName) {
     return !collections || collections.includes(colName);
   }).filter(function (colName) {
@@ -32,7 +20,7 @@ function dumpRxDatabase() {
     return _this.collections[colName];
   });
   return Promise.all(useCollections.map(function (col) {
-    return col.exportJSON(decrypted);
+    return col.exportJSON();
   })).then(function (cols) {
     json.collections = cols;
     return json;
@@ -64,23 +52,13 @@ var importDumpRxDatabase = function importDumpRxDatabase(dump) {
 };
 
 var dumpRxCollection = function dumpRxCollection() {
-  var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-  var encrypted = !decrypted;
   var json = {
     name: this.name,
     schemaHash: this.schema.hash,
-    encrypted: false,
-    passwordHash: null,
     docs: []
   };
-
-  if (this.database.password && encrypted) {
-    json.passwordHash = hash(this.database.password);
-    json.encrypted = true;
-  }
-
   var query = createRxQuery('find', _getDefaultQuery(), this);
-  return this._queryStorageInstance(query, undefined, encrypted).then(function (docs) {
+  return queryCollection(query).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
       delete docData._attachments;
@@ -99,50 +77,32 @@ function importDumpRxCollection(exportedJSON) {
       schemaHash: exportedJSON.schemaHash,
       own: this.schema.hash
     });
-  } // check if passwordHash matches own
-
-
-  if (exportedJSON.encrypted && exportedJSON.passwordHash !== hash(this.database.password)) {
-    throw newRxError('JD3', {
-      passwordHash: exportedJSON.passwordHash,
-      own: hash(this.database.password)
-    });
   }
 
-  var docs = exportedJSON.docs // decrypt
-  .map(function (doc) {
-    return _this3._crypter.decrypt(doc);
-  }) // validate schema
+  var docs = exportedJSON.docs // validate schema
   .map(function (doc) {
     return _this3.schema.validate(doc);
   });
-  return this.database.lockedRun( // write to disc
-  function () {
-    var writeMe = docs.map(function (doc) {
-      return {
-        document: _handleToStorageInstance(_this3, doc)
-      };
-    });
-    return _this3.storageInstance.bulkWrite(writeMe);
-  });
+  return this.storageInstance.bulkWrite(docs.map(function (document) {
+    return {
+      document: document
+    };
+  }));
 }
 
-export var rxdb = true;
-export var prototypes = {
-  RxDatabase: function RxDatabase(proto) {
-    proto.exportJSON = dumpRxDatabase;
-    proto.importJSON = importDumpRxDatabase;
-  },
-  RxCollection: function RxCollection(proto) {
-    proto.exportJSON = dumpRxCollection;
-    proto.importJSON = importDumpRxCollection;
-  }
-};
-export var overwritable = {};
 export var RxDBJsonDumpPlugin = {
   name: 'json-dump',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  overwritable: overwritable
+  rxdb: true,
+  prototypes: {
+    RxDatabase: function RxDatabase(proto) {
+      proto.exportJSON = dumpRxDatabase;
+      proto.importJSON = importDumpRxDatabase;
+    },
+    RxCollection: function RxCollection(proto) {
+      proto.exportJSON = dumpRxCollection;
+      proto.importJSON = importDumpRxCollection;
+    }
+  },
+  overwritable: {}
 };
 //# sourceMappingURL=json-dump.js.map

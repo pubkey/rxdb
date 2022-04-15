@@ -41,7 +41,7 @@ function _getValidator(
  * @param  schemaPath if given, the sub-schema will be validated
  * @throws {RxError} if not valid
  */
-const validate = function (
+function validateFullDocumentData(
     this: RxSchema,
     obj: any
 ): any {
@@ -55,7 +55,7 @@ const validate = function (
             schema: this.jsonSchema
         });
     }
-};
+}
 
 const runAfterSchemaCreated = (rxSchema: RxSchema) => {
     // pre-generate the isMyJsonValid-validator from the schema
@@ -64,24 +64,22 @@ const runAfterSchemaCreated = (rxSchema: RxSchema) => {
     });
 };
 
-export const rxdb = true;
-export const prototypes = {
-    /**
-     * set validate-function for the RxSchema.prototype
-     * @param prototype of RxSchema
-     */
-    RxSchema: (proto: any) => {
-        proto._getValidator = _getValidator;
-        proto.validate = validate;
-    }
-};
-export const hooks = {
-    createRxSchema: runAfterSchemaCreated
-};
-
 export const RxDBValidatePlugin: RxPlugin = {
     name: 'validate',
-    rxdb,
-    prototypes,
-    hooks
+    rxdb: true,
+    prototypes: {
+        /**
+         * set validate-function for the RxSchema.prototype
+         * @param prototype of RxSchema
+         */
+        RxSchema: (proto: any) => {
+            proto._getValidator = _getValidator;
+            proto.validateFullDocumentData = validateFullDocumentData;
+        }
+    },
+    hooks: {
+        createRxSchema: {
+            after: runAfterSchemaCreated
+        }
+    }
 };

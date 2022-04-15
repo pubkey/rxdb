@@ -1,5 +1,5 @@
 import type { ChangeEvent } from 'event-reduce-js';
-import { BlobBuffer } from './pouch';
+import { RxDocumentMeta } from './rx-document';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
 
@@ -15,9 +15,7 @@ export type RxDocumentData<T> = T & {
      * Instead the documents are stored with _deleted: true
      * which means they will not be returned at queries.
      */
-    // deleted is optional. If not set, we assume _deleted: false
-    // TODO make it required to ensure we have to correct value and type everywhere.
-    _deleted?: boolean;
+    _deleted: boolean;
 
     /**
      * The attachments meta data is stored besides to document.
@@ -33,23 +31,28 @@ export type RxDocumentData<T> = T & {
      * Revisions behave similar to couchdb revisions:
      * @link https://docs.couchdb.org/en/stable/replication/conflicts.html#revision-tree
 
-     * When you create a new document, do not send a revision,
-     * When you update an existing document, do not send a revision.
-     * When you insert via overwrite: true, send the new revision you want to save the document with.
+    * When writing a document, you must send the correct revision in the previous-field
+     * to make sure that you do not cause a write conflict.
+     * The revision of the 'new' document-field must be created, for example via util.createRevision().
+     * Any revision that matches the [height]-[hash] format can be used.
      */
     _rev: string;
+
+    /**
+     * RxDB specific meta data of the document.
+     * TODO in RxDB version 12 we introduced the _meta field.
+     * But for easier migration, _deleted, _rev etc. are still at the root level
+     * of the document.
+     * In the next major release 13 we should move these values into the _meta field.
+     */
+    _meta: RxDocumentMeta;
 }
 
 /**
  * The document data how it is send to the
  * storage instance to save it.
  */
-export type RxDocumentWriteData<T> = T & {
-
-    // deleted is optional. If not set, we assume _deleted: false
-    // TODO make it required to ensure we have to correct value and type everywhere.
-    _deleted?: boolean;
-
+export type RxDocumentWriteData<T> = RxDocumentData<T> & {
     _attachments: {
         /**
          * To create a new attachment, set the write data
@@ -60,17 +63,6 @@ export type RxDocumentWriteData<T> = T & {
          */
         [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
     }
-
-    /**
-     * Only set when overwrite: true
-     * The new revision is stored with the document
-     * so that other write processes can know that they provoked a conflict
-     * because the current revision is not the same as before.
-     * The [height] of the new revision must be heigher then the [height] of the old revision.
-     * When overwrite: false, the revision is taken from
-     * the previous document of the BulkWriteRow
-     */
-    _rev?: string;
 };
 
 export type WithDeleted<DocType> = DocType & {
@@ -99,10 +91,6 @@ export type BulkWriteRow<DocumentData> = {
     document: RxDocumentWriteData<DocumentData>
 };
 
-export type BulkWriteLocalRow<DocumentData> = {
-    previous?: RxLocalDocumentData<DocumentData>,
-    document: RxLocalDocumentData<DocumentData>
-}
 
 /**
  * Meta data of the attachment.
@@ -113,11 +101,11 @@ export type RxAttachmentDataMeta = {
      * The digest which is the output of the hash function
      * from storage.statics.hash(attachment.data)
      */
-     digest: string;
-     /**
-      * Size of the attachments data
-      */
-     length: number;
+    digest: string;
+    /**
+     * Size of the attachments data
+     */
+    length: number;
 };
 
 /**
@@ -137,28 +125,18 @@ export type RxAttachmentData = RxAttachmentDataMeta & {
  */
 export type RxAttachmentWriteData = RxAttachmentData & {
     /**
-     * The data of the attachment.
+     * The data of the attachment. As string in base64 format.
+     * In the past we used BlobBuffer internally but it created many
+     * problems because of then we need the full data (for encryption/compression)
+     * so we anyway have to get the string value out of the BlobBuffer.
+     * 
+     * Also using BlobBuffer has no performance benefit because in some RxStorage implementations,
+     * like PouchDB, it just keeps the transaction open for longer because the BlobBuffer
+     * has be be read.
      */
-    data: BlobBuffer;
+    data: string;
 }
 
-
-export type RxLocalDocumentData<
-    Data = {
-        // local documents are schemaless and contain any data
-        [key: string]: any
-    }
-    > = {
-        // Local documents always have _id as primary
-        _id: string;
-
-        // local documents cannot have attachments,
-        // so this must always be an empty object.
-        _attachments: {};
-
-        _deleted?: boolean;
-        _rev?: string;
-    } & Data;
 
 /**
  * Error that can happer per document when
@@ -168,7 +146,11 @@ export type RxStorageBulkWriteError<RxDocType> = {
 
     status: number |
     409 // conflict
-    // TODO add other status codes from pouchdb
+    /**
+     * Before you add any other status code,
+     * check pouchdb/packages/node_modules/pouch-errors/src/index.js
+     * and try to use the same code as PouchDB does.
+     */
     ;
 
     /**
@@ -182,25 +164,14 @@ export type RxStorageBulkWriteError<RxDocType> = {
 
     // the original document data that should have been written.
     writeRow: BulkWriteRow<RxDocType>;
-}
-
-export type RxStorageBulkWriteLocalError<D> = {
-    status: number |
-    409 // conflict
-    // TODO add other status codes from pouchdb
-    ;
 
     /**
-     * set this property to make it easy
-     * to detect if the object is a RxStorageBulkWriteError
+     * The error state must contain the
+     * document state in the database.
+     * This ensures that we can continue resolving a conflict
+     * without having to pull the document out of the db first.
      */
-    isError: true;
-
-    // primary key of the document
-    documentId: string;
-
-    // the original document data that should have been written.
-    writeRow: BulkWriteLocalRow<D>;
+    documentInDb: RxDocumentData<RxDocType>;
 }
 
 export type RxStorageBulkWriteResponse<DocData> = {
@@ -221,25 +192,6 @@ export type RxStorageBulkWriteResponse<DocData> = {
     }
 }
 
-export type RxLocalStorageBulkWriteResponse<DocData> = {
-    /**
-     * A map that is indexed by the documentId
-     * contains all succeded writes.
-     */
-    success: {
-        [documentId: string]: RxLocalDocumentData<DocData>;
-    };
-
-    /**
-     * A map that is indexed by the documentId
-     * contains all errored writes.
-     */
-    error: {
-        [documentId: string]: RxStorageBulkWriteLocalError<DocData>;
-    };
-}
-
-
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
 
 /**
@@ -251,10 +203,10 @@ export type RxStorageQueryResult<RxDocType> = {
     documents: RxDocumentData<RxDocType>[];
 }
 
-export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOptions> = {
+export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> = {
     databaseName: string;
     collectionName: string;
-    schema: RxJsonSchema<DocumentData>;
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>;
     options: InstanceCreationOptions;
     /**
      * If multiInstance is true, there can be more
@@ -264,14 +216,6 @@ export type RxStorageInstanceCreationParams<DocumentData, InstanceCreationOption
      */
     multiInstance: boolean;
 }
-
-export type RxKeyObjectStorageInstanceCreationParams<InstanceCreationOptions> = {
-    databaseName: string;
-    collectionName: string;
-    options: InstanceCreationOptions;
-    multiInstance: boolean;
-}
-
 
 export type ChangeStreamOptions = {
 
@@ -290,24 +234,6 @@ export type ChangeStreamOptions = {
     limit?: number;
 }
 
-export type ChangeStreamOnceOptions = ChangeStreamOptions & {
-    /**
-     * sinceSequence is not optional
-     * on one time changes.
-     */
-    sinceSequence: number;
-
-    /**
-     * On one-time change stream results,
-     * we can define the sort order
-     * to either get events before sinceSequence
-     * or events after sinceSequence.
-     */
-    direction: 'before' | 'after';
-
-    limit?: number;
-};
-
 /**
  * In the past we handles each RxChangeEvent by its own.
  * But it has been shown that this take way more performance then needed,
@@ -325,7 +251,7 @@ export type EventBulk<EventType> = {
     events: EventType[];
 }
 
-export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<DocumentData>> & {
+export type ChangeStreamEvent<DocType> = ChangeEvent<RxDocumentData<DocType>> & {
     /**
      * An integer that is increasing
      * and unique per event.
@@ -339,12 +265,6 @@ export type ChangeStreamEvent<DocumentData> = ChangeEvent<RxDocumentData<Documen
      */
     id: string;
 };
-
-export type RxStorageChangedDocumentMeta = {
-    id: string;
-    sequence: number;
-}
-
 
 export type RxStorageChangeEvent<DocType> = {
     /**
@@ -360,6 +280,8 @@ export type RxStorageChangeEvent<DocType> = {
      * and when it was finished.
      * This is optional because we do not have this time
      * for events that come from inside of the storage instance.
+     * 
+     * TODO do we even need this values?
      */
     startTime?: number;
     endTime?: number;

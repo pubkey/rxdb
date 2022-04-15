@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DocCache = void 0;
-exports.createDocCache = createDocCache;
 
 var DocCache = /*#__PURE__*/function () {
   function DocCache() {
@@ -30,8 +29,4 @@ var DocCache = /*#__PURE__*/function () {
 }();
 
 exports.DocCache = DocCache;
-
-function createDocCache() {
-  return new DocCache();
-}
 //# sourceMappingURL=doc-cache.js.map

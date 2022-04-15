@@ -22,7 +22,7 @@ export type BackupMetaFileContent = {
     updatedAt: number;
     collectionStates: {
         [collectionName: string]: {
-            lastSequence: number;
+            checkpoint?: any;
         }
     }
 }

@@ -16,6 +16,8 @@ var _rxChangeEvent = require("./rx-change-event");
 
 var _util = require("./util");
 
+var _rxQueryHelper = require("./rx-query-helper");
+
 function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
     return [primaryKey];
@@ -32,7 +34,8 @@ exports.RXQUERY_QUERY_PARAMS_CACHE = RXQUERY_QUERY_PARAMS_CACHE;
 function getQueryParams(rxQuery) {
   if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
     var collection = rxQuery.collection;
-    var queryJson = rxQuery.getPreparedQuery();
+    var preparedQuery = rxQuery.getPreparedQuery();
+    var normalizedMangoQuery = (0, _rxQueryHelper.normalizeMangoQuery)(collection.storageInstance.schema, (0, _util.clone)(rxQuery.mangoQuery));
     var primaryKey = collection.schema.primaryPath;
     /**
      * Create a custom sort comparator
@@ -40,7 +43,7 @@ function getQueryParams(rxQuery) {
      * we send for example compressed documents to be sorted by compressed queries.
      */
 
-    var sortComparator = collection.database.storage.statics.getSortComparator(collection.storageInstance.schema, queryJson);
+    var sortComparator = collection.database.storage.statics.getSortComparator(collection.storageInstance.schema, preparedQuery);
 
     var useSortComparator = function useSortComparator(docA, docB) {
       var sortComparatorData = {
@@ -58,7 +61,7 @@ function getQueryParams(rxQuery) {
      */
 
 
-    var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.storageInstance.schema, queryJson);
+    var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.storageInstance.schema, preparedQuery);
 
     var useQueryMatcher = function useQueryMatcher(doc) {
       var queryMatcherData = {
@@ -71,9 +74,9 @@ function getQueryParams(rxQuery) {
 
     var ret = {
       primaryKey: rxQuery.collection.schema.primaryPath,
-      skip: queryJson.skip,
-      limit: queryJson.limit,
-      sortFields: getSortFieldsOfQuery(primaryKey, rxQuery.mangoQuery),
+      skip: normalizedMangoQuery.skip,
+      limit: normalizedMangoQuery.limit,
+      sortFields: getSortFieldsOfQuery(primaryKey, normalizedMangoQuery),
       sortComparator: useSortComparator,
       queryMatcher: useQueryMatcher
     };
@@ -103,14 +106,6 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
       previousResults: previousResults,
       keyDocumentMap: previousResultsMap
     };
-    /*
-    // use this to check if all states are calculated correctly
-    const stateSet = getStateSet(stateResolveFunctionInput);
-    console.dir(stateResolveFunctionInput);
-    console.log('state set:');
-    logStateSet(stateSet);
-    */
-
     var actionName = (0, _eventReduceJs.calculateActionName)(stateResolveFunctionInput);
 
     if (actionName === 'runFullQueryAgain') {

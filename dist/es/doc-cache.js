@@ -20,7 +20,4 @@ export var DocCache = /*#__PURE__*/function () {
 
   return DocCache;
 }();
-export function createDocCache() {
-  return new DocCache();
-}
 //# sourceMappingURL=doc-cache.js.map

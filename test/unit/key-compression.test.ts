@@ -15,7 +15,7 @@ import {
 } from '../../';
 
 import {
-    getRxStoragePouch, pouchDocumentDataToRxDocumentData
+    pouchDocumentDataToRxDocumentData
 } from '../../plugins/pouchdb';
 import { SimpleHumanDocumentType } from './../helper/schema-objects';
 
@@ -53,10 +53,10 @@ config.parallel('key-compression.test.js', () => {
             }
             const c = await humansCollection.create(0);
             const query: any = c.find()
-                .where('foobar').eq(5)
+                .where('age').eq(5)
                 .getPreparedQuery();
 
-            assert.strictEqual(query.selector.foobar, 5);
+            assert.strictEqual(query.selector.age, 5);
             c.database.destroy();
         });
     });
@@ -84,6 +84,44 @@ config.parallel('key-compression.test.js', () => {
             c.database.destroy();
         });
     });
+    describe('query', () => {
+        it('should properly run the compressed query', async () => {
+            const col = await humansCollection.create(0);
+            assert.ok(col.schema.jsonSchema.keyCompression);
+
+            // add one matching and one non-matching doc
+            await col.bulkInsert([
+                {
+                    firstName: 'aaa',
+                    lastName: 'aaa',
+                    passportId: 'aaa',
+                    age: 0
+                },
+                {
+                    firstName: 'bbb',
+                    lastName: 'bbb',
+                    passportId: 'bbb',
+                    age: 0
+                }
+            ]);
+            const query = col.find({
+                selector: {
+                    firstName: {
+                        $ne: 'aaa'
+                    }
+                }
+            });
+            const docs = await query.exec();
+            const doc = docs[0];
+            if (!doc) {
+                throw new Error('doc missing');
+            }
+
+            assert.strictEqual(doc.passportId, 'bbb');
+
+            col.database.destroy();
+        });
+    });
     describe('issues', () => {
         it('#50 compress string array properly', async () => {
             const mySchema: RxJsonSchema<{ likes: any[], id: string }> = {
@@ -97,7 +135,8 @@ config.parallel('key-compression.test.js', () => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     likes: {
                         type: 'array',
@@ -110,7 +149,7 @@ config.parallel('key-compression.test.js', () => {
 
             const db = await createRxDatabase({
                 name: 'heroesdb',
-                storage: getRxStoragePouch('memory')
+                storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
                 mycollection: {
@@ -138,7 +177,8 @@ config.parallel('key-compression.test.js', () => {
                 type: 'object',
                 properties: {
                     key: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 100
                     },
                     nested: {
                         type: 'object'
@@ -148,7 +188,7 @@ config.parallel('key-compression.test.js', () => {
 
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory')
+                storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
                 mycollection: {

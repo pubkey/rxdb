@@ -4,9 +4,8 @@ import type {
 } from 'event-reduce-js';
 import type {
     MangoQuery,
-    RxDocumentWriteData,
+    RxDocumentData,
     RxJsonSchema,
-    RxKeyObjectStorageInstanceCreationParams,
     RxStorage,
     RxStorageInstanceCreationParams,
     RxStorageStatics
@@ -16,7 +15,6 @@ import {
 } from 'mingo';
 import { binaryMd5 } from 'pouchdb-md5';
 import { getDexieSortComparator } from './dexie-helper';
-import { flatClone } from '../../util';
 import {
     DexieSettings,
     DexieStorageInternals
@@ -25,10 +23,6 @@ import {
     createDexieStorageInstance,
     RxStorageInstanceDexie
 } from './rx-storage-instance-dexie';
-import {
-    createDexieKeyObjectStorageInstance,
-    RxStorageKeyObjectInstanceDexie
-} from './rx-storage-key-object-instance-dexie';
 import { getPouchQueryPlan } from './query/dexie-query';
 import { newRxError } from '../../rx-error';
 
@@ -46,7 +40,7 @@ export const RxStorageDexieStatics: RxStorageStatics = {
         return false;
     },
     prepareQuery<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: MangoQuery<RxDocType>
     ) {
 
@@ -69,7 +63,7 @@ export const RxStorageDexieStatics: RxStorageStatics = {
     },
 
     getSortComparator<RxDocType>(
-        schema: RxJsonSchema<RxDocType>,
+        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         query: MangoQuery<RxDocType>
     ): DeterministicSortComparator<RxDocType> {
         return getDexieSortComparator(schema, query);
@@ -78,9 +72,9 @@ export const RxStorageDexieStatics: RxStorageStatics = {
     getQueryMatcher<RxDocType>(
         _schema: RxJsonSchema<RxDocType>,
         query: MangoQuery<RxDocType>
-    ): QueryMatcher<RxDocumentWriteData<RxDocType>> {
+    ): QueryMatcher<RxDocumentData<RxDocType>> {
         const mingoQuery = new MingoQuery(query.selector ? query.selector : {});
-        const fun: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
+        const fun: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
             if (doc._deleted) {
                 return false;
             }
@@ -110,20 +104,6 @@ export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSet
         params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>
     ): Promise<RxStorageInstanceDexie<RxDocType>> {
         return createDexieStorageInstance(this, params, this.settings);
-    }
-
-    public createKeyObjectStorageInstance(
-        params: RxKeyObjectStorageInstanceCreationParams<DexieSettings>
-    ): Promise<RxStorageKeyObjectInstanceDexie> {
-        // ensure we never mix up key-object data with normal storage documents.
-        const useParams = flatClone(params);
-        useParams.collectionName = params.collectionName + '-key-object';
-
-        return createDexieKeyObjectStorageInstance(
-            this,
-            params,
-            this.settings
-        );
     }
 }
 

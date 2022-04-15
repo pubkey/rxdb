@@ -4,6 +4,7 @@ import config from './config';
 import {
     addRxPlugin,
     ensureNotFalsy,
+    fillWithDefaultSettings,
     getPseudoSchemaForVersion,
     now,
     randomCouchString
@@ -11,8 +12,7 @@ import {
 
 import {
     getRxStorageLoki,
-    RxStorageInstanceLoki,
-    RxStorageKeyObjectInstanceLoki
+    RxStorageInstanceLoki
 } from '../../plugins/lokijs';
 
 import * as humansCollections from '../helper/humans-collection';
@@ -28,6 +28,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { LeaderElector } from 'broadcast-channel';
 import { HumanDocumentType } from '../helper/schemas';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 /**
  * RxStorageLokiJS specific tests
@@ -49,9 +50,6 @@ describe('rx-storage-lokijs.test.js', () => {
             assert.ok(doc);
 
             const storageInstance: RxStorageInstanceLoki<HumanDocumentType> = collection.storageInstance as any;
-            const localStorageInstance: RxStorageKeyObjectInstanceLoki = collection.localDocumentsStore as any;
-
-            assert.ok(localStorageInstance.internals.leaderElector);
             assert.ok(storageInstance.internals.leaderElector);
 
             await collection.database.destroy();
@@ -79,9 +77,7 @@ describe('rx-storage-lokijs.test.js', () => {
 
             // the database storage of col2 should not have internal localState
             assert.ok(col1.database.internalStore.internals.localState);
-            assert.ok(col1.database.localDocumentsStore.internals.localState);
             assert.ok(!col2.database.internalStore.internals.localState);
-            assert.ok(!col2.database.localDocumentsStore.internals.localState);
 
             /**
              * Only col1 should be leader
@@ -126,7 +122,6 @@ describe('rx-storage-lokijs.test.js', () => {
                     return leaderElector.isLeader;
                 });
             }
-
 
             // wait until one is leader
             await waitUntil(() => {
@@ -173,7 +168,6 @@ describe('rx-storage-lokijs.test.js', () => {
                 { foo: 'bar' }
             );
 
-
             /**
              * The non-leading instances should not
              * have localState set in its storage instances.
@@ -181,9 +175,7 @@ describe('rx-storage-lokijs.test.js', () => {
             cols.forEach(col => {
                 const mustHaveLocal = col.storageInstance.internals.leaderElector.isLeader;
                 assert.strictEqual(mustHaveLocal, !!col.database.internalStore.internals.localState);
-                assert.strictEqual(mustHaveLocal, !!col.database.localDocumentsStore.internals.localState);
                 assert.strictEqual(mustHaveLocal, !!col.storageInstance.internals.localState);
-                assert.strictEqual(mustHaveLocal, !!col.localDocumentsStore.internals.localState);
             });
 
             cols.forEach(col => col.database.destroy());
@@ -249,16 +241,18 @@ describe('rx-storage-lokijs.test.js', () => {
 
             const localState = await ensureNotFalsy(storageInstance.internals.localState);
             assert.ok(localState.databaseState.database.persistenceAdapter === adapter);
-            await storageInstance.bulkWrite([{
+            const writeResponse = await storageInstance.bulkWrite([{
                 document: {
                     key: 'foobar',
                     _deleted: false,
+                    _rev: EXAMPLE_REVISION_1,
                     _meta: {
                         lwt: now()
                     },
                     _attachments: {}
                 }
             }]);
+            assert.deepStrictEqual(writeResponse.error, {});
 
             /**
              * It should have written the file to the filesystem
@@ -298,6 +292,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 document: {
                     key: 'foobar',
                     _deleted: false,
+                    _rev: EXAMPLE_REVISION_1,
                     _meta: {
                         lwt: now()
                     },
@@ -352,7 +347,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     collectionName: randomCouchString(12),
                     multiInstance: false,
                     options: {},
-                    schema: schemas.human
+                    schema: fillWithDefaultSettings(schemas.human)
                 });
 
                 const firstDocData = Object.assign(schemaObjects.human(), {
@@ -360,6 +355,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     _meta: {
                         lwt: now()
                     },
+                    _rev: EXAMPLE_REVISION_1,
                     _attachments: {}
                 });
                 await storageInstance.bulkWrite([
@@ -368,50 +364,32 @@ describe('rx-storage-lokijs.test.js', () => {
                     }
                 ]);
 
-                await storageInstance.bulkAddRevisions([
-                    Object.assign(schemaObjects.human(), {
-                        _deleted: false,
-                        _attachments: {},
-                        _meta: {
-                            lwt: now()
-                        },
-                        _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
-                    })
+                await storageInstance.bulkWrite([
+                    {
+                        document: Object.assign(schemaObjects.human(), {
+                            _deleted: false,
+                            _attachments: {},
+                            _meta: {
+                                lwt: now()
+                            },
+                            _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
+                        })
+                    }
                 ]);
                 const preparedQuery = storage.statics.prepareQuery(
-                    schemas.human,
+                    fillWithDefaultSettings(schemas.human),
                     {
                         selector: {},
                         sort: [{
                             passportId: 'asc'
-                        }]
+                        }],
+                        skip: 0
                     }
                 );
                 await storageInstance.query(preparedQuery);
-
                 await storageInstance.findDocumentsById([firstDocData.passportId], false);
 
-                const keyObjectStorageInstance = await storage.createKeyObjectStorageInstance({
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    multiInstance: false,
-                    options: {}
-                });
-
-                await keyObjectStorageInstance.bulkWrite([{
-                    document: {
-                        _id: 'foobar',
-                        _attachments: {},
-                        _meta: {
-                            lwt: now()
-                        },
-                        _deleted: false
-                    }
-                }]);
-                await keyObjectStorageInstance.findLocalDocumentsById(['foobar'], false);
-
                 await storageInstance.close();
-                await keyObjectStorageInstance.close();
 
                 // reset the global.setTimeout so the following tests work properly.
                 global.setTimeout = oldSetTimeout;

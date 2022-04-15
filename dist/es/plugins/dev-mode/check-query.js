@@ -1,5 +1,6 @@
 import deepEqual from 'fast-deep-equal';
 import { newRxError, newRxTypeError } from '../../rx-error';
+import { massageSelector } from 'pouchdb-selector-core';
 /**
  * accidentially passing a non-valid object into the query params
  * is very hard to debug especially when queries are observed
@@ -33,11 +34,34 @@ export function checkQuery(args) {
   });
 }
 export function checkMangoQuery(args) {
+  var schema = args.rxQuery.collection.schema.jsonSchema;
+  /**
+   * Ensure that all top level fields are included in the schema.
+   * TODO this check can be augmented to also check sub-fields.
+   */
+
+  var massagedSelector = massageSelector(args.mangoQuery.selector);
+  var schemaTopLevelFields = Object.keys(schema.properties);
+  Object.keys(massagedSelector) // do not check operators
+  .filter(function (fieldOrOperator) {
+    return !fieldOrOperator.startsWith('$');
+  }) // skip this check on non-top-level fields
+  .filter(function (field) {
+    return !field.includes('.');
+  }).forEach(function (field) {
+    if (!schemaTopLevelFields.includes(field)) {
+      throw newRxError('QU13', {
+        schema: schema,
+        field: field,
+        query: args.mangoQuery
+      });
+    }
+  });
   /**
    * ensure if custom index is set,
    * it is also defined in the schema
    */
-  var schema = args.rxQuery.collection.schema.normalized;
+
   var schemaIndexes = schema.indexes ? schema.indexes : [];
   var index = args.mangoQuery.index;
 

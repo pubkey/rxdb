@@ -179,13 +179,13 @@ config.parallel('leader-election.test.js', () => {
                 }
             });
             assert.strictEqual(db.isLeader(), true);
-            db.destroy();
+            await db.destroy();
         });
         it('non-multiInstance: waitForLeadership should instant', async () => {
             const c = await humansCollection.create(0);
             const db = c.database;
             await db.waitForLeadership();
-            db.destroy();
+            await db.destroy();
         });
 
         it('waitForLeadership: run once when instance becomes leader', async () => {
@@ -196,7 +196,6 @@ config.parallel('leader-election.test.js', () => {
                     .map(() => humansCollection.createMultiInstance(name))
             );
             const dbs = cols.map(col => col.database);
-
 
             let count = 0;
             dbs.forEach(db => db.waitForLeadership().then(() => count++));

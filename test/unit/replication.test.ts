@@ -20,7 +20,6 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     flatClone,
-    getFromMapOrThrow,
     RxCollection,
     ensureNotFalsy,
     randomCouchString,
@@ -29,15 +28,15 @@ import {
 } from '../../';
 
 import {
-    setLastPushSequence,
-    getLastPushSequence,
-    getChangesSinceLastPushSequence,
     setLastPullDocument,
     getLastPullDocument,
     replicateRxCollection,
     wasLastWriteFromPullReplication,
     setLastWritePullReplication,
-    getPullReplicationFlag
+    getPullReplicationFlag,
+    setLastPushCheckpoint,
+    getLastPushCheckpoint,
+    getChangesSinceLastPushCheckpoint
 } from '../../plugins/replication';
 
 import type {
@@ -46,6 +45,7 @@ import type {
     RxDocumentData,
     RxDocumentWriteData
 } from '../../src/types';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
@@ -167,25 +167,25 @@ describe('replication.test.js', () => {
         });
     });
     config.parallel('replication-checkpoints', () => {
-        describe('.setLastPushSequence()', () => {
+        describe('.setLastPushCheckpoint()', () => {
             it('should set the last push sequence', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                const ret = await setLastPushSequence(
+                const ret = await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     1
                 );
-                assert.ok(ret._id.includes(REPLICATION_IDENTIFIER_TEST));
+                assert.ok(ret.id.includes(REPLICATION_IDENTIFIER_TEST));
                 c.database.destroy();
             });
             it('should be able to run multiple times', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                await setLastPushSequence(
+                await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     1
                 );
-                await setLastPushSequence(
+                await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     2
@@ -193,24 +193,24 @@ describe('replication.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('.getLastPushSequence()', () => {
-            it('should get null if not set before', async () => {
+        describe('.getLastPushCheckpoint()', () => {
+            it('should get undefined if not set before', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                const ret = await getLastPushSequence(
+                const ret = await getLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST
                 );
-                assert.strictEqual(ret, 0);
+                assert.strictEqual(typeof ret, 'undefined');
                 c.database.destroy();
             });
             it('should get the value if set before', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                await setLastPushSequence(
+                await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     5
                 );
-                const ret = await getLastPushSequence(
+                const ret = await getLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST
                 );
@@ -219,23 +219,23 @@ describe('replication.test.js', () => {
             });
             it('should get the value if set multiple times', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                await setLastPushSequence(
+                await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     5
                 );
-                const ret = await getLastPushSequence(
+                const ret = await getLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST
                 );
                 assert.strictEqual(ret, 5);
 
-                await setLastPushSequence(
+                await setLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST,
                     10
                 );
-                const ret2 = await getLastPushSequence(
+                const ret2 = await getLastPushCheckpoint(
                     c,
                     REPLICATION_IDENTIFIER_TEST
                 );
@@ -243,13 +243,12 @@ describe('replication.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('.getChangesSinceLastPushSequence()', () => {
+        describe('.getChangesSinceLastPushCheckpoint()', () => {
             it('should get all changes', async () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -264,9 +263,8 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(amount);
                 const oneDoc = await c.findOne().exec(true);
                 await oneDoc.atomicPatch({ age: 1 });
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -277,9 +275,8 @@ describe('replication.test.js', () => {
             it('should not get more changes then the limit', async () => {
                 const amount = 30;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -296,9 +293,8 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(amount);
                 const oneDoc = await c.findOne().exec(true);
                 await oneDoc.remove();
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -317,47 +313,11 @@ describe('replication.test.js', () => {
 
                 c.database.destroy();
             });
-            it('should get deletions after an update via addRevisions', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(1);
-                const oneDoc = await c.findOne().exec(true);
-                const id = oneDoc.primary;
-
-                const newDocData: RxDocumentData<HumanWithTimestampDocumentType> = flatClone(oneDoc.toJSON(true));
-                newDocData.age = 100;
-                newDocData._rev = '2-23099cb8125d2c79db839ae3f1211cf8';
-                await c.storageInstance.bulkAddRevisions([newDocData]);
-
-                /**
-                 * We wait here because directly after the last write,
-                 * it takes some milliseconds until the change is propagated
-                 * via the event stream.
-                 * This does only happen because we directly access storageInstance.bulkAddRevisions()
-                 * and so RxDB does not know about the change.
-                 * This problem will not happen during normal RxDB usage.
-                 */
-                await waitUntil(() => oneDoc.age === 100);
-                await oneDoc.remove();
-
-                const changesResult = await getChangesSinceLastPushSequence(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    () => false,
-                    10
-                );
-                assert.strictEqual(changesResult.changedDocs.size, 1);
-                const docFromChange = getFromMapOrThrow(changesResult.changedDocs, id);
-                assert.ok(docFromChange.doc._deleted);
-                assert.strictEqual(docFromChange.doc.age, 100);
-
-                c.database.destroy();
-            });
             it('should have resolved the primary', async () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -377,7 +337,8 @@ describe('replication.test.js', () => {
                         _deleted: false,
                         _meta: {
                             lwt: now()
-                        }
+                        },
+                        _rev: EXAMPLE_REVISION_1
                     }
                 );
                 setLastWritePullReplication(
@@ -394,9 +355,8 @@ describe('replication.test.js', () => {
                 const allDocs = await c.find().exec();
 
                 assert.strictEqual(allDocs.length, amount + 1);
-                const changesResult = await getChangesSinceLastPushSequence(
+                const changesResult = await getChangesSinceLastPushCheckpoint(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
                     REPLICATION_IDENTIFIER_TEST_HASH,
                     () => false,
                     10
@@ -405,13 +365,6 @@ describe('replication.test.js', () => {
                 assert.strictEqual(changesResult.changedDocs.size, amount);
                 const shouldNotBeFound = Array.from(changesResult.changedDocs.values()).find((change) => change.id === docId);
                 assert.ok(!shouldNotBeFound);
-
-                /**
-                 * lastSequence must be >= amount
-                 * Not == because there might be hidden change documents
-                 * like when pouchdb adds one while creating an index.
-                 */
-                assert.ok(changesResult.lastSequence >= amount);
 
                 c.database.destroy();
             });
@@ -423,10 +376,10 @@ describe('replication.test.js', () => {
                 const docData = doc.toJSON(true);
                 const ret = await setLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     docData
                 );
-                assert.ok(ret._id.includes(REPLICATION_IDENTIFIER_TEST));
+                assert.ok(ret.id.includes(REPLICATION_IDENTIFIER_TEST_HASH));
                 c.database.destroy();
             });
             it('should be able to run multiple times', async () => {
@@ -435,15 +388,15 @@ describe('replication.test.js', () => {
                 const docData = doc.toJSON(true);
                 await setLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     docData
                 );
                 const ret = await setLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     docData
                 );
-                assert.ok(ret._id.includes(REPLICATION_IDENTIFIER_TEST));
+                assert.ok(ret.id.includes(REPLICATION_IDENTIFIER_TEST_HASH));
                 c.database.destroy();
             });
         });
@@ -452,7 +405,7 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const ret = await getLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST
+                    REPLICATION_IDENTIFIER_TEST_HASH
                 );
                 assert.strictEqual(ret, null);
                 c.database.destroy();
@@ -466,12 +419,12 @@ describe('replication.test.js', () => {
 
                 await setLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST,
+                    REPLICATION_IDENTIFIER_TEST_HASH,
                     docData
                 );
                 const ret = await getLastPullDocument(
                     c,
-                    REPLICATION_IDENTIFIER_TEST
+                    REPLICATION_IDENTIFIER_TEST_HASH
                 );
                 if (!ret) {
                     throw new Error('last pull document missing');
@@ -500,7 +453,6 @@ describe('replication.test.js', () => {
                 console.log('got error :');
                 console.dir(err);
             });
-
             await replicationState.awaitInitialReplication();
 
             const docsLocal = await localCollection.find().exec();
@@ -517,6 +469,111 @@ describe('replication.test.js', () => {
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
+        });
+    });
+    config.parallel('live replication', () => {
+        it('should replicate all writes', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            replicationState.error$.subscribe(err => {
+                console.log('got error :');
+                console.dir(err);
+            });
+            await replicationState.awaitInitialReplication();
+
+            const docsRemoteQuery = await remoteCollection.findOne();
+
+            // insert
+            const id = 'foobar';
+            const docData = schemaObjects.humanWithTimestamp({
+                id
+            });
+            const doc = await localCollection.insert(docData);
+            await waitUntil(async () => {
+                const remoteDoc = await docsRemoteQuery.exec();
+                return !!remoteDoc;
+            });
+
+            // UPDATE
+            await doc.atomicPatch({
+                age: 100
+            });
+            await waitUntil(async () => {
+                const remoteDoc = await docsRemoteQuery.exec(true);
+                return remoteDoc.age === 100;
+            });
+
+            // DELETE
+            await wait(100);
+            await doc.remove();
+            await waitUntil(async () => {
+                const remoteDoc = await docsRemoteQuery.exec();
+                return !remoteDoc;
+            });
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+    });
+    config.parallel('other', () => {
+        describe('.awaitInSync()', () => {
+            it('should resolve after some time', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    pull: {
+                        handler: getPullHandler(remoteCollection)
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection)
+                    }
+                });
+                await replicationState.awaitInSync();
+
+                localCollection.database.destroy();
+                remoteCollection.database.destroy();
+            });
+            it('should never resolve when offline', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    pull: {
+                        handler: async () => {
+                            await wait(100);
+                            throw new Error('always error');
+                        }
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection)
+                    }
+                });
+                let resolved = false;
+                replicationState.awaitInSync().then(() => {
+                    resolved = true;
+                });
+                await wait(config.isFastMode() ? 100 : 400);
+                assert.strictEqual(resolved, false);
+
+                localCollection.database.destroy();
+                remoteCollection.database.destroy();
+            });
         });
     });
     config.parallel('issues', () => {
@@ -543,7 +600,7 @@ describe('replication.test.js', () => {
             await replicationState.awaitInitialReplication();
             await replicationState.run();
 
-            const originalSequence = await getLastPushSequence(
+            const originalSequence = await getLastPushCheckpoint(
                 localCollection,
                 REPLICATION_IDENTIFIER_TEST
             );
@@ -552,7 +609,7 @@ describe('replication.test.js', () => {
                 await replicationState.run()
             }
 
-            const newSequence = await getLastPushSequence(
+            const newSequence = await getLastPushCheckpoint(
                 localCollection,
                 REPLICATION_IDENTIFIER_TEST
             );
@@ -729,6 +786,46 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
-    });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/3727
+         */
+        it('#3727 should not go into infinite push loop when number of changed requests equals to batchSize', async () => {
+            const MAX_PUSH_COUNT = 30 // arbitrary big number
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 4 });
+            let pushCount = 0;
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    batchSize: 5,
+                    handler: async (documents) => {
+                        pushCount++;
 
+                        if (pushCount > MAX_PUSH_COUNT) {
+                            // Exit push cycle. Otherwise test will never end
+                            throw new Error('Stop replication');
+                        }
+
+                        const ret = await getPushHandler(remoteCollection)(documents);
+                        return ret;
+                    }
+                }
+            });
+
+            await replicationState.awaitInitialReplication();
+            const docData = schemaObjects.humanWithTimestamp();
+            await localCollection.insert(docData)
+            await replicationState.run();
+
+            if (pushCount > MAX_PUSH_COUNT) {
+                throw new Error('Infinite push loop');
+            }
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+    });
 });

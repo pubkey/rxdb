@@ -1,6 +1,6 @@
 import { ERROR_MESSAGES } from './error-messages';
 import { checkSchema } from './check-schema';
-import { checkOrmMethods } from './check-orm';
+import { checkOrmDocumentMethods, checkOrmMethods } from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
 import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowed-properties';
 import { checkMangoQuery, checkQuery } from './check-query';
@@ -16,8 +16,8 @@ import deepFreeze from 'deep-freeze';
  */
 
 export function deepFreezeWhenDevMode(obj) {
-  // direct return if falsy
-  if (!obj) {
+  // direct return if not suitable for deepFreeze()
+  if (!obj || typeof obj === 'string' || typeof obj === 'number') {
     return obj;
   }
 
@@ -42,52 +42,67 @@ export var RxDBDevModePlugin = {
     }
   },
   hooks: {
-    preAddRxPlugin: function preAddRxPlugin(args) {
-      /**
-       * throw when dev mode is added multiple times
-       * because there is no way that this was done intentional.
-       * Likely the developer has mixed core and default usage of RxDB.
-       */
-      if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
-        throw newRxError('DEV1', {
-          plugins: args.plugins
-        });
+    preAddRxPlugin: {
+      after: function after(args) {
+        /**
+         * throw when dev mode is added multiple times
+         * because there is no way that this was done intentional.
+         * Likely the developer has mixed core and default usage of RxDB.
+         */
+        if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
+          throw newRxError('DEV1', {
+            plugins: args.plugins
+          });
+        }
       }
     },
-    preCreateRxSchema: checkSchema,
-    preCreateRxDatabase: function preCreateRxDatabase(args) {
-      ensureDatabaseNameIsValid(args);
+    preCreateRxSchema: {
+      after: checkSchema
     },
-    preCreateRxCollection: function preCreateRxCollection(args) {
-      ensureCollectionNameValid(args);
-
-      if (args.name.charAt(0) === '_') {
-        throw newRxError('DB2', {
-          name: args.name
-        });
-      }
-
-      if (!args.schema) {
-        throw newRxError('DB4', {
-          name: args.name,
-          args: args
-        });
+    preCreateRxDatabase: {
+      after: function after(args) {
+        ensureDatabaseNameIsValid(args);
       }
     },
-    preCreateRxQuery: function preCreateRxQuery(args) {
-      checkQuery(args);
-    },
-    prePrepareQuery: function prePrepareQuery(args) {
-      checkMangoQuery(args);
-    },
-    createRxCollection: function createRxCollection(args) {
-      // check ORM-methods
-      checkOrmMethods(args.statics);
-      checkOrmMethods(args.methods);
-      checkOrmMethods(args.attachments); // check migration strategies
+    preCreateRxCollection: {
+      after: function after(args) {
+        ensureCollectionNameValid(args);
+        checkOrmDocumentMethods(args.schema, args.methods);
 
-      if (args.schema && args.migrationStrategies) {
-        checkMigrationStrategies(args.schema, args.migrationStrategies);
+        if (args.name.charAt(0) === '_') {
+          throw newRxError('DB2', {
+            name: args.name
+          });
+        }
+
+        if (!args.schema) {
+          throw newRxError('DB4', {
+            name: args.name,
+            args: args
+          });
+        }
+      }
+    },
+    preCreateRxQuery: {
+      after: function after(args) {
+        checkQuery(args);
+      }
+    },
+    prePrepareQuery: {
+      after: function after(args) {
+        checkMangoQuery(args);
+      }
+    },
+    createRxCollection: {
+      after: function after(args) {
+        // check ORM-methods
+        checkOrmMethods(args.creator.statics);
+        checkOrmMethods(args.creator.methods);
+        checkOrmMethods(args.creator.attachments); // check migration strategies
+
+        if (args.creator.schema && args.creator.migrationStrategies) {
+          checkMigrationStrategies(args.creator.schema, args.creator.migrationStrategies);
+        }
       }
     }
   }

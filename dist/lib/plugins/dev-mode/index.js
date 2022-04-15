@@ -59,8 +59,8 @@ var _deepFreeze = _interopRequireDefault(require("deep-freeze"));
  * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */
 function deepFreezeWhenDevMode(obj) {
-  // direct return if falsy
-  if (!obj) {
+  // direct return if not suitable for deepFreeze()
+  if (!obj || typeof obj === 'string' || typeof obj === 'number') {
     return obj;
   }
 
@@ -86,52 +86,67 @@ var RxDBDevModePlugin = {
     }
   },
   hooks: {
-    preAddRxPlugin: function preAddRxPlugin(args) {
-      /**
-       * throw when dev mode is added multiple times
-       * because there is no way that this was done intentional.
-       * Likely the developer has mixed core and default usage of RxDB.
-       */
-      if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
-        throw (0, _rxError.newRxError)('DEV1', {
-          plugins: args.plugins
-        });
+    preAddRxPlugin: {
+      after: function after(args) {
+        /**
+         * throw when dev mode is added multiple times
+         * because there is no way that this was done intentional.
+         * Likely the developer has mixed core and default usage of RxDB.
+         */
+        if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
+          throw (0, _rxError.newRxError)('DEV1', {
+            plugins: args.plugins
+          });
+        }
       }
     },
-    preCreateRxSchema: _checkSchema.checkSchema,
-    preCreateRxDatabase: function preCreateRxDatabase(args) {
-      (0, _unallowedProperties.ensureDatabaseNameIsValid)(args);
+    preCreateRxSchema: {
+      after: _checkSchema.checkSchema
     },
-    preCreateRxCollection: function preCreateRxCollection(args) {
-      (0, _unallowedProperties.ensureCollectionNameValid)(args);
-
-      if (args.name.charAt(0) === '_') {
-        throw (0, _rxError.newRxError)('DB2', {
-          name: args.name
-        });
-      }
-
-      if (!args.schema) {
-        throw (0, _rxError.newRxError)('DB4', {
-          name: args.name,
-          args: args
-        });
+    preCreateRxDatabase: {
+      after: function after(args) {
+        (0, _unallowedProperties.ensureDatabaseNameIsValid)(args);
       }
     },
-    preCreateRxQuery: function preCreateRxQuery(args) {
-      (0, _checkQuery.checkQuery)(args);
-    },
-    prePrepareQuery: function prePrepareQuery(args) {
-      (0, _checkQuery.checkMangoQuery)(args);
-    },
-    createRxCollection: function createRxCollection(args) {
-      // check ORM-methods
-      (0, _checkOrm.checkOrmMethods)(args.statics);
-      (0, _checkOrm.checkOrmMethods)(args.methods);
-      (0, _checkOrm.checkOrmMethods)(args.attachments); // check migration strategies
+    preCreateRxCollection: {
+      after: function after(args) {
+        (0, _unallowedProperties.ensureCollectionNameValid)(args);
+        (0, _checkOrm.checkOrmDocumentMethods)(args.schema, args.methods);
 
-      if (args.schema && args.migrationStrategies) {
-        (0, _checkMigrationStrategies.checkMigrationStrategies)(args.schema, args.migrationStrategies);
+        if (args.name.charAt(0) === '_') {
+          throw (0, _rxError.newRxError)('DB2', {
+            name: args.name
+          });
+        }
+
+        if (!args.schema) {
+          throw (0, _rxError.newRxError)('DB4', {
+            name: args.name,
+            args: args
+          });
+        }
+      }
+    },
+    preCreateRxQuery: {
+      after: function after(args) {
+        (0, _checkQuery.checkQuery)(args);
+      }
+    },
+    prePrepareQuery: {
+      after: function after(args) {
+        (0, _checkQuery.checkMangoQuery)(args);
+      }
+    },
+    createRxCollection: {
+      after: function after(args) {
+        // check ORM-methods
+        (0, _checkOrm.checkOrmMethods)(args.creator.statics);
+        (0, _checkOrm.checkOrmMethods)(args.creator.methods);
+        (0, _checkOrm.checkOrmMethods)(args.creator.attachments); // check migration strategies
+
+        if (args.creator.schema && args.creator.migrationStrategies) {
+          (0, _checkMigrationStrategies.checkMigrationStrategies)(args.creator.schema, args.creator.migrationStrategies);
+        }
       }
     }
   }

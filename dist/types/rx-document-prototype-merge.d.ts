@@ -6,7 +6,7 @@
  * adding them to a new object.
  * In the future we should do this by chaining the __proto__ objects
  */
-import type { RxCollection, RxDocument } from './types';
+import type { RxCollection, RxDocument, RxDocumentData } from './types';
 export declare function getDocumentPrototype(rxCollection: RxCollection): any;
 export declare function getRxDocumentConstructor(rxCollection: RxCollection): any;
 /**
@@ -15,7 +15,7 @@ export declare function getRxDocumentConstructor(rxCollection: RxCollection): an
  * If the document already exists in the _docCache,
  * return that instead to ensure we have no duplicates.
  */
-export declare function createRxDocument<DT, OM>(rxCollection: RxCollection<DT, OM>, docData: any): RxDocument<DT, OM>;
+export declare function createRxDocument<RxDocType, ORM>(rxCollection: RxCollection<RxDocType, ORM>, docData: RxDocumentData<RxDocType>): RxDocument<RxDocType, ORM>;
 /**
  * create RxDocument from the docs-array
  */

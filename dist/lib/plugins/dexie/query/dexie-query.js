@@ -7,7 +7,7 @@ exports.dexieQuery = void 0;
 exports.getDexieKeyRange = getDexieKeyRange;
 exports.getPouchQueryPlan = getPouchQueryPlan;
 
-var _rxSchema = require("../../../rx-schema");
+var _rxSchemaHelper = require("../../../rx-schema-helper");
 
 var _util = require("../../../util");
 
@@ -133,14 +133,6 @@ var dexieQuery = function dexieQuery(instance, preparedQuery) {
 
         rows = rows.slice(skip, skipPlusLimit);
         /**
-         * Strip internal keys as last operation
-         * so it has to run over less documents.
-         */
-
-        rows = rows.map(function (docData) {
-          return (0, _dexieHelper.stripDexieKey)(docData);
-        });
-        /**
          * Comment this in for debugging to check all fields in the database.
          */
         // const docsInDb = await state.dexieTable.filter(queryMatcher).toArray();
@@ -176,7 +168,7 @@ exports.dexieQuery = dexieQuery;
  * @link https://nolanlawson.com/2021/08/22/speeding-up-indexeddb-reads-and-writes/
  */
 function getPouchQueryPlan(schema, query) {
-  var primaryKey = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+  var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   /**
    * Store the query plan together with the prepared query
    * to improve performance

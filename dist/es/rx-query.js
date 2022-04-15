@@ -2,14 +2,65 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'fast-deep-equal';
 import { BehaviorSubject, firstValueFrom, merge } from 'rxjs';
 import { mergeMap, filter, map, startWith, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, flatClone, firstPropertyNameOfObject, ensureNotFalsy } from './util';
+import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy } from './util';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { createRxDocuments } from './rx-document-prototype-merge';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
-import { _handleToStorageInstance } from './rx-collection-helper';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema';
+import { normalizeMangoQuery } from './rx-query-helper';
+
+/**
+ * Runs the query over the storage instance
+ * of the collection.
+ * Does some optimizations to ensuer findById is used
+ * when specific queries are used.
+ */
+export var queryCollection = function queryCollection(rxQuery) {
+  try {
+    var docs = [];
+    var _collection = rxQuery.collection;
+    /**
+     * Optimizations shortcut.
+     * If query is find-one-document-by-id,
+     * then we do not have to use the slow query() method
+     * but instead can use findDocumentsById()
+     */
+
+    var _temp2 = function () {
+      if (rxQuery.isFindOneByIdQuery) {
+        var docId = rxQuery.isFindOneByIdQuery;
+        return Promise.resolve(_collection.storageInstance.findDocumentsById([docId], false)).then(function (docsMap) {
+          var docData = docsMap[docId];
+
+          if (docData) {
+            docs.push(docData);
+          }
+        });
+      } else {
+        var preparedQuery = rxQuery.getPreparedQuery();
+        return Promise.resolve(_collection.storageInstance.query(preparedQuery)).then(function (queryResult) {
+          docs = queryResult.documents;
+        });
+      }
+    }();
+
+    return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
+      return docs;
+    }) : docs);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+/**
+ * Returns true if the given query
+ * selects exactly one document by its id.
+ * Used to optimize performance because these kind of
+ * queries do not have to run over an index and can use get-by-id instead.
+ * Returns false if no query of that kind.
+ * Returns the document id otherwise.
+ */
+
 var _queryCount = 0;
 
 var newQueryID = function newQueryID() {
@@ -93,24 +144,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
     this._lastExecStart = now();
-    var docsPromise;
-
-    switch (this.op) {
-      case 'find':
-        docsPromise = this.collection._queryStorageInstance(this);
-        break;
-
-      case 'findOne':
-        docsPromise = this.collection._queryStorageInstance(this, 1);
-        break;
-
-      default:
-        throw newRxError('QU1', {
-          collection: this.collection.name,
-          op: this.op
-        });
-    }
-
+    var docsPromise = queryCollection(this);
     return docsPromise.then(function (docs) {
       _this._lastExecEnd = now();
       return docs;
@@ -126,7 +160,6 @@ export var RxQueryBase = /*#__PURE__*/function () {
   _proto.exec = function exec(throwIfMissing) {
     var _this2 = this;
 
-    // TODO this should be ensured by typescript
     if (throwIfMissing && this.op !== 'findOne') {
       throw newRxError('QU9', {
         collection: this.collection.name,
@@ -190,7 +223,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     var hookInput = {
       rxQuery: this,
       // can be mutated by the hooks so we have to deep clone first.
-      mangoQuery: normalizeMangoQuery(this.collection.schema.normalized, clone(this.mangoQuery))
+      mangoQuery: normalizeMangoQuery(this.collection.schema.jsonSchema, clone(this.mangoQuery))
     };
     runPluginHooks('prePrepareQuery', hookInput);
     var value = this.collection.database.storage.statics.prepareQuery(this.collection.storageInstance.schema, hookInput.mangoQuery);
@@ -213,7 +246,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
       return false;
     }
 
-    return this.queryMatcher(_handleToStorageInstance(this.collection, docData));
+    return this.queryMatcher(docData);
   }
   /**
    * deletes all found documents
@@ -333,7 +366,16 @@ export var RxQueryBase = /*#__PURE__*/function () {
   }, {
     key: "queryMatcher",
     get: function get() {
-      return overwriteGetterForCaching(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(this.collection.storageInstance.schema, this.getPreparedQuery()));
+      var schema = this.collection.schema.jsonSchema;
+      /**
+       * Instead of calling this.getPreparedQuery(),
+       * we have to prepare the query for the query matcher
+       * so that it does not contain modifications from the hooks
+       * like the key compression.
+       */
+
+      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, normalizeMangoQuery(this.collection.schema.jsonSchema, clone(this.mangoQuery)));
+      return overwriteGetterForCaching(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(schema, usePreparedQuery));
     }
   }, {
     key: "asRxQuery",
@@ -476,68 +518,9 @@ function __ensureEqual(rxQuery) {
 
   return Promise.resolve(ret); // true if results have changed
 }
-/**
- * Normalize the query to ensure we have all fields set
- * and queries that represent the same query logic are detected as equal by the caching.
- */
-
-
-export function normalizeMangoQuery(schema, mangoQuery) {
-  var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-  mangoQuery = flatClone(mangoQuery);
-  /**
-   * To ensure a deterministic sorting,
-   * we have to ensure the primary key is always part
-   * of the sort query.
-   * Primary sorting is added as last sort parameter,
-   * similiar to how we add the primary key to indexes that do not have it.
-   */
-
-  if (!mangoQuery.sort) {
-    var _ref;
-
-    mangoQuery.sort = [(_ref = {}, _ref[primaryKey] = 'asc', _ref)];
-  } else {
-    var isPrimaryInSort = mangoQuery.sort.find(function (p) {
-      return firstPropertyNameOfObject(p) === primaryKey;
-    });
-
-    if (!isPrimaryInSort) {
-      var _mangoQuery$sort$push;
-
-      mangoQuery.sort = mangoQuery.sort.slice(0);
-      mangoQuery.sort.push((_mangoQuery$sort$push = {}, _mangoQuery$sort$push[primaryKey] = 'asc', _mangoQuery$sort$push));
-    }
-  }
-  /**
-   * Ensure that if an index is specified,
-   * the primaryKey is inside of it.
-   */
-
-
-  if (mangoQuery.index) {
-    var indexAr = Array.isArray(mangoQuery.index) ? mangoQuery.index.slice(0) : [mangoQuery.index];
-
-    if (!indexAr.includes(primaryKey)) {
-      indexAr.push(primaryKey);
-    }
-
-    mangoQuery.index = indexAr;
-  }
-
-  return mangoQuery;
-}
-/**
- * Returns true if the given query
- * selects exactly one document by its id.
- * Used to optimize performance because these kind of
- * queries do not have to run over an index and can use get-by-id instead.
- * Returns false if no query of that kind.
- * Returns the document id otherwise.
- */
 
 export function isFindOneByIdQuery(primaryPath, query) {
-  if (query.limit === 1 && !query.skip && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
+  if (query.limit === 1 && !query.skip && query.selector && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
     if (typeof query.selector[primaryPath] === 'string') {
       return query.selector[primaryPath];
     } else if (Object.keys(query.selector[primaryPath]).length === 1 && typeof query.selector[primaryPath].$eq === 'string') {

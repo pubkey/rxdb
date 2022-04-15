@@ -35,12 +35,14 @@ export async function create(
         storage,
         multiInstance,
         eventReduce,
-        ignoreDuplicate: true
+        ignoreDuplicate: true,
+        localDocuments: true
     });
 
     const collections = await db.addCollections({
         [name]: {
-            schema: schemas.human
+            schema: schemas.human,
+            localDocuments: true
         }
     });
 
@@ -347,12 +349,14 @@ export async function createMultiInstance(
         password,
         multiInstance: true,
         eventReduce: true,
-        ignoreDuplicate: true
+        ignoreDuplicate: true,
+        localDocuments: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collections = await db.addCollections({
         human: {
-            schema: schemas.human
+            schema: schemas.human,
+            localDocuments: true
         }
     });
     // insert data

@@ -4,7 +4,7 @@
  */
 import { expose } from 'threads/worker';
 import { getFromMapOrThrow } from '../../util';
-export function wrappedRxStorage(args) {
+export function wrappedWorkerRxStorage(args) {
   var nextId = 0;
   var instanceById = new Map();
   var exposeMe = {
@@ -27,10 +27,6 @@ export function wrappedRxStorage(args) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.bulkWrite(documentWrites);
     },
-    bulkAddRevisions: function bulkAddRevisions(instanceId, documents) {
-      var instance = getFromMapOrThrow(instanceById, instanceId);
-      return instance.bulkAddRevisions(documents);
-    },
     findDocumentsById: function findDocumentsById(instanceId, ids, deleted) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.findDocumentsById(ids, deleted);
@@ -43,13 +39,17 @@ export function wrappedRxStorage(args) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.getAttachmentData(documentId, attachmentId);
     },
-    getChangedDocuments: function getChangedDocuments(instanceId, options) {
+    getChangedDocumentsSince: function getChangedDocumentsSince(instanceId, limit, checkpoint) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
-      return instance.getChangedDocuments(options);
+      return instance.getChangedDocumentsSince(limit, checkpoint);
     },
     changeStream: function changeStream(instanceId) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.changeStream();
+    },
+    cleanup: function cleanup(instanceId, minDeletedTime) {
+      var instance = getFromMapOrThrow(instanceById, instanceId);
+      return instance.cleanup(minDeletedTime);
     },
     close: function close(instanceId) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
@@ -58,30 +58,6 @@ export function wrappedRxStorage(args) {
     remove: function remove(instanceId) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.remove();
-    },
-
-    /**
-     * RxKeyObjectStorageInstance
-     */
-    createKeyObjectStorageInstance: function createKeyObjectStorageInstance(params) {
-      try {
-        var _instanceId2 = nextId++;
-
-        return Promise.resolve(args.storage.createKeyObjectStorageInstance(params)).then(function (instance) {
-          instanceById.set(_instanceId2, instance);
-          return _instanceId2;
-        });
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    },
-    bulkWriteLocal: function bulkWriteLocal(instanceId, documentWrites) {
-      var instance = getFromMapOrThrow(instanceById, instanceId);
-      return instance.bulkWrite(documentWrites);
-    },
-    findLocalDocumentsById: function findLocalDocumentsById(instanceId, ids) {
-      var instance = getFromMapOrThrow(instanceById, instanceId);
-      return instance.findLocalDocumentsById(ids);
     }
   };
   expose(exposeMe);

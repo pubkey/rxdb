@@ -7,7 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxDBAjvValidatePlugin = void 0;
 exports._getValidator = _getValidator;
-exports.rxdb = exports.prototypes = exports.hooks = void 0;
 
 var _ajv = _interopRequireDefault(require("ajv"));
 
@@ -46,11 +45,14 @@ function _getValidator(rxSchema) {
  */
 
 
-function validate(obj) {
+function validateFullDocumentData(obj) {
   var useValidator = _getValidator(this);
 
   var isValid = useValidator(obj);
-  if (isValid) return obj;else {
+
+  if (isValid) {
+    return obj;
+  } else {
     throw (0, _rxError.newRxError)('VD2', {
       errors: useValidator.errors,
       obj: obj,
@@ -66,26 +68,22 @@ var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   });
 };
 
-var rxdb = true;
-exports.rxdb = rxdb;
-var prototypes = {
-  /**
-   * set validate-function for the RxSchema.prototype
-   */
-  RxSchema: function RxSchema(proto) {
-    proto.validate = validate;
-  }
-};
-exports.prototypes = prototypes;
-var hooks = {
-  createRxSchema: runAfterSchemaCreated
-};
-exports.hooks = hooks;
 var RxDBAjvValidatePlugin = {
   name: 'ajv-validate',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  hooks: hooks
+  rxdb: true,
+  prototypes: {
+    /**
+     * set validate-function for the RxSchema.prototype
+     */
+    RxSchema: function RxSchema(proto) {
+      proto.validateFullDocumentData = validateFullDocumentData;
+    }
+  },
+  hooks: {
+    createRxSchema: {
+      after: runAfterSchemaCreated
+    }
+  }
 };
 exports.RxDBAjvValidatePlugin = RxDBAjvValidatePlugin;
 //# sourceMappingURL=ajv-validate.js.map

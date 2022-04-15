@@ -14,8 +14,6 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _rxError = require("../../rx-error");
 
-var _rxSchema = require("../../rx-schema");
-
 var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var _util = require("../../util");
@@ -34,9 +32,9 @@ var _entityProperties = require("./entity-properties");
  * @throws {Error}
  */
 function checkFieldNameRegex(fieldName) {
-  if (fieldName === '') return; // TODO why is the fieldname allowed to be empty string?
-
-  if (fieldName === '_deleted') return;
+  if (fieldName === '_deleted') {
+    return;
+  }
 
   if (['properties', 'language'].includes(fieldName)) {
     throw (0, _rxError.newRxError)('SC23', {
@@ -66,7 +64,7 @@ function checkFieldNameRegex(fieldName) {
 
 
 function validateFieldsDeep(rxJsonSchema) {
-  var primaryPath = (0, _rxSchema.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
+  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
 
   function checkField(fieldName, schemaObj, path) {
     if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
@@ -214,6 +212,24 @@ function checkPrimaryKey(jsonSchema) {
       validatePrimarySchemaPart(schemaPart);
     });
   }
+  /**
+   * The primary key must have a maxLength set
+   * which is required by some RxStorage implementations
+   * to ensure we can craft custom index strings.
+   */
+
+
+  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(jsonSchema.primaryKey);
+  var primaryPathSchemaPart = jsonSchema.properties[primaryPath];
+
+  if (!primaryPathSchemaPart.maxLength) {
+    throw (0, _rxError.newRxError)('SC39', {
+      schema: jsonSchema,
+      args: {
+        primaryPathSchemaPart: primaryPathSchemaPart
+      }
+    });
+  }
 }
 /**
  * computes real path of the object path in the collection schema
@@ -340,6 +356,92 @@ function checkSchema(jsonSchema) {
           }
         }
       }
+      /**
+       * To be able to craft custom indexable string with compound fields,
+       * we need to know the maximum fieldlength of the fields values
+       * when they are transformed to strings.
+       * Therefore we need to enforce some properties inside of the schema.
+       */
+
+
+      var indexAsArray = (0, _util.isMaybeReadonlyArray)(index) ? index : [index];
+      indexAsArray.forEach(function (fieldName) {
+        var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(jsonSchema, fieldName);
+        var type = schemaPart.type;
+
+        switch (type) {
+          case 'string':
+            var maxLength = schemaPart.maxLength;
+
+            if (!maxLength) {
+              throw (0, _rxError.newRxError)('SC34', {
+                index: index,
+                field: fieldName,
+                schema: jsonSchema
+              });
+            }
+
+            break;
+
+          case 'number':
+          case 'integer':
+            var multipleOf = schemaPart.multipleOf;
+
+            if (!multipleOf) {
+              throw (0, _rxError.newRxError)('SC35', {
+                index: index,
+                field: fieldName,
+                schema: jsonSchema
+              });
+            }
+
+            var maximum = schemaPart.maximum;
+            var minimum = schemaPart.minimum;
+
+            if (typeof maximum === 'undefined' || typeof minimum === 'undefined') {
+              throw (0, _rxError.newRxError)('SC37', {
+                index: index,
+                field: fieldName,
+                schema: jsonSchema
+              });
+            }
+
+            break;
+
+          case 'boolean':
+            /**
+             * If a boolean field is used as an index,
+             * it must be required.
+             */
+            var parentPath = '';
+            var lastPathPart = fieldName;
+
+            if (fieldName.includes('.')) {
+              var partParts = fieldName.split('.');
+              lastPathPart = partParts.pop();
+              parentPath = partParts.join('.');
+            }
+
+            var parentSchemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(jsonSchema, parentPath);
+
+            if (!parentSchemaPart.required || !parentSchemaPart.required.includes(lastPathPart)) {
+              throw (0, _rxError.newRxError)('SC38', {
+                index: index,
+                field: fieldName,
+                schema: jsonSchema
+              });
+            }
+
+            break;
+
+          default:
+            throw (0, _rxError.newRxError)('SC36', {
+              fieldName: fieldName,
+              type: schemaPart.type,
+              schema: jsonSchema
+            });
+        }
+      });
     });
   } // remove backward-compatibility for index: true
 

@@ -1,7 +1,7 @@
 
 # Summary
 
-* [Introduction](README.md)
+* [Quickstart](./quickstart.md)
 
 * [Install](./install.md)
     * [npm](./install.md#npm)
@@ -111,11 +111,22 @@
 
 * [LeaderElection](./leader-election.md)
 
+* [RxStorage](./rx-storage.md)
+
+* [RxStorage PouchDB](./rx-storage-pouchdb.md)
+* [PouchDB Adapters](./adapters.md)
+
 * [RxStorage Dexie.js](./rx-storage-dexie.md)
 
 * [RxStorage LokiJS](./rx-storage-lokijs.md)
 
+* [RxStorage IndexedDB](./rx-storage-indexeddb.md)
+
+* [RxStorage SQLite](./rx-storage-sqlite.md)
+
 * [RxStorage Worker](./rx-storage-worker.md)
+
+* [RxStorage Sharding](./rx-storage-sharding.md)
 
 * [Replication CouchDB](./replication-couchdb.md)
 
@@ -123,7 +134,7 @@
 
 * [Replication Primitives](./replication.md)
 
-* [InMemory](./in-memory.md)
+* [Cleanup](./cleanup.md)
 
 * [Backup](./backup.md)
 
@@ -135,8 +146,7 @@
 
 * [Creating Plugins](./plugins.md)
 
-* [Adapters](./adapters.md)
-
+* [RxDB Premium](./premium.md)
 
 
 * Tutorials

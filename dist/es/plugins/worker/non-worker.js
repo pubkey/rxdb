@@ -31,28 +31,10 @@ export var RxStorageWorker = /*#__PURE__*/function () {
 
       return Promise.resolve(_this2.workerPromise).then(function (worker) {
         return Promise.resolve(worker.createStorageInstance(params)).then(function (instanceId) {
-          return new RxStorageInstanceWorker(params.databaseName, params.collectionName, params.schema, {
+          return new RxStorageInstanceWorker(_this2, params.databaseName, params.collectionName, params.schema, {
             rxStorage: _this2,
             instanceId: instanceId,
             worker: worker
-          }, params.options);
-        });
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
-  _proto.createKeyObjectStorageInstance = function createKeyObjectStorageInstance(params) {
-    try {
-      var _this4 = this;
-
-      return Promise.resolve(_this4.workerPromise).then(function (worker) {
-        return Promise.resolve(worker.createKeyObjectStorageInstance(params)).then(function (instanceId) {
-          return new RxStorageKeyObjectInstanceWorker(params.databaseName, params.collectionName, {
-            rxStorage: _this4,
-            worker: worker,
-            instanceId: instanceId
           }, params.options);
         });
       });
@@ -68,18 +50,19 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
    * threads.js uses observable-fns instead of rxjs
    * so we have to transform it.
    */
-  function RxStorageInstanceWorker(databaseName, collectionName, schema, internals, options) {
-    var _this5 = this;
+  function RxStorageInstanceWorker(storage, databaseName, collectionName, schema, internals, options) {
+    var _this3 = this;
 
     this.changes$ = new Subject();
     this.subs = [];
+    this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
     this.schema = schema;
     this.internals = internals;
     this.options = options;
     this.subs.push(this.internals.worker.changeStream(this.internals.instanceId).subscribe(function (ev) {
-      return _this5.changes$.next(ev);
+      return _this3.changes$.next(ev);
     }));
   }
 
@@ -87,10 +70,6 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
 
   _proto2.bulkWrite = function bulkWrite(documentWrites) {
     return this.internals.worker.bulkWrite(this.internals.instanceId, documentWrites);
-  };
-
-  _proto2.bulkAddRevisions = function bulkAddRevisions(documents) {
-    return this.internals.worker.bulkAddRevisions(this.internals.instanceId, documents);
   };
 
   _proto2.findDocumentsById = function findDocumentsById(ids, deleted) {
@@ -105,12 +84,22 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
     return this.internals.worker.getAttachmentData(this.internals.instanceId, documentId, attachmentId);
   };
 
-  _proto2.getChangedDocuments = function getChangedDocuments(options) {
-    return this.internals.worker.getChangedDocuments(this.internals.instanceId, options);
+  _proto2.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
+    try {
+      var _this5 = this;
+
+      return Promise.resolve(_this5.internals.worker.getChangedDocumentsSince(_this5.internals.instanceId, limit, checkpoint));
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   _proto2.changeStream = function changeStream() {
     return this.changes$.asObservable();
+  };
+
+  _proto2.cleanup = function cleanup(minDeletedTime) {
+    return this.internals.worker.cleanup(this.internals.instanceId, minDeletedTime);
   };
 
   _proto2.close = function close() {
@@ -125,52 +114,6 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
   };
 
   return RxStorageInstanceWorker;
-}();
-export var RxStorageKeyObjectInstanceWorker = /*#__PURE__*/function () {
-  /**
-   * threads.js uses observable-fns instead of rxjs
-   * so we have to transform it.
-   */
-  function RxStorageKeyObjectInstanceWorker(databaseName, collectionName, internals, options) {
-    var _this6 = this;
-
-    this.changes$ = new Subject();
-    this.subs = [];
-    this.databaseName = databaseName;
-    this.collectionName = collectionName;
-    this.internals = internals;
-    this.options = options;
-    this.subs.push(this.internals.worker.changeStream(this.internals.instanceId).subscribe(function (ev) {
-      return _this6.changes$.next(ev);
-    }));
-  }
-
-  var _proto3 = RxStorageKeyObjectInstanceWorker.prototype;
-
-  _proto3.bulkWrite = function bulkWrite(documentWrites) {
-    return this.internals.worker.bulkWriteLocal(this.internals.instanceId, documentWrites);
-  };
-
-  _proto3.findLocalDocumentsById = function findLocalDocumentsById(ids) {
-    return this.internals.worker.findLocalDocumentsById(this.internals.instanceId, ids);
-  };
-
-  _proto3.changeStream = function changeStream() {
-    return this.changes$.asObservable();
-  };
-
-  _proto3.close = function close() {
-    this.subs.forEach(function (sub) {
-      return sub.unsubscribe();
-    });
-    return this.internals.worker.close(this.internals.instanceId);
-  };
-
-  _proto3.remove = function remove() {
-    return this.internals.worker.remove(this.internals.instanceId);
-  };
-
-  return RxStorageKeyObjectInstanceWorker;
 }();
 export function getRxStorageWorker(settings) {
   var storage = new RxStorageWorker(settings, settings.statics);

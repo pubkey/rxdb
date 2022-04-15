@@ -2,9 +2,6 @@
  * this plugin adds the json export/import capabilities to RxDB
  */
 import {
-    hash
-} from '../util';
-import {
     createRxQuery,
     queryCollection,
     _getDefaultQuery
@@ -21,22 +18,13 @@ import type {
 
 function dumpRxDatabase(
     this: RxDatabase,
-    decrypted = false,
     collections?: string[]
 ): Promise<any> {
     const json: any = {
         name: this.name,
         instanceToken: this.token,
-        encrypted: false,
-        passwordHash: null,
         collections: []
     };
-
-    if (this.password) {
-        json.passwordHash = hash(this.password);
-        if (decrypted) json.encrypted = false;
-        else json.encrypted = true;
-    }
 
     const useCollections = Object.keys(this.collections)
         .filter(colName => !collections || collections.includes(colName))
@@ -45,7 +33,7 @@ function dumpRxDatabase(
 
     return Promise.all(
         useCollections
-            .map(col => col.exportJSON(decrypted))
+            .map(col => col.exportJSON())
     ).then(cols => {
         json.collections = cols;
         return json;
@@ -76,23 +64,13 @@ const importDumpRxDatabase = function (
 };
 
 const dumpRxCollection = function (
-    this: RxCollection,
-    decrypted = false
+    this: RxCollection
 ) {
-    const encrypted = !decrypted;
-
     const json: any = {
         name: this.name,
         schemaHash: this.schema.hash,
-        encrypted: false,
-        passwordHash: null,
         docs: []
     };
-
-    if (this.database.password && encrypted) {
-        json.passwordHash = hash(this.database.password);
-        json.encrypted = true;
-    }
 
     const query = createRxQuery(
         'find',
@@ -104,11 +82,6 @@ const dumpRxCollection = function (
             json.docs = docs.map((docData: any) => {
                 delete docData._rev;
                 delete docData._attachments;
-
-                if (encrypted) {
-                    docData = this._crypter.encrypt(docData);
-                }
-
                 return docData;
             });
             return json;
@@ -127,43 +100,25 @@ function importDumpRxCollection<RxDocType>(
         });
     }
 
-    // check if passwordHash matches own
-    if (
-        exportedJSON.encrypted &&
-        exportedJSON.passwordHash !== hash(this.database.password)
-    ) {
-        throw newRxError('JD3', {
-            passwordHash: exportedJSON.passwordHash,
-            own: hash(this.database.password)
-        });
-    }
-
     const docs: RxDocumentData<RxDocType>[] = exportedJSON.docs
-        // decrypt
-        .map((doc: any) => this._crypter.decrypt(doc))
         // validate schema
         .map((doc: any) => this.schema.validate(doc));
 
     return this.storageInstance.bulkWrite(docs.map(document => ({ document })));
 }
 
-export const rxdb = true;
-export const prototypes = {
-    RxDatabase: (proto: any) => {
-        proto.exportJSON = dumpRxDatabase;
-        proto.importJSON = importDumpRxDatabase;
-    },
-    RxCollection: (proto: any) => {
-        proto.exportJSON = dumpRxCollection;
-        proto.importJSON = importDumpRxCollection;
-    }
-};
-
-export const overwritable = {};
-
 export const RxDBJsonDumpPlugin: RxPlugin = {
     name: 'json-dump',
-    rxdb,
-    prototypes,
-    overwritable
+    rxdb: true,
+    prototypes: {
+        RxDatabase: (proto: any) => {
+            proto.exportJSON = dumpRxDatabase;
+            proto.importJSON = importDumpRxDatabase;
+        },
+        RxCollection: (proto: any) => {
+            proto.exportJSON = dumpRxCollection;
+            proto.importJSON = importDumpRxCollection;
+        }
+    },
+    overwritable: {}
 };

@@ -1,5 +1,5 @@
 import { getRxStorageDexie } from '../../dexie';
-import { wrappedRxStorage } from '../../worker';
+import { wrappedWorkerRxStorage } from '../../worker';
 
 var indexedDB = require('fake-indexeddb');
 
@@ -9,7 +9,7 @@ var storage = getRxStorageDexie({
   indexedDB: indexedDB,
   IDBKeyRange: IDBKeyRange
 });
-wrappedRxStorage({
+wrappedWorkerRxStorage({
   storage: storage
 });
 //# sourceMappingURL=dexie-memory.worker.js.map

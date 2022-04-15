@@ -5,11 +5,18 @@
  * To determine this, we 'flag' the document
  * by setting a specially crafted revision string.
  */
+import type { DeepReadonly, RxDocumentData, RxDocumentWriteData } from '../../types';
+export declare function getPullReplicationFlag(replicationIdentifierHash: string): string;
 /**
- * Returns a new revision key without the revision height.
- * The revision is crafted for the graphql replication
- * and contains the information that this document data was pulled
- * from the remote server and not saved by the client.
+ * Sets the pull replication flag to the _meta
+ * to contain the next revision height.
+ * Used to identify the document as 'pulled-from-remote'
+ * so we do not send it to remote again.
  */
-export declare function createRevisionForPulledDocument(replicationIdentifierHash: string, doc: any): string;
-export declare function wasRevisionfromPullReplication(replicationIdentifierHash: string, revision: string): boolean;
+export declare function setLastWritePullReplication<RxDocType>(replicationIdentifierHash: string, documentData: RxDocumentData<RxDocType> | RxDocumentWriteData<RxDocType>, 
+/**
+ * Height of the revision
+ * with which the pull flag will be saved.
+ */
+revisionHeight: number): void;
+export declare function wasLastWriteFromPullReplication<RxDocType>(replicationIdentifierHash: string, documentData: RxDocumentData<RxDocType> | DeepReadonly<RxDocumentData<RxDocType>>): boolean;

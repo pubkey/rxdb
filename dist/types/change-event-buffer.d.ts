@@ -29,13 +29,6 @@ export declare class ChangeEventBuffer {
      * this function reduces the events to the last ChangeEvent of each doc
      */
     reduceByLastOfDoc(changeEvents: RxChangeEvent<any>[]): RxChangeEvent<any>[];
-    /**
-     * use this to check if a change has already been handled
-     * @returns true if change with revision exists
-     * TODO only used in the in-memory plugin, we should move it there.
-     *
-     */
-    hasChangeWithRevision(revision: string): boolean;
     destroy(): void;
 }
 export declare function createChangeEventBuffer(collection: RxCollection<any, any>): ChangeEventBuffer;

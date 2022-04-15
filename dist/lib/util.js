@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RXDB_HASH_SALT = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
+exports.RX_META_LWT_MINIMUM = exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RXDB_HASH_SALT = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
 exports.adapterObject = adapterObject;
 exports.batchArray = batchArray;
 exports.clone = exports.blobBufferUtil = void 0;
@@ -16,9 +16,12 @@ exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
 exports.firstPropertyValueOfObject = firstPropertyValueOfObject;
 exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
+exports.getDefaultRevision = getDefaultRevision;
+exports.getDefaultRxDocumentMeta = getDefaultRxDocumentMeta;
 exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.getFromObjectOrThrow = getFromObjectOrThrow;
 exports.getHeightOfRevision = getHeightOfRevision;
+exports.getSortDocumentsByLastWriteTimeComparator = getSortDocumentsByLastWriteTimeComparator;
 exports.hash = hash;
 exports.isElectronRenderer = void 0;
 exports.isFolderPath = isFolderPath;
@@ -37,6 +40,7 @@ exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.requestIdlePromise = requestIdlePromise;
 exports.runXTimes = runXTimes;
 exports.shuffleArray = shuffleArray;
+exports.sortDocumentsByLastWriteTime = sortDocumentsByLastWriteTime;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
 exports.toPromise = toPromise;
@@ -48,6 +52,20 @@ var _clone = _interopRequireDefault(require("clone"));
 var _sparkMd = _interopRequireDefault(require("spark-md5"));
 
 var _isElectron = _interopRequireDefault(require("is-electron"));
+
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
 
 /**
  * Returns an error that indicates that a plugin is missing
@@ -471,20 +489,23 @@ function getHeightOfRevision(revision) {
   return parseRevision(revision).height;
 }
 /**
- * Creates a revision string that does NOT include the revision height
- * Copied and adapted from pouchdb-utils/src/rev.js
- * 
- * We use our own function so RxDB usage without pouchdb RxStorage
- * does not include pouchdb code in the bundle.
+ * Creates the next write revision for a given document.
  */
 
 
-function createRevision(docData) {
+function createRevision(docData, previousDocData) {
+  var previousRevision = previousDocData ? previousDocData._rev : null;
+  var previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
+  var newRevisionHeight = previousRevisionHeigth + 1;
   var docWithoutRev = Object.assign({}, docData, {
+    _rev: undefined,
     _rev_tree: undefined
   });
   var diggestString = JSON.stringify(docWithoutRev);
-  return _sparkMd["default"].hash(diggestString);
+
+  var revisionHash = _sparkMd["default"].hash(diggestString);
+
+  return newRevisionHeight + '-' + revisionHash;
 }
 /**
  * overwrites the getter with the actual value
@@ -580,6 +601,44 @@ var blobBufferUtil = {
 
     return blobBuffer;
   },
+
+  /**
+   * depending if we are on node or browser,
+   * we have to use Buffer(node) or Blob(browser)
+   */
+  createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
+    try {
+      var _exit2 = false;
+      var blobBuffer;
+
+      if (isElectronRenderer) {
+        // if we are inside of electron-renderer, always use the node-buffer
+        return Promise.resolve(Buffer.from(base64String, 'base64'));
+      }
+
+      var _temp2 = _catch(function () {
+        /**
+         * For browsers.
+         * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+         */
+        return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
+          return Promise.resolve(base64Response.blob()).then(function (blob) {
+            _exit2 = true;
+            return blob;
+          });
+        });
+      }, function () {
+        // for node
+        blobBuffer = Buffer.from(base64String, 'base64');
+      });
+
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function (_result) {
+        return _exit2 ? _result : blobBuffer;
+      }) : _exit2 ? _temp2 : blobBuffer);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  },
   isBlobBuffer: function isBlobBuffer(data) {
     if (typeof Buffer !== 'undefined' && Buffer.isBuffer(data) || data instanceof Blob) {
       return true;
@@ -620,6 +679,53 @@ var blobBufferUtil = {
       reader.readAsText(blobBuffer);
     });
   },
+  toBase64String: function toBase64String(blobBuffer) {
+    if (typeof blobBuffer === 'string') {
+      return Promise.resolve(blobBuffer);
+    }
+
+    if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
+      // node
+      return nextTick()
+      /**
+       * We use btoa() instead of blobBuffer.toString('base64')
+       * to ensure that we have the same behavior in nodejs and the browser.
+       */
+      .then(function () {
+        return blobBuffer.toString('base64');
+      });
+    }
+
+    return new Promise(function (res, rej) {
+      /**
+       * Browser
+       * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
+       */
+      var reader = new FileReader();
+      reader.onerror = rej;
+
+      reader.onload = function () {
+        // looks like 'data:plain/text;base64,YWFh...'
+        var fullResult = reader.result;
+        var split = fullResult.split(',');
+        split.shift();
+        res(split.join(','));
+      };
+
+      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+      /**
+       * in the electron-renderer we have a typed array insteaf of a blob
+       * so we have to transform it.
+       * @link https://github.com/pubkey/rxdb/issues/1371
+       */
+
+      if (blobBufferType === '[object Uint8Array]') {
+        blobBuffer = new Blob([blobBuffer]);
+      }
+
+      reader.readAsDataURL(blobBuffer);
+    });
+  },
   size: function size(blobBuffer) {
     if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
       // node
@@ -642,5 +748,58 @@ var RXJS_SHARE_REPLAY_DEFAULTS = {
   bufferSize: 1,
   refCount: true
 };
+/**
+ * We use 1 as minimum so that the value is never falsy.
+ * This const is used in several places because querying
+ * with a value lower then the minimum could give false results.
+ */
+
 exports.RXJS_SHARE_REPLAY_DEFAULTS = RXJS_SHARE_REPLAY_DEFAULTS;
+var RX_META_LWT_MINIMUM = 1;
+exports.RX_META_LWT_MINIMUM = RX_META_LWT_MINIMUM;
+
+function getDefaultRxDocumentMeta() {
+  return {
+    /**
+     * Set this to 1 to not waste performance
+     * while calling new Date()..
+     * The storage wrappers will anyway update
+     * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
+     */
+    lwt: RX_META_LWT_MINIMUM
+  };
+}
+/**
+ * Returns a revision that is not valid.
+ * Use this to have correct typings
+ * while the storage wrapper anyway will overwrite the revision.
+ */
+
+
+function getDefaultRevision() {
+  /**
+   * Use a non-valid revision format,
+   * to ensure that the RxStorage will throw
+   * when the revision is not replaced downstream.
+   */
+  return '';
+}
+
+function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
+  return function (a, b) {
+    if (a._meta.lwt === b._meta.lwt) {
+      if (b[primaryPath] < a[primaryPath]) {
+        return 1;
+      } else {
+        return -1;
+      }
+    } else {
+      return a._meta.lwt - b._meta.lwt;
+    }
+  };
+}
+
+function sortDocumentsByLastWriteTime(primaryPath, docs) {
+  return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
+}
 //# sourceMappingURL=util.js.map

@@ -31,11 +31,14 @@ export function _getValidator(rxSchema) {
  * validates the given object against the schema
  */
 
-function validate(obj) {
+function validateFullDocumentData(obj) {
   var useValidator = _getValidator(this);
 
   var isValid = useValidator(obj);
-  if (isValid) return obj;else {
+
+  if (isValid) {
+    return obj;
+  } else {
     throw newRxError('VD2', {
       errors: useValidator.errors,
       obj: obj,
@@ -51,22 +54,21 @@ var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   });
 };
 
-export var rxdb = true;
-export var prototypes = {
-  /**
-   * set validate-function for the RxSchema.prototype
-   */
-  RxSchema: function RxSchema(proto) {
-    proto.validate = validate;
-  }
-};
-export var hooks = {
-  createRxSchema: runAfterSchemaCreated
-};
 export var RxDBAjvValidatePlugin = {
   name: 'ajv-validate',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  hooks: hooks
+  rxdb: true,
+  prototypes: {
+    /**
+     * set validate-function for the RxSchema.prototype
+     */
+    RxSchema: function RxSchema(proto) {
+      proto.validateFullDocumentData = validateFullDocumentData;
+    }
+  },
+  hooks: {
+    createRxSchema: {
+      after: runAfterSchemaCreated
+    }
+  }
 };
 //# sourceMappingURL=ajv-validate.js.map

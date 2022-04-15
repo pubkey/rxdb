@@ -6,17 +6,13 @@ import {
     Observable
 } from 'rxjs';
 import {
-    createRevision,
-    getHeightOfRevision,
-    parseRevision,
-    lastOfArray,
-    flatClone,
     now,
     randomCouchString,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    RX_META_LWT_MINIMUM,
+    sortDocumentsByLastWriteTime
 } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
 import type {
     RxStorageInstance,
     RxStorageChangeEvent,
@@ -25,23 +21,22 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageBulkWriteError,
     RxStorageQueryResult,
-    BlobBuffer,
-    ChangeStreamOnceOptions,
     RxJsonSchema,
-    RxStorageChangedDocumentMeta,
     RxStorageInstanceCreationParams,
     EventBulk,
-    PreparedQuery
+    PreparedQuery,
+    DexieChangesCheckpoint
 } from '../../types';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageDexie } from './rx-storage-dexie';
 import {
     closeDexieDb,
     getDexieDbWithTables,
-    getDexieEventKey,
     getDocsInDb
 } from './dexie-helper';
 import { dexieQuery } from './query/dexie-query';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
 
 let instanceId = now();
 
@@ -59,23 +54,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         public readonly storage: RxStorageDexie,
         public readonly databaseName: string,
         public readonly collectionName: string,
-        public readonly schema: Readonly<RxJsonSchema<RxDocType>>,
+        public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
         public readonly internals: DexieStorageInternals,
         public readonly options: Readonly<DexieSettings>,
         public readonly settings: DexieSettings
     ) {
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-    }
-
-    /**
-     * Adds entries to the changes feed
-     * that can be queried to check which documents have been
-     * changed since sequence X.
-     */
-    private async addChangeDocumentsMeta(ids: string[]) {
-        const state = await this.internals;
-        const addDocs = ids.map(id => ({ id }));
-        return state.dexieChangesTable.bulkPut(addDocs);
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
@@ -94,7 +78,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             'rw',
             state.dexieTable,
             state.dexieDeletedTable,
-            state.dexieChangesTable,
             async () => {
                 const docsInDb = await getDocsInDb<RxDocType>(this.internals, documentKeys);
 
@@ -113,8 +96,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     const startTime = now();
                     const documentInDb = docsInDb[docIndex];
                     if (!documentInDb) {
-                        // insert new document
-                        const newRevision = '1-' + createRevision(writeRow.document);
                         /**
                          * It is possible to insert already deleted documents,
                          * this can happen on replication.
@@ -124,9 +105,8 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                             {},
                             writeRow.document,
                             {
-                                _rev: newRevision,
                                 _deleted: insertedIsDeleted,
-                                // TODO attachments are currently not working with lokijs
+                                // TODO attachments are currently not working with dexie.js
                                 _attachments: {} as any
                             }
                         );
@@ -136,7 +116,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         } else {
                             bulkPutDocs.push(writeDoc);
                             eventBulk.events.push({
-                                eventId: getDexieEventKey(false, id, newRevision),
+                                eventId: getUniqueDeterministicEventKey(this, this.primaryPath as any, writeRow),
                                 documentId: id,
                                 change: {
                                     doc: writeDoc,
@@ -149,6 +129,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 endTime: startTime
                             });
                         }
+
                         ret.success[id] = writeDoc;
                     } else {
                         // update existing document
@@ -175,18 +156,16 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 isError: true,
                                 status: 409,
                                 documentId: id,
-                                writeRow: writeRow
+                                writeRow: writeRow,
+                                documentInDb
                             };
                             ret.error[id] = err;
                         } else {
-                            const newRevHeight = getHeightOfRevision(revInDb) + 1;
-                            const newRevision = newRevHeight + '-' + createRevision(writeRow.document);
                             const isDeleted = !!writeRow.document._deleted;
                             const writeDoc: any = Object.assign(
                                 {},
                                 writeRow.document,
                                 {
-                                    _rev: newRevision,
                                     _deleted: isDeleted,
                                     // TODO attachments are currently not working with lokijs
                                     _attachments: {}
@@ -224,30 +203,38 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                                 bulkPutDeletedDocs.push(writeDoc);
                                 bulkRemoveDocs.push(id);
 
-                                /**
-                                 * On delete, we send the 'new' rev in the previous property,
-                                 * to have the equal behavior as pouchdb.
-                                 */
-                                const previous = flatClone(writeRow.previous);
-                                previous._rev = newRevision;
                                 change = {
                                     id,
                                     operation: 'DELETE',
-                                    previous,
+                                    previous: writeRow.previous,
                                     doc: null
                                 };
+                            } else if (
+                                writeRow.previous && writeRow.previous._deleted &&
+                                writeRow.document._deleted
+                            ) {
+                                // deleted doc was overwritten with other deleted doc
+                                bulkPutDeletedDocs.push(writeDoc);
                             }
                             if (!change) {
-                                throw newRxError('SNH', { args: { writeRow } });
+                                if (
+                                    writeRow.previous && writeRow.previous._deleted &&
+                                    writeRow.document._deleted
+                                ) {
+                                    // deleted doc got overwritten with other deleted doc -> do not send an event
+                                } else {
+                                    throw newRxError('SNH', { args: { writeRow } });
+                                }
+                            } else {
+                                eventBulk.events.push({
+                                    eventId: getUniqueDeterministicEventKey(this, this.primaryPath as any, writeRow),
+                                    documentId: id,
+                                    change,
+                                    startTime,
+                                    // will be filled up before the event is pushed into the changestream
+                                    endTime: startTime
+                                });
                             }
-                            eventBulk.events.push({
-                                eventId: getDexieEventKey(false, id, newRevision),
-                                documentId: id,
-                                change,
-                                startTime,
-                                // will be filled up before the event is pushed into the changestream
-                                endTime: startTime
-                            });
                             ret.success[id] = writeDoc;
                         }
                     }
@@ -257,8 +244,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID,
                     bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID,
                     bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs) : PROMISE_RESOLVE_VOID,
-                    bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID,
-                    changesIds.length > 0 ? this.addChangeDocumentsMeta(changesIds) : PROMISE_RESOLVE_VOID
+                    bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID
                 ]);
             });
 
@@ -267,131 +253,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         this.changes$.next(eventBulk);
 
         return ret;
-    }
-
-    async bulkAddRevisions(documents: RxDocumentData<RxDocType>[]): Promise<void> {
-        const state = await this.internals;
-        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
-            id: randomCouchString(10),
-            events: []
-        };
-        const documentKeys: string[] = documents.map(writeRow => writeRow[this.primaryPath] as any);
-        await state.dexieDb.transaction(
-            'rw',
-            state.dexieTable,
-            state.dexieDeletedTable,
-            state.dexieChangesTable,
-            async () => {
-                const docsInDb = await getDocsInDb<RxDocType>(this.internals, documentKeys);
-
-                /**
-                 * Batch up the database operations
-                 * so we can later run them in bulk.
-                 */
-                const bulkPutDocs: any[] = [];
-                const bulkRemoveDocs: string[] = [];
-                const bulkPutDeletedDocs: any[] = [];
-                const bulkRemoveDeletedDocs: string[] = [];
-                const changesIds: string[] = [];
-
-                documents.forEach((docData, docIndex) => {
-                    const startTime = now();
-                    const documentInDb = docsInDb[docIndex];
-                    const id: string = docData[this.primaryPath] as any;
-
-                    if (!documentInDb) {
-                        if (docData._deleted) {
-                            bulkPutDeletedDocs.push(docData);
-                        } else {
-                            bulkPutDocs.push(docData);
-                        }
-
-                        eventBulk.events.push({
-                            documentId: id,
-                            eventId: getDexieEventKey(false, id, docData._rev),
-                            change: {
-                                doc: docData,
-                                id,
-                                operation: 'INSERT',
-                                previous: null
-                            },
-                            startTime,
-                            // will be filled up before the event is pushed into the changestream
-                            endTime: startTime
-                        });
-                        changesIds.push(id);
-                    } else {
-                        const newWriteRevision = parseRevision(docData._rev);
-                        const oldRevision = parseRevision(documentInDb._rev);
-
-                        let mustUpdate: boolean = false;
-                        if (newWriteRevision.height !== oldRevision.height) {
-                            // height not equal, compare base on height
-                            if (newWriteRevision.height > oldRevision.height) {
-                                mustUpdate = true;
-                            }
-                        } else if (newWriteRevision.hash > oldRevision.hash) {
-                            // equal height but new write has the 'winning' hash
-                            mustUpdate = true;
-                        }
-                        if (mustUpdate) {
-                            let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
-                            if (documentInDb._deleted && !docData._deleted) {
-                                bulkRemoveDeletedDocs.push(id);
-                                bulkPutDocs.push(docData);
-                                change = {
-                                    id,
-                                    operation: 'INSERT',
-                                    previous: null,
-                                    doc: docData
-                                };
-                            } else if (!documentInDb._deleted && !docData._deleted) {
-                                bulkPutDocs.push(docData);
-                                change = {
-                                    id,
-                                    operation: 'UPDATE',
-                                    previous: documentInDb,
-                                    doc: docData
-                                };
-                            } else if (!documentInDb._deleted && docData._deleted) {
-                                bulkPutDeletedDocs.push(docData);
-                                bulkRemoveDocs.push(id);
-                                change = {
-                                    id,
-                                    operation: 'DELETE',
-                                    previous: documentInDb,
-                                    doc: null
-                                };
-                            } else if (documentInDb._deleted && docData._deleted) {
-                                bulkPutDocs.push(docData);
-                                change = null;
-                            }
-                            if (change) {
-                                eventBulk.events.push({
-                                    documentId: id,
-                                    eventId: getDexieEventKey(false, id, docData._rev),
-                                    change,
-                                    startTime,
-                                    // will be filled up before the event is pushed into the changestream
-                                    endTime: startTime
-                                });
-                                changesIds.push(id);
-                            }
-                        }
-                    }
-                });
-                await Promise.all([
-                    bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID,
-                    bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID,
-                    bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs) : PROMISE_RESOLVE_VOID,
-                    bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID,
-                    this.addChangeDocumentsMeta(changesIds)
-                ]);
-            });
-
-        const endTime = now();
-        eventBulk.events.forEach(event => event.endTime = endTime);
-        this.changes$.next(eventBulk);
     }
 
     async findDocumentsById(
@@ -432,50 +293,48 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         );
     }
 
-    async getChangedDocuments(
-        options: ChangeStreamOnceOptions
+    async getChangedDocumentsSince(
+        limit: number,
+        checkpoint?: DexieChangesCheckpoint
     ): Promise<{
-        changedDocuments: RxStorageChangedDocumentMeta[];
-        lastSequence: number;
-    }> {
+        document: RxDocumentData<RxDocType>;
+        checkpoint: DexieChangesCheckpoint;
+    }[]> {
+        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
+        const sinceId = checkpoint ? checkpoint.id : '';
         const state = await this.internals;
-        let lastSequence: number = 0;
 
-        let query;
-        if (options.direction === 'before') {
-            query = state.dexieChangesTable
-                .where('sequence')
-                .below(options.sinceSequence)
-                .reverse();
-        } else {
-            query = state.dexieChangesTable
-                .where('sequence')
-                .above(options.sinceSequence);
-        }
 
-        if (options.limit) {
-            query = (query as any).limit(options.limit);
-        }
+        const [changedDocsNormal, changedDocsDeleted] = await Promise.all(
+            [
+                state.dexieTable,
+                state.dexieDeletedTable
+            ].map(async (table) => {
+                const query = table
+                    .where('[_meta.lwt+' + this.primaryPath + ']')
+                    .above([sinceLwt, sinceId])
+                    .limit(limit);
+                const changedDocuments: RxDocumentData<RxDocType>[] = await query.toArray();
+                return changedDocuments;
+            })
+        );
+        let changedDocs = changedDocsNormal.concat(changedDocsDeleted);
 
-        const changedDocuments: RxStorageChangedDocumentMeta[] = await query.toArray();
-
-        if (changedDocuments.length === 0) {
-            lastSequence = options.sinceSequence;
-        } else {
-            const useForLastSequence = options.direction === 'after' ? lastOfArray(changedDocuments) : changedDocuments[0];
-            lastSequence = useForLastSequence.sequence;
-        }
-
-        return {
-            lastSequence,
-            changedDocuments
-        }
+        changedDocs = sortDocumentsByLastWriteTime(this.primaryPath as any, changedDocs);
+        changedDocs = changedDocs.slice(0, limit);
+        return changedDocs.map(docData => ({
+            document: docData,
+            checkpoint: {
+                id: docData[this.primaryPath] as any,
+                lwt: docData._meta.lwt
+            }
+        }));
     }
 
     async remove(): Promise<void> {
         const state = await this.internals;
         await Promise.all([
-            state.dexieChangesTable.clear(),
+            state.dexieDeletedTable.clear(),
             state.dexieTable.clear()
         ]);
         return this.close();
@@ -485,11 +344,42 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return this.changes$.asObservable();
     }
 
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<BlobBuffer> {
+    async cleanup(minimumDeletedTime: number): Promise<boolean> {
+        const state = await this.internals;
+        await state.dexieDb.transaction(
+            'rw',
+            state.dexieDeletedTable,
+            async () => {
+                const maxDeletionTime = now() - minimumDeletedTime;
+                const toRemove = await state.dexieDeletedTable
+                    .where('_meta.lwt')
+                    .below(maxDeletionTime)
+                    .toArray();
+                const removeIds: string[] = toRemove.map(doc => doc[this.primaryPath]);
+                await state.dexieDeletedTable.bulkDelete(removeIds);
+            }
+        );
+
+        /**
+         * TODO instead of deleting all deleted docs at once,
+         * only clean up some of them and return true.
+         * This ensures that when many documents have to be purged,
+         * we do not block the more important tasks too long.
+         */
+        return false;
+    }
+
+    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
         throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
     }
 
     async close(): Promise<void> {
+        if (this.closed) {
+            throw newRxError('SNH', {
+                database: this.databaseName,
+                collection: this.collectionName
+            });
+        }
         this.closed = true;
         this.changes$.complete();
         closeDexieDb(this.internals);

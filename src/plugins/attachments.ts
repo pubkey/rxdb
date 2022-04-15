@@ -1,6 +1,7 @@
 import {
     map
 } from 'rxjs/operators';
+
 import {
     blobBufferUtil,
     flatClone
@@ -17,12 +18,10 @@ import type {
     RxAttachmentData,
     RxDocumentData,
     RxAttachmentCreator,
-    RxAttachmentWriteData,
-    RxStorageStatics,
-    RxAttachmentDataMeta
+    RxAttachmentWriteData
 } from '../types';
-import type { RxSchema } from '../rx-schema';
-import { writeSingle } from '../rx-storage-helper';
+import { hashAttachmentData, writeSingle } from '../rx-storage-helper';
+import { runAsyncPluginHooks } from '../hooks';
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -97,24 +96,28 @@ export class RxAttachment {
      * returns the data for the attachment
      */
     async getData(): Promise<BlobBuffer> {
-        const plainData = await this.doc.collection.storageInstance.getAttachmentData(
+        const plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(
             this.doc.primary,
             this.id
         );
-        if (shouldEncrypt(this.doc.collection.schema)) {
-            const dataString = await blobBufferUtil.toString(plainData);
-            const ret = blobBufferUtil.createBlobBuffer(
-                this.doc.collection._crypter._decryptString(dataString),
-                this.type as any
-            );
-            return ret;
-        } else {
-            return plainData;
-        }
+        const hookInput = {
+            database: this.doc.collection.database,
+            schema: this.doc.collection.schema.jsonSchema,
+            type: this.type,
+            plainData: plainDataBase64
+        };
+        await runAsyncPluginHooks('postReadAttachment', hookInput);
+        const ret = await blobBufferUtil.createBlobBufferFromBase64(
+            hookInput.plainData,
+            this.type as any
+        );
+        return ret;
     }
 
-    getStringData(): Promise<string> {
-        return this.getData().then(bufferBlob => blobBufferUtil.toString(bufferBlob));
+    async getStringData(): Promise<string> {
+        const data = await this.getData();
+        const asString = await blobBufferUtil.toString(data);
+        return asString;
     }
 }
 
@@ -132,17 +135,9 @@ export function fromStorageInstanceResult(
     });
 }
 
-function shouldEncrypt(schema: RxSchema): boolean {
-    return !!(schema.jsonSchema.attachments && schema.jsonSchema.attachments.encrypted);
-}
-
 export async function putAttachment(
     this: RxDocument,
-    {
-        id,
-        data,
-        type = 'text/plain'
-    }: RxAttachmentCreator,
+    attachmentData: RxAttachmentCreator,
     /**
      * If set to true, the write will be skipped
      * when the attachment already contains the same data.
@@ -151,24 +146,35 @@ export async function putAttachment(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
-    /**
-     * Then encryption plugin is only able to encrypt strings,
-     * so unpack as string first.
-     */
 
-    if (shouldEncrypt(this.collection.schema)) {
-        const dataString = await blobBufferUtil.toString(data);
-        const encrypted = this.collection._crypter._encryptString(dataString);
-        data = blobBufferUtil.createBlobBuffer(encrypted, 'text/plain');
-    }
+    const dataSize = blobBufferUtil.size(attachmentData.data);
+    const storageStatics = this.collection.database.storage.statics;
+    const dataString = await blobBufferUtil.toBase64String(attachmentData.data);
 
-    const statics = this.collection.database.storage.statics;
+    const hookAttachmentData = {
+        id: attachmentData.id,
+        type: attachmentData.type,
+        data: dataString
+    };
+    await runAsyncPluginHooks('preWriteAttachment', {
+        database: this.collection.database,
+        schema: this.collection.schema.jsonSchema,
+        attachmentData: hookAttachmentData
+    });
+
+    const {
+        id, data, type
+    } = hookAttachmentData;
+
+    const newDigest = await hashAttachmentData(
+        dataString,
+        storageStatics
+    ).then(hash => storageStatics.hashKey + '-' + hash);
+
     this._atomicQueue = this._atomicQueue
         .then(async () => {
             if (skipIfSame && this._data._attachments && this._data._attachments[id]) {
                 const currentMeta = this._data._attachments[id];
-                const newHash = await statics.hash(data);
-                const newDigest = statics.hashKey + '-' + newHash;
                 if (currentMeta.type === type && currentMeta.digest === newDigest) {
                     // skip because same data and same type
                     return this.getAttachment(id);
@@ -178,15 +184,11 @@ export async function putAttachment(
             const docWriteData: RxDocumentWriteData<{}> = flatClone(this._data);
             docWriteData._attachments = flatClone(docWriteData._attachments);
 
-            const meta = await getAttachmentDataMeta(
-                this.collection.database.storage.statics,
-                data
-            );
             docWriteData._attachments[id] = {
-                digest: meta.digest,
-                length: meta.length,
+                digest: newDigest,
+                length: dataSize,
                 type,
-                data: data
+                data
             };
 
             const writeRow = {
@@ -268,7 +270,6 @@ export async function preMigrateDocument<RxDocType>(
 ): Promise<void> {
     const attachments = data.docData._attachments;
     if (attachments) {
-        const mustDecrypt = !!shouldEncrypt(data.oldCollection.schema);
         const newAttachments: { [attachmentId: string]: RxAttachmentWriteData } = {};
         await Promise.all(
             Object.keys(attachments).map(async (attachmentId) => {
@@ -276,21 +277,19 @@ export async function preMigrateDocument<RxDocType>(
                 const docPrimary: string = (data.docData as any)[data.oldCollection.schema.primaryPath];
 
                 let rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
-                if (mustDecrypt) {
-                    rawAttachmentData = await blobBufferUtil.toString(rawAttachmentData)
-                        .then(dataString => blobBufferUtil.createBlobBuffer(
-                            data.oldCollection._crypter._decryptString(dataString),
-                            (attachment as RxAttachmentData).type as any
-                        ));
-                }
 
-                const meta = await getAttachmentDataMeta(
-                    data.oldCollection.database.storage.statics,
-                    rawAttachmentData
-                );
+                const hookInput = {
+                    database: data.oldCollection.database,
+                    schema: data.oldCollection.schema.jsonSchema,
+                    type: attachment.type,
+                    plainData: rawAttachmentData
+                };
+                await runAsyncPluginHooks('postReadAttachment', hookInput);
+                rawAttachmentData = hookInput.plainData;
+
                 newAttachments[attachmentId] = {
-                    digest: meta.digest,
-                    length: meta.length,
+                    digest: attachment.digest,
+                    length: attachment.length,
                     type: attachment.type,
                     data: rawAttachmentData
                 };
@@ -313,62 +312,49 @@ export async function postMigrateDocument(_action: any): Promise<void> {
     return;
 }
 
-export async function getAttachmentDataMeta(
-    storageStatics: RxStorageStatics,
-    data: BlobBuffer
-): Promise<RxAttachmentDataMeta> {
-    const hash = await storageStatics.hash(data);
-    const length = blobBufferUtil.size(data);
-    return {
-        digest: storageStatics.hashKey + '-' + hash,
-        length
-    }
-}
-
-export const rxdb = true;
-export const prototypes = {
-    RxDocument: (proto: any) => {
-        proto.putAttachment = putAttachment;
-        proto.getAttachment = getAttachment;
-        proto.allAttachments = allAttachments;
-        Object.defineProperty(proto, 'allAttachments$', {
-            get: function allAttachments$() {
-                return this._dataSync$
-                    .pipe(
-                        map((data: any) => {
-                            if (!data['_attachments']) {
-                                return {};
-                            }
-                            return data['_attachments'];
-                        }),
-                        map((attachmentsData: any) => Object.entries(
-                            attachmentsData
-                        )),
-                        map(entries => {
-                            return (entries as any)
-                                .map(([id, attachmentData]: any) => {
-                                    return fromStorageInstanceResult(
-                                        id,
-                                        attachmentData,
-                                        this
-                                    );
-                                });
-                        })
-                    );
-            }
-        });
-    }
-};
-export const overwritable = {};
-export const hooks = {
-    preMigrateDocument,
-    postMigrateDocument
-};
-
 export const RxDBAttachmentsPlugin: RxPlugin = {
     name: 'attachments',
-    rxdb,
-    prototypes,
-    overwritable,
-    hooks
+    rxdb: true,
+    prototypes: {
+        RxDocument: (proto: any) => {
+            proto.putAttachment = putAttachment;
+            proto.getAttachment = getAttachment;
+            proto.allAttachments = allAttachments;
+            Object.defineProperty(proto, 'allAttachments$', {
+                get: function allAttachments$() {
+                    return this._dataSync$
+                        .pipe(
+                            map((data: any) => {
+                                if (!data['_attachments']) {
+                                    return {};
+                                }
+                                return data['_attachments'];
+                            }),
+                            map((attachmentsData: any) => Object.entries(
+                                attachmentsData
+                            )),
+                            map(entries => {
+                                return (entries as any)
+                                    .map(([id, attachmentData]: any) => {
+                                        return fromStorageInstanceResult(
+                                            id,
+                                            attachmentData,
+                                            this
+                                        );
+                                    });
+                            })
+                        );
+                }
+            });
+        }
+    },
+    overwritable: {},
+    hooks: {
+        preMigrateDocument: {
+            after: preMigrateDocument
+        },
+        postMigrateDocument: {
+            after: postMigrateDocument
+        }
+    }
 };

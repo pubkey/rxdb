@@ -3,14 +3,15 @@
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 import { createCompressionTable, compressObject, decompressObject, compressedPath, compressQuery, DEFAULT_COMPRESSION_FLAG, createCompressedJsonSchema } from 'jsonschema-key-compression';
-import { getPrimaryFieldOfPrimaryKey } from '../rx-schema';
+import { overwritable } from '../overwritable';
+import { getPrimaryFieldOfPrimaryKey } from '../rx-schema-helper';
 import { flatClone, isMaybeReadonlyArray } from '../util';
 
 /**
  * Cache the compression table and the compressed schema
  * by the storage instance for better performance.
  */
-var COMPRESSION_STATE_BY_COLLECTION = new WeakMap();
+var COMPRESSION_STATE_BY_SCHEMA = new WeakMap();
 export function createCompressionState(schema) {
   var compressionSchema = flatClone(schema);
   delete compressionSchema.primaryKey;
@@ -19,7 +20,7 @@ export function createCompressionState(schema) {
    * Do not compress the primary field
    * for easier debugging.
    */
-  getPrimaryFieldOfPrimaryKey(schema.primaryKey), '_rev', '_attachments', '_deleted']);
+  getPrimaryFieldOfPrimaryKey(schema.primaryKey), '_rev', '_attachments', '_deleted', '_meta']);
   delete compressionSchema.primaryKey;
   var compressedSchema = createCompressedJsonSchema(table, compressionSchema); // also compress primary key
 
@@ -60,92 +61,116 @@ export function createCompressionState(schema) {
     schema: compressedSchema
   };
 }
-export function getCompressionStateByStorageInstance(collection) {
-  var state = COMPRESSION_STATE_BY_COLLECTION.get(collection);
+export function getCompressionStateByRxJsonSchema(schema) {
+  var state = COMPRESSION_STATE_BY_SCHEMA.get(schema);
 
   if (!state) {
-    state = createCompressionState(collection.schema.jsonSchema);
-    COMPRESSION_STATE_BY_COLLECTION.set(collection, state);
+    /**
+     * Because we cache the state by the JsonSchema,
+     * it must be ausured that the given schema object never changes.
+     */
+    overwritable.deepFreezeWhenDevMode(schema);
+    state = createCompressionState(schema);
+    COMPRESSION_STATE_BY_SCHEMA.set(schema, state);
   }
 
   return state;
 }
-export var rxdb = true;
-export var prototypes = {};
-export var overwritable = {};
 export var RxDBKeyCompressionPlugin = {
   name: 'key-compression',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  overwritable: overwritable,
+  rxdb: true,
+  prototypes: {},
+  overwritable: {},
   hooks: {
     /**
      * replace the keys of a query-obj with the compressed keys
      * because the storage instance only knows the compressed schema
      * @return compressed queryJSON
      */
-    prePrepareQuery: function prePrepareQuery(input) {
-      var rxQuery = input.rxQuery;
-      var mangoQuery = input.mangoQuery;
+    prePrepareQuery: {
+      after: function after(input) {
+        var rxQuery = input.rxQuery;
+        var mangoQuery = input.mangoQuery;
 
-      if (!rxQuery.collection.schema.jsonSchema.keyCompression) {
-        return;
+        if (!rxQuery.collection.schema.jsonSchema.keyCompression) {
+          return;
+        }
+
+        var compressionState = getCompressionStateByRxJsonSchema(rxQuery.collection.schema.jsonSchema);
+        var compressedQuery = compressQuery(compressionState.table, mangoQuery);
+        input.mangoQuery = compressedQuery;
       }
-
-      var compressionState = getCompressionStateByStorageInstance(rxQuery.collection);
-      var compressedQuery = compressQuery(compressionState.table, mangoQuery);
-      input.mangoQuery = compressedQuery;
     },
-    preCreateRxStorageInstance: function preCreateRxStorageInstance(params) {
+    preCreateRxStorageInstance: {
+      after: function after(params) {
+        /**
+         * When key compression is used,
+         * the storage instance only knows about the compressed schema
+         */
+        if (params.schema.keyCompression) {
+          var compressionState = createCompressionState(params.schema);
+          params.schema = compressionState.schema;
+        }
+      }
+    },
+    preQueryMatcher: {
+      after: function after(params) {
+        if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
+          return;
+        }
+
+        var state = getCompressionStateByRxJsonSchema(params.rxQuery.collection.schema.jsonSchema);
+        params.doc = compressObject(state.table, params.doc);
+      }
+    },
+    preSortComparator: {
+      after: function after(params) {
+        if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
+          return;
+        }
+
+        var state = getCompressionStateByRxJsonSchema(params.rxQuery.collection.schema.jsonSchema);
+        params.docA = compressObject(state.table, params.docA);
+        params.docB = compressObject(state.table, params.docB);
+      }
+    },
+    preWriteToStorageInstance: {
       /**
-       * When key compression is used,
-       * the storage instance only knows about the compressed schema
+       * Must run as last because other plugin hooks
+       * might no longer work when the key-compression
+       * changed the document keys.
        */
-      if (params.schema.keyCompression) {
-        var compressionState = createCompressionState(params.schema);
-        params.schema = compressionState.schema;
+      after: function after(params) {
+        if (!params.schema.keyCompression) {
+          return;
+        }
+
+        var state = getCompressionStateByRxJsonSchema(params.schema);
+        /**
+         * Do not send attachments to compressObject()
+         * because it will deep clone which does not work on Blob or Buffer.
+         */
+
+        params.doc = flatClone(params.doc);
+        var attachments = params.doc._attachments;
+        delete params.doc._attachments;
+        params.doc = compressObject(state.table, params.doc);
+        params.doc._attachments = attachments;
       }
     },
-    preQueryMatcher: function preQueryMatcher(params) {
-      if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
-        return;
-      }
-
-      var state = getCompressionStateByStorageInstance(params.rxQuery.collection);
-      params.doc = compressObject(state.table, params.doc);
-    },
-    preSortComparator: function preSortComparator(params) {
-      if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
-        return;
-      }
-
-      var state = getCompressionStateByStorageInstance(params.rxQuery.collection);
-      params.docA = compressObject(state.table, params.docA);
-      params.docB = compressObject(state.table, params.docB);
-    },
-    preWriteToStorageInstance: function preWriteToStorageInstance(params) {
-      if (!params.collection.schema.jsonSchema.keyCompression) {
-        return;
-      }
-
-      var state = getCompressionStateByStorageInstance(params.collection);
+    postReadFromInstance: {
       /**
-       * Do not send attachments to compressObject()
-       * because it will deep clone which does not work on Blob or Buffer.
+       * Use 'before' because it must de-compress
+       * the object keys before the other hooks can work.
        */
+      before: function before(params) {
+        if (!params.schema.keyCompression) {
+          return;
+        }
 
-      var attachments = params.doc._attachments;
-      delete params.doc._attachments;
-      params.doc = compressObject(state.table, params.doc);
-      params.doc._attachments = attachments;
-    },
-    postReadFromInstance: function postReadFromInstance(params) {
-      if (!params.collection.schema.jsonSchema.keyCompression) {
-        return;
+        var state = getCompressionStateByRxJsonSchema(params.schema);
+        params.doc = decompressObject(state.table, params.doc);
       }
-
-      var state = getCompressionStateByStorageInstance(params.collection);
-      params.doc = decompressObject(state.table, params.doc);
     }
   }
 };

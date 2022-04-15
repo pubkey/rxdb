@@ -1,4 +1,4 @@
-import { EventBulk } from './rx-storage';
+import { EventBulk, RxDocumentData } from './rx-storage';
 import { DeepReadonly } from './util';
 
 export type RxChangeEventBase = {
@@ -23,31 +23,30 @@ export type RxChangeEventBase = {
 
 export type RxChangeEventInsert<DocType> = RxChangeEventBase & {
     operation: 'INSERT';
-    documentData: DeepReadonly<DocType>;
+    documentData: DeepReadonly<RxDocumentData<DocType>>;
     previousDocumentData: null;
 }
 
 export type RxChangeEventUpdate<DocType> = RxChangeEventBase & {
     operation: 'UPDATE';
-    documentData: DeepReadonly<DocType>;
-    previousDocumentData: DeepReadonly<DocType> | 'UNKNOWN';
+    documentData: DeepReadonly<RxDocumentData<DocType>>;
+    previousDocumentData: DeepReadonly<RxDocumentData<DocType>> | 'UNKNOWN';
 }
 
 export type RxChangeEventDelete<DocType> = RxChangeEventBase & {
     operation: 'DELETE';
     documentData: null;
-    previousDocumentData: DeepReadonly<DocType> | 'UNKNOWN';
+    previousDocumentData: DeepReadonly<RxDocumentData<DocType>> | 'UNKNOWN';
 }
 
-// TODO remove =any
-export type RxChangeEvent<DocType = any> = RxChangeEventInsert<DocType> | RxChangeEventUpdate<DocType> | RxChangeEventDelete<DocType>;
+export type RxChangeEvent<DocType> = RxChangeEventInsert<DocType> | RxChangeEventUpdate<DocType> | RxChangeEventDelete<DocType>;
 
 /**
  * Internally, all events are processed via bulks
  * to save performance when sending them over a transport layer
  * or de-duplicating them.
  */
-export type RxChangeEventBulk<DocType = any> = EventBulk<RxChangeEvent<DocType>> & {
+export type RxChangeEventBulk<DocType> = EventBulk<RxChangeEvent<DocType>> & {
     // optional, not given for changes to local documents of a RxDatabase.
     collectionName?: string;
     /**

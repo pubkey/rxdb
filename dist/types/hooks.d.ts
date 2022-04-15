@@ -1,7 +1,4 @@
 /**
- * stores the hooks that where added by the plugins
- */
-/**
  * hook-functions that can be extended by the plugin
  */
 export declare const HOOKS: {

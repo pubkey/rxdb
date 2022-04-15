@@ -16,7 +16,10 @@ import { DeepReadonly, PlainJsonValue } from './util';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
-declare type AtomicUpdateFunction<RxDocumentType> = (doc: RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
+declare type AtomicUpdateFunction<RxDocumentType> = (
+    doc: RxDocumentData<RxDocumentType>,
+    rxDocument: RxDocument<RxDocumentType>
+) => RxDocumentType | Promise<RxDocumentType>;
 
 /**
  * Meta data that is attached to each document by RxDB.
@@ -101,12 +104,9 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     toJSON(withRevAndAttachments: true): DeepReadonly<RxDocumentData<RxDocumentType>>;
     toJSON(withRevAndAttachments: false): DeepReadonly<RxDocumentType>;
 
+    toMutableJSON(): RxDocumentType;
+    toMutableJSON(withRevAndAttachments: true): RxDocumentData<RxDocumentType>;
+    toMutableJSON(withRevAndAttachments: false): RxDocumentType;
+
     destroy(): void;
-}
-
-declare type LocalDocWithType<LocalDocType> = RxDocumentBase<LocalDocType> & LocalDocType;
-
-export declare type RxLocalDocument<Parent, LocalDocType = any> = RxDocumentBase<LocalDocType> & LocalDocType & {
-    readonly parent: Parent;
-    isLocal(): true;
 }

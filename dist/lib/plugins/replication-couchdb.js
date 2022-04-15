@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxDBReplicationCouchDBPlugin = exports.RxCouchDBReplicationStateBase = void 0;
 exports.createRxCouchDBReplicationState = createRxCouchDBReplicationState;
-exports.rxdb = exports.prototypes = exports.hooks = void 0;
+exports.pouchReplicationFunction = pouchReplicationFunction;
 exports.setPouchEventEmitter = setPouchEventEmitter;
 exports.syncCouchDB = syncCouchDB;
 
@@ -25,20 +25,18 @@ var _pouchdb = require("../plugins/pouchdb");
 
 var _rxCollection = require("../rx-collection");
 
-var _rxCollectionHelper = require("../rx-collection-helper");
+var _hooks = require("../hooks");
 
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
  * you can use it to sync collections with remote or local couchdb-instances
  */
-// add pouchdb-replication-plugin
-(0, _pouchdb.addPouchPlugin)(_pouchdbReplication["default"]);
+
 /**
  * Contains all pouchdb instances that
  * are used inside of RxDB by collections or databases.
  * Used to ensure the remote of a replication cannot be an internal pouchdb.
  */
-
 var INTERNAL_POUCHDBS = new WeakSet();
 
 var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
@@ -102,8 +100,6 @@ var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
 
     this.canceled = true;
 
-    this.collection._repStates["delete"](this);
-
     if (this._pouchEventEmitterObject) {
       this._pouchEventEmitterObject.cancel();
     }
@@ -143,7 +139,14 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
       return doc.language !== 'query';
     }) // remove internal docs
     .map(function (doc) {
-      return (0, _rxCollectionHelper._handleFromStorageInstance)(rxRepState.collection, doc);
+      var hookParams = {
+        database: rxRepState.collection.database,
+        primaryPath: rxRepState.collection.schema.primaryPath,
+        schema: rxRepState.collection.schema.jsonSchema,
+        doc: doc
+      };
+      (0, _hooks.runPluginHooks)('postReadFromInstance', hookParams);
+      return hookParams.doc;
     }) // do primary-swap and keycompression
     .forEach(function (doc) {
       return rxRepState._subjects.docs.next(doc);
@@ -225,24 +228,54 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
 function createRxCouchDBReplicationState(collection, syncOptions) {
   return new RxCouchDBReplicationStateBase(collection, syncOptions);
 }
+/**
+ * get the correct function-name for pouchdb-replication
+ */
 
-function syncCouchDB(_ref) {
+
+function pouchReplicationFunction(pouch, _ref) {
+  var _ref$pull = _ref.pull,
+      pull = _ref$pull === void 0 ? true : _ref$pull,
+      _ref$push = _ref.push,
+      push = _ref$push === void 0 ? true : _ref$push;
+
+  if (pull && push) {
+    return pouch.sync.bind(pouch);
+  }
+
+  if (!pull && push) {
+    return pouch.replicate.to.bind(pouch);
+  }
+
+  if (pull && !push) {
+    return pouch.replicate.from.bind(pouch);
+  }
+
+  if (!pull && !push) {
+    throw (0, _rxError.newRxError)('UT3', {
+      pull: pull,
+      push: push
+    });
+  }
+}
+
+function syncCouchDB(_ref2) {
   var _this2 = this;
 
-  var remote = _ref.remote,
-      _ref$waitForLeadershi = _ref.waitForLeadership,
-      waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
-      _ref$direction = _ref.direction,
-      direction = _ref$direction === void 0 ? {
+  var remote = _ref2.remote,
+      _ref2$waitForLeadersh = _ref2.waitForLeadership,
+      waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
+      _ref2$direction = _ref2.direction,
+      direction = _ref2$direction === void 0 ? {
     pull: true,
     push: true
-  } : _ref$direction,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {
+  } : _ref2$direction,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {
     live: true,
     retry: true
-  } : _ref$options,
-      query = _ref.query;
+  } : _ref2$options,
+      query = _ref2.query;
   var useOptions = (0, _util.flatClone)(options); // prevent #641 by not allowing internal pouchdbs as remote
 
   if ((0, _pouchdb.isInstanceOf)(remote) && INTERNAL_POUCHDBS.has(remote)) {
@@ -263,7 +296,7 @@ function syncCouchDB(_ref) {
     });
   }
 
-  var syncFun = (0, _pouchdb.pouchReplicationFunction)(this.storageInstance.internals.pouch, direction);
+  var syncFun = pouchReplicationFunction(this.storageInstance.internals.pouch, direction);
 
   if (query) {
     useOptions.selector = query.getPreparedQuery().selector;
@@ -287,34 +320,37 @@ function syncCouchDB(_ref) {
     var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
-    _this2._repStates.add(repState);
+    _this2.onDestroy.then(function () {
+      return repState.cancel();
+    });
   });
   return repState;
 }
 
-var rxdb = true;
-exports.rxdb = rxdb;
-var prototypes = {
-  RxCollection: function RxCollection(proto) {
-    proto.syncCouchDB = syncCouchDB;
-  }
-};
-exports.prototypes = prototypes;
-var hooks = {
-  createRxCollection: function createRxCollection(collection) {
-    var pouch = collection.storageInstance.internals.pouch;
-
-    if (pouch) {
-      INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
-    }
-  }
-};
-exports.hooks = hooks;
 var RxDBReplicationCouchDBPlugin = {
   name: 'replication-couchdb',
-  rxdb: rxdb,
-  prototypes: prototypes,
-  hooks: hooks
+  rxdb: true,
+  init: function init() {
+    // add pouchdb-replication-plugin
+    (0, _pouchdb.addPouchPlugin)(_pouchdbReplication["default"]);
+  },
+  prototypes: {
+    RxCollection: function RxCollection(proto) {
+      proto.syncCouchDB = syncCouchDB;
+    }
+  },
+  hooks: {
+    createRxCollection: {
+      after: function after(args) {
+        var collection = args.collection;
+        var pouch = collection.storageInstance.internals.pouch;
+
+        if (pouch) {
+          INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
+        }
+      }
+    }
+  }
 };
 exports.RxDBReplicationCouchDBPlugin = RxDBReplicationCouchDBPlugin;
 //# sourceMappingURL=replication-couchdb.js.map

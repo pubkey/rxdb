@@ -9,15 +9,15 @@
  */
 import PouchDBCore from 'pouchdb-core';
 import { Subject } from 'rxjs';
-import { flatClone, getFromMapOrThrow, getHeightOfRevision, now, randomCouchString } from '../../util';
+import { flatClone, getFromMapOrThrow, now, parseRevision, PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getEventKey, pouchChangeRowToChangeEvent, POUCHDB_DESIGN_PREFIX, POUCHDB_LOCAL_PREFIX, pouchDocumentDataToRxDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
-export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(primaryPath, emitData) {
+export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDBInstance, primaryPath, emitData) {
   try {
     var ret = [];
 
-    var _temp11 = function () {
-      if (emitData.writeOptions.hasOwnProperty('new_edits') && !emitData.writeOptions.new_edits) {
+    var _temp8 = function () {
+      if (!emitData.writeOptions.custom && emitData.writeOptions.hasOwnProperty('new_edits') && emitData.writeOptions.new_edits === false) {
         return Promise.resolve(Promise.all(emitData.writeDocs.map(function (writeDoc) {
           try {
             var id = writeDoc._id;
@@ -30,10 +30,24 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                 previousDoc = pouchDocumentDataToRxDocumentData(primaryPath, previousDoc);
               }
 
-              if (previousDoc && getHeightOfRevision(previousDoc._rev) > getHeightOfRevision(writeDoc._rev)) {
-                // not the newest revision was added
-                // TODO is comparing the height enough to compare revisions?
-                return;
+              if (previousDoc) {
+                var parsedRevPrevious = parseRevision(previousDoc._rev);
+                var parsedRevNew = parseRevision(writeDoc._rev);
+
+                if (parsedRevPrevious.height > parsedRevNew.height ||
+                /**
+                 * If the revision height is equal,
+                 * we determine the higher hash as winner.
+                 */
+                parsedRevPrevious.height === parsedRevNew.height && parsedRevPrevious.hash > parsedRevNew.hash) {
+                  /**
+                   * The newly added document was not the latest revision
+                   * so we drop the write.
+                   * With plain PouchDB it makes sense to store conflicting branches of the document
+                   * but RxDB assumes that the conflict is resolved directly.
+                   */
+                  return;
+                }
               }
 
               if (!previousDoc && writeDoc._deleted) {
@@ -81,7 +95,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                 });
               }
 
-              var changeEvent = changeEventToNormal(primaryPath, event, emitData.startTime, emitData.endTime);
+              var changeEvent = changeEventToNormal(pouchDBInstance, primaryPath, event, emitData.startTime, emitData.endTime);
               ret.push(changeEvent);
             });
           } catch (e) {
@@ -89,7 +103,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
           }
         }))).then(function () {});
       } else {
-        var _temp12 = function () {
+        var _temp9 = function () {
           if (!emitData.writeOptions.custom || emitData.writeOptions.custom && !emitData.writeOptions.custom.writeRowById) {
             var writeDocsById = new Map();
             emitData.writeDocs.forEach(function (writeDoc) {
@@ -110,7 +124,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                   writeDoc = flatClone(writeDoc);
                   writeDoc._rev = resultRow.rev;
                   var event = pouchChangeRowToChangeEvent(primaryPath, writeDoc);
-                  var changeEvent = changeEventToNormal(primaryPath, event);
+                  var changeEvent = changeEventToNormal(pouchDBInstance, primaryPath, event);
                   ret.push(changeEvent);
                 });
               } catch (e) {
@@ -127,20 +141,21 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
 
                 var id = resultRow.id;
                 var writeRow = getFromMapOrThrow(writeMap, id);
-                var newDoc = pouchDocumentDataToRxDocumentData(primaryPath, writeRow.document);
-                return Promise.resolve(writeAttachmentsToAttachments(newDoc._attachments)).then(function (_writeAttachmentsToAt3) {
-                  function _temp15() {
+                return Promise.resolve(writeAttachmentsToAttachments(writeRow.document._attachments)).then(function (attachments) {
+                  function _temp12() {
                     if (writeRow.document._deleted && (!writeRow.previous || writeRow.previous._deleted)) {} else {
-                      var changeEvent = changeEventToNormal(emitData.writeOptions.custom.primaryPath, event, emitData.startTime, emitData.endTime);
+                      var changeEvent = changeEventToNormal(pouchDBInstance, emitData.writeOptions.custom.primaryPath, event, emitData.startTime, emitData.endTime);
                       ret.push(changeEvent);
                     }
                   }
 
-                  newDoc._attachments = _writeAttachmentsToAt3;
-                  newDoc._rev = resultRow.rev;
+                  var newDoc = Object.assign({}, writeRow.document, {
+                    _attachments: attachments,
+                    _rev: resultRow.rev
+                  });
                   var event;
 
-                  var _temp14 = function () {
+                  var _temp11 = function () {
                     if (!writeRow.previous || writeRow.previous._deleted) {
                       // was insert
                       event = {
@@ -150,16 +165,16 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                         previous: null
                       };
                     } else {
-                      var _temp16 = function () {
+                      var _temp13 = function () {
                         if (writeRow.document._deleted) {
                           // was delete
                           // we need to add the new revision to the previous doc
                           // so that the eventkey is calculated correctly.
                           // Is this a hack? idk.
-                          var previousDoc = pouchDocumentDataToRxDocumentData(primaryPath, writeRow.previous);
-                          return Promise.resolve(writeAttachmentsToAttachments(previousDoc._attachments)).then(function (_writeAttachmentsToAt4) {
-                            previousDoc._attachments = _writeAttachmentsToAt4;
-                            previousDoc._rev = resultRow.rev;
+                          return Promise.resolve(writeAttachmentsToAttachments(writeRow.previous._attachments)).then(function (attachments) {
+                            var previousDoc = Object.assign({}, writeRow.previous, {
+                              _attachments: attachments
+                            });
                             event = {
                               operation: 'DELETE',
                               doc: null,
@@ -178,11 +193,11 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                         }
                       }();
 
-                      if (_temp16 && _temp16.then) return _temp16.then(function () {});
+                      if (_temp13 && _temp13.then) return _temp13.then(function () {});
                     }
                   }();
 
-                  return _temp14 && _temp14.then ? _temp14.then(_temp15) : _temp15(_temp14);
+                  return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
                 });
               } catch (e) {
                 return Promise.reject(e);
@@ -191,11 +206,11 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
           }
         }();
 
-        if (_temp12 && _temp12.then) return _temp12.then(function () {});
+        if (_temp9 && _temp9.then) return _temp9.then(function () {});
       }
     }();
 
-    return Promise.resolve(_temp11 && _temp11.then ? _temp11.then(function () {
+    return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(function () {
       return ret;
     }) : ret);
   } catch (e) {
@@ -218,7 +233,29 @@ export function getCustomEventEmitterByPouch(pouch) {
 
   return emitter;
 }
+/**
+ * Counter, used to debug stuff.
+ */
+
 var i = 0;
+/**
+ * Because we cannot force pouchdb to await bulkDocs runs
+ * inside of a transaction, like done with the other RxStorage implementations,
+ * we have to ensure the calls to bulkDocs() do not run in parallel. 
+ * 
+ * TODO this is somehow a hack. Instead of doing that, inspect how
+ * PouchDB runs bulkDocs internally and adapt that transaction handling.
+ */
+
+var BULK_DOC_RUN_QUEUE = new WeakMap();
+/**
+ * PouchDB is like a minefield,
+ * where stuff randomly does not work dependend on some conditions.
+ * So instead of doing plain writes,
+ * we hack into the bulkDocs() function
+ * and adjust the behavior accordingly.
+ */
+
 export function addCustomEventsPluginToPouch() {
   if (addedToPouch) {
     return;
@@ -226,76 +263,174 @@ export function addCustomEventsPluginToPouch() {
 
   addedToPouch = true;
   var oldBulkDocs = PouchDBCore.prototype.bulkDocs;
+  /**
+   * Ensure we do not run bulkDocs() in parallel on the same PouchDB instance.
+   */
 
   var newBulkDocs = function newBulkDocs(body, options, callback) {
     try {
-      var _temp7 = function _temp7() {
+      var _this2 = this;
+
+      var queue = BULK_DOC_RUN_QUEUE.get(_this2);
+
+      if (!queue) {
+        queue = PROMISE_RESOLVE_VOID;
+      }
+
+      queue = queue.then(function () {
+        try {
+          return Promise.resolve(newBulkDocsInner.bind(_this2)(body, options, callback));
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      });
+      BULK_DOC_RUN_QUEUE.set(_this2, queue);
+      return Promise.resolve(queue);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var newBulkDocsInner = function newBulkDocsInner(body, options, callback) {
+    try {
+      var _temp4 = function _temp4() {
+        /**
+         * Custom handling if the call came from RxDB (options.custom is set).
+         */
+        var usePouchResult = [];
+        var hasNonErrorWrite = false;
+
+        if (options.custom && options.hasOwnProperty('new_edits') && options.new_edits === false) {
+          /**
+           * Reset the write docs array,
+           * because we only write non-conflicting documents.
+           */
+          docs = [];
+          var writeRowById = options.custom.writeRowById;
+          var insertDocsById = options.custom.insertDocsById;
+          Array.from(writeRowById.entries()).forEach(function (_ref) {
+            var id = _ref[0],
+                writeRow = _ref[1];
+            var previousRev = writeRow.previous ? writeRow.previous._rev : null;
+            var newRev = parseRevision(writeRow.document._rev);
+            var docInDb = previousDocsInDb.get(id);
+            var docInDbRev = docInDb ? docInDb._rev : null;
+
+            if (docInDbRev !== previousRev &&
+            /**
+             * If doc in db is deleted
+             * and no previous docs was send,
+             * We have a re-insert which must not cause a conflict.
+             */
+            !(docInDb && docInDb._deleted && !writeRow.previous)) {
+              // we have a conflict
+              usePouchResult.push({
+                error: true,
+                id: id,
+                status: 409
+              });
+            } else {
+              var useRevisions = {
+                start: docInDb ? docInDb._revisions.start + 1 : newRev.height,
+                ids: docInDb ? docInDb._revisions.ids.slice(0) : []
+              };
+              useRevisions.ids.unshift(newRev.hash);
+              var useNewRev = useRevisions.start + '-' + newRev.hash;
+              hasNonErrorWrite = true;
+              docs.push(Object.assign({}, insertDocsById.get(id), {
+                _revisions: useRevisions,
+                _rev: useNewRev
+              }));
+              usePouchResult.push({
+                ok: true,
+                id: id,
+                rev: writeRow.document._rev
+              });
+            }
+          });
+          /**
+           * Optimization shortcut,
+           * if all document writes were conflict errors,
+           * we can skip directly.
+           */
+
+          if (!hasNonErrorWrite) {
+            return usePouchResult;
+          }
+        }
         /**
          * pouchdb calls this function again with transformed input.
          * This would lead to duplicate events. So we marks the deeper calls via the options
          * parameter and do not emit events if it is set.
          */
+
+
         var deeperOptions = flatClone(options);
         deeperOptions.isDeeper = true;
-        return oldBulkDocs.call(_this2, docs, deeperOptions, function (err, result) {
-          if (err) {
-            if (callback) {
-              callback(err);
+        var callReturn;
+        var callPromise = new Promise(function (res, rej) {
+          callReturn = oldBulkDocs.call(_this4, docs, deeperOptions, function (err, result) {
+            if (err) {
+              callback ? callback(err) : rej(err);
             } else {
-              throw err;
-            }
-          } else {
-            return function () {
-              try {
-                var _temp5 = function _temp5() {
-                  if (callback) {
-                    callback(null, result);
-                  } else {
-                    return result;
-                  }
-                };
+              return function () {
+                try {
+                  result.forEach(function (row) {
+                    usePouchResult.push(row);
+                  });
+                  /**
+                   * For calls that came from RxDB,
+                   * we have to ensure that the events are emitted
+                   * before the actual call resolves.
+                   */
 
-                var _temp6 = function () {
+                  var eventsPromise = PROMISE_RESOLVE_VOID;
+
                   if (!options.isDeeper) {
                     var endTime = now();
                     var emitData = {
-                      emitId: t,
+                      emitId: runId,
                       writeDocs: docs,
                       writeOptions: options,
-                      writeResult: result,
-                      previousDocs: previousDocs,
+                      writeResult: usePouchResult,
+                      previousDocs: previousDocsInDb,
                       startTime: startTime,
                       endTime: endTime
                     };
-                    return Promise.resolve(eventEmitDataToStorageEvents('_id', emitData)).then(function (events) {
+                    eventsPromise = eventEmitDataToStorageEvents(_this4, '_id', emitData).then(function (events) {
                       var eventBulk = {
                         id: randomCouchString(10),
                         events: events
                       };
-                      var emitter = getCustomEventEmitterByPouch(_this2);
+                      var emitter = getCustomEventEmitterByPouch(_this4);
                       emitter.subject.next(eventBulk);
                     });
                   }
-                }();
 
-                /**
-                 * For calls that came from RxDB,
-                 * we have to ensure that the events are emitted
-                 * before the actual call resolves.
-                 */
-                return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
-              } catch (e) {
-                return Promise.reject(e);
-              }
-            }();
-          }
+                  if (callback) {
+                    callback(null, usePouchResult);
+                  } else {
+                    return Promise.resolve(eventsPromise.then(function () {
+                      res(usePouchResult);
+                      return usePouchResult;
+                    }));
+                  }
+
+                  return Promise.resolve();
+                } catch (e) {
+                  return Promise.reject(e);
+                }
+              }();
+            }
+          });
         });
+        return options.custom ? callPromise : callReturn;
       };
 
-      var _this2 = this;
+      var _this4 = this;
 
       var startTime = now();
-      var t = i++; // normalize input
+      var runId = i++; // normalize input
 
       if (typeof options === 'function') {
         callback = options;
@@ -318,7 +453,8 @@ export function addCustomEventsPluginToPouch() {
         if (body.hasOwnProperty('new_edits')) {
           options.new_edits = body.new_edits;
         }
-      }
+      } // throw if no docs given, because RxDB should never make such a call.
+
 
       if (docs.length === 0) {
         throw newRxError('SNH', {
@@ -335,75 +471,80 @@ export function addCustomEventsPluginToPouch() {
        */
 
 
-      var previousDocs = new Map();
+      var previousDocsInDb = options.custom ? options.custom.previousDocsInDb : new Map();
 
-      var _temp8 = function () {
+      var _temp5 = function () {
         if (options.hasOwnProperty('new_edits') && options.new_edits === false) {
-          var ids = docs.map(function (doc) {
-            return doc._id;
-          });
-          /**
-           * Pouchdb does not return deleted documents via allDocs()
-           * So have to do use our hack with getting the newest revisions from the
-           * changes.
-           */
+          return Promise.resolve(_this4.bulkGet({
+            docs: docs.map(function (doc) {
+              return {
+                id: doc._id
+              };
+            }),
+            revs: true,
+            latest: true
+          })).then(function (viaBulkGet) {
+            /**
+             * bulkGet() does not return deleted documents,
+             * so we must refetch them via allDocs() afterwards.
+             */
+            var mustRefetchBecauseDeleted = [];
+            viaBulkGet.results.forEach(function (resultRow) {
+              var firstDoc = resultRow.docs[0];
 
-          return Promise.resolve(_this2.changes({
-            live: false,
-            since: 0,
-            doc_ids: ids,
-            style: 'all_docs'
-          })).then(function (viaChanges) {
-            return Promise.resolve(Promise.all(viaChanges.results.map(function (result) {
-              try {
-                return Promise.resolve(_this2.get(result.id, {
-                  rev: result.changes[0].rev,
-                  deleted: 'ok',
-                  revs: options.set_new_edit_as_latest_revision ? true : false,
-                  style: 'all_docs'
-                }));
-              } catch (e) {
-                return Promise.reject(e);
-              }
-            }))).then(function (previousDocsResult) {
-              previousDocsResult.forEach(function (doc) {
-                return previousDocs.set(doc._id, doc);
-              });
-
-              if (options.set_new_edit_as_latest_revision) {
-                docs.forEach(function (doc) {
-                  var id = doc._id;
-                  var previous = previousDocs.get(id);
-
-                  if (previous) {
-                    var splittedRev = doc._rev.split('-');
-
-                    var revHeight = parseInt(splittedRev[0], 10);
-                    var revLabel = splittedRev[1];
-
-                    if (!previous._revisions) {
-                      previous._revisions = {
-                        ids: []
-                      };
-                    }
-
-                    doc._revisions = {
-                      start: revHeight,
-                      ids: previous._revisions.ids
-                    };
-
-                    doc._revisions.ids.unshift(revLabel);
-
-                    delete previous._revisions;
-                  }
-                });
+              if (firstDoc.ok) {
+                previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
+              } else {
+                if (firstDoc.error && firstDoc.error.reason === 'deleted') {
+                  mustRefetchBecauseDeleted.push(resultRow.id);
+                }
               }
             });
+
+            var _temp = function () {
+              if (mustRefetchBecauseDeleted.length > 0) {
+                return Promise.resolve(_this4.allDocs({
+                  keys: mustRefetchBecauseDeleted,
+                  include_docs: true,
+                  conflicts: true
+                })).then(function (deletedDocsViaAllDocs) {
+                  var idsWithRevs = [];
+                  deletedDocsViaAllDocs.rows.forEach(function (row) {
+                    idsWithRevs.push({
+                      id: row.id,
+                      rev: row.value.rev
+                    });
+                  });
+                  return Promise.resolve(_this4.bulkGet({
+                    docs: idsWithRevs,
+                    revs: true,
+                    latest: true
+                  })).then(function (deletedDocsViaBulkGetWithRev) {
+                    deletedDocsViaBulkGetWithRev.results.forEach(function (resultRow) {
+                      var firstDoc = resultRow.docs[0];
+
+                      if (firstDoc.ok) {
+                        previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
+                      } else {
+                        throw newRxError('SNH', {
+                          args: {
+                            deletedDocsViaBulkGetWithRev: deletedDocsViaBulkGetWithRev,
+                            resultRow: resultRow
+                          }
+                        });
+                      }
+                    });
+                  });
+                });
+              }
+            }();
+
+            if (_temp && _temp.then) return _temp.then(function () {});
           });
         }
       }();
 
-      return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(_temp7) : _temp7(_temp8));
+      return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(_temp4) : _temp4(_temp5));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -413,11 +554,11 @@ export function addCustomEventsPluginToPouch() {
     bulkDocs: newBulkDocs
   });
 }
-export function changeEventToNormal(primaryPath, change, startTime, endTime) {
+export function changeEventToNormal(pouchDBInstance, primaryPath, change, startTime, endTime) {
   var doc = change.operation === 'DELETE' ? change.previous : change.doc;
   var primary = doc[primaryPath];
   var storageChangeEvent = {
-    eventId: getEventKey(false, primary, doc._rev),
+    eventId: getEventKey(pouchDBInstance, primary, change),
     documentId: primary,
     change: change,
     startTime: startTime,

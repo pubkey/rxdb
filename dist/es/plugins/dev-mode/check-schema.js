@@ -4,8 +4,7 @@
  */
 import objectPath from 'object-path';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema';
-import { getSchemaByObjectPath } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import { flattenObject, isMaybeReadonlyArray, trimDots } from '../../util';
 import { rxDocumentProperties } from './entity-properties';
 /**
@@ -16,9 +15,9 @@ import { rxDocumentProperties } from './entity-properties';
  */
 
 export function checkFieldNameRegex(fieldName) {
-  if (fieldName === '') return; // TODO why is the fieldname allowed to be empty string?
-
-  if (fieldName === '_deleted') return;
+  if (fieldName === '_deleted') {
+    return;
+  }
 
   if (['properties', 'language'].includes(fieldName)) {
     throw newRxError('SC23', {
@@ -194,6 +193,24 @@ export function checkPrimaryKey(jsonSchema) {
       validatePrimarySchemaPart(schemaPart);
     });
   }
+  /**
+   * The primary key must have a maxLength set
+   * which is required by some RxStorage implementations
+   * to ensure we can craft custom index strings.
+   */
+
+
+  var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
+  var primaryPathSchemaPart = jsonSchema.properties[primaryPath];
+
+  if (!primaryPathSchemaPart.maxLength) {
+    throw newRxError('SC39', {
+      schema: jsonSchema,
+      args: {
+        primaryPathSchemaPart: primaryPathSchemaPart
+      }
+    });
+  }
 }
 /**
  * computes real path of the object path in the collection schema
@@ -319,6 +336,92 @@ export function checkSchema(jsonSchema) {
           }
         }
       }
+      /**
+       * To be able to craft custom indexable string with compound fields,
+       * we need to know the maximum fieldlength of the fields values
+       * when they are transformed to strings.
+       * Therefore we need to enforce some properties inside of the schema.
+       */
+
+
+      var indexAsArray = isMaybeReadonlyArray(index) ? index : [index];
+      indexAsArray.forEach(function (fieldName) {
+        var schemaPart = getSchemaByObjectPath(jsonSchema, fieldName);
+        var type = schemaPart.type;
+
+        switch (type) {
+          case 'string':
+            var maxLength = schemaPart.maxLength;
+
+            if (!maxLength) {
+              throw newRxError('SC34', {
+                index: index,
+                field: fieldName,
+                schema: jsonSchema
+              });
+            }
+
+            break;
+
+          case 'number':
+          case 'integer':
+            var multipleOf = schemaPart.multipleOf;
+
+            if (!multipleOf) {
+              throw newRxError('SC35', {
+                index: index,
+                field: fieldName,
+                schema: jsonSchema
+              });
+            }
+
+            var maximum = schemaPart.maximum;
+            var minimum = schemaPart.minimum;
+
+            if (typeof maximum === 'undefined' || typeof minimum === 'undefined') {
+              throw newRxError('SC37', {
+                index: index,
+                field: fieldName,
+                schema: jsonSchema
+              });
+            }
+
+            break;
+
+          case 'boolean':
+            /**
+             * If a boolean field is used as an index,
+             * it must be required.
+             */
+            var parentPath = '';
+            var lastPathPart = fieldName;
+
+            if (fieldName.includes('.')) {
+              var partParts = fieldName.split('.');
+              lastPathPart = partParts.pop();
+              parentPath = partParts.join('.');
+            }
+
+            var parentSchemaPart = getSchemaByObjectPath(jsonSchema, parentPath);
+
+            if (!parentSchemaPart.required || !parentSchemaPart.required.includes(lastPathPart)) {
+              throw newRxError('SC38', {
+                index: index,
+                field: fieldName,
+                schema: jsonSchema
+              });
+            }
+
+            break;
+
+          default:
+            throw newRxError('SC36', {
+              fieldName: fieldName,
+              type: schemaPart.type,
+              schema: jsonSchema
+            });
+        }
+      });
     });
   } // remove backward-compatibility for index: true
 

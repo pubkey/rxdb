@@ -7,11 +7,12 @@ import {
 } from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
-import type { RxStorage } from '../../src/types';
 import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
 import { getRxStorageLoki, RxStorageLokiStatics } from '../../plugins/lokijs';
 import { getRxStorageDexie } from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
+import { RxTestStorage } from './types';
+import { CUSTOM_STORAGE } from './custom-storage';
 
 function isFastMode(): boolean {
     try {
@@ -31,18 +32,12 @@ try {
     }
 } catch (err) { }
 
-declare type Storage = {
-    readonly name: string;
-    readonly getStorage: () => RxStorage<any, any>;
-    readonly hasCouchDBReplication: boolean;
-    readonly hasAttachments: boolean;
-}
 const config: {
     platform: any;
     parallel: typeof useParallel;
     rootPath: string;
     isFastMode: () => boolean;
-    storage: Storage;
+    storage: RxTestStorage;
 } = {
     platform: detect(),
     parallel: useParallel,
@@ -63,6 +58,11 @@ if (detect().name === 'node') {
 }
 
 export function setDefaultStorage(storageKey: string) {
+    if (storageKey === CUSTOM_STORAGE.name) {
+        config.storage = CUSTOM_STORAGE;
+        return;
+    }
+
     switch (storageKey) {
         case 'pouchdb':
             config.storage = {
@@ -72,7 +72,8 @@ export function setDefaultStorage(storageKey: string) {
                     return getRxStoragePouch('memory');
                 },
                 hasCouchDBReplication: true,
-                hasAttachments: true
+                hasAttachments: true,
+                hasRegexSupport: true
             };
             break;
         case 'lokijs':
@@ -80,7 +81,8 @@ export function setDefaultStorage(storageKey: string) {
                 name: 'lokijs',
                 getStorage: () => getRxStorageLoki(),
                 hasCouchDBReplication: false,
-                hasAttachments: false
+                hasAttachments: false,
+                hasRegexSupport: true
             };
             break;
         case 'lokijs-worker':
@@ -98,7 +100,8 @@ export function setDefaultStorage(storageKey: string) {
                     }
                 ),
                 hasCouchDBReplication: false,
-                hasAttachments: false
+                hasAttachments: false,
+                hasRegexSupport: true
             };
             break;
         case 'dexie':
@@ -111,7 +114,8 @@ export function setDefaultStorage(storageKey: string) {
                     IDBKeyRange
                 }),
                 hasCouchDBReplication: false,
-                hasAttachments: false
+                hasAttachments: false,
+                hasRegexSupport: true
             };
             break;
         default:

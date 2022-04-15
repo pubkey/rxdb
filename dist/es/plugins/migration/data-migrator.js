@@ -5,22 +5,20 @@
 
 /**
  * TODO this should be completely rewritten because:
- * - The current implemetation does not use bulkDocs which is much faster
  * - This could have been done in much less code which would be easier to uderstand
  *
  */
 import { Subject } from 'rxjs';
 import deepEqual from 'fast-deep-equal';
-import { clone, toPromise, flatClone, getHeightOfRevision, createRevision, PROMISE_RESOLVE_VOID, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_NULL } from '../../util';
+import { clone, toPromise, flatClone, getHeightOfRevision, createRevision, PROMISE_RESOLVE_VOID, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_NULL, getDefaultRxDocumentMeta } from '../../util';
 import { createRxSchema } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
 import { runAsyncPluginHooks, runPluginHooks } from '../../hooks';
 import { getPreviousVersions } from '../../rx-schema';
-import { createCrypter } from '../../crypter';
 import { getMigrationStateByDatabase } from './migration-state';
 import { map } from 'rxjs/operators';
-import { countAllUndeleted, getBatch, getSingleDocument } from '../../rx-storage-helper';
-import { _handleFromStorageInstance, _handleToStorageInstance } from '../../rx-collection-helper';
+import { getAllDocuments, getWrappedStorageInstance } from '../../rx-storage-helper';
+import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_COLLECTION } from '../../rx-database-internal-store';
 
 /**
  * transform documents data and save them to the new collection
@@ -49,8 +47,8 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
               var writeDeleted = flatClone(docData);
               writeDeleted._deleted = true;
               return {
-                previous: _handleToStorageInstance(oldCollection, docData),
-                document: _handleToStorageInstance(oldCollection, writeDeleted)
+                previous: docData,
+                document: writeDeleted
               };
             });
 
@@ -108,9 +106,7 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
              * notice that this data also contains the attachments data
              */
             var attachmentsBefore = migratedDocData._attachments;
-
-            var saveData = _handleToStorageInstance(oldCollection.newestCollection, migratedDocData);
-
+            var saveData = migratedDocData;
             saveData._attachments = attachmentsBefore;
             bulkWriteToStorageInput.push(saveData);
             action.res = saveData;
@@ -134,7 +130,11 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
 
         var _temp2 = function () {
           if (bulkWriteToStorageInput.length) {
-            return Promise.resolve(oldCollection.newestCollection.storageInstance.bulkAddRevisions(bulkWriteToStorageInput)).then(function () {});
+            return Promise.resolve(oldCollection.newestCollection.storageInstance.bulkWrite(bulkWriteToStorageInput.map(function (document) {
+              return {
+                document: document
+              };
+            }))).then(function () {});
           }
         }();
 
@@ -153,44 +153,29 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
  * get an array with OldCollection-instances from all existing old storage-instances
  */
 export var _getOldCollections = function _getOldCollections(dataMigrator) {
-  return Promise.resolve(getOldCollectionDocs(dataMigrator)).then(function (oldColDocs) {
-    return Promise.all(oldColDocs.map(function (colDoc) {
-      if (!colDoc) {
-        return null;
-      }
-
-      return createOldCollection(colDoc.schema.version, colDoc.schema, dataMigrator);
-    }).filter(function (colDoc) {
-      return colDoc !== null;
-    }));
-  });
-};
-/**
- * returns true if a migration is needed
- */
-
-export var getOldCollectionDocs = function getOldCollectionDocs(dataMigrator) {
   try {
-    return Promise.all(getPreviousVersions(dataMigrator.currentSchema.jsonSchema).map(function (v) {
-      return getSingleDocument(dataMigrator.database.internalStore, dataMigrator.name + '-' + v);
-    }).map(function (fun) {
-      return fun["catch"](function () {
-        return null;
-      });
-    }) // auto-catch so Promise.all continues
-    ).then(function (oldCollectionDocs) {
-      return oldCollectionDocs.filter(function (d) {
-        return !!d;
-      });
+    return Promise.resolve(getOldCollectionDocs(dataMigrator)).then(function (oldColDocs) {
+      return Promise.all(oldColDocs.map(function (colDoc) {
+        if (!colDoc) {
+          return null;
+        }
+
+        return createOldCollection(colDoc.data.schema.version, colDoc.data.schema, dataMigrator);
+      }).filter(function (colDoc) {
+        return colDoc !== null;
+      }));
     });
   } catch (e) {
     return Promise.reject(e);
   }
 };
+/**
+ * returns true if a migration is needed
+ */
+
 export var createOldCollection = function createOldCollection(version, schemaObj, dataMigrator) {
   try {
     var database = dataMigrator.newestCollection.database;
-    var schema = createRxSchema(schemaObj, false);
     var storageInstanceCreationParams = {
       databaseName: database.name,
       collectionName: dataMigrator.newestCollection.name,
@@ -206,9 +191,9 @@ export var createOldCollection = function createOldCollection(version, schemaObj
         newestCollection: dataMigrator.newestCollection,
         database: database,
         schema: createRxSchema(schemaObj, false),
-        storageInstance: storageInstance,
-        _crypter: createCrypter(database.password, schema)
+        storageInstance: storageInstance
       };
+      ret.storageInstance = getWrappedStorageInstance(ret.database, storageInstance, schemaObj);
       return ret;
     });
   } catch (e) {
@@ -275,7 +260,9 @@ export var DataMigrator = /*#__PURE__*/function () {
         _this.nonMigratedOldCollections = ret;
         _this.allOldCollections = _this.nonMigratedOldCollections.slice(0);
         var countAll = Promise.all(_this.nonMigratedOldCollections.map(function (oldCol) {
-          return countAllUndeleted(_this.database.storage, oldCol.storageInstance);
+          return getAllDocuments(oldCol.schema.primaryPath, oldCol.storageInstance).then(function (allDocs) {
+            return allDocs.length;
+          });
         }));
         return countAll;
       }).then(function (countAll) {
@@ -378,6 +365,16 @@ export var DataMigrator = /*#__PURE__*/function () {
 
   return DataMigrator;
 }();
+export function getOldCollectionDocs(dataMigrator) {
+  var collectionDocKeys = getPreviousVersions(dataMigrator.currentSchema.jsonSchema).map(function (version) {
+    return dataMigrator.name + '-' + version;
+  });
+  return dataMigrator.database.internalStore.findDocumentsById(collectionDocKeys.map(function (key) {
+    return getPrimaryKeyOfInternalDocument(key, INTERNAL_CONTEXT_COLLECTION);
+  }), false).then(function (docsObj) {
+    return Object.values(docsObj);
+  });
+}
 export function mustMigrate(dataMigrator) {
   if (dataMigrator.currentSchema.version === 0) {
     return PROMISE_RESOLVE_FALSE;
@@ -401,10 +398,19 @@ export function runStrategyIfNotNull(oldCollection, version, docOrNull) {
   }
 }
 export function getBatchOfOldCollection(oldCollection, batchSize) {
-  return getBatch(oldCollection.database.storage, oldCollection.storageInstance, batchSize).then(function (docs) {
-    return docs.map(function (doc) {
+  var _ref;
+
+  var storage = oldCollection.database.storage;
+  var storageInstance = oldCollection.storageInstance;
+  var preparedQuery = storage.statics.prepareQuery(storageInstance.schema, {
+    selector: {},
+    sort: [(_ref = {}, _ref[oldCollection.schema.primaryPath] = 'asc', _ref)],
+    limit: batchSize,
+    skip: 0
+  });
+  return storageInstance.query(preparedQuery).then(function (result) {
+    return result.documents.map(function (doc) {
       doc = flatClone(doc);
-      doc = _handleFromStorageInstance(oldCollection, doc);
       return doc;
     });
   });
@@ -444,6 +450,17 @@ export function migrateDocumentData(oldCollection, docData) {
   return currentPromise.then(function (doc) {
     if (doc === null) {
       return PROMISE_RESOLVE_NULL;
+    }
+    /**
+     * Add _meta field if missing.
+     * We need this to migration documents from pre-12.0.0 state
+     * to version 12.0.0. Therefore we need to add the _meta field if it is missing.
+     * TODO remove this in the major version 13.0.0 
+     */
+
+
+    if (!doc._meta) {
+      doc._meta = getDefaultRxDocumentMeta();
     } // check final schema
 
 
