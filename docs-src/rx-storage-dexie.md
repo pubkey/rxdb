@@ -1,4 +1,4 @@
-# RxStorage Dexie.js (In beta)
+# RxStorage Dexie.js
 
 Instead of using PouchDB as underlying storage engine, you can also use [Dexie.js](https://github.com/dexie/Dexie.js).
 Dexie.js is a minimal wrapper around IndexedDB that has a good performance.
