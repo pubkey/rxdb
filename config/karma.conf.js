@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 
 
 // while the karma tests run, we need some things which we start here
@@ -13,8 +14,7 @@ const configuration = {
     basePath: '',
     frameworks: [
         'mocha',
-        'browserify',
-        'detectBrowsers'
+        'browserify'
     ],
     browserify: {
         debug: true,
@@ -30,37 +30,14 @@ const configuration = {
     colors: true,
     autoWatch: false,
 
-    /**
-     * see
-     * @link https://github.com/litixsoft/karma-detect-browsers
-     */
-    detectBrowsers: {
-        enabled: true,
-        usePhantomJS: false,
-        postDetection: function (availableBrowser) {
-            // return [];
-            // return ['Chrome_travis_ci']; // comment in to test specific browser
-            const browsers = availableBrowser
-                .filter(b => !['PhantomJS', 'FirefoxAurora', 'FirefoxNightly', 'ChromeCanary'].includes(b))
-                .map(b => {
-                    if (b === 'Chrome') return 'Chrome_travis_ci';
-                    else return b;
-                });
-            return browsers;
-        }
-    },
-
     // Karma plugins loaded
     plugins: [
         'karma-mocha',
         'karma-browserify',
         'karma-chrome-launcher',
-        'karma-edge-launcher',
-        'karma-safari-launcher',
-        'karma-firefox-launcher',
-        'karma-ie-launcher',
-        'karma-opera-launcher',
-        'karma-detect-browsers'
+        // karma-edge-launcher does not properly pickup the edge chromium browser.
+        // This plugin is able to detect the edge browser and use it.
+        '@chiragrupani/karma-chromium-edge-launcher'
     ],
 
     // Source files that you wanna generate coverage for.
@@ -75,7 +52,7 @@ const configuration = {
             timeout: 12000
         }
     },
-    browsers: ['Chrome_travis_ci'],
+    browsers: ['Chrome_travis_ci', 'Edge'],
     browserDisconnectTimeout: 12000,
     processKillTimeout: 12000,
     customLaunchers: {

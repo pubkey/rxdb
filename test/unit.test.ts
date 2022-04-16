@@ -10,14 +10,14 @@ import './unit/adapter-check.test.js';
  * Do not commit this file if you modified the order.
  */
 import './unit/rx-storage-implementations.test.js';
-import './unit/rx-storage-pouchdb.test.js';
+/* import './unit/rx-storage-pouchdb.test.js'; */
 import './unit/rx-storage-lokijs.test.js';
-import './unit/rx-storage-dexie.test.js';
+/* import './unit/rx-storage-dexie.test.js'; */
 
-import './unit/instance-of-check.test.js';
-import './unit/rx-schema.test.js';
+/* import './unit/instance-of-check.test.js';
+import './unit/rx-schema.test.js'; */
 import './unit/bug-report.test.js';
-import './unit/rx-database.test.js';
+/* import './unit/rx-database.test.js';
 import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
 import './unit/rx-query.test.js';
@@ -51,3 +51,4 @@ import './unit/cross-instance.test.js';
 import './unit/server.test.js';
 import './unit/plugin.test.js';
 import './unit/last.test.js';
+ */
