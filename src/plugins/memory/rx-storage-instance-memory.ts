@@ -19,6 +19,7 @@ import { ensureNotFalsy, now, RX_META_LWT_MINIMUM } from '../../util';
 import { getDexieKeyRange } from '../dexie/query/dexie-query';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
 import { pouchSwapIdToPrimaryString } from '../pouchdb';
+import { boundGE, boundGT } from './binary-search-bounds';
 import {
     compareDocsWithIndex,
     ensureNotRemoved,
@@ -36,10 +37,6 @@ import type {
     RxStorageMemorySettings
 } from './memory-types';
 
-import {
-    gt as boundGT,
-    ge as boundGE
-} from 'binary-search-bounds';
 
 
 // TODO we should not need this here

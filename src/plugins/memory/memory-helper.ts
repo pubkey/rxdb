@@ -6,11 +6,8 @@ import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
 import { newRxError } from '../../rx-error';
+import { boundEQ } from './binary-search-bounds';
 
-
-import {
-    eq as boundEQ
-} from 'binary-search-bounds';
 
 export function getMemoryCollectionKey(
     databaseName: string,
