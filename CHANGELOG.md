@@ -13,6 +13,7 @@
 - Removed the `core` plugin. The default export `from 'rxdb'` now exports only the RxDB core without plugins.
 
 - The Dexie.js RxStorage is no longer in beta mode.
+- Added the in memory storage plugin.
 - Added `RxDocument().toMutableJSON()`
 - Added `RxCollection().bulkUpsert()`
 - Added optional `init()` function to `RxPlugin`.
