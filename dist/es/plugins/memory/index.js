@@ -1,0 +1,23 @@
+import { flatClone } from '../../util';
+import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
+import { createMemoryStorageInstance } from './rx-storage-instance-memory';
+export function getRxStorageMemory() {
+  var settings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var storage = {
+    name: 'memory',
+    statics: RxStorageDexieStatics,
+    collectionStates: new Map(),
+    createStorageInstance: function createStorageInstance(params) {
+      params = flatClone(params);
+      params.collectionName = params.collectionName + '-' + params.schema.version;
+      var useSettings = Object.assign({}, settings, params.options);
+      return createMemoryStorageInstance(this, params, useSettings);
+    }
+  };
+  return storage;
+}
+export * from './memory-helper';
+export * from './memory-types';
+export * from './memory-indexes';
+export * from './rx-storage-instance-memory';
+//# sourceMappingURL=index.js.map

@@ -9,6 +9,8 @@ var _rxQuery = require("../rx-query");
 
 var _rxError = require("../rx-error");
 
+var _util = require("../util");
+
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
@@ -68,6 +70,7 @@ var dumpRxCollection = function dumpRxCollection() {
   var query = (0, _rxQuery.createRxQuery)('find', (0, _rxQuery._getDefaultQuery)(), this);
   return (0, _rxQuery.queryCollection)(query).then(function (docs) {
     json.docs = docs.map(function (docData) {
+      docData = (0, _util.flatClone)(docData);
       delete docData._rev;
       delete docData._attachments;
       return docData;

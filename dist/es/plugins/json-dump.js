@@ -3,6 +3,7 @@
  */
 import { createRxQuery, queryCollection, _getDefaultQuery } from '../rx-query';
 import { newRxError } from '../rx-error';
+import { flatClone } from '../util';
 
 function dumpRxDatabase(collections) {
   var _this = this;
@@ -60,6 +61,7 @@ var dumpRxCollection = function dumpRxCollection() {
   var query = createRxQuery('find', _getDefaultQuery(), this);
   return queryCollection(query).then(function (docs) {
     json.docs = docs.map(function (docData) {
+      docData = flatClone(docData);
       delete docData._rev;
       delete docData._attachments;
       return docData;

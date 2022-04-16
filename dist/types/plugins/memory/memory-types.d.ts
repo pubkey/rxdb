@@ -1,0 +1,53 @@
+import type { PreparedQuery, RxDocumentData, RxStorage } from '../../types';
+export declare type RxStorageMemorySettings = {};
+export declare type RxStorageMemoryInstanceCreationOptions = {};
+export declare type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
+    /**
+     * State by collectionKey
+     */
+    collectionStates: Map<string, MemoryStorageInternals<any>>;
+};
+/**
+ * The internals are shared between multiple storage instances
+ * that have been created with the same [databaseName+collectionName] combination.
+ */
+export declare type MemoryStorageInternals<RxDocType> = {
+    /**
+     * We re-use the memory state when multiple instances
+     * are created with the same params.
+     * If refCount beomces 0, we can delete the state.
+     */
+    refCount: number;
+    /**
+     * If this becomes true,
+     * it means that an instance has called remove()
+     * so all other instances should also not work anymore.
+     */
+    removed: boolean;
+    documents: Map<string, RxDocumentData<RxDocType>>;
+    byIndex: {
+        /**
+         * Because RxDB requires a deterministic sorting
+         * on all indexes, we can be sure that the composed index key
+         * of each document is unique, because it contains the primaryKey
+         * as last index part.
+         * So we do not have to store the index-position when we want to do fast
+         * writes. Instead we can do a binary search over the exisiting array
+         * because RxDB also knows the previous state of the document when we do a bulkWrite().
+         */
+        [indexName: string]: {
+            index: string[];
+            docsWithIndex: DocWithIndexString<RxDocType>[];
+        };
+    };
+};
+export declare type DocWithIndexString<RxDocType> = {
+    id: string;
+    doc: RxDocumentData<RxDocType>;
+    indexString: string;
+};
+export declare type MemoryPreparedQuery<DocType> = PreparedQuery<DocType>;
+export declare type MemoryChangesCheckpoint = {
+    id: string;
+    lwt: number;
+};

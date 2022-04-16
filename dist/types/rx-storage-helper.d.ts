@@ -45,6 +45,12 @@ bulkWriteRows: BulkWriteRow<RxDocType>[]): {
      * RxStorageInstance().getChangedDocumentsSince().
      */
     changedDocumentIds: RxDocumentData<RxDocType>[keyof RxDocType][];
+    /**
+     * TODO directly return a docId->error object
+     * like in the return value of bulkWrite().
+     * This will improve performance because we do not have to iterate
+     * over the error array again.
+     */
     errors: RxStorageBulkWriteError<RxDocType>[];
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
 };
