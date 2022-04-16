@@ -1,4 +1,5 @@
 import type { RxStorageInstanceCreationParams } from '../../types';
+import { flatClone } from '../../util';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
 import type {
     RxStorageMemory,
@@ -21,11 +22,16 @@ export function getRxStorageMemory(
         createStorageInstance<RxDocType>(
             params: RxStorageInstanceCreationParams<RxDocType, RxStorageMemoryInstanceCreationOptions>
         ): Promise<RxStorageInstanceMemory<RxDocType>> {
+            params = flatClone(params);
+            params.collectionName = params.collectionName + '-' + params.schema.version;
+
             const useSettings = Object.assign(
                 {},
                 settings,
                 params.options
             );
+
+
             return createMemoryStorageInstance(this, params, useSettings);
         }
     };

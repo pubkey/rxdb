@@ -105,6 +105,39 @@ jobs:
       - name: npm run test:fast:lokijs
         run: npm run test:fast:lokijs
 
+  node-memory:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-memory-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-memory-x4-
+
+      - name: install npm dependencies
+        run: npm install
+      
+      - name: build
+        run: npm run build
+
+      - name: npm run test:node:memory
+        run: npm run test:node:memory
+
+      - name: npm run test:fast:memory
+        run: npm run test:fast:memory
+
   # run the node tests for the LokiJS RxStorage in a different
   # task to run in parallel.
   node-lokijs-worker:

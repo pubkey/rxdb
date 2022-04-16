@@ -289,6 +289,9 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
                 it('get event on db2 when db1 fires', async () => {
+                    if (!config.storage.hasMultiInstance) {
+                        return;
+                    }
                     const name = randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
@@ -310,6 +313,9 @@ config.parallel('primary.test.js', () => {
                     c2.database.destroy();
                 });
                 it('get new field-value when other db changes', async () => {
+                    if (!config.storage.hasMultiInstance) {
+                        return;
+                    }
                     const name = randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);

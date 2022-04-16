@@ -19,7 +19,13 @@ import { ensureNotFalsy, now, RX_META_LWT_MINIMUM } from '../../util';
 import { getDexieKeyRange } from '../dexie/query/dexie-query';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
 import { pouchSwapIdToPrimaryString } from '../pouchdb';
-import { compareDocsWithIndex, ensureNotRemoved, findPositionByLowerBoundIndexString, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
+import {
+    compareDocsWithIndex,
+    ensureNotRemoved,
+    getMemoryCollectionKey,
+    putWriteRowToState,
+    removeDocFromState
+} from './memory-helper';
 import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';
 import type {
     DocWithIndexString,
@@ -144,8 +150,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     async query(preparedQuery: MemoryPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
-        console.dir(preparedQuery);
-
         const skip = preparedQuery.skip ? preparedQuery.skip : 0;
         const limit = preparedQuery.limit ? preparedQuery.limit : Infinity;
         const skipPlusLimit = skip + limit;
@@ -189,7 +193,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const index: string[] | undefined = ['_deleted'].concat(queryPlanFields);
         let lowerBound = Array.isArray(keyRange.lower) ? keyRange.lower : [keyRange.lower];
         lowerBound = [false].concat(lowerBound);
-        console.log(JSON.stringify(queryPlan, null, 4));
 
         const lowerBoundString = getStartIndexStringFromLowerBound(
             this.schema,
@@ -204,30 +207,41 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             index,
             upperBound
         );
-
-
-        console.log('lowerBoundString: ' + lowerBoundString);
-        console.log('upperBoundString: ' + upperBoundString);
-        console.log('idnex name: ' + getMemoryIndexName(index));
-        console.dir(this.internals.byIndex);
-
-        const docsWithIndex = this.internals.byIndex[getMemoryIndexName(index)].docsWithIndex;
-        let indexOfLower = findPositionByLowerBoundIndexString(
+        const indexName = getMemoryIndexName(index);
+        const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+        let indexOfLower = boundGE(
             docsWithIndex,
-            lowerBoundString
+            {
+                indexString: lowerBoundString
+            } as any,
+            compareDocsWithIndex
         );
-        console.log('indexOfLower: ' + indexOfLower);
 
         let rows: RxDocumentData<RxDocType>[] = [];
-        while (rows.length < skipPlusLimit && indexOfLower < docsWithIndex.length) {
+        let done = false;
+        while (!done) {
             const currentDoc = docsWithIndex[indexOfLower];
+
+            if (
+                !currentDoc ||
+                currentDoc.indexString > upperBoundString
+            ) {
+                break;
+            }
+
             if (queryMatcher(currentDoc.doc)) {
                 rows.push(currentDoc.doc);
             }
 
+            if (
+                (rows.length >= skipPlusLimit && !isOneSortDescending) ||
+                indexOfLower >= docsWithIndex.length
+            ) {
+                done = true;
+            }
+
             indexOfLower++;
         }
-
 
         if (mustManuallyResort) {
             rows = rows.sort(sortComparator);
@@ -272,7 +286,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             docsWithIndex,
             {
                 indexString: lowerBoundString
-            },
+            } as any,
             compareDocsWithIndex
         );
 
@@ -313,7 +327,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             docsWithIndex,
             {
                 indexString: lowerBoundString
-            },
+            } as any,
             compareDocsWithIndex
         );
 
@@ -324,7 +338,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 done = true;
             } else {
                 removeDocFromState(
-                    this.primaryPath,
+                    this.primaryPath as any,
                     this.schema,
                     this.internals,
                     currentDoc.doc
@@ -358,8 +372,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     async close(): Promise<void> {
-        ensureNotRemoved(this);
-
         if (this.closed) {
             throw newRxError('SNH', {
                 database: this.databaseName,

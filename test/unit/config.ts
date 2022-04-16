@@ -72,6 +72,7 @@ export function setDefaultStorage(storageKey: string) {
                     addPouchPlugin(require('pouchdb-adapter-memory'));
                     return getRxStoragePouch('memory');
                 },
+                hasMultiInstance: true,
                 hasCouchDBReplication: true,
                 hasAttachments: true,
                 hasRegexSupport: true
@@ -81,6 +82,7 @@ export function setDefaultStorage(storageKey: string) {
             config.storage = {
                 name: 'memory',
                 getStorage: () => getRxStorageMemory(),
+                hasMultiInstance: false,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
@@ -90,6 +92,7 @@ export function setDefaultStorage(storageKey: string) {
             config.storage = {
                 name: 'lokijs',
                 getStorage: () => getRxStorageLoki(),
+                hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
@@ -109,6 +112,7 @@ export function setDefaultStorage(storageKey: string) {
                         workerInput: lokiWorkerPath
                     }
                 ),
+                hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
@@ -123,6 +127,7 @@ export function setDefaultStorage(storageKey: string) {
                     indexedDB,
                     IDBKeyRange
                 }),
+                hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true

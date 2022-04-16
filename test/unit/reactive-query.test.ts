@@ -231,6 +231,9 @@ config.parallel('reactive-query.test.js', () => {
             });
 
         it('ISSUE: should have the document in DocCache when getting it from observe', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
             const name = randomCouchString(10);
             const c = await humansCollection.createPrimary(1, name);
             const c2 = await humansCollection.createPrimary(0, name);

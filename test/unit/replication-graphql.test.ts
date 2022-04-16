@@ -1086,6 +1086,9 @@ describe('replication-graphql.test.ts', () => {
                 await c.database.destroy();
             });
             it('should work with multiInstance', async () => {
+                if (!config.storage.hasMultiInstance) {
+                    return;
+                }
                 if (config.isFastMode()) {
                     // TODO this test randomly fails in fast mode with lokijs storage.
                     return;
