@@ -37,11 +37,7 @@ import type {
     RxStorageMemorySettings
 } from './memory-types';
 
-
-
-// TODO we should not need this here
 const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
-
 
 export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     RxDocType,
