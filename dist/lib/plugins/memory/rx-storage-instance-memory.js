@@ -57,7 +57,6 @@ var createMemoryStorageInstance = function createMemoryStorageInstance(storage, 
 
 exports.createMemoryStorageInstance = createMemoryStorageInstance;
 
-// TODO we should not need this here
 var IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
 
 var RxStorageInstanceMemory = /*#__PURE__*/function () {
