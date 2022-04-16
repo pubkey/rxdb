@@ -38,3 +38,9 @@ export function getRxStorageMemory(
 
     return storage;
 }
+
+
+export * from './memory-helper';
+export * from './memory-types';
+export * from './memory-indexes';
+export * from './rx-storage-instance-memory';
