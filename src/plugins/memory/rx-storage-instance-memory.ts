@@ -28,7 +28,6 @@ import {
 } from './memory-helper';
 import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';
 import type {
-    DocWithIndexString,
     MemoryChangesCheckpoint,
     MemoryPreparedQuery,
     MemoryStorageInternals,

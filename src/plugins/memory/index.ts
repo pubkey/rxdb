@@ -12,7 +12,7 @@ import {
 } from './rx-storage-instance-memory';
 
 export function getRxStorageMemory(
-    settings: RxStorageMemorySettings
+    settings: RxStorageMemorySettings = {}
 ): RxStorageMemory {
 
     const storage: RxStorageMemory = {
