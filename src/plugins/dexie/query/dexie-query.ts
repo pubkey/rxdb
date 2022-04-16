@@ -138,10 +138,6 @@ export async function dexieQuery<RxDocType>(
     );
     const sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
 
-
-    console.log('dexieQuery()');
-    console.log(JSON.stringify(preparedQuery, null, 4));
-
     const skip = preparedQuery.skip ? preparedQuery.skip : 0;
     const limit = preparedQuery.limit ? preparedQuery.limit : Infinity;
     const skipPlusLimit = skip + limit;
@@ -207,10 +203,6 @@ export async function dexieQuery<RxDocType>(
                 }
                 index = store.index(indexName);
             }
-
-            console.dir(index);
-            console.log('keyRange:');
-            console.dir(keyRange);
 
             const cursorReq = index.openCursor(keyRange);
             await new Promise<void>(res => {
