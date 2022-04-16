@@ -892,7 +892,7 @@ config.parallel('rx-collection.test.js', () => {
                         c.database.destroy();
                     });
                     it('get last in order', async () => {
-                        const c = await humansCollection.create(20);
+                        const c = await humansCollection.create(10);
                         const docs = await c.find().sort({
                             passportId: 'asc'
                         }).exec();
@@ -900,10 +900,12 @@ config.parallel('rx-collection.test.js', () => {
                             passportId: 'asc'
                         }).limit(1).exec();
                         firstDoc = firstDoc[0];
+
                         let last: any = await c.find().sort({
                             passportId: 'desc'
                         }).limit(1).exec();
                         last = last[0];
+
                         assert.strictEqual(last['_data'].passportId, docs[(docs.length - 1)]._data.passportId);
                         assert.notStrictEqual(firstDoc['_data'].passportId, last['_data'].passportId);
                         c.database.destroy();

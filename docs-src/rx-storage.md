@@ -18,6 +18,10 @@ It has the special behavior of loading all data into memory at app start and the
 The LokiJS based storage is based on the [Dexie.js](https://github.com/dexie/Dexie.js) IndexedDB wrapper.
 It stores the data inside of a browsers IndexedDB database and has a very small bundle size. Compared to the LokiJS storage, it has a better initial load time even on big datasets. [Read more](./rx-storage-dexie.md)
 
+### Memory
+
+A plain in-memory storage. Really fast and can be used in all environments. [Read more](./rx-storage-memory.md)
+
 ### IndexedDB
 
 The IndexedDB `RxStorage` is based on plain IndexedDB. This has the best performance of all other non-in-memory storage, when RxDB is used inside of a browser. [Read more](./rx-storage-indexeddb.md)

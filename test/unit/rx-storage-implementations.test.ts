@@ -1994,6 +1994,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         });
     });
     describe('multiInstance', () => {
+        if (!config.storage.hasMultiInstance) {
+            return;
+        }
         async function getMultiInstanceRxStorageInstance(): Promise<{
             a: RxStorageInstance<TestDocType, any, any>;
             b: RxStorageInstance<TestDocType, any, any>;

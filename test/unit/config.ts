@@ -11,6 +11,7 @@ import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
 import { getRxStorageLoki, RxStorageLokiStatics } from '../../plugins/lokijs';
 import { getRxStorageDexie } from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
+import { getRxStorageMemory } from '../../plugins/memory';
 import { RxTestStorage } from './types';
 import { CUSTOM_STORAGE } from './custom-storage';
 
@@ -71,8 +72,19 @@ export function setDefaultStorage(storageKey: string) {
                     addPouchPlugin(require('pouchdb-adapter-memory'));
                     return getRxStoragePouch('memory');
                 },
+                hasMultiInstance: true,
                 hasCouchDBReplication: true,
                 hasAttachments: true,
+                hasRegexSupport: true
+            };
+            break;
+        case 'memory':
+            config.storage = {
+                name: 'memory',
+                getStorage: () => getRxStorageMemory(),
+                hasMultiInstance: false,
+                hasCouchDBReplication: false,
+                hasAttachments: false,
                 hasRegexSupport: true
             };
             break;
@@ -80,6 +92,7 @@ export function setDefaultStorage(storageKey: string) {
             config.storage = {
                 name: 'lokijs',
                 getStorage: () => getRxStorageLoki(),
+                hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
@@ -99,6 +112,7 @@ export function setDefaultStorage(storageKey: string) {
                         workerInput: lokiWorkerPath
                     }
                 ),
+                hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
@@ -113,6 +127,7 @@ export function setDefaultStorage(storageKey: string) {
                     indexedDB,
                     IDBKeyRange
                 }),
+                hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true

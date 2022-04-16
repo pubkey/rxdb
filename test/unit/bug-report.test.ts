@@ -31,6 +31,10 @@ describe('bug-report.test.js', () => {
             // return;
         }
 
+        if (!config.storage.hasMultiInstance) {
+            return;
+        }
+
         // create a schema
         const mySchema = {
             version: 0,

@@ -23,6 +23,9 @@ import * as humansCollection from './../helper/humans-collection';
 import { getRxStoragePouch } from '../../plugins/pouchdb';
 
 config.parallel('cross-instance.test.js', () => {
+    if (!config.storage.hasMultiInstance) {
+        return;
+    }
     describe('create database', () => {
         it('create a multiInstance database', async () => {
             const db = await createRxDatabase({

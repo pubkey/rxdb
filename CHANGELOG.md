@@ -12,6 +12,8 @@
 - Refactor local documents plugin to only create a storage instance for local documents when needed.
 - Removed the `core` plugin. The default export `from 'rxdb'` now exports only the RxDB core without plugins.
 
+
+- Added the in memory storage plugin.
 - Added `RxDocument().toMutableJSON()`
 - Added `RxCollection().bulkUpsert()`
 - Added optional `init()` function to `RxPlugin`.

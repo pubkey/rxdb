@@ -120,6 +120,8 @@
 
 * [RxStorage LokiJS](./rx-storage-lokijs.md)
 
+* [RxStorage Memory](./rx-storage-memory.md)
+
 * [RxStorage IndexedDB](./rx-storage-indexeddb.md)
 
 * [RxStorage SQLite](./rx-storage-sqlite.md)

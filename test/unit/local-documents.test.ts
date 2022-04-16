@@ -314,6 +314,9 @@ config.parallel('local-documents.test.js', () => {
         });
     });
     describe('multi-instance', () => {
+        if (!config.storage.hasMultiInstance) {
+            return;
+        }
         it('should stream events over multi-instance', async () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({

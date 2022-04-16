@@ -15,6 +15,7 @@ import type {
     RxPlugin,
     RxDocumentData
 } from '../types';
+import { flatClone } from '../util';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -80,6 +81,7 @@ const dumpRxCollection = function (
     return queryCollection(query)
         .then((docs: any) => {
             json.docs = docs.map((docData: any) => {
+                docData = flatClone(docData);
                 delete docData._rev;
                 delete docData._attachments;
                 return docData;
