@@ -10,9 +10,9 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
  */
 export var getDocsInDb = function getDocsInDb(internals, docIds) {
   return Promise.resolve(internals).then(function (state) {
-    return Promise.resolve(Promise.all([state.dexieTable.bulkGet(docIds), state.dexieDeletedTable.bulkGet(docIds)])).then(function (_ref) {
-      var nonDeletedDocsInDb = _ref[0],
-          deletedDocsInDb = _ref[1];
+    return Promise.resolve(Promise.all([state.dexieTable.bulkGet(docIds), state.dexieDeletedTable.bulkGet(docIds)])).then(function (_ref3) {
+      var nonDeletedDocsInDb = _ref3[0],
+          deletedDocsInDb = _ref3[1];
       var docsInDb = deletedDocsInDb.slice(0);
       nonDeletedDocsInDb.forEach(function (doc, idx) {
         if (doc) {
@@ -127,7 +127,7 @@ export function getDexieSortComparator(_schema, query) {
  * which comes from the key-compression plugin.
  */
 
-export var DEXIE_PIPE_SUBSTITUTE = 'RxDBSubstPIPE';
+export var DEXIE_PIPE_SUBSTITUTE = '__';
 export function dexieReplaceIfStartsWithPipe(str) {
   if (str.startsWith('|')) {
     var withoutFirst = str.substring(1);
@@ -135,6 +135,62 @@ export function dexieReplaceIfStartsWithPipe(str) {
   } else {
     return str;
   }
+}
+export function dexieReplaceIfStartsWithPipeRevert(str) {
+  if (str.startsWith(DEXIE_PIPE_SUBSTITUTE)) {
+    var withoutFirst = str.substring(DEXIE_PIPE_SUBSTITUTE.length);
+    return '|' + withoutFirst;
+  } else {
+    return str;
+  }
+}
+/**
+ * @recursive
+ */
+
+export function fromStorageToDexie(documentData) {
+  if (!documentData) {
+    return documentData;
+  }
+
+  if (Array.isArray(documentData)) {
+    return documentData.map(function (row) {
+      return fromStorageToDexie(row);
+    });
+  }
+
+  var ret = {};
+  Object.entries(documentData).forEach(function (_ref) {
+    var key = _ref[0],
+        value = _ref[1];
+
+    if (typeof value === 'object') {
+      value = fromStorageToDexie(value);
+    }
+
+    ret[dexieReplaceIfStartsWithPipe(key)] = value;
+  });
+  return ret;
+}
+export function fromDexieToStorage(documentData) {
+  if (Array.isArray(documentData)) {
+    return documentData.map(function (row) {
+      return fromDexieToStorage(row);
+    });
+  }
+
+  var ret = {};
+  Object.entries(documentData).forEach(function (_ref2) {
+    var key = _ref2[0],
+        value = _ref2[1];
+
+    if (typeof value === 'object') {
+      value = fromStorageToDexie(value);
+    }
+
+    ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
+  });
+  return ret;
 }
 /**
  * Creates a string that can be used to create the dexie store.

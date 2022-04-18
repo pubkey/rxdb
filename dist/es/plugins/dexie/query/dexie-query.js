@@ -2,7 +2,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema-helper';
 import { clone, ensureNotFalsy } from '../../../util';
 import { getPouchIndexDesignDocNameByIndex, POUCHDB_DESIGN_PREFIX, pouchSwapIdToPrimaryString } from '../../pouchdb';
 import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';
-import { DEXIE_DOCS_TABLE_NAME } from '../dexie-helper';
+import { dexieReplaceIfStartsWithPipe, DEXIE_DOCS_TABLE_NAME, fromDexieToStorage } from '../dexie-helper';
 import { RxStorageDexieStatics } from '../rx-storage-dexie';
 import { generateKeyRange } from './pouchdb-find-query-planer/indexeddb-find';
 import { planQuery } from './pouchdb-find-query-planer/query-planner';
@@ -74,9 +74,11 @@ export var dexieQuery = function dexieQuery(instance, preparedQuery) {
             var indexName;
 
             if (queryPlanFields.length === 1) {
-              indexName = queryPlanFields[0];
+              indexName = dexieReplaceIfStartsWithPipe(queryPlanFields[0]);
             } else {
-              indexName = '[' + queryPlanFields.join('+') + ']';
+              indexName = '[' + queryPlanFields.map(function (field) {
+                return dexieReplaceIfStartsWithPipe(field);
+              }).join('+') + ']';
             }
 
             index = store.index(indexName);
@@ -89,10 +91,10 @@ export var dexieQuery = function dexieQuery(instance, preparedQuery) {
 
               if (cursor) {
                 // We have a record in cursor.value
-                var docData = cursor.value;
+                var docData = fromDexieToStorage(cursor.value);
 
                 if (queryMatcher(docData)) {
-                  rows.push(cursor.value);
+                  rows.push(docData);
                 }
                 /**
                  * If we do not have to manually sort

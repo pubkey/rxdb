@@ -16,8 +16,14 @@ export declare function getDexieSortComparator<RxDocType>(_schema: RxJsonSchema<
  * keys as IndexedDB indexes. So we have to substitute the pipe-char
  * which comes from the key-compression plugin.
  */
-export declare const DEXIE_PIPE_SUBSTITUTE = "RxDBSubstPIPE";
+export declare const DEXIE_PIPE_SUBSTITUTE = "__";
 export declare function dexieReplaceIfStartsWithPipe(str: string): string;
+export declare function dexieReplaceIfStartsWithPipeRevert(str: string): string;
+/**
+ * @recursive
+ */
+export declare function fromStorageToDexie(documentData: RxDocumentData<any>): any;
+export declare function fromDexieToStorage(documentData: any): RxDocumentData<any>;
 /**
  * Creates a string that can be used to create the dexie store.
  * @link https://dexie.org/docs/API-Reference#quick-reference

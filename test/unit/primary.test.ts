@@ -1,14 +1,3 @@
-/**
- * instead of using a generated _id as primary,
- * a own primary can be set in the schema
- * the primary is always:
- *    - type:     'string'
- *    - index:    true
- *    - final:    true
- *    - unique:   true
- *    - required
- */
-
 import assert from 'assert';
 import clone from 'clone';
 import AsyncTestUtil from 'async-test-util';

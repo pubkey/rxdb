@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import { now, randomCouchString, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWriteTime } from '../../util';
 import { newRxError } from '../../rx-error';
-import { closeDexieDb, getDexieDbWithTables, getDocsInDb } from './dexie-helper';
+import { closeDexieDb, fromDexieToStorage, fromStorageToDexie, getDexieDbWithTables, getDocsInDb } from './dexie-helper';
 import { dexieQuery } from './query/dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
@@ -52,10 +52,14 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
         return Promise.resolve(state.dexieDb.transaction('rw', state.dexieTable, state.dexieDeletedTable, function () {
           try {
             return Promise.resolve(getDocsInDb(_this2.internals, documentKeys)).then(function (docsInDb) {
+              docsInDb = docsInDb.map(function (d) {
+                return d ? fromDexieToStorage(d) : d;
+              });
               /**
                * Batch up the database operations
                * so we can later run them in bulk.
                */
+
               var bulkPutDocs = [];
               var bulkRemoveDocs = [];
               var bulkPutDeletedDocs = [];
@@ -194,7 +198,11 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                   }
                 }
               });
-              return Promise.resolve(Promise.all([bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID, bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID, bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs) : PROMISE_RESOLVE_VOID, bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID])).then(function () {});
+              return Promise.resolve(Promise.all([bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs.map(function (d) {
+                return fromStorageToDexie(d);
+              })) : PROMISE_RESOLVE_VOID, bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID, bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs.map(function (d) {
+                return fromStorageToDexie(d);
+              })) : PROMISE_RESOLVE_VOID, bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID])).then(function () {});
             });
           } catch (e) {
             return Promise.reject(e);
@@ -228,7 +236,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                 var documentInDb = docsInDb[idx];
 
                 if (documentInDb && (!documentInDb._deleted || deleted)) {
-                  ret[id] = documentInDb;
+                  ret[id] = fromDexieToStorage(documentInDb);
                 }
               });
             };
@@ -274,7 +282,11 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
         return Promise.resolve(Promise.all([state.dexieTable, state.dexieDeletedTable].map(function (table) {
           try {
             var query = table.where('[_meta.lwt+' + _this6.primaryPath + ']').above([sinceLwt, sinceId]).limit(limit);
-            return Promise.resolve(query.toArray());
+            return Promise.resolve(query.toArray()).then(function (changedDocuments) {
+              return changedDocuments.map(function (d) {
+                return fromDexieToStorage(d);
+              });
+            });
           } catch (e) {
             return Promise.reject(e);
           }

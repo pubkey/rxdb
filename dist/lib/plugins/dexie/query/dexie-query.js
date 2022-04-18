@@ -83,9 +83,11 @@ var dexieQuery = function dexieQuery(instance, preparedQuery) {
             var indexName;
 
             if (queryPlanFields.length === 1) {
-              indexName = queryPlanFields[0];
+              indexName = (0, _dexieHelper.dexieReplaceIfStartsWithPipe)(queryPlanFields[0]);
             } else {
-              indexName = '[' + queryPlanFields.join('+') + ']';
+              indexName = '[' + queryPlanFields.map(function (field) {
+                return (0, _dexieHelper.dexieReplaceIfStartsWithPipe)(field);
+              }).join('+') + ']';
             }
 
             index = store.index(indexName);
@@ -98,10 +100,10 @@ var dexieQuery = function dexieQuery(instance, preparedQuery) {
 
               if (cursor) {
                 // We have a record in cursor.value
-                var docData = cursor.value;
+                var docData = (0, _dexieHelper.fromDexieToStorage)(cursor.value);
 
                 if (queryMatcher(docData)) {
-                  rows.push(cursor.value);
+                  rows.push(docData);
                 }
                 /**
                  * If we do not have to manually sort

@@ -7,6 +7,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.closeDexieDb = exports.DEXIE_PIPE_SUBSTITUTE = exports.DEXIE_DOCS_TABLE_NAME = exports.DEXIE_DELETED_DOCS_TABLE_NAME = exports.DEXIE_CHANGES_TABLE_NAME = void 0;
 exports.dexieReplaceIfStartsWithPipe = dexieReplaceIfStartsWithPipe;
+exports.dexieReplaceIfStartsWithPipeRevert = dexieReplaceIfStartsWithPipeRevert;
+exports.fromDexieToStorage = fromDexieToStorage;
+exports.fromStorageToDexie = fromStorageToDexie;
 exports.getDexieDbWithTables = getDexieDbWithTables;
 exports.getDexieSortComparator = getDexieSortComparator;
 exports.getDexieStoreSchema = getDexieStoreSchema;
@@ -28,9 +31,9 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
  */
 var getDocsInDb = function getDocsInDb(internals, docIds) {
   return Promise.resolve(internals).then(function (state) {
-    return Promise.resolve(Promise.all([state.dexieTable.bulkGet(docIds), state.dexieDeletedTable.bulkGet(docIds)])).then(function (_ref) {
-      var nonDeletedDocsInDb = _ref[0],
-          deletedDocsInDb = _ref[1];
+    return Promise.resolve(Promise.all([state.dexieTable.bulkGet(docIds), state.dexieDeletedTable.bulkGet(docIds)])).then(function (_ref3) {
+      var nonDeletedDocsInDb = _ref3[0],
+          deletedDocsInDb = _ref3[1];
       var docsInDb = deletedDocsInDb.slice(0);
       nonDeletedDocsInDb.forEach(function (doc, idx) {
         if (doc) {
@@ -156,7 +159,7 @@ function getDexieSortComparator(_schema, query) {
  */
 
 
-var DEXIE_PIPE_SUBSTITUTE = 'RxDBSubstPIPE';
+var DEXIE_PIPE_SUBSTITUTE = '__';
 exports.DEXIE_PIPE_SUBSTITUTE = DEXIE_PIPE_SUBSTITUTE;
 
 function dexieReplaceIfStartsWithPipe(str) {
@@ -166,6 +169,65 @@ function dexieReplaceIfStartsWithPipe(str) {
   } else {
     return str;
   }
+}
+
+function dexieReplaceIfStartsWithPipeRevert(str) {
+  if (str.startsWith(DEXIE_PIPE_SUBSTITUTE)) {
+    var withoutFirst = str.substring(DEXIE_PIPE_SUBSTITUTE.length);
+    return '|' + withoutFirst;
+  } else {
+    return str;
+  }
+}
+/**
+ * @recursive
+ */
+
+
+function fromStorageToDexie(documentData) {
+  if (!documentData) {
+    return documentData;
+  }
+
+  if (Array.isArray(documentData)) {
+    return documentData.map(function (row) {
+      return fromStorageToDexie(row);
+    });
+  }
+
+  var ret = {};
+  Object.entries(documentData).forEach(function (_ref) {
+    var key = _ref[0],
+        value = _ref[1];
+
+    if (typeof value === 'object') {
+      value = fromStorageToDexie(value);
+    }
+
+    ret[dexieReplaceIfStartsWithPipe(key)] = value;
+  });
+  return ret;
+}
+
+function fromDexieToStorage(documentData) {
+  if (Array.isArray(documentData)) {
+    return documentData.map(function (row) {
+      return fromDexieToStorage(row);
+    });
+  }
+
+  var ret = {};
+  Object.entries(documentData).forEach(function (_ref2) {
+    var key = _ref2[0],
+        value = _ref2[1];
+
+    if (typeof value === 'object') {
+      value = fromStorageToDexie(value);
+    }
+
+    ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
+  });
+  return ret;
 }
 /**
  * Creates a string that can be used to create the dexie store.
