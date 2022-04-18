@@ -12,6 +12,7 @@ import {
     randomCouchString,
     isRxDocument,
     RxJsonSchema,
+    RxCollection,
 } from '../../';
 
 import {
@@ -207,6 +208,113 @@ config.parallel('key-compression.test.js', () => {
                 }
             };
             await collection.insert(docData);
+
+            db.destroy();
+        });
+        /**
+         * Running this query must work
+         * because it is used in the client-side-databases comparison project.
+         * @link https://github.com/pubkey/client-side-databases
+         */
+        it('query over compressed index', async () => {
+            type RxMessageDocumentType = {
+                id: string;
+                text: string;
+                createdAt: number;
+                read: boolean;
+                sender: string;
+                reciever: string;
+            };
+            const schema: RxJsonSchema<RxMessageDocumentType> = {
+                title: 'messages schema',
+                description: 'describes a message',
+                version: 0,
+                keyCompression: true,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 40
+                    },
+                    text: {
+                        type: 'string'
+                    },
+                    createdAt: {
+                        type: 'number',
+                        minimum: 0,
+                        maximum: 100000000000000,
+                        multipleOf: 1
+                    },
+                    read: {
+                        description: 'true if was read by the reciever',
+                        type: 'boolean'
+                    },
+                    sender: {
+                        type: 'string',
+                        ref: 'users',
+                        maxLength: 40
+                    },
+                    reciever: {
+                        type: 'string',
+                        ref: 'users',
+                        maxLength: 40
+                    }
+                },
+                indexes: [
+                    'createdAt'
+                ],
+                required: [
+                    'text',
+                    'createdAt',
+                    'read',
+                    'sender',
+                    'reciever'
+                ]
+            };
+
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage()
+            });
+
+            const collections = await db.addCollections({
+                messages: {
+                    schema
+                }
+            });
+            const collection: RxCollection<RxMessageDocumentType> = collections.messages;
+            await collection.insert({
+                id: 'xxx',
+                text: 'foobar',
+                createdAt: 100,
+                read: false,
+                sender: 'a',
+                reciever: 'b'
+            });
+            const query = collection.findOne({
+                selector: {
+                    $or: [
+                        {
+                            sender: 'a',
+                            reciever: 'b'
+                        },
+                        {
+                            sender: 'b',
+                            reciever: 'a'
+                        }
+                    ]
+                },
+                sort: [
+                    { createdAt: 'asc' },
+                    { id: 'asc' }
+                ]
+            });
+
+
+            const result = await query.exec(true);
+            assert.strictEqual(result.id, 'xxx');
+
 
             db.destroy();
         });

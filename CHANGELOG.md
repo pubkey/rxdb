@@ -25,6 +25,7 @@
 - RxPlugin hooks now can be defined as running `before` or `after` other plugin hooks.
 - Attachments are now internally handled as string instead of `Blob` or `Buffer`
 - Fix (replication primitives) only drop pulled documents when a relevant document was changed locally.
+- Fix dexie.js was not able to query over an index when `keyCompression: true`
 
 Changes to `RxStorageInterface`:
 - `RxStorageInstance` must have the `RxStorage` in the `storage` property.

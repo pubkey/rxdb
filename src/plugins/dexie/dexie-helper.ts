@@ -134,7 +134,7 @@ export function getDexieSortComparator<RxDocType>(
  * keys as IndexedDB indexes. So we have to substitute the pipe-char
  * which comes from the key-compression plugin.
  */
-export const DEXIE_PIPE_SUBSTITUTE = 'RxDBSubstPIPE';
+export const DEXIE_PIPE_SUBSTITUTE = '__';
 export function dexieReplaceIfStartsWithPipe(str: string): string {
     if (str.startsWith('|')) {
         const withoutFirst = str.substring(1);
@@ -143,6 +143,52 @@ export function dexieReplaceIfStartsWithPipe(str: string): string {
         return str;
     }
 }
+
+export function dexieReplaceIfStartsWithPipeRevert(str: string): string {
+    if (str.startsWith(DEXIE_PIPE_SUBSTITUTE)) {
+        const withoutFirst = str.substring(DEXIE_PIPE_SUBSTITUTE.length);
+        return '|' + withoutFirst;
+    } else {
+        return str;
+    }
+}
+
+/**
+ * @recursive
+ */
+export function fromStorageToDexie(documentData: RxDocumentData<any>): any {
+    if (!documentData) {
+        return documentData;
+    }
+    if (Array.isArray(documentData)) {
+        return documentData.map(row => fromStorageToDexie(row));
+    }
+
+    const ret: any = {};
+    Object.entries(documentData).forEach(([key, value]) => {
+        if (typeof value === 'object') {
+            value = fromStorageToDexie(value);
+        }
+        ret[dexieReplaceIfStartsWithPipe(key)] = value;
+    });
+    return ret;
+}
+
+export function fromDexieToStorage(documentData: any): RxDocumentData<any> {
+    if (Array.isArray(documentData)) {
+        return documentData.map(row => fromDexieToStorage(row));
+    }
+
+    const ret: any = {};
+    Object.entries(documentData).forEach(([key, value]) => {
+        if (typeof value === 'object') {
+            value = fromStorageToDexie(value);
+        }
+        ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
+    });
+    return ret;
+}
+
 
 /**
  * Creates a string that can be used to create the dexie store.

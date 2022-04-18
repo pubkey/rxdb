@@ -3,7 +3,7 @@ import type { MangoQuery, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorage
 import { clone, ensureNotFalsy } from '../../../util';
 import { getPouchIndexDesignDocNameByIndex, POUCHDB_DESIGN_PREFIX, pouchSwapIdToPrimaryString } from '../../pouchdb';
 import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';
-import { DEXIE_DOCS_TABLE_NAME } from '../dexie-helper';
+import { dexieReplaceIfStartsWithPipe, DEXIE_DOCS_TABLE_NAME, fromDexieToStorage } from '../dexie-helper';
 import { RxStorageDexieStatics } from '../rx-storage-dexie';
 import type { RxStorageInstanceDexie } from '../rx-storage-instance-dexie';
 import { generateKeyRange } from './pouchdb-find-query-planer/indexeddb-find';
@@ -197,9 +197,13 @@ export async function dexieQuery<RxDocType>(
             } else {
                 let indexName: string;
                 if (queryPlanFields.length === 1) {
-                    indexName = queryPlanFields[0];
+                    indexName = dexieReplaceIfStartsWithPipe(queryPlanFields[0]);
                 } else {
-                    indexName = '[' + queryPlanFields.join('+') + ']';
+                    indexName = '[' +
+                        queryPlanFields
+                            .map(field => dexieReplaceIfStartsWithPipe(field))
+                            .join('+')
+                        + ']';
                 }
                 index = store.index(indexName);
             }
@@ -210,11 +214,11 @@ export async function dexieQuery<RxDocType>(
                     const cursor = e.target.result;
                     if (cursor) {
                         // We have a record in cursor.value
-                        const docData = cursor.value;
+                        const docData = fromDexieToStorage(cursor.value);
                         if (
                             queryMatcher(docData)
                         ) {
-                            rows.push(cursor.value);
+                            rows.push(docData);
                         }
 
                         /**
@@ -242,6 +246,7 @@ export async function dexieQuery<RxDocType>(
         }
     );
 
+
     if (mustManuallyResort) {
         rows = rows.sort(sortComparator);
     }
@@ -262,6 +267,7 @@ export async function dexieQuery<RxDocType>(
     // if (preparedQuery.limit && documents.length > preparedQuery.limit) {
     //     documents = documents.slice(0, preparedQuery.limit);
     // }
+
 
 
     return {

@@ -320,9 +320,9 @@ config.parallel('primary.test.js', () => {
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
                     const obj = schemaObjects.simpleHuman();
+
                     await c1.insert(obj);
                     const doc = await c1.findOne().exec(true);
-
 
                     let value: any;
                     let count = 0;

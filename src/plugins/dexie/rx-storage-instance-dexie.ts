@@ -31,6 +31,8 @@ import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie'
 import { RxStorageDexie } from './rx-storage-dexie';
 import {
     closeDexieDb,
+    fromDexieToStorage,
+    fromStorageToDexie,
     getDexieDbWithTables,
     getDocsInDb
 } from './dexie-helper';
@@ -79,7 +81,8 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             state.dexieTable,
             state.dexieDeletedTable,
             async () => {
-                const docsInDb = await getDocsInDb<RxDocType>(this.internals, documentKeys);
+                let docsInDb = await getDocsInDb<RxDocType>(this.internals, documentKeys);
+                docsInDb = docsInDb.map(d => d ? fromDexieToStorage(d) : d);
 
                 /**
                  * Batch up the database operations
@@ -239,11 +242,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         }
                     }
                 });
-
                 await Promise.all([
-                    bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID,
+                    bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs.map(d => fromStorageToDexie(d))) : PROMISE_RESOLVE_VOID,
                     bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID,
-                    bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs) : PROMISE_RESOLVE_VOID,
+                    bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs.map(d => fromStorageToDexie(d))) : PROMISE_RESOLVE_VOID,
                     bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID
                 ]);
             });
@@ -279,7 +281,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         documentInDb &&
                         (!documentInDb._deleted || deleted)
                     ) {
-                        ret[id] = documentInDb;
+                        ret[id] = fromDexieToStorage(documentInDb);
                     }
                 });
             });
@@ -315,7 +317,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     .above([sinceLwt, sinceId])
                     .limit(limit);
                 const changedDocuments: RxDocumentData<RxDocType>[] = await query.toArray();
-                return changedDocuments;
+                return changedDocuments.map(d => fromDexieToStorage(d));
             })
         );
         let changedDocs = changedDocsNormal.concat(changedDocsDeleted);
