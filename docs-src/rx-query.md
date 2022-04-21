@@ -6,6 +6,10 @@ Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://gith
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
 
+**Note**: The results that `.find()` returns are sorted alphabetically by the primary key. Insert order does not affect query results. To avoid issues, make sure that the primary key is something that can be sorted.
+
+e.g: Using fields that contain uuid's as primary keys, will give a different order than what was inserted. Hence, avoid using uuid's as primary keys.
+
 ```js
 // find all that are older then 18
 const query = myCollection

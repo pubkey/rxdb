@@ -9,10 +9,9 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import config from './config';
+import config, { setDefaultStorage } from './config';
 
-import { randomCouchString } from '../../';
-import Loki from 'lokijs';
+import { createRxDatabase, randomCouchString } from '../../';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
@@ -31,50 +30,97 @@ describe('bug-report.test.js', () => {
             return;
         }
 
+        // create a schema
+        const mySchema = {
+            title: 'hero schema',
+            description: 'describes a simple hero',
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    maxLength: 20,
+                    type: 'string',
+                    description: 'the id of the hero',
+                    primary: true,
+                },
+                name: {
+                    maxLength: 20,
+                    type: 'string',
+                },
+                color: {
+                    type: 'string',
+                },
+            },
+            required: ['name', 'color'],
+            indexes: ['name'],
+        };
+
         // generate a random database-name
         const name = randomCouchString(10);
 
-        // create a database
-        const db = new Loki(name);
+        setDefaultStorage('lokijs');
 
+        // create a database
+        const db = await createRxDatabase({
+            name,
+            /**
+             * By calling config.storage.getStorage(),
+             * we can ensure that all variations of RxStorage are tested in the CI.
+             */
+            storage: config.storage.getStorage(),
+            eventReduce: true,
+            ignoreDuplicate: true,
+        });
         // create a collection
-        const mycollection = db.addCollection('mycollection', {
-            indices: ['name']
-          });
+        const collections = await db.addCollections({
+            mycollection: {
+                schema: mySchema,
+            },
+        });
+
+        const mycollection = collections.mycollection;
 
         // define documents
         const doc0 = {
+            id: '0',
             name: 'Batman',
             color: 'red',
         };
         const doc1 = {
+            id: '1',
             name: 'Antman',
             color: 'blue',
         };
         const doc2 = {
+            id: '2',
             name: 'Deadpool',
             color: 'green',
         };
         const doc3 = {
+            id: '3',
             name: 'Captain America',
             color: 'yellow',
         };
 
         // insert a document
-        mycollection.insert(doc0);
-        mycollection.insert(doc1);
-        mycollection.insert(doc2);
-        mycollection.insert(doc3);
+        await mycollection.insert(doc0);
+        await mycollection.insert(doc1);
+        await mycollection.insert(doc2);
+        await mycollection.insert(doc3);
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        const docs = mycollection.find();
+        const docs = await mycollection.find().exec();
 
         assert.strictEqual(docs[0].name, doc0.name);
         assert.strictEqual(docs[1].name, doc1.name);
         assert.strictEqual(docs[2].name, doc2.name);
         assert.strictEqual(docs[3].name, doc3.name);
+
+        // clean up afterwards
+        db.destroy();
     });
 });
