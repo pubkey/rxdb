@@ -38,7 +38,9 @@ describe('bug-report.test.js', () => {
         const db = new Loki(name);
 
         // create a collection
-        const mycollection = db.addCollection('mycollection');
+        const mycollection = db.addCollection('mycollection', {
+            indices: ['name']
+          });
 
         // define documents
         const doc0 = {
