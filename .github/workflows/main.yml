@@ -604,33 +604,29 @@ jobs:
           node-version-file: '.nvmrc'
       - name: download X times
         run: |
-          npm i rxdb
+          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
           npm cache clean --force
           rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts
-          npm i rxdb
+          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
           npm cache clean --force
           rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts
-          npm i rxdb
+          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
           npm cache clean --force
           rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts
-          npm i rxdb
+          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
           npm cache clean --force
           rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts
-          npm i rxdb
+          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
           npm cache clean --force
           rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts
-          npm i rxdb
+          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
           npm cache clean --force
           rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts
-          npm i rxdb
+          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
           npm cache clean --force
           rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts
+          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
+          npm cache clean --force
+          rm -rf node_modules
 
           
