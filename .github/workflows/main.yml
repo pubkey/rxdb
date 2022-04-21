@@ -607,26 +607,30 @@ jobs:
           npm i rxdb
           npm cache clean --force
           rm -rf node_modules
+          npm i rxdb --no-optional --skip-installed --ignore-scripts
           npm i rxdb
           npm cache clean --force
           rm -rf node_modules
+          npm i rxdb --no-optional --skip-installed --ignore-scripts
           npm i rxdb
           npm cache clean --force
           rm -rf node_modules
+          npm i rxdb --no-optional --skip-installed --ignore-scripts
           npm i rxdb
           npm cache clean --force
           rm -rf node_modules
+          npm i rxdb --no-optional --skip-installed --ignore-scripts
           npm i rxdb
           npm cache clean --force
           rm -rf node_modules
+          npm i rxdb --no-optional --skip-installed --ignore-scripts
           npm i rxdb
           npm cache clean --force
           rm -rf node_modules
+          npm i rxdb --no-optional --skip-installed --ignore-scripts
           npm i rxdb
           npm cache clean --force
           rm -rf node_modules
-          npm i rxdb
-          npm cache clean --force
-          rm -rf node_modules
+          npm i rxdb --no-optional --skip-installed --ignore-scripts
 
           
