@@ -9,9 +9,10 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import config, { setDefaultStorage } from './config';
+import config from './config';
 
-import { createRxDatabase, randomCouchString } from '../../';
+import { randomCouchString } from '../../';
+import Loki from 'lokijs';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
@@ -30,49 +31,14 @@ describe('bug-report.test.js', () => {
             return;
         }
 
-        // create a schema
-        const mySchema = {
-            title: 'hero schema',
-            description: 'describes a simple hero',
-            version: 0,
-            primaryKey: 'name',
-            type: 'object',
-            properties: {
-                name: {
-                    maxLength: 20,
-                    type: 'string',
-                },
-                color: {
-                    type: 'string',
-                },
-            },
-            required: ['name', 'color'],
-        };
-
         // generate a random database-name
         const name = randomCouchString(10);
 
-        setDefaultStorage('lokijs');
-
         // create a database
-        const db = await createRxDatabase({
-            name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true,
-        });
-        // create a collection
-        const collections = await db.addCollections({
-            mycollection: {
-                schema: mySchema,
-            },
-        });
+        const db = new Loki(name);
 
-        const mycollection = collections.mycollection;
+        // create a collection
+        const mycollection = db.addCollection('mycollection');
 
         // define documents
         const doc0 = {
@@ -93,23 +59,20 @@ describe('bug-report.test.js', () => {
         };
 
         // insert a document
-        await mycollection.insert(doc0);
-        await mycollection.insert(doc1);
-        await mycollection.insert(doc2);
-        await mycollection.insert(doc3);
+        mycollection.insert(doc0);
+        mycollection.insert(doc1);
+        mycollection.insert(doc2);
+        mycollection.insert(doc3);
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        const docs = await mycollection.find().exec();
+        const docs = mycollection.find();
 
         assert.strictEqual(docs[0].name, doc0.name);
         assert.strictEqual(docs[1].name, doc1.name);
         assert.strictEqual(docs[2].name, doc2.name);
         assert.strictEqual(docs[3].name, doc3.name);
-
-        // clean up afterwards
-        db.destroy();
     });
 });
