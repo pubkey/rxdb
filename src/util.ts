@@ -206,7 +206,7 @@ export function ensureNotFalsy<T>(obj: T | false | undefined | null): T {
     return obj;
 }
 
-export function ensureInteger(obj: unknown):number {
+export function ensureInteger(obj: unknown): number {
     if (!Number.isInteger(obj)) {
         throw new Error('ensurePositiveInteger() is falsy');
     }
