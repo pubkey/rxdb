@@ -9,14 +9,7 @@ Things that have to be done before, while and after a release.
 
 ## release
 
-- [ ] Run the [build action](https://github.com/pubkey/rxdb/actions/workflows/build.yml?query=workflow%3ABuild) and wait until it is finished
-- [ ] run `git pull`
-- [ ] Update the `version`-field in the package.json
-- [ ] Update the version and the date in the CHANGELOG.md
-- [ ] Run `git add .` and `git commit -m '${newVersion}'` and `git push origin master` to push the new release to the github-repo
-- [ ] Run `npm publish` to push the new release to npm
-- [ ] Create a new tag at the [github-repo](https://github.com/pubkey/rxdb/releases/new)
-
+- [ ] Run the [release action](https://github.com/pubkey/rxdb/actions/workflows/release.yml) and wait until it is finished
 
 ## post-release
 
