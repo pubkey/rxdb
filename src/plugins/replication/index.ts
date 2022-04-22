@@ -575,7 +575,7 @@ export function replicateRxCollection<RxDocType>(
          * if it is a live replication.
          */
         if (replicationState.live) {
-            if (pull) {
+            if (pull && replicationState.liveInterval > 0) {
                 (async () => {
                     while (!replicationState.isStopped()) {
                         await collection.promiseWait(ensureNotFalsy(replicationState.liveInterval));
