@@ -27,21 +27,14 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set prerelease variable
-        if: contains(github.event.inputs.version, 'beta')
         id: vars
         run: |
-          echo ::set-output name=prerelease::$(true)
-      - name: Set prerelease variable
-        if: "!contains(github.event.inputs.version, 'beta')"
-        id: vars
-        run: |
-          echo ::set-output name=prerelease::$(true)
+          echo ::set-output name=prerelease::${{ contains(github.event.inputs.version, 'beta') }}
 
       - name: Log parsed version
         run: |
           echo "version: ${{github.event.inputs.version}}"
           echo "prerelease: ${{ steps.vars.outputs.prerelease }}"
-
 
       - name: Set git config
         run: |
