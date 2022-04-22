@@ -69,6 +69,7 @@ jobs:
         uses: actions/setup-node@v3.0.0
         with:
           node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: install npm dependencies
         run: |
@@ -88,6 +89,10 @@ jobs:
           git add .
           git commit -m ${{github.event.inputs.version}}
           git tag ${{github.event.inputs.version}}
+
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - uses: ncipollo/release-action@v1
         with:
