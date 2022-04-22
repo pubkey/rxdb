@@ -11,7 +11,7 @@ on:
         # Friendly description to be shown in the UI instead of 'name'
         description: 'Version to release (if the version contains the beta keyword, we assume it is a pre-release)'
         # Default value if no value is explicitly provided
-        default: '1.0.0'
+        default: ''
         # Input has to be provided for the workflow to run
         required: true
 
@@ -42,20 +42,24 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
 
+      # Build the docs, only do this if it is not a prerelease.
       # TODO move from gitbook to honkit
       # https://github.com/honkit/honkit
       # so we do not need this
       - name: downgrade nodejs for gitbook
+        if: steps.vars.outputs.prerelease == 'true'
         uses: actions/setup-node@v3.0.0
         with:
           node-version: 13.8.0
 
       - name: Install old node version so it works with the shitty gitbook
+        if: steps.vars.outputs.prerelease == 'true'
         run: |
           node -v
           npm install
 
       - name: build docs
+        if: steps.vars.outputs.prerelease == 'true'
         run: |
           npm run docs:build
 
