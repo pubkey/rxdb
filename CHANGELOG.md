@@ -1,10 +1,11 @@
-# Changelog
 
-
-### 12.0.0-beta.XX (comming soon) BREAKING
+# RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
 
+<!-- ADD new changes here! -->
+
+### 12.0.0-beta.33 (22 April 2022)
 
 - All indexes that do not contain the primaryKey, get the primary key added.
 - You can now set a custom index when doing a query.
@@ -39,9 +40,7 @@ Changes to `RxStorageInterface`:
 
 <!-- /CHANGELOG NEWEST -->
 
-
 <!-- RELEASE BELOW -->
-
 
 ### 11.6.0 (4 February 2022)
 
@@ -79,14 +78,12 @@ Other:
 Bugfixes:
   - GraphQL replication: Unnecessary local document writes fill up the database [#3627](https://github.com/pubkey/rxdb/pull/3627) Thanks [@hdwatts](https://github.com/hdwatts)
 
-
 ### 11.2.0 (12 January 2022)
 
 Bugfixes:
   - Replication Primitives: Local writes while running the `pull` must not be lost but send to the remote.
   - Replication Primitives: Should not stack up failed runs and then run many times.
   - Support composite indices in schema literal types [#3609](https://github.com/pubkey/rxdb/pull/3609) Thanks [@nirvdrum](https://github.com/nirvdrum)
-
 
 ### 11.1.0 (6 January 2022)
 
@@ -190,6 +187,7 @@ Bugfixes:
 
 Bugfixes:
   - LokiJS Storage must have a deterministic sort order.
+
 ### 10.3.2 (5 November 2021)
 
 Bugfixes:
@@ -211,7 +209,6 @@ Bugfixes:
 Other:
   - Improved performance of write operations.
   - Removed unnecessary abstraction layer of `LeaderElector`
-
 
 ### 10.2.2 (25 October 2021)
 
@@ -272,19 +269,16 @@ Breaking:
   - Removed the deprecated `atomicSet()`, use `atomicPatch()` instead.
   - Removed the deprecated `RxDatabase.collection()` use `RxDatabase().addCollections()` instead.
 
-
   - Moved everything pouchdb related to the `pouchdb` plugin.
   - Pouchdb plugins are not longer added via `addRxPlugin()` but `addPouchPlugin()`. (RxDB plugins are still added via `addRxPlugin`).
   - Removed plugin hook `preCreatePouchDb`.
   - Removed the `watch-for-changes` plugin, this is now directly integrated into the pouchdb `RxStorage`.
   - Removed the `adapter-check` plugin. (The function `adapterCheck` has moved to the pouchdb plugin).
 
-
   - Calling `RxDatabase.server()` now returns a promise that resolves when the server is started up.
   - Changed the defaults of `PouchDBExpressServerOptions` from the `server()` method, by default we now store logs in the tmp folder and the config is in memory.
   - Renamed `replication`-plugin to `replication-couchdb` to be more consistend in naming like with `replication-graphql`
     - Renamed `RxCollection().sync()` to `RxCollection().syncCouchDB()`
-
 
   - Renamed the functions of the json import/export plugin to be less confusing
     - `dump()` is now `exportJSON()`
@@ -308,7 +302,6 @@ Features:
 Types:
   - `getLocal()` can return `undefined`. Thanks [@chrisdrackett](https://github.com/chrisdrackett)
   - Fixed typings in the dependencies so you can use `noUncheckedIndexedAccess`. Thanks [@seanwu1105](https://github.com/seanwu1105)
-
 
 ### 9.20.0 (15 May 2021)
 
@@ -516,7 +509,6 @@ Bugfixes:
 
 Other:
   - Added `"sideEffects": false` to all plugins
-
 
 ### 9.1.0 (31 May 2020)
 
@@ -791,7 +783,6 @@ Other:
   - Split `RxCollection.watchForChanges()` into own plugin
   - Refactored `RxQuery`
 
-
 ### 7.7.1 (August 1, 2018)
 
 Bugfixes:
@@ -805,7 +796,6 @@ Other
   - Added more example the the RxQuery-Docs [#740](https://github.com/pubkey/rxdb/pull/740) thanks [@Celludriel](https://github.com/Celludriel)
 
 ### 7.7.0 (July 6, 2018)
-
 
 Bugfixes:
   - Indexes do not work in objects named "properties" [#697](https://github.com/pubkey/rxdb/issues/697)
@@ -1056,7 +1046,6 @@ Bugfixes:
 
 **WARNING**: If you use RxDB with angular2||zone.js, you might have the error [_global is not defined](https://github.com/angular/zone.js/issues/835). Wait for the next zone.js release before updating RxDB.
 
-
 ## 5.1.0 (July 10, 2017)
 
 Features:
@@ -1131,7 +1120,6 @@ Features:
 Other:
   - upgraded to pouchdb [v6.2.0](https://pouchdb.com/2017/04/20/pouchdb-6.2.0.html)
   - re-executing queries while nothing happend to the collection, is now fetched
-
 
 ## 3.0.8 (April 20, 2017)
 
@@ -1249,7 +1237,6 @@ Refactor:
 
 Bugfixes:
   - Fixed tests for IE11
-
 
 ## 2.0.0 (January 23, 2017) BREAKING
 
