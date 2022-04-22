@@ -15,7 +15,7 @@ addRxPlugin(RxDBReplicationCouchDBPlugin);
 ```
 
 
-## Rx.Collection.syncCouchDB()
+## RxCollection.syncCouchDB()
 To replicate the collection with another instance, use `RxCollection.syncCouchDB()`.
 It basically does the same as [pouchdb-sync](https://pouchdb.com/guides/replication.html) but also adds event-handlers to make sure that change-events will be recognized in the internal event-stream.
 
