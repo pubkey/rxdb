@@ -9,7 +9,7 @@ on:
     inputs:
       version:
         # Friendly description to be shown in the UI instead of 'name'
-        description: 'Version to release'
+        description: 'Version to release (if the version contains the beta keyword, we assume it is a pre-release)'
         # Default value if no value is explicitly provided
         default: '1.0.0'
         # Input has to be provided for the workflow to run
@@ -85,22 +85,15 @@ jobs:
           git commit -m ${{github.event.inputs.version}}
           git tag ${{github.event.inputs.version}}
 
-      # - uses: ncipollo/release-action@v1
-      #   with:
-      #     bodyFile: "./release-body.md"
-      #     prerelease: ${{ steps.vars.outputs.prerelease }}
-      #     token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ncipollo/release-action@v1
+        with:
+          prerelease: ${{ steps.vars.outputs.prerelease }}
+          tag: ${{github.event.inputs.version}}
+          bodyFile: "./release-body.md"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-
-      # - name: Commit files
-      #   run: |
-      #     git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      #     git config --local user.name "github-actions[bot]"
-      #     git add .
-      #     git commit -m "BUILD" -a
-
-      # - name: Push changes
-      #   uses: ad-m/github-push-action@master
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     branch: ${{ github.ref }}
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
