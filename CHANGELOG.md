@@ -1,8 +1,10 @@
 # Changelog
 
-### X.X.X (comming soon)
 
 ### 12.0.0-beta.XX (comming soon) BREAKING
+
+<!-- CHANGELOG NEWEST -->
+
 
 - All indexes that do not contain the primaryKey, get the primary key added.
 - You can now set a custom index when doing a query.
@@ -34,6 +36,11 @@ Changes to `RxStorageInterface`:
 - Added `doesBroadcastChangestream()` to `RxStorageStatics`
 - Added `withDeleted` parameter to `RxStorageKeyObjectInstance.findLocalDocumentsById()`
 - Added internal `_meta` property to stored document data that contains internal document related data like last-write-time and replication checkpoints.
+
+<!-- /CHANGELOG NEWEST -->
+
+
+<!-- RELEASE BELOW -->
 
 
 ### 11.6.0 (4 February 2022)
@@ -628,20 +635,12 @@ Other:
   - Fix GraphQL-example to propper use Websocket-Pub-Sub
 
 ### 8.6.0 (4 October 2019)
-Migrated to typescript.
 
-### 8.5.0-beta.3 (1 October 2019)
-
-  - Fixed import of `@types/pouchdb-core` and `@types/pouchdb-find`
-
-### 8.5.0-beta.2 (1 October 2019)
+- Migrated to typescript.
+- Fixed import of `@types/pouchdb-core` and `@types/pouchdb-find`
 
 Bugfixes:
   - Fixed typings of `preCreateRxCollection` [#1533](https://github.com/pubkey/rxdb/issues/1533) Thanks [@yanshiyason](https://github.com/yanshiyason)
-
-### 8.5.0-beta.1 (30 September 2019)
-
-Migrated to typescript.
 
 ### 8.5.0 (18 September 2019)
 
