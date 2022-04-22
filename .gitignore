@@ -19,3 +19,4 @@ pouch__all_dbs__/
 .DS_Store?
 .eslintcache
 isolate-*
+release-body.md

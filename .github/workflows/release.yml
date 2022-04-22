@@ -1,0 +1,113 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Release
+
+# Controls when the action will run. 
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      version:
+        # Friendly description to be shown in the UI instead of 'name'
+        description: 'Version to release'
+        # Default value if no value is explicitly provided
+        default: '1.0.0'
+        # Input has to be provided for the workflow to run
+        required: true
+
+jobs:
+  # This workflow contains a single job called "build"
+  build-all:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-18.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Set prerelease variable
+        if: contains(github.event.inputs.version, 'beta')
+        id: vars
+        run: |
+          echo ::set-output name=prerelease::$(true)
+      - name: Set prerelease variable
+        if: "!contains(github.event.inputs.version, 'beta')"
+        id: vars
+        run: |
+          echo ::set-output name=prerelease::$(true)
+
+      - name: Log parsed version
+        run: |
+          echo "version: ${{github.event.inputs.version}}"
+          echo "prerelease: ${{ steps.vars.outputs.prerelease }}"
+
+
+      - name: Set git config
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+
+      # TODO move from gitbook to honkit
+      # https://github.com/honkit/honkit
+      # so we do not need this
+      - name: downgrade nodejs for gitbook
+        uses: actions/setup-node@v3.0.0
+        with:
+          node-version: 13.8.0
+
+      - name: Install old node version so it works with the shitty gitbook
+        run: |
+          node -v
+          npm install
+
+      - name: build docs
+        run: |
+          npm run docs:build
+
+
+      # update node
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.0.0
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: install npm dependencies
+        run: |
+          node -v
+          rm -r node_modules/
+          npm install
+      
+      - run: npm run build
+
+      - name: 'update version and changelog'
+        working-directory: 'scripts'
+        run: |
+          node set-version.js ${{github.event.inputs.version}}
+
+      - name: add git tag
+        run: |
+          git add .
+          git commit -m ${{github.event.inputs.version}}
+          git tag ${{github.event.inputs.version}}
+
+      # - uses: ncipollo/release-action@v1
+      #   with:
+      #     bodyFile: "./release-body.md"
+      #     prerelease: ${{ steps.vars.outputs.prerelease }}
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+
+
+      # - name: Commit files
+      #   run: |
+      #     git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      #     git config --local user.name "github-actions[bot]"
+      #     git add .
+      #     git commit -m "BUILD" -a
+
+      # - name: Push changes
+      #   uses: ad-m/github-push-action@master
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: ${{ github.ref }}
