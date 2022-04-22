@@ -74,7 +74,7 @@ jobs:
       - name: install npm dependencies
         run: |
           node -v
-          rm -r node_modules/
+          rm -rf node_modules/
           npm install
       
       - run: npm run build
