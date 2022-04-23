@@ -22,7 +22,8 @@ import {
     createRxDatabase
 } from 'rxdb';
 import {
-    getRxStorageSQLite
+    getRxStorageSQLite,
+    getSQLiteBasicsNode
 } from 'rxdb-premium/plugins/sqlite';
 
 /**
@@ -32,26 +33,17 @@ import {
  */
 import sqlite3 from 'sqlite3';
 
-/**
- * First, the SQLite RxStorage needs a databaseCreator function
- * that creates a new SQLite instance based on a given database name.
- * 
- * This is needed because different runtimes have different ways of loading
- * the SQLite library.
- */
-const databaseCreator = (name) => Promise.resolve(new sqlite3.Database(name));
-
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageSQLite({
         /**
-         * The SQLite RxStorage needs a databaseCreator function
-         * that creates a new SQLite instance based on a given database name.
-         * 
-         * This is needed because different runtimes have different ways of loading
-         * the SQLite library.
+         * Different runtimes have different interfaces to SQLite.
+         * For example in node.js we have a callback API,
+         * while in capacitor sqlite we have Promises.
+         * So we need a helper object that is capable of doing the basic
+         * sqlite operations.
          */
-        databaseCreator: (name) => Promise.resolve(new sqlite3.Database(name))
+        sqliteBasics: getSQLiteBasicsNode(sqlite3)
     })
 });
 ```

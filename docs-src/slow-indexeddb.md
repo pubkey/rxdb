@@ -112,7 +112,7 @@ As the performance test results show, using a batched cursor can give a huge imp
 
 RxDB uses batched cursors in the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
 
-## Sharding
+## IndexedDB Sharding
 
 Sharding is a technique, normally used in server side databases, where the database is partitioned [horizontally](https://en.wikipedia.org/wiki/Partition_(database)). Instead of storing all documents at one table/collection, the documents are split into so called **shards** and each shard is stored on one table/collection. This is done in server side architectures to spread the load between multiple physical servers which **increases scalability**.
 
