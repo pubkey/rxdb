@@ -119,6 +119,9 @@ jobs:
           bodyFile: "./release-body.md"
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # pull again to make it unlikely that we have a merge conflict.
+      - run: git pull
+
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
