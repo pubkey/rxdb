@@ -322,7 +322,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          */
         return this.internals.pouch
             .compact()
-            .then(() => false);
+            .then(() => true);
     }
 
     async getChangedDocumentsSince(

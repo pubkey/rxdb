@@ -1952,6 +1952,64 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 await storageInstance.close();
             });
+            it('should at some time return true (when all docs are cleaned up)', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+
+                let done = false;
+                while (!done) {
+                    done = await storageInstance.cleanup(0);
+                }
+
+                const id = 'foobar';
+                /**
+                 * Insert
+                 */
+                const insertResult = await storageInstance.bulkWrite([{
+                    document: {
+                        key: id,
+                        value: 'barfoo',
+                        _attachments: {},
+                        _rev: EXAMPLE_REVISION_1,
+                        _meta: {
+                            lwt: now()
+                        },
+                        _deleted: false
+                    }
+                }]);
+                const previous = getFromObjectOrThrow(insertResult.success, id);
+
+                /**
+                 * Delete
+                 */
+                const deleteResult = await storageInstance.bulkWrite([{
+                    previous,
+                    document: {
+                        key: id,
+                        value: 'barfoo',
+                        _rev: EXAMPLE_REVISION_2,
+                        _deleted: true,
+                        _meta: {
+                            lwt: now()
+                        },
+                        _attachments: {}
+                    }
+                }]);
+                getFromObjectOrThrow(deleteResult.success, id);
+
+                done = false;
+                while (!done) {
+                    done = await storageInstance.cleanup(0);
+                }
+
+                await storageInstance.close();
+            });
         });
         describe('.remove()', () => {
             it('should have deleted all data', async () => {
