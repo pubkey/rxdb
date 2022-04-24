@@ -58,8 +58,8 @@ export async function cleanupRxCollection(
     const storageInstance = rxCollection.storageInstance;
 
     // run cleanup() until it returns true
-    let hasMore = true;
-    while (hasMore && !rxCollection.destroyed) {
+    let isDone = false;
+    while (!isDone && !rxCollection.destroyed) {
         if (cleanupPolicy.awaitReplicationsInSync) {
             const replicationStates = REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
             if (replicationStates) {
@@ -84,7 +84,7 @@ export async function cleanupRxCollection(
                 }
                 return storageInstance.cleanup(cleanupPolicy.minimumDeletedTime);
             });
-        hasMore = await RXSOTRAGE_CLEANUP_QUEUE;
+        isDone = await RXSOTRAGE_CLEANUP_QUEUE;
     }
 }
 
