@@ -231,9 +231,9 @@ var cleanupRxCollection = function cleanupRxCollection(rxCollection, cleanupPoli
     var rxDatabase = rxCollection.database;
     var storageInstance = rxCollection.storageInstance; // run cleanup() until it returns true
 
-    var hasMore = true;
+    var isDone = false;
     return Promise.resolve(_for(function () {
-      return !_exit2 && !!hasMore && !rxCollection.destroyed;
+      return !_exit2 && !isDone && !rxCollection.destroyed;
     }, void 0, function () {
       function _temp3() {
         return Promise.resolve(rxDatabase.requestIdlePromise()).then(function () {
@@ -250,7 +250,7 @@ var cleanupRxCollection = function cleanupRxCollection(rxCollection, cleanupPoli
             return storageInstance.cleanup(cleanupPolicy.minimumDeletedTime);
           });
           return Promise.resolve(RXSOTRAGE_CLEANUP_QUEUE).then(function (_RXSOTRAGE_CLEANUP_QU) {
-            hasMore = _RXSOTRAGE_CLEANUP_QU;
+            isDone = _RXSOTRAGE_CLEANUP_QU;
           });
         });
       }
