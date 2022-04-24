@@ -364,11 +364,11 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
         /**
          * TODO instead of deleting all deleted docs at once,
-         * only clean up some of them and return true.
+         * only clean up some of them and return false if there are more documents to clean up.
          * This ensures that when many documents have to be purged,
          * we do not block the more important tasks too long.
          */
-        return false;
+        return true;
     }
 
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
