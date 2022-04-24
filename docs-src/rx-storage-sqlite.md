@@ -15,7 +15,7 @@ This storage is based on [SQLite](https://www.sqlite.org/index.html) and is made
 - Does not support attachments.
 
 
-## Usage
+## Usage (with Node.js SQLite)
 
 ```ts
 import {
@@ -47,6 +47,62 @@ const myRxDatabase = await createRxDatabase({
     })
 });
 ```
+
+
+
+## Usage (with SQLite Capacitor)
+
+1. Install the [sqlite capacitor plugin](https://github.com/capacitor-community/sqlite)
+2. Add the iOS database location to your capacitor config
+
+```json
+{
+    "plugins": {
+        "CapacitorSQLite": {
+            "iosDatabaseLocation": "Library/CapacitorDatabase"
+        }
+    }
+}
+```
+
+3. Use the function `getSQLiteBasicsCapacitor` to get the capacitor sqlite wrapper.
+
+
+```ts
+import {
+    createRxDatabase
+} from 'rxdb';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsCapacitor
+} from 'rxdb-premium/plugins/sqlite';
+
+/**
+ * Import SQLite from the capacitor plugin.
+ */
+import {
+    CapacitorSQLite,
+    SQLiteConnection
+} from '@capacitor-community/sqlite';
+import { Capacitor } from '@capacitor/core';
+
+const sqlite = new SQLiteConnection(CapacitorSQLite);
+
+const myRxDatabase = await createRxDatabase({
+    name: 'exampledb',
+    storage: getRxStorageSQLite({
+        /**
+         * Different runtimes have different interfaces to SQLite.
+         * For example in node.js we have a callback API,
+         * while in capacitor sqlite we have Promises.
+         * So we need a helper object that is capable of doing the basic
+         * sqlite operations.
+         */
+        sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor)
+    })
+});
+```
+
 
 
 --------------------------------------------------------------------------------

@@ -20,3 +20,4 @@ If you use RxDB in your company project, you can purchase access by contacting m
 ### For your side project
 
 If you are a **single developer** and you use RxDB in your **side project**, you can get livetime access to the premium package by solving one Task of the [Premium Tasks](https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md) list.
+Notice: It is not possible to get premium access via github sponsorships.
