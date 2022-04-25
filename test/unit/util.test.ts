@@ -11,7 +11,8 @@ import {
     blobBufferUtil,
     createRevision,
     sortDocumentsByLastWriteTime,
-    RxDocumentData
+    RxDocumentData,
+    ensureInteger
 } from '../../';
 
 import {
@@ -21,7 +22,7 @@ import {
 import {
     rev as pouchCreateRevisison
 } from 'pouchdb-utils';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+import {EXAMPLE_REVISION_1} from '../helper/revisions';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
@@ -316,5 +317,24 @@ describe('util.test.js', () => {
             assert.strictEqual(sorted[0].id, 'a');
             assert.strictEqual(sorted[1].id, 'b');
         });
+    });
+    describe('.ensureInteger()', () => {
+        it('should return the given argument in case of integer', () => {
+             assert.doesNotThrow(() => ensureInteger(56));
+             assert.strictEqual(ensureInteger(56),56);
+        });
+        [
+            undefined,
+            true,
+            [],
+            {},
+            1.2,
+            Infinity,
+            ''
+        ].map(value =>{
+            it(`should throw error for ${value} argument`, () => {
+                assert.throws(() => ensureInteger(value));
+            });
+        })
     });
 });
