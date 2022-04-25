@@ -525,6 +525,49 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
+        it('should allow 0 value for liveInterval', async () => {
+            const {localCollection, remoteCollection} = await getTestCollections({local: 0, remote: 0});
+            assert.doesNotThrow(async () => {
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    liveInterval: 0,
+                    pull: {
+                        handler: getPullHandler(remoteCollection)
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection)
+                    }
+                });
+                await replicationState.awaitInitialReplication();
+            });
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+        it('should push data even if liveInterval is set to 0', async () => {
+            const {localCollection, remoteCollection} = await getTestCollections({local: 0, remote: 0});
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                liveInterval: 0,
+                push: {
+                    handler() {
+                        throw new Error();
+                    }
+                }
+            });
+            let error = null;
+            replicationState.error$.subscribe((err) => {
+                error = err;
+            });
+            await replicationState.run();
+            assert.strictEqual(error, null, 'Throwing pull handler should be called');
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
     });
     config.parallel('other', () => {
         describe('.awaitInSync()', () => {
