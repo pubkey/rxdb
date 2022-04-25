@@ -28,6 +28,7 @@ import {
     setLastPushCheckpoint
 } from './replication-checkpoint';
 import {
+    ensureInteger,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
@@ -575,10 +576,11 @@ export function replicateRxCollection<RxDocType>(
          * if it is a live replication.
          */
         if (replicationState.live) {
-            if (pull) {
+            const liveInterval: number = ensureInteger(replicationState.liveInterval);
+            if (pull && liveInterval > 0) {
                 (async () => {
                     while (!replicationState.isStopped()) {
-                        await collection.promiseWait(ensureNotFalsy(replicationState.liveInterval));
+                        await collection.promiseWait(liveInterval);
                         if (replicationState.isStopped()) {
                             return;
                         }

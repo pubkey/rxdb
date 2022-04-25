@@ -2176,7 +2176,7 @@ describe('replication-graphql.test.ts', () => {
                     live: true,
                     deletedFlag: 'deleted',
                     retryTime: 500,
-                    liveInterval: Infinity
+                    liveInterval: 0
                 });
                 const replicationState = graphqlReplicationState.replicationState;
 

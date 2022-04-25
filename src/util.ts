@@ -206,6 +206,13 @@ export function ensureNotFalsy<T>(obj: T | false | undefined | null): T {
     return obj;
 }
 
+export function ensureInteger(obj: unknown): number {
+    if (!Number.isInteger(obj)) {
+        throw new Error('ensureInteger() is falsy');
+    }
+    return obj as number;
+}
+
 /**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set
