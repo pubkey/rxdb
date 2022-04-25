@@ -11,3 +11,11 @@ It represents a simple hero-list which is two-way-replicated with the server.
 5. run `npm run preinstall && npm install`
 6. run `npm start`
 7. Open [http://127.0.0.1:8888/](http://127.0.0.1:8888/) **IMPORTANT: do not use localhost**
+
+
+
+You can change the storage and disable sync via url parameter, e.g.: 
+
+- http://localhost:8888/?storage=dexie&sync=false
+- http://localhost:8888/?storage=pouchdb&sync=true
+- http://localhost:8888/?storage=lokijs&sync=true
