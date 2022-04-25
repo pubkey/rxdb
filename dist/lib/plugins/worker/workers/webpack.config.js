@@ -15,7 +15,9 @@ module.exports = {
     'lokijs-memory': './src/plugins/worker/workers/lokijs-memory.worker.ts',
     'lokijs-fs': './src/plugins/worker/workers/lokijs-fs.worker.ts',
     'pouchdb-idb': './src/plugins/worker/workers/pouchdb-idb.worker.ts',
-    'pouchdb-memory': './src/plugins/worker/workers/pouchdb-memory.worker.ts'
+    'pouchdb-memory': './src/plugins/worker/workers/pouchdb-memory.worker.ts',
+    'dexie': './src/plugins/worker/workers/dexie.worker.ts',
+    'dexie-memory': './src/plugins/worker/workers/dexie-memory.worker.ts'
   },
   output: {
     filename: '[name].worker.js',

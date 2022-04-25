@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 12.0.0-beta.40 (24 April 2022)
+### 12.0.0-beta.41 (25 April 2022)
 
 - All indexes that do not contain the primaryKey, get the primary key added.
 - You can now set a custom index when doing a query.
