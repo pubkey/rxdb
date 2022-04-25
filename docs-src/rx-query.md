@@ -227,6 +227,11 @@ myCollection.find().where('name').eq('foo')
 .exec().then(documents => console.dir(documents));
 ```
 
+## NOTICE: RxDB will always append the primary key to the sort parameters
+For several performance optimizations, like the [EventReduce algoritm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic odering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
+This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.
+
+
 ## NOTICE: RxQuery's are immutable
 
 Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQuery's have to be immutable.
