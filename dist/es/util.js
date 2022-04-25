@@ -202,6 +202,13 @@ export function ensureNotFalsy(obj) {
 
   return obj;
 }
+export function ensureInteger(obj) {
+  if (!Number.isInteger(obj)) {
+    throw new Error('ensureInteger() is falsy');
+  }
+
+  return obj;
+}
 /**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set

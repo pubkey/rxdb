@@ -8498,6 +8498,7 @@ exports.adapterObject = adapterObject;
 exports.batchArray = batchArray;
 exports.clone = exports.blobBufferUtil = void 0;
 exports.createRevision = createRevision;
+exports.ensureInteger = ensureInteger;
 exports.ensureNotFalsy = ensureNotFalsy;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
@@ -8758,6 +8759,14 @@ function runXTimes(xTimes, fn) {
 function ensureNotFalsy(obj) {
   if (!obj) {
     throw new Error('ensureNotFalsy() is falsy');
+  }
+
+  return obj;
+}
+
+function ensureInteger(obj) {
+  if (!Number.isInteger(obj)) {
+    throw new Error('ensureInteger() is falsy');
   }
 
   return obj;

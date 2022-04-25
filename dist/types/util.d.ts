@@ -51,6 +51,7 @@ export declare function ucfirst(str: string): string;
 export declare function trimDots(str: string): string;
 export declare function runXTimes(xTimes: number, fn: (idx: number) => void): void;
 export declare function ensureNotFalsy<T>(obj: T | false | undefined | null): T;
+export declare function ensureInteger(obj: unknown): number;
 /**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set

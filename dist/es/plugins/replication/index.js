@@ -210,7 +210,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { getChangesSinceLastPushCheckpoint, getLastPullDocument, setLastPullDocument, setLastPushCheckpoint } from './replication-checkpoint';
-import { ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getHeightOfRevision, hash, lastOfArray, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
+import { ensureInteger, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getHeightOfRevision, hash, lastOfArray, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
 import { overwritable } from '../../overwritable';
 import { setLastWritePullReplication, wasLastWriteFromPullReplication } from './revision-flag';
 import { newRxError } from '../../rx-error';
@@ -843,14 +843,16 @@ export function replicateRxCollection(_ref) {
      */
 
     if (replicationState.live) {
-      if (pull) {
+      var _liveInterval = ensureInteger(replicationState.liveInterval);
+
+      if (pull && _liveInterval > 0) {
         (function () {
           try {
             var _exit8 = false;
             return _for(function () {
               return !_exit8 && !replicationState.isStopped();
             }, void 0, function () {
-              return Promise.resolve(collection.promiseWait(ensureNotFalsy(replicationState.liveInterval))).then(function () {
+              return Promise.resolve(collection.promiseWait(_liveInterval)).then(function () {
                 if (replicationState.isStopped()) {
                   _exit8 = true;
                   return;

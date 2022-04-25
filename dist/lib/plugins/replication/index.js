@@ -906,14 +906,16 @@ function replicateRxCollection(_ref) {
      */
 
     if (replicationState.live) {
-      if (pull) {
+      var _liveInterval = (0, _util.ensureInteger)(replicationState.liveInterval);
+
+      if (pull && _liveInterval > 0) {
         (function () {
           try {
             var _exit8 = false;
             return _for(function () {
               return !_exit8 && !replicationState.isStopped();
             }, void 0, function () {
-              return Promise.resolve(collection.promiseWait((0, _util.ensureNotFalsy)(replicationState.liveInterval))).then(function () {
+              return Promise.resolve(collection.promiseWait(_liveInterval)).then(function () {
                 if (replicationState.isStopped()) {
                   _exit8 = true;
                   return;
