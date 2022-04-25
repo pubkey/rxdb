@@ -508,7 +508,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
      * @link https://github.com/pouchdb/pouchdb/issues/802
      */
     return this.internals.pouch.compact().then(function () {
-      return false;
+      return true;
     });
   };
 
