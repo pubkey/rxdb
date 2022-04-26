@@ -570,7 +570,7 @@ describe('replication.test.js', () => {
         });
     });
     config.parallel('other', () => {
-        describe('runInitialReplication', () => {
+        describe('autoStart', () => {
             it('should run first replication by default', async () => {
                 const replicationState = replicateRxCollection({
                     collection: {
@@ -579,13 +579,13 @@ describe('replication.test.js', () => {
                     } as RxCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                     live: false,
-                    runInitialReplication: true,
+                    autoStart: true,
                     waitForLeadership: false
                 });
                 await replicationState.awaitInitialReplication();
                 assert.strictEqual(replicationState.runCount,1);
             });
-            it('should not run first replication when runInitialReplication is set to false', async () => {
+            it('should not run first replication when autoStart is set to false', async () => {
                 const replicationState = replicateRxCollection({
                     collection: {
                         database: {},
@@ -593,7 +593,7 @@ describe('replication.test.js', () => {
                     } as RxCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                     live: false,
-                    runInitialReplication: false,
+                    autoStart: false,
                     waitForLeadership: false
                 });
                 // by definition awaitInitialReplication would be infinite

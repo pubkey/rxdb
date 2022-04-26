@@ -109,5 +109,5 @@ export type ReplicationOptions<RxDocType> = {
      * If set to false, it will not run replication on `replicateRxCollection()`.
      * This means you need to call replicationState.run() to trigger the first replication.
      */
-    runInitialReplication?: boolean; // default=true
+    autoStart?: boolean; // default=true
 }

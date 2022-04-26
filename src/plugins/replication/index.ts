@@ -95,7 +95,7 @@ export class RxReplicationStateBase<RxDocType> {
         public readonly live?: boolean,
         liveInterval?: number,
         public retryTime?: number,
-        public runInitialReplication?: boolean,
+        public autoStart?: boolean,
     ) {
         let replicationStates = REPLICATION_STATE_BY_COLLECTION.get(collection);
         if (!replicationStates) {
@@ -551,7 +551,7 @@ export function replicateRxCollection<RxDocType>(
         liveInterval = 1000 * 10,
         retryTime = 1000 * 5,
         waitForLeadership,
-        runInitialReplication = true,
+        autoStart = true,
     }: ReplicationOptions<RxDocType>
 ): RxReplicationState<RxDocType> {
 
@@ -572,7 +572,7 @@ export function replicateRxCollection<RxDocType>(
         live,
         liveInterval,
         retryTime,
-        runInitialReplication
+        autoStart
     );
     ensureInteger(replicationState.liveInterval);
     /**
@@ -585,7 +585,7 @@ export function replicateRxCollection<RxDocType>(
         if (replicationState.isStopped()) {
             return;
         }
-        if (runInitialReplication) {
+        if (autoStart) {
             replicationState.run();
         }
         if (replicationState.live && push) {

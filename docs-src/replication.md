@@ -131,7 +131,7 @@ const replicationState = await replicateRxCollection({
      * This means you need to call replicationState.run() to trigger the first replication.
      * (optional), default is true.
      */
-    runInitialReplication: true,
+    autoStart: true,
     /**
      * Optional,
      * only needed when you want to replicate remote changes to the local state.
