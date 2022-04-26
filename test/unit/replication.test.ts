@@ -547,24 +547,28 @@ describe('replication.test.js', () => {
         });
         it('should push data even if liveInterval is set to 0', async () => {
             const {localCollection, remoteCollection} = await getTestCollections({local: 0, remote: 0});
-            const replicationState = replicateRxCollection({
+            let callProof = null;
+            replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: true,
                 liveInterval: 0,
+                autoStart: false,
                 push: {
                     handler() {
-                        throw new Error();
+                        callProof = 'yeah';
+                        return Promise.resolve();
                     }
-                }
+                },
             });
-            let error = null;
-            replicationState.error$.subscribe((err) => {
-                error = err;
-            });
-            await replicationState.run();
-            assert.strictEqual(error, null, 'Throwing pull handler should be called');
+            assert.strictEqual(callProof, null, 'replicateRxCollection should not trigger a push on init.');
 
+            // insert a new doc to trigger a push
+            const docData = schemaObjects.humanWithTimestamp();
+            docData.age = 0;
+            await localCollection.insert(docData);
+
+            assert.strictEqual(callProof, 'yeah', 'Throwing pull handler should be called');
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
