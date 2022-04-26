@@ -5,7 +5,12 @@
 
 <!-- ADD new changes here! -->
 
-### 12.0.0-beta.42 (25 April 2022)
+<!-- /CHANGELOG NEWEST -->
+
+<!-- RELEASE BELOW -->
+
+
+### 12.0.0 (26 April 2022) BREAKING [read the announcement](./orga/releases/12.0.0.md)
 
 - All indexes that do not contain the primaryKey, get the primary key added.
 - You can now set a custom index when doing a query.
@@ -37,10 +42,6 @@ Changes to `RxStorageInterface`:
 - Added `doesBroadcastChangestream()` to `RxStorageStatics`
 - Added `withDeleted` parameter to `RxStorageKeyObjectInstance.findLocalDocumentsById()`
 - Added internal `_meta` property to stored document data that contains internal document related data like last-write-time and replication checkpoints.
-
-<!-- /CHANGELOG NEWEST -->
-
-<!-- RELEASE BELOW -->
 
 ### 11.6.0 (4 February 2022)
 

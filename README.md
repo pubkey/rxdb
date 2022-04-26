@@ -1,6 +1,6 @@
 | Announcement                                                        |
 | :--: |
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **11.0.0** is now released, read the [ANNOUNCEMENT](./orga/releases/11.0.0.md) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **12.0.0** is now released, read the [ANNOUNCEMENT](./orga/releases/12.0.0.md) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
 
 <!--
 | Announcement                                                        |
@@ -354,7 +354,7 @@ By setting a schema-field to `encrypted`, the value of this field will be stored
 
 import { 
   createRxDatabase
-} from 'rxdb/plugins/core';
+} from 'rxdb';
 
 
 /**
