@@ -81,6 +81,8 @@ export class RxReplicationStateBase<RxDocType> {
      */
     public pendingRetries = 0;
 
+    public liveInterval: number;
+
     constructor(
         /**
          * hash of the identifier, used to flag revisions
@@ -91,7 +93,7 @@ export class RxReplicationStateBase<RxDocType> {
         public readonly pull?: ReplicationPullOptions<RxDocType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live?: boolean,
-        public liveInterval?: number,
+        liveInterval?: number,
         public retryTime?: number,
         public runInitialReplication?: boolean,
     ) {
@@ -116,6 +118,16 @@ export class RxReplicationStateBase<RxDocType> {
                 }
             });
         });
+        this.liveInterval = liveInterval !== void 0 ? ensureInteger(liveInterval) : 1000 * 10;
+    }
+
+    async continuePolling() {
+        await this.collection.promiseWait(this.liveInterval);
+        await this.run(
+            // do not retry on liveInterval-runs because they might stack up
+            // when failing
+            false
+        );
     }
 
     isStopped(): boolean {
@@ -195,6 +207,9 @@ export class RxReplicationStateBase<RxDocType> {
                 }
                 this.runQueueCount--;
             });
+        if (this.live && this.pull && this.liveInterval > 0) {
+            this.runningPromise.then(() => this.continuePolling());
+        }
         return this.runningPromise;
     }
 
@@ -559,7 +574,7 @@ export function replicateRxCollection<RxDocType>(
         retryTime,
         runInitialReplication
     );
-
+    ensureInteger(replicationState.liveInterval);
     /**
      * Always await this Promise to ensure that the current instance
      * is leader when waitForLeadership=true
@@ -570,66 +585,42 @@ export function replicateRxCollection<RxDocType>(
         if (replicationState.isStopped()) {
             return;
         }
-
-        if(runInitialReplication) {
+        if (runInitialReplication) {
             replicationState.run();
         }
+        if (replicationState.live && push) {
+            /**
+             * When a non-local document is written to the collection,
+             * we have to run the replication run() once to ensure
+             * that the change is pushed to the remote.
+             */
+            const changeEventsSub = collection.$.pipe(
+                filter(cE => !cE.isLocal)
+            ).subscribe(changeEvent => {
+                if (replicationState.isStopped()) {
+                    return;
+                }
+                const doc = getDocumentDataOfRxChangeEvent(changeEvent);
 
-        /**
-         * Start sync-interval and listeners
-         * if it is a live replication.
-         */
-        if (replicationState.live) {
-            const liveInterval: number = ensureInteger(replicationState.liveInterval);
-            if (pull && liveInterval > 0) {
-                (async () => {
-                    while (!replicationState.isStopped()) {
-                        await collection.promiseWait(liveInterval);
-                        if (replicationState.isStopped()) {
-                            return;
-                        }
-                        await replicationState.run(
-                            // do not retry on liveInterval-runs because they might stack up
-                            // when failing
-                            false
-                        );
-                    }
-                })();
-            }
-            if (push) {
-                /**
-                 * When a non-local document is written to the collection,
-                 * we have to run the replication run() once to ensure
-                 * that the change is pushed to the remote.
-                 */
-                const changeEventsSub = collection.$.pipe(
-                    filter(cE => !cE.isLocal)
-                ).subscribe(changeEvent => {
-                    if (replicationState.isStopped()) {
-                        return;
-                    }
-                    const doc = getDocumentDataOfRxChangeEvent(changeEvent);
-
-                    if (
-                        /**
-                         * Do not run() if the change
-                         * was from a pull-replication cycle.
-                         */
-                        !wasLastWriteFromPullReplication(
-                            replicationState.replicationIdentifierHash,
-                            doc
-                        ) ||
-                        /**
-                         * If the event is a delete, we still have to run the replication
-                         * because wasLastWriteFromPullReplication() will give the wrong answer.
-                         */
-                        changeEvent.operation === 'DELETE'
-                    ) {
-                        replicationState.run();
-                    }
-                });
-                replicationState.subs.push(changeEventsSub);
-            }
+                if (
+                    /**
+                     * Do not run() if the change
+                     * was from a pull-replication cycle.
+                     */
+                    !wasLastWriteFromPullReplication(
+                        replicationState.replicationIdentifierHash,
+                        doc
+                    ) ||
+                    /**
+                     * If the event is a delete, we still have to run the replication
+                     * because wasLastWriteFromPullReplication() will give the wrong answer.
+                     */
+                    changeEvent.operation === 'DELETE'
+                ) {
+                    replicationState.run();
+                }
+            });
+            replicationState.subs.push(changeEventsSub);
         }
     });
     return replicationState as any;
