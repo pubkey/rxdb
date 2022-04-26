@@ -45,4 +45,5 @@ export type SyncOptionsGraphQL<RxDocType> = {
     live?: boolean; // default=false
     liveInterval?: number; // time in milliseconds
     retryTime?: number; // time in milliseconds
+    runInitialReplication?: boolean; // default=true
 };
