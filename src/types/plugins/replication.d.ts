@@ -104,4 +104,10 @@ export type ReplicationOptions<RxDocType> = {
      * 
      */
     waitForLeadership?: boolean; // default=true
+    /**
+     * Calling `replicateRxCollection()` implies to run a replication.
+     * If set to false, it will not run replication on `replicateRxCollection()`.
+     * This means you need to call replicationState.run() to trigger the first replication.
+     */
+    runInitialReplication?: boolean; // default=true
 }
