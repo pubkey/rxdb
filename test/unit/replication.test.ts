@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import {
+import AsyncTestUtil, {
     clone,
     wait,
     waitUntil
@@ -545,7 +545,7 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
-        it('should push data even if liveInterval is set to 0', async () => {
+        it.only('should push data even if liveInterval is set to 0', async () => {
             const {localCollection, remoteCollection} = await getTestCollections({local: 0, remote: 0});
             let callProof = null;
             replicateRxCollection({
@@ -561,12 +561,14 @@ describe('replication.test.js', () => {
                     }
                 },
             });
+            // ensure proof is still null once replicateRxCollection()
             assert.strictEqual(callProof, null, 'replicateRxCollection should not trigger a push on init.');
 
             // insert a new doc to trigger a push
-            const docData = schemaObjects.humanWithTimestamp();
-            docData.age = 0;
-            await localCollection.insert(docData);
+            await localCollection.insert(schemaObjects.humanWithTimestamp());
+
+            // wait for storage propagation
+            await AsyncTestUtil.wait(100);
 
             assert.strictEqual(callProof, 'yeah', 'Throwing pull handler should be called');
             localCollection.database.destroy();
