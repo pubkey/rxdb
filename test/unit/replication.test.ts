@@ -570,9 +570,39 @@ describe('replication.test.js', () => {
         });
     });
     config.parallel('other', () => {
+        describe('runInitialReplication', () => {
+            it('should run first replication by default', async () => {
+                const replicationState = replicateRxCollection({
+                    collection: {
+                        database: {},
+                        onDestroy: {then(){}}
+                    } as RxCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    runInitialReplication: true,
+                    waitForLeadership: false
+                });
+                await replicationState.awaitInitialReplication();
+                assert.strictEqual(replicationState.runCount,1);
+            });
+            it('should not run first replication when runInitialReplication is set to false', async () => {
+                const replicationState = replicateRxCollection({
+                    collection: {
+                        database: {},
+                        onDestroy: {then(){}}
+                    } as RxCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    runInitialReplication: false,
+                    waitForLeadership: false
+                });
+                // by definition awaitInitialReplication would be infinite
+                assert.strictEqual(replicationState.runCount,0);
+            });
+        });
         describe('.awaitInSync()', () => {
             it('should resolve after some time', async () => {
-                const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+                const {localCollection, remoteCollection} = await getTestCollections({local: 5, remote: 5});
 
                 const replicationState = replicateRxCollection({
                     collection: localCollection,

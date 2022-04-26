@@ -93,6 +93,7 @@ export class RxReplicationStateBase<RxDocType> {
         public readonly live?: boolean,
         public liveInterval?: number,
         public retryTime?: number,
+        public runInitialReplication?: boolean,
     ) {
         let replicationStates = REPLICATION_STATE_BY_COLLECTION.get(collection);
         if (!replicationStates) {
@@ -137,7 +138,7 @@ export class RxReplicationStateBase<RxDocType> {
 
     /**
      * Returns a promise that resolves when:
-     * - All local data is repliacted with the remote
+     * - All local data is replicated with the remote
      * - No replication cycle is running or in retry-state
      */
     async awaitInSync(): Promise<true> {
@@ -534,7 +535,8 @@ export function replicateRxCollection<RxDocType>(
         live = false,
         liveInterval = 1000 * 10,
         retryTime = 1000 * 5,
-        waitForLeadership
+        waitForLeadership,
+        runInitialReplication = true,
     }: ReplicationOptions<RxDocType>
 ): RxReplicationState<RxDocType> {
 
@@ -555,6 +557,7 @@ export function replicateRxCollection<RxDocType>(
         live,
         liveInterval,
         retryTime,
+        runInitialReplication
     );
 
     /**
@@ -568,8 +571,9 @@ export function replicateRxCollection<RxDocType>(
             return;
         }
 
-        // trigger run() once
-        replicationState.run();
+        if(runInitialReplication) {
+            replicationState.run();
+        }
 
         /**
          * Start sync-interval and listeners
