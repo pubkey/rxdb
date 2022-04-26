@@ -545,7 +545,7 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
-        it.only('should push data even if liveInterval is set to 0', async () => {
+        it('should push data even if liveInterval is set to 0', async () => {
             const {localCollection, remoteCollection} = await getTestCollections({local: 0, remote: 0});
             let callProof = null;
             replicateRxCollection({
