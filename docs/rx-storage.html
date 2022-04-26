@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxStorage Dexie.js · RxDB - Documentation</title>
+        <title>RxStorage · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-storage-lokijs.html" />
+    <link rel="next" href="rx-storage-pouchdb.html" />
     
     
-    <link rel="prev" href="adapters.html" />
+    <link rel="prev" href="leader-election.html" />
     
 
     </head>
@@ -1451,7 +1451,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.17" data-path="rx-storage.html">
+        <li class="chapter active" data-level="1.17" data-path="rx-storage.html">
             
                 <a href="rx-storage.html">
             
@@ -1490,7 +1490,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.20" data-path="rx-storage-dexie.html">
+        <li class="chapter " data-level="1.20" data-path="rx-storage-dexie.html">
             
                 <a href="rx-storage-dexie.html">
             
@@ -1903,7 +1903,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxStorage Dexie.js</a>
+        <a href="." >RxStorage</a>
     </h1>
 </div>
 
@@ -1918,61 +1918,29 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxstorage-dexiejs">RxStorage Dexie.js</h1>
-<p>Instead of using PouchDB as underlying storage engine, you can also use <a href="https://github.com/dexie/Dexie.js" target="_blank">Dexie.js</a>.
-Dexie.js is a minimal wrapper around IndexedDB that has a good performance.</p>
-<p>For the Dexie based <code>RxStorage</code>, we use the <a href="https://github.com/kofrasa/mingo" target="_blank">mingo</a> query handler. And a copy of the query planner from the <a href="https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules/pouchdb-find" target="_blank">PouchDB-find</a> plugin.</p>
-<p><strong>IMPORTANT:</strong> The Dexie.js <code>RxStorage</code> is in <strong>beta</strong> mode. It may get breaking changes in any minor new RxDB version. Use at your own risk.</p>
-<h2 id="pros">Pros</h2>
-<ul>
-<li>Smaller bundle size then with the PouchDB storage.</li>
-<li>Fast inital load even on big datasets.</li>
-<li>Faster write and read performance than with PouchDB because it has less overhead.</li>
-</ul>
-<h2 id="cons">Cons</h2>
-<ul>
-<li>Does not support CouchDB replication.</li>
-<li>It does not support attachments. (Make a pull request)</li>
-<li>Running many operations can be slow because the underlying <a href="slow-indexeddb.html">IndexedDB is slow</a>.</li>
-</ul>
-<h2 id="usage">Usage</h2>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
-
-<span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
-    storage: getRxStorageDexie()
-});
-</code></pre>
-<h2 id="overwritepolyfill-the-native-indexeddb">Overwrite/Polyfill the native IndexedDB</h2>
-<p>Node.js has no IndexedDB API. To still run the Dexie <code>RxStorage</code> in Node.js, for example to run unit tests, you have to polyfill it.
-You can do that by using the <a href="https://github.com/dumbmatter/fakeIndexedDB" target="_blank">fake-indexeddb</a> module and pass it to the <code>getRxStorageDexie()</code> function.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
-
-<span class="hljs-comment">//&gt; npm install fake-indexeddb --save</span>
-<span class="hljs-keyword">const</span> fakeIndexedDB = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;fake-indexeddb&apos;</span>);
-<span class="hljs-keyword">const</span> fakeIDBKeyRange = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;fake-indexeddb/lib/FDBKeyRange&apos;</span>);
-
-<span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
-    storage: getRxStorageDexie({
-        indexedDB: fakeIndexedDB,
-        IDBKeyRange: fakeIDBKeyRange
-    })
-});
-</code></pre>
-<h2 id="using-addons">Using addons</h2>
-<p>Dexie.js has its own plugin system with <a href="https://dexie.org/docs/DerivedWork#known-addons" target="_blank">many plugins</a> for encryption, replication or other use cases. With the Dexie.js <code>RxStorage</code> you can use the same plugins by passing them to the <code>getRxStorageDexie()</code> function.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
-    storage: getRxStorageDexie({
-        addons: [ <span class="hljs-comment">/* Your Dexie.js plugins */</span> ]
-    })
-});
-</code></pre>
+                                <h1 id="rxstorage">RxStorage</h1>
+<p>RxDB is not a self contained database. Instead the data is stored in an implementation of the <a href="https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts" target="_blank">RxStorage interface</a>. This allows you to switch out the underlaying data layer, depending on the JavaScript environment and performance requirements. For example you can use the PouchDB storage with the SQLite adapter for a capacitor app. Or you can use the LokiJS RxStorage with the IndexedDB adapter for a browser based application. For Node.js, there are filesystem based adapters.</p>
+<h2 id="implementations">Implementations</h2>
+<h3 id="pouchdb">PouchDB</h3>
+<p>The PouchDB RxStorage is based on the <a href="https://github.com/pouchdb/pouchdb" target="_blank">PouchDB</a> database. It is the most battle proven RxStorage and has a big ecosystem of adapters. It is the only RxStorage that allows to do replication with a CouchDB endpoint. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. <a href="rx-storage-pouchdb.html">Read more</a></p>
+<h3 id="lokijs">LokiJS</h3>
+<p>The LokiJS based storage is based on the <a href="https://github.com/techfort/LokiJS" target="_blank">LokiJS</a> database.
+It has the special behavior of loading all data into memory at app start and therefore has the best performance when running operations over a small to mid sized dataset. <a href="rx-storage-lokijs.html">Read more</a></p>
+<h3 id="dexiejs">Dexie.js</h3>
+<p>The LokiJS based storage is based on the <a href="https://github.com/dexie/Dexie.js" target="_blank">Dexie.js</a> IndexedDB wrapper.
+It stores the data inside of a browsers IndexedDB database and has a very small bundle size. Compared to the LokiJS storage, it has a better initial load time even on big datasets. <a href="rx-storage-dexie.html">Read more</a></p>
+<h3 id="memory">Memory</h3>
+<p>A plain in-memory storage. Really fast and can be used in all environments. <a href="rx-storage-memory.html">Read more</a></p>
+<h3 id="indexeddb">IndexedDB</h3>
+<p>The IndexedDB <code>RxStorage</code> is based on plain IndexedDB. This has the best performance of all other non-in-memory storage, when RxDB is used inside of a browser. <a href="rx-storage-indexeddb.html">Read more</a></p>
+<h3 id="sqlite">SQLite</h3>
+<p>The SQLite storage has the best performance when RxDB is used on <strong>Node.js</strong>, <strong>Electron</strong>, <strong>React Native</strong>, <strong>Cordova</strong> or <strong>Capacitor</strong>. <a href="rx-storage-sqlite.html">Read more</a></p>
+<h3 id="worker">Worker</h3>
+<p>The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker&apos;s process which can improve the percieved performance of your application. <a href="rx-storage-worker.html">Read more</a></p>
+<h3 id="sharding">Sharding</h3>
+<p>On some <code>RxStorage</code> implementations (like IndexedDB), a huge performance improvement can be done by sharding the documents into multiple database instances. With the sharding plugin you can wrap any other <code>RxStorage</code> into a sharded storage. <a href="rx-storage-sharding.html">Read more</a></p>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="rx-storage-lokijs.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="rx-storage-pouchdb.html">here</a></p>
 
                                 
                                 </section>
@@ -2000,12 +1968,12 @@ You can do that by using the <a href="https://github.com/dumbmatter/fakeIndexedD
 
             
                 
-                <a href="adapters.html" class="navigation navigation-prev " aria-label="Previous page: PouchDB Adapters">
+                <a href="leader-election.html" class="navigation navigation-prev " aria-label="Previous page: LeaderElection">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="rx-storage-lokijs.html" class="navigation navigation-next " aria-label="Next page: RxStorage LokiJS">
+                <a href="rx-storage-pouchdb.html" class="navigation navigation-next " aria-label="Next page: RxStorage PouchDB">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2016,7 +1984,7 @@ You can do that by using the <a href="https://github.com/dumbmatter/fakeIndexedD
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxStorage Dexie.js","level":"1.20","depth":1,"next":{"title":"RxStorage LokiJS","level":"1.21","depth":1,"path":"rx-storage-lokijs.md","ref":"./rx-storage-lokijs.md","articles":[]},"previous":{"title":"PouchDB Adapters","level":"1.19","depth":1,"path":"adapters.md","ref":"./adapters.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-dexie.md","mtime":"2022-04-26T00:08:55.443Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-26T00:12:38.435Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage","level":"1.17","depth":1,"next":{"title":"RxStorage PouchDB","level":"1.18","depth":1,"path":"rx-storage-pouchdb.md","ref":"./rx-storage-pouchdb.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.16","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage.md","mtime":"2022-04-26T00:08:55.443Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-26T00:12:38.435Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

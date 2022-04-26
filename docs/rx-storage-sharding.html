@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxStorage Dexie.js · RxDB - Documentation</title>
+        <title>RxStorage Sharding · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-storage-lokijs.html" />
+    <link rel="next" href="replication-couchdb.html" />
     
     
-    <link rel="prev" href="adapters.html" />
+    <link rel="prev" href="rx-storage-worker.html" />
     
 
     </head>
@@ -1490,7 +1490,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.20" data-path="rx-storage-dexie.html">
+        <li class="chapter " data-level="1.20" data-path="rx-storage-dexie.html">
             
                 <a href="rx-storage-dexie.html">
             
@@ -1568,7 +1568,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="rx-storage-sharding.html">
+        <li class="chapter active" data-level="1.26" data-path="rx-storage-sharding.html">
             
                 <a href="rx-storage-sharding.html">
             
@@ -1903,7 +1903,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxStorage Dexie.js</a>
+        <a href="." >RxStorage Sharding</a>
     </h1>
 </div>
 
@@ -1918,61 +1918,72 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxstorage-dexiejs">RxStorage Dexie.js</h1>
-<p>Instead of using PouchDB as underlying storage engine, you can also use <a href="https://github.com/dexie/Dexie.js" target="_blank">Dexie.js</a>.
-Dexie.js is a minimal wrapper around IndexedDB that has a good performance.</p>
-<p>For the Dexie based <code>RxStorage</code>, we use the <a href="https://github.com/kofrasa/mingo" target="_blank">mingo</a> query handler. And a copy of the query planner from the <a href="https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules/pouchdb-find" target="_blank">PouchDB-find</a> plugin.</p>
-<p><strong>IMPORTANT:</strong> The Dexie.js <code>RxStorage</code> is in <strong>beta</strong> mode. It may get breaking changes in any minor new RxDB version. Use at your own risk.</p>
-<h2 id="pros">Pros</h2>
-<ul>
-<li>Smaller bundle size then with the PouchDB storage.</li>
-<li>Fast inital load even on big datasets.</li>
-<li>Faster write and read performance than with PouchDB because it has less overhead.</li>
-</ul>
-<h2 id="cons">Cons</h2>
-<ul>
-<li>Does not support CouchDB replication.</li>
-<li>It does not support attachments. (Make a pull request)</li>
-<li>Running many operations can be slow because the underlying <a href="slow-indexeddb.html">IndexedDB is slow</a>.</li>
-</ul>
-<h2 id="usage">Usage</h2>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
+                                <h1 id="sharding-rxstorage-beta">Sharding RxStorage (beta)</h1>
+<p>With the sharding plugin, you can improve the write and query times of <strong>some</strong> <code>RxStorage</code> implementations.
+For example on <a href="slow-indexeddb.html">slow IndexedDB</a>, a performance gain of <strong>30-50% on reads</strong>, and <strong>25% on writes</strong> can be achieved by using multiple IndexedDB Stores instead of putting all documents into the same store.</p>
+<p>The sharding plugin works as a wrapper around any other <code>RxStorage</code>. The sharding plugin will automatically create multiple shards per storage instance and it will merge and split read and write calls to it.</p>
+<p><strong>NOTICE:</strong> The sharding plugin is part of <a href="premium.html">RxDB premium</a>. It is not part of the default RxDB module.</p>
+<h2 id="using-the-sharding-plugin">Using the sharding plugin</h2>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    getRxStorageSharding
+} from <span class="hljs-string">&apos;rxdb-premium/plugins/sharding&apos;</span>;
+
 <span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
 
-<span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
+
+<span class="hljs-comment">/**
+ * First wrap the original RxStorage with the sharding RxStorage.
+ */</span>
+<span class="hljs-keyword">const</span> shardedRxStorage = getRxStorageSharding({
+
+    <span class="hljs-comment">/**
+     * Here we use the dexie.js RxStorage,
+     * it is also possible to use any other RxStorage instead.
+     */</span>
     storage: getRxStorageDexie()
 });
-</code></pre>
-<h2 id="overwritepolyfill-the-native-indexeddb">Overwrite/Polyfill the native IndexedDB</h2>
-<p>Node.js has no IndexedDB API. To still run the Dexie <code>RxStorage</code> in Node.js, for example to run unit tests, you have to polyfill it.
-You can do that by using the <a href="https://github.com/dumbmatter/fakeIndexedDB" target="_blank">fake-indexeddb</a> module and pass it to the <code>getRxStorageDexie()</code> function.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
 
-<span class="hljs-comment">//&gt; npm install fake-indexeddb --save</span>
-<span class="hljs-keyword">const</span> fakeIndexedDB = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;fake-indexeddb&apos;</span>);
-<span class="hljs-keyword">const</span> fakeIDBKeyRange = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;fake-indexeddb/lib/FDBKeyRange&apos;</span>);
 
-<span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
-    storage: getRxStorageDexie({
-        indexedDB: fakeIndexedDB,
-        IDBKeyRange: fakeIDBKeyRange
-    })
-});
-</code></pre>
-<h2 id="using-addons">Using addons</h2>
-<p>Dexie.js has its own plugin system with <a href="https://dexie.org/docs/DerivedWork#known-addons" target="_blank">many plugins</a> for encryption, replication or other use cases. With the Dexie.js <code>RxStorage</code> you can use the same plugins by passing them to the <code>getRxStorageDexie()</code> function.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
-    storage: getRxStorageDexie({
-        addons: [ <span class="hljs-comment">/* Your Dexie.js plugins */</span> ]
-    })
+<span class="hljs-comment">/**
+ * Add the sharding options to your schema.
+ * Changing these options will require a data migration.
+ */</span>
+<span class="hljs-keyword">const</span> mySchema = {
+    <span class="hljs-comment">/* ... */</span>
+    sharding: {
+        <span class="hljs-comment">/**
+         * Amount of shards per RxStorage instance.
+         * Depending on your data size and query patterns, the optimal shard amount may differ.
+         * Do a performance test to optimize that value.
+         * 10 Shards is a good value to start with.
+         * 
+         * IMPORTANT: Changing the value of shards is not possible on a already existing database state,
+         * you will loose access to  your data.
+         */</span>
+        shards: <span class="hljs-number">10</span>,
+        <span class="hljs-comment">/**
+         * Sharding mode,
+         * you can either shard by collection or by database.
+         * For most cases you should use &apos;collection&apos; which will shard on the collection level.
+         * For example with the IndexedDB RxStorage, it will then create multiple stores per IndexedDB database
+         * and not multiple IndexedDB databases, which would be slower.
+         */</span>
+        mode: <span class="hljs-string">&apos;collection&apos;</span>
+    }
+    <span class="hljs-comment">/* ... */</span>
+}
+
+
+<span class="hljs-comment">/**
+ * Create the RxDatabase with the wrapped RxStorage. 
+ */</span>
+<span class="hljs-keyword">const</span> database = await createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: shardedRxStorage
 });
 </code></pre>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="rx-storage-lokijs.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="replication-couchdb.html">here</a></p>
 
                                 
                                 </section>
@@ -2000,12 +2011,12 @@ You can do that by using the <a href="https://github.com/dumbmatter/fakeIndexedD
 
             
                 
-                <a href="adapters.html" class="navigation navigation-prev " aria-label="Previous page: PouchDB Adapters">
+                <a href="rx-storage-worker.html" class="navigation navigation-prev " aria-label="Previous page: RxStorage Worker">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="rx-storage-lokijs.html" class="navigation navigation-next " aria-label="Next page: RxStorage LokiJS">
+                <a href="replication-couchdb.html" class="navigation navigation-next " aria-label="Next page: Replication CouchDB">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2016,7 +2027,7 @@ You can do that by using the <a href="https://github.com/dumbmatter/fakeIndexedD
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxStorage Dexie.js","level":"1.20","depth":1,"next":{"title":"RxStorage LokiJS","level":"1.21","depth":1,"path":"rx-storage-lokijs.md","ref":"./rx-storage-lokijs.md","articles":[]},"previous":{"title":"PouchDB Adapters","level":"1.19","depth":1,"path":"adapters.md","ref":"./adapters.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-dexie.md","mtime":"2022-04-26T00:08:55.443Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-26T00:12:38.435Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage Sharding","level":"1.26","depth":1,"next":{"title":"Replication CouchDB","level":"1.27","depth":1,"path":"replication-couchdb.md","ref":"./replication-couchdb.md","articles":[]},"previous":{"title":"RxStorage Worker","level":"1.25","depth":1,"path":"rx-storage-worker.md","ref":"./rx-storage-worker.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-sharding.md","mtime":"2022-04-26T00:08:55.443Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-26T00:12:38.435Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

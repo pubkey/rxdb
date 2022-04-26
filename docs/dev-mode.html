@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxStorage Dexie.js · RxDB - Documentation</title>
+        <title>Dev Mode · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-storage-lokijs.html" />
+    <link rel="next" href="rx-database.html" />
     
     
-    <link rel="prev" href="adapters.html" />
+    <link rel="prev" href="install.html" />
     
 
     </head>
@@ -195,7 +195,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4" data-path="dev-mode.html">
+        <li class="chapter active" data-level="1.4" data-path="dev-mode.html">
             
                 <a href="dev-mode.html">
             
@@ -1490,7 +1490,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.20" data-path="rx-storage-dexie.html">
+        <li class="chapter " data-level="1.20" data-path="rx-storage-dexie.html">
             
                 <a href="rx-storage-dexie.html">
             
@@ -1903,7 +1903,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxStorage Dexie.js</a>
+        <a href="." >Dev Mode</a>
     </h1>
 </div>
 
@@ -1918,61 +1918,47 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxstorage-dexiejs">RxStorage Dexie.js</h1>
-<p>Instead of using PouchDB as underlying storage engine, you can also use <a href="https://github.com/dexie/Dexie.js" target="_blank">Dexie.js</a>.
-Dexie.js is a minimal wrapper around IndexedDB that has a good performance.</p>
-<p>For the Dexie based <code>RxStorage</code>, we use the <a href="https://github.com/kofrasa/mingo" target="_blank">mingo</a> query handler. And a copy of the query planner from the <a href="https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules/pouchdb-find" target="_blank">PouchDB-find</a> plugin.</p>
-<p><strong>IMPORTANT:</strong> The Dexie.js <code>RxStorage</code> is in <strong>beta</strong> mode. It may get breaking changes in any minor new RxDB version. Use at your own risk.</p>
-<h2 id="pros">Pros</h2>
+                                <h1 id="dev-mode">Dev Mode</h1>
+<p>The dev-mode plugin adds many checks and validations to RxDB.
+This ensures that you use the RxDB API properly and so the dev-mode plugin should always be used when
+using RxDB in developement mode.</p>
 <ul>
-<li>Smaller bundle size then with the PouchDB storage.</li>
-<li>Fast inital load even on big datasets.</li>
-<li>Faster write and read performance than with PouchDB because it has less overhead.</li>
+<li>Adds validation check for schemas, queries, ORM methods and document fields.</li>
+<li>Adds readable error messages.</li>
+<li>Ensures that <code>readonly</code> JavaScript objects are not accidentially mutated.</li>
 </ul>
-<h2 id="cons">Cons</h2>
-<ul>
-<li>Does not support CouchDB replication.</li>
-<li>It does not support attachments. (Make a pull request)</li>
-<li>Running many operations can be slow because the underlying <a href="slow-indexeddb.html">IndexedDB is slow</a>.</li>
-</ul>
-<h2 id="usage">Usage</h2>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
-
-<span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
-    storage: getRxStorageDexie()
-});
+<p><strong>IMPORTANT:</strong>: The dev-mode plugin will increase your build size and decrease the performance. It must <strong>always</strong> be used in development. You should <strong>never</strong> use it in production.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { addRxPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> { RxDBDevModePlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/dev-mode&apos;</span>;
+addRxPlugin(RxDBDevModePlugin);
 </code></pre>
-<h2 id="overwritepolyfill-the-native-indexeddb">Overwrite/Polyfill the native IndexedDB</h2>
-<p>Node.js has no IndexedDB API. To still run the Dexie <code>RxStorage</code> in Node.js, for example to run unit tests, you have to polyfill it.
-You can do that by using the <a href="https://github.com/dumbmatter/fakeIndexedDB" target="_blank">fake-indexeddb</a> module and pass it to the <code>getRxStorageDexie()</code> function.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
+<h2 id="usage-with-nodejs">Usage with Node.js</h2>
+<pre><code class="lang-ts">async <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createDb</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">if</span> (process.env.NODE_ENV !== <span class="hljs-string">&quot;production&quot;</span>) {
+        await <span class="hljs-keyword">import</span>(<span class="hljs-string">&apos;rxdb/plugins/dev-mode&apos;</span>).then(
+            <span class="hljs-keyword">module</span> =&gt; addRxPlugin(<span class="hljs-keyword">module</span> as any)
+        );
+    }
 
-<span class="hljs-comment">//&gt; npm install fake-indexeddb --save</span>
-<span class="hljs-keyword">const</span> fakeIndexedDB = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;fake-indexeddb&apos;</span>);
-<span class="hljs-keyword">const</span> fakeIDBKeyRange = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;fake-indexeddb/lib/FDBKeyRange&apos;</span>);
-
-<span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
-    storage: getRxStorageDexie({
-        indexedDB: fakeIndexedDB,
-        IDBKeyRange: fakeIDBKeyRange
-    })
-});
+    const db = createRxDatabase( /* ... */ );
+}
 </code></pre>
-<h2 id="using-addons">Using addons</h2>
-<p>Dexie.js has its own plugin system with <a href="https://dexie.org/docs/DerivedWork#known-addons" target="_blank">many plugins</a> for encryption, replication or other use cases. With the Dexie.js <code>RxStorage</code> you can use the same plugins by passing them to the <code>getRxStorageDexie()</code> function.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
-    storage: getRxStorageDexie({
-        addons: [ <span class="hljs-comment">/* Your Dexie.js plugins */</span> ]
-    })
-});
+<h2 id="usage-with-angular">Usage with Angular</h2>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { isDevMode } from <span class="hljs-string">&apos;@angular/core&apos;</span>;
+
+async <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createDb</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">if</span> (isDevMode()){
+        await <span class="hljs-keyword">import</span>(<span class="hljs-string">&apos;rxdb/plugins/dev-mode&apos;</span>).then(
+            <span class="hljs-keyword">module</span> =&gt; addRxPlugin(<span class="hljs-keyword">module</span> as any)
+        );
+    }
+
+    const db = createRxDatabase( /* ... */ );
+    // ...
+}
 </code></pre>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="rx-storage-lokijs.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="rx-database.html">here</a></p>
 
                                 
                                 </section>
@@ -2000,12 +1986,12 @@ You can do that by using the <a href="https://github.com/dumbmatter/fakeIndexedD
 
             
                 
-                <a href="adapters.html" class="navigation navigation-prev " aria-label="Previous page: PouchDB Adapters">
+                <a href="install.html#import" class="navigation navigation-prev " aria-label="Previous page: import">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="rx-storage-lokijs.html" class="navigation navigation-next " aria-label="Next page: RxStorage LokiJS">
+                <a href="rx-database.html" class="navigation navigation-next " aria-label="Next page: RxDatabase">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2016,7 +2002,7 @@ You can do that by using the <a href="https://github.com/dumbmatter/fakeIndexedD
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxStorage Dexie.js","level":"1.20","depth":1,"next":{"title":"RxStorage LokiJS","level":"1.21","depth":1,"path":"rx-storage-lokijs.md","ref":"./rx-storage-lokijs.md","articles":[]},"previous":{"title":"PouchDB Adapters","level":"1.19","depth":1,"path":"adapters.md","ref":"./adapters.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-dexie.md","mtime":"2022-04-26T00:08:55.443Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-26T00:12:38.435Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Dev Mode","level":"1.4","depth":1,"next":{"title":"RxDatabase","level":"1.5","depth":1,"path":"rx-database.md","ref":"./rx-database.md","articles":[{"title":"Creation","level":"1.5.1","depth":2,"anchor":"#creation","path":"rx-database.md","ref":"./rx-database.md#creation","articles":[{"title":"name","level":"1.5.1.1","depth":3,"anchor":"#name","path":"rx-database.md","ref":"./rx-database.md#name","articles":[]},{"title":"adapter","level":"1.5.1.2","depth":3,"anchor":"#adapter","path":"rx-database.md","ref":"./rx-database.md#adapter","articles":[]},{"title":"password","level":"1.5.1.3","depth":3,"anchor":"#password","path":"rx-database.md","ref":"./rx-database.md#password","articles":[]},{"title":"multiInstance","level":"1.5.1.4","depth":3,"anchor":"#multiinstance","path":"rx-database.md","ref":"./rx-database.md#multiinstance","articles":[]},{"title":"eventReduce","level":"1.5.1.5","depth":3,"anchor":"#eventreduce","path":"rx-database.md","ref":"./rx-database.md#eventreduce","articles":[]},{"title":"ignoreDuplicate","level":"1.5.1.6","depth":3,"anchor":"#ignoreduplicate","path":"rx-database.md","ref":"./rx-database.md#ignoreduplicate","articles":[]},{"title":"pouchSettings","level":"1.5.1.7","depth":3,"anchor":"#pouchSettings","path":"rx-database.md","ref":"./rx-database.md#pouchSettings","articles":[]}]},{"title":"Functions","level":"1.5.2","depth":2,"anchor":"#functions","path":"rx-database.md","ref":"./rx-database.md#functions","articles":[{"title":"$","level":"1.5.2.1","depth":3,"anchor":"#observe-with-","path":"rx-database.md","ref":"./rx-database.md#observe-with-","articles":[]},{"title":"exportJSON()","level":"1.5.2.2","depth":3,"anchor":"#dump","path":"rx-database.md","ref":"./rx-database.md#dump","articles":[]},{"title":"importJSON()","level":"1.5.2.3","depth":3,"anchor":"#importdump","path":"rx-database.md","ref":"./rx-database.md#importdump","articles":[]},{"title":"server()","level":"1.5.2.4","depth":3,"anchor":"#server","path":"rx-database.md","ref":"./rx-database.md#server","articles":[]},{"title":"waitForLeadership()","level":"1.5.2.5","depth":3,"anchor":"#waitforleadership","path":"rx-database.md","ref":"./rx-database.md#waitforleadership","articles":[]},{"title":"requestIdlePromise()","level":"1.5.2.6","depth":3,"anchor":"#requestidlepromise","path":"rx-database.md","ref":"./rx-database.md#requestidlepromise","articles":[]},{"title":"destroy()","level":"1.5.2.7","depth":3,"anchor":"#destroy","path":"rx-database.md","ref":"./rx-database.md#destroy","articles":[]},{"title":"remove()","level":"1.5.2.8","depth":3,"anchor":"#remove","path":"rx-database.md","ref":"./rx-database.md#remove","articles":[]},{"title":"checkAdapter()","level":"1.5.2.9","depth":3,"anchor":"#checkadapter","path":"rx-database.md","ref":"./rx-database.md#checkadapter","articles":[]},{"title":"isRxDatabase()","level":"1.5.2.10","depth":3,"anchor":"#isrxdatabase","path":"rx-database.md","ref":"./rx-database.md#isrxdatabase","articles":[]}]}]},"previous":{"title":"import","level":"1.3.2","depth":2,"anchor":"#import","path":"install.md","ref":"./install.md#import","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"dev-mode.md","mtime":"2022-04-26T00:08:55.395Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-26T00:12:38.435Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
