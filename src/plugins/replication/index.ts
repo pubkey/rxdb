@@ -207,7 +207,7 @@ export class RxReplicationStateBase<RxDocType> {
                 }
                 this.runQueueCount--;
             });
-        if (this.live && this.pull && this.liveInterval > 0) {
+        if (this.live && this.pull && this.liveInterval > 0 && this.pendingRetries < 1) {
             this.runningPromise.then(() => this.continuePolling());
         }
         return this.runningPromise;
