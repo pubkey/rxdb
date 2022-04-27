@@ -130,4 +130,54 @@ describe('bug-report.test.js', () => {
         db.destroy();
         dbInOtherTab.destroy();
     });
+
+    it('use findOne().$ to subscribe a document, the reference should equal to document which created by newDocument', async () => {
+        // generate a random database-name
+        const name = randomCouchString(10);
+
+        // create a schema
+        const mySchema = {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 100,
+                },
+                name: {
+                    type: 'string'
+                }
+            },
+        };
+
+        // create a database
+        const db = await createRxDatabase({
+            name,
+            /**
+             * By calling config.storage.getStorage(),
+             * we can ensure that all variations of RxStorage are tested in the CI.
+             */
+            storage: config.storage.getStorage(),
+            eventReduce: true,
+            ignoreDuplicate: true
+        });
+        // create a collection
+        await db.addCollections({
+            mycollection: {
+                schema: mySchema
+            }
+        });
+
+        let docOuter;
+        db.mycollection.findOne('1').$.subscribe((doc) => (docOuter = doc));
+
+        const docNew = db.mycollection.newDocument({ id: '1', name: 'name-1' });
+
+        await docNew.save();
+
+        console.log('docOuter: ', docOuter)
+
+        assert.strictEqual(docOuter === docNew, true)
+    })
 });
