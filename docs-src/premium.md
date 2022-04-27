@@ -15,9 +15,10 @@ To make RxDB a sustainable Project, some plugins are not part of the RxDB open s
 
 ### As a company
 
-If you use RxDB in your company project, you can purchase access by contacting me via [Chat](https://gitter.im/pubkey) or [Twitter](https://twitter.com/rxdbjs)
+If you use RxDB in your company project, you can purchase access by filling out [this form](https://forms.gle/SVjUuPdVtrSM4ZGW7).
 
 ### For your side project
 
 If you are a **single developer** and you use RxDB in your **side project**, you can get livetime access to the premium package by solving one Task of the [Premium Tasks](https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md) list.
-Notice: It is not possible to get premium access via github sponsorships.
+
+**Notice:** It is not possible to get premium access via github sponsorships.
