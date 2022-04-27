@@ -2,7 +2,7 @@
  * this is a template for a test.
  * If you found a bug, edit this test to reproduce it
  * and than make a pull-request with that failing test.
- * The maintainer will later move your test to the correct possition in the test-suite.
+ * The maintainer will later move your test to the correct position in the test-suite.
  *
  * To run this test do:
  * - 'npm run test:node' so it runs in nodejs
@@ -18,7 +18,7 @@ import {
 } from '../../';
 
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async () => {
+    it.only('should fail because it reproduces the bug', async () => {
 
         /**
          * If your test should only run in nodejs or only run in the browser,
@@ -45,17 +45,12 @@ describe('bug-report.test.js', () => {
                     type: 'string',
                     maxLength: 100
                 },
-                firstName: {
-                    type: 'string'
+                names: {
+                    type: 'array',
+                    items:{
+                        type:'string'
+                    }
                 },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
             }
         };
 
@@ -83,9 +78,7 @@ describe('bug-report.test.js', () => {
         // insert a document
         await collections.mycollection.insert({
             passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
+            names: ['Bob', 'Kelso']
         });
 
         /**
@@ -108,15 +101,15 @@ describe('bug-report.test.js', () => {
         // find the document in the other tab
         const myDocument = await collectionInOtherTab.mycollection
             .findOne()
-            .where('firstName')
-            .eq('Bob')
+            .where('passportId')
+            .eq('foobar')
             .exec();
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.strictEqual(myDocument.age, 56);
+        assert.deepStrictEqual(myDocument.names, ['Bob', 'Kelso']);
 
         // you can also wait for events
         const emitted = [];
