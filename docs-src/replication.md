@@ -54,6 +54,7 @@ The deleted field must always be exactly `_deleted`. If your remote endpoint use
 ## The replication cycle
 
 The replication works in cycles. A cycle is triggered when:
+  - When calling `replicateRxCollection()` (if `autoStart` is `true` as by default)
   - Automatically on writes to non-[local](./rx-local-document.md) documents.
   - When `liveInterval` is reached from the time of last `run()` cycle.
   - The `run()` method is called manually.
@@ -124,6 +125,16 @@ const replicationState = await replicateRxCollection({
      * (optional), default is 5 seconds.
      */
     retryTime: number,
+    /**
+     * Trigger or not a first replication
+     * if `false`, the first replication should be trigged by : 
+     *  - `replicationState.run()`
+     *  - a write to non-[local](./rx-local-document.md) document
+     * Used with `liveInterval` greater than `0`, the polling for remote changes starts 
+     * after the first triggered replication. 
+     * (optional), only needed when live=true, default is true.
+     */
+    autoStart: true,
     /**
      * Optional,
      * only needed when you want to replicate remote changes to the local state.

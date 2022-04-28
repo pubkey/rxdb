@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import {
+import AsyncTestUtil, {
     clone,
     wait,
     waitUntil
@@ -547,32 +547,71 @@ describe('replication.test.js', () => {
         });
         it('should push data even if liveInterval is set to 0', async () => {
             const {localCollection, remoteCollection} = await getTestCollections({local: 0, remote: 0});
-            const replicationState = replicateRxCollection({
+            let callProof = null;
+            replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: true,
                 liveInterval: 0,
+                autoStart: false,
                 push: {
                     handler() {
-                        throw new Error();
+                        callProof = 'yeah';
+                        return Promise.resolve();
                     }
-                }
+                },
             });
-            let error = null;
-            replicationState.error$.subscribe((err) => {
-                error = err;
-            });
-            await replicationState.run();
-            assert.strictEqual(error, null, 'Throwing pull handler should be called');
+            // ensure proof is still null once replicateRxCollection()
+            assert.strictEqual(callProof, null, 'replicateRxCollection should not trigger a push on init.');
 
+            // insert a new doc to trigger a push
+            await localCollection.insert(schemaObjects.humanWithTimestamp());
+
+            // wait for storage propagation
+            await AsyncTestUtil.wait(100);
+
+            assert.strictEqual(callProof, 'yeah', 'Throwing pull handler should be called');
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
     });
     config.parallel('other', () => {
+        describe('autoStart', () => {
+            it('should run first replication by default', async () => {
+                const replicationState = replicateRxCollection({
+                    collection: {
+                        database: {},
+                        onDestroy: {then(){}}
+                    } as RxCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    autoStart: true,
+                    waitForLeadership: false
+                });
+                await replicationState.awaitInitialReplication();
+                assert.strictEqual(replicationState.runCount,1);
+            });
+            it('should not run first replication when autoStart is set to false', async () => {
+                const replicationState = replicateRxCollection({
+                    collection: {
+                        database: {},
+                        onDestroy: {then(){}}
+                    } as RxCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    autoStart: false,
+                    waitForLeadership: false
+                });
+
+                await wait(100);
+
+                // by definition awaitInitialReplication would be infinite
+                assert.strictEqual(replicationState.runCount,0);
+            });
+        });
         describe('.awaitInSync()', () => {
             it('should resolve after some time', async () => {
-                const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+                const {localCollection, remoteCollection} = await getTestCollections({local: 5, remote: 5});
 
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
