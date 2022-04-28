@@ -602,6 +602,9 @@ describe('replication.test.js', () => {
                     autoStart: false,
                     waitForLeadership: false
                 });
+
+                await wait(100);
+
                 // by definition awaitInitialReplication would be infinite
                 assert.strictEqual(replicationState.runCount,0);
             });
