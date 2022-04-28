@@ -1965,6 +1965,7 @@
 <h2 id="the-replication-cycle">The replication cycle</h2>
 <p>The replication works in cycles. A cycle is triggered when:</p>
 <ul>
+<li>When calling <code>replicateRxCollection()</code> (if <code>autoStart</code> is <code>true</code> as by default)</li>
 <li>Automatically on writes to non-<a href="rx-local-document.html">local</a> documents.</li>
 <li>When <code>liveInterval</code> is reached from the time of last <code>run()</code> cycle.</li>
 <li>The <code>run()</code> method is called manually.</li>
@@ -2026,6 +2027,16 @@ RxDB relies solely on the remote instance to detect and resolve conflicts. Each 
      * (optional), default is 5 seconds.
      */</span>
     retryTime: <span class="hljs-built_in">number</span>,
+    <span class="hljs-comment">/**
+     * Trigger or not a first replication
+     * if `false`, the first replication should be trigged by : 
+     *  - `replicationState.run()`
+     *  - a write to non-[local](./rx-local-document.md) document
+     * Used with `liveInterval` greater than `0`, the polling for remote changes starts 
+     * after the first triggered replication. 
+     * (optional), only needed when live=true, default is true.
+     */</span>
+    autoStart: <span class="hljs-literal">true</span>,
     <span class="hljs-comment">/**
      * Optional,
      * only needed when you want to replicate remote changes to the local state.
@@ -2186,7 +2197,7 @@ myRxReplicationState.active$.subscribe(bool =&gt; <span class="hljs-built_in">co
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Replication Primitives","level":"1.29","depth":1,"next":{"title":"Cleanup","level":"1.30","depth":1,"path":"cleanup.md","ref":"./cleanup.md","articles":[]},"previous":{"title":"Replication GraphQL","level":"1.28","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2022-04-27T21:28:03.809Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-27T21:32:55.803Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication Primitives","level":"1.29","depth":1,"next":{"title":"Cleanup","level":"1.30","depth":1,"path":"cleanup.md","ref":"./cleanup.md","articles":[]},"previous":{"title":"Replication GraphQL","level":"1.28","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2022-04-28T11:48:05.747Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-28T11:49:30.389Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

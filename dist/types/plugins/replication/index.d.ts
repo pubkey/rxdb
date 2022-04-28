@@ -12,8 +12,8 @@ export declare class RxReplicationStateBase<RxDocType> {
     readonly pull?: ReplicationPullOptions<RxDocType> | undefined;
     readonly push?: ReplicationPushOptions<RxDocType> | undefined;
     readonly live?: boolean | undefined;
-    liveInterval?: number | undefined;
     retryTime?: number | undefined;
+    autoStart?: boolean | undefined;
     readonly subs: Subscription[];
     initialReplicationComplete$: Observable<true>;
     readonly subjects: {
@@ -41,17 +41,19 @@ export declare class RxReplicationStateBase<RxDocType> {
      * Decrease when the retry-cycle started to run.
      */
     pendingRetries: number;
+    liveInterval: number;
     constructor(
     /**
      * hash of the identifier, used to flag revisions
      * and to identify which documents state came from the remote.
      */
-    replicationIdentifierHash: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, liveInterval?: number | undefined, retryTime?: number | undefined);
+    replicationIdentifierHash: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, liveInterval?: number, retryTime?: number | undefined, autoStart?: boolean | undefined);
+    continuePolling(): Promise<void>;
     isStopped(): boolean;
     awaitInitialReplication(): Promise<true>;
     /**
      * Returns a promise that resolves when:
-     * - All local data is repliacted with the remote
+     * - All local data is replicated with the remote
      * - No replication cycle is running or in retry-state
      */
     awaitInSync(): Promise<true>;
@@ -79,7 +81,7 @@ export declare class RxReplicationStateBase<RxDocType> {
      */
     runPush(): Promise<boolean>;
 }
-export declare function replicateRxCollection<RxDocType>({ replicationIdentifier, collection, pull, push, live, liveInterval, retryTime, waitForLeadership }: ReplicationOptions<RxDocType>): RxReplicationState<RxDocType>;
+export declare function replicateRxCollection<RxDocType>({ replicationIdentifier, collection, pull, push, live, liveInterval, retryTime, waitForLeadership, autoStart, }: ReplicationOptions<RxDocType>): RxReplicationState<RxDocType>;
 export * from './replication-checkpoint';
 export * from './revision-flag';
 export * from './rx-replication-error';

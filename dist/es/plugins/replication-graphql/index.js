@@ -80,7 +80,9 @@ export function syncGraphQL(_ref) {
       _ref$liveInterval = _ref.liveInterval,
       liveInterval = _ref$liveInterval === void 0 ? 1000 * 10 : _ref$liveInterval,
       _ref$retryTime = _ref.retryTime,
-      retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime;
+      retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
+      _ref$autoStart = _ref.autoStart,
+      autoStart = _ref$autoStart === void 0 ? true : _ref$autoStart;
   var collection = this; // fill in defaults for pull & push
 
   var pullModifier = pull && pull.modifier ? pull.modifier : DEFAULT_MODIFIER;
@@ -238,7 +240,8 @@ export function syncGraphQL(_ref) {
     waitForLeadership: waitForLeadership,
     live: live,
     liveInterval: liveInterval,
-    retryTime: retryTime
+    retryTime: retryTime,
+    autoStart: autoStart
   });
   var graphqlReplicationState = new RxGraphQLReplicationState(replicationState, collection, url, mutateableClientState);
   return graphqlReplicationState;

@@ -185,49 +185,49 @@ function dexieReplaceIfStartsWithPipeRevert(str) {
 
 
 function fromStorageToDexie(documentData) {
-  if (!documentData) {
+  if (!documentData || typeof documentData === 'string' || typeof documentData === 'number' || typeof documentData === 'boolean') {
     return documentData;
-  }
-
-  if (Array.isArray(documentData)) {
+  } else if (Array.isArray(documentData)) {
     return documentData.map(function (row) {
       return fromStorageToDexie(row);
     });
+  } else if (typeof documentData === 'object') {
+    var ret = {};
+    Object.entries(documentData).forEach(function (_ref) {
+      var key = _ref[0],
+          value = _ref[1];
+
+      if (typeof value === 'object') {
+        value = fromStorageToDexie(value);
+      }
+
+      ret[dexieReplaceIfStartsWithPipe(key)] = value;
+    });
+    return ret;
   }
-
-  var ret = {};
-  Object.entries(documentData).forEach(function (_ref) {
-    var key = _ref[0],
-        value = _ref[1];
-
-    if (typeof value === 'object') {
-      value = fromStorageToDexie(value);
-    }
-
-    ret[dexieReplaceIfStartsWithPipe(key)] = value;
-  });
-  return ret;
 }
 
 function fromDexieToStorage(documentData) {
-  if (Array.isArray(documentData)) {
+  if (!documentData || typeof documentData === 'string' || typeof documentData === 'number' || typeof documentData === 'boolean') {
+    return documentData;
+  } else if (Array.isArray(documentData)) {
     return documentData.map(function (row) {
       return fromDexieToStorage(row);
     });
+  } else if (typeof documentData === 'object') {
+    var ret = {};
+    Object.entries(documentData).forEach(function (_ref2) {
+      var key = _ref2[0],
+          value = _ref2[1];
+
+      if (typeof value === 'object' || Array.isArray(documentData)) {
+        value = fromDexieToStorage(value);
+      }
+
+      ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
+    });
+    return ret;
   }
-
-  var ret = {};
-  Object.entries(documentData).forEach(function (_ref2) {
-    var key = _ref2[0],
-        value = _ref2[1];
-
-    if (typeof value === 'object') {
-      value = fromStorageToDexie(value);
-    }
-
-    ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
-  });
-  return ret;
 }
 /**
  * Creates a string that can be used to create the dexie store.

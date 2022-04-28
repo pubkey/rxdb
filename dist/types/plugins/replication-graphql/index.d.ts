@@ -41,7 +41,8 @@ export declare class RxGraphQLReplicationState<RxDocType> {
     }): void;
 }
 export declare function syncGraphQL<RxDocType>(this: RxCollection, { url, headers, waitForLeadership, pull, push, deletedFlag, live, liveInterval, // in ms
-retryTime, }: SyncOptionsGraphQL<RxDocType>): RxGraphQLReplicationState<RxDocType>;
+retryTime, // in ms
+autoStart, }: SyncOptionsGraphQL<RxDocType>): RxGraphQLReplicationState<RxDocType>;
 export * from './helper';
 export * from './graphql-schema-from-rx-schema';
 export * from './query-builder-from-rx-schema';
