@@ -157,36 +157,37 @@ export function dexieReplaceIfStartsWithPipeRevert(str: string): string {
  * @recursive
  */
 export function fromStorageToDexie(documentData: RxDocumentData<any>): any {
-    if (!documentData) {
+    if (!documentData || typeof documentData === 'string' || typeof documentData === 'number' || typeof documentData === 'boolean') {
         return documentData;
-    }
-    if (Array.isArray(documentData)) {
+    } else if (Array.isArray(documentData)) {
         return documentData.map(row => fromStorageToDexie(row));
+    } else if (typeof documentData === 'object') {
+        const ret: any = {};
+        Object.entries(documentData).forEach(([key, value]) => {
+            if (typeof value === 'object') {
+                value = fromStorageToDexie(value);
+            }
+            ret[dexieReplaceIfStartsWithPipe(key)] = value;
+        });
+        return ret;
     }
-
-    const ret: any = {};
-    Object.entries(documentData).forEach(([key, value]) => {
-        if (typeof value === 'object') {
-            value = fromStorageToDexie(value);
-        }
-        ret[dexieReplaceIfStartsWithPipe(key)] = value;
-    });
-    return ret;
 }
 
 export function fromDexieToStorage(documentData: any): RxDocumentData<any> {
-    if (Array.isArray(documentData)) {
+    if (!documentData || typeof documentData === 'string' || typeof documentData === 'number' || typeof documentData === 'boolean') {
+        return documentData;
+    } else if (Array.isArray(documentData)) {
         return documentData.map(row => fromDexieToStorage(row));
+    } else if (typeof documentData === 'object') {
+        const ret: any = {};
+        Object.entries(documentData).forEach(([key, value]) => {
+            if (typeof value === 'object' || Array.isArray(documentData)) {
+                value = fromDexieToStorage(value);
+            }
+            ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
+        });
+        return ret;
     }
-
-    const ret: any = {};
-    Object.entries(documentData).forEach(([key, value]) => {
-        if (typeof value === 'object') {
-            value = fromStorageToDexie(value);
-        }
-        ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
-    });
-    return ret;
 }
 
 
