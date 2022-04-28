@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - Added `autoStart` option to the replication plugins [#3775](https://github.com/pubkey/rxdb/pull/3775) Thanks [@mmouterde](https://github.com/mmouterde)
+- Fix [#778](https://github.com/pubkey/rxdb/pull/3778) Storing string array was broken in the dexie storage. Thanks [@mmouterde](https://github.com/mmouterde)
 
 
 <!-- ADD new changes here! -->
