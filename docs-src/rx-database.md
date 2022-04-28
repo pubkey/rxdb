@@ -31,15 +31,12 @@ Depending on the storage or adapter this can also be used to define the filesyst
 
 ### storage
 
-RxDB works on top of an implementation of the `RxStorage` interface. This interface is an abstraction that allows you to use different underlaying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
+RxDB works on top of an implementation of the [RxStorage](./rx-storage.md) interface. This interface is an abstraction that allows you to use different underlaying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
 
-At the moment, there are implementations for the PouchDB based storage and for the LokiJS based storage and a Dexie.js based storage.
-These storages themself work on different adapter that determine where to store the data. For example you can use the PouchDB storage with an indexeddb adapter in the browser. Or use the LokiJS storage with the filesystem adapter in Node.js.
+There are many `RxStorage` implementations that can be used depending on the JavaScript environment and performance requirements.
+For example you can use the PouchDB storage with an IndexedDB adapter in the browser. Or use the LokiJS storage with the filesystem adapter in Node.js.
 
-- [List of PouchDB adapters](./adapters.md)
-- [List of LokiJS adapters](https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md)
-- [Dexie.js RxStorage](./rx-storage-dexie.md)
-
+- [List of RxStorage implementations](./rx-storage.md)
 
 ```javascript
 
