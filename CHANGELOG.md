@@ -3,6 +3,9 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- Added `autoStart` option to the replication plugins [#3775](https://github.com/pubkey/rxdb/pull/3775) Thanks [@mmouterde](https://github.com/mmouterde)
+
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
