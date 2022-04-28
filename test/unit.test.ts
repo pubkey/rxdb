@@ -51,3 +51,4 @@ import './unit/cross-instance.test.js';
 import './unit/server.test.js';
 import './unit/plugin.test.js';
 import './unit/last.test.js';
+import './unit/dexie-helper.test.js'
