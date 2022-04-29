@@ -160,6 +160,7 @@
     "@babel/plugin-external-helpers": "7.16.7",
     "@babel/plugin-proposal-class-properties": "7.16.7",
     "@babel/plugin-proposal-object-rest-spread": "7.17.3",
+    "@babel/plugin-transform-literals": "7.16.7",
     "@babel/plugin-transform-member-expression-literals": "7.16.7",
     "@babel/plugin-transform-modules-commonjs": "7.17.9",
     "@babel/plugin-transform-property-literals": "7.16.7",

@@ -26,6 +26,18 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-core-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-core-x4-
+
       - name: install npm dependencies
         run: npm install
       
@@ -50,6 +62,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-storage-pouchdb-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-storage-pouchdb-x4-
 
       - name: install npm dependencies
         run: npm install
@@ -198,6 +222,18 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-storage-dexie-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-storage-dexie-x4-
+
       - name: install npm dependencies
         run: npm install
       
@@ -273,6 +309,19 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-test-builds-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-test-builds-x4-
+
       - name: prepare core
         run: |
           npm install
@@ -293,6 +342,19 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-test-code-style-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-test-code-style-x4-
+
       - name: prepare core
         run: |
           npm install
