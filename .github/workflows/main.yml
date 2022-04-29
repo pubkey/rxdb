@@ -42,8 +42,7 @@ jobs:
         run: npm run test:performance:lokijs
 
 
-  # run these in a separate job to speed up the CI
-  node:
+  storage-pouchdb:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -70,9 +69,14 @@ jobs:
           npm install
           npm run test
 
-  # run the node tests for the LokiJS RxStorage in a different
-  # task to run in parallel.
-  node-lokijs:
+      - name: npm run test:browser:ci:pouchdb
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:browser:ci:pouchdb
+
+
+  # run the node tests for the LokiJS RxStorage
+  storage-lokijs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -110,7 +114,7 @@ jobs:
         with:
           run: npm run test:browser:ci:lokijs
 
-  node-memory:
+  storage-memory:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -142,6 +146,11 @@ jobs:
 
       - name: npm run test:fast:memory
         run: npm run test:fast:memory
+
+      - name: npm run test:browser:ci:memory
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:browser:ci:memory
 
   # run the node tests for the LokiJS RxStorage in a different
   # task to run in parallel.
@@ -180,7 +189,7 @@ jobs:
 
   # run the node tests for the Dexie.js RxStorage in a different
   # task to run in parallel.
-  node-dexie:
+  storage-dexie:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -200,6 +209,11 @@ jobs:
 
       - name: npm run test:fast:dexie
         run: npm run test:fast:dexie
+
+      - name: npm run test:browser:ci:dexie
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:browser:ci:dexie
 
   angular:
     runs-on: ubuntu-18.04
@@ -497,7 +511,7 @@ jobs:
           run: npm run test:dexie
 
 
-  test-browser-couch:
+  test-couchdb-integration:
     # The type of runner that the job will run on
     runs-on: ubuntu-18.04
 
@@ -530,12 +544,6 @@ jobs:
         run: |
           npm install
           npm run build
-
-      - name: npm run test:browser:ci:pouchdb
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          working-directory: ./ #optional
-          run: npm run test:browser:ci:pouchdb
         
       - name: npm run test:couchdb
         run: npm run test:couchdb

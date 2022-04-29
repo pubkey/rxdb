@@ -8,9 +8,6 @@ async function thingsWeNeed() {
 }
 thingsWeNeed();
 
-console.log('Karma env variables:');
-console.dir(process.env);
-
 // karma config
 const configuration = {
     basePath: '',
