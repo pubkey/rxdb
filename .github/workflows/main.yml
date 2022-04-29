@@ -34,9 +34,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-core-x5-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-core-x6-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-core-x5-
+            ${{ runner.os }}-npm-core-x6-
 
       - name: install npm dependencies
         run: npm install
@@ -71,9 +71,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-pouchdb-x5-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-pouchdb-x6-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-pouchdb-x5-
+            ${{ runner.os }}-npm-storage-pouchdb-x6-
 
       - name: install npm dependencies
         run: npm install
@@ -117,9 +117,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-loki-x5-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-loki-x6-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-loki-x5-
+            ${{ runner.os }}-npm-loki-x6-
 
       - name: install npm dependencies
         run: npm install
@@ -155,9 +155,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-memory-x5-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-memory-x6-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-memory-x5-
+            ${{ runner.os }}-npm-memory-x6-
 
       - name: install npm dependencies
         run: npm install
@@ -195,9 +195,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-loki-worker-x5-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-loki-worker-x6-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-loki-worker-x5-
+            ${{ runner.os }}-npm-loki-worker-x6-
 
       - name: install npm dependencies
         run: npm install
@@ -230,9 +230,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-dexie-x5-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-dexie-x6-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-dexie-x5-
+            ${{ runner.os }}-npm-storage-dexie-x6-
 
       - name: install npm dependencies
         run: npm install
@@ -272,9 +272,9 @@ jobs:
             ./node_modules
             ./examples/angular/node_modules
           # invalidate cache when any package.json changes
-          key: ${{ runner.os }}-npm-angular-x5-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-angular-x6-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-angular-x5-
+            ${{ runner.os }}-npm-angular-x6-
 
       - name: prepare core
         run: |
@@ -318,9 +318,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-builds-x5-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-builds-x6-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-builds-x5-
+            ${{ runner.os }}-npm-test-builds-x6-
 
       - name: prepare core
         run: |
@@ -351,9 +351,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-code-style-x5-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-code-style-x6-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-code-style-x5-
+            ${{ runner.os }}-npm-test-code-style-x6-
 
       - name: prepare core
         run: |
