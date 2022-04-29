@@ -18,7 +18,7 @@ on:
 jobs:
 
   core:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -55,7 +55,7 @@ jobs:
 
 
   storage-pouchdb:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -101,7 +101,7 @@ jobs:
 
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -139,7 +139,7 @@ jobs:
           run: npm run test:browser:ci:lokijs
 
   storage-memory:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -179,7 +179,7 @@ jobs:
   # run the node tests for the LokiJS RxStorage in a different
   # task to run in parallel.
   node-lokijs-worker:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -214,7 +214,7 @@ jobs:
   # run the node tests for the Dexie.js RxStorage in a different
   # task to run in parallel.
   storage-dexie:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -252,7 +252,7 @@ jobs:
           run: npm run test:browser:ci:dexie
 
   angular:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       #- name: install dependencies
@@ -302,7 +302,7 @@ jobs:
         run: npm run test:ssr
 
   test-builds:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -335,7 +335,7 @@ jobs:
 
 
   test-code-style:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -372,7 +372,7 @@ jobs:
         run: npm run check-types
 
   electron:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -412,7 +412,7 @@ jobs:
     #      run: npm run test
 
   react:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -440,7 +440,7 @@ jobs:
           run: npm run test:build
 
   react-native:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -477,7 +477,7 @@ jobs:
           npm run test:bundle
 
   vue:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: install dependencies
@@ -506,7 +506,7 @@ jobs:
           run: npm run test
 
   svelte:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: install dependencies
@@ -534,7 +534,7 @@ jobs:
           run: npm run test
 
   graphql:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: install dependencies
@@ -575,7 +575,7 @@ jobs:
 
   test-couchdb-integration:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -611,7 +611,7 @@ jobs:
         run: npm run test:couchdb
 
   test-tutorials:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -629,7 +629,7 @@ jobs:
           npm test
 
   test-multiple-times-pouchdb:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -646,7 +646,7 @@ jobs:
         run: for i in `seq 10`; do npm run test:fast:pouchdb; done
 
   test-multiple-times-lokijs:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
