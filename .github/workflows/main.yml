@@ -526,11 +526,11 @@ jobs:
           npm install
           npm run build
 
-      - name: npm run test:browser
+      - name: npm run test:browser:ci
         uses: GabrielBB/xvfb-action@v1
         with:
           working-directory: ./ #optional
-          run: npm run test:browser
+          run: npm run test:browser:ci
         
       - name: npm run test:couchdb
         run: npm run test:couchdb

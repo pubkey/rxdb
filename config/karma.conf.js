@@ -8,6 +8,9 @@ async function thingsWeNeed() {
 }
 thingsWeNeed();
 
+console.log('Karma env variables:');
+console.dir(process.env);
+
 // karma config
 const configuration = {
     basePath: '',
@@ -40,12 +43,14 @@ const configuration = {
         postDetection: function (availableBrowser) {
             // return [];
             // return ['Chrome_travis_ci']; // comment in to test specific browser
+            const doNotUseTheseBrowsers = [
+                'PhantomJS',
+                'FirefoxAurora',
+                'FirefoxNightly',
+                'ChromeCanary'
+            ];
             const browsers = availableBrowser
-                .filter(b => !['PhantomJS', 'FirefoxAurora', 'FirefoxNightly', 'ChromeCanary'].includes(b))
-                .map(b => {
-                    if (b === 'Chrome') return 'Chrome_travis_ci';
-                    else return b;
-                });
+                .filter(b => !doNotUseTheseBrowsers.includes(b));
             return browsers;
         }
     },
@@ -75,20 +80,13 @@ const configuration = {
             timeout: 12000
         }
     },
-    browsers: ['Chrome_travis_ci'],
     browserDisconnectTimeout: 12000,
     processKillTimeout: 12000,
-    customLaunchers: {
-        Chrome_travis_ci: {
-            base: 'Chrome',
-            flags: ['--no-sandbox']
-        }
-    },
     singleRun: true
 };
 
-if (process.env.TRAVIS) {
-    configuration.browsers = ['Chrome_travis_ci'];
+if (process.env.CI) {
+    console.log('# Use CI settings.');
     /**
      * overwrite reporters-default
      * So no big list will be shown at log
@@ -99,7 +97,13 @@ if (process.env.TRAVIS) {
     configuration.concurrency = 1;
 }
 
+
+
 module.exports = function (config) {
+
+    console.log('karma config:');
+    console.dir(configuration);
+
     config.set(configuration);
 };
 

@@ -57,6 +57,7 @@
     "test:node:loop": "npm run test:node && npm run test:node:loop",
     "test:browser": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb karma start ./config/karma.conf.js --single-run",
     "test:browser:loop": "npm run test:browser && npm run test:browser:loop",
+    "test:browser:ci": "npm run transpile && cross-env CI=true DEFAULT_STORAGE=pouchdb karma start ./config/karma.conf.js --single-run",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
