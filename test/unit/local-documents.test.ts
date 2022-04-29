@@ -472,6 +472,15 @@ config.parallel('local-documents.test.js', () => {
                 emitted.push(x);
             });
 
+            /**
+             * Before inserting, we must await that the empty result set
+             * was emitted. Otherwise we might miss the initial emit
+             * because creating the db2 can take a long time
+             * on some storages. So not awaiting here would make the test
+             * timing dependend.
+             */
+            await waitUntil(() => emitted.length === 1);
+
             console.log('---- 4');
             await db.insertLocal<TestDocType>('foobar', {
                 foo: 'bar'
