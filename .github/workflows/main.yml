@@ -105,6 +105,11 @@ jobs:
       - name: npm run test:fast:lokijs
         run: npm run test:fast:lokijs
 
+      - name: npm run test:browser:ci:lokijs
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:browser:ci:lokijs
+
   node-memory:
     runs-on: ubuntu-18.04
     steps:
@@ -526,11 +531,11 @@ jobs:
           npm install
           npm run build
 
-      - name: npm run test:browser:ci
+      - name: npm run test:browser:ci:pouchdb
         uses: GabrielBB/xvfb-action@v1
         with:
           working-directory: ./ #optional
-          run: npm run test:browser:ci
+          run: npm run test:browser:ci:pouchdb
         
       - name: npm run test:couchdb
         run: npm run test:couchdb

@@ -33,6 +33,19 @@ try {
     }
 } catch (err) { }
 
+
+
+
+
+
+
+
+const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
+
+console.log('ENV_VARIABLES:');
+console.log(JSON.stringify(ENV_VARIABLES, null, 4));
+
+
 const config: {
     platform: any;
     parallel: typeof useParallel;
@@ -47,16 +60,8 @@ const config: {
     storage: {} as any
 };
 
-let DEFAULT_STORAGE: string;
-if (detect().name === 'node') {
-    DEFAULT_STORAGE = process.env.DEFAULT_STORAGE as any;
-} else {
-    /**
-     * Enforce pouchdb in browser tests.
-     * TODO also run lokijs storage there.
-     */
-    DEFAULT_STORAGE = 'pouchdb';
-}
+const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
+console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
 
 export function setDefaultStorage(storageKey: string) {
     if (storageKey === CUSTOM_STORAGE.name) {
@@ -138,8 +143,8 @@ export function setDefaultStorage(storageKey: string) {
     }
 }
 
-console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
 setDefaultStorage(DEFAULT_STORAGE);
+console.log('# use RxStorage: ' + config.storage.name);
 
 if (config.platform.name === 'node') {
     process.setMaxListeners(100);

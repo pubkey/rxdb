@@ -78,7 +78,13 @@ const configuration = {
         mocha: {
             bail: true,
             timeout: 12000
-        }
+        },
+        /**
+         * Pass all env variables here,
+         * so that they can be used in the browsers JavaScript process.
+         * @link https://stackoverflow.com/a/38879184
+         */
+        env: process.env
     },
     browserDisconnectTimeout: 12000,
     processKillTimeout: 12000,
