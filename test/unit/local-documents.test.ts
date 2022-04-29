@@ -481,29 +481,21 @@ config.parallel('local-documents.test.js', () => {
              */
             await waitUntil(() => emitted.length === 1);
 
-            console.log('---- 4');
             await db.insertLocal<TestDocType>('foobar', {
                 foo: 'bar'
             });
 
-            console.log('---- 5');
             await waitUntil(() => {
-                console.log('emitted.lenght ' + emitted.length);
-                console.log(JSON.stringify(emitted, null, 4));
                 return emitted.length === 2;
             }, 2000, 50);
             assert.ok(emitted.pop());
 
-            console.log('---- 6');
             const doc = await db2.getLocal<TestDocType>('foobar');
-            console.log('---- 7');
             assert.strictEqual(doc && doc.toJSON().data.foo, 'bar');
 
-            console.log('---- 8');
             sub.unsubscribe();
             db.destroy();
             db2.destroy();
-            console.log('---- 9');
         });
         it('should not conflict with non-local-doc that has same id', async () => {
             const name = randomCouchString(10);

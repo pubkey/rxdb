@@ -38,8 +38,9 @@ const configuration = {
         enabled: true,
         usePhantomJS: false,
         postDetection: function (availableBrowser) {
-            // return [];
-            // return ['Chrome_travis_ci']; // comment in to test specific browser
+            // return ['Chrome'];
+            // return ['Firefox'];
+            
             const doNotUseTheseBrowsers = [
                 'PhantomJS',
                 'FirefoxAurora',
@@ -104,8 +105,8 @@ if (process.env.CI) {
 
 module.exports = function (config) {
 
-    console.log('karma config:');
-    console.dir(configuration);
+    // console.log('karma config:');
+    // console.dir(configuration);
 
     config.set(configuration);
 };
