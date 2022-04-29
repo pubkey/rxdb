@@ -42,10 +42,6 @@ try {
 
 const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
 
-console.log('ENV_VARIABLES:');
-console.log(JSON.stringify(ENV_VARIABLES, null, 4));
-
-
 const config: {
     platform: any;
     parallel: typeof useParallel;
