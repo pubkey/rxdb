@@ -454,14 +454,12 @@ config.parallel('local-documents.test.js', () => {
             db2.destroy();
         });
         it('BUG insertLocal not send to other instance', async () => {
-            console.log('---- 1');
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
                 localDocuments: true
             });
-            console.log('---- 2');
             const db2 = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -469,7 +467,6 @@ config.parallel('local-documents.test.js', () => {
                 localDocuments: true
             });
 
-            console.log('---- 3');
             const emitted: any[] = [];
             const sub = db2.getLocal$<TestDocType>('foobar').subscribe(x => {
                 emitted.push(x);
@@ -483,8 +480,9 @@ config.parallel('local-documents.test.js', () => {
             console.log('---- 5');
             await waitUntil(() => {
                 console.log('emitted.lenght ' + emitted.length);
+                console.log(JSON.stringify(emitted, null, 4));
                 return emitted.length === 2;
-            });
+            }, 2000, 50);
             assert.ok(emitted.pop());
 
             console.log('---- 6');

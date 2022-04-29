@@ -15,9 +15,13 @@ import { getRxStorageMemory } from '../../plugins/memory';
 import { RxTestStorage } from './types';
 import { CUSTOM_STORAGE } from './custom-storage';
 
+
+const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
+
+
 function isFastMode(): boolean {
     try {
-        return process.env.NODE_ENV === 'fast';
+        return ENV_VARIABLES.NODE_ENV === 'fast';
     } catch (err) {
         return false;
     }
@@ -25,7 +29,7 @@ function isFastMode(): boolean {
 
 let useParallel = describe;
 try {
-    if (process.env.NODE_ENV === 'fast') {
+    if (ENV_VARIABLES.NODE_ENV === 'fast') {
         useParallel = parallel;
         broadcastChannelEnforceOptions({
             type: 'simulate'
@@ -40,7 +44,6 @@ try {
 
 
 
-const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
 
 const config: {
     platform: any;
