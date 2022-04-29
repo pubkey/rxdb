@@ -165,6 +165,7 @@
     "@babel/plugin-transform-property-literals": "7.16.7",
     "@babel/plugin-transform-runtime": "7.17.0",
     "@babel/plugin-transform-spread": "7.16.7",
+    "@babel/plugin-transform-typescript": "7.16.8",
     "@babel/polyfill": "7.12.1",
     "@babel/preset-env": "7.16.11",
     "@babel/preset-typescript": "7.16.7",
