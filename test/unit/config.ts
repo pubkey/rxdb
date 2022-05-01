@@ -69,6 +69,23 @@ export function setDefaultStorage(storageKey: string) {
                     addPouchPlugin(require('pouchdb-adapter-memory'));
                     return getRxStoragePouch('memory');
                 },
+                getPerformanceStorage() {
+                    if (config.platform.name === 'node') {
+                        // Node.js
+                        addPouchPlugin(require('pouchdb-adapter-leveldb'));
+                        return {
+                            storage: getRxStoragePouch('leveldb'),
+                            description: 'pouchdb+leveldb'
+                        };
+                    } else {
+                        // browser
+                        addPouchPlugin(require('pouchdb-adapter-idb'));
+                        return {
+                            storage: getRxStoragePouch('idb'),
+                            description: 'pouchdb+idb'
+                        };
+                    }
+                },
                 hasMultiInstance: true,
                 hasCouchDBReplication: true,
                 hasAttachments: true,
@@ -79,6 +96,12 @@ export function setDefaultStorage(storageKey: string) {
             config.storage = {
                 name: 'memory',
                 getStorage: () => getRxStorageMemory(),
+                getPerformanceStorage() {
+                    return {
+                        description: 'memory',
+                        storage: getRxStorageMemory()
+                    }
+                },
                 hasMultiInstance: false,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
@@ -89,6 +112,27 @@ export function setDefaultStorage(storageKey: string) {
             config.storage = {
                 name: 'lokijs',
                 getStorage: () => getRxStorageLoki(),
+                getPerformanceStorage() {
+                    if (config.platform.name === 'node') {
+                        // Node.js
+                        const LokiFsStructuredAdapter = require('lokijs/src/loki-fs-structured-adapter.js');
+                        return {
+                            storage: getRxStorageLoki({
+                                adapter: new LokiFsStructuredAdapter()
+                            }),
+                            description: 'loki+fs-structured-adapter'
+                        };
+                    } else {
+                        // browser
+                        const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
+                        return {
+                            storage: getRxStorageLoki({
+                                adapter: new LokiIncrementalIndexedDBAdapter()
+                            }),
+                            description: 'loki+incremental-indexeddb'
+                        };
+                    }
+                },
                 hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
@@ -96,19 +140,34 @@ export function setDefaultStorage(storageKey: string) {
             };
             break;
         case 'lokijs-worker':
-            const lokiWorkerPath = require('path').join(
+            const lokiMemoryWorkerPath = require('path').join(
                 '../../../../dist/lib/plugins/worker/workers/',
                 'lokijs-memory.worker.js'
             );
-            console.log('lokiWorkerPath: ' + lokiWorkerPath);
+            const lokiFsWorkerPath = require('path').join(
+                '../../../../dist/lib/plugins/worker/workers/',
+                'lokijs-fs.worker.js'
+            );
+            console.log('lokiMemoryWorkerPath: ' + lokiMemoryWorkerPath);
             config.storage = {
                 name: 'lokijs-worker',
                 getStorage: () => getRxStorageWorker(
                     {
                         statics: RxStorageLokiStatics,
-                        workerInput: lokiWorkerPath
+                        workerInput: lokiMemoryWorkerPath
                     }
                 ),
+                getPerformanceStorage() {
+                    return {
+                        storage: getRxStorageWorker(
+                            {
+                                statics: RxStorageLokiStatics,
+                                workerInput: lokiFsWorkerPath
+                            }
+                        ),
+                        description: 'loki-worker-fs'
+                    };
+                },
                 hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
@@ -116,14 +175,38 @@ export function setDefaultStorage(storageKey: string) {
             };
             break;
         case 'dexie':
-            const indexedDB = require('fake-indexeddb');
-            const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
             config.storage = {
                 name: 'dexie',
-                getStorage: () => getRxStorageDexie({
-                    indexedDB,
-                    IDBKeyRange
-                }),
+                getStorage: () => {
+                    if (config.platform.name === 'node' || config.isFastMode()) {
+                        const indexedDB = require('fake-indexeddb');
+                        const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+                        return getRxStorageDexie({
+                            indexedDB,
+                            IDBKeyRange
+                        });
+                    } else {
+                        return getRxStorageDexie({});
+                    }
+                },
+                getPerformanceStorage() {
+                    if (config.platform.name === 'node') {
+                        const indexedDB = require('fake-indexeddb');
+                        const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+                        return {
+                            storage: getRxStorageDexie({
+                                indexedDB,
+                                IDBKeyRange
+                            }),
+                            description: 'dexie+fake-indexeddb'
+                        };
+                    } else {
+                        return {
+                            storage: getRxStorageDexie({}),
+                            description: 'dexie+native-indexeddb'
+                        }
+                    }
+                },
                 hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
