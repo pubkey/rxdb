@@ -6,7 +6,7 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
 import config from './config';
 import {
@@ -301,22 +301,18 @@ config.parallel('cross-instance.test.js', () => {
     });
     describe('AutoPull', () => {
         describe('positive', () => {
-            it('should recieve events without calling .socket.pull()', async () => {
+            it('should recieve events on the other side', async () => {
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
-                const waitPromise = AsyncTestUtil.waitResolveable(500);
 
-                let received = 0;
-                c2.$.subscribe(cEvent => {
-                    received++;
-                    assert.ok(cEvent.operation);
-                    waitPromise.resolve();
-                });
+                const emitted = [];
+                c2.$.subscribe(ev => emitted.push(ev));
+
                 await c1.insert(schemaObjects.human());
 
-                await waitPromise.promise;
-                assert.strictEqual(received, 1);
+                await waitUntil(() => emitted.length >= 1);
+
                 c1.database.destroy();
                 c2.database.destroy();
             });
