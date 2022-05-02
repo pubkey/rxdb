@@ -24,9 +24,10 @@ describe('unit/performance.test.ts', () => {
 
         const totalTimeSums: { [k: string]: number } = {};
 
-        const runs = 10;
+        const runs = 5;
         let runsDone = 0;
         while (runsDone < runs) {
+            console.log('---------------- ' + runsDone);
             runsDone++;
 
             let time = performance.now();
@@ -46,7 +47,7 @@ describe('unit/performance.test.ts', () => {
 
             // create database
             const db = await createRxDatabase({
-                name: 'test-db-performance-'+randomCouchString(10),
+                name: 'test-db-performance-' + randomCouchString(10),
                 eventReduce: true,
                 /**
                  * A RxStorage implementation (like LokiJS)
