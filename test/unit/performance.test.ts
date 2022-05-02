@@ -25,9 +25,9 @@ describe('unit/performance.test.ts', () => {
 
         const totalTimeSums: { [k: string]: number } = {};
 
-        const runs = 8;
+        const runs = 5;
         const collectionsAmount = 8;
-        const docsAmount = 50;
+        const docsAmount = 20;
 
         let runsDone = 0;
         while (runsDone < runs) {
