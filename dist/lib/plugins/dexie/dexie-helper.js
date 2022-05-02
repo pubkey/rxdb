@@ -79,7 +79,7 @@ function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
   if (!state) {
     state = function () {
       try {
-        var _dexieDb$version$stor;
+        var _dexieStoresSettings;
 
         /**
          * IndexedDB was not designed for dynamically adding tables on the fly,
@@ -89,7 +89,8 @@ function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
         var useSettings = (0, _util.flatClone)(settings);
         useSettings.autoOpen = false;
         var dexieDb = new _dexie.Dexie(dexieDbName, useSettings);
-        dexieDb.version(1).stores((_dexieDb$version$stor = {}, _dexieDb$version$stor[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieDb$version$stor[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieDb$version$stor[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']', _dexieDb$version$stor));
+        var dexieStoresSettings = (_dexieStoresSettings = {}, _dexieStoresSettings[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieStoresSettings[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieStoresSettings[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']', _dexieStoresSettings);
+        dexieDb.version(1).stores(dexieStoresSettings);
         return Promise.resolve(dexieDb.open()).then(function () {
           return {
             dexieDb: dexieDb,
@@ -163,6 +164,14 @@ var DEXIE_PIPE_SUBSTITUTE = '__';
 exports.DEXIE_PIPE_SUBSTITUTE = DEXIE_PIPE_SUBSTITUTE;
 
 function dexieReplaceIfStartsWithPipe(str) {
+  var split = str.split('.');
+
+  if (split.length > 1) {
+    return split.map(function (part) {
+      return dexieReplaceIfStartsWithPipe(part);
+    }).join('.');
+  }
+
   if (str.startsWith('|')) {
     var withoutFirst = str.substring(1);
     return DEXIE_PIPE_SUBSTITUTE + withoutFirst;
@@ -172,6 +181,14 @@ function dexieReplaceIfStartsWithPipe(str) {
 }
 
 function dexieReplaceIfStartsWithPipeRevert(str) {
+  var split = str.split('.');
+
+  if (split.length > 1) {
+    return split.map(function (part) {
+      return dexieReplaceIfStartsWithPipeRevert(part);
+    }).join('.');
+  }
+
   if (str.startsWith(DEXIE_PIPE_SUBSTITUTE)) {
     var withoutFirst = str.substring(DEXIE_PIPE_SUBSTITUTE.length);
     return '|' + withoutFirst;

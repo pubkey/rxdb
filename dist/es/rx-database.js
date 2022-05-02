@@ -327,7 +327,8 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
           if (docInDb.data.schemaHash !== schema.hash) {
             throw newRxError('DB6', {
-              name: collectionName,
+              database: _this4.name,
+              collection: collectionName,
               previousSchemaHash: docInDb.data.schemaHash,
               schemaHash: schema.hash,
               previousSchema: docInDb.data.schema,

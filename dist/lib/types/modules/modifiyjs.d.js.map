@@ -1,1 +1,1 @@
-{"version":3,"sources":[],"names":[],"mappings":"","sourcesContent":[],"file":"modifiyjs.d.js"}
+{"version":3,"file":"modifiyjs.d.js","names":[],"sources":["../../../../src/types/modules/modifiyjs.d.ts"],"sourcesContent":["declare module 'modifyjs';"],"mappings":""}
