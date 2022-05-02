@@ -2,6 +2,7 @@ import {
     createRxDatabase,
     randomCouchString
 } from '../../';
+import * as assert from 'assert';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import config from './config';
@@ -24,7 +25,10 @@ describe('unit/performance.test.ts', () => {
 
         const totalTimeSums: { [k: string]: number } = {};
 
-        const runs = 5;
+        const runs = 10;
+        const collectionsAmount = 8;
+        const docsAmount = 100;
+
         let runsDone = 0;
         while (runsDone < runs) {
             console.log('---------------- ' + runsDone);
@@ -63,21 +67,26 @@ describe('unit/performance.test.ts', () => {
 
             // create collections
             const collectionData: any = {};
-            new Array(8)
+            let firstCollectionName: string = '';
+            new Array(collectionsAmount)
                 .fill(0)
                 .forEach((_v, idx) => {
-                    const name = 'human' + idx;
+                    const name = randomCouchString(10) + '_' + idx;
+                    if (!firstCollectionName) {
+                        firstCollectionName = name;
+                    }
                     collectionData[name] = {
                         schema: schemas.averageSchema(),
                         statics: {}
                     };
                 });
-            await db.addCollections(collectionData);
+            const collections = await db.addCollections(collectionData);
+            const collection = collections[firstCollectionName];
             updateTime('collection-creation');
 
             // insert documents
             const docIds: string[] = [];
-            const docsData = new Array(100)
+            const docsData = new Array(docsAmount)
                 .fill(0)
                 .map(() => {
                     const data = schemaObjects.averageSchema();
@@ -86,15 +95,15 @@ describe('unit/performance.test.ts', () => {
                 });
             updateTime();
 
-            await db.human0.bulkInsert(docsData);
+            await collection.bulkInsert(docsData);
             updateTime('insert-documents');
 
             // find by id
-            await db.human0.findByIds(docIds);
+            await collection.findByIds(docIds);
             updateTime('find-by-ids');
 
             // find by query
-            await db.human0.find({
+            const queryResult = await collection.find({
                 selector: {
                     var1: {
                         $gt: ''
@@ -102,8 +111,9 @@ describe('unit/performance.test.ts', () => {
                 }
             }).exec();
             updateTime('find-by-query');
+            assert.strictEqual(queryResult.length, docsAmount);
 
-            await db.destroy();
+            await db.remove();
         }
 
 
