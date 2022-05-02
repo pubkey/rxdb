@@ -318,7 +318,7 @@ export class RxDatabaseBase<
                     previousSchemaHash: docInDb.data.schemaHash,
                     schemaHash: schema.hash,
                     previousSchema: docInDb.data.schema,
-                    schema: (jsonSchemas as any)[collectionName].schema
+                    schema: ensureNotFalsy((jsonSchemas as any)[collectionName])
                 });
             }
         });
