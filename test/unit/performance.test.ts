@@ -26,8 +26,8 @@ describe('unit/performance.test.ts', () => {
         const totalTimeSums: { [k: string]: number } = {};
 
         const runs = 5;
-        const collectionsAmount = 8;
-        const docsAmount = 20;
+        const collectionsAmount = 4;
+        const docsAmount = 40;
 
         let runsDone = 0;
         while (runsDone < runs) {
@@ -99,8 +99,16 @@ describe('unit/performance.test.ts', () => {
             updateTime('insert-documents');
 
             // find by id
-            await collection.findByIds(docIds);
+            /**
+             * Find by id,
+             * here we run the query agains the storage because
+             * if we would do collection.findByIds(), it would
+             * just return the documents from the cache.
+             * 
+             */
+            const idsResult = await collection.storageInstance.findDocumentsById(docIds, false);
             updateTime('find-by-ids');
+            assert.strictEqual(Object.keys(idsResult).length, docsAmount);
 
             // find by query
             const queryResult = await collection.find({
