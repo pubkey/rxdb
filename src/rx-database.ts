@@ -313,7 +313,8 @@ export class RxDatabaseBase<
             // collection already exists but has different schema
             if (docInDb.data.schemaHash !== schema.hash) {
                 throw newRxError('DB6', {
-                    name: collectionName,
+                    database: this.name,
+                    collection: collectionName,
                     previousSchemaHash: docInDb.data.schemaHash,
                     schemaHash: schema.hash,
                     previousSchema: docInDb.data.schema,
