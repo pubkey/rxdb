@@ -24,10 +24,11 @@ import {
     createRevision
 } from '../../';
 
-import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
+import { createCompressionState, getCompressionStateByRxJsonSchema, RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
+import * as schemas from '../helper/schemas';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import {
@@ -53,6 +54,7 @@ import {
     EXAMPLE_REVISION_3,
     EXAMPLE_REVISION_4
 } from '../helper/revisions';
+import { compressObject } from 'jsonschema-key-compression';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -595,7 +597,40 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 storageInstance.close();
             });
+            it('should be able to store a complex document with key compression', async () => {
+                const databaseName = randomCouchString(12);
+                const schema = fillWithDefaultSettings(schemas.averageSchema());
+                const compressionState = getCompressionStateByRxJsonSchema(schema);
+                const storageInstance = await config.storage.getStorage().createStorageInstance<any>({
+                    databaseName,
+                    collectionName: randomCouchString(12),
+                    schema: compressionState.schema,
+                    options: {},
+                    multiInstance: false
+                });
 
+                const docData = Object.assign(
+                    schemaObjects.averageSchema(),
+                    {
+                        _attachments: {},
+                        _deleted: false,
+                        _rev: EXAMPLE_REVISION_1,
+                        _meta: {
+                            lwt: now()
+                        }
+                    }
+                );
+                const writeResponse = await storageInstance.bulkWrite([
+                    {
+                        document: compressObject(
+                            compressionState.table,
+                            docData
+                        )
+                    }
+                ]);
+                assert.deepStrictEqual(writeResponse.error, {});
+                storageInstance.close();
+            });
             it('should be able to create another instance after a write', async () => {
                 const databaseName = randomCouchString(12);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
