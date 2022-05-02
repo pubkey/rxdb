@@ -1,8 +1,8 @@
 # Creating Plugins
 
-Creating an own plugin is very simple. A plugin is basically an javascript-object which overwrites or extends RxDB's internal classes, prototypes and hooks.
+Creating your own plugin is very simple. A plugin is basically a javascript-object which overwrites or extends RxDB's internal classes, prototypes, and hooks.
 
-A basic plugins:
+A basic plugin:
 
 ```javascript
 
@@ -12,7 +12,7 @@ const myPlugin = {
          * (optional) init() method
          * that is called when the plugin is added to RxDB for the first time.
          */
-        init(){
+        init() {
             // import other plugins or initialize stuff
         },
         /**
@@ -27,13 +27,13 @@ const myPlugin = {
              * @param {object} prototype of RxCollection
              */
             RxCollection: (proto) => {
-                proto.hello = function(){
+                proto.hello = function() {
                     return 'world';
                 };
             }
         },
         /**
-         * some methods are static and can be overwritten in the overwriteable-object
+         * some methods are static and can be overwritten in the overwritable-object
          */
         overwritable: {
             validatePassword: function(password) {
@@ -46,7 +46,7 @@ const myPlugin = {
          */
         hooks: {
             /**
-             * add a foo-property to each document. You can then call myDocument.foo (='bar')
+             * add a `foo` property to each document. You can then call myDocument.foo (='bar')
              */
             createRxDocument: {
                 /**
@@ -68,19 +68,19 @@ addRxPlugin(myPlugin);
 
 ## rxdb
 
-The `rxdb`-property signals that this plugin is and rxdb-plugin and not a pouchdb-plugin. The value should always be `true`.
+The `rxdb`-property signals that this plugin is an rxdb-plugin and not a pouchdb-plugin. The value should always be `true`.
 
 ## prototypes
 
-The `prototypes`-property contains a function for each of RxDB's internal prototype that you want to manipulate. Each function gets the prototype-object of the corresponding class as parameter and than can modify it. You can see a list of all available prototypes [here](https://github.com/pubkey/rxdb/blob/master/src/plugin.ts)
+The `prototypes`-property contains a function for each of RxDB's internal prototype that you want to manipulate. Each function gets the prototype-object of the corresponding class as parameter and then can modify it. You can see a list of all available prototypes [here](https://github.com/pubkey/rxdb/blob/master/src/plugin.ts)
 
 ## overwritable
 
-Some of RxDB's functions are not inside of a class-prototype but are static. You can set and overwrite them with the `overwritable`-object. You can see a list of all overwriteables [here](https://github.com/pubkey/rxdb/blob/master/src/overwritable.ts).
+Some of RxDB's functions are not inside of a class-prototype but are static. You can set and overwrite them with the `overwritable`-object. You can see a list of all overwritables [here](https://github.com/pubkey/rxdb/blob/master/src/overwritable.ts).
 
 # hooks
 
-Sometimes you don't want to overwrite an existing RxDB-method, but extend it. You can do this by adding hooks which will be called each time the code jumps into the hooks corresponding call. You can find a list of all hooks here [here](https://github.com/pubkey/rxdb/blob/master/src/hooks.ts).
+Sometimes you don't want to overwrite an existing RxDB-method, but extend it. You can do this by adding hooks which will be called each time the code jumps into the hooks corresponding call. You can find a list of all hooks [here](https://github.com/pubkey/rxdb/blob/master/src/hooks.ts).
 
 # options
 
