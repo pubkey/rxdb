@@ -177,5 +177,6 @@ export type {
     MigrationStrategies,
     FilledMangoQuery,
     OldRxCollection,
-    WithAttachmentsData
+    WithAttachmentsData,
+    RxTestStorage
 } from './types';
