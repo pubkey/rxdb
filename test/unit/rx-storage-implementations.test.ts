@@ -2288,6 +2288,56 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 storageInstanceV0.close();
                 storageInstanceV1.close();
             });
+            it('should not mix up documents stored in a different database name', async () => {
+                const collectionName = 'aaaaa';
+                const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
+                const storageInstance1 = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName,
+                    schema,
+                    options: {},
+                    multiInstance: false
+                });
+
+                const writeResponse = await storageInstance1.bulkWrite(
+                    [{
+                        document: {
+                            key: 'foobar0',
+                            value: '0',
+                            _deleted: false,
+                            _meta: {
+                                lwt: now()
+                            },
+                            _rev: EXAMPLE_REVISION_1,
+                            _attachments: {}
+                        }
+                    }]
+                );
+                assert.deepStrictEqual(writeResponse.error, {});
+                await storageInstance1.close();
+
+
+                const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName,
+                    schema,
+                    options: {},
+                    multiInstance: false
+                });
+
+                const allDocsQuery = config.storage.getStorage().statics.prepareQuery(
+                    schema,
+                    {
+                        selector: {},
+                        skip: 0,
+                        sort: [{ key: 'asc' }]
+                    }
+                );
+                const allDocs = await storageInstance2.query(allDocsQuery);
+                assert.deepStrictEqual(allDocs.documents, []);
+
+                storageInstance2.close();
+            });
         });
     });
     describe('migration', () => {
