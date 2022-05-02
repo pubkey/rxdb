@@ -27,7 +27,10 @@ import type {
     PreparedQuery,
     DexieChangesCheckpoint
 } from '../../types';
-import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
+import {
+    DexieSettings,
+    DexieStorageInternals
+} from '../../types/plugins/dexie';
 import { RxStorageDexie } from './rx-storage-dexie';
 import {
     closeDexieDb,
@@ -242,6 +245,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         }
                     }
                 });
+
                 await Promise.all([
                     bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs.map(d => fromStorageToDexie(d))) : PROMISE_RESOLVE_VOID,
                     bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID,

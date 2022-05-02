@@ -40,7 +40,7 @@ export function getDexieDbWithTables(
             const useSettings = flatClone(settings);
             useSettings.autoOpen = false;
             const dexieDb = new Dexie(dexieDbName, useSettings);
-            dexieDb.version(1).stores({
+            const dexieStoresSettings = {
                 [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
                 [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',
                 /**
@@ -53,7 +53,9 @@ export function getDexieDbWithTables(
                  * We also need the [_meta.lwt+' + primaryPath + '] index for getChangedDocumentsSince()
                  */
                 [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']'
-            });
+            };
+
+            dexieDb.version(1).stores(dexieStoresSettings);
             await dexieDb.open();
             return {
                 dexieDb,
@@ -136,6 +138,11 @@ export function getDexieSortComparator<RxDocType>(
  */
 export const DEXIE_PIPE_SUBSTITUTE = '__';
 export function dexieReplaceIfStartsWithPipe(str: string): string {
+    const split = str.split('.');
+    if (split.length > 1) {
+        return split.map(part => dexieReplaceIfStartsWithPipe(part)).join('.');
+    }
+
     if (str.startsWith('|')) {
         const withoutFirst = str.substring(1);
         return DEXIE_PIPE_SUBSTITUTE + withoutFirst;
@@ -145,6 +152,11 @@ export function dexieReplaceIfStartsWithPipe(str: string): string {
 }
 
 export function dexieReplaceIfStartsWithPipeRevert(str: string): string {
+    const split = str.split('.');
+    if (split.length > 1) {
+        return split.map(part => dexieReplaceIfStartsWithPipeRevert(part)).join('.');
+    }
+
     if (str.startsWith(DEXIE_PIPE_SUBSTITUTE)) {
         const withoutFirst = str.substring(DEXIE_PIPE_SUBSTITUTE.length);
         return '|' + withoutFirst;

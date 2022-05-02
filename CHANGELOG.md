@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- FIX dexie.js storage does not work with keyCompression when having a nested schema.
+
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->

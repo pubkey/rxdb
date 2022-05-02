@@ -24,7 +24,10 @@ import {
     createRevision
 } from '../../';
 
-import { createCompressionState, getCompressionStateByRxJsonSchema, RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
+import {
+    getCompressionStateByRxJsonSchema,
+    RxDBKeyCompressionPlugin
+} from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
@@ -620,15 +623,23 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }
                 );
+                const compressedDocData = compressObject(
+                    compressionState.table,
+                    docData
+                );
                 const writeResponse = await storageInstance.bulkWrite([
                     {
-                        document: compressObject(
-                            compressionState.table,
-                            docData
-                        )
+                        document: compressedDocData
                     }
                 ]);
                 assert.deepStrictEqual(writeResponse.error, {});
+
+                const getDocFromDb = await storageInstance.findDocumentsById([docData.id], false);
+                assert.deepStrictEqual(
+                    getDocFromDb[docData.id],
+                    compressedDocData
+                );
+
                 storageInstance.close();
             });
             it('should be able to create another instance after a write', async () => {

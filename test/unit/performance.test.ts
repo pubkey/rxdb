@@ -1,5 +1,3 @@
-import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import {
     createRxDatabase,
     randomCouchString
@@ -48,7 +46,7 @@ describe('unit/performance.test.ts', () => {
 
             // create database
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: 'test-db-performance-'+randomCouchString(10),
                 eventReduce: true,
                 /**
                  * A RxStorage implementation (like LokiJS)
@@ -86,6 +84,7 @@ describe('unit/performance.test.ts', () => {
                     return data;
                 });
             updateTime();
+
             await db.human0.bulkInsert(docsData);
             updateTime('insert-documents');
 
