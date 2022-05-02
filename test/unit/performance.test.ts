@@ -19,15 +19,15 @@ describe('unit/performance.test.ts', () => {
         if (config.isFastMode()) {
             return;
         }
-        this.timeout(90 * 1000);
+        this.timeout(120 * 1000);
 
         const perfStorage = config.storage.getPerformanceStorage();
 
         const totalTimeSums: { [k: string]: number } = {};
 
-        const runs = 10;
+        const runs = 8;
         const collectionsAmount = 8;
-        const docsAmount = 100;
+        const docsAmount = 50;
 
         let runsDone = 0;
         while (runsDone < runs) {
