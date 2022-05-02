@@ -98,7 +98,6 @@ describe('unit/performance.test.ts', () => {
             await collection.bulkInsert(docsData);
             updateTime('insert-documents');
 
-            // find by id
             /**
              * Find by id,
              * here we run the query agains the storage because
@@ -125,7 +124,9 @@ describe('unit/performance.test.ts', () => {
         }
 
 
-        const timeToLog: any = {};
+        const timeToLog: any = {
+            description: perfStorage.description
+        };
         Object.entries(totalTimeSums).forEach(([key, totalTime]) => {
             timeToLog[key] = totalTime / runs;
         });
