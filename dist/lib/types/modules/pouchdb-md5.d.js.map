@@ -1,1 +1,1 @@
-{"version":3,"sources":[],"names":[],"mappings":"","sourcesContent":[],"file":"pouchdb-md5.d.js"}
+{"version":3,"file":"pouchdb-md5.d.js","names":[],"sources":["../../../../src/types/modules/pouchdb-md5.d.ts"],"sourcesContent":["declare module 'pouchdb-md5';\n"],"mappings":""}

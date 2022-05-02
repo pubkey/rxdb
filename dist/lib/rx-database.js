@@ -363,7 +363,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
           if (docInDb.data.schemaHash !== schema.hash) {
             throw (0, _rxError.newRxError)('DB6', {
-              name: collectionName,
+              database: _this4.name,
+              collection: collectionName,
               previousSchemaHash: docInDb.data.schemaHash,
               schemaHash: schema.hash,
               previousSchema: docInDb.data.schema,
