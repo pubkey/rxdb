@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 12.0.3 (3 May 2022)
+
 ### 12.0.2 (2 May 2022)
 
 - FIX dexie.js storage does not work with keyCompression when having a nested schema.

@@ -368,7 +368,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
               previousSchemaHash: docInDb.data.schemaHash,
               schemaHash: schema.hash,
               previousSchema: docInDb.data.schema,
-              schema: jsonSchemas[collectionName].schema
+              schema: (0, _util.ensureNotFalsy)(jsonSchemas[collectionName])
             });
           }
         });
