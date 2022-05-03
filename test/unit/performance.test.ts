@@ -27,7 +27,7 @@ describe('unit/performance.test.ts', () => {
 
         const runs = 5;
         const collectionsAmount = 4;
-        const docsAmount = 80;
+        const docsAmount = 300;
 
         let runsDone = 0;
         while (runsDone < runs) {
