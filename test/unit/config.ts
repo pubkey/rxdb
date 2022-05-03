@@ -56,7 +56,7 @@ const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
 console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
 
 export function setDefaultStorage(storageKey: string) {
-    if (storageKey === CUSTOM_STORAGE.name) {
+    if (storageKey === CUSTOM_STORAGE.name || storageKey === 'custom') {
         config.storage = CUSTOM_STORAGE;
         return;
     }
