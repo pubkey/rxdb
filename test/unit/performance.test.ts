@@ -6,7 +6,7 @@ import * as assert from 'assert';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import config from './config';
-
+import { wait } from 'async-test-util';
 
 /**
  * Running these performance tests in the unit test suite
@@ -15,7 +15,6 @@ import config from './config';
  */
 describe('unit/performance.test.ts', () => {
     it('run the performance test', async function () {
-
         if (config.isFastMode()) {
             return;
         }
@@ -31,6 +30,12 @@ describe('unit/performance.test.ts', () => {
 
         let runsDone = 0;
         while (runsDone < runs) {
+            /**
+             * Wait a bit to ensure nothing else is running
+             * that would influence the performance.
+             */
+            await wait(200);
+
             console.log('---------------- ' + runsDone);
             runsDone++;
 
