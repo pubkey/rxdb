@@ -27,7 +27,7 @@ describe('unit/performance.test.ts', () => {
 
         const runs = 5;
         const collectionsAmount = 4;
-        const docsAmount = 40;
+        const docsAmount = 80;
 
         let runsDone = 0;
         while (runsDone < runs) {
@@ -49,6 +49,8 @@ describe('unit/performance.test.ts', () => {
                 time = performance.now();
             }
 
+            updateTime();
+
             // create database
             const db = await createRxDatabase({
                 name: 'test-db-performance-' + randomCouchString(10),
@@ -63,7 +65,6 @@ describe('unit/performance.test.ts', () => {
                 multiInstance: false,
                 storage: perfStorage.storage
             });
-            updateTime('database-creation');
 
             // create collections
             const collectionData: any = {};
@@ -82,7 +83,15 @@ describe('unit/performance.test.ts', () => {
                 });
             const collections = await db.addCollections(collectionData);
             const collection = collections[firstCollectionName];
-            updateTime('collection-creation');
+
+
+            /**
+             * Many storages have a lazy initialization.
+             * So it makes no sense to measure the time of database/collection creation.
+             * Insert we do a single insert an measure the time to the first insert.
+             */
+            await collection.insert(schemaObjects.averageSchema());
+            updateTime('time-to-first-insert');
 
             // insert documents
             const docIds: string[] = [];
@@ -94,7 +103,6 @@ describe('unit/performance.test.ts', () => {
                     return data;
                 });
             updateTime();
-
             await collection.bulkInsert(docsData);
             updateTime('insert-documents');
 
@@ -110,6 +118,7 @@ describe('unit/performance.test.ts', () => {
             assert.strictEqual(Object.keys(idsResult).length, docsAmount);
 
             // find by query
+            updateTime();
             const queryResult = await collection.find({
                 selector: {
                     var1: {
@@ -118,7 +127,7 @@ describe('unit/performance.test.ts', () => {
                 }
             }).exec();
             updateTime('find-by-query');
-            assert.strictEqual(queryResult.length, docsAmount);
+            assert.strictEqual(queryResult.length, docsAmount + 1);
 
             await db.remove();
         }
