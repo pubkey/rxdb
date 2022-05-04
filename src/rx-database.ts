@@ -772,7 +772,7 @@ export async function removeRxDatabase(
                 const key = colDoc.key;
                 const schema = colDoc.data.schema;
                 const split = key.split('-');
-                const collectionName = split[0]; // proposal : key.substr(0,key.lastIndexOf('-'))
+                const collectionName = split[0]; // proposal : key.substring(0,key.lastIndexOf('-'))
                 const storageInstance = storage.createStorageInstance<any>(
                     {
                         databaseName,
