@@ -8,8 +8,9 @@ import { JsonSchema, RxDocumentData, RxJsonSchema } from './types';
  * Crafts an indexable string that can be used
  * to check if a document would be sorted below or above
  * another documents, dependent on the index values.
+ * @monad for better performance
  */
-export declare function getIndexableString<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, index: string[], docData: RxDocumentData<RxDocType>): string;
+export declare function getIndexableStringMonad<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, index: string[]): (docData: RxDocumentData<RxDocType>) => string;
 declare type ParsedLengths = {
     nonDecimals: number;
     decimals: number;

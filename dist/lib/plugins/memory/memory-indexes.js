@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.addIndexesToInternalsState = addIndexesToInternalsState;
 exports.getMemoryIndexName = getMemoryIndexName;
 
+var _customIndex = require("../../custom-index");
+
 var _rxSchemaHelper = require("../../rx-schema-helper");
 
 function addIndexesToInternalsState(state, schema) {
@@ -26,7 +28,8 @@ function addIndexesToInternalsState(state, schema) {
     var indexName = getMemoryIndexName(indexAr);
     state.byIndex[indexName] = {
       index: indexAr,
-      docsWithIndex: []
+      docsWithIndex: [],
+      getIndexableString: (0, _customIndex.getIndexableStringMonad)(schema, indexAr)
     };
   }); // we need this index for the changes()
 
@@ -34,7 +37,8 @@ function addIndexesToInternalsState(state, schema) {
   var indexName = getMemoryIndexName(changesIndex);
   state.byIndex[indexName] = {
     index: changesIndex,
-    docsWithIndex: []
+    docsWithIndex: [],
+    getIndexableString: (0, _customIndex.getIndexableStringMonad)(schema, changesIndex)
   };
 }
 
