@@ -36,6 +36,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import { RxDBEncryptionPlugin } from '../../plugins/encryption';
 import { InternalStorePasswordDocType } from '../../src/plugins/encryption';
 import { RxStorageDexie } from '../../src/plugins/dexie';
+
 addRxPlugin(RxDBEncryptionPlugin);
 
 config.parallel('rx-database.test.js', () => {
@@ -688,14 +689,16 @@ config.parallel('rx-database.test.js', () => {
                 }
             });
             const internalDatabase: any = storage.settings.indexedDB;
-            assert.deepStrictEqual(Array.from(internalDatabase._databases.keys()), [
+            assert.deepStrictEqual(Array.from(internalDatabase._databases.keys()).filter(key => (key as string).includes(name)), [
                 `rxdb-dexie-${name}--0--_rxdb_internal`,
                 `rxdb-dexie-${name}--0--name_with_a_-_in`
             ]);
             await db.remove();
-            assert.deepStrictEqual(Array.from(internalDatabase._databases.keys()), [
+            assert.deepStrictEqual(Array.from(internalDatabase._databases.keys()).filter(key => (key as string).includes(name)), [
                 `rxdb-dexie-${name}--0--_rxdb_internal`,
                 `rxdb-dexie-${name}--0--name_with_a_-_in`,
+                // get unexpected : rxdb-dexie-${name}--0--name_with_a
+                // get unexpected : rxdb-dexie-${name}--0--name_with_a_
                 `rxdb-dexie-${name}--0--plugin-local-documents-`, // ok... why not ?! Is there another issue ?
             ]);
         });
