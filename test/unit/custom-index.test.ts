@@ -6,7 +6,7 @@ import {
     randomString
 } from 'async-test-util';
 import {
-    getIndexableString,
+    getIndexableStringMonad,
     RxDocumentData,
     RxJsonSchema,
     getStringLengthOfIndexNumber,
@@ -86,7 +86,7 @@ config.parallel('custom-index.test.ts', () => {
             assert.strictEqual(parsed.nonDecimals, 3);
         });
     });
-    describe('.getIndexableString()', () => {
+    describe('.getIndexableStringMonad()', () => {
         describe('index-type: string', () => {
             it('should get a correct string', () => {
                 const index = ['id'];
@@ -95,16 +95,14 @@ config.parallel('custom-index.test.ts', () => {
                     getIndexTestDoc({ id: 'aa' })
                 ];
                 const sorted = docs.sort((a, b) => {
-                    const strA = getIndexableString(
+                    const strA = getIndexableStringMonad(
                         schema,
-                        index,
-                        a
-                    );
-                    const strB = getIndexableString(
+                        index
+                    )(a);
+                    const strB = getIndexableStringMonad(
                         schema,
-                        index,
-                        b
-                    );
+                        index
+                    )(b);
                     assert.strictEqual(strA.length, schema.properties.id.maxLength);
                     assert.strictEqual(strB.length, schema.properties.id.maxLength);
                     return strA < strB ? -1 : 1;
@@ -120,16 +118,14 @@ config.parallel('custom-index.test.ts', () => {
                     getIndexTestDoc({ bool: false })
                 ];
                 const sorted = docs.sort((a, b) => {
-                    const strA = getIndexableString(
+                    const strA = getIndexableStringMonad(
                         schema,
-                        index,
-                        a
-                    );
-                    const strB = getIndexableString(
+                        index
+                    )(a);
+                    const strB = getIndexableStringMonad(
                         schema,
-                        index,
-                        b
-                    );
+                        index
+                    )(b);
                     assert.strictEqual(strA.length, 1);
                     assert.strictEqual(strB.length, 1);
                     return strA < strB ? -1 : 1;
@@ -141,11 +137,10 @@ config.parallel('custom-index.test.ts', () => {
             it('should get a valid string', () => {
                 const index = ['num'];
                 const docData = getIndexTestDoc({ num: 24.02 });
-                const indexString = getIndexableString(
+                const indexString = getIndexableStringMonad(
                     schema,
-                    index,
-                    docData
-                );
+                    index
+                )(docData);
                 const parsed = getStringLengthOfIndexNumber(schema.properties.num);
                 assert.strictEqual(indexString.length, parsed.decimals + parsed.nonDecimals);
             });
@@ -156,16 +151,14 @@ config.parallel('custom-index.test.ts', () => {
                     getIndexTestDoc({ num: 10.02 })
                 ];
                 const sorted = docs.sort((a, b) => {
-                    const strA = getIndexableString(
+                    const strA = getIndexableStringMonad(
                         schema,
-                        index,
-                        a
-                    );
-                    const strB = getIndexableString(
+                        index
+                    )(a);
+                    const strB = getIndexableStringMonad(
                         schema,
-                        index,
-                        b
-                    );
+                        index
+                    )(b);
                     assert.strictEqual(strA.length, strB.length);
                     return strA < strB ? -1 : 1;
                 });
@@ -199,11 +192,10 @@ config.parallel('custom-index.test.ts', () => {
                 const doc = {
                     id: 'foo'
                 };
-                const strA = getIndexableString<{ id: string; optional?: string; }>(
+                const strA: string = getIndexableStringMonad<{ id: string; optional?: string; }>(
                     schema,
-                    ['optional'],
-                    doc as any
-                );
+                    ['optional']
+                )(doc as any);
                 assert.ok(strA);
                 strA.split('').forEach(char => assert.strictEqual(char, ' '));
             });
@@ -224,11 +216,10 @@ config.parallel('custom-index.test.ts', () => {
             );
 
             const matchingDocs = docs.filter(doc => {
-                const isIndexStr = getIndexableString(
+                const isIndexStr = getIndexableStringMonad(
                     schema,
-                    index,
-                    doc
-                );
+                    index
+                )(doc);
                 return isIndexStr >= lowerBoundString;
             });
 
@@ -252,11 +243,10 @@ config.parallel('custom-index.test.ts', () => {
                 ]
             );
             const matchingDocs = docs.filter(doc => {
-                const isIndexStr = getIndexableString(
+                const isIndexStr = getIndexableStringMonad(
                     schema,
-                    index,
-                    doc
-                );
+                    index
+                )(doc);
                 return isIndexStr <= upperBoundString;
             });
 
@@ -278,11 +268,10 @@ config.parallel('custom-index.test.ts', () => {
             );
 
             const matchingDocs = docs.filter(doc => {
-                const isIndexStr = getIndexableString(
+                const isIndexStr = getIndexableStringMonad(
                     schema,
-                    index,
-                    doc
-                );
+                    index
+                )(doc);
                 return isIndexStr <= upperBoundString;
             });
 
@@ -316,11 +305,10 @@ config.parallel('custom-index.test.ts', () => {
             const doc = getIndexTestDoc();
             doc._deleted = true;
             doc._meta.lwt = now();
-            const docIndexString = getIndexableString(
+            const docIndexString = getIndexableStringMonad(
                 useSchema,
-                index,
-                doc
-            );
+                index
+            )(doc);
             assert.ok(lowerBoundString < docIndexString);
             const upperBoundString = getStartIndexStringFromUpperBound(
                 useSchema,
