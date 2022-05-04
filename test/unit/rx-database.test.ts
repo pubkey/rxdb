@@ -28,7 +28,7 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, {wait} from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -684,20 +684,23 @@ config.parallel('rx-database.test.js', () => {
                 }
             });
             await db.addCollections({
-                'name_with_a': {
+                'name_no_dash': {
                     schema: schemas.human
                 }
             });
+            await wait(100); // required... but why ?!
             const internalDatabase: any = storage.settings.indexedDB;
             assert.deepStrictEqual(Array.from(internalDatabase._databases.keys()).filter(key => (key as string).includes(name)), [
                 `rxdb-dexie-${name}--0--_rxdb_internal`,
-                `rxdb-dexie-${name}--0--name_with_a_-_in`
+                `rxdb-dexie-${name}--0--name_with_a_-_in`,
+                `rxdb-dexie-${name}--0--name_no_dash`
             ]);
             await db.remove();
+            await wait(100);
             assert.deepStrictEqual(Array.from(internalDatabase._databases.keys()).filter(key => (key as string).includes(name)), [
                 `rxdb-dexie-${name}--0--_rxdb_internal`,
                 `rxdb-dexie-${name}--0--name_with_a_-_in`,
-                // get unexpected : rxdb-dexie-${name}--0--name_with_a
+                `rxdb-dexie-${name}--0--name_no_dash`,
                 // get unexpected : rxdb-dexie-${name}--0--name_with_a_
                 `rxdb-dexie-${name}--0--plugin-local-documents-`, // ok... why not ?! Is there another issue ?
             ]);
