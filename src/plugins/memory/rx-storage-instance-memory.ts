@@ -1,5 +1,9 @@
 import { Observable, Subject } from 'rxjs';
-import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound, MAX_CHAR } from '../../custom-index';
+import {
+    getStartIndexStringFromLowerBound,
+    getStartIndexStringFromUpperBound,
+    MAX_CHAR
+} from '../../custom-index';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
@@ -78,7 +82,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             }
         });
 
-
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             this.primaryPath,
@@ -92,7 +95,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         /**
          * Do inserts/updates
          */
-        categorized.bulkInsertDocs.forEach(writeRow => {
+         categorized.bulkInsertDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
             putWriteRowToState(
                 this.primaryPath as any,

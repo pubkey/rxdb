@@ -1,3 +1,4 @@
+import { getIndexableStringMonad } from '../../custom-index';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import type { RxDocumentData, RxJsonSchema } from '../../types';
 import type { MemoryStorageInternals } from './memory-types';
@@ -31,7 +32,8 @@ export function addIndexesToInternalsState<RxDocType>(
         const indexName = getMemoryIndexName(indexAr);
         state.byIndex[indexName] = {
             index: indexAr,
-            docsWithIndex: []
+            docsWithIndex: [],
+            getIndexableString: getIndexableStringMonad(schema, indexAr)
         };
     });
 
@@ -43,7 +45,8 @@ export function addIndexesToInternalsState<RxDocType>(
     const indexName = getMemoryIndexName(changesIndex);
     state.byIndex[indexName] = {
         index: changesIndex,
-        docsWithIndex: []
+        docsWithIndex: [],
+        getIndexableString: getIndexableStringMonad(schema, changesIndex)
     };
 
 }

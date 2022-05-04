@@ -14,51 +14,81 @@ import { ensureNotFalsy } from './util';
  * Crafts an indexable string that can be used
  * to check if a document would be sorted below or above 
  * another documents, dependent on the index values.
+ * @monad for better performance
  */
-export function getIndexableString<RxDocType>(
+export function getIndexableStringMonad<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    index: string[],
-    docData: RxDocumentData<RxDocType>
-): string {
-    let str = '';
+    index: string[]
+): (docData: RxDocumentData<RxDocType>) => string {
+
+    /**
+     * Prepare all relevant information
+     * outside of the returned function
+     * to save performance when the returned
+     * function is called many times.
+     */
+    const fieldNameProperties: {
+        [k: string]: {
+            schemaPart: JsonSchema;
+            /*
+             * Only in number fields.
+             */
+            parsedLengths?: ParsedLengths
+        }
+    } = {};
     index.forEach(fieldName => {
         const schemaPart = getSchemaByObjectPath(
             schema,
             fieldName
         );
-        let fieldValue = objectPath.get(docData, fieldName);
+        fieldNameProperties[fieldName] = {
+            schemaPart
+        };
         const type = schemaPart.type;
-
-        switch (type) {
-            case 'string':
-                const maxLength = schemaPart.maxLength as number;
-                if (!fieldValue) {
-                    fieldValue = '';
-                }
-                str += fieldValue.padStart(maxLength, ' ');
-                break;
-            case 'boolean':
-                const boolToStr = fieldValue ? '1' : '0';
-                str += boolToStr;
-                break;
-            case 'number':
-            case 'integer':
-                const parsedLengths = getStringLengthOfIndexNumber(
-                    schemaPart
-                );
-                if (!fieldValue) {
-                    fieldValue = 0;
-                }
-                str += getNumberIndexString(
-                    parsedLengths,
-                    fieldValue
-                );
-                break;
-            default:
-                throw new Error('unknown index type ' + type);
+        if (type === 'number' || type === 'integer') {
+            const parsedLengths = getStringLengthOfIndexNumber(
+                schemaPart
+            );
+            fieldNameProperties[fieldName].parsedLengths = parsedLengths;
         }
     });
-    return str;
+
+    const ret = function (docData: RxDocumentData<RxDocType>): string {
+        let str = '';
+        index.forEach(fieldName => {
+            const schemaPart = fieldNameProperties[fieldName].schemaPart;
+            let fieldValue = objectPath.get(docData, fieldName);
+            const type = schemaPart.type;
+            switch (type) {
+                case 'string':
+                    const maxLength = schemaPart.maxLength as number;
+                    if (!fieldValue) {
+                        fieldValue = '';
+                    }
+                    str += fieldValue.padStart(maxLength, ' ');
+                    break;
+                case 'boolean':
+                    const boolToStr = fieldValue ? '1' : '0';
+                    str += boolToStr;
+                    break;
+                case 'number':
+                case 'integer':
+                    const parsedLengths = ensureNotFalsy(fieldNameProperties[fieldName].parsedLengths);
+                    if (!fieldValue) {
+                        fieldValue = 0;
+                    }
+                    str += getNumberIndexString(
+                        parsedLengths,
+                        fieldValue
+                    );
+                    break;
+                default:
+                    throw new Error('unknown index type ' + type);
+            }
+        });
+        return str;
+    }
+    return ret;
 }
 
 declare type ParsedLengths = {

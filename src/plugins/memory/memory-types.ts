@@ -41,6 +41,7 @@ export type MemoryStorageInternals<RxDocType> = {
         [indexName: string]: {
             index: string[];
             docsWithIndex: DocWithIndexString<RxDocType>[];
+            getIndexableString: (docData: RxDocumentData<RxDocType>) => string
         }
     }
 };

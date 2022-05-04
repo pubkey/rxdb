@@ -1,6 +1,12 @@
-import { getIndexableString } from '../../custom-index';
-import type { BulkWriteRow, RxDocumentData, RxJsonSchema } from '../../types';
-import type { DocWithIndexString, MemoryStorageInternals } from './memory-types';
+import type {
+    BulkWriteRow,
+    RxDocumentData,
+    RxJsonSchema
+} from '../../types';
+import type {
+    DocWithIndexString,
+    MemoryStorageInternals
+} from './memory-types';
 import type { RxStorageInstanceMemory } from './rx-storage-instance-memory';
 import {
     pushAtSortPosition
@@ -38,8 +44,7 @@ export function putWriteRowToState<RxDocType>(
 
     Object.values(state.byIndex).forEach(byIndex => {
         const docsWithIndex = byIndex.docsWithIndex;
-        const newIndexString = getIndexableString(schema, byIndex.index, row.document);
-
+        const newIndexString = byIndex.getIndexableString(row.document);
         const [, insertPosition] = pushAtSortPosition(
             docsWithIndex,
             {
@@ -62,7 +67,7 @@ export function putWriteRowToState<RxDocType>(
          * Remove previous if it was in the state
          */
         if (docInState) {
-            const previousIndexString = getIndexableString(schema, byIndex.index, docInState);
+            const previousIndexString = byIndex.getIndexableString(docInState);
             if (previousIndexString === newIndexString) {
                 /**
                  * Index not changed -> The old doc must be before or after the new one.
@@ -112,7 +117,7 @@ export function removeDocFromState<RxDocType>(
 
     Object.values(state.byIndex).forEach(byIndex => {
         const docsWithIndex = byIndex.docsWithIndex;
-        const indexString = getIndexableString(schema, byIndex.index, doc);
+        const indexString = byIndex.getIndexableString(doc);
 
         const positionInIndex = boundEQ(
             docsWithIndex,

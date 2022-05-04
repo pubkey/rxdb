@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- IMPROVE memory storage performance.
 
 <!-- ADD new changes here! -->
 
