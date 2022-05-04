@@ -21,7 +21,7 @@ export const DEXIE_CHANGES_TABLE_NAME = 'changes';
 
 const DEXIE_STATE_DB_BY_NAME: Map<string, DexieStorageInternals> = new Map();
 const REF_COUNT_PER_DEXIE_DB: Map<DexieStorageInternals, number> = new Map();
-export function getDexieDbWithTables(
+export async function getDexieDbWithTables(
     databaseName: string,
     collectionName: string,
     settings: DexieSettings,
@@ -30,46 +30,46 @@ export function getDexieDbWithTables(
     const primaryPath: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
     const dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
     let state = DEXIE_STATE_DB_BY_NAME.get(dexieDbName);
-    if (!state) {
-        state = (async () => {
+    if (state) {
+        return state;
+    }
+    else {
+
+        /**
+         * IndexedDB was not designed for dynamically adding tables on the fly,
+         * so we create one dexie database per RxDB storage instance.
+         * @link https://github.com/dexie/Dexie.js/issues/684#issuecomment-373224696
+         */
+        const useSettings = flatClone(settings);
+        useSettings.autoOpen = false;
+        const dexieDb = new Dexie(dexieDbName, useSettings);
+        const dexieStoresSettings = {
+            [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
+            [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',
             /**
-             * IndexedDB was not designed for dynamically adding tables on the fly,
-             * so we create one dexie database per RxDB storage instance.
-             * @link https://github.com/dexie/Dexie.js/issues/684#issuecomment-373224696
+             * Instead of adding {deleted: false} to every query we run over the document store,
+             * we move deleted documents into a separate store where they can only be queried
+             * by primary key.
+             * This increases performance because it is way easier for the query planner to select
+             * a good index and we also do not have to add the _deleted field to every index.
+             *
+             * We also need the [_meta.lwt+' + primaryPath + '] index for getChangedDocumentsSince()
              */
-            const useSettings = flatClone(settings);
-            useSettings.autoOpen = false;
-            const dexieDb = new Dexie(dexieDbName, useSettings);
-            const dexieStoresSettings = {
-                [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
-                [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',
-                /**
-                 * Instead of adding {deleted: false} to every query we run over the document store,
-                 * we move deleted documents into a separate store where they can only be queried
-                 * by primary key.
-                 * This increases performance because it is way easier for the query planner to select
-                 * a good index and we also do not have to add the _deleted field to every index.
-                 * 
-                 * We also need the [_meta.lwt+' + primaryPath + '] index for getChangedDocumentsSince()
-                 */
-                [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']'
-            };
+            [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']'
+        };
 
-            dexieDb.version(1).stores(dexieStoresSettings);
-            await dexieDb.open();
-            return {
-                dexieDb,
-                dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME],
-                dexieDeletedTable: (dexieDb as any)[DEXIE_DELETED_DOCS_TABLE_NAME],
-                dexieChangesTable: (dexieDb as any)[DEXIE_CHANGES_TABLE_NAME]
-            };
-        })();
-
+        dexieDb.version(1).stores(dexieStoresSettings);
+        await dexieDb.open();
+        state = {
+            dexieDb,
+            dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME],
+            dexieDeletedTable: (dexieDb as any)[DEXIE_DELETED_DOCS_TABLE_NAME],
+            dexieChangesTable: (dexieDb as any)[DEXIE_CHANGES_TABLE_NAME]
+        }
         DEXIE_STATE_DB_BY_NAME.set(dexieDbName, state);
         REF_COUNT_PER_DEXIE_DB.set(state, 0);
+        return state;
     }
-
-    return state;
 }
 
 export async function closeDexieDb(statePromise: DexieStorageInternals) {

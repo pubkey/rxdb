@@ -398,7 +398,7 @@ export async function createDexieStorageInstance<RxDocType>(
     params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>,
     settings: DexieSettings
 ): Promise<RxStorageInstanceDexie<RxDocType>> {
-    const internals = getDexieDbWithTables(
+    const internals = await getDexieDbWithTables(
         params.databaseName,
         params.collectionName,
         settings,
