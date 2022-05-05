@@ -28,7 +28,7 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-import AsyncTestUtil, {wait} from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -664,12 +664,7 @@ config.parallel('rx-database.test.js', () => {
             assert.strictEqual(pouchPath, 'subfolder/mydb-rxdb-5-humans');
         });
         it('ISSUE - collection name with dashes make it fails', async () => {
-            /*
-             * could be relevant for other storages too, but with no mock tool for tests,
-             * I have to use internal implementation for assertions.
-             * Please @pubkey could you consider a such tool ?
-             */
-            if (config.storage.name !== 'dexie') {
+            if (config.storage.name !== 'dexie' && config.platform.isNode()) {
                 return;
             }
             const storage: RxStorageDexie = config.storage.getStorage() as RxStorageDexie;
@@ -688,7 +683,7 @@ config.parallel('rx-database.test.js', () => {
                     schema: schemas.human
                 }
             });
-            await wait(100); // required... but why ?!
+            await wait(100);
             const internalDatabase: any = storage.settings.indexedDB;
             assert.deepStrictEqual(Array.from(internalDatabase._databases.keys()).filter(key => (key as string).includes(name)), [
                 `rxdb-dexie-${name}--0--_rxdb_internal`,
@@ -702,7 +697,7 @@ config.parallel('rx-database.test.js', () => {
                 `rxdb-dexie-${name}--0--name_with_a_-_in`,
                 `rxdb-dexie-${name}--0--name_no_dash`,
                 // get unexpected : rxdb-dexie-${name}--0--name_with_a_
-                `rxdb-dexie-${name}--0--plugin-local-documents-`, // ok... why not ?! Is there another issue ?
+                `rxdb-dexie-${name}--0--plugin-local-documents-`
             ]);
         });
     });
