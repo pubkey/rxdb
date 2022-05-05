@@ -160,6 +160,9 @@ config.parallel('attachments.test.ts', () => {
             c.database.destroy();
         });
         it('should find the attachment after database is re-created', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
@@ -318,9 +321,11 @@ config.parallel('attachments.test.ts', () => {
             });
 
             // the data stored in the storage must be encrypted
-            const encryptedData = await doc.collection.storageInstance.internals.pouch.getAttachment(doc.primary, 'cat.txt');
-            const dataString = await blobBufferUtil.toString(encryptedData);
-            assert.notStrictEqual(dataString, 'foo bar aaa');
+            if (config.storage.name === 'pouchdb') {
+                const encryptedData = await doc.collection.storageInstance.internals.pouch.getAttachment(doc.primary, 'cat.txt');
+                const dataString = await blobBufferUtil.toString(encryptedData);
+                assert.notStrictEqual(dataString, 'foo bar aaa');
+            }
 
             // getting the data again must be decrypted
             const data = await attachment.getStringData();
@@ -351,6 +356,9 @@ config.parallel('attachments.test.ts', () => {
         });
     });
     describe('multiInstance', () => {
+        if (!config.storage.hasMultiInstance) {
+            return;
+        }
         it('should emit on other instance', async () => {
             const name = randomCouchString(10);
             type Collections = { humans: RxCollection<HumanDocumentType, {}, {}> };
@@ -421,6 +429,9 @@ config.parallel('attachments.test.ts', () => {
         });
     });
     describe('migration', () => {
+        if (!config.storage.hasPersistence) {
+            return;
+        }
         it('should keep the attachments during migration', async () => {
             const dbName = randomCouchString(10);
             type DocData = {

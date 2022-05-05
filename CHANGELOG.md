@@ -3,7 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- Added `notifyAboutRemoteChange()` to the GrapQL replication and replication primitives.
+- ADD `notifyAboutRemoteChange()` to the GrapQL replication and replication primitives.
+- ADD attachment support to memory `RxStorage`.
 
 <!-- ADD new changes here! -->
 

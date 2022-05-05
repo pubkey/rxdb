@@ -170,8 +170,9 @@ export type RxStorageBulkWriteError<RxDocType> = {
      * document state in the database.
      * This ensures that we can continue resolving a conflict
      * without having to pull the document out of the db first.
+     * Is not set if the error happens on an insert.
      */
-    documentInDb: RxDocumentData<RxDocType>;
+    documentInDb?: RxDocumentData<RxDocType>;
 }
 
 export type RxStorageBulkWriteResponse<DocData> = {

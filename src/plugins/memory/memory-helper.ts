@@ -31,6 +31,11 @@ export function ensureNotRemoved(
     }
 }
 
+export function attachmentMapKey(documentId: string, attachmentId: string): string {
+    return documentId + '||' + attachmentId;
+}
+
+
 export function putWriteRowToState<RxDocType>(
     primaryPath: string,
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,

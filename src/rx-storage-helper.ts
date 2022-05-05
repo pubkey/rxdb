@@ -11,6 +11,8 @@ import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper'
 import type {
     BulkWriteRow,
     EventBulk,
+    RxAttachmentData,
+    RxAttachmentWriteData,
     RxChangeEvent,
     RxCollection,
     RxDatabase,
@@ -177,7 +179,22 @@ export function categorizeBulkWriteRows<RxDocType>(
      */
     errors: RxStorageBulkWriteError<RxDocType>[];
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
+    attachmentsAdd: {
+        documentId: string;
+        attachmentId: string;
+        attachmentData: RxAttachmentWriteData;
+    }[];
+    attachmentsRemove: {
+        documentId: string;
+        attachmentId: string;
+    }[];
+    attachmentsUpdate: {
+        documentId: string;
+        attachmentId: string;
+        attachmentData: RxAttachmentWriteData;
+    }[];
 } {
+    const hasAttachments = !!storageInstance.schema.attachments;
     const bulkInsertDocs: BulkWriteRow<RxDocType>[] = [];
     const bulkUpdateDocs: BulkWriteRow<RxDocType>[] = [];
     const errors: RxStorageBulkWriteError<RxDocType>[] = [];
@@ -188,10 +205,27 @@ export function categorizeBulkWriteRows<RxDocType>(
     };
 
 
+    const attachmentsAdd: {
+        documentId: string;
+        attachmentId: string;
+        attachmentData: RxAttachmentWriteData;
+    }[] = [];
+    const attachmentsRemove: {
+        documentId: string;
+        attachmentId: string;
+    }[] = [];
+    const attachmentsUpdate: {
+        documentId: string;
+        attachmentId: string;
+        attachmentData: RxAttachmentWriteData;
+    }[] = [];
+
+
     const startTime = now();
     bulkWriteRows.forEach(writeRow => {
         const id = writeRow.document[primaryPath];
         const documentInDb = docsInDb.get(id);
+        let attachmentError: RxStorageBulkWriteError<RxDocType> | undefined;
 
         if (!documentInDb) {
             /**
@@ -199,14 +233,40 @@ export function categorizeBulkWriteRows<RxDocType>(
              * this can happen on replication.
              */
             const insertedIsDeleted = writeRow.document._deleted ? true : false;
-            bulkInsertDocs.push(writeRow);
+            Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
+                if (
+                    !(attachmentData as RxAttachmentWriteData).data
+                ) {
+                    attachmentError = {
+                        documentId: id as any,
+                        isError: true,
+                        status: 510,
+                        writeRow
+                    };
+                    errors.push(attachmentError);
+                } else {
+                    attachmentsAdd.push({
+                        documentId: id as any,
+                        attachmentId,
+                        attachmentData: attachmentData as any
+                    });
+                }
+            });
+            if (!attachmentError) {
+                if (hasAttachments) {
+                    bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
+                } else {
+                    bulkInsertDocs.push(writeRow);
+                }
+            }
+
             if (!insertedIsDeleted) {
                 changedDocumentIds.push(id);
                 eventBulk.events.push({
                     eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath as any, writeRow),
                     documentId: id as any,
                     change: {
-                        doc: writeRow.document,
+                        doc: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document,
                         id: id as any,
                         operation: 'INSERT',
                         previous: null
@@ -250,7 +310,76 @@ export function categorizeBulkWriteRows<RxDocType>(
                 return;
             }
 
-            bulkUpdateDocs.push(writeRow);
+
+            // handle attachments data
+            if (writeRow.document._deleted) {
+                /**
+                 * Deleted documents must have cleared all their attachments.
+                 */
+                if (writeRow.previous) {
+                    Object
+                        .keys(writeRow.previous._attachments)
+                        .forEach(attachmentId => {
+                            attachmentsRemove.push({
+                                documentId: id as any,
+                                attachmentId
+                            });
+                        });
+                }
+            } else {
+
+                // first check for errors
+                Object
+                    .entries(writeRow.document._attachments)
+                    .find(([attachmentId, attachmentData]) => {
+                        const previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
+                        if (
+                            !previousAttachmentData &&
+                            !(attachmentData as RxAttachmentWriteData).data
+                        ) {
+                            attachmentError = {
+                                documentId: id as any,
+                                documentInDb: documentInDb,
+                                isError: true,
+                                status: 510,
+                                writeRow
+                            };
+                        }
+                        return true;
+                    });
+                if (!attachmentError) {
+                    Object
+                        .entries(writeRow.document._attachments)
+                        .forEach(([attachmentId, attachmentData]) => {
+                            const previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
+                            if (!previousAttachmentData) {
+                                attachmentsAdd.push({
+                                    documentId: id as any,
+                                    attachmentId,
+                                    attachmentData: attachmentData as any
+                                });
+                            } else {
+                                attachmentsUpdate.push({
+                                    documentId: id as any,
+                                    attachmentId,
+                                    attachmentData: attachmentData as any
+                                });
+                            }
+                        });
+                }
+            }
+            if (attachmentError) {
+                errors.push(attachmentError);
+            } else {
+                if (hasAttachments) {
+                    bulkUpdateDocs.push(stripAttachmentsDataFromRow(writeRow));
+                } else {
+                    bulkUpdateDocs.push(writeRow);
+                }
+            }
+
+
+
             let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
             const writeDoc = writeRow.document;
             if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
@@ -258,14 +387,14 @@ export function categorizeBulkWriteRows<RxDocType>(
                     id: id as any,
                     operation: 'INSERT',
                     previous: null,
-                    doc: writeDoc
+                    doc: hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc
                 };
             } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
                 change = {
                     id: id as any,
                     operation: 'UPDATE',
                     previous: writeRow.previous,
-                    doc: writeDoc
+                    doc: hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc
                 };
             } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
                 change = {
@@ -303,9 +432,35 @@ export function categorizeBulkWriteRows<RxDocType>(
         bulkUpdateDocs,
         errors,
         changedDocumentIds,
-        eventBulk
+        eventBulk,
+        attachmentsAdd,
+        attachmentsRemove,
+        attachmentsUpdate
     };
 }
+
+export function stripAttachmentsDataFromRow<RxDocType>(writeRow: BulkWriteRow<RxDocType>): BulkWriteRow<RxDocType> {
+    return {
+        previous: writeRow.previous,
+        document: stripAttachmentsDataFromDocument(writeRow.document)
+    };
+}
+export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWriteData<RxDocType>): RxDocumentData<RxDocType> {
+    const useDoc: RxDocumentData<RxDocType> = flatClone(doc);
+    useDoc._attachments = {};
+    Object
+        .entries(doc._attachments)
+        .forEach(([attachmentId, attachmentData]) => {
+            useDoc._attachments[attachmentId] = {
+                digest: attachmentData.digest,
+                length: attachmentData.length,
+                type: attachmentData.type
+            };
+        })
+    return useDoc;
+}
+
+
 
 /**
  * Each event is labeled with the id
@@ -339,6 +494,7 @@ export function getAttachmentSize(
 ): number {
     return atob(attachmentBase64String).length;
 }
+
 
 /**
  * Wraps the normal storageInstance of a RxCollection

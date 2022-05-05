@@ -19,12 +19,13 @@ import type {
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
 } from '../../types';
-import { ensureNotFalsy, now, RX_META_LWT_MINIMUM } from '../../util';
+import { ensureNotFalsy, getFromMapOrThrow, now, RX_META_LWT_MINIMUM } from '../../util';
 import { getDexieKeyRange } from '../dexie/query/dexie-query';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
 import { pouchSwapIdToPrimaryString } from '../pouchdb';
 import { boundGE, boundGT } from './binary-search-bounds';
 import {
+    attachmentMapKey,
     compareDocsWithIndex,
     ensureNotRemoved,
     getMemoryCollectionKey,
@@ -95,7 +96,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         /**
          * Do inserts/updates
          */
-         categorized.bulkInsertDocs.forEach(writeRow => {
+        categorized.bulkInsertDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
             putWriteRowToState(
                 this.primaryPath as any,
@@ -117,6 +118,28 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 docsInDb.get(docId)
             );
             ret.success[docId as any] = writeRow.document;
+        });
+
+        /**
+         * Handle attachments
+         */
+        const attachmentsMap = this.internals.attachments;
+        categorized.attachmentsAdd.forEach(attachment => {
+            attachmentsMap.set(
+                attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                attachment.attachmentData
+            );
+        });
+        categorized.attachmentsUpdate.forEach(attachment => {
+            attachmentsMap.set(
+                attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                attachment.attachmentData
+            );
+        });
+        categorized.attachmentsRemove.forEach(attachment => {
+            attachmentsMap.delete(
+                attachmentMapKey(attachment.documentId, attachment.attachmentId)
+            );
         });
 
         this.changes$.next(categorized.eventBulk);
@@ -346,9 +369,13 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
 
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
+    getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
         ensureNotRemoved(this);
-        throw new Error('Attachments are not implemented in the memory RxStorage. Make a pull request.');
+        const data = getFromMapOrThrow(
+            this.internals.attachments,
+            attachmentMapKey(documentId, attachmentId)
+        );
+        return Promise.resolve(data.data);
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
@@ -402,6 +429,7 @@ export async function createMemoryStorageInstance<RxDocType>(
             removed: false,
             refCount: 1,
             documents: new Map(),
+            attachments: params.schema.attachments ? new Map() : undefined as any,
             byIndex: {}
         };
         addIndexesToInternalsState(internals, params.schema);

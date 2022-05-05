@@ -95,11 +95,8 @@ describe('backup.test.ts', () => {
                 attachments: true
             };
 
-            console.log('--- 1');
             const backupState = collection.database.backup(options);
-            console.log('--- 2');
             await backupState.awaitInitialBackup();
-            console.log('--- 3');
 
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary)));
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary, 'attachments', 'cat.txt')));

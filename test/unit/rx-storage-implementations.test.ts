@@ -1695,11 +1695,75 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             if (!config.storage.hasAttachments) {
                 return;
             }
+            it('should be able to store and retrieve an attachment', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: Object.assign(
+                        getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                        {
+                            attachments: {}
+                        }
+                    ),
+                    options: {},
+                    multiInstance: false
+                });
+                const statics = config.storage.getStorage().statics;
+
+
+                const attachmentData = new Array(20).fill('a').join('');
+                const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
+                    attachmentData,
+                    'text/plain'
+                );
+
+                const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
+                const attachmentHash = await hashAttachmentData(
+                    dataStringBase64,
+                    statics
+                );
+                const dataLength = getAttachmentSize(dataStringBase64);
+
+                const writeData: RxDocumentWriteData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: EXAMPLE_REVISION_1,
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _attachments: {
+                        foo: {
+                            digest: statics.hashKey + '-' + attachmentHash,
+                            length: dataLength,
+                            data: dataStringBase64,
+                            type: 'text/plain'
+                        }
+                    }
+                };
+                await writeSingle<TestDocType>(
+                    storageInstance,
+                    {
+                        document: writeData
+                    }
+                );
+
+                const attachmentDataAfter = await storageInstance.getAttachmentData('foobar', 'foo');
+                assert.strictEqual(attachmentDataAfter, dataStringBase64);
+
+
+                storageInstance.close();
+            });
             it('should return the correct attachment object on all document fetch methods', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    schema: Object.assign(
+                        getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                        {
+                            attachments: {}
+                        }
+                    ),
                     options: {},
                     multiInstance: false
                 });
@@ -1813,7 +1877,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    schema: Object.assign(
+                        getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                        {
+                            attachments: {}
+                        }
+                    ),
                     options: {},
                     multiInstance: false
                 });

@@ -12,8 +12,6 @@ Use this storage when you need a really fast database like in your unit tests or
 
 - No persistence
 - No CouchDB replication
-- Does not support [attachments](./rx-attachment.md).
-
 
 
 ```ts

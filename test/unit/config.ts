@@ -86,6 +86,7 @@ export function setDefaultStorage(storageKey: string) {
                         };
                     }
                 },
+                hasPersistence: true,
                 hasMultiInstance: true,
                 hasCouchDBReplication: true,
                 hasAttachments: true,
@@ -102,9 +103,10 @@ export function setDefaultStorage(storageKey: string) {
                         storage: getRxStorageMemory()
                     }
                 },
+                hasPersistence: false,
                 hasMultiInstance: false,
                 hasCouchDBReplication: false,
-                hasAttachments: false,
+                hasAttachments: true,
                 hasRegexSupport: true
             };
             break;
@@ -133,6 +135,7 @@ export function setDefaultStorage(storageKey: string) {
                         };
                     }
                 },
+                hasPersistence: true,
                 hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
@@ -168,6 +171,7 @@ export function setDefaultStorage(storageKey: string) {
                         description: 'loki-worker-fs'
                     };
                 },
+                hasPersistence: true,
                 hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
@@ -207,6 +211,7 @@ export function setDefaultStorage(storageKey: string) {
                         }
                     }
                 },
+                hasPersistence: true,
                 hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
