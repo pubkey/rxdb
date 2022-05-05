@@ -666,8 +666,8 @@ config.parallel('rx-database.test.js', () => {
         it.only('ISSUE - collection name with dashes make it fails', async () => {
             const storage = config.storage.getStorage();
 
-            //Spy calls to function createStorageInstance of the storage
-            sinon.spy(storage, 'createStorageInstance');
+            // Spy calls to function createStorageInstance of the storage
+            const spy = sinon.spy(storage, 'createStorageInstance');
 
             const db = await createRxDatabase({
                 name: randomCouchString(10),
@@ -687,14 +687,16 @@ config.parallel('rx-database.test.js', () => {
 
             await db.remove();
 
-            //Get spy report : and extract collectionName passed to the createStorageInstance function
-            const collectionNamePassedToCreateStorageInstanceFn: string[] = storage.createStorageInstance.getCalls()
-                .reduce((acc, call) => acc.includes(call.args.collectionName) ? acc : [...acc, call.args[0].collectionName], []);
+            // Get spy report : and extract collectionName passed to the createStorageInstance function
+            const collectionNamePassedToCreateStorageInstanceFn = spy.getCalls()
+                .reduce((acc, call) => {
+                    return acc.includes(call.args[0].collectionName) ? acc : [...acc, call.args[0].collectionName]
+                }, [] as string[]).filter(collectionName => collectionName.startsWith('name_'));
 
             // Ensure spy did not view unwanted collectionName
             assert.deepStrictEqual(collectionNamePassedToCreateStorageInstanceFn, [
-                '_rxdb_internal',
                 'name_with_a_-_in',
+                // Here was the issue: it returns unexpected 'name_with_a_-'
                 'name_no_dash'])
 
             // ensure to clear all call history, normally in beforeEach hook
