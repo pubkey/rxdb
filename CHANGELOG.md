@@ -2,13 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- IMPROVE memory storage performance.
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.0.8 (4 May 2022)
+
+- IMPROVE memory storage performance.
 
 ### 12.0.7 (3 May 2022)
 

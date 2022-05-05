@@ -1,3 +1,4 @@
+import { getIndexableStringMonad } from '../../custom-index';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 export function addIndexesToInternalsState(state, schema) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
@@ -17,7 +18,8 @@ export function addIndexesToInternalsState(state, schema) {
     var indexName = getMemoryIndexName(indexAr);
     state.byIndex[indexName] = {
       index: indexAr,
-      docsWithIndex: []
+      docsWithIndex: [],
+      getIndexableString: getIndexableStringMonad(schema, indexAr)
     };
   }); // we need this index for the changes()
 
@@ -25,7 +27,8 @@ export function addIndexesToInternalsState(state, schema) {
   var indexName = getMemoryIndexName(changesIndex);
   state.byIndex[indexName] = {
     index: changesIndex,
-    docsWithIndex: []
+    docsWithIndex: [],
+    getIndexableString: getIndexableStringMonad(schema, changesIndex)
   };
 }
 export function getMemoryIndexName(index) {

@@ -10,47 +10,72 @@ import { ensureNotFalsy } from './util';
  * Crafts an indexable string that can be used
  * to check if a document would be sorted below or above 
  * another documents, dependent on the index values.
+ * @monad for better performance
  */
 
-export function getIndexableString(schema, index, docData) {
-  var str = '';
+export function getIndexableStringMonad(schema, index) {
+  /**
+   * Prepare all relevant information
+   * outside of the returned function
+   * to save performance when the returned
+   * function is called many times.
+   */
+  var fieldNameProperties = {};
   index.forEach(function (fieldName) {
     var schemaPart = getSchemaByObjectPath(schema, fieldName);
-    var fieldValue = objectPath.get(docData, fieldName);
+    fieldNameProperties[fieldName] = {
+      schemaPart: schemaPart
+    };
     var type = schemaPart.type;
 
-    switch (type) {
-      case 'string':
-        var maxLength = schemaPart.maxLength;
-
-        if (!fieldValue) {
-          fieldValue = '';
-        }
-
-        str += fieldValue.padStart(maxLength, ' ');
-        break;
-
-      case 'boolean':
-        var boolToStr = fieldValue ? '1' : '0';
-        str += boolToStr;
-        break;
-
-      case 'number':
-      case 'integer':
-        var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-
-        if (!fieldValue) {
-          fieldValue = 0;
-        }
-
-        str += getNumberIndexString(parsedLengths, fieldValue);
-        break;
-
-      default:
-        throw new Error('unknown index type ' + type);
+    if (type === 'number' || type === 'integer') {
+      var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
+      fieldNameProperties[fieldName].parsedLengths = parsedLengths;
     }
   });
-  return str;
+
+  var ret = function ret(docData) {
+    var str = '';
+    index.forEach(function (fieldName) {
+      var schemaPart = fieldNameProperties[fieldName].schemaPart;
+      var fieldValue = objectPath.get(docData, fieldName);
+      var type = schemaPart.type;
+
+      switch (type) {
+        case 'string':
+          var maxLength = schemaPart.maxLength;
+
+          if (!fieldValue) {
+            fieldValue = '';
+          }
+
+          str += fieldValue.padStart(maxLength, ' ');
+          break;
+
+        case 'boolean':
+          var boolToStr = fieldValue ? '1' : '0';
+          str += boolToStr;
+          break;
+
+        case 'number':
+        case 'integer':
+          var parsedLengths = ensureNotFalsy(fieldNameProperties[fieldName].parsedLengths);
+
+          if (!fieldValue) {
+            fieldValue = 0;
+          }
+
+          str += getNumberIndexString(parsedLengths, fieldValue);
+          break;
+
+        default:
+          throw new Error('unknown index type ' + type);
+      }
+    });
+    return str;
+  };
+
+  return ret;
 }
 export function getStringLengthOfIndexNumber(schemaPart) {
   var minimum = Math.floor(schemaPart.minimum);

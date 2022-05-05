@@ -1,4 +1,3 @@
-import { getIndexableString } from '../../custom-index';
 import { pushAtSortPosition } from 'array-push-at-sort-position';
 import { newRxError } from '../../rx-error';
 import { boundEQ } from './binary-search-bounds';
@@ -15,7 +14,7 @@ export function putWriteRowToState(primaryPath, schema, state, row, docInState) 
   state.documents.set(docId, row.document);
   Object.values(state.byIndex).forEach(function (byIndex) {
     var docsWithIndex = byIndex.docsWithIndex;
-    var newIndexString = getIndexableString(schema, byIndex.index, row.document);
+    var newIndexString = byIndex.getIndexableString(row.document);
 
     var _pushAtSortPosition = pushAtSortPosition(docsWithIndex, {
       id: docId,
@@ -35,7 +34,7 @@ export function putWriteRowToState(primaryPath, schema, state, row, docInState) 
 
 
     if (docInState) {
-      var previousIndexString = getIndexableString(schema, byIndex.index, docInState);
+      var previousIndexString = byIndex.getIndexableString(docInState);
 
       if (previousIndexString === newIndexString) {
         /**
@@ -76,7 +75,7 @@ export function removeDocFromState(primaryPath, schema, state, doc) {
   state.documents["delete"](docId);
   Object.values(state.byIndex).forEach(function (byIndex) {
     var docsWithIndex = byIndex.docsWithIndex;
-    var indexString = getIndexableString(schema, byIndex.index, doc);
+    var indexString = byIndex.getIndexableString(doc);
     var positionInIndex = boundEQ(docsWithIndex, {
       indexString: indexString
     }, compareDocsWithIndex);

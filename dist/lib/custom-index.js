@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.MAX_CHAR = void 0;
-exports.getIndexableString = getIndexableString;
+exports.getIndexableStringMonad = getIndexableStringMonad;
 exports.getNumberIndexString = getNumberIndexString;
 exports.getStartIndexStringFromLowerBound = getStartIndexStringFromLowerBound;
 exports.getStartIndexStringFromUpperBound = getStartIndexStringFromUpperBound;
@@ -28,48 +28,73 @@ var _util = require("./util");
  * Crafts an indexable string that can be used
  * to check if a document would be sorted below or above 
  * another documents, dependent on the index values.
+ * @monad for better performance
  */
-function getIndexableString(schema, index, docData) {
-  var str = '';
+function getIndexableStringMonad(schema, index) {
+  /**
+   * Prepare all relevant information
+   * outside of the returned function
+   * to save performance when the returned
+   * function is called many times.
+   */
+  var fieldNameProperties = {};
   index.forEach(function (fieldName) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
-
-    var fieldValue = _objectPath["default"].get(docData, fieldName);
-
+    fieldNameProperties[fieldName] = {
+      schemaPart: schemaPart
+    };
     var type = schemaPart.type;
 
-    switch (type) {
-      case 'string':
-        var maxLength = schemaPart.maxLength;
-
-        if (!fieldValue) {
-          fieldValue = '';
-        }
-
-        str += fieldValue.padStart(maxLength, ' ');
-        break;
-
-      case 'boolean':
-        var boolToStr = fieldValue ? '1' : '0';
-        str += boolToStr;
-        break;
-
-      case 'number':
-      case 'integer':
-        var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-
-        if (!fieldValue) {
-          fieldValue = 0;
-        }
-
-        str += getNumberIndexString(parsedLengths, fieldValue);
-        break;
-
-      default:
-        throw new Error('unknown index type ' + type);
+    if (type === 'number' || type === 'integer') {
+      var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
+      fieldNameProperties[fieldName].parsedLengths = parsedLengths;
     }
   });
-  return str;
+
+  var ret = function ret(docData) {
+    var str = '';
+    index.forEach(function (fieldName) {
+      var schemaPart = fieldNameProperties[fieldName].schemaPart;
+
+      var fieldValue = _objectPath["default"].get(docData, fieldName);
+
+      var type = schemaPart.type;
+
+      switch (type) {
+        case 'string':
+          var maxLength = schemaPart.maxLength;
+
+          if (!fieldValue) {
+            fieldValue = '';
+          }
+
+          str += fieldValue.padStart(maxLength, ' ');
+          break;
+
+        case 'boolean':
+          var boolToStr = fieldValue ? '1' : '0';
+          str += boolToStr;
+          break;
+
+        case 'number':
+        case 'integer':
+          var parsedLengths = (0, _util.ensureNotFalsy)(fieldNameProperties[fieldName].parsedLengths);
+
+          if (!fieldValue) {
+            fieldValue = 0;
+          }
+
+          str += getNumberIndexString(parsedLengths, fieldValue);
+          break;
+
+        default:
+          throw new Error('unknown index type ' + type);
+      }
+    });
+    return str;
+  };
+
+  return ret;
 }
 
 function getStringLengthOfIndexNumber(schemaPart) {
