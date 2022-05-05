@@ -664,7 +664,7 @@ config.parallel('rx-database.test.js', () => {
             assert.strictEqual(pouchPath, 'subfolder/mydb-rxdb-5-humans');
         });
         it('ISSUE - collection name with dashes make it fails', async () => {
-            if (config.storage.name !== 'dexie' && config.platform.isNode()) {
+            if (config.storage.name !== 'dexie' && !config.platform.isNode()) {
                 return;
             }
             const storage: RxStorageDexie = config.storage.getStorage() as RxStorageDexie;
