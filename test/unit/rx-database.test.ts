@@ -33,8 +33,11 @@ import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 
-import { RxDBEncryptionPlugin } from '../../plugins/encryption';
-import { InternalStorePasswordDocType } from '../../src/plugins/encryption';
+import {RxDBEncryptionPlugin} from '../../plugins/encryption';
+import {InternalStorePasswordDocType} from '../../src/plugins/encryption';
+import {RxStorageDexie} from "../../src/plugins/dexie";
+import {simpleHuman} from "../helper/schema-objects";
+
 addRxPlugin(RxDBEncryptionPlugin);
 
 config.parallel('rx-database.test.js', () => {
@@ -403,7 +406,7 @@ config.parallel('rx-database.test.js', () => {
                             selector: {
                                 context: 'collection'
                             },
-                            sort: [{ id: 'asc' }],
+                            sort: [{id: 'asc'}],
                             skip: 0
                         }
                     )
@@ -629,7 +632,7 @@ config.parallel('rx-database.test.js', () => {
             });
 
             const id = 'foobar';
-            await db.insertLocal(id, { foo: 'bar' });
+            await db.insertLocal(id, {foo: 'bar'});
 
             await db.remove();
 
@@ -661,8 +664,28 @@ config.parallel('rx-database.test.js', () => {
             );
             assert.strictEqual(pouchPath, 'subfolder/mydb-rxdb-5-humans');
         });
-    });
 
+
+        it.only('ISSUE - collection keeping docs', async () => {
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage() as RxStorageDexie
+            });
+            const collections = await db.addCollections({
+                human: {schema: schemas.human}
+            });
+            await collections.human.insert(simpleHuman());
+            let docs = await collections.human.find().exec();
+            assert.strictEqual(docs.length, 1, 'collection should be initialized with 1 document.');
+
+            await collections.human.remove();
+            await db.remove();
+            await db.destroy();
+
+            docs = await collections.human.find().exec();
+            assert.strictEqual(docs.length, 0, 'once db removed, collection should have 0 document.');
+        });
+    });
     describe('wait a bit', () => {
         it('w8 a bit', (done) => {
             setTimeout(done, 30);
