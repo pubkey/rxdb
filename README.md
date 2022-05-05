@@ -502,7 +502,7 @@ console.log(myDoc.firstName);
 
 ## Getting started
 
-Get started now by [reading the docs](https://rxdb.info/) or exploring the [example-projects](./examples).
+Get started now by [reading the docs](https://rxdb.info/quickstart.html) or exploring the [example-projects](./examples).
 
 ## Pros and cons
 
