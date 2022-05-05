@@ -265,13 +265,13 @@ async function run() {
             );
             ret.subscribe({
                 next: async (data) => {
-                    console.log('subscription emitted => trigger run()');
+                    console.log('subscription emitted => trigger notifyAboutRemoteChange()');
                     console.dir(data);
-                    await replicationState.run();
-                    console.log('run() done');
+                    await replicationState.notifyAboutRemoteChange();
+                    console.log('notifyAboutRemoteChange() done');
                 },
                 error(error) {
-                    console.log('run() got error:');
+                    console.log('notifyAboutRemoteChange() got error:');
                     console.dir(error);
                 }
             });

@@ -292,10 +292,10 @@ const changeObservable = wsClient.request({ query });
 changeObservable.subscribe({
     next(data) {
         /**
-         * When a change happens, call .run() on the replicationState.
-         * This will trigger the pull-handler and download changes from the server.
+         * When a change happens on the remote, call .notifyAboutRemoteChange() on the replicationState.
+         * This will trigger the pull-handler and download changes from the server if necessary.
          */
-        replicationState.run();
+        replicationState.notifyAboutRemoteChange();
     }
 });
 
@@ -351,6 +351,11 @@ Triggers a replication cycle with the server. This is done automatically if the 
 ```js
 await replicationState.run();
 ```
+
+
+### notifyAboutRemoteChange()
+
+Should be called when the remote tells the client that a new change has happened at the remote. Might or might not trigger a new `run()` cycle, depending on when it is called and if another cycle is already running. Use this inside of websocket handlers.
 
 
 #### .cancel()

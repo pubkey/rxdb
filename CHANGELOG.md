@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- Added `notifyAboutRemoteChange()` to the GrapQL replication and replication primitives.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

@@ -82,6 +82,10 @@ export class RxGraphQLReplicationState<RxDocType> {
         return this.replicationState.run(retryOnFail);
     }
 
+    notifyAboutRemoteChange(): Promise<void> {
+        return this.replicationState.notifyAboutRemoteChange();
+    }
+
     cancel(): Promise<any> {
         return this.replicationState.cancel();
     }

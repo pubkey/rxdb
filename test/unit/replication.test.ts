@@ -526,7 +526,7 @@ describe('replication.test.js', () => {
             remoteCollection.database.destroy();
         });
         it('should allow 0 value for liveInterval', async () => {
-            const {localCollection, remoteCollection} = await getTestCollections({local: 0, remote: 0});
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
             assert.doesNotThrow(async () => {
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
@@ -546,7 +546,7 @@ describe('replication.test.js', () => {
             remoteCollection.database.destroy();
         });
         it('should push data even if liveInterval is set to 0', async () => {
-            const {localCollection, remoteCollection} = await getTestCollections({local: 0, remote: 0});
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
             let callProof = null;
             replicateRxCollection({
                 collection: localCollection,
@@ -575,13 +575,67 @@ describe('replication.test.js', () => {
             remoteCollection.database.destroy();
         });
     });
+    describe('.notifyAboutRemoteChange()', () => {
+        it('should only make a request to the remote when the last pull time is older', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                liveInterval: 0,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: async (docs) => {
+                        /**
+                         * When document data would be send to a remote server,
+                         * the server would emit an event over the websocket,
+                         * which should trigger a call to notifyAboutRemoteChange()
+                         * which is simulated here.
+                         */
+                        replicationState.notifyAboutRemoteChange();
+                        await wait(10);
+                        return getPushHandler(remoteCollection)(docs);
+                    }
+                }
+            });
+            await replicationState.awaitInitialReplication();
+
+            /**
+             * When notifyAboutRemoteChange() is called when no run is happening,
+             * it should trigger a new run() cycle. 
+             */
+            let runCountBefore = replicationState.runCount;
+            await replicationState.notifyAboutRemoteChange();
+            assert.strictEqual(runCountBefore + 1, replicationState.runCount);
+
+            /**
+             * When notifyAboutRemoteChange() is called because
+             * the remote has emitted an event, it should not trigger a
+             * new run() cycle.
+             */
+            runCountBefore = replicationState.runCount;
+            await localCollection.insert(schemaObjects.humanWithTimestamp());
+            await wait(50);
+            /**
+             * Exactly 1 runCount should be added
+             * because notifyAboutRemoteChange() must not have triggered an additional new run() cycle.
+             */
+            assert.strictEqual(runCountBefore + 1, replicationState.runCount);
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+    });
     config.parallel('other', () => {
         describe('autoStart', () => {
             it('should run first replication by default', async () => {
                 const replicationState = replicateRxCollection({
                     collection: {
                         database: {},
-                        onDestroy: {then(){}}
+                        onDestroy: { then() { } }
                     } as RxCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                     live: false,
@@ -589,13 +643,13 @@ describe('replication.test.js', () => {
                     waitForLeadership: false
                 });
                 await replicationState.awaitInitialReplication();
-                assert.strictEqual(replicationState.runCount,1);
+                assert.strictEqual(replicationState.runCount, 1);
             });
             it('should not run first replication when autoStart is set to false', async () => {
                 const replicationState = replicateRxCollection({
                     collection: {
                         database: {},
-                        onDestroy: {then(){}}
+                        onDestroy: { then() { } }
                     } as RxCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                     live: false,
@@ -606,12 +660,12 @@ describe('replication.test.js', () => {
                 await wait(100);
 
                 // by definition awaitInitialReplication would be infinite
-                assert.strictEqual(replicationState.runCount,0);
+                assert.strictEqual(replicationState.runCount, 0);
             });
         });
         describe('.awaitInSync()', () => {
             it('should resolve after some time', async () => {
-                const {localCollection, remoteCollection} = await getTestCollections({local: 5, remote: 5});
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
 
                 const replicationState = replicateRxCollection({
                     collection: localCollection,

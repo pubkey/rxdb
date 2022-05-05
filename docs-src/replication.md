@@ -58,6 +58,7 @@ The replication works in cycles. A cycle is triggered when:
   - Automatically on writes to non-[local](./rx-local-document.md) documents.
   - When `liveInterval` is reached from the time of last `run()` cycle.
   - The `run()` method is called manually.
+  - Calling `notifyAboutRemoteChange` might also trigger a cycle, if needed.
 
 A cycle performs these steps in the given order:
 
@@ -214,8 +215,12 @@ exampleSocket.onmessage = () => {
     /**
      * Trigger a replication cycle
      * when the websocket recieves a message.
+     * Instead of using run(),
+     * we use notifyAboutRemoteChange() here to ensure
+     * that only a full cycle is added, it there is no pending cycle
+     * in the queue anyway.
      */
-    replicationState.run();
+    replicationState.notifyAboutRemoteChange();
 }
 ```
 
@@ -282,6 +287,10 @@ Runs a new replication cycle. The replication plugin will always make sure that 
 ```ts
 await myRxReplicationState.run();
 ```
+
+### notifyAboutRemoteChange()
+
+Should be called when the remote tells the client that a new change has happened at the remote. Might or might not trigger a new `run()` cycle, depending on when it is called and if another cycle is already running. Use this inside of websocket handlers.
 
 
 

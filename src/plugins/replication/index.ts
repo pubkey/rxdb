@@ -36,6 +36,7 @@ import {
     getHeightOfRevision,
     hash,
     lastOfArray,
+    now,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID
@@ -73,6 +74,15 @@ export class RxReplicationStateBase<RxDocType> {
      * has been called. Used in tests.
      */
     public runCount: number = 0;
+
+    /**
+     * Time when the last successfull
+     * pull cycle has been started.
+     * Not the end time of that cycle!
+     * Used to determine if notifyAboutRemoteChange()
+     * should trigger a new run() cycle or not.
+     */
+    public lastPullStart: number = 0;
 
     /**
      * Amount of pending retries of the run() cycle.
@@ -185,7 +195,6 @@ export class RxReplicationStateBase<RxDocType> {
             return;
         }
 
-
         if (this.runQueueCount > 2) {
             return this.runningPromise;
         }
@@ -212,6 +221,28 @@ export class RxReplicationStateBase<RxDocType> {
         }
         return this.runningPromise;
     }
+
+
+    /**
+     * Must be called when the remote tells the client
+     * that something has been changed on the remote side.
+     * Might or might not trigger a new run() cycle,
+     * depending on when it is called and if another run() cycle is already
+     * running.
+     */
+    async notifyAboutRemoteChange() {
+        const callTime = now();
+        return new Promise<void>(res => {
+            this.runningPromise = this.runningPromise.then(() => {
+                if (this.lastPullStart < callTime) {
+                    this.run().then(() => res());
+                } else {
+                    res();
+                }
+            });
+        });
+    }
+
 
     /**
      * Runs the whole cycle once,
@@ -264,7 +295,9 @@ export class RxReplicationStateBase<RxDocType> {
         }
 
         if (this.pull) {
+            const lastPullStartTime = now();
             const pullResult = await this.runPull();
+            this.lastPullStart = lastPullStartTime;
             if (pullResult === 'error' && retryOnFail) {
                 addRetry();
                 return true;
