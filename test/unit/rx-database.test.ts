@@ -28,13 +28,13 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-import AsyncTestUtil, {wait} from 'async-test-util';
+import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 
-import {RxDBEncryptionPlugin} from '../../plugins/encryption';
-import {InternalStorePasswordDocType} from '../../src/plugins/encryption';
+import { RxDBEncryptionPlugin } from '../../plugins/encryption';
+import { InternalStorePasswordDocType } from '../../src/plugins/encryption';
 import sinon from 'sinon';
 
 addRxPlugin(RxDBEncryptionPlugin);
@@ -405,7 +405,7 @@ config.parallel('rx-database.test.js', () => {
                             selector: {
                                 context: 'collection'
                             },
-                            sort: [{id: 'asc'}],
+                            sort: [{ id: 'asc' }],
                             skip: 0
                         }
                     )
@@ -631,7 +631,7 @@ config.parallel('rx-database.test.js', () => {
             });
 
             const id = 'foobar';
-            await db.insertLocal(id, {foo: 'bar'});
+            await db.insertLocal(id, { foo: 'bar' });
 
             await db.remove();
 
@@ -663,7 +663,7 @@ config.parallel('rx-database.test.js', () => {
             );
             assert.strictEqual(pouchPath, 'subfolder/mydb-rxdb-5-humans');
         });
-        it.only('ISSUE - collection name with dashes make it fails', async () => {
+        it('ISSUE - collection name with dashes make it fails', async () => {
             const storage = config.storage.getStorage();
 
             // Spy calls to function createStorageInstance of the storage
@@ -674,16 +674,9 @@ config.parallel('rx-database.test.js', () => {
                 storage,
             });
             await db.addCollections({
-                'name_with_a_-_in': {
-                    schema: schemas.human
-                }
+                'name_with_a_-_in': { schema: schemas.human },
+                'name_no_dash': { schema: schemas.human }
             });
-            await db.addCollections({
-                'name_no_dash': {
-                    schema: schemas.human
-                }
-            });
-            await wait(100);
 
             await db.remove();
 
