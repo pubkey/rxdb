@@ -78,6 +78,11 @@ export type Override<T1, T2> = Omit<T1, keyof T2> & T2;
          */
         description: string;
     };
+    /**
+     * True if the storage is able to
+     * keep data after an instance is closed and opened again.
+     */
+    readonly hasPersistence: boolean;
     readonly hasMultiInstance: boolean;
     readonly hasCouchDBReplication: boolean;
     readonly hasAttachments: boolean;
