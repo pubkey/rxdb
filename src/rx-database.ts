@@ -769,15 +769,11 @@ export async function removeRxDatabase(
     await Promise.all(
         collectionDocs
             .map(async (colDoc) => {
-                const key = colDoc.key;
-                const schema = colDoc.data.schema;
-                const split = key.split('-');
-                const collectionName = split[0]; // proposal : colDoc.data.name;
                 const storageInstance = storage.createStorageInstance<any>(
                     {
                         databaseName,
-                        collectionName,
-                        schema,
+                        collectionName: colDoc.data.name,
+                        schema: colDoc.data.schema,
                         options: {},
                         multiInstance: false
                     }
