@@ -2,6 +2,13 @@
 | :--: |
 | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **12.0.0** is now released, read the [ANNOUNCEMENT](./orga/releases/12.0.0.md) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
 
+
+
+<br />
+<br />
+<br />
+
+
 <!--
 | Announcement                                                        |
 | :--: |
@@ -9,8 +16,9 @@
 -->
 
 
+
 <p align="center">
-  <a href="https://github.com/pubkey/rxdb">
+  <a href="https://rxdb.info/">
     <img src="./docs-src/files/logo/logo_text.svg" width="380px" />
   </a>
 </p>
@@ -23,13 +31,17 @@
 <p align="justify">
   RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js.
   Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
-  This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits. To replicate data between your clients and server, RxDB provides modules for realtime replication with any <b>CouchDB</b> compliant endpoint and also with custom <b>GraphQL</b> endpoints.
+  This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits.<br />
+  To <b>replicate</b> data between your clients and server, RxDB provides modules for realtime replication with any <b>CouchDB</b> compliant endpoint and also with custom <b>GraphQL</b> endpoints. Also you can use the replication primitives plugin to create custom replications over any protocol like <b>REST</b>, <b>Websocket</b> or <b>p2p</b>.<br />
+
+
+
 </p>
 
 
 <div align="center">
   <h3>
-    <a href="https://rxdb.info/">Documentation</a>
+    <a href="https://rxdb.info/quickstart.html">Documentation</a>
     <span> | </span>
     <a href="https://github.com/pubkey/rxdb/tree/master/examples">Example-Projects</a>
   </h3>
@@ -71,27 +83,26 @@
 | 💅 | **ORM-capabilities** to easily handle data-code-relations and customize functions of documents and collections                                                                                                                                                                               |
 | 🔷  | Full **TypeScript** support for fast and secure coding (Requires Typescript v3.8 or higher)                                                                                                                                             |
 
-## Platform-support
+## Flexible Storage layer
 
-RxDB is made so that you can use **exactly the same code** at
+RxDB is based on the [RxStorage layer](https://rxdb.info/rx-storage.html), so that you can use **reuse the same code** at different JavaScript runtimes like:
 
--   ![Chrome](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png)
-    ![Firefox](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png)
+![Chrome](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png) ![Firefox](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png)
     ![Safari](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png)
     ![Edge](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png)
-    ![Internet Explorer 11](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png) Browsers
--   ![NodeJS](docs-src/files/icons/nodejs.png) [NodeJS](https://github.com/pubkey/rxdb/tree/master/examples/node)
--   ![electron](docs-src/files/icons/electron.png) [Electron](https://github.com/pubkey/rxdb/tree/master/examples/electron)
--   ![react-native](docs-src/files/icons/react-native.png) [React-Native](https://github.com/pubkey/rxdb/tree/master/examples/react-native)
--   ![cordova](docs-src/files/icons/cordova.png) [Cordova / Phonegap](https://cordova.apache.org/)
--   [Capacitor](https://capacitorjs.com/)
+    ![Internet Explorer 11](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png) Browsers,
+![NodeJS](docs-src/files/icons/nodejs.png) [NodeJS](https://github.com/pubkey/rxdb/tree/master/examples/node),
+![electron](docs-src/files/icons/electron.png) [Electron](https://github.com/pubkey/rxdb/tree/master/examples/electron),
+![react-native](docs-src/files/icons/react-native.png) [React-Native](https://github.com/pubkey/rxdb/tree/master/examples/react-native),
+![cordova](docs-src/files/icons/cordova.png) [Cordova / Phonegap](https://cordova.apache.org/)
+or [Capacitor](https://capacitorjs.com/)
 
 We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like
 
--   ![angular](docs-src/files/icons/angular.png) [Angular](https://github.com/pubkey/rxdb/tree/master/examples/angular)
--   ![vuejs](docs-src/files/icons/vuejs.png) [Vuejs](https://github.com/pubkey/rxdb/tree/master/examples/vue)
--   ![react](docs-src/files/icons/react.png) [React](https://github.com/pubkey/rxdb/tree/master/examples/react)
--   ![ionic](docs-src/files/icons/ionic.png) [Ionic2](https://github.com/pubkey/rxdb/tree/master/examples/ionic2)
+   ![angular](docs-src/files/icons/angular.png) [Angular](https://github.com/pubkey/rxdb/tree/master/examples/angular),
+   ![vuejs](docs-src/files/icons/vuejs.png) [Vuejs](https://github.com/pubkey/rxdb/tree/master/examples/vue),
+   ![react](docs-src/files/icons/react.png) [React](https://github.com/pubkey/rxdb/tree/master/examples/react),
+   ![ionic](docs-src/files/icons/ionic.png) [Ionic2](https://github.com/pubkey/rxdb/tree/master/examples/ionic2) and all other modern JavaScript frameworks.
 
 ## Quickstart
 
@@ -113,15 +124,20 @@ import {
   getRxStoragePouch
 } from 'rxdb';
 
-// add the pouchdb indexeddb adapter
-addPouchPlugin(require('pouchdb-adapter-idb'));
+
+/**
+ * For browsers, we use the dexie.js based storage
+ * which stores data in IndexedDB.
+ * In other JavaScript runtimes, we can use different storages.
+ * @link https://rxdb.info/rx-storage.html
+ */
+import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 // create a database
 const db = await createRxDatabase({
     // the name of the database
     name: 'heroesdb',
-    // use pouchdb with the indexeddb-adapter as storage engine.
-    storage: getRxStoragePouch('idb'),
+    storage: getRxStorageDexie(),
     // optional password, used to encrypt fields when defined in the schema
     password: 'myLongAndStupidPassword'
 });
@@ -137,11 +153,14 @@ await db.addCollections({
 db.heroes.insert({ name: 'Bob' });                          
 ```
 
+You can continue with the [quickstart here](https://rxdb.info/quickstart.html).
+
+
 ## Features (click to toggle)
 
 <details>
 <summary>
-  <b>Subscribe to query results</b>
+  <b>Subscribe to events, query results, documents and event single fields of a document</b>
   <p>
 
 RxDB implements [rxjs](https://github.com/ReactiveX/rxjs) to make your data reactive.
@@ -170,8 +189,7 @@ db.heroes
   <b>MultiWindow/Tab</b>
   <p>
 
-When two instances of RxDB use the same storage-engine, their state and action-stream will be broadcasted.
-This means with two browser-windows the change of window #1 will automatically affect window #2. This works completely offline.
+RxDB supports multi tab/window usage out of the box. When data is changed at one browser tab/window or Node.js process, the change will automatically be broadcasted to all other tabs so that they can update the UI properly.
 
 </p>
 </summary>
@@ -246,7 +264,8 @@ const mySchema = {
     type: "object",
     properties: {
         name: {
-            type: "string"
+            type: "string",
+            maxLength: 30
         },
         secret: {
             type: "string",
@@ -491,19 +510,20 @@ Before you decide to use RxDB, or even before you decide to create an offline fi
 
 - [About Offline First](https://rxdb.info/offline-first.html)
 - [Downsides of Offline First](https://rxdb.info/downsides-of-offline-first.html)
+- [RxDB vs XY](https://rxdb.info/alternatives.html)
 
 ## Contribute
 
-[Check out how you can contribute to this project](./docs-src/contribute.md).
-[Read this when you have found a bug](./orga/bug-checklist.md)
+- [Check out how you can contribute to this project](./docs-src/contribute.md).
+- [Read this when you have found a bug](./orga/bug-checklist.md)
+- [Buy access to the premium plugins](https://rxdb.info/premium.html)
+
 ## Follow up
 
 -   Follow RxDB on [twitter](https://twitter.com/intent/follow?screen_name=rxdbjs) to not miss the latest enhancements.
 -   Join the chat on [gitter](https://gitter.im/pubkey/rxdb) for discussion.
+-   Subscribe to the [newsletter](https://www.getrevue.co/profile/rxdbjs/)
 
-## Thank you
-
-A big **Thank you** to every [contributor](https://github.com/pubkey/rxdb/graphs/contributors) of this project.
 
 ## License
 
