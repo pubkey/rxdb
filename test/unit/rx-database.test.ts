@@ -28,14 +28,14 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil, {wait} from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 
-import { RxDBEncryptionPlugin } from '../../plugins/encryption';
-import { InternalStorePasswordDocType } from '../../src/plugins/encryption';
-import { RxStorageDexie } from '../../src/plugins/dexie';
+import {RxDBEncryptionPlugin} from '../../plugins/encryption';
+import {InternalStorePasswordDocType} from '../../src/plugins/encryption';
+import sinon from 'sinon';
 
 addRxPlugin(RxDBEncryptionPlugin);
 
@@ -405,7 +405,7 @@ config.parallel('rx-database.test.js', () => {
                             selector: {
                                 context: 'collection'
                             },
-                            sort: [{ id: 'asc' }],
+                            sort: [{id: 'asc'}],
                             skip: 0
                         }
                     )
@@ -631,7 +631,7 @@ config.parallel('rx-database.test.js', () => {
             });
 
             const id = 'foobar';
-            await db.insertLocal(id, { foo: 'bar' });
+            await db.insertLocal(id, {foo: 'bar'});
 
             await db.remove();
 
@@ -663,15 +663,15 @@ config.parallel('rx-database.test.js', () => {
             );
             assert.strictEqual(pouchPath, 'subfolder/mydb-rxdb-5-humans');
         });
-        it('ISSUE - collection name with dashes make it fails', async () => {
-            if (config.storage.name !== 'dexie' && !config.platform.isNode()) {
-                return;
-            }
-            const storage: RxStorageDexie = config.storage.getStorage() as RxStorageDexie;
-            const name = randomCouchString(10);
+        it.only('ISSUE - collection name with dashes make it fails', async () => {
+            const storage = config.storage.getStorage();
+
+            //Spy calls to function createStorageInstance of the storage
+            sinon.spy(storage, 'createStorageInstance');
+
             const db = await createRxDatabase({
-                name,
-                storage
+                name: randomCouchString(10),
+                storage,
             });
             await db.addCollections({
                 'name_with_a_-_in': {
@@ -684,21 +684,21 @@ config.parallel('rx-database.test.js', () => {
                 }
             });
             await wait(100);
-            const internalDatabase: any = storage.settings.indexedDB;
-            assert.deepStrictEqual(Array.from(internalDatabase._databases.keys()).filter(key => (key as string).includes(name)), [
-                `rxdb-dexie-${name}--0--_rxdb_internal`,
-                `rxdb-dexie-${name}--0--name_with_a_-_in`,
-                `rxdb-dexie-${name}--0--name_no_dash`
-            ]);
+
             await db.remove();
-            await wait(100);
-            assert.deepStrictEqual(Array.from(internalDatabase._databases.keys()).filter(key => (key as string).includes(name)), [
-                `rxdb-dexie-${name}--0--_rxdb_internal`,
-                `rxdb-dexie-${name}--0--name_with_a_-_in`,
-                `rxdb-dexie-${name}--0--name_no_dash`,
-                // get unexpected : rxdb-dexie-${name}--0--name_with_a_
-                `rxdb-dexie-${name}--0--plugin-local-documents-`
-            ]);
+
+            //Get spy report : and extract collectionName passed to the createStorageInstance function
+            const collectionNamePassedToCreateStorageInstanceFn: string[] = storage.createStorageInstance.getCalls()
+                .reduce((acc, call) => acc.includes(call.args.collectionName) ? acc : [...acc, call.args[0].collectionName], []);
+
+            // Ensure spy did not view unwanted collectionName
+            assert.deepStrictEqual(collectionNamePassedToCreateStorageInstanceFn, [
+                '_rxdb_internal',
+                'name_with_a_-_in',
+                'name_no_dash'])
+
+            // ensure to clear all call history, normally in beforeEach hook
+            sinon.restore();
         });
     });
 
