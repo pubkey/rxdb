@@ -11,7 +11,6 @@ import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper'
 import type {
     BulkWriteRow,
     EventBulk,
-    RxAttachmentData,
     RxAttachmentWriteData,
     RxChangeEvent,
     RxCollection,
