@@ -307,7 +307,7 @@ export class RxDatabaseBase<
         const putDocsResult = await this.internalStore.bulkWrite(bulkPutDocs);
 
         Object.entries(putDocsResult.error).forEach(([_id, error]) => {
-            const docInDb: RxDocumentData<InternalStoreCollectionDocType> = error.documentInDb;
+            const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
             const collectionName = docInDb.data.name;
             const schema = (schemas as any)[collectionName];
             // collection already exists but has different schema

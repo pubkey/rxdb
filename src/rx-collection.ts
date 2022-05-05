@@ -459,7 +459,7 @@ export class RxCollectionBase<
             insertResult.error.map(error => {
                 const id = error.documentId;
                 const writeData = getFromMapOrThrow(useJsonByDocId, id);
-                const docDataInDb = error.documentInDb;
+                const docDataInDb = ensureNotFalsy(error.documentInDb);
                 const doc = createRxDocument(this.asRxCollection, docDataInDb);
                 return doc.atomicUpdate(() => writeData);
             })

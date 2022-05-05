@@ -8,7 +8,7 @@ import type {
     RxStorageBulkWriteError,
     RxStorageInstance
 } from './types';
-import { createRevision, getDefaultRevision, now, randomCouchString } from './util';
+import { createRevision, ensureNotFalsy, getDefaultRevision, now, randomCouchString } from './util';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
@@ -187,7 +187,7 @@ export async function ensureStorageTokenExists<Collections = any>(rxDatabase: Rx
             (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).status === 409
         ) {
             const storageTokenDocInDb = (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).documentInDb;
-            return storageTokenDocInDb.data.token;
+            return ensureNotFalsy(storageTokenDocInDb).data.token;
         }
         throw err;
     }

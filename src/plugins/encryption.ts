@@ -23,6 +23,7 @@ import type {
 import {
     clone,
     createRevision,
+    ensureNotFalsy,
     flatClone,
     getDefaultRevision,
     hash,
@@ -115,7 +116,7 @@ export async function storePasswordHashIntoDatabase(
             (err as any).isError &&
             (err as RxStorageBulkWriteError<InternalStorePasswordDocType>).status === 409
         ) {
-            pwHashDoc = (err as RxStorageBulkWriteError<InternalStorePasswordDocType>).documentInDb;
+            pwHashDoc = ensureNotFalsy((err as RxStorageBulkWriteError<InternalStorePasswordDocType>).documentInDb);
         } else {
             throw err;
         }
