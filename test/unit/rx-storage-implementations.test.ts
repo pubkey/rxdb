@@ -268,7 +268,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                  * This ensures that we can continue resolving the conflict
                  * without having to pull the document out of the db first.
                  */
-                assert.ok(first.documentInDb.value, writeData.value);
+                assert.ok(ensureNotFalsy(first.documentInDb).value, writeData.value);
 
                 assert.ok(first.writeRow);
 
