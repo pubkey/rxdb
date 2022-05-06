@@ -457,6 +457,7 @@ export class RxDatabaseBase<
         if (this.destroyed) {
             return PROMISE_RESOLVE_FALSE;
         }
+
         // settings destroyed = true must be the first thing to do.
         this.destroyed = true;
 

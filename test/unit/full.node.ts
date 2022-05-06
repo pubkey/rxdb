@@ -5,11 +5,26 @@
 
 import assert from 'assert';
 
+
+/**
+ * exit with non-zero on unhandledRejection
+ */
+process.on('unhandledRejection', function (err) {
+    console.log('full.node.ts: unhandledRejection');
+    console.error(err);
+    process.exit(1);
+});
+
 const {
     createRxDatabase,
     isRxDocument,
-    randomCouchString
+    randomCouchString,
+    addRxPlugin
 } = require('../../');
+const {
+    RxDBLeaderElectionPlugin
+} = require('../../plugins/leader-election');
+addRxPlugin(RxDBLeaderElectionPlugin);
 const {
     addPouchPlugin,
     getRxStoragePouch

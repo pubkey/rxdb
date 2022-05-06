@@ -5,6 +5,7 @@
 
 - ADD `notifyAboutRemoteChange()` to the GrapQL replication and replication primitives.
 - ADD attachment support to memory `RxStorage`.
+- FIX default of `waitForLeadership` in replication primitives must be `true`
 
 <!-- ADD new changes here! -->
 

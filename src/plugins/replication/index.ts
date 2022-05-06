@@ -583,12 +583,10 @@ export function replicateRxCollection<RxDocType>(
         live = false,
         liveInterval = 1000 * 10,
         retryTime = 1000 * 5,
-        waitForLeadership,
+        waitForLeadership = true,
         autoStart = true,
     }: ReplicationOptions<RxDocType>
 ): RxReplicationState<RxDocType> {
-
-
     const replicationIdentifierHash = hash(
         [
             collection.database.name,

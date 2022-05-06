@@ -119,13 +119,22 @@ const replicationState = await replicateRxCollection({
      * that that tells the client when to fetch remote changes.
      * (optional), only needed when live=true, default is 10 seconds.
      */
-    liveInterval: 10000,
+    liveInterval: 10 * 1000,
     /**
      * Time in milliseconds after when a failed replication cycle
      * has to be retried.
      * (optional), default is 5 seconds.
      */
-    retryTime: number,
+    retryTime: 5 * 1000,
+
+    /**
+     * When multiInstance is true, like when you use RxDB in multiple browser tabs,
+     * the replication should always run in only one of the open browser tabs.
+     * If waitForLeadership is true, it will wait until the current instance is leader.
+     * If waitForLeadership is false, it will start replicating, even if it is not leader.
+     * [default=true]
+     */
+    waitForLeadership: true,
     /**
      * Trigger or not a first replication
      * if `false`, the first replication should be trigged by : 
@@ -253,7 +262,7 @@ myRxReplicationState.active$.subscribe(bool => console.dir(bool));
 
 ### awaitInitialReplication()
 
-With `awaitInitialReplication()` you can await the initial replication that is done when a full replication cycle was finished for the first time.
+With `awaitInitialReplication()` you can await the initial replication that is done when a full replication cycle was finished for the first time. 
 
 ```ts
 await myRxReplicationState.awaitInitialReplication();
