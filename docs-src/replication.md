@@ -262,7 +262,10 @@ myRxReplicationState.active$.subscribe(bool => console.dir(bool));
 
 ### awaitInitialReplication()
 
-With `awaitInitialReplication()` you can await the initial replication that is done when a full replication cycle was finished for the first time. 
+With `awaitInitialReplication()` you can await the initial replication that is done when a full replication cycle was finished for the first time.
+
+**WARNING:** When `multiInstance: true` and `waitForLeadership: true` and another tab is already running the replication, `awaitInitialReplication()` will not resolve until the other tab is closed and the replication starts in this tab.
+
 
 ```ts
 await myRxReplicationState.awaitInitialReplication();
@@ -272,9 +275,11 @@ await myRxReplicationState.awaitInitialReplication();
 ### awaitInSync()
 
 Returns a promise that resolves when:
-- `awaitInitialReplication()` has emited.
-- All local data is repliacted with the remote.
+- `awaitInitialReplication()` has emitted.
+- All local data is replicated with the remote.
 - No replication cycle is running or in retry-state.
+
+**WARNING:** When `multiInstance: true` and `waitForLeadership: true` and another tab is already running the replication, `awaitInSync()` will not resolve until the other tab is closed and the replication starts in this tab.
 
 ```ts
 await myRxReplicationState.awaitInSync();
