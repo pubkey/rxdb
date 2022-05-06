@@ -65,7 +65,7 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
        */
       if (err.isError && err.status === 409) {
         var storageTokenDocInDb = err.documentInDb;
-        return storageTokenDocInDb.data.token;
+        return (0, _util.ensureNotFalsy)(storageTokenDocInDb).data.token;
       }
 
       throw err;

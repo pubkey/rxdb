@@ -23,7 +23,7 @@ export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInst
         checkpoint: MemoryChangesCheckpoint;
     }[]>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
+    getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
     remove(): Promise<void>;
     close(): Promise<void>;

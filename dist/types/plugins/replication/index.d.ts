@@ -36,6 +36,14 @@ export declare class RxReplicationStateBase<RxDocType> {
      */
     runCount: number;
     /**
+     * Time when the last successfull
+     * pull cycle has been started.
+     * Not the end time of that cycle!
+     * Used to determine if notifyAboutRemoteChange()
+     * should trigger a new run() cycle or not.
+     */
+    lastPullStart: number;
+    /**
      * Amount of pending retries of the run() cycle.
      * Increase when a pull or push fails to retry after retryTime.
      * Decrease when the retry-cycle started to run.
@@ -62,6 +70,14 @@ export declare class RxReplicationStateBase<RxDocType> {
      * Ensures that this._run() does not run in parallel
      */
     run(retryOnFail?: boolean): Promise<void>;
+    /**
+     * Must be called when the remote tells the client
+     * that something has been changed on the remote side.
+     * Might or might not trigger a new run() cycle,
+     * depending on when it is called and if another run() cycle is already
+     * running.
+     */
+    notifyAboutRemoteChange(): Promise<void>;
     /**
      * Runs the whole cycle once,
      * first pushes the local changes to the remote,

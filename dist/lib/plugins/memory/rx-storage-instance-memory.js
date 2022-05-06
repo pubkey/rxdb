@@ -40,6 +40,7 @@ var createMemoryStorageInstance = function createMemoryStorageInstance(storage, 
         removed: false,
         refCount: 1,
         documents: new Map(),
+        attachments: params.schema.attachments ? new Map() : undefined,
         byIndex: {}
       };
       (0, _memoryIndexes.addIndexesToInternalsState)(_internals, params.schema);
@@ -110,6 +111,20 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
       var docId = writeRow.document[_this.primaryPath];
       (0, _memoryHelper.putWriteRowToState)(_this.primaryPath, _this.schema, _this.internals, writeRow, docsInDb.get(docId));
       ret.success[docId] = writeRow.document;
+    });
+    /**
+     * Handle attachments
+     */
+
+    var attachmentsMap = this.internals.attachments;
+    categorized.attachmentsAdd.forEach(function (attachment) {
+      attachmentsMap.set((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+    });
+    categorized.attachmentsUpdate.forEach(function (attachment) {
+      attachmentsMap.set((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+    });
+    categorized.attachmentsRemove.forEach(function (attachment) {
+      attachmentsMap["delete"]((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId));
     });
     this.changes$.next(categorized.eventBulk);
     return Promise.resolve(ret);
@@ -285,9 +300,10 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     }
   };
 
-  _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
+  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     (0, _memoryHelper.ensureNotRemoved)(this);
-    throw new Error('Attachments are not implemented in the memory RxStorage. Make a pull request.');
+    var data = (0, _util.getFromMapOrThrow)(this.internals.attachments, (0, _memoryHelper.attachmentMapKey)(documentId, attachmentId));
+    return Promise.resolve(data.data);
   };
 
   _proto.changeStream = function changeStream() {

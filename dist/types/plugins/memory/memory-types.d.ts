@@ -1,4 +1,4 @@
-import type { PreparedQuery, RxDocumentData, RxStorage } from '../../types';
+import type { PreparedQuery, RxAttachmentWriteData, RxDocumentData, RxStorage } from '../../types';
 export declare type RxStorageMemorySettings = {};
 export declare type RxStorageMemoryInstanceCreationOptions = {};
 export declare type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
@@ -25,6 +25,11 @@ export declare type MemoryStorageInternals<RxDocType> = {
      */
     removed: boolean;
     documents: Map<string, RxDocumentData<RxDocType>>;
+    /**
+     * Attachments data, indexed by a combined string
+     * consisting of [documentId + '||' + attachmentId]
+     */
+    attachments: Map<string, RxAttachmentWriteData>;
     byIndex: {
         /**
          * Because RxDB requires a deterministic sorting

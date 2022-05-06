@@ -9,6 +9,9 @@ export function ensureNotRemoved(instance) {
     throw new Error('removed');
   }
 }
+export function attachmentMapKey(documentId, attachmentId) {
+  return documentId + '||' + attachmentId;
+}
 export function putWriteRowToState(primaryPath, schema, state, row, docInState) {
   var docId = row.document[primaryPath];
   state.documents.set(docId, row.document);

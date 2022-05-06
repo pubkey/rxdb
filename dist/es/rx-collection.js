@@ -322,7 +322,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         return Promise.resolve(Promise.all(insertResult.error.map(function (error) {
           var id = error.documentId;
           var writeData = getFromMapOrThrow(useJsonByDocId, id);
-          var docDataInDb = error.documentInDb;
+          var docDataInDb = ensureNotFalsy(error.documentInDb);
           var doc = createRxDocument(_this10.asRxCollection, docDataInDb);
           return doc.atomicUpdate(function () {
             return writeData;

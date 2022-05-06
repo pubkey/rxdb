@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.attachmentMapKey = attachmentMapKey;
 exports.compareDocsWithIndex = compareDocsWithIndex;
 exports.ensureNotRemoved = ensureNotRemoved;
 exports.getMemoryCollectionKey = getMemoryCollectionKey;
@@ -23,6 +24,10 @@ function ensureNotRemoved(instance) {
   if (instance.internals.removed) {
     throw new Error('removed');
   }
+}
+
+function attachmentMapKey(documentId, attachmentId) {
+  return documentId + '||' + attachmentId;
 }
 
 function putWriteRowToState(primaryPath, schema, state, row, docInState) {

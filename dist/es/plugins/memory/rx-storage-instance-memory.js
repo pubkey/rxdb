@@ -3,12 +3,12 @@ import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound, M
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
-import { ensureNotFalsy, now, RX_META_LWT_MINIMUM } from '../../util';
+import { ensureNotFalsy, getFromMapOrThrow, now, RX_META_LWT_MINIMUM } from '../../util';
 import { getDexieKeyRange } from '../dexie/query/dexie-query';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
 import { pouchSwapIdToPrimaryString } from '../pouchdb';
 import { boundGE, boundGT } from './binary-search-bounds';
-import { compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
+import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
 import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';
 export var createMemoryStorageInstance = function createMemoryStorageInstance(storage, params, settings) {
   try {
@@ -21,6 +21,7 @@ export var createMemoryStorageInstance = function createMemoryStorageInstance(st
         removed: false,
         refCount: 1,
         documents: new Map(),
+        attachments: params.schema.attachments ? new Map() : undefined,
         byIndex: {}
       };
       addIndexesToInternalsState(_internals, params.schema);
@@ -89,6 +90,20 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       var docId = writeRow.document[_this.primaryPath];
       putWriteRowToState(_this.primaryPath, _this.schema, _this.internals, writeRow, docsInDb.get(docId));
       ret.success[docId] = writeRow.document;
+    });
+    /**
+     * Handle attachments
+     */
+
+    var attachmentsMap = this.internals.attachments;
+    categorized.attachmentsAdd.forEach(function (attachment) {
+      attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+    });
+    categorized.attachmentsUpdate.forEach(function (attachment) {
+      attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+    });
+    categorized.attachmentsRemove.forEach(function (attachment) {
+      attachmentsMap["delete"](attachmentMapKey(attachment.documentId, attachment.attachmentId));
     });
     this.changes$.next(categorized.eventBulk);
     return Promise.resolve(ret);
@@ -261,9 +276,10 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     }
   };
 
-  _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
+  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     ensureNotRemoved(this);
-    throw new Error('Attachments are not implemented in the memory RxStorage. Make a pull request.');
+    var data = getFromMapOrThrow(this.internals.attachments, attachmentMapKey(documentId, attachmentId));
+    return Promise.resolve(data.data);
   };
 
   _proto.changeStream = function changeStream() {

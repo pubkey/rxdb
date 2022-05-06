@@ -1,6 +1,6 @@
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
 import { writeSingle } from './rx-storage-helper';
-import { createRevision, getDefaultRevision, now, randomCouchString } from './util';
+import { createRevision, ensureNotFalsy, getDefaultRevision, now, randomCouchString } from './util';
 
 function _catch(body, recover) {
   try {
@@ -55,7 +55,7 @@ export var ensureStorageTokenExists = function ensureStorageTokenExists(rxDataba
        */
       if (err.isError && err.status === 409) {
         var storageTokenDocInDb = err.documentInDb;
-        return storageTokenDocInDb.data.token;
+        return ensureNotFalsy(storageTokenDocInDb).data.token;
       }
 
       throw err;

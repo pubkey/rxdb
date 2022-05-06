@@ -1,7 +1,7 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, EventBulk, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageStatics } from './types';
+import type { BulkWriteRow, EventBulk, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageStatics } from './types';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
 /**
@@ -53,7 +53,23 @@ bulkWriteRows: BulkWriteRow<RxDocType>[]): {
      */
     errors: RxStorageBulkWriteError<RxDocType>[];
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
+    attachmentsAdd: {
+        documentId: string;
+        attachmentId: string;
+        attachmentData: RxAttachmentWriteData;
+    }[];
+    attachmentsRemove: {
+        documentId: string;
+        attachmentId: string;
+    }[];
+    attachmentsUpdate: {
+        documentId: string;
+        attachmentId: string;
+        attachmentData: RxAttachmentWriteData;
+    }[];
 };
+export declare function stripAttachmentsDataFromRow<RxDocType>(writeRow: BulkWriteRow<RxDocType>): BulkWriteRow<RxDocType>;
+export declare function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWriteData<RxDocType>): RxDocumentData<RxDocType>;
 /**
  * Each event is labeled with the id
  * to make it easy to filter out duplicates.

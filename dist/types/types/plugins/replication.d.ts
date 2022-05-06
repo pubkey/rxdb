@@ -101,7 +101,6 @@ export type ReplicationOptions<RxDocType> = {
      * it will not wait until the current instance becomes leader.
      * This means it can happen that multiple browser tabs
      * run the replication at the same time which is dangerous.
-     * 
      */
     waitForLeadership?: boolean; // default=true
     /**

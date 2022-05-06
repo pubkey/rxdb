@@ -321,7 +321,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
         Object.entries(putDocsResult.error).forEach(function (_ref2) {
           var _id = _ref2[0],
               error = _ref2[1];
-          var docInDb = error.documentInDb;
+          var docInDb = ensureNotFalsy(error.documentInDb);
           var collectionName = docInDb.data.name;
           var schema = schemas[collectionName]; // collection already exists but has different schema
 

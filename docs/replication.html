@@ -1969,6 +1969,7 @@
 <li>Automatically on writes to non-<a href="rx-local-document.html">local</a> documents.</li>
 <li>When <code>liveInterval</code> is reached from the time of last <code>run()</code> cycle.</li>
 <li>The <code>run()</code> method is called manually.</li>
+<li>Calling <code>notifyAboutRemoteChange</code> might also trigger a cycle, if needed.</li>
 </ul>
 <p>A cycle performs these steps in the given order:</p>
 <ol>
@@ -2020,13 +2021,22 @@ RxDB relies solely on the remote instance to detect and resolve conflicts. Each 
      * that that tells the client when to fetch remote changes.
      * (optional), only needed when live=true, default is 10 seconds.
      */</span>
-    liveInterval: <span class="hljs-number">10000</span>,
+    liveInterval: <span class="hljs-number">10</span> * <span class="hljs-number">1000</span>,
     <span class="hljs-comment">/**
      * Time in milliseconds after when a failed replication cycle
      * has to be retried.
      * (optional), default is 5 seconds.
      */</span>
-    retryTime: <span class="hljs-built_in">number</span>,
+    retryTime: <span class="hljs-number">5</span> * <span class="hljs-number">1000</span>,
+
+    <span class="hljs-comment">/**
+     * When multiInstance is true, like when you use RxDB in multiple browser tabs,
+     * the replication should always run in only one of the open browser tabs.
+     * If waitForLeadership is true, it will wait until the current instance is leader.
+     * If waitForLeadership is false, it will start replicating, even if it is not leader.
+     * [default=true]
+     */</span>
+    waitForLeadership: <span class="hljs-literal">true</span>,
     <span class="hljs-comment">/**
      * Trigger or not a first replication
      * if `false`, the first replication should be trigged by : 
@@ -2108,8 +2118,12 @@ exampleSocket.onmessage = () =&gt; {
     <span class="hljs-comment">/**
      * Trigger a replication cycle
      * when the websocket recieves a message.
+     * Instead of using run(),
+     * we use notifyAboutRemoteChange() here to ensure
+     * that only a full cycle is added, it there is no pending cycle
+     * in the queue anyway.
      */</span>
-    replicationState.run();
+    replicationState.notifyAboutRemoteChange();
 }
 </code></pre>
 <h2 id="rxreplicationstate">RxReplicationState</h2>
@@ -2133,15 +2147,17 @@ myRxReplicationState.active$.subscribe(bool =&gt; <span class="hljs-built_in">co
 </code></pre>
 <h3 id="awaitinitialreplication">awaitInitialReplication()</h3>
 <p>With <code>awaitInitialReplication()</code> you can await the initial replication that is done when a full replication cycle was finished for the first time.</p>
+<p><strong>WARNING:</strong> When <code>multiInstance: true</code> and <code>waitForLeadership: true</code> and another tab is already running the replication, <code>awaitInitialReplication()</code> will not resolve until the other tab is closed and the replication starts in this tab.</p>
 <pre><code class="lang-ts">await myRxReplicationState.awaitInitialReplication();
 </code></pre>
 <h3 id="awaitinsync">awaitInSync()</h3>
 <p>Returns a promise that resolves when:</p>
 <ul>
-<li><code>awaitInitialReplication()</code> has emited.</li>
-<li>All local data is repliacted with the remote.</li>
+<li><code>awaitInitialReplication()</code> has emitted.</li>
+<li>All local data is replicated with the remote.</li>
 <li>No replication cycle is running or in retry-state.</li>
 </ul>
+<p><strong>WARNING:</strong> When <code>multiInstance: true</code> and <code>waitForLeadership: true</code> and another tab is already running the replication, <code>awaitInSync()</code> will not resolve until the other tab is closed and the replication starts in this tab.</p>
 <pre><code class="lang-ts">await myRxReplicationState.awaitInSync();
 </code></pre>
 <h3 id="cancel">cancel()</h3>
@@ -2152,6 +2168,8 @@ myRxReplicationState.active$.subscribe(bool =&gt; <span class="hljs-built_in">co
 <p>Runs a new replication cycle. The replication plugin will always make sure that at any point in time, only one cycle is running.</p>
 <pre><code class="lang-ts">await myRxReplicationState.run();
 </code></pre>
+<h3 id="notifyaboutremotechange">notifyAboutRemoteChange()</h3>
+<p>Should be called when the remote tells the client that a new change has happened at the remote. Might or might not trigger a new <code>run()</code> cycle, depending on when it is called and if another cycle is already running. Use this inside of websocket handlers.</p>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="cleanup.html">here</a></p>
 
@@ -2197,7 +2215,7 @@ myRxReplicationState.active$.subscribe(bool =&gt; <span class="hljs-built_in">co
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Replication Primitives","level":"1.29","depth":1,"next":{"title":"Cleanup","level":"1.30","depth":1,"path":"cleanup.md","ref":"./cleanup.md","articles":[]},"previous":{"title":"Replication GraphQL","level":"1.28","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2022-05-05T19:06:50.237Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-05T19:11:40.851Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication Primitives","level":"1.29","depth":1,"next":{"title":"Cleanup","level":"1.30","depth":1,"path":"cleanup.md","ref":"./cleanup.md","articles":[]},"previous":{"title":"Replication GraphQL","level":"1.28","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2022-05-06T16:11:26.525Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-06T16:13:01.852Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

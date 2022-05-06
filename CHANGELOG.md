@@ -3,15 +3,17 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD `notifyAboutRemoteChange()` to the GrapQL replication and replication primitives.
-- ADD attachment support to memory `RxStorage`.
-- FIX default of `waitForLeadership` in replication primitives must be `true`
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.1.0 (6 May 2022)
+
+- ADD `notifyAboutRemoteChange()` to the GrapQL replication and replication primitives.
+- ADD attachment support to memory `RxStorage`.
+- FIX default of `waitForLeadership` in replication primitives must be `true`
 
 ### 12.0.8 (4 May 2022)
 

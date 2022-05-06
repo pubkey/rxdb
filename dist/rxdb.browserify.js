@@ -4180,7 +4180,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
         return Promise.resolve(Promise.all(insertResult.error.map(function (error) {
           var id = error.documentId;
           var writeData = (0, _util.getFromMapOrThrow)(useJsonByDocId, id);
-          var docDataInDb = error.documentInDb;
+          var docDataInDb = (0, _util.ensureNotFalsy)(error.documentInDb);
           var doc = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this10.asRxCollection, docDataInDb);
           return doc.atomicUpdate(function () {
             return writeData;
@@ -4949,7 +4949,7 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
        */
       if (err.isError && err.status === 409) {
         var storageTokenDocInDb = err.documentInDb;
-        return storageTokenDocInDb.data.token;
+        return (0, _util.ensureNotFalsy)(storageTokenDocInDb).data.token;
       }
 
       throw err;
@@ -5413,7 +5413,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         Object.entries(putDocsResult.error).forEach(function (_ref2) {
           var _id = _ref2[0],
               error = _ref2[1];
-          var docInDb = error.documentInDb;
+          var docInDb = (0, _util.ensureNotFalsy)(error.documentInDb);
           var collectionName = docInDb.data.name;
           var schema = schemas[collectionName]; // collection already exists but has different schema
 
@@ -8020,6 +8020,8 @@ exports.getUniqueDeterministicEventKey = getUniqueDeterministicEventKey;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
 exports.hashAttachmentData = hashAttachmentData;
 exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
+exports.stripAttachmentsDataFromDocument = stripAttachmentsDataFromDocument;
+exports.stripAttachmentsDataFromRow = stripAttachmentsDataFromRow;
 exports.throwIfIsStorageWriteError = throwIfIsStorageWriteError;
 exports.writeSingle = void 0;
 
@@ -8170,6 +8172,7 @@ docsInDb,
  * RxStorageInstance().bulkWrite().
  */
 bulkWriteRows) {
+  var hasAttachments = !!storageInstance.schema.attachments;
   var bulkInsertDocs = [];
   var bulkUpdateDocs = [];
   var errors = [];
@@ -8178,10 +8181,14 @@ bulkWriteRows) {
     id: (0, _util.randomCouchString)(10),
     events: []
   };
+  var attachmentsAdd = [];
+  var attachmentsRemove = [];
+  var attachmentsUpdate = [];
   var startTime = (0, _util.now)();
   bulkWriteRows.forEach(function (writeRow) {
     var id = writeRow.document[primaryPath];
     var documentInDb = docsInDb.get(id);
+    var attachmentError;
 
     if (!documentInDb) {
       /**
@@ -8189,7 +8196,34 @@ bulkWriteRows) {
        * this can happen on replication.
        */
       var insertedIsDeleted = writeRow.document._deleted ? true : false;
-      bulkInsertDocs.push(writeRow);
+      Object.entries(writeRow.document._attachments).forEach(function (_ref2) {
+        var attachmentId = _ref2[0],
+            attachmentData = _ref2[1];
+
+        if (!attachmentData.data) {
+          attachmentError = {
+            documentId: id,
+            isError: true,
+            status: 510,
+            writeRow: writeRow
+          };
+          errors.push(attachmentError);
+        } else {
+          attachmentsAdd.push({
+            documentId: id,
+            attachmentId: attachmentId,
+            attachmentData: attachmentData
+          });
+        }
+      });
+
+      if (!attachmentError) {
+        if (hasAttachments) {
+          bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
+        } else {
+          bulkInsertDocs.push(writeRow);
+        }
+      }
 
       if (!insertedIsDeleted) {
         changedDocumentIds.push(id);
@@ -8197,7 +8231,7 @@ bulkWriteRows) {
           eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
           documentId: id,
           change: {
-            doc: writeRow.document,
+            doc: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document,
             id: id,
             operation: 'INSERT',
             previous: null
@@ -8230,9 +8264,74 @@ bulkWriteRows) {
         };
         errors.push(err);
         return;
+      } // handle attachments data
+
+
+      if (writeRow.document._deleted) {
+        /**
+         * Deleted documents must have cleared all their attachments.
+         */
+        if (writeRow.previous) {
+          Object.keys(writeRow.previous._attachments).forEach(function (attachmentId) {
+            attachmentsRemove.push({
+              documentId: id,
+              attachmentId: attachmentId
+            });
+          });
+        }
+      } else {
+        // first check for errors
+        Object.entries(writeRow.document._attachments).find(function (_ref3) {
+          var attachmentId = _ref3[0],
+              attachmentData = _ref3[1];
+          var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
+
+          if (!previousAttachmentData && !attachmentData.data) {
+            attachmentError = {
+              documentId: id,
+              documentInDb: documentInDb,
+              isError: true,
+              status: 510,
+              writeRow: writeRow
+            };
+          }
+
+          return true;
+        });
+
+        if (!attachmentError) {
+          Object.entries(writeRow.document._attachments).forEach(function (_ref4) {
+            var attachmentId = _ref4[0],
+                attachmentData = _ref4[1];
+            var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
+
+            if (!previousAttachmentData) {
+              attachmentsAdd.push({
+                documentId: id,
+                attachmentId: attachmentId,
+                attachmentData: attachmentData
+              });
+            } else {
+              attachmentsUpdate.push({
+                documentId: id,
+                attachmentId: attachmentId,
+                attachmentData: attachmentData
+              });
+            }
+          });
+        }
       }
 
-      bulkUpdateDocs.push(writeRow);
+      if (attachmentError) {
+        errors.push(attachmentError);
+      } else {
+        if (hasAttachments) {
+          bulkUpdateDocs.push(stripAttachmentsDataFromRow(writeRow));
+        } else {
+          bulkUpdateDocs.push(writeRow);
+        }
+      }
+
       var change = null;
       var writeDoc = writeRow.document;
 
@@ -8241,14 +8340,14 @@ bulkWriteRows) {
           id: id,
           operation: 'INSERT',
           previous: null,
-          doc: writeDoc
+          doc: hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc
         };
       } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
         change = {
           id: id,
           operation: 'UPDATE',
           previous: writeRow.previous,
-          doc: writeDoc
+          doc: hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc
         };
       } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
         change = {
@@ -8285,8 +8384,33 @@ bulkWriteRows) {
     bulkUpdateDocs: bulkUpdateDocs,
     errors: errors,
     changedDocumentIds: changedDocumentIds,
-    eventBulk: eventBulk
+    eventBulk: eventBulk,
+    attachmentsAdd: attachmentsAdd,
+    attachmentsRemove: attachmentsRemove,
+    attachmentsUpdate: attachmentsUpdate
   };
+}
+
+function stripAttachmentsDataFromRow(writeRow) {
+  return {
+    previous: writeRow.previous,
+    document: stripAttachmentsDataFromDocument(writeRow.document)
+  };
+}
+
+function stripAttachmentsDataFromDocument(doc) {
+  var useDoc = (0, _util.flatClone)(doc);
+  useDoc._attachments = {};
+  Object.entries(doc._attachments).forEach(function (_ref5) {
+    var attachmentId = _ref5[0],
+        attachmentData = _ref5[1];
+    useDoc._attachments[attachmentId] = {
+      digest: attachmentData.digest,
+      length: attachmentData.length,
+      type: attachmentData.type
+    };
+  });
+  return useDoc;
 }
 /**
  * Each event is labeled with the id
@@ -8406,14 +8530,14 @@ rxJsonSchema) {
           success: {},
           error: {}
         };
-        Object.entries(writeResult.error).forEach(function (_ref2) {
-          var k = _ref2[0],
-              v = _ref2[1];
+        Object.entries(writeResult.error).forEach(function (_ref6) {
+          var k = _ref6[0],
+              v = _ref6[1];
           ret.error[k] = v;
         });
-        Object.entries(writeResult.success).forEach(function (_ref3) {
-          var k = _ref3[0],
-              v = _ref3[1];
+        Object.entries(writeResult.success).forEach(function (_ref7) {
+          var k = _ref7[0],
+              v = _ref7[1];
           ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
         });
         return ret;
@@ -8435,9 +8559,9 @@ rxJsonSchema) {
         return storageInstance.findDocumentsById(ids, deleted);
       }).then(function (findResult) {
         var ret = {};
-        Object.entries(findResult).forEach(function (_ref4) {
-          var key = _ref4[0],
-              doc = _ref4[1];
+        Object.entries(findResult).forEach(function (_ref8) {
+          var key = _ref8[0],
+              doc = _ref8[1];
           ret[key] = transformDocumentDataFromRxStorageToRxDB(doc);
         });
         return ret;

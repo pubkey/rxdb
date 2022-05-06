@@ -52,6 +52,10 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function () {
     return this.replicationState.run(retryOnFail);
   };
 
+  _proto.notifyAboutRemoteChange = function notifyAboutRemoteChange() {
+    return this.replicationState.notifyAboutRemoteChange();
+  };
+
   _proto.cancel = function cancel() {
     return this.replicationState.cancel();
   };

@@ -35,6 +35,7 @@ export declare class RxGraphQLReplicationState<RxDocType> {
     isStopped(): boolean;
     awaitInitialReplication(): Promise<true>;
     run(retryOnFail?: boolean): Promise<void>;
+    notifyAboutRemoteChange(): Promise<void>;
     cancel(): Promise<any>;
     setHeaders(headers: {
         [k: string]: string;

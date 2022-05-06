@@ -105,7 +105,7 @@ var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabase(rxDat
       });
     }, function (err) {
       if (err.isError && err.status === 409) {
-        pwHashDoc = err.documentInDb;
+        pwHashDoc = (0, _util.ensureNotFalsy)(err.documentInDb);
       } else {
         throw err;
       }
