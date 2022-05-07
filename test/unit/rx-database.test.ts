@@ -33,10 +33,10 @@ import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 
-import {RxDBEncryptionPlugin} from '../../plugins/encryption';
-import {InternalStorePasswordDocType} from '../../src/plugins/encryption';
-import {RxStorageDexie} from "../../src/plugins/dexie";
-import {simpleHuman} from "../helper/schema-objects";
+import { RxDBEncryptionPlugin } from '../../plugins/encryption';
+import { InternalStorePasswordDocType } from '../../src/plugins/encryption';
+import { RxStorageDexie } from '../../src/plugins/dexie';
+import { simpleHuman } from '../helper/schema-objects';
 
 addRxPlugin(RxDBEncryptionPlugin);
 
@@ -406,7 +406,7 @@ config.parallel('rx-database.test.js', () => {
                             selector: {
                                 context: 'collection'
                             },
-                            sort: [{id: 'asc'}],
+                            sort: [{ id: 'asc' }],
                             skip: 0
                         }
                     )
@@ -632,7 +632,7 @@ config.parallel('rx-database.test.js', () => {
             });
 
             const id = 'foobar';
-            await db.insertLocal(id, {foo: 'bar'});
+            await db.insertLocal(id, { foo: 'bar' });
 
             await db.remove();
 
