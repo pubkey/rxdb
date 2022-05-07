@@ -205,6 +205,28 @@ config.parallel('attachments.test.ts', () => {
             assert.strictEqual(attachment.type, 'text/plain');
             c2.database.destroy();
         });
+        it('should remove all attachments when a document gets deleted', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            const attachmentId = 'cat.txt';
+            await doc.putAttachment({
+                id: attachmentId,
+                data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
+                type: 'text/plain'
+            });
+            await c.storageInstance.getAttachmentData(doc.primary, attachmentId);
+
+            await doc.remove();
+            let hasThrown = false;
+            try {
+                await c.storageInstance.getAttachmentData(doc.primary, attachmentId);
+            } catch (err) {
+                hasThrown = true;
+            }
+            assert.ok(hasThrown);
+
+            c.database.destroy();
+        });
     });
     describe('RxAttachment.getData()', () => {
         it('should get the data', async () => {

@@ -594,28 +594,6 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         databaseName: storageInstance.databaseName,
         options: storageInstance.options,
         bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
-
-
-            /**
-             * Do some checks in dev-mode
-             */
-            if (overwritable.isDevMode()) {
-                rows.forEach(writeRow => {
-                    /**
-                     * If the document is deleted,
-                     * all attachments must have been removed.
-                     */
-                    if (
-                        writeRow.document._deleted &&
-                        Object.keys(writeRow.document._attachments).length > 0
-                    ) {
-                        throw newRxError('SNH', {
-                            document: writeRow.document
-                        });
-                    }
-                });
-            }
-
             const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows
                 .map(row => transformDocumentDataFromRxDBToRxStorage(row));
             return database.lockedRun(
