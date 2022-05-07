@@ -540,6 +540,7 @@ export async function _migrateDocuments(
     const bulkDeleteInputData = documentsData.map(docData => {
         const writeDeleted = flatClone(docData);
         writeDeleted._deleted = true;
+        writeDeleted._attachments = {};
         return {
             previous: docData,
             document: writeDeleted

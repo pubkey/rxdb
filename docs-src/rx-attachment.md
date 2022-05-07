@@ -4,7 +4,11 @@ Attachments are binary data files that can be attachment to an `RxDocument`, lik
 
 Using attachments instead of adding the data to the normal document, ensures that you still have a good performance when querying and writing documents, even when a big amount of data, like an image file has to be stored.
 
-You can store string, binary files, images and whatever you want side by side with your documents.
+- You can store string, binary files, images and whatever you want side by side with your documents.
+- Deleted documents automatically loose all their attachments data.
+- Not all replication plugins support the replication of attachments.
+- Attachments can be stored encrypted.
+
 
 ## Add the attachments plugin
 

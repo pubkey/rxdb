@@ -1957,6 +1957,62 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.strictEqual(Object.keys(previous._attachments).length, 2);
                 storageInstance.close();
             });
+            it('_deleted documents must loose all attachments', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: Object.assign(
+                        getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                        {
+                            attachments: {}
+                        }
+                    ),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
+                const attachmentHash = await config.storage.getStorage().statics.hash(data);
+                const dataString = await blobBufferUtil.toBase64String(data);
+                const writeData: RxDocumentWriteData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: EXAMPLE_REVISION_1,
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _attachments: {
+                        foo: {
+                            digest: config.storage.getStorage().statics.hashKey + '-' + attachmentHash,
+                            length: blobBufferUtil.size(data),
+                            data: dataString,
+                            type: 'text/plain'
+                        }
+                    }
+                };
+                await storageInstance.bulkWrite([{ document: writeData }]);
+                await storageInstance.getAttachmentData('foobar', 'foo');
+
+                const deleteData = clone(writeData);
+                deleteData._meta.lwt = now();
+                deleteData._deleted = true;
+                deleteData._attachments = {};
+                deleteData._rev = EXAMPLE_REVISION_2;
+
+                await storageInstance.bulkWrite([{ previous: writeData, document: deleteData }]);
+
+
+                let hasThrown = false;
+                try {
+                    await storageInstance.getAttachmentData('foobar', 'foo');
+                } catch (err) {
+                    hasThrown = true;
+                }
+                assert.ok(hasThrown);
+
+                storageInstance.close();
+            });
         });
         describe('.cleanup', () => {
             it('should have cleaned up the deleted document', async () => {
