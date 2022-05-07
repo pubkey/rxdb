@@ -25,7 +25,8 @@ import {
     lastOfArray,
     now,
     RxDocument,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    RxCollectionCreator
 } from '../../';
 
 import {
@@ -1133,6 +1134,53 @@ config.parallel('rx-collection.test.js', () => {
                     const docsAfter = await c.find().exec();
                     assert.strictEqual(docsAfter.length, 9);
                     c.database.destroy();
+                });
+                /**
+                 * @link https://github.com/pubkey/rxdb/pull/3785
+                 */
+                it('#3785 should work when the collection name contains a dash or other special characters', async () => {
+                    if (!config.storage.hasPersistence) {
+                        return;
+                    }
+
+                    const collectionNames: string[] = [
+                        'name_with_a_-_in',
+                        'name_no_dash',
+                        'dollar$collection'
+                    ].sort();
+
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        storage: config.storage.getStorage(),
+                    });
+
+
+
+                    const collectionsCreator: { [k: string]: RxCollectionCreator } = {};
+                    collectionNames.forEach(collectionName => {
+                        collectionsCreator[collectionName] = {
+                            schema: schemas.human
+                        };
+                    });
+                    await db.addCollections(collectionsCreator);
+
+                    /**
+                     * Add a document to each collection
+                     */
+                    const docData = schemaObjects.simpleHuman();
+                    await Promise.all(
+                        Object.keys(db.collections).map(collectionName => {
+                            console.log(collectionName);
+                            return db.collections[collectionName].insert(docData);
+                        })
+                    );
+
+                    const removedCollections = await db.remove();
+
+                    assert.deepStrictEqual(
+                        removedCollections.sort(),
+                        collectionNames
+                    );
                 });
             });
             describe('.bulkRemove()', () => {

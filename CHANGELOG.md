@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - ADD attachment support to SQLite `RxStorage`
 - ADD attachment support to IndexedDB `RxStorage`
+- FIX collections with a dash in the name where not properly removed [#3785](https://github.com/pubkey/rxdb/pull/3785) Thanks [@mmouterde](https://github.com/mmouterde)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

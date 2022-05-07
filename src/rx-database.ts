@@ -501,9 +501,10 @@ export class RxDatabaseBase<
     }
 
     /**
-     * deletes the database and its stored data
+     * deletes the database and its stored data.
+     * Returns the names of all removed collections.
      */
-    remove(): Promise<void> {
+    remove(): Promise<string[]> {
         return this
             .destroy()
             .then(() => removeRxDatabase(this.name, this.storage));
@@ -749,13 +750,16 @@ export function createRxDatabase<
 }
 
 /**
- * removes the database and all its known data
+ * Removes the database and all its known data
+ * with all known collections and all internal meta data.
+ * 
+ * Returns the names of the removed collections.
  */
 export async function removeRxDatabase(
     databaseName: string,
     storage: RxStorage<any, any>
-): Promise<any> {
-    const storageInstance = await createRxDatabaseStorageInstance(
+): Promise<string[]> {
+    const dbInternalsStorageInstance = await createRxDatabaseStorageInstance(
         storage,
         databaseName,
         {},
@@ -763,18 +767,18 @@ export async function removeRxDatabase(
     );
 
     const collectionDocs = await getAllCollectionDocuments(
-        storageInstance,
+        dbInternalsStorageInstance,
         storage
     );
 
+    const removedCollectionNames: string[] = [];
     await Promise.all(
         collectionDocs
             .map(async (colDoc) => {
-                const key = colDoc.key;
                 const schema = colDoc.data.schema;
-                const split = key.split('-');
-                const collectionName = split[0];
-                const storageInstance = storage.createStorageInstance<any>(
+                const collectionName = colDoc.data.name;
+                removedCollectionNames.push(collectionName);
+                const storageInstance = await storage.createStorageInstance<any>(
                     {
                         databaseName,
                         collectionName,
@@ -783,7 +787,7 @@ export async function removeRxDatabase(
                         multiInstance: false
                     }
                 );
-                await (await storageInstance).remove();
+                await storageInstance.remove();
             })
     );
 
@@ -793,7 +797,8 @@ export async function removeRxDatabase(
         storage
     });
 
-    return storageInstance.remove();
+    await dbInternalsStorageInstance.remove();
+    return removedCollectionNames;
 }
 
 export function isRxDatabase(obj: any) {
