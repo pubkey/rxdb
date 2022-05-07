@@ -1,6 +1,8 @@
 # Attachments
 
-Like [pouchdb](https://pouchdb.com/guides/attachments.html), RxDB can store attachments which have better performance and a higher [quota-limit](https://www.html5rocks.com/en/tutorials/offline/quota-research/) than regular data.
+Attachments are binary data files that can be attachment to an `RxDocument`, like a file that is attached to an email.
+
+Using attachments instead of adding the data to the normal document, ensures that you still have a good performance when querying and writing documents, even when a big amount of data, like an image file has to be stored.
 
 You can store string, binary files, images and whatever you want side by side with your documents.
 

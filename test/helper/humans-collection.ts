@@ -82,7 +82,9 @@ export async function createAttachments(
     name = 'human',
     multiInstance = true
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
-    if (!name) name = 'human';
+    if (!name) {
+        name = 'human';
+    }
     const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType> }>({
         name: randomCouchString(10),
         storage: config.storage.getStorage(),

@@ -2,7 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD attachment support to SQLite `RxStorage`
+- ADD attachment support to IndexedDB `RxStorage`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

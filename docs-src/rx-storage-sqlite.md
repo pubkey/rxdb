@@ -12,7 +12,6 @@ This storage is based on [SQLite](https://www.sqlite.org/index.html) and is made
 
 - It is part of [RxDB Premium](./premium.md)
 - Does not support CouchDB replication.
-- Does not support attachments.
 
 
 ## Usage (with Node.js SQLite)
