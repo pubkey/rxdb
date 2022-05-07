@@ -60,8 +60,7 @@ export function getDexieDbWithTables(
             return {
                 dexieDb,
                 dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME],
-                dexieDeletedTable: (dexieDb as any)[DEXIE_DELETED_DOCS_TABLE_NAME],
-                dexieChangesTable: (dexieDb as any)[DEXIE_CHANGES_TABLE_NAME]
+                dexieDeletedTable: (dexieDb as any)[DEXIE_DELETED_DOCS_TABLE_NAME]
             };
         })();
 
