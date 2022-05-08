@@ -131,6 +131,7 @@ await myDocument.atomicPatch({
 ```
 
 - Remove the document
+
 ```ts
 await myDocument.remove();
 ```
