@@ -547,7 +547,7 @@ describe('replication.test.js', () => {
         });
         it('should push data even if liveInterval is set to 0', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
-            let callProof = null;
+            let callProof: string | null = null;
             replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -567,10 +567,12 @@ describe('replication.test.js', () => {
             // insert a new doc to trigger a push
             await localCollection.insert(schemaObjects.humanWithTimestamp());
 
-            // wait for storage propagation
-            await AsyncTestUtil.wait(100);
+            /**
+             * At some time,
+             * the push handler should be called
+             */
+            await waitUntil(() => callProof === 'yeah');
 
-            assert.strictEqual(callProof, 'yeah', 'Throwing pull handler should be called');
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
