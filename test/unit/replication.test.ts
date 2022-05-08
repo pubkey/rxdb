@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil, {
+import {
     clone,
     wait,
     waitUntil
