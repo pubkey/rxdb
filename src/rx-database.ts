@@ -585,10 +585,7 @@ export async function _removeAllOfCollection(
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
     const docs = await getAllCollectionDocuments(rxDatabase.internalStore, rxDatabase.storage);
     const relevantDocs = docs
-        .filter((doc) => {
-            const name = doc.key.split('-')[0];
-            return name === collectionName;
-        });
+        .filter((colDoc) => colDoc.data.name === collectionName);
     const writeRows = relevantDocs.map(doc => {
         const writeDoc = flatClone(doc);
         writeDoc._deleted = true;

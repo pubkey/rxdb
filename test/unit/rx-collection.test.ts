@@ -1170,7 +1170,6 @@ config.parallel('rx-collection.test.js', () => {
                     const docData = schemaObjects.simpleHuman();
                     await Promise.all(
                         Object.keys(db.collections).map(collectionName => {
-                            console.log(collectionName);
                             return db.collections[collectionName].insert(docData);
                         })
                     );
@@ -1181,6 +1180,48 @@ config.parallel('rx-collection.test.js', () => {
                         removedCollections.sort(),
                         collectionNames
                     );
+                });
+                /**
+                 * @link https://github.com/pubkey/rxdb/pull/3788
+                 */
+                it('#3788 removing the collection should also remove all changes', async () => {
+                    if (!config.storage.hasMultiInstance) {
+                        return;
+                    }
+
+                    const dbName = randomCouchString();
+
+                    const createDb = async () => {
+                        const db = await createRxDatabase({
+                            name: dbName,
+                            storage: config.storage.getStorage(),
+                            ignoreDuplicate: true
+                        });
+                        await db.addCollections({
+                            'human-2': { schema: schemas.human }
+                        });
+                        return db;
+                    }
+
+                    const db1 = await createDb();
+                    await db1.collections['human-2'].insert(schemaObjects.simpleHuman());
+                    const db2 = await createDb();
+
+                    // remove the collection on one database
+                    await db1['human-2'].remove();
+
+
+                    /**
+                     * Getting the changes in the other database should have an empty result.
+                     */
+                    const changesResult = await db2['human-2'].storageInstance.getChangedDocumentsSince(10);
+
+                    console.dir(changesResult);
+
+                    assert.strictEqual(changesResult.length, 0);
+
+                    db1.destroy();
+                    db2.destroy();
                 });
             });
             describe('.bulkRemove()', () => {
