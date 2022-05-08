@@ -1210,15 +1210,16 @@ config.parallel('rx-collection.test.js', () => {
                     // remove the collection on one database
                     await db1['human-2'].remove();
 
-
                     /**
                      * Getting the changes in the other database should have an empty result.
+                     * This cannot be checked on pouchdb
+                     * because the pouchdb storage will not resolve anytime
+                     * when the storage was removed in the other instance.
                      */
-                    const changesResult = await db2['human-2'].storageInstance.getChangedDocumentsSince(10);
-
-                    console.dir(changesResult);
-
-                    assert.strictEqual(changesResult.length, 0);
+                    if (config.storage.name !== 'pouchdb') {
+                        const changesResult = await db2['human-2'].storageInstance.getChangedDocumentsSince(10);
+                        assert.strictEqual(changesResult.length, 0);
+                    }
 
                     db1.destroy();
                     db2.destroy();
