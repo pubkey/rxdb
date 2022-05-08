@@ -586,7 +586,7 @@ export async function _removeAllOfCollection(
     const docs = await getAllCollectionDocuments(rxDatabase.internalStore, rxDatabase.storage);
     const relevantDocs = docs
         .filter((doc) => {
-            const name = doc.key.split('-')[0];
+            const name = doc.key.split('-')[0]; // hello split ! ^^
             return name === collectionName;
         });
     const writeRows = relevantDocs.map(doc => {

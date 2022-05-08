@@ -35,8 +35,6 @@ import * as schemaObjects from '../helper/schema-objects';
 
 import { RxDBEncryptionPlugin } from '../../plugins/encryption';
 import { InternalStorePasswordDocType } from '../../src/plugins/encryption';
-import { RxStorageDexie } from '../../src/plugins/dexie';
-import { simpleHuman } from '../helper/schema-objects';
 
 addRxPlugin(RxDBEncryptionPlugin);
 
@@ -666,24 +664,44 @@ config.parallel('rx-database.test.js', () => {
         });
 
 
-        it.only('ISSUE - collection keeping docs', async () => {
-            const db = await createRxDatabase({
-                name: randomCouchString(10),
-                storage: config.storage.getStorage() as RxStorageDexie
-            });
-            const collections = await db.addCollections({
-                human: {schema: schemas.human}
-            });
-            await collections.human.insert(simpleHuman());
-            let docs = await collections.human.find().exec();
-            assert.strictEqual(docs.length, 1, 'collection should be initialized with 1 document.');
+        it('#3788 removing the collection should also remove all changes', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
 
-            await collections.human.remove();
-            await db.remove();
-            await db.destroy();
+            const dbName = randomCouchString();
 
-            docs = await collections.human.find().exec();
-            assert.strictEqual(docs.length, 0, 'once db removed, collection should have 0 document.');
+            const createDb = async () => {
+                const db = await createRxDatabase({
+                    name: dbName,
+                    storage: config.storage.getStorage(),
+                    ignoreDuplicate: true
+                });
+                await db.addCollections({
+                    'human-2': { schema: schemas.human }
+                });
+                return db;
+            }
+
+            const db1 = await createDb();
+            await db1.collections['human-2'].insert(schemaObjects.simpleHuman());
+            const db2 = await createDb();
+
+            // remove the collection on one database
+            await db1['human-2'].remove();
+
+
+            /**
+             * Getting the changes in the other database should have an empty result.
+             */
+            const changesResult = await db2['human-2'].storageInstance.getChangedDocumentsSince(10);
+
+            console.dir(changesResult);
+
+            assert.strictEqual(changesResult.length, 0);
+
+            db1.destroy();
+            db2.destroy();
         });
     });
     describe('wait a bit', () => {
