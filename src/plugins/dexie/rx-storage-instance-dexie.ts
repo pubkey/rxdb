@@ -342,7 +342,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         await Promise.all([
             state.dexieDeletedTable.clear(),
             state.dexieTable.clear()
-            /* why not dexieChangesTable ? */
         ]);
         return this.close();
     }
