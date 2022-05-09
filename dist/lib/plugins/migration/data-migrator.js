@@ -73,6 +73,7 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
             var bulkDeleteInputData = documentsData.map(function (docData) {
               var writeDeleted = (0, _util.flatClone)(docData);
               writeDeleted._deleted = true;
+              writeDeleted._attachments = {};
               return {
                 previous: docData,
                 document: writeDeleted

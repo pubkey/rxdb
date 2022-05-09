@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult } from '../../types';
+import type { BulkWriteRow, EventBulk, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types';
 import type { MemoryChangesCheckpoint, MemoryPreparedQuery, MemoryStorageInternals, RxStorageMemory, RxStorageMemoryInstanceCreationOptions, RxStorageMemorySettings } from './memory-types';
 export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<RxDocType, MemoryStorageInternals<RxDocType>, RxStorageMemoryInstanceCreationOptions> {
     readonly storage: RxStorageMemory;
@@ -9,7 +9,7 @@ export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInst
     readonly internals: MemoryStorageInternals<RxDocType>;
     readonly options: Readonly<RxStorageMemoryInstanceCreationOptions>;
     readonly settings: RxStorageMemorySettings;
-    readonly primaryPath: keyof RxDocType;
+    readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$;
     closed: boolean;
     constructor(storage: RxStorageMemory, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: MemoryStorageInternals<RxDocType>, options: Readonly<RxStorageMemoryInstanceCreationOptions>, settings: RxStorageMemorySettings);

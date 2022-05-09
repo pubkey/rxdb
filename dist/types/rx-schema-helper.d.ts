@@ -9,7 +9,7 @@ export declare function getPseudoSchemaForVersion<T = any>(version: number, prim
  */
 export declare function getSchemaByObjectPath<T = any>(rxJsonSchema: RxJsonSchema<T>, path: keyof T | string): JsonSchema;
 export declare function fillPrimaryKey<T>(primaryPath: keyof T, jsonSchema: RxJsonSchema<T>, documentData: RxDocumentData<T>): RxDocumentData<T>;
-export declare function getPrimaryFieldOfPrimaryKey<RxDocType>(primaryKey: PrimaryKey<RxDocType>): keyof RxDocType;
+export declare function getPrimaryFieldOfPrimaryKey<RxDocType>(primaryKey: PrimaryKey<RxDocType>): StringKeys<RxDocType>;
 /**
  * Returns the composed primaryKey of a document by its data.
  */

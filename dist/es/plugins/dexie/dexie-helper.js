@@ -65,8 +65,7 @@ export function getDexieDbWithTables(databaseName, collectionName, settings, sch
           return {
             dexieDb: dexieDb,
             dexieTable: dexieDb[DEXIE_DOCS_TABLE_NAME],
-            dexieDeletedTable: dexieDb[DEXIE_DELETED_DOCS_TABLE_NAME],
-            dexieChangesTable: dexieDb[DEXIE_CHANGES_TABLE_NAME]
+            dexieDeletedTable: dexieDb[DEXIE_DELETED_DOCS_TABLE_NAME]
           };
         });
       } catch (e) {

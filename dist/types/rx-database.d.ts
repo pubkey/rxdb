@@ -128,9 +128,10 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      */
     destroy(): Promise<boolean>;
     /**
-     * deletes the database and its stored data
+     * deletes the database and its stored data.
+     * Returns the names of all removed collections.
      */
-    remove(): Promise<void>;
+    remove(): Promise<string[]>;
     get asRxDatabase(): RxDatabase<{}, Internals, InstanceCreationOptions>;
 }
 /**
@@ -151,8 +152,11 @@ export declare function createRxDatabase<Collections = {
     [key: string]: RxCollection;
 }, Internals = any, InstanceCreationOptions = any>({ storage, instanceCreationOptions, name, password, multiInstance, eventReduce, ignoreDuplicate, options, cleanupPolicy, localDocuments }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections, Internals, InstanceCreationOptions>>;
 /**
- * removes the database and all its known data
+ * Removes the database and all its known data
+ * with all known collections and all internal meta data.
+ *
+ * Returns the names of the removed collections.
  */
-export declare function removeRxDatabase(databaseName: string, storage: RxStorage<any, any>): Promise<any>;
+export declare function removeRxDatabase(databaseName: string, storage: RxStorage<any, any>): Promise<string[]>;
 export declare function isRxDatabase(obj: any): boolean;
 export declare function dbCount(): number;

@@ -1,7 +1,7 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, EventBulk, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageStatics } from './types';
+import type { BulkWriteRow, EventBulk, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageStatics, StringKeys } from './types';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
 /**
@@ -24,13 +24,13 @@ export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxColl
  * and must not be written.
  * Used as helper inside of some RxStorage implementations.
  */
-export declare function categorizeBulkWriteRows<RxDocType>(storageInstance: RxStorageInstance<any, any, any>, primaryPath: keyof RxDocType, 
+export declare function categorizeBulkWriteRows<RxDocType>(storageInstance: RxStorageInstance<any, any, any>, primaryPath: StringKeys<RxDocType>, 
 /**
  * Current state of the documents
  * inside of the storage. Used to determine
  * which writes cause conflicts.
  */
-docsInDb: Map<RxDocumentData<RxDocType>[keyof RxDocType], RxDocumentData<RxDocType>>, 
+docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>>, 
 /**
  * The write rows that are passed to
  * RxStorageInstance().bulkWrite().
@@ -44,7 +44,7 @@ bulkWriteRows: BulkWriteRow<RxDocType>[]): {
      * sequences table so that they can be fetched via
      * RxStorageInstance().getChangedDocumentsSince().
      */
-    changedDocumentIds: RxDocumentData<RxDocType>[keyof RxDocType][];
+    changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][];
     /**
      * TODO directly return a docId->error object
      * like in the return value of bulkWrite().

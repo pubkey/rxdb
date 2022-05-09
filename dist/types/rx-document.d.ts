@@ -7,7 +7,7 @@ export declare const basePrototype: {
      * we should make these accesors functions instead of getters.
      */
     readonly _data: import("./types").DeepReadonlyObject<{}> | undefined;
-    readonly primaryPath: undefined;
+    readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: Observable<boolean> | undefined;
@@ -95,7 +95,7 @@ export declare function createRxDocumentConstructor(proto?: {
      * we should make these accesors functions instead of getters.
      */
     readonly _data: import("./types").DeepReadonlyObject<{}> | undefined;
-    readonly primaryPath: undefined;
+    readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: Observable<boolean> | undefined;
@@ -184,7 +184,7 @@ export declare function createRxDocumentConstructor(proto?: {
          * we should make these accesors functions instead of getters.
          */
         readonly _data: import("./types").DeepReadonlyObject<{}> | undefined;
-        readonly primaryPath: undefined;
+        readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
         readonly primary: any;
         readonly revision: string | undefined;
         readonly deleted$: Observable<boolean> | undefined;

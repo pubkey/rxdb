@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk, LokiChangesCheckpoint } from '../../types';
+import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk, LokiChangesCheckpoint, StringKeys } from '../../types';
 import type { RxStorageLoki } from './rx-storage-lokijs';
 export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<RxDocType, LokiStorageInternals, LokiSettings> {
     readonly storage: RxStorageLoki;
@@ -9,7 +9,7 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     readonly internals: LokiStorageInternals;
     readonly options: Readonly<LokiSettings>;
     readonly databaseSettings: LokiDatabaseSettings;
-    readonly primaryPath: keyof RxDocType;
+    readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$;
     private lastChangefeedSequence;
     readonly instanceId: number;

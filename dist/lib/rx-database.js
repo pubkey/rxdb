@@ -45,30 +45,28 @@ var _obliviousSet = require("oblivious-set");
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
 
 /**
- * removes the database and all its known data
+ * Removes the database and all its known data
+ * with all known collections and all internal meta data.
+ * 
+ * Returns the names of the removed collections.
  */
 var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
-  return Promise.resolve(createRxDatabaseStorageInstance(storage, databaseName, {}, false)).then(function (storageInstance) {
-    return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storageInstance, storage)).then(function (collectionDocs) {
+  return Promise.resolve(createRxDatabaseStorageInstance(storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
+    return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(dbInternalsStorageInstance, storage)).then(function (collectionDocs) {
+      var removedCollectionNames = [];
       return Promise.resolve(Promise.all(collectionDocs.map(function (colDoc) {
         try {
-          var _key = colDoc.key;
           var schema = colDoc.data.schema;
-
-          var split = _key.split('-');
-
-          var collectionName = split[0];
-
-          var _storageInstance2 = storage.createStorageInstance({
+          var collectionName = colDoc.data.name;
+          removedCollectionNames.push(collectionName);
+          return Promise.resolve(storage.createStorageInstance({
             databaseName: databaseName,
             collectionName: collectionName,
             schema: schema,
             options: {},
             multiInstance: false
-          });
-
-          return Promise.resolve(_storageInstance2).then(function (_storageInstance) {
-            return Promise.resolve(_storageInstance.remove()).then(function () {});
+          })).then(function (storageInstance) {
+            return Promise.resolve(storageInstance.remove()).then(function () {});
           });
         } catch (e) {
           return Promise.reject(e);
@@ -78,7 +76,9 @@ var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
           databaseName: databaseName,
           storage: storage
         })).then(function () {
-          return storageInstance.remove();
+          return Promise.resolve(dbInternalsStorageInstance.remove()).then(function () {
+            return removedCollectionNames;
+          });
         });
       });
     });
@@ -127,9 +127,8 @@ var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(s
 var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collectionName) {
   try {
     return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(rxDatabase.internalStore, rxDatabase.storage)).then(function (docs) {
-      var relevantDocs = docs.filter(function (doc) {
-        var name = doc.key.split('-')[0];
-        return name === collectionName;
+      var relevantDocs = docs.filter(function (colDoc) {
+        return colDoc.data.name === collectionName;
       });
       var writeRows = relevantDocs.map(function (doc) {
         var writeDoc = (0, _util.flatClone)(doc);
@@ -566,7 +565,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     }
   }
   /**
-   * deletes the database and its stored data
+   * deletes the database and its stored data.
+   * Returns the names of all removed collections.
    */
   ;
 

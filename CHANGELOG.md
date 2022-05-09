@@ -2,16 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD attachment support to SQLite `RxStorage`
-- ADD attachment support to IndexedDB `RxStorage`
-- FIX collections with a dash in the name where not properly removed [#3785](https://github.com/pubkey/rxdb/pull/3785) Thanks [@mmouterde](https://github.com/mmouterde)
-- FIX data still there despite remove and destroy calls [#3788](https://github.com/pubkey/rxdb/pull/3788) Thanks [@mmouterde](https://github.com/mmouterde)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.2.0 (9 May 2022)
+
+- ADD attachment support to SQLite `RxStorage`
+- ADD attachment support to IndexedDB `RxStorage`
+- FIX collections with a dash in the name where not properly removed [#3785](https://github.com/pubkey/rxdb/pull/3785) Thanks [@mmouterde](https://github.com/mmouterde)
+- FIX data still there despite remove and destroy calls [#3788](https://github.com/pubkey/rxdb/pull/3788) Thanks [@mmouterde](https://github.com/mmouterde)
 
 ### 12.1.0 (6 May 2022)
 

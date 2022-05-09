@@ -1,8 +1,8 @@
-import type { DeepMutable, DeepReadonly, MaybeReadonly, RxDocumentData, RxJsonSchema } from './types';
+import type { DeepMutable, DeepReadonly, MaybeReadonly, RxDocumentData, RxJsonSchema, StringKeys } from './types';
 export declare class RxSchema<RxDocType = any> {
     readonly jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>;
     indexes: MaybeReadonly<string[]>[];
-    readonly primaryPath: keyof RxDocType;
+    readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     finalFields: string[];
     constructor(jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>);
     get version(): number;

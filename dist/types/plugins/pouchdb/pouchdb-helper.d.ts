@@ -1,6 +1,6 @@
 /// <reference types="pouchdb-core" />
 /// <reference types="node" />
-import type { ChangeStreamEvent, MaybeReadonly, PouchChangeRow, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, RxLocalDocumentData, WithAttachments } from '../../types';
+import type { ChangeStreamEvent, MaybeReadonly, PouchChangeRow, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, RxLocalDocumentData, StringKeys, WithAttachments } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import type { ChangeEvent } from 'event-reduce-js';
 export declare type PouchStorageInternals = {
@@ -27,17 +27,17 @@ export declare const POUCHDB_DESIGN_PREFIX: '_design/';
  * So we have to map this field into a non-lodashed field.
  */
 export declare const POUCHDB_META_FIELDNAME = "rxdbMeta";
-export declare function pouchSwapIdToPrimary<T>(primaryKey: keyof T, docData: any): any;
-export declare function pouchSwapIdToPrimaryString<T>(primaryKey: keyof T, str: keyof T): keyof T;
-export declare function pouchDocumentDataToRxDocumentData<T>(primaryKey: keyof T, pouchDoc: WithAttachments<T>): RxDocumentData<T>;
-export declare function rxDocumentDataToPouchDocumentData<T>(primaryKey: keyof T, doc: RxDocumentData<T> | RxDocumentWriteData<T>): WithAttachments<T & {
+export declare function pouchSwapIdToPrimary<T>(primaryKey: StringKeys<RxDocumentData<T>>, docData: any): any;
+export declare function pouchSwapIdToPrimaryString<T>(primaryKey: StringKeys<RxDocumentData<T>>, str: keyof T): StringKeys<RxDocumentData<T>>;
+export declare function pouchDocumentDataToRxDocumentData<T>(primaryKey: StringKeys<RxDocumentData<T>>, pouchDoc: WithAttachments<T>): RxDocumentData<T>;
+export declare function rxDocumentDataToPouchDocumentData<T>(primaryKey: StringKeys<RxDocumentData<T>>, doc: RxDocumentData<T> | RxDocumentWriteData<T>): WithAttachments<T & {
     _id: string;
 }>;
 /**
  * Swaps the primaryKey of the document
  * to the _id property.
  */
-export declare function pouchSwapPrimaryToId<RxDocType>(primaryKey: keyof RxDocType, docData: any): RxDocType & {
+export declare function pouchSwapPrimaryToId<RxDocType>(primaryKey: StringKeys<RxDocumentData<RxDocType>>, docData: any): RxDocType & {
     _id: string;
 };
 /**
@@ -46,14 +46,14 @@ export declare function pouchSwapPrimaryToId<RxDocType>(primaryKey: keyof RxDocT
  */
 export declare function pouchStripLocalFlagFromPrimary(str: string): string;
 export declare function getEventKey(pouchDBInstance: PouchDBInstance, primary: string, change: ChangeEvent<RxDocumentData<any>>): string;
-export declare function pouchChangeRowToChangeEvent<DocumentData>(primaryKey: keyof DocumentData, pouchDoc: any): ChangeEvent<RxDocumentData<DocumentData>>;
-export declare function pouchChangeRowToChangeStreamEvent<DocumentData>(primaryKey: keyof DocumentData, pouchRow: PouchChangeRow): ChangeStreamEvent<DocumentData>;
+export declare function pouchChangeRowToChangeEvent<DocumentData>(primaryKey: StringKeys<DocumentData>, pouchDoc: any): ChangeEvent<RxDocumentData<DocumentData>>;
+export declare function pouchChangeRowToChangeStreamEvent<DocumentData>(primaryKey: StringKeys<DocumentData>, pouchRow: PouchChangeRow): ChangeStreamEvent<DocumentData>;
 /**
  * Runs a primary swap with transform all custom primaryKey occurences
  * into '_id'
  * @recursive
  */
-export declare function primarySwapPouchDbQuerySelector<RxDocType>(selector: any, primaryKey: keyof RxDocumentData<RxDocType>): any;
+export declare function primarySwapPouchDbQuerySelector<RxDocType>(selector: any, primaryKey: StringKeys<RxDocumentData<RxDocType>>): any;
 export declare function pouchHash(data: Buffer | Blob | string): Promise<string>;
 export declare function writeAttachmentsToAttachments(attachments: {
     [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
