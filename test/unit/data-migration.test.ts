@@ -1092,6 +1092,12 @@ config.parallel('data-migration.test.js', () => {
             });
         });
         it('#3460 migrate attachments', async () => {
+            // Attachments are not implemented for lokijs
+            // https://github.com/pubkey/rxdb/pull/3752#issuecomment-1120715556
+            if (config.storage.name === 'lokijs') {
+                return;
+            }
+
             const attachmentData = AsyncTestUtil.randomString(20);
             const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
                 attachmentData,
@@ -1162,7 +1168,7 @@ config.parallel('data-migration.test.js', () => {
             const db = await createRxDatabase({
                 ignoreDuplicate: true,
                 name: dbName,
-                storage: config.storage.getPersistendStorage(),
+                storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
                 heroes: {
@@ -1177,7 +1183,7 @@ config.parallel('data-migration.test.js', () => {
             const db2 = await createRxDatabase({
                 ignoreDuplicate: true,
                 name: dbName,
-                storage: config.storage.getPersistendStorage(),
+                storage: config.storage.getStorage(),
             });
             const cols2 = await db2.addCollections({
                 heroes: {
@@ -1207,7 +1213,7 @@ config.parallel('data-migration.test.js', () => {
                 const db = await createRxDatabase({
                     ignoreDuplicate: true,
                     name: dbName,
-                    storage: config.storage.getPersistendStorage(),
+                    storage: config.storage.getStorage(),
                 });
                 await db.addCollections({
                     heroes: {
