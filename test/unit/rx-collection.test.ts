@@ -565,11 +565,12 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     it('find none with random passportId', async () => {
                         const c = await humansCollection.create();
-                        const docs = await c.find({
+                        const query = c.find({
                             selector: {
                                 passportId: randomCouchString(10)
                             }
-                        }).exec();
+                        });
+                        const docs = await query.exec();
                         assert.strictEqual(docs.length, 0);
                         c.database.destroy();
                     });

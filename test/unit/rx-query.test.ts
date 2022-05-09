@@ -704,7 +704,7 @@ config.parallel('rx-query.test.js', () => {
             );
             c.database.destroy();
         });
-        it('.findOne(documentId) should use RxStorage().findDocumentsById() instead of RxStorage().query()', async () => {
+        it('isFindOneByIdQuery(): .findOne(documentId) should use RxStorage().findDocumentsById() instead of RxStorage().query()', async () => {
             const c = await humansCollection.create();
             const docData = schemaObjects.simpleHuman();
             const docId = 'foobar';
@@ -738,6 +738,19 @@ config.parallel('rx-query.test.js', () => {
                         }
                     },
                     limit: 1
+                }).exec(),
+                () => c.find({
+                    selector: {
+                        passportId: {
+                            $eq: docId
+                        }
+                    }
+                    /**
+                     * Even without limit here,
+                     * it should detect that we look for a document that is $eq
+                     * to the primary key, so it can always
+                     * only find one document.
+                     */
                 }).exec()
             ];
             for (const operation of operations) {

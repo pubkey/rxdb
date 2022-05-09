@@ -617,7 +617,6 @@ export function isFindOneByIdQuery(
     query: MangoQuery<any>
 ): false | string {
     if (
-        query.limit === 1 &&
         !query.skip &&
         query.selector &&
         Object.keys(query.selector).length === 1 &&

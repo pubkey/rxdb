@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- OPTIMIZE `isFindOneByIdQuery()` should be `true` when only the primary field is queried with an `$eq`
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
