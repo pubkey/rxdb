@@ -88,4 +88,7 @@ export type RxTestStorage = {
     readonly hasAttachments: boolean;
     // true if the storage supports $regex queries, false if not.
     readonly hasRegexSupport: boolean;
+
+    // ???
+    readonly getPersistendStorage: () => RxStorage<any, any>;
 }

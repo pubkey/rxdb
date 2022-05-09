@@ -50,7 +50,7 @@ config.parallel('data-migration.test.js', () => {
      * the database again.
      */
     if (
-        !config.storage.name.includes('pouchdb')
+        !(config.storage.name.includes('pouchdb') || config.storage.name === 'lokijs')
     ) {
         return;
     }

@@ -88,6 +88,10 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
+                getPersistendStorage: () => {
+                    addPouchPlugin(require('pouchdb-adapter-memory'));
+                    return getRxStoragePouch('memory');
+                },
                 hasCouchDBReplication: true,
                 hasAttachments: true,
                 hasRegexSupport: true
@@ -137,6 +141,13 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
+                getPersistendStorage: () => {
+                    const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
+                    const adapter = new lfsa();
+                    return getRxStorageLoki({
+                        adapter
+                    });
+                },
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
@@ -152,6 +163,11 @@ export function setDefaultStorage(storageKey: string) {
                 'lokijs-fs.worker.js'
             );
             console.log('lokiMemoryWorkerPath: ' + lokiMemoryWorkerPath);
+            const lokiPersistendWorkerPath = require('path').join(
+                '../../../../test_tmp/helper',
+                'lokijs-worker.js'
+            );
+            console.log('lokiWorkerPath: ' + lokiWorkerPath);
             config.storage = {
                 name: 'lokijs-worker',
                 getStorage: () => getRxStorageWorker(
@@ -173,6 +189,14 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
+                getPersistendStorage() {
+                    return getRxStorageWorker(
+                        {
+                            statics: RxStorageLokiStatics,
+                            workerInput: lokiPersistendWorkerPath
+                        }
+                    );
+                },
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
@@ -213,6 +237,9 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
+                getPersistendStorage: () => {
+                    throw new Error('dexie persistend storage is not implemented')
+                },
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
