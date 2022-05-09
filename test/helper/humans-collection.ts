@@ -455,7 +455,7 @@ export async function createMigrationCollection(
     const colName = 'human';
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanAgeDocumentType> }>({
         name,
-        storage: config.storage.getPersistendStorage(),
+        storage: config.storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -481,7 +481,7 @@ export async function createMigrationCollection(
 
     const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanV3DocumentType> }>({
         name,
-        storage: config.storage.getPersistendStorage(),
+        storage: config.storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
