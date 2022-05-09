@@ -20,7 +20,8 @@ import type {
     RxDocumentData,
     RxDocumentWriteData,
     RxJsonSchema,
-    RxStorageStatics
+    RxStorageStatics,
+    StringKeys
 } from '../../types';
 import { overwritable } from '../../overwritable';
 import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
@@ -42,7 +43,7 @@ export const RxStoragePouchStatics: RxStorageStatics = {
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         query: MangoQuery<RxDocType>
     ): DeterministicSortComparator<RxDocType> {
-        const primaryPath: keyof RxDocType = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
+        const primaryPath: StringKeys<RxDocType> = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
         const sortOptions: MangoQuerySortPart[] = query.sort ? (query.sort as any) : [{
             [primaryPath]: 'asc'
         }];

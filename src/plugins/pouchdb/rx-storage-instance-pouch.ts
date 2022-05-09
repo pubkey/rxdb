@@ -21,7 +21,8 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
-    RxStorageQueryResult
+    RxStorageQueryResult,
+    StringKeys
 } from '../../types';
 import {
     OPEN_POUCHDB_STORAGE_INSTANCES,
@@ -56,7 +57,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     private subs: Subscription[] = [];
-    private primaryPath: keyof RxDocType;
+    private primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
     constructor(
         public readonly storage: RxStorage<PouchStorageInternals, PouchSettings>,
@@ -67,7 +68,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         public readonly options: Readonly<PouchSettings>
     ) {
         OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
 
         /**
          * Instead of listening to pouch.changes,

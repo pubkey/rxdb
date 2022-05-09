@@ -7,7 +7,15 @@ import {
     DeterministicSortComparator,
     StateResolveFunctionInput
 } from 'event-reduce-js';
-import type { RxQuery, MangoQuery, RxChangeEvent, RxDocumentWriteData, PreparedQuery } from './types';
+import type {
+    RxQuery,
+    MangoQuery,
+    RxChangeEvent,
+    RxDocumentWriteData,
+    PreparedQuery,
+    StringKeys,
+    RxDocumentData
+} from './types';
 import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
 import { clone, ensureNotFalsy } from './util';
@@ -25,9 +33,9 @@ export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventRedu
 
 
 export function getSortFieldsOfQuery<RxDocType>(
-    primaryKey: keyof RxDocType,
+    primaryKey: StringKeys<RxDocumentData<RxDocType>>,
     query: MangoQuery<RxDocType>
-): (string | keyof RxDocType)[] {
+): (string | StringKeys<RxDocType>)[] {
     if (!query.sort || query.sort.length === 0) {
         return [primaryKey];
     } else {

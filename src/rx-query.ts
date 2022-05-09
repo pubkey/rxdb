@@ -218,7 +218,7 @@ export class RxQueryBase<
         const primPath = this.collection.schema.primaryPath;
         const docsDataMap = new Map();
         const docsData = docs.map(doc => {
-            const docData: RxDocumentType = doc._dataSync$.getValue() as any;
+            const docData: RxDocumentData<RxDocumentType> = doc._dataSync$.getValue() as any;
             const id: string = docData[primPath] as any;
             docsDataMap.set(id, docData);
             return docData;

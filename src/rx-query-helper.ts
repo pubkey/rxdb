@@ -10,7 +10,7 @@ export function normalizeMangoQuery<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     mangoQuery: MangoQuery<RxDocType>
 ): FilledMangoQuery<RxDocType> {
-    const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as string;
+    const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     mangoQuery = flatClone(mangoQuery);
 
     if (typeof mangoQuery.skip !== 'number') {

@@ -27,7 +27,7 @@ export function getDexieDbWithTables(
     settings: DexieSettings,
     schema: RxJsonSchema<any>
 ): DexieStorageInternals {
-    const primaryPath: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
+    const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
     let state = DEXIE_STATE_DB_BY_NAME.get(dexieDbName);
     if (!state) {
@@ -215,7 +215,7 @@ export function getDexieStoreSchema(
      * First part must be the primary key
      * @link https://github.com/dexie/Dexie.js/issues/1307#issuecomment-846590912
      */
-    const primaryKey: string = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey) as string;
+    const primaryKey = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
     parts.push([primaryKey]);
 
     // add other indexes

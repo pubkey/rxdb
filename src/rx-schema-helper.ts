@@ -82,7 +82,7 @@ export function fillPrimaryKey<T>(
 
 export function getPrimaryFieldOfPrimaryKey<RxDocType>(
     primaryKey: PrimaryKey<RxDocType>
-): keyof RxDocType {
+): StringKeys<RxDocType> {
     if (typeof primaryKey === 'string') {
         return primaryKey as any;
     } else {
@@ -154,7 +154,7 @@ export function fillWithDefaultSettings<T = any>(
     schemaObj: RxJsonSchema<T>
 ): RxJsonSchema<RxDocumentData<T>> {
     schemaObj = flatClone(schemaObj);
-    const primaryPath: string = getPrimaryFieldOfPrimaryKey(schemaObj.primaryKey) as string;
+    const primaryPath: string = getPrimaryFieldOfPrimaryKey(schemaObj.primaryKey);
     schemaObj.properties = flatClone(schemaObj.properties);
 
     // additionalProperties is always false
@@ -276,7 +276,7 @@ export function getFinalFields<T = any>(
 
     // primary is also final
     const primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
-    ret.push(primaryPath as string);
+    ret.push(primaryPath);
 
     // fields of composite primary are final
     if (typeof jsonSchema.primaryKey !== 'string') {

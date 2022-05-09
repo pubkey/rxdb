@@ -22,7 +22,8 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
-    RxStorageStatics
+    RxStorageStatics,
+    StringKeys
 } from './types';
 import {
     createRevision,
@@ -147,13 +148,13 @@ export function throwIfIsStorageWriteError<RxDocType>(
  */
 export function categorizeBulkWriteRows<RxDocType>(
     storageInstance: RxStorageInstance<any, any, any>,
-    primaryPath: keyof RxDocType,
+    primaryPath: StringKeys<RxDocType>,
     /**
      * Current state of the documents
      * inside of the storage. Used to determine
      * which writes cause conflicts.
      */
-    docsInDb: Map<RxDocumentData<RxDocType>[keyof RxDocType], RxDocumentData<RxDocType>>,
+    docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>>,
     /**
      * The write rows that are passed to
      * RxStorageInstance().bulkWrite().
@@ -168,7 +169,7 @@ export function categorizeBulkWriteRows<RxDocType>(
      * sequences table so that they can be fetched via
      * RxStorageInstance().getChangedDocumentsSince().
      */
-    changedDocumentIds: RxDocumentData<RxDocType>[keyof RxDocType][];
+    changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][];
 
     /**
      * TODO directly return a docId->error object
@@ -197,7 +198,7 @@ export function categorizeBulkWriteRows<RxDocType>(
     const bulkInsertDocs: BulkWriteRow<RxDocType>[] = [];
     const bulkUpdateDocs: BulkWriteRow<RxDocType>[] = [];
     const errors: RxStorageBulkWriteError<RxDocType>[] = [];
-    const changedDocumentIds: RxDocumentData<RxDocType>[keyof RxDocType][] = [];
+    const changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][] = [];
     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
         id: randomCouchString(10),
         events: []

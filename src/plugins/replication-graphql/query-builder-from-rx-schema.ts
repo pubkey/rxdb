@@ -73,7 +73,7 @@ export function pushQueryBuilderFromRxSchema(
     collectionName: string,
     input: GraphQLSchemaFromRxSchemaInputSingleCollection
 ): RxGraphQLReplicationPushQueryBuilder {
-    const primaryKey: string = getPrimaryFieldOfPrimaryKey(input.schema.primaryKey) as string;
+    const primaryKey = getPrimaryFieldOfPrimaryKey(input.schema.primaryKey);
     input = fillUpOptionals(input);
     const prefixes: Prefixes = input.prefixes as any;
 

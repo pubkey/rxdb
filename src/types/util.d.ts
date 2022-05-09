@@ -61,7 +61,7 @@ export type Override<T1, T2> = Omit<T1, keyof T2> & T2;
  * To test a storage, we need these
  * configuration values.
  */
- export type RxTestStorage = {
+export type RxTestStorage = {
     // TODO remove name here, it can be read out already via getStorage().name
     readonly name: string;
     readonly getStorage: () => RxStorage<any, any>;

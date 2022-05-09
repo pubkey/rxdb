@@ -27,7 +27,8 @@ import type {
     LokiDatabaseSettings,
     LokiLocalDatabaseState,
     EventBulk,
-    LokiChangesCheckpoint
+    LokiChangesCheckpoint,
+    StringKeys
 } from '../../types';
 import {
     closeLokiCollections,
@@ -57,7 +58,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     LokiSettings
 > {
 
-    public readonly primaryPath: keyof RxDocType;
+    public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     private lastChangefeedSequence: number = 0;
     public readonly instanceId = instanceId++;
@@ -73,7 +74,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         public readonly options: Readonly<LokiSettings>,
         public readonly databaseSettings: LokiDatabaseSettings
     ) {
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
         if (this.internals.leaderElector) {
             this.internals.leaderElector.awaitLeadership().then(() => {
@@ -102,23 +103,23 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             error: {}
         };
 
-        const docsInDb: Map<RxDocumentData<RxDocType>[keyof RxDocType], RxDocumentData<RxDocType>> = new Map();
+        const docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>> = new Map();
         const docsInDbWithLokiKey: Map<
-            RxDocumentData<RxDocType>[keyof RxDocType],
+            RxDocumentData<RxDocType>[StringKeys<RxDocType>],
             RxDocumentData<RxDocType> & { $loki: number; }
         > = new Map();
         documentWrites.forEach(writeRow => {
             const id = writeRow.document[this.primaryPath];
             const documentInDb = localState.collection.by(this.primaryPath, id);
             if (documentInDb) {
-                docsInDbWithLokiKey.set(id, documentInDb);
-                docsInDb.set(id, stripLokiKey(documentInDb));
+                docsInDbWithLokiKey.set(id as any, documentInDb);
+                docsInDb.set(id as any, stripLokiKey(documentInDb));
             }
         });
 
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
-            this.primaryPath,
+            this.primaryPath as any,
             docsInDb,
             documentWrites
         );
@@ -130,7 +131,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         });
         categorized.bulkUpdateDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
-            const documentInDbWithLokiKey = getFromMapOrThrow(docsInDbWithLokiKey, docId);
+            const documentInDbWithLokiKey = getFromMapOrThrow(docsInDbWithLokiKey, docId as any);
             const writeDoc: any = Object.assign(
                 {},
                 writeRow.document,

@@ -17,7 +17,8 @@ import type {
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
-    RxStorageQueryResult
+    RxStorageQueryResult,
+    StringKeys
 } from '../../types';
 import { ensureNotFalsy, getFromMapOrThrow, now, RX_META_LWT_MINIMUM } from '../../util';
 import { getDexieKeyRange } from '../dexie/query/dexie-query';
@@ -50,7 +51,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     RxStorageMemoryInstanceCreationOptions
 > {
 
-    public readonly primaryPath: keyof RxDocType;
+    public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     public closed = false;
 
@@ -63,7 +64,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         public readonly options: Readonly<RxStorageMemoryInstanceCreationOptions>,
         public readonly settings: RxStorageMemorySettings
     ) {
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     }
 
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
@@ -74,18 +75,18 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             error: {}
         };
 
-        const docsInDb: Map<RxDocumentData<RxDocType>[keyof RxDocType], RxDocumentData<RxDocType>> = new Map();
+        const docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>> = new Map();
         documentWrites.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
             const docInDb = this.internals.documents.get(docId as any);
             if (docInDb) {
-                docsInDb.set(docId, docInDb);
+                docsInDb.set(docId as any, docInDb);
             }
         });
 
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
-            this.primaryPath,
+            this.primaryPath as any,
             docsInDb,
             documentWrites
         );
@@ -115,7 +116,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 this.schema,
                 this.internals,
                 writeRow,
-                docsInDb.get(docId)
+                docsInDb.get(docId as any)
             );
             ret.success[docId as any] = writeRow.document;
         });

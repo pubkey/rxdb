@@ -361,7 +361,7 @@ export class RxReplicationStateBase<RxDocType> {
             });
         }
 
-        const pulledDocIds: string[] = pulledDocuments.map(doc => doc[this.collection.schema.primaryPath]) as any;
+        const pulledDocIds: string[] = pulledDocuments.map(doc => (doc as any)[this.collection.schema.primaryPath]) as any;
         if (this.isStopped()) {
             return Promise.resolve('ok');
         }

@@ -7,7 +7,7 @@ export function addIndexesToInternalsState<RxDocType>(
     state: MemoryStorageInternals<RxDocType>,
     schema: RxJsonSchema<RxDocumentData<RxDocType>>
 ) {
-    const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
+    const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const useIndexes: string[][] = !schema.indexes ? [] : schema.indexes.map(row => Array.isArray(row) ? row.slice(0) : [row]) as any;
 
     // we need this as default index

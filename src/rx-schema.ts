@@ -20,7 +20,8 @@ import type {
     DeepMutable,
     DeepReadonly, MaybeReadonly,
     RxDocumentData,
-    RxJsonSchema
+    RxJsonSchema,
+    StringKeys
 } from './types';
 import {
     fillWithDefaultSettings,
@@ -34,7 +35,7 @@ import { fillObjectDataBeforeInsert } from './rx-collection-helper';
 
 export class RxSchema<RxDocType = any> {
     public indexes: MaybeReadonly<string[]>[];
-    public readonly primaryPath: keyof RxDocType;
+    public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     public finalFields: string[];
 
     constructor(
@@ -43,7 +44,7 @@ export class RxSchema<RxDocType = any> {
         this.indexes = getIndexes(this.jsonSchema);
 
         // primary is always required
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.jsonSchema.primaryKey) as any;
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.jsonSchema.primaryKey);
 
         this.finalFields = getFinalFields(this.jsonSchema);
     }

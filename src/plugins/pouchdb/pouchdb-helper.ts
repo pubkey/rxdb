@@ -8,6 +8,7 @@ import type {
     RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocumentData,
+    StringKeys,
     WithAttachments
 } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
@@ -53,7 +54,7 @@ export const POUCHDB_DESIGN_PREFIX: '_design/' = '_design/';
 export const POUCHDB_META_FIELDNAME = 'rxdbMeta';
 
 export function pouchSwapIdToPrimary<T>(
-    primaryKey: keyof T,
+    primaryKey: StringKeys<RxDocumentData<T>>,
     docData: any
 ): any {
 
@@ -68,16 +69,19 @@ export function pouchSwapIdToPrimary<T>(
     return docData;
 }
 
-export function pouchSwapIdToPrimaryString<T>(primaryKey: keyof T, str: keyof T): keyof T {
+export function pouchSwapIdToPrimaryString<T>(
+    primaryKey: StringKeys<RxDocumentData<T>>,
+    str: keyof T
+): StringKeys<RxDocumentData<T>> {
     if (str === '_id') {
         return primaryKey;
     } else {
-        return str;
+        return str as any;
     }
 }
 
 export function pouchDocumentDataToRxDocumentData<T>(
-    primaryKey: keyof T,
+    primaryKey: StringKeys<RxDocumentData<T>>,
     pouchDoc: WithAttachments<T>
 ): RxDocumentData<T> {
     let useDoc: RxDocumentData<T> = pouchSwapIdToPrimary(primaryKey, pouchDoc);
@@ -115,7 +119,7 @@ export function pouchDocumentDataToRxDocumentData<T>(
 }
 
 export function rxDocumentDataToPouchDocumentData<T>(
-    primaryKey: keyof T,
+    primaryKey: StringKeys<RxDocumentData<T>>,
     doc: RxDocumentData<T> | RxDocumentWriteData<T>
 ): WithAttachments<T & { _id: string; }> {
     let pouchDoc: WithAttachments<T> = pouchSwapPrimaryToId(primaryKey, doc);
@@ -155,7 +159,7 @@ export function rxDocumentDataToPouchDocumentData<T>(
  * to the _id property.
  */
 export function pouchSwapPrimaryToId<RxDocType>(
-    primaryKey: keyof RxDocType,
+    primaryKey: StringKeys<RxDocumentData<RxDocType>>,
     docData: any
 ): RxDocType & { _id: string } {
     // optimisation shortcut
@@ -189,7 +193,7 @@ export function getEventKey(
 }
 
 export function pouchChangeRowToChangeEvent<DocumentData>(
-    primaryKey: keyof DocumentData,
+    primaryKey: StringKeys<DocumentData>,
     pouchDoc: any
 ): ChangeEvent<RxDocumentData<DocumentData>> {
     if (!pouchDoc) {
@@ -228,7 +232,7 @@ export function pouchChangeRowToChangeEvent<DocumentData>(
 }
 
 export function pouchChangeRowToChangeStreamEvent<DocumentData>(
-    primaryKey: keyof DocumentData,
+    primaryKey: StringKeys<DocumentData>,
     pouchRow: PouchChangeRow
 ): ChangeStreamEvent<DocumentData> {
     const doc = pouchRow.doc;
@@ -286,9 +290,9 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
  * @recursive
  */
 export function primarySwapPouchDbQuerySelector<RxDocType>(
-    selector: any, 
-    primaryKey: keyof RxDocumentData<RxDocType>
-    ): any {
+    selector: any,
+    primaryKey: StringKeys<RxDocumentData<RxDocType>>
+): any {
     if (primaryKey === '_id') {
         return selector;
     }

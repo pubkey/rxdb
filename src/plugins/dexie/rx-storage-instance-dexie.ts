@@ -25,7 +25,8 @@ import type {
     RxStorageInstanceCreationParams,
     EventBulk,
     PreparedQuery,
-    DexieChangesCheckpoint
+    DexieChangesCheckpoint,
+    StringKeys
 } from '../../types';
 import {
     DexieSettings,
@@ -50,7 +51,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     DexieStorageInternals,
     DexieSettings
 > {
-    public readonly primaryPath: keyof RxDocType;
+    public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     public readonly instanceId = instanceId++;
     public closed = false;
@@ -64,7 +65,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         public readonly options: Readonly<DexieSettings>,
         public readonly settings: DexieSettings
     ) {
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {

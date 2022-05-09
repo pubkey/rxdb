@@ -233,7 +233,7 @@ export function checkPrimaryKey(
      * to ensure we can craft custom index strings.
      */
     const primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
-    const primaryPathSchemaPart = jsonSchema.properties[primaryPath as any];
+    const primaryPathSchemaPart = jsonSchema.properties[primaryPath];
     if (!primaryPathSchemaPart.maxLength) {
         throw newRxError('SC39', { schema: jsonSchema, args: { primaryPathSchemaPart } });
     }

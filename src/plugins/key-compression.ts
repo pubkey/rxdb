@@ -57,7 +57,7 @@ export function createCompressionState(
              * Do not compress the primary field
              * for easier debugging.
              */
-            getPrimaryFieldOfPrimaryKey(schema.primaryKey) as string,
+            getPrimaryFieldOfPrimaryKey(schema.primaryKey),
             '_rev',
             '_attachments',
             '_deleted',
@@ -73,7 +73,7 @@ export function createCompressionState(
 
     // also compress primary key
     if (typeof schema.primaryKey !== 'string') {
-        const composedPrimary: CompositePrimaryKey<any> = schema.primaryKey as any;
+        const composedPrimary: CompositePrimaryKey<any> = schema.primaryKey;
         const newComposedPrimary: CompositePrimaryKey<any> = {
             key: compressedPath(table, composedPrimary.key as string),
             fields: composedPrimary.fields.map(field => compressedPath(table, field as string)),
