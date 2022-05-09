@@ -80,6 +80,7 @@ export {
 export * from './rx-storage-helper';
 
 export * from './custom-index';
+export * from './query-planner';
 
 export {
     _clearHook // used in tests
@@ -178,5 +179,7 @@ export type {
     FilledMangoQuery,
     OldRxCollection,
     WithAttachmentsData,
-    RxTestStorage
+    RxTestStorage,
+
+    RxQueryPlan
 } from './types';
