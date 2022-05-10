@@ -23,11 +23,6 @@ export function getQueryPlan<RxDocType>(
     query: FilledMangoQuery<RxDocType>
 ): RxQueryPlan {
     const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-
-
-    console.log('getQueryPlan()');
-    console.log(JSON.stringify(query, null, 4));
-
     const selector = query.selector;
 
     let indexes: string[][] = schema.indexes ? schema.indexes as any : [];
@@ -70,10 +65,6 @@ export function getQueryPlan<RxDocType>(
                     matcherOpts = Object.assign(matcherOpts, partialOpts);
                 }
             });
-
-
-            console.log('before fill missing:');
-            console.dir(matcherOpts);
 
             // fill missing attributes
             if (typeof matcherOpts.startKey === 'undefined') {
@@ -142,11 +133,6 @@ export function isLogicalOperator(operator: string): boolean {
 
 
 export function getMatcherQueryOpts(operator: string, operatorValue: any): Partial<RxQueryPlanerOpts> {
-
-    // console.log('getMatcherQueryOpts()');
-    // console.log(operator);
-    // console.log(operatorValue);
-
     switch (operator) {
         case '$eq':
             return {
@@ -188,29 +174,17 @@ export function rateQueryPlan<RxDocType>(
 ): number {
     let quality: number = 0;
 
-    console.log('################### rateQueryPlan()');
-    console.dir(query);
-    console.dir(queryPlan);
-
-
     const pointsPerMatchingKey = 10;
     const idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === INDEX_MIN);
-    console.log('idxOfFirstMinStartKey: ' + idxOfFirstMinStartKey);
     quality = quality + (idxOfFirstMinStartKey * pointsPerMatchingKey)
-    console.log(quality);
 
     const idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === INDEX_MAX);
-    console.log('idxOfFirstMaxEndKey: ' + idxOfFirstMaxEndKey);
     quality = quality + (idxOfFirstMaxEndKey * pointsPerMatchingKey)
-    console.log(quality);
 
     const pointsIfNoReSortMustBeDone = 5;
     if (queryPlan.sortFieldsSameAsIndexFields) {
         quality = quality + pointsIfNoReSortMustBeDone;
     }
 
-
-
-    console.log('quality: ' + quality);
     return quality;
 }

@@ -72,21 +72,7 @@ export async function dexieQuery<RxDocType>(
         (state.dexieDb as any)._options.IDBKeyRange
     );
 
-    console.log('keyRange:');
-    console.dir(keyRange);
-
     const queryPlanFields: string[] = queryPlan.index;
-    console.log('queryPlanFields:');
-    console.dir(queryPlanFields);
-
-    /**
-     * Also manually sort if one part of the sort is in descending order
-     * because all our indexes are ascending.
-     * TODO should we be able to define descending indexes?
-     */
-    const isOneSortDescending = query.sort.find((sortPart: any) => Object.values(sortPart)[0] === 'desc');
-    const mustManuallyResort = isOneSortDescending || !queryPlan.sortFieldsSameAsIndexFields;
-
 
     let rows: any[] = [];
     await state.dexieDb.transaction(
@@ -122,15 +108,8 @@ export async function dexieQuery<RxDocType>(
                             .join('+')
                         + ']';
                 }
-
-                console.log('indexName: ' + indexName);
                 index = store.index(indexName);
             }
-
-            console.dir(queryPlan);
-            console.log('useIndexStore:');
-            console.dir(index);
-
             const cursorReq = index.openCursor(keyRange);
             await new Promise<void>(res => {
                 cursorReq.onsuccess = function (e: any) {
@@ -138,10 +117,6 @@ export async function dexieQuery<RxDocType>(
                     if (cursor) {
                         // We have a record in cursor.value
                         const docData = fromDexieToStorage(cursor.value);
-
-                        console.log('cursor got doc data:');
-                        console.dir(docData);
-
                         if (
                             queryMatcher(docData)
                         ) {
@@ -155,7 +130,7 @@ export async function dexieQuery<RxDocType>(
                          * because we already have every relevant document.
                          */
                         if (
-                            !mustManuallyResort &&
+                            queryPlan.sortFieldsSameAsIndexFields &&
                             rows.length === skipPlusLimit
                         ) {
                             res();
@@ -174,7 +149,7 @@ export async function dexieQuery<RxDocType>(
     );
 
 
-    if (mustManuallyResort) {
+    if (!queryPlan.sortFieldsSameAsIndexFields) {
         rows = rows.sort(sortComparator);
     }
 

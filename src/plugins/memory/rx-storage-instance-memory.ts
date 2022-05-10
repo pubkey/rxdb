@@ -190,13 +190,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         const queryPlanFields: string[] = queryPlan.index;
 
-        /**
-         * Also manually sort if one part of the sort is in descending order
-         * because all our indexes are ascending.
-         * TODO should we be able to define descending indexes?
-         */
-        const isOneSortDescending = query.sort.find((sortPart: any) => Object.values(sortPart)[0] === 'desc');
-        const mustManuallyResort = isOneSortDescending || !queryPlan.sortFieldsSameAsIndexFields;
+        const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
 
 
         const index: string[] | undefined = ['_deleted'].concat(queryPlanFields);
@@ -244,7 +238,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             }
 
             if (
-                (rows.length >= skipPlusLimit && !isOneSortDescending) ||
+                (rows.length >= skipPlusLimit && !mustManuallyResort) ||
                 indexOfLower >= docsWithIndex.length
             ) {
                 done = true;
