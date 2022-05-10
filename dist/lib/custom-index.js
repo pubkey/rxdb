@@ -5,7 +5,6 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.MAX_CHAR = void 0;
 exports.getIndexableStringMonad = getIndexableStringMonad;
 exports.getNumberIndexString = getNumberIndexString;
 exports.getStartIndexStringFromLowerBound = getStartIndexStringFromLowerBound;
@@ -17,6 +16,8 @@ var _rxSchemaHelper = require("./rx-schema-helper");
 var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("./util");
+
+var _queryPlanner = require("./query-planner");
 
 /**
  * For some RxStorage implementations,
@@ -175,9 +176,6 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
   return str;
 }
 
-var MAX_CHAR = String.fromCharCode(65535);
-exports.MAX_CHAR = MAX_CHAR;
-
 function getStartIndexStringFromUpperBound(schema, index, upperBound) {
   var str = '';
   index.forEach(function (fieldName, idx) {
@@ -190,9 +188,9 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
         var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
 
         if (typeof bound === 'string') {
-          str += bound.padStart(maxLength, MAX_CHAR);
+          str += bound.padStart(maxLength, _queryPlanner.INDEX_MAX);
         } else {
-          str += ''.padStart(maxLength, MAX_CHAR);
+          str += ''.padStart(maxLength, _queryPlanner.INDEX_MAX);
         }
 
         break;
@@ -211,7 +209,7 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
 
-        if (bound === null || bound === MAX_CHAR) {
+        if (bound === null || bound === _queryPlanner.INDEX_MAX) {
           str += '9'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);

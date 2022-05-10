@@ -520,7 +520,7 @@ function __ensureEqual(rxQuery) {
 }
 
 export function isFindOneByIdQuery(primaryPath, query) {
-  if (query.limit === 1 && !query.skip && query.selector && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
+  if (!query.skip && query.selector && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
     if (typeof query.selector[primaryPath] === 'string') {
       return query.selector[primaryPath];
     } else if (Object.keys(query.selector[primaryPath]).length === 1 && typeof query.selector[primaryPath].$eq === 'string') {

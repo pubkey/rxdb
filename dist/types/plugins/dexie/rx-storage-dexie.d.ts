@@ -1,7 +1,7 @@
 /// <reference types="pouchdb-core" />
 /// <reference types="node" />
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import type { RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
+import type { RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics, FilledMangoQuery } from '../../types';
 import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 export declare const RxStorageDexieStatics: RxStorageStatics;
@@ -12,7 +12,7 @@ export declare class RxStorageDexie implements RxStorage<DexieStorageInternals, 
         hash(data: string | Blob | Buffer): Promise<string>;
         hashKey: string;
         doesBroadcastChangestream(): boolean;
-        prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
+        prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: FilledMangoQuery<RxDocType>): any;
         getSortComparator<RxDocType_1>(schema: RxJsonSchema<RxDocumentData<RxDocType_1>>, preparedQuery: any): DeterministicSortComparator<RxDocType_1>;
         getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<RxDocumentData<RxDocType_2>>, preparedQuery: any): QueryMatcher<RxDocumentData<RxDocType_2>>;
     }>;

@@ -2,7 +2,7 @@ import { Subject } from 'rxjs';
 import { now, randomCouchString, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWriteTime } from '../../util';
 import { newRxError } from '../../rx-error';
 import { closeDexieDb, fromDexieToStorage, fromStorageToDexie, getDexieDbWithTables, getDocsInDb } from './dexie-helper';
-import { dexieQuery } from './query/dexie-query';
+import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
 export var createDexieStorageInstance = function createDexieStorageInstance(storage, params, settings) {

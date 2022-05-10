@@ -1,4 +1,4 @@
-import type { PreparedQuery, RxAttachmentWriteData, RxDocumentData, RxStorage } from '../../types';
+import type { DexiePreparedQuery, RxAttachmentWriteData, RxDocumentData, RxStorage } from '../../types';
 export declare type RxStorageMemorySettings = {};
 export declare type RxStorageMemoryInstanceCreationOptions = {};
 export declare type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
@@ -52,7 +52,7 @@ export declare type DocWithIndexString<RxDocType> = {
     doc: RxDocumentData<RxDocType>;
     indexString: string;
 };
-export declare type MemoryPreparedQuery<DocType> = PreparedQuery<DocType>;
+export declare type MemoryPreparedQuery<DocType> = DexiePreparedQuery<DocType>;
 export declare type MemoryChangesCheckpoint = {
     id: string;
     lwt: number;

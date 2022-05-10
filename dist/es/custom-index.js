@@ -6,6 +6,7 @@
 import { getSchemaByObjectPath } from './rx-schema-helper';
 import objectPath from 'object-path';
 import { ensureNotFalsy } from './util';
+import { INDEX_MAX } from './query-planner';
 /**
  * Crafts an indexable string that can be used
  * to check if a document would be sorted below or above 
@@ -152,7 +153,6 @@ export function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
   });
   return str;
 }
-export var MAX_CHAR = String.fromCharCode(65535);
 export function getStartIndexStringFromUpperBound(schema, index, upperBound) {
   var str = '';
   index.forEach(function (fieldName, idx) {
@@ -165,9 +165,9 @@ export function getStartIndexStringFromUpperBound(schema, index, upperBound) {
         var maxLength = ensureNotFalsy(schemaPart.maxLength);
 
         if (typeof bound === 'string') {
-          str += bound.padStart(maxLength, MAX_CHAR);
+          str += bound.padStart(maxLength, INDEX_MAX);
         } else {
-          str += ''.padStart(maxLength, MAX_CHAR);
+          str += ''.padStart(maxLength, INDEX_MAX);
         }
 
         break;
@@ -186,7 +186,7 @@ export function getStartIndexStringFromUpperBound(schema, index, upperBound) {
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
 
-        if (bound === null || bound === MAX_CHAR) {
+        if (bound === null || bound === INDEX_MAX) {
           str += '9'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);

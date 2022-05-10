@@ -43,7 +43,7 @@ Object.keys(_dexieHelper).forEach(function (key) {
   });
 });
 
-var _dexieQuery = require("./query/dexie-query");
+var _dexieQuery = require("./dexie-query");
 
 Object.keys(_dexieQuery).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -52,32 +52,6 @@ Object.keys(_dexieQuery).forEach(function (key) {
     enumerable: true,
     get: function get() {
       return _dexieQuery[key];
-    }
-  });
-});
-
-var _queryPlanner = require("./query/pouchdb-find-query-planer/query-planner");
-
-Object.keys(_queryPlanner).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _queryPlanner[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _queryPlanner[key];
-    }
-  });
-});
-
-var _indexeddbFind = require("./query/pouchdb-find-query-planer/indexeddb-find");
-
-Object.keys(_indexeddbFind).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _indexeddbFind[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _indexeddbFind[key];
     }
   });
 });
