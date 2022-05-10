@@ -233,6 +233,15 @@ exampleSocket.onmessage = () => {
 }
 ```
 
+## Multi Tab support
+
+Replication by default runs only in one instance when RxDB is used in multiple browser tabs or Node.js processes.
+By setting `waitForLeadership: false` you can enforce that each tab runs its own replication cycles.
+If used in in a multi instance setting, so when at database creation `multiInstance: false` was not set,
+you need to import the leader election plugin so that RxDB can know how many instances exist and which browser tab should run the replication.
+
+
+
 
 ## RxReplicationState
 
