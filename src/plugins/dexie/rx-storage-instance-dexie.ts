@@ -41,7 +41,7 @@ import {
     getDexieDbWithTables,
     getDocsInDb
 } from './dexie-helper';
-import { dexieQuery } from './query/dexie-query';
+import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
 
