@@ -1,119 +1,15 @@
-import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema-helper';
 import type {
     DexiePreparedQuery,
-    MangoQuery,
-    RxDocumentData,
-    RxJsonSchema,
     RxQueryPlan,
     RxStorageQueryResult
-} from '../../../types';
-import { clone, ensureNotFalsy } from '../../../util';
-import {
-    getPouchIndexDesignDocNameByIndex,
-    POUCHDB_DESIGN_PREFIX,
-    pouchSwapIdToPrimaryString
-} from '../../pouchdb';
-import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';
+} from '../../types';
 import {
     dexieReplaceIfStartsWithPipe,
     DEXIE_DOCS_TABLE_NAME,
     fromDexieToStorage
-} from '../dexie-helper';
-import { RxStorageDexieStatics } from '../rx-storage-dexie';
-import type { RxStorageInstanceDexie } from '../rx-storage-instance-dexie';
-import { generateKeyRange } from './pouchdb-find-query-planer/indexeddb-find';
-import { planQuery } from './pouchdb-find-query-planer/query-planner';
-
-
-/**
- * Use the pouchdb query planner to determine which index
- * must be used to get the correct documents.
- * @link https://www.bennadel.com/blog/3258-understanding-the-query-plan-explained-by-the-find-plugin-in-pouchdb-6-2-0.htm
- * 
- * 
- * TODO use batched cursor
- * @link https://nolanlawson.com/2021/08/22/speeding-up-indexeddb-reads-and-writes/
- */
-export function getPouchQueryPlan<RxDocType>(
-    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    query: MangoQuery<RxDocType>
-) {
-    const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-
-    /**
-     * Store the query plan together with the prepared query
-     * to improve performance
-     * We use the query planner of pouchdb-find.
-     */
-    const pouchCompatibleIndexes = [
-        // the primary key is always a free index
-        {
-            ddoc: null as any,
-            name: '_all_docs',
-            type: 'special',
-            def: {
-                fields: [
-                    {
-                        '_id': 'asc'
-                    }
-                ] as any[]
-            }
-        }
-    ];
-    if (schema.indexes) {
-        schema.indexes.forEach(index => {
-            index = Array.isArray(index) ? index : [index];
-            const pouchIndex = index.map(indexPart => {
-                if (indexPart === primaryKey) {
-                    return '_id';
-                } else {
-                    return indexPart;
-                }
-            });
-            const indexName = getPouchIndexDesignDocNameByIndex(pouchIndex);
-            pouchCompatibleIndexes.push({
-                ddoc: POUCHDB_DESIGN_PREFIX + indexName,
-                name: indexName,
-                type: 'json',
-                def: {
-                    fields: index.map(indexPart => {
-                        const useKey = indexPart === primaryKey ? '_id' : indexPart;
-                        return { [useKey]: 'asc' };
-                    })
-                }
-            });
-        })
-    }
-
-    /**
-     * Because pouchdb-find is buggy AF,
-     * we have to apply the same hacks to the query
-     * as we do with the PouchDB RxStorage.
-     * Only then we can use that monkeypatched
-     * query with the query planner.
-     */
-    const pouchdbCompatibleQuery = preparePouchDbQuery(
-        schema,
-        clone(query)
-    );
-
-    const pouchQueryPlan = planQuery(
-        pouchdbCompatibleQuery,
-        pouchCompatibleIndexes
-    );
-
-    // transform back _id to primaryKey
-    pouchQueryPlan.index.def.fields = pouchQueryPlan.index.def.fields.map((field: any) => {
-        const [fieldName, value] = Object.entries(field)[0];
-        if (fieldName === '_id') {
-            return { [primaryKey]: value };
-        } else {
-            return { [fieldName]: value };
-        }
-    });
-
-    return pouchQueryPlan;
-}
+} from './dexie-helper';
+import { RxStorageDexieStatics } from './rx-storage-dexie';
+import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 
 
 export function getKeyRangeByQueryPlan(
@@ -140,8 +36,6 @@ export function getKeyRangeByQueryPlan(
             queryPlan.inclusiveEnd
         );
     }
-
-
 
     return IDBKeyRange.bound(
         queryPlan.startKeys,
