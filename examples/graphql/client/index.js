@@ -35,7 +35,7 @@ import {
     pushQueryBuilderFromRxSchema
 } from 'rxdb/plugins/replication-graphql';
 import {
-    getLastPushSequence
+    getLastPushCheckpoint
 } from 'rxdb/plugins/replication';
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 
@@ -207,7 +207,7 @@ async function run() {
         });
 
         setInterval(async () => {
-            var last = await getLastPushSequence(
+            var last = await getLastPushCheckpoint(
                 db.hero,
                 replicationState.endpointHash
             );
