@@ -59,6 +59,16 @@ export const RxStorageDexieStatics: RxStorageStatics = {
             mutateableQuery
         );
 
+        if (
+            mutateableQuery.selector && Object.keys(mutateableQuery.selector).length > 0
+        ) {
+            console.log('-------preaparedQueryResult:');
+            console.log(JSON.stringify(mutateableQuery, null, 4));
+            console.dir(schema.indexes);
+            console.dir(schema.primaryKey);
+            console.log('----------------------------');
+        }
+
         return mutateableQuery;
     },
 

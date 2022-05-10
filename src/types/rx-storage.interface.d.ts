@@ -86,6 +86,15 @@ export type FilledMangoQuery<RxDocType> = MangoQuery<RxDocType> & {
     sort: MangoQuerySortPart<RxDocType>[];
 
     /**
+     * In the normalized mango query,
+     * the index must always be a string[],
+     * never just a string.
+     * This makes it easier to use the query because
+     * we do not have to do an array check.
+     */
+    index?: string[];
+
+    /**
      * Skip must be set which defaults to 0
      */
     skip: number;

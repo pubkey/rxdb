@@ -21,8 +21,16 @@ export function getQueryPlan<RxDocType>(
 ): RxQueryPlan {
     const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
 
+
+    console.dir(query);
+
     const selector = query.selector;
-    const indexes: string[][] = schema.indexes ? schema.indexes as any : [];
+
+    let indexes: string[][] = schema.indexes ? schema.indexes as any : [];
+    if (query.index) {
+        indexes = [query.index];
+    }
+
     const optimalSortIndex = query.sort.map(sortField => Object.keys(sortField)[0]);
     const optimalSortIndexCompareString = optimalSortIndex.join(',');
 
@@ -53,12 +61,17 @@ export function getQueryPlan<RxDocType>(
                     matcherOpts = Object.assign(matcherOpts, partialOpts);
                 }
             });
+
+
+            console.log('before fill missing:');
+            console.dir(matcherOpts);
+
             // fill missing attributes
             if (typeof matcherOpts.startKey === 'undefined') {
                 matcherOpts.startKey = '';
             }
             if (typeof matcherOpts.endKey === 'undefined') {
-                matcherOpts.startKey = MAX_CHAR;
+                matcherOpts.endKey = MAX_CHAR;
             }
             if (typeof matcherOpts.inclusiveStart === 'undefined') {
                 matcherOpts.inclusiveStart = true;
@@ -84,8 +97,11 @@ export function getQueryPlan<RxDocType>(
             queryPlan
         );
         if (
-            quality > 0 &&
-            quality > currentBestQuality
+            (
+                quality > 0 &&
+                quality > currentBestQuality
+            ) ||
+            query.index
         ) {
             currentBestQuality = quality;
             currentBestQueryPlan = queryPlan;
@@ -118,6 +134,11 @@ export function isLogicalOperator(operator: string): boolean {
 
 
 export function getMatcherQueryOpts(operator: string, operatorValue: any): Partial<RxQueryPlanerOpts> {
+
+    // console.log('getMatcherQueryOpts()');
+    // console.log(operator);
+    // console.log(operatorValue);
+
     switch (operator) {
         case '$eq':
             return {
@@ -152,10 +173,36 @@ export function getMatcherQueryOpts(operator: string, operatorValue: any): Parti
  * Returns a number that determines the quality of the query plan.
  * Higher number means better query plan.
  */
-export function rateQueryPlan(
+export function rateQueryPlan<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: FilledMangoQuery<RxDocType>,
     queryPlan: RxQueryPlan
 ): number {
-    return 6;
+    let quality: number = 0;
+
+    console.log('################### rateQueryPlan()');
+    console.dir(query);
+    console.dir(queryPlan);
+
+
+    const pointsPerMatchingKey = 10;
+    const idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === '');
+    console.log('idxOfFirstMinStartKey: ' + idxOfFirstMinStartKey);
+    quality = quality + (idxOfFirstMinStartKey * pointsPerMatchingKey)
+    console.log(quality);
+
+    const idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === MAX_CHAR);
+    console.log('idxOfFirstMaxEndKey: ' + idxOfFirstMaxEndKey);
+    quality = quality + (idxOfFirstMaxEndKey * pointsPerMatchingKey)
+    console.log(quality);
+
+    const pointsIfNoReSortMustBeDone = 5;
+    if (queryPlan.sortFieldsSameAsIndexFields) {
+        quality = quality + pointsIfNoReSortMustBeDone;
+    }
+
+
+
+    console.log('quality: ' + quality);
+    return quality;
 }

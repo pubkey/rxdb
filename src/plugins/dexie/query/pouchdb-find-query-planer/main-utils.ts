@@ -94,7 +94,7 @@ export function max(arr: any[], fun: Function) {
     return max;
 }
 
-export function arrayEquals(arr1: any[], arr2: any[]) {
+export function arrayEquals(arr1: any[], arr2: any[]): boolean {
     if (arr1.length !== arr2.length) {
         return false;
     }
