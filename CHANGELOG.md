@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - OPTIMIZE `isFindOneByIdQuery()` should be `true` when only the primary field is queried with an `$eq`
+- REWRITE query planner to use better indexeses in dexie.js and memory storage.
 
 <!-- ADD new changes here! -->
 
