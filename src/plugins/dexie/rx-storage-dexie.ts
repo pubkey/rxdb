@@ -8,7 +8,9 @@ import type {
     RxJsonSchema,
     RxStorage,
     RxStorageInstanceCreationParams,
-    RxStorageStatics
+    RxStorageStatics,
+    DexiePreparedQuery,
+    FilledMangoQuery
 } from '../../types';
 import {
     Query as MingoQuery
@@ -23,8 +25,8 @@ import {
     createDexieStorageInstance,
     RxStorageInstanceDexie
 } from './rx-storage-instance-dexie';
-import { getPouchQueryPlan } from './query/dexie-query';
 import { newRxError } from '../../rx-error';
+import { getQueryPlan } from '../../query-planner';
 
 
 export const RxStorageDexieStatics: RxStorageStatics = {
@@ -41,8 +43,8 @@ export const RxStorageDexieStatics: RxStorageStatics = {
     },
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        mutateableQuery: MangoQuery<RxDocType>
-    ) {
+        mutateableQuery: FilledMangoQuery<RxDocType>
+    ): DexiePreparedQuery<RxDocType> {
 
         if (!mutateableQuery.sort) {
             throw newRxError('SNH', {
@@ -54,7 +56,7 @@ export const RxStorageDexieStatics: RxStorageStatics = {
          * Store the query plan together with the
          * prepared query to save performance.
          */
-        (mutateableQuery as any).pouchQueryPlan = getPouchQueryPlan(
+        const queryPlan = getQueryPlan(
             schema,
             mutateableQuery
         );
@@ -66,24 +68,29 @@ export const RxStorageDexieStatics: RxStorageStatics = {
             console.log(JSON.stringify(mutateableQuery, null, 4));
             console.dir(schema.indexes);
             console.dir(schema.primaryKey);
+            console.dir(queryPlan);
             console.log('----------------------------');
         }
 
-        return mutateableQuery;
+        return {
+            query: mutateableQuery,
+            queryPlan
+        };
     },
 
     getSortComparator<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        query: MangoQuery<RxDocType>
+        preparedQuery: DexiePreparedQuery<RxDocType>
     ): DeterministicSortComparator<RxDocType> {
-        return getDexieSortComparator(schema, query);
+        return getDexieSortComparator(schema, preparedQuery.query);
     },
 
     getQueryMatcher<RxDocType>(
         _schema: RxJsonSchema<RxDocType>,
-        query: MangoQuery<RxDocType>
+        preparedQuery: DexiePreparedQuery<RxDocType>
     ): QueryMatcher<RxDocumentData<RxDocType>> {
-        const mingoQuery = new MingoQuery(query.selector ? query.selector : {});
+        const query = preparedQuery.query;
+        const mingoQuery = new MingoQuery(query.selector);
         const fun: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
             if (doc._deleted) {
                 return false;

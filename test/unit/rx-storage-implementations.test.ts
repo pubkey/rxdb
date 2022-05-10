@@ -1090,6 +1090,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
              * we must ensure we there is always a deterministic sort order.
              */
             it('should have the same deterministic order of .query() and .getSortComparator()', async () => {
+
+                console.log('###############################################');
+                console.log('###############################################');
+                console.log('###############################################');
+                console.log('###############################################');
+
+
+
                 const schema: RxJsonSchema<RxDocumentData<RandomDoc>> = fillWithDefaultSettings({
                     version: 0,
                     primaryKey: 'id',
@@ -1148,7 +1156,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         multiInstance: false
                     });
 
-                const docData: RxDocumentWriteData<RandomDoc>[] = new Array(10)
+                const docData: RxDocumentWriteData<RandomDoc>[] = new Array(6)
                     .fill(0)
                     .map((_x, idx) => ({
                         id: randomString(10),
@@ -1222,6 +1230,13 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 ];
                 for (const query of queries) {
+                    console.log('---------------------------- test Query:');
+                    console.log('---------------------------- test Query:');
+                    console.log('---------------------------- test Query:');
+                    console.log('---------------------------- test Query:');
+                    console.log('---------------------------- test Query:');
+                    console.log('---------------------------- test Query:');
+                    console.dir(query),
                     await testQuery(query);
                 }
 

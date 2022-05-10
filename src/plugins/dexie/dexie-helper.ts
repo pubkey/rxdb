@@ -104,6 +104,7 @@ export function getDexieSortComparator<RxDocType>(
         [fieldName: string]: 1 | -1;
     } = {};
 
+    console.dir(query);
     if (!query.sort) {
         throw newRxError('SNH', { query });
     }

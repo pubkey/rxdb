@@ -11,7 +11,7 @@ import {
     RxJsonSchema,
     getQueryPlan,
     normalizeMangoQuery,
-    MAX_CHAR
+    INDEX_MAX
 } from '../../';
 
 
@@ -76,7 +76,7 @@ config.parallel('query-planner.test.js', () => {
             );
             assert.deepStrictEqual(queryPlan.index, ['age', 'passportId']);
             assert.strictEqual(queryPlan.startKeys[0], 20);
-            assert.strictEqual(queryPlan.endKeys[0], MAX_CHAR);
+            assert.strictEqual(queryPlan.endKeys[0], INDEX_MAX);
             assert.ok(queryPlan.inclusiveStart);
         });
     });
@@ -197,13 +197,40 @@ config.parallel('query-planner.test.js', () => {
             );
             assert.deepStrictEqual(queryPlan.index, ['firstName', 'age', 'passportId']);
         });
-    });
+        it('should have set sortFieldsSameAsIndexFields: false when order is desc', () => {
+            const schema = getHumanSchemaWithIndexes([
+                ['firstName', 'age'],
+                ['age', 'firstName']
+            ]);
+            const query = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {},
+                    sort: [
+                        { age: 'desc' },
+                        { firstName: 'asc' }
+                    ]
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
 
-
-    // TODO
-    describe('TODO', () => {
-        it('TODO', () => {
-            process.exit();
+            /**
+             * Because on a 'desc'-sorting no index can be used,
+             * it should use the default index.
+             */
+            assert.deepStrictEqual(queryPlan.index, ['passportId']);
+            assert.strictEqual(queryPlan.sortFieldsSameAsIndexFields, false);
         });
     });
+
+
+    // // TODO
+    // describe('TODO', () => {
+    //     it('TODO', () => {
+    //         process.exit();
+    //     });
+    // });
 });

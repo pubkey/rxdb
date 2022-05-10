@@ -29,6 +29,7 @@ import type {
     StringKeys
 } from '../../types';
 import {
+    DexiePreparedQuery,
     DexieSettings,
     DexieStorageInternals
 } from '../../types/plugins/dexie';
@@ -293,7 +294,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return ret;
     }
 
-    query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    query(preparedQuery: DexiePreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
         return dexieQuery(
             this,
             preparedQuery

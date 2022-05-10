@@ -1,9 +1,24 @@
 import { getPrimaryFieldOfPrimaryKey } from '../../../rx-schema-helper';
-import type { MangoQuery, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorageQueryResult } from '../../../types';
+import type {
+    DexiePreparedQuery,
+    MangoQuery,
+    RxDocumentData,
+    RxJsonSchema,
+    RxQueryPlan,
+    RxStorageQueryResult
+} from '../../../types';
 import { clone, ensureNotFalsy } from '../../../util';
-import { getPouchIndexDesignDocNameByIndex, POUCHDB_DESIGN_PREFIX, pouchSwapIdToPrimaryString } from '../../pouchdb';
+import {
+    getPouchIndexDesignDocNameByIndex,
+    POUCHDB_DESIGN_PREFIX,
+    pouchSwapIdToPrimaryString
+} from '../../pouchdb';
 import { preparePouchDbQuery } from '../../pouchdb/pouch-statics';
-import { dexieReplaceIfStartsWithPipe, DEXIE_DOCS_TABLE_NAME, fromDexieToStorage } from '../dexie-helper';
+import {
+    dexieReplaceIfStartsWithPipe,
+    DEXIE_DOCS_TABLE_NAME,
+    fromDexieToStorage
+} from '../dexie-helper';
 import { RxStorageDexieStatics } from '../rx-storage-dexie';
 import type { RxStorageInstanceDexie } from '../rx-storage-instance-dexie';
 import { generateKeyRange } from './pouchdb-find-query-planer/indexeddb-find';
@@ -101,17 +116,10 @@ export function getPouchQueryPlan<RxDocType>(
 }
 
 
-export function getDexieKeyRange(
-    queryPlan: any,
-    low: any,
-    height: any,
-    /**
-     * The window.IDBKeyRange object.
-     * Can be swapped out in other environments
-     */
+export function getKeyRangeByQueryPlan(
+    queryPlan: RxQueryPlan,
     IDBKeyRange?: any
-): any {
-
+) {
     if (!IDBKeyRange) {
         if (typeof window === 'undefined') {
             throw new Error('IDBKeyRange missing');
@@ -120,7 +128,28 @@ export function getDexieKeyRange(
         }
     }
 
-    return generateKeyRange(queryPlan.queryOpts, IDBKeyRange, low, height);
+    /**
+     * If index has only one field,
+     * we have to pass the keys directly, not the key arrays.
+     */
+    if (queryPlan.index.length === 1) {
+        return IDBKeyRange.bound(
+            queryPlan.startKeys[0],
+            queryPlan.endKeys[0],
+            queryPlan.inclusiveStart,
+            queryPlan.inclusiveEnd
+        );
+    }
+
+
+
+    return IDBKeyRange.bound(
+        queryPlan.startKeys,
+        queryPlan.endKeys,
+        queryPlan.inclusiveStart,
+        queryPlan.inclusiveEnd
+    );
+
 }
 
 
@@ -129,46 +158,40 @@ export function getDexieKeyRange(
  */
 export async function dexieQuery<RxDocType>(
     instance: RxStorageInstanceDexie<RxDocType>,
-    preparedQuery: PreparedQuery<RxDocType>
+    preparedQuery: DexiePreparedQuery<RxDocType>
 ): Promise<RxStorageQueryResult<RxDocType>> {
     const state = await instance.internals;
+    const query = preparedQuery.query;
     const queryMatcher = RxStorageDexieStatics.getQueryMatcher(
         instance.schema,
         preparedQuery
     );
     const sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
 
-    const skip = preparedQuery.skip ? preparedQuery.skip : 0;
-    const limit = preparedQuery.limit ? preparedQuery.limit : Infinity;
+    const skip = query.skip ? query.skip : 0;
+    const limit = query.limit ? query.limit : Infinity;
     const skipPlusLimit = skip + limit;
-    const queryPlan = (preparedQuery as any).pouchQueryPlan;
+    const queryPlan = preparedQuery.queryPlan;
 
-    const keyRange = getDexieKeyRange(
+    const keyRange = getKeyRangeByQueryPlan(
         queryPlan,
-        Number.NEGATIVE_INFINITY,
-        (state.dexieDb as any)._maxKey,
         (state.dexieDb as any)._options.IDBKeyRange
     );
 
-    const queryPlanFields: string[] = queryPlan.index.def.fields
-        .map((fieldObj: any) => Object.keys(fieldObj)[0])
-        .map((field: any) => pouchSwapIdToPrimaryString(instance.primaryPath, field));
+    console.log('keyRange:');
+    console.dir(keyRange);
 
-    const sortFields = ensureNotFalsy((preparedQuery as MangoQuery<RxDocType>).sort)
-        .map(sortPart => Object.keys(sortPart)[0]);
+    const queryPlanFields: string[] = queryPlan.index;
+    console.log('queryPlanFields:');
+    console.dir(queryPlanFields);
 
-    /**
-     * If the cursor iterated over the same index that
-     * would be used for sorting, we do not have to sort the results.
-     */
-    const sortFieldsSameAsIndexFields = queryPlanFields.join(',') === sortFields.join(',');
     /**
      * Also manually sort if one part of the sort is in descending order
      * because all our indexes are ascending.
      * TODO should we be able to define descending indexes?
      */
-    const isOneSortDescending = preparedQuery.sort.find((sortPart: any) => Object.values(sortPart)[0] === 'desc');
-    const mustManuallyResort = isOneSortDescending || !sortFieldsSameAsIndexFields;
+    const isOneSortDescending = query.sort.find((sortPart: any) => Object.values(sortPart)[0] === 'desc');
+    const mustManuallyResort = isOneSortDescending || !queryPlan.sortFieldsSameAsIndexFields;
 
 
     let rows: any[] = [];
@@ -205,8 +228,14 @@ export async function dexieQuery<RxDocType>(
                             .join('+')
                         + ']';
                 }
+
+                console.log('indexName: ' + indexName);
                 index = store.index(indexName);
             }
+
+            console.dir(queryPlan);
+            console.log('useIndexStore:');
+            console.dir(index);
 
             const cursorReq = index.openCursor(keyRange);
             await new Promise<void>(res => {
@@ -215,6 +244,10 @@ export async function dexieQuery<RxDocType>(
                     if (cursor) {
                         // We have a record in cursor.value
                         const docData = fromDexieToStorage(cursor.value);
+
+                        console.log('cursor got doc data:');
+                        console.dir(docData);
+
                         if (
                             queryMatcher(docData)
                         ) {

@@ -1,4 +1,3 @@
-import { MAX_CHAR } from './custom-index';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     FilledMangoQuery,
@@ -7,6 +6,10 @@ import type {
     RxQueryPlan,
     RxQueryPlanerOpts
 } from './types';
+
+
+export const INDEX_MAX = String.fromCharCode(65535);
+export const INDEX_MIN = -Infinity;
 
 /**
  * Returns the query plan which contains
@@ -22,7 +25,8 @@ export function getQueryPlan<RxDocType>(
     const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
 
 
-    console.dir(query);
+    console.log('getQueryPlan()');
+    console.log(JSON.stringify(query, null, 4));
 
     const selector = query.selector;
 
@@ -33,6 +37,11 @@ export function getQueryPlan<RxDocType>(
 
     const optimalSortIndex = query.sort.map(sortField => Object.keys(sortField)[0]);
     const optimalSortIndexCompareString = optimalSortIndex.join(',');
+    /**
+     * Most storages do not support descending indexes
+     * so having a 'desc' in the sorting, means we always have to re-sort the results.
+     */
+    const hasDescSorting = !!query.sort.find(sortField => Object.values(sortField)[0] === 'desc')
 
     let currentBestQuality = -1;
     let currentBestQueryPlan: RxQueryPlan | undefined;
@@ -46,8 +55,8 @@ export function getQueryPlan<RxDocType>(
                 !operators.length
             ) {
                 return {
-                    startKey: '',
-                    endKey: MAX_CHAR,
+                    startKey: INDEX_MIN,
+                    endKey: INDEX_MAX,
                     inclusiveStart: true,
                     inclusiveEnd: true
                 };
@@ -68,10 +77,10 @@ export function getQueryPlan<RxDocType>(
 
             // fill missing attributes
             if (typeof matcherOpts.startKey === 'undefined') {
-                matcherOpts.startKey = '';
+                matcherOpts.startKey = INDEX_MIN;
             }
             if (typeof matcherOpts.endKey === 'undefined') {
-                matcherOpts.endKey = MAX_CHAR;
+                matcherOpts.endKey = INDEX_MAX;
             }
             if (typeof matcherOpts.inclusiveStart === 'undefined') {
                 matcherOpts.inclusiveStart = true;
@@ -89,7 +98,7 @@ export function getQueryPlan<RxDocType>(
             endKeys: opts.map(opt => opt.endKey),
             inclusiveEnd: !opts.find(opt => !opt.inclusiveEnd),
             inclusiveStart: !opts.find(opt => !opt.inclusiveStart),
-            sortFieldsSameAsIndexFields: optimalSortIndexCompareString === index.join(',')
+            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(',')
         };
         const quality = rateQueryPlan(
             schema,
@@ -114,17 +123,16 @@ export function getQueryPlan<RxDocType>(
     if (!currentBestQueryPlan) {
         return {
             index: [primaryPath],
-            startKeys: [''],
-            endKeys: [MAX_CHAR],
+            startKeys: [INDEX_MIN],
+            endKeys: [INDEX_MAX],
             inclusiveEnd: true,
             inclusiveStart: true,
-            sortFieldsSameAsIndexFields: optimalSortIndexCompareString === primaryPath
+            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath
         }
     }
 
     return currentBestQueryPlan;
 }
-
 
 
 const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
@@ -186,12 +194,12 @@ export function rateQueryPlan<RxDocType>(
 
 
     const pointsPerMatchingKey = 10;
-    const idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === '');
+    const idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === INDEX_MIN);
     console.log('idxOfFirstMinStartKey: ' + idxOfFirstMinStartKey);
     quality = quality + (idxOfFirstMinStartKey * pointsPerMatchingKey)
     console.log(quality);
 
-    const idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === MAX_CHAR);
+    const idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === INDEX_MAX);
     console.log('idxOfFirstMaxEndKey: ' + idxOfFirstMaxEndKey);
     quality = quality + (idxOfFirstMaxEndKey * pointsPerMatchingKey)
     console.log(quality);

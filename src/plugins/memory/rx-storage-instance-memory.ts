@@ -1,9 +1,9 @@
 import { Observable, Subject } from 'rxjs';
 import {
     getStartIndexStringFromLowerBound,
-    getStartIndexStringFromUpperBound,
-    MAX_CHAR
+    getStartIndexStringFromUpperBound
 } from '../../custom-index';
+import { INDEX_MAX } from '../../query-planner';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
@@ -184,7 +184,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const keyRange = getDexieKeyRange(
             queryPlan,
             Number.NEGATIVE_INFINITY,
-            MAX_CHAR,
+            INDEX_MAX,
             IDBKeyRange
         );
 
