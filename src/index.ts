@@ -132,6 +132,7 @@ export type {
     ExtractDTcol,
     RxDatabaseGenerated,
     RxDocumentBase,
+    StringKeys,
 
     // stuff from the RxStorage interface
     RxDocumentData,
