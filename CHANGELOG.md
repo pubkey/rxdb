@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 12.3.1 (10 May 2022)
+
 ### 12.3.0 (10 May 2022)
 
 - OPTIMIZE `isFindOneByIdQuery()` should be `true` when only the primary field is queried with an `$eq`
