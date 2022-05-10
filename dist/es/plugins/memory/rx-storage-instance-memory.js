@@ -1,12 +1,10 @@
 import { Subject } from 'rxjs';
-import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound, MAX_CHAR } from '../../custom-index';
+import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
-import { ensureNotFalsy, getFromMapOrThrow, now, RX_META_LWT_MINIMUM } from '../../util';
-import { getDexieKeyRange } from '../dexie/query/dexie-query';
+import { getFromMapOrThrow, now, RX_META_LWT_MINIMUM } from '../../util';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
-import { pouchSwapIdToPrimaryString } from '../pouchdb';
 import { boundGE, boundGT } from './binary-search-bounds';
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
 import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';
@@ -36,9 +34,6 @@ export var createMemoryStorageInstance = function createMemoryStorageInstance(st
     return Promise.reject(e);
   }
 };
-
-var IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
-
 export var RxStorageInstanceMemory = /*#__PURE__*/function () {
   function RxStorageInstanceMemory(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.changes$ = new Subject();
@@ -131,42 +126,20 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     try {
       var _this5 = this;
 
-      var skip = preparedQuery.skip ? preparedQuery.skip : 0;
-      var limit = preparedQuery.limit ? preparedQuery.limit : Infinity;
+      var queryPlan = preparedQuery.queryPlan;
+      var query = preparedQuery.query;
+      var skip = query.skip ? query.skip : 0;
+      var limit = query.limit ? query.limit : Infinity;
       var skipPlusLimit = skip + limit;
-      var queryPlan = preparedQuery.pouchQueryPlan;
       var queryMatcher = RxStorageDexieStatics.getQueryMatcher(_this5.schema, preparedQuery);
       var sortComparator = RxStorageDexieStatics.getSortComparator(_this5.schema, preparedQuery);
-      var keyRange = getDexieKeyRange(queryPlan, Number.NEGATIVE_INFINITY, MAX_CHAR, IDBKeyRange);
-      var queryPlanFields = queryPlan.index.def.fields.map(function (fieldObj) {
-        return Object.keys(fieldObj)[0];
-      }).map(function (field) {
-        return pouchSwapIdToPrimaryString(_this5.primaryPath, field);
-      });
-      var sortFields = ensureNotFalsy(preparedQuery.sort).map(function (sortPart) {
-        return Object.keys(sortPart)[0];
-      });
-      /**
-       * If the cursor iterated over the same index that
-       * would be used for sorting, we do not have to sort the results.
-       */
-
-      var sortFieldsSameAsIndexFields = queryPlanFields.join(',') === sortFields.join(',');
-      /**
-       * Also manually sort if one part of the sort is in descending order
-       * because all our indexes are ascending.
-       * TODO should we be able to define descending indexes?
-       */
-
-      var isOneSortDescending = preparedQuery.sort.find(function (sortPart) {
-        return Object.values(sortPart)[0] === 'desc';
-      });
-      var mustManuallyResort = isOneSortDescending || !sortFieldsSameAsIndexFields;
+      var queryPlanFields = queryPlan.index;
+      var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
       var index = ['_deleted'].concat(queryPlanFields);
-      var lowerBound = Array.isArray(keyRange.lower) ? keyRange.lower : [keyRange.lower];
+      var lowerBound = queryPlan.startKeys;
       lowerBound = [false].concat(lowerBound);
       var lowerBoundString = getStartIndexStringFromLowerBound(_this5.schema, index, lowerBound);
-      var upperBound = Array.isArray(keyRange.upper) ? keyRange.upper : [keyRange.upper];
+      var upperBound = queryPlan.endKeys;
       upperBound = [false].concat(upperBound);
       var upperBoundString = getStartIndexStringFromUpperBound(_this5.schema, index, upperBound);
       var indexName = getMemoryIndexName(index);
@@ -188,7 +161,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
           rows.push(currentDoc.doc);
         }
 
-        if (rows.length >= skipPlusLimit && !isOneSortDescending || indexOfLower >= docsWithIndex.length) {
+        if (rows.length >= skipPlusLimit && !mustManuallyResort || indexOfLower >= docsWithIndex.length) {
           done = true;
         }
 

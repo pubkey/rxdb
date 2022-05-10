@@ -20,6 +20,10 @@ function normalizeMangoQuery(schema, mangoQuery) {
   if (typeof mangoQuery.skip !== 'number') {
     mangoQuery.skip = 0;
   }
+
+  if (!mangoQuery.selector) {
+    mangoQuery.selector = {};
+  }
   /**
    * To ensure a deterministic sorting,
    * we have to ensure the primary key is always part

@@ -2,8 +2,8 @@ import { Query as MingoQuery } from 'mingo';
 import { binaryMd5 } from 'pouchdb-md5';
 import { getDexieSortComparator } from './dexie-helper';
 import { createDexieStorageInstance } from './rx-storage-instance-dexie';
-import { getPouchQueryPlan } from './query/dexie-query';
 import { newRxError } from '../../rx-error';
+import { getQueryPlan } from '../../query-planner';
 export var RxStorageDexieStatics = {
   hash: function hash(data) {
     return new Promise(function (res) {
@@ -28,14 +28,18 @@ export var RxStorageDexieStatics = {
      */
 
 
-    mutateableQuery.pouchQueryPlan = getPouchQueryPlan(schema, mutateableQuery);
-    return mutateableQuery;
+    var queryPlan = getQueryPlan(schema, mutateableQuery);
+    return {
+      query: mutateableQuery,
+      queryPlan: queryPlan
+    };
   },
-  getSortComparator: function getSortComparator(schema, query) {
-    return getDexieSortComparator(schema, query);
+  getSortComparator: function getSortComparator(schema, preparedQuery) {
+    return getDexieSortComparator(schema, preparedQuery.query);
   },
-  getQueryMatcher: function getQueryMatcher(_schema, query) {
-    var mingoQuery = new MingoQuery(query.selector ? query.selector : {});
+  getQueryMatcher: function getQueryMatcher(_schema, preparedQuery) {
+    var query = preparedQuery.query;
+    var mingoQuery = new MingoQuery(query.selector);
 
     var fun = function fun(doc) {
       if (doc._deleted) {

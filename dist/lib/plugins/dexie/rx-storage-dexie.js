@@ -14,9 +14,9 @@ var _dexieHelper = require("./dexie-helper");
 
 var _rxStorageInstanceDexie = require("./rx-storage-instance-dexie");
 
-var _dexieQuery = require("./query/dexie-query");
-
 var _rxError = require("../../rx-error");
+
+var _queryPlanner = require("../../query-planner");
 
 var RxStorageDexieStatics = {
   hash: function hash(data) {
@@ -42,14 +42,18 @@ var RxStorageDexieStatics = {
      */
 
 
-    mutateableQuery.pouchQueryPlan = (0, _dexieQuery.getPouchQueryPlan)(schema, mutateableQuery);
-    return mutateableQuery;
+    var queryPlan = (0, _queryPlanner.getQueryPlan)(schema, mutateableQuery);
+    return {
+      query: mutateableQuery,
+      queryPlan: queryPlan
+    };
   },
-  getSortComparator: function getSortComparator(schema, query) {
-    return (0, _dexieHelper.getDexieSortComparator)(schema, query);
+  getSortComparator: function getSortComparator(schema, preparedQuery) {
+    return (0, _dexieHelper.getDexieSortComparator)(schema, preparedQuery.query);
   },
-  getQueryMatcher: function getQueryMatcher(_schema, query) {
-    var mingoQuery = new _mingo.Query(query.selector ? query.selector : {});
+  getQueryMatcher: function getQueryMatcher(_schema, preparedQuery) {
+    var query = preparedQuery.query;
+    var mingoQuery = new _mingo.Query(query.selector);
 
     var fun = function fun(doc) {
       if (doc._deleted) {

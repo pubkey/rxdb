@@ -13,7 +13,7 @@ var _rxError = require("../../rx-error");
 
 var _dexieHelper = require("./dexie-helper");
 
-var _dexieQuery = require("./query/dexie-query");
+var _dexieQuery = require("./dexie-query");
 
 var _rxSchemaHelper = require("../../rx-schema-helper");
 

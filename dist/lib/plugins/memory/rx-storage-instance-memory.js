@@ -17,11 +17,7 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 
 var _util = require("../../util");
 
-var _dexieQuery = require("../dexie/query/dexie-query");
-
 var _rxStorageDexie = require("../dexie/rx-storage-dexie");
-
-var _pouchdb = require("../pouchdb");
 
 var _binarySearchBounds = require("./binary-search-bounds");
 
@@ -57,8 +53,6 @@ var createMemoryStorageInstance = function createMemoryStorageInstance(storage, 
 };
 
 exports.createMemoryStorageInstance = createMemoryStorageInstance;
-
-var IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
 
 var RxStorageInstanceMemory = /*#__PURE__*/function () {
   function RxStorageInstanceMemory(storage, databaseName, collectionName, schema, internals, options, settings) {
@@ -152,45 +146,23 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     try {
       var _this5 = this;
 
-      var skip = preparedQuery.skip ? preparedQuery.skip : 0;
-      var limit = preparedQuery.limit ? preparedQuery.limit : Infinity;
+      var queryPlan = preparedQuery.queryPlan;
+      var query = preparedQuery.query;
+      var skip = query.skip ? query.skip : 0;
+      var limit = query.limit ? query.limit : Infinity;
       var skipPlusLimit = skip + limit;
-      var queryPlan = preparedQuery.pouchQueryPlan;
 
       var queryMatcher = _rxStorageDexie.RxStorageDexieStatics.getQueryMatcher(_this5.schema, preparedQuery);
 
       var sortComparator = _rxStorageDexie.RxStorageDexieStatics.getSortComparator(_this5.schema, preparedQuery);
 
-      var keyRange = (0, _dexieQuery.getDexieKeyRange)(queryPlan, Number.NEGATIVE_INFINITY, _customIndex.MAX_CHAR, IDBKeyRange);
-      var queryPlanFields = queryPlan.index.def.fields.map(function (fieldObj) {
-        return Object.keys(fieldObj)[0];
-      }).map(function (field) {
-        return (0, _pouchdb.pouchSwapIdToPrimaryString)(_this5.primaryPath, field);
-      });
-      var sortFields = (0, _util.ensureNotFalsy)(preparedQuery.sort).map(function (sortPart) {
-        return Object.keys(sortPart)[0];
-      });
-      /**
-       * If the cursor iterated over the same index that
-       * would be used for sorting, we do not have to sort the results.
-       */
-
-      var sortFieldsSameAsIndexFields = queryPlanFields.join(',') === sortFields.join(',');
-      /**
-       * Also manually sort if one part of the sort is in descending order
-       * because all our indexes are ascending.
-       * TODO should we be able to define descending indexes?
-       */
-
-      var isOneSortDescending = preparedQuery.sort.find(function (sortPart) {
-        return Object.values(sortPart)[0] === 'desc';
-      });
-      var mustManuallyResort = isOneSortDescending || !sortFieldsSameAsIndexFields;
+      var queryPlanFields = queryPlan.index;
+      var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
       var index = ['_deleted'].concat(queryPlanFields);
-      var lowerBound = Array.isArray(keyRange.lower) ? keyRange.lower : [keyRange.lower];
+      var lowerBound = queryPlan.startKeys;
       lowerBound = [false].concat(lowerBound);
       var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(_this5.schema, index, lowerBound);
-      var upperBound = Array.isArray(keyRange.upper) ? keyRange.upper : [keyRange.upper];
+      var upperBound = queryPlan.endKeys;
       upperBound = [false].concat(upperBound);
       var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(_this5.schema, index, upperBound);
       var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
@@ -212,7 +184,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
           rows.push(currentDoc.doc);
         }
 
-        if (rows.length >= skipPlusLimit && !isOneSortDescending || indexOfLower >= docsWithIndex.length) {
+        if (rows.length >= skipPlusLimit && !mustManuallyResort || indexOfLower >= docsWithIndex.length) {
           done = true;
         }
 

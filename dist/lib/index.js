@@ -337,6 +337,20 @@ Object.keys(_customIndex).forEach(function (key) {
   });
 });
 
+var _queryPlanner = require("./query-planner");
+
+Object.keys(_queryPlanner).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _queryPlanner[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _queryPlanner[key];
+    }
+  });
+});
+
 var _hooks = require("./hooks");
 
 var _queryCache = require("./query-cache");
