@@ -1,6 +1,14 @@
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import type { FilledMangoQuery, MangoQuery, RxDocumentData, RxJsonSchema } from './types';
-import { firstPropertyNameOfObject, flatClone } from './util';
+import type {
+    FilledMangoQuery,
+    MangoQuery,
+    RxDocumentData,
+    RxJsonSchema
+} from './types';
+import {
+    firstPropertyNameOfObject,
+    flatClone
+} from './util';
 
 /**
  * Normalize the query to ensure we have all fields set
@@ -15,6 +23,10 @@ export function normalizeMangoQuery<RxDocType>(
 
     if (typeof mangoQuery.skip !== 'number') {
         mangoQuery.skip = 0;
+    }
+
+    if (!mangoQuery.selector) {
+        mangoQuery.selector = {};
     }
 
     /**

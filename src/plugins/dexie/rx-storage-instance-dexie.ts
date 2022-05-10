@@ -24,11 +24,11 @@ import type {
     RxJsonSchema,
     RxStorageInstanceCreationParams,
     EventBulk,
-    PreparedQuery,
     DexieChangesCheckpoint,
     StringKeys
 } from '../../types';
 import {
+    DexiePreparedQuery,
     DexieSettings,
     DexieStorageInternals
 } from '../../types/plugins/dexie';
@@ -40,7 +40,7 @@ import {
     getDexieDbWithTables,
     getDocsInDb
 } from './dexie-helper';
-import { dexieQuery } from './query/dexie-query';
+import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
 
@@ -293,7 +293,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return ret;
     }
 
-    query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    query(preparedQuery: DexiePreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
         return dexieQuery(
             this,
             preparedQuery

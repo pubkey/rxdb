@@ -1,11 +1,18 @@
-import {
+import type {
     Dexie,
     DexieOptions,
     Table as DexieTable
 } from 'dexie';
+import { RxQueryPlan } from '../query-planner';
+import type { FilledMangoQuery } from '../rx-storage.interface';
 
 export type DexieSettings = DexieOptions;
 
+
+export type DexiePreparedQuery<RxDocType> = {
+    query: FilledMangoQuery<RxDocType>;
+    queryPlan: RxQueryPlan;
+}
 
 /**
  * The internals is a Promise that resolves

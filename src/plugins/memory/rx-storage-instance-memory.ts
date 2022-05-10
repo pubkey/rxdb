@@ -1,8 +1,10 @@
-import { Observable, Subject } from 'rxjs';
+import {
+    Observable,
+    Subject
+} from 'rxjs';
 import {
     getStartIndexStringFromLowerBound,
-    getStartIndexStringFromUpperBound,
-    MAX_CHAR
+    getStartIndexStringFromUpperBound
 } from '../../custom-index';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
@@ -10,7 +12,6 @@ import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import type {
     BulkWriteRow,
     EventBulk,
-    MangoQuery,
     RxDocumentData,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
@@ -20,11 +21,16 @@ import type {
     RxStorageQueryResult,
     StringKeys
 } from '../../types';
-import { ensureNotFalsy, getFromMapOrThrow, now, RX_META_LWT_MINIMUM } from '../../util';
-import { getDexieKeyRange } from '../dexie/query/dexie-query';
+import {
+    getFromMapOrThrow,
+    now,
+    RX_META_LWT_MINIMUM
+} from '../../util';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
-import { pouchSwapIdToPrimaryString } from '../pouchdb';
-import { boundGE, boundGT } from './binary-search-bounds';
+import {
+    boundGE,
+    boundGT
+} from './binary-search-bounds';
 import {
     attachmentMapKey,
     compareDocsWithIndex,
@@ -33,7 +39,10 @@ import {
     putWriteRowToState,
     removeDocFromState
 } from './memory-helper';
-import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';
+import {
+    addIndexesToInternalsState,
+    getMemoryIndexName
+} from './memory-indexes';
 import type {
     MemoryChangesCheckpoint,
     MemoryPreparedQuery,
@@ -42,8 +51,6 @@ import type {
     RxStorageMemoryInstanceCreationOptions,
     RxStorageMemorySettings
 } from './memory-types';
-
-const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
 
 export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -169,10 +176,11 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     async query(preparedQuery: MemoryPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
-        const skip = preparedQuery.skip ? preparedQuery.skip : 0;
-        const limit = preparedQuery.limit ? preparedQuery.limit : Infinity;
+        const queryPlan = preparedQuery.queryPlan;
+        const query = preparedQuery.query;
+        const skip = query.skip ? query.skip : 0;
+        const limit = query.limit ? query.limit : Infinity;
         const skipPlusLimit = skip + limit;
-        const queryPlan = (preparedQuery as any).pouchQueryPlan;
 
         const queryMatcher = RxStorageDexieStatics.getQueryMatcher(
             this.schema,
@@ -180,37 +188,14 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
         const sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
 
+        const queryPlanFields: string[] = queryPlan.index;
 
-        const keyRange = getDexieKeyRange(
-            queryPlan,
-            Number.NEGATIVE_INFINITY,
-            MAX_CHAR,
-            IDBKeyRange
-        );
-
-        const queryPlanFields: string[] = queryPlan.index.def.fields
-            .map((fieldObj: any) => Object.keys(fieldObj)[0])
-            .map((field: any) => pouchSwapIdToPrimaryString(this.primaryPath, field));
-
-        const sortFields = ensureNotFalsy((preparedQuery as MangoQuery<RxDocType>).sort)
-            .map(sortPart => Object.keys(sortPart)[0]);
-
-        /**
-         * If the cursor iterated over the same index that
-         * would be used for sorting, we do not have to sort the results.
-         */
-        const sortFieldsSameAsIndexFields = queryPlanFields.join(',') === sortFields.join(',');
-        /**
-         * Also manually sort if one part of the sort is in descending order
-         * because all our indexes are ascending.
-         * TODO should we be able to define descending indexes?
-         */
-        const isOneSortDescending = preparedQuery.sort.find((sortPart: any) => Object.values(sortPart)[0] === 'desc');
-        const mustManuallyResort = isOneSortDescending || !sortFieldsSameAsIndexFields;
+        const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
 
 
         const index: string[] | undefined = ['_deleted'].concat(queryPlanFields);
-        let lowerBound = Array.isArray(keyRange.lower) ? keyRange.lower : [keyRange.lower];
+
+        let lowerBound: any[] = queryPlan.startKeys;
         lowerBound = [false].concat(lowerBound);
 
         const lowerBoundString = getStartIndexStringFromLowerBound(
@@ -219,7 +204,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             lowerBound
         );
 
-        let upperBound = Array.isArray(keyRange.upper) ? keyRange.upper : [keyRange.upper];
+        let upperBound: any[] = queryPlan.endKeys;
         upperBound = [false].concat(upperBound);
         const upperBoundString = getStartIndexStringFromUpperBound(
             this.schema,
@@ -253,7 +238,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             }
 
             if (
-                (rows.length >= skipPlusLimit && !isOneSortDescending) ||
+                (rows.length >= skipPlusLimit && !mustManuallyResort) ||
                 indexOfLower >= docsWithIndex.length
             ) {
                 done = true;

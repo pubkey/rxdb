@@ -8,6 +8,7 @@ import { getSchemaByObjectPath } from './rx-schema-helper';
 import { JsonSchema, RxDocumentData, RxJsonSchema } from './types';
 import objectPath from 'object-path';
 import { ensureNotFalsy } from './util';
+import { INDEX_MAX } from './query-planner';
 
 
 /**
@@ -186,7 +187,6 @@ export function getStartIndexStringFromLowerBound(
     return str;
 }
 
-export const MAX_CHAR = String.fromCharCode(65535);
 
 export function getStartIndexStringFromUpperBound(
     schema: RxJsonSchema<any>,
@@ -207,9 +207,9 @@ export function getStartIndexStringFromUpperBound(
             case 'string':
                 const maxLength = ensureNotFalsy(schemaPart.maxLength);
                 if (typeof bound === 'string') {
-                    str += (bound as string).padStart(maxLength, MAX_CHAR);
+                    str += (bound as string).padStart(maxLength, INDEX_MAX);
                 } else {
-                    str += ''.padStart(maxLength, MAX_CHAR);
+                    str += ''.padStart(maxLength, INDEX_MAX);
                 }
                 break;
             case 'boolean':
@@ -225,7 +225,7 @@ export function getStartIndexStringFromUpperBound(
                 const parsedLengths = getStringLengthOfIndexNumber(
                     schemaPart
                 );
-                if (bound === null || bound === MAX_CHAR) {
+                if (bound === null || bound === INDEX_MAX) {
                     str += '9'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
                 } else {
                     str += getNumberIndexString(

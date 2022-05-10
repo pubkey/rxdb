@@ -1148,7 +1148,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         multiInstance: false
                     });
 
-                const docData: RxDocumentWriteData<RandomDoc>[] = new Array(10)
+                const docData: RxDocumentWriteData<RandomDoc>[] = new Array(6)
                     .fill(0)
                     .map((_x, idx) => ({
                         id: randomString(10),

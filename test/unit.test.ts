@@ -3,6 +3,15 @@ import './unit/util.test.js';
 import './unit/pouch-db-integration.test.js';
 import './unit/adapter-check.test.js';
 
+
+/**
+ * Helpers that
+ * do not fully test RxDB but
+ * just single methods
+ */
+import './unit/custom-index.test.js';
+import './unit/query-planner.test';
+
 /**
  * Move these tests around so that
  * when you focus on one part of RxDB,
@@ -13,6 +22,8 @@ import './unit/rx-storage-implementations.test.js';
 import './unit/rx-storage-pouchdb.test.js';
 import './unit/rx-storage-lokijs.test.js';
 import './unit/rx-storage-dexie.test.js';
+
+
 
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
@@ -44,7 +55,6 @@ import './unit/leader-election.test.js';
 import './unit/backup.test.js';
 import './unit/replication.test.js';
 import './unit/replication-graphql.test.js';
-import './unit/custom-index.test.js';
 import './unit/replication-couchdb.test.js';
 import './unit/import-export.test.js';
 import './unit/cross-instance.test.js';

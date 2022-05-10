@@ -8,14 +8,11 @@ import {
     fillWithDefaultSettings,
     MangoQuery,
     normalizeMangoQuery,
-    normalizeRxJsonSchema,
-    randomCouchString,
-    RxJsonSchema
+    randomCouchString
 } from '../../';
 
 import {
     RxStorageDexieStatics,
-    getPouchQueryPlan,
     getDexieStoreSchema
 } from '../../plugins/dexie';
 
@@ -28,7 +25,8 @@ addRxPlugin(RxDBValidatePlugin);
 import {
     HumanDocumentType,
     humanMinimal,
-    humanSchemaLiteral
+    humanSchemaLiteral,
+    human
 } from '../helper/schemas';
 
 /**
@@ -49,15 +47,20 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     randomCouchString(10),
                     2
                 );
-                const query: MangoQuery = {
+                const query: MangoQuery<HumanDocumentType> = {
                     selector: {},
                     sort: [
                         { age: 'asc' }
                     ]
                 }
+                const schema = fillWithDefaultSettings(human);
+                const preparedQuery = RxStorageDexieStatics.prepareQuery(
+                    schema,
+                    normalizeMangoQuery(schema, query)
+                );
                 const comparator = RxStorageDexieStatics.getSortComparator<HumanDocumentType>(
                     humanMinimal as any,
-                    query
+                    preparedQuery
                 );
                 const sortResult = comparator(docA, docB);
                 assert.strictEqual(sortResult, -1);
@@ -80,9 +83,14 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         age: 1
                     }
                 };
+                const schema = fillWithDefaultSettings(humanMinimal);
+                const preparedQuery = RxStorageDexieStatics.prepareQuery(
+                    schema,
+                    normalizeMangoQuery(schema, query)
+                );
                 const matcher = RxStorageDexieStatics.getQueryMatcher(
-                    fillWithDefaultSettings(humanMinimal),
-                    query
+                    schema,
+                    preparedQuery
                 );
                 const matching = matcher(docMatching as any);
                 assert.ok(matching);
@@ -130,51 +138,6 @@ config.parallel('rx-storage-dexie.test.js', () => {
             });
         });
     });
-    describe('query', () => {
-        describe('.getPouchQueryPlan()', () => {
-            it('should use the correct index', () => {
-                const schema: RxJsonSchema<any> = {
-                    version: 0,
-                    primaryKey: 'key',
-                    type: 'object',
-                    properties: {
-                        key: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        age: {
-                            type: 'number'
-                        }
-                    },
-                    indexes: [
-                        ['age', 'key']
-                    ]
-                };
-
-                const queryPlan = getPouchQueryPlan(
-                    schema,
-                    {
-                        selector: {
-                            age: {
-                                $gt: 18
-                            }
-                        },
-                        sort: [
-                            { age: 'asc' },
-                            { key: 'asc' }
-                        ],
-                        limit: 5,
-                        skip: 1
-                    }
-                );
-
-                const hasAgeField = queryPlan.index.def.fields.find((field: any) => Object.keys(field)[0] === 'age');
-                assert.ok(hasAgeField);
-                const hasKeyField = queryPlan.index.def.fields.find((field: any) => Object.keys(field)[0] === 'key');
-                assert.ok(hasKeyField);
-            });
-        });
-    });
     describe('.query()', () => {
         it('should respect a custom index', async () => {
             /**
@@ -192,7 +155,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         schema.indexes.push(['age', 'firstName', 'passportId']);
                         schema.indexes.push(['firstName', 'age', 'passportId']);
                         */
-            schema = normalizeRxJsonSchema(schema);
+            schema = fillWithDefaultSettings(schema);
 
             const databaseName = randomCouchString(12);
             const storageInstance = await storage.createStorageInstance<HumanDocumentType>({
@@ -222,10 +185,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     schema,
                     normalizeMangoQuery(schema, query)
                 );
-                const queryPlan = getPouchQueryPlan(
-                    schema,
-                    preparedQuery
-                );
+                const queryPlan = preparedQuery.queryPlan;
                 const result = await storageInstance.query(preparedQuery);
                 return {
                     query,
@@ -251,18 +211,23 @@ config.parallel('rx-storage-dexie.test.js', () => {
             });
 
             // default should use default index
-            assert.strictEqual(
-                defaultAnalyzed.queryPlan.index.ddoc,
-                null
+            assert.deepStrictEqual(
+                defaultAnalyzed.queryPlan.index,
+                ['passportId']
             );
 
             // custom should use the custom index
             (customIndexAnalyzed.query as any).index.forEach((indexKey: string) => {
                 if (indexKey !== 'passportId') {
-                    assert.ok(ensureNotFalsy(customIndexAnalyzed.queryPlan.index.ddoc).includes(indexKey));
+                    assert.ok(ensureNotFalsy(customIndexAnalyzed.queryPlan.index).includes(indexKey));
                 }
             });
-            assert.ok(ensureNotFalsy(customIndexAnalyzed.queryPlan.index.ddoc).includes('_id'));
+
+            /**
+             * The primaryPath must always be the last index field
+             * to have deterministic sorting.
+             */
+            assert.ok(ensureNotFalsy(customIndexAnalyzed.queryPlan.index).includes('passportId'));
 
             // both queries should have returned the same documents
             assert.deepStrictEqual(

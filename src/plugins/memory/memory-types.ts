@@ -1,5 +1,5 @@
 import type {
-    PreparedQuery,
+    DexiePreparedQuery,
     RxAttachmentWriteData,
     RxDocumentData,
     RxStorage
@@ -63,7 +63,7 @@ export type DocWithIndexString<RxDocType> = {
     indexString: string;
 };
 
-export type MemoryPreparedQuery<DocType> = PreparedQuery<DocType>;
+export type MemoryPreparedQuery<DocType> = DexiePreparedQuery<DocType>;
 
 export type MemoryChangesCheckpoint = {
     id: string;
