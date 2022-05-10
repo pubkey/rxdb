@@ -3,7 +3,6 @@ import type {
     QueryMatcher
 } from 'event-reduce-js';
 import type {
-    MangoQuery,
     RxDocumentData,
     RxJsonSchema,
     RxStorage,

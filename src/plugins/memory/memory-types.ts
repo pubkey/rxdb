@@ -1,6 +1,5 @@
 import type {
     DexiePreparedQuery,
-    PreparedQuery,
     RxAttachmentWriteData,
     RxDocumentData,
     RxStorage

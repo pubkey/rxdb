@@ -6,17 +6,13 @@ import {
     clone,
     ensureNotFalsy,
     fillWithDefaultSettings,
-    getQueryPlan,
     MangoQuery,
     normalizeMangoQuery,
-    normalizeRxJsonSchema,
-    randomCouchString,
-    RxJsonSchema
+    randomCouchString
 } from '../../';
 
 import {
     RxStorageDexieStatics,
-    getPouchQueryPlan,
     getDexieStoreSchema
 } from '../../plugins/dexie';
 
@@ -139,51 +135,6 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     ]
                 });
                 assert.ok(dexieSchema.startsWith('id, [age+id]'));
-            });
-        });
-    });
-    describe('query', () => {
-        describe('.getPouchQueryPlan()', () => {
-            it('should use the correct index', () => {
-                const schema: RxJsonSchema<any> = {
-                    version: 0,
-                    primaryKey: 'key',
-                    type: 'object',
-                    properties: {
-                        key: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        age: {
-                            type: 'number'
-                        }
-                    },
-                    indexes: [
-                        ['age', 'key']
-                    ]
-                };
-
-                const queryPlan = getPouchQueryPlan(
-                    schema,
-                    {
-                        selector: {
-                            age: {
-                                $gt: 18
-                            }
-                        },
-                        sort: [
-                            { age: 'asc' },
-                            { key: 'asc' }
-                        ],
-                        limit: 5,
-                        skip: 1
-                    }
-                );
-
-                const hasAgeField = queryPlan.index.def.fields.find((field: any) => Object.keys(field)[0] === 'age');
-                assert.ok(hasAgeField);
-                const hasKeyField = queryPlan.index.def.fields.find((field: any) => Object.keys(field)[0] === 'key');
-                assert.ok(hasKeyField);
             });
         });
     });

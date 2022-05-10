@@ -24,7 +24,6 @@ import type {
     RxJsonSchema,
     RxStorageInstanceCreationParams,
     EventBulk,
-    PreparedQuery,
     DexieChangesCheckpoint,
     StringKeys
 } from '../../types';
