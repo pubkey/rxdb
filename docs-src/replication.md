@@ -241,8 +241,6 @@ If used in in a multi instance setting, so when at database creation `multiInsta
 you need to import the leader election plugin so that RxDB can know how many instances exist and which browser tab should run the replication.
 
 
-
-
 ## RxReplicationState
 
 The function `replicateRxCollection()` returns a `RxReplicationState` that can be used to manage and observe the replication.
