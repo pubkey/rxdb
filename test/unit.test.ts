@@ -60,7 +60,7 @@ import './unit/import-export.test.js';
 import './unit/cross-instance.test.js';
 import './unit/server.test.js';
 import './unit/plugin.test.js';
-import './unit/dexie-helper.test.js'
+import './unit/dexie-helper.test.js';
 import './unit/performance.test';
 import './unit/last.test.js';
 

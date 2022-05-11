@@ -132,6 +132,7 @@ describe('unit/performance.test.ts', () => {
                 },
                 sort: [{ var1: 'asc' }]
             });
+            console.dir(query.getPreparedQuery());
             const queryResult = await query.exec();
             updateTime('find-by-query');
             assert.strictEqual(queryResult.length, docsAmount + 1);
@@ -149,8 +150,5 @@ describe('unit/performance.test.ts', () => {
 
         console.log('Performance test for ' + perfStorage.description);
         console.log(JSON.stringify(timeToLog, null, 4));
-
-
-        process.exit();
     });
 });
