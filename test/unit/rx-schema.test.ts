@@ -78,6 +78,9 @@ config.parallel('rx-schema.test.js', () => {
                 it('validates deep nested indexes', () => {
                     checkSchema(schemas.humanWithDeepNestedIndexes);
                 });
+                it('validates with pattern properties as a property attribute', () => {
+                    checkSchema(schemas.humanWithPatternProperties);
+                });
             });
             describe('negative', () => {
                 it('break when index defined at object property level', () => {
@@ -638,8 +641,18 @@ config.parallel('rx-schema.test.js', () => {
                     const obj: any = schemaObjects.nestedHuman();
                     schema.validate(obj);
                 });
+                it('validates object with pattern properties', () => {
+                    const schema = createRxSchema(schemas.humanWithPatternProperties);
+                    const obj: any = schemaObjects.humanWithPatternProperties();
+                    schema.validate(obj);
+                });
             });
             describe('negative', () => {
+                it('field data does not match pattern properties regex', () => {
+                    const schema = createRxSchema(schemas.humanWithPatternProperties);
+                    const obj: any = schemaObjects.humanWithPatternPropertiesFail();
+                    assert.throws(() => schema.validate(obj), Error);
+                });
                 it('required field not given', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj: any = schemaObjects.human();
