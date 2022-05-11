@@ -25,7 +25,7 @@ describe('unit/performance.test.ts', () => {
         const totalTimeSums: { [k: string]: number } = {};
 
         const runs = 5;
-        const collectionsAmount = 4;
+        const collectionsAmount = 3;
         const docsAmount = 300;
 
         let runsDone = 0;
@@ -124,13 +124,15 @@ describe('unit/performance.test.ts', () => {
 
             // find by query
             updateTime();
-            const queryResult = await collection.find({
+            const query = collection.find({
                 selector: {
                     var1: {
                         $gt: ''
                     }
-                }
-            }).exec();
+                },
+                sort: [{ var1: 'asc' }]
+            });
+            const queryResult = await query.exec();
             updateTime('find-by-query');
             assert.strictEqual(queryResult.length, docsAmount + 1);
 
@@ -147,5 +149,8 @@ describe('unit/performance.test.ts', () => {
 
         console.log('Performance test for ' + perfStorage.description);
         console.log(JSON.stringify(timeToLog, null, 4));
+
+
+        process.exit();
     });
 });
