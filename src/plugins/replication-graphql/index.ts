@@ -151,9 +151,14 @@ export function syncGraphQL<RxDocType>(
                     }
                 }
 
-                const dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
-                const docsData: any[] = objectPath.get(result, dataPath);
-
+                let docsData: any[] = [] 
+                if (!pull.dataPath || typeof pull.dataPath === 'string') {
+                    const dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
+                    docsData = objectPath.get(result, dataPath);
+                } else {
+                    docsData = pull.dataPath(result)
+                }
+                
                 // optimization shortcut, do not proceed if there are no documents.
                 if (docsData.length === 0) {
                     return {

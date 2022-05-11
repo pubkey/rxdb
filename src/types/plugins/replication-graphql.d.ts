@@ -27,7 +27,7 @@ export interface GraphQLSyncPullOptions<RxDocType> {
      */
     batchSize: number;
     modifier?: (doc: RxDocType | any) => Promise<any> | any;
-    dataPath?: string;
+    dataPath?: string | ((result: any) => any[]);
 }
 export interface GraphQLSyncPushOptions<RxDocType> {
     queryBuilder: RxGraphQLReplicationPushQueryBuilder;

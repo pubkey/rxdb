@@ -310,6 +310,74 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.destroy();
             });
+            it('should pull documents from a custom dataPath function if one is specified', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(batchSize))
+                ]);
+
+                const collectionQueryBuilder = (doc: any) => {
+                    if (!doc) {
+                        doc = {
+                            id: '',
+                            updatedAt: 0
+                        };
+                    }
+
+                    const query = `query($lastId: String!, $updatedAt: Int!, $batchSize: Int!)
+                    {
+                        collectionFeedForRxDBReplication(lastId: $lastId, minUpdatedAt: $updatedAt, limit: $batchSize) {
+                            collection {
+                                id
+                                name
+                                age
+                                updatedAt
+                                deleted
+                            }
+                        }
+                    }`;
+
+                    const variables = {
+                        lastId: doc.id,
+                        updatedAt: doc.updatedAt,
+                        batchSize
+                    };
+
+                    return {
+                        query,
+                        variables
+                    };
+                };
+
+                type Result = {
+                    data: {
+                        collectionFeedForRxDBReplication: {
+                            collection: any[]
+                        }
+                    }
+                }
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: collectionQueryBuilder,
+                        dataPath: (result: Result) => {
+                            return result.data.collectionFeedForRxDBReplication.collection;
+                        }  
+                    },
+                    deletedFlag: 'deleted'
+                });
+                assert.strictEqual(replicationState.isStopped(), false);
+
+                await AsyncTestUtil.waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === batchSize;
+                });
+
+                server.close();
+                c.database.destroy();
+            });
             it('should pull all documents when they have the same timestamp because they are also sorted by id', async () => {
                 const amount = batchSize * 2;
                 const testData = getTestData(amount);
