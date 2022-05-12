@@ -1,6 +1,7 @@
 import {
     RxQueryBase
 } from '../rx-query';
+import { StringKeys } from './util';
 
 export interface RxQueryOptions<T> {
     $eq?: T;
@@ -39,7 +40,7 @@ export type MangoQuerySelector<RxDocType = any> = {
  */
 export type MangoQuerySortDirection = 'asc' | 'desc';
 export type MangoQuerySortPart<RxDocType = any> = {
-    [k in keyof RxDocType | string]: MangoQuerySortDirection;
+    [k in StringKeys<RxDocType> | string]: MangoQuerySortDirection;
 };
 
 export type MangoQueryNoLimit<RxDocType = any> = {

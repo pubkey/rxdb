@@ -3,13 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- REFACTOR if no sort order is set on a query, use a better matching sort order and not just the primary key.
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.4.0 (12 May 2022)
+
+- REFACTOR if no sort order is set on a query, use a better matching sort order and not just the primary key.
 
 ### 12.3.2 (10 May 2022)
 

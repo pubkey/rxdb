@@ -9,10 +9,6 @@ export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, 
     name: string;
     statics: Readonly<{
         hash(data: string | Blob | Buffer): Promise<string>;
-        /**
-         * Creates the indexes of the schema inside of the pouchdb instance.
-         * Will skip indexes that already exist.
-         */
         hashKey: string;
         doesBroadcastChangestream(): boolean;
         prepareQuery<RxDocType>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
