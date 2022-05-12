@@ -1,5 +1,6 @@
+import { isLogicalOperator } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { firstPropertyNameOfObject, flatClone } from './util';
+import { firstPropertyNameOfObject, flatClone, isMaybeReadonlyArray } from './util';
 /**
  * Normalize the query to ensure we have all fields set
  * and queries that represent the same query logic are detected as equal by the caching.
@@ -7,39 +8,14 @@ import { firstPropertyNameOfObject, flatClone } from './util';
 
 export function normalizeMangoQuery(schema, mangoQuery) {
   var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-  mangoQuery = flatClone(mangoQuery);
+  var normalizedMangoQuery = flatClone(mangoQuery);
 
-  if (typeof mangoQuery.skip !== 'number') {
-    mangoQuery.skip = 0;
+  if (typeof normalizedMangoQuery.skip !== 'number') {
+    normalizedMangoQuery.skip = 0;
   }
 
-  if (!mangoQuery.selector) {
-    mangoQuery.selector = {};
-  }
-  /**
-   * To ensure a deterministic sorting,
-   * we have to ensure the primary key is always part
-   * of the sort query.
-   * Primary sorting is added as last sort parameter,
-   * similiar to how we add the primary key to indexes that do not have it.
-   */
-
-
-  if (!mangoQuery.sort) {
-    var _ref;
-
-    mangoQuery.sort = [(_ref = {}, _ref[primaryKey] = 'asc', _ref)];
-  } else {
-    var isPrimaryInSort = mangoQuery.sort.find(function (p) {
-      return firstPropertyNameOfObject(p) === primaryKey;
-    });
-
-    if (!isPrimaryInSort) {
-      var _mangoQuery$sort$push;
-
-      mangoQuery.sort = mangoQuery.sort.slice(0);
-      mangoQuery.sort.push((_mangoQuery$sort$push = {}, _mangoQuery$sort$push[primaryKey] = 'asc', _mangoQuery$sort$push));
-    }
+  if (!normalizedMangoQuery.selector) {
+    normalizedMangoQuery.selector = {};
   }
   /**
    * Ensure that if an index is specified,
@@ -47,16 +23,110 @@ export function normalizeMangoQuery(schema, mangoQuery) {
    */
 
 
-  if (mangoQuery.index) {
-    var indexAr = Array.isArray(mangoQuery.index) ? mangoQuery.index.slice(0) : [mangoQuery.index];
+  if (normalizedMangoQuery.index) {
+    var indexAr = Array.isArray(normalizedMangoQuery.index) ? normalizedMangoQuery.index.slice(0) : [normalizedMangoQuery.index];
 
     if (!indexAr.includes(primaryKey)) {
       indexAr.push(primaryKey);
     }
 
-    mangoQuery.index = indexAr;
+    normalizedMangoQuery.index = indexAr;
+  }
+  /**
+   * To ensure a deterministic sorting,
+   * we have to ensure the primary key is always part
+   * of the sort query.
+   * Primary sorting is added as last sort parameter,
+   * similiar to how we add the primary key to indexes that do not have it.
+   * 
+   */
+
+
+  if (!normalizedMangoQuery.sort) {
+    /**
+     * If no sort is given at all,
+     * we can assume that the user does not care about sort order at al.
+     * 
+     * we cannot just use the primary key as sort parameter
+     * because it would likely cause the query to run over the primary key index
+     * which has a bad performance in most cases.
+     */
+    if (normalizedMangoQuery.index) {
+      normalizedMangoQuery.sort = normalizedMangoQuery.index.map(function (field) {
+        var _ref;
+
+        return _ref = {}, _ref[field] = 'asc', _ref;
+      });
+    } else {
+      /**
+       * Find the index that best matches the fields with the logical operators
+       */
+      if (schema.indexes) {
+        var fieldsWithLogicalOperator = new Set();
+        Object.entries(normalizedMangoQuery.selector).forEach(function (_ref2) {
+          var field = _ref2[0],
+              matcher = _ref2[1];
+          var hasLogical = false;
+
+          if (typeof matcher === 'object' && matcher !== null) {
+            hasLogical = !!Object.keys(matcher).find(function (operator) {
+              return isLogicalOperator(operator);
+            });
+          } else {
+            hasLogical = true;
+          }
+
+          if (hasLogical) {
+            fieldsWithLogicalOperator.add(field);
+          }
+        });
+        var currentFieldsAmount = -1;
+        var currentBestIndexForSort;
+        schema.indexes.forEach(function (index) {
+          var useIndex = isMaybeReadonlyArray(index) ? index : [index];
+          var firstWrongIndex = useIndex.findIndex(function (indexField) {
+            return !fieldsWithLogicalOperator.has(indexField);
+          });
+
+          if (firstWrongIndex > 0 && firstWrongIndex > currentFieldsAmount) {
+            currentFieldsAmount = firstWrongIndex;
+            currentBestIndexForSort = useIndex;
+          }
+        });
+
+        if (currentBestIndexForSort) {
+          normalizedMangoQuery.sort = currentBestIndexForSort.map(function (field) {
+            var _ref3;
+
+            return _ref3 = {}, _ref3[field] = 'asc', _ref3;
+          });
+        }
+      }
+      /**
+       * Fall back to the primary key as sort order
+       * if no better one has been found
+       */
+
+
+      if (!normalizedMangoQuery.sort) {
+        var _ref4;
+
+        normalizedMangoQuery.sort = [(_ref4 = {}, _ref4[primaryKey] = 'asc', _ref4)];
+      }
+    }
+  } else {
+    var isPrimaryInSort = normalizedMangoQuery.sort.find(function (p) {
+      return firstPropertyNameOfObject(p) === primaryKey;
+    });
+
+    if (!isPrimaryInSort) {
+      var _normalizedMangoQuery;
+
+      normalizedMangoQuery.sort = normalizedMangoQuery.sort.slice(0);
+      normalizedMangoQuery.sort.push((_normalizedMangoQuery = {}, _normalizedMangoQuery[primaryKey] = 'asc', _normalizedMangoQuery));
+    }
   }
 
-  return mangoQuery;
+  return normalizedMangoQuery;
 }
 //# sourceMappingURL=rx-query-helper.js.map
