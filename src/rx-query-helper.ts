@@ -1,3 +1,4 @@
+import { isLogicalOperator } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     FilledMangoQuery,
@@ -7,7 +8,8 @@ import type {
 } from './types';
 import {
     firstPropertyNameOfObject,
-    flatClone
+    flatClone,
+    isMaybeReadonlyArray
 } from './util';
 
 /**
@@ -19,14 +21,26 @@ export function normalizeMangoQuery<RxDocType>(
     mangoQuery: MangoQuery<RxDocType>
 ): FilledMangoQuery<RxDocType> {
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-    mangoQuery = flatClone(mangoQuery);
+    const normalizedMangoQuery: FilledMangoQuery<RxDocType> = flatClone(mangoQuery) as any;
 
-    if (typeof mangoQuery.skip !== 'number') {
-        mangoQuery.skip = 0;
+    if (typeof normalizedMangoQuery.skip !== 'number') {
+        normalizedMangoQuery.skip = 0;
     }
 
-    if (!mangoQuery.selector) {
-        mangoQuery.selector = {};
+    if (!normalizedMangoQuery.selector) {
+        normalizedMangoQuery.selector = {};
+    }
+
+    /**
+     * Ensure that if an index is specified,
+     * the primaryKey is inside of it.
+     */
+    if (normalizedMangoQuery.index) {
+        const indexAr = Array.isArray(normalizedMangoQuery.index) ? normalizedMangoQuery.index.slice(0) : [normalizedMangoQuery.index];
+        if (!indexAr.includes(primaryKey)) {
+            indexAr.push(primaryKey);
+        }
+        normalizedMangoQuery.index = indexAr;
     }
 
     /**
@@ -35,29 +49,73 @@ export function normalizeMangoQuery<RxDocType>(
      * of the sort query.
      * Primary sorting is added as last sort parameter,
      * similiar to how we add the primary key to indexes that do not have it.
+     * 
      */
-    if (!mangoQuery.sort) {
-        mangoQuery.sort = [{ [primaryKey]: 'asc' }] as any;
+    if (!normalizedMangoQuery.sort) {
+        /**
+         * If no sort is given at all,
+         * we can assume that the user does not care about sort order at al.
+         * 
+         * we cannot just use the primary key as sort parameter
+         * because it would likely cause the query to run over the primary key index
+         * which has a bad performance in most cases.
+         */
+        if (normalizedMangoQuery.index) {
+            normalizedMangoQuery.sort = normalizedMangoQuery.index.map((field: string) => ({ [field as any]: 'asc' } as any));
+        } else {
+            /**
+             * Find the index that best matches the fields with the logical operators
+             */
+            if (schema.indexes) {
+                const fieldsWithLogicalOperator: Set<string> = new Set();
+                Object.entries(normalizedMangoQuery.selector).forEach(([field, matcher]) => {
+                    let hasLogical = false;
+                    if (typeof matcher === 'object' && matcher !== null) {
+                        hasLogical = !!Object.keys(matcher).find(operator => isLogicalOperator(operator));
+                    } else {
+                        hasLogical = true;
+                    }
+                    if (hasLogical) {
+                        fieldsWithLogicalOperator.add(field);
+                    }
+                });
+
+
+                let currentFieldsAmount = -1;
+                let currentBestIndexForSort: string[] | readonly string[] | undefined;
+                schema.indexes.forEach(index => {
+                    const useIndex = isMaybeReadonlyArray(index) ? index : [index];
+                    const firstWrongIndex = useIndex.findIndex(indexField => !fieldsWithLogicalOperator.has(indexField));
+                    if (
+                        firstWrongIndex > 0 &&
+                        firstWrongIndex > currentFieldsAmount
+                    ) {
+                        currentFieldsAmount = firstWrongIndex;
+                        currentBestIndexForSort = useIndex;
+                    }
+                });
+                if (currentBestIndexForSort) {
+                    normalizedMangoQuery.sort = currentBestIndexForSort.map((field: string) => ({ [field as any]: 'asc' } as any));
+                }
+
+            }
+
+            /**
+             * Fall back to the primary key as sort order
+             * if no better one has been found
+             */
+            if (!normalizedMangoQuery.sort) {
+                normalizedMangoQuery.sort = [{ [primaryKey]: 'asc' }] as any;
+            }
+        }
     } else {
-        const isPrimaryInSort = mangoQuery.sort
+        const isPrimaryInSort = normalizedMangoQuery.sort
             .find(p => firstPropertyNameOfObject(p) === primaryKey);
         if (!isPrimaryInSort) {
-            mangoQuery.sort = mangoQuery.sort.slice(0);
-            mangoQuery.sort.push({ [primaryKey]: 'asc' } as any);
+            normalizedMangoQuery.sort = normalizedMangoQuery.sort.slice(0);
+            normalizedMangoQuery.sort.push({ [primaryKey]: 'asc' } as any);
         }
     }
 
-    /**
-     * Ensure that if an index is specified,
-     * the primaryKey is inside of it.
-     */
-    if (mangoQuery.index) {
-        const indexAr = Array.isArray(mangoQuery.index) ? mangoQuery.index.slice(0) : [mangoQuery.index];
-        if (!indexAr.includes(primaryKey)) {
-            indexAr.push(primaryKey);
-        }
-        mangoQuery.index = indexAr;
-    }
-
-    return mangoQuery as any;
+    return normalizedMangoQuery;
 }

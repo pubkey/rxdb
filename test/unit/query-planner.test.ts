@@ -30,6 +30,54 @@ config.parallel('query-planner.test.js', () => {
         return fillWithDefaultSettings(schema);
     }
 
+    describe('.normalizeMangoQuery()', () => {
+        describe('fill up the sort', () => {
+            it('should use the index fields as default sort, if index is provided', () => {
+                const schema = getHumanSchemaWithIndexes([['age', 'firstName']]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        index: ['age', 'firstName']
+                    }
+                );
+                assert.deepStrictEqual(
+                    query.sort,
+                    [
+                        { age: 'asc' },
+                        { firstName: 'asc' },
+                        { passportId: 'asc' }
+                    ]
+                );
+            });
+            it('should use the logical operators if no index is provided', () => {
+                const schema = getHumanSchemaWithIndexes([
+                    ['age', 'firstName'],
+                    ['lastName', 'firstName']
+                ]);
+                const query = normalizeMangoQuery<HumanDocumentType>(
+                    schema,
+                    {
+                        selector: {
+                            age: {
+                                $gt: 20
+                            },
+                            firstName: {
+                                $gt: ''
+                            }
+                        }
+                    }
+                );
+                assert.deepStrictEqual(
+                    query.sort,
+                    [
+                        { age: 'asc' },
+                        { firstName: 'asc' },
+                        { passportId: 'asc' }
+                    ]
+                );
+            });
+        });
+    });
     describe('.getQueryPlan()', () => {
         it('should pick the default index when no indexes specified in the schema', () => {
             const schema = getHumanSchemaWithIndexes([]);
