@@ -148,6 +148,8 @@
 
 * [Creating Plugins](./plugins.md)
 
+* [Query Optimizer](./query-optimizer.md)
+
 * [RxDB Premium](./premium.md)
 
 

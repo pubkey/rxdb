@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - REFACTOR if no sort order is set on a query, use a better matching sort order and not just the primary key.
+- ADD query optimizer to premium plugins.
 
 <!-- ADD new changes here! -->
 

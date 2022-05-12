@@ -5,6 +5,7 @@ To make RxDB a sustainable Project, some plugins are not part of the RxDB open s
 
 ## Premium plugins
 
+- [Query Optimizer](./query-optimizer.md) A tool to find the best index for a given query. You can use this during build time to find the best index and then use that index during runtime.
 - [RxStorage IndexedDB](./rx-storage-indexeddb.md) a really fast [RxStorage](./rx-storage.md) implementation based on **IndexedDB**. Made to be used in browsers.
 - [RxStorage SQLite](./rx-storage-sqlite.md) a really fast [RxStorage](./rx-storage.md) implementation based on **SQLite**. Made to be used on **Node.js**, **Electron**, **React Native**, **Cordova** or **Capacitor**.
 - [RxStorage Sharding](./rx-storage-sharding.md) a wrapper around any other [RxStorage](./rx-storage.md) that improves performance by applying the sharding technique.
