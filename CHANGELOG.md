@@ -3,13 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD query optimizer to premium plugins.
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.4.1 (12 May 2022)
+
+- ADD query optimizer to premium plugins.
 
 ### 12.4.0 (12 May 2022)
 
