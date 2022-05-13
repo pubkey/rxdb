@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - FIX query planner did not pick the correct index on `$eq` operations.
+- IMPROVE performance of the memory RxStorage
 
 <!-- ADD new changes here! -->
 

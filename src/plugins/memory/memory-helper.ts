@@ -5,7 +5,8 @@ import type {
 } from '../../types';
 import type {
     DocWithIndexString,
-    MemoryStorageInternals
+    MemoryStorageInternals,
+    MemoryStorageInternalsByIndex
 } from './memory-types';
 import type { RxStorageInstanceMemory } from './rx-storage-instance-memory';
 import {
@@ -35,19 +36,25 @@ export function attachmentMapKey(documentId: string, attachmentId: string): stri
     return documentId + '||' + attachmentId;
 }
 
+const SORT_BY_INDEX_STRING = (a: DocWithIndexString<any>, b: DocWithIndexString<any>) => {
+    if (a.indexString < b.indexString) {
+        return -1;
+    } else {
+        return 1;
+    }
+};
+
+
 
 export function putWriteRowToState<RxDocType>(
-    primaryPath: string,
-    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    docId: string,
     state: MemoryStorageInternals<RxDocType>,
+    stateByIndex: MemoryStorageInternalsByIndex<RxDocType>[],
     row: BulkWriteRow<RxDocType>,
     docInState?: RxDocumentData<RxDocType>
 ) {
-    const docId: string = (row.document as any)[primaryPath];
     state.documents.set(docId, row.document);
-
-
-    Object.values(state.byIndex).forEach(byIndex => {
+    stateByIndex.forEach(byIndex => {
         const docsWithIndex = byIndex.docsWithIndex;
         const newIndexString = byIndex.getIndexableString(row.document);
         const [, insertPosition] = pushAtSortPosition(
@@ -57,16 +64,9 @@ export function putWriteRowToState<RxDocType>(
                 doc: row.document,
                 indexString: newIndexString
             },
-            (a: DocWithIndexString<RxDocType>, b: DocWithIndexString<RxDocType>) => {
-                if (a.indexString < b.indexString) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            },
+            SORT_BY_INDEX_STRING,
             true
         );
-
 
         /**
          * Remove previous if it was in the state

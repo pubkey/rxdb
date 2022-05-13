@@ -5,7 +5,11 @@
  */
 
 import { getSchemaByObjectPath } from './rx-schema-helper';
-import { JsonSchema, RxDocumentData, RxJsonSchema } from './types';
+import type {
+    JsonSchema,
+    RxDocumentData,
+    RxJsonSchema
+} from './types';
 import objectPath from 'object-path';
 import { ensureNotFalsy } from './util';
 import { INDEX_MAX } from './query-planner';
@@ -16,6 +20,11 @@ import { INDEX_MAX } from './query-planner';
  * to check if a document would be sorted below or above 
  * another documents, dependent on the index values.
  * @monad for better performance
+ * 
+ * IMPORTANT: Performance is really important here
+ * which is why we code so 'strange'.
+ * Always run performance tests when you want to
+ * change something in this method.
  */
 export function getIndexableStringMonad<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
@@ -29,62 +38,72 @@ export function getIndexableStringMonad<RxDocType>(
      * function is called many times.
      */
     const fieldNameProperties: {
-        [k: string]: {
-            schemaPart: JsonSchema;
-            /*
-             * Only in number fields.
-             */
-            parsedLengths?: ParsedLengths
-        }
-    } = {};
-    index.forEach(fieldName => {
+        fieldName: string;
+        schemaPart: JsonSchema;
+        /*
+         * Only in number fields.
+         */
+        parsedLengths?: ParsedLengths;
+
+        /**
+         * True if the fieldName is a complex
+         * path so we have to use the slower objectPath
+         * module instead of just getting the object property.
+         */
+        hasComplexPath: boolean;
+    }[] = index.map(fieldName => {
         const schemaPart = getSchemaByObjectPath(
             schema,
             fieldName
         );
-        fieldNameProperties[fieldName] = {
-            schemaPart
-        };
         const type = schemaPart.type;
+        let parsedLengths: ParsedLengths | undefined;
         if (type === 'number' || type === 'integer') {
-            const parsedLengths = getStringLengthOfIndexNumber(
+            parsedLengths = getStringLengthOfIndexNumber(
                 schemaPart
             );
-            fieldNameProperties[fieldName].parsedLengths = parsedLengths;
+        }
+
+        return {
+            fieldName,
+            schemaPart,
+            parsedLengths,
+            hasComplexPath: fieldName.includes('.')
         }
     });
 
+
     const ret = function (docData: RxDocumentData<RxDocType>): string {
         let str = '';
-        index.forEach(fieldName => {
-            const schemaPart = fieldNameProperties[fieldName].schemaPart;
-            let fieldValue = objectPath.get(docData, fieldName);
+        fieldNameProperties.forEach(props => {
+            const schemaPart = props.schemaPart;
             const type = schemaPart.type;
-            switch (type) {
-                case 'string':
-                    const maxLength = schemaPart.maxLength as number;
-                    if (!fieldValue) {
-                        fieldValue = '';
-                    }
-                    str += fieldValue.padStart(maxLength, ' ');
-                    break;
-                case 'boolean':
-                    const boolToStr = fieldValue ? '1' : '0';
-                    str += boolToStr;
-                    break;
-                case 'number':
-                case 'integer':
-                    const parsedLengths = ensureNotFalsy(fieldNameProperties[fieldName].parsedLengths);
-                    if (!fieldValue) {
-                        fieldValue = 0;
-                    }
-                    str += getNumberIndexString(
-                        parsedLengths,
-                        fieldValue
-                    );
-                    break;
-                default:
-                    throw new Error('unknown index type ' + type);
+
+            /**
+             * TODO
+             * it is too likely that we often need the objectPath method
+             * because _meta.lwt is often used in the indexes.
+             * So we should find a ways to improve the performance here.
+             */
+            let fieldValue = props.hasComplexPath ? objectPath.get(docData, props.fieldName) : (docData as any)[props.fieldName];
+
+            if (type === 'string') {
+                if (!fieldValue) {
+                    fieldValue = '';
+                }
+                str += fieldValue.padStart(schemaPart.maxLength as number, ' ');
+            } else if (type === 'boolean') {
+                const boolToStr = fieldValue ? '1' : '0';
+                str += boolToStr;
+            } else {
+                const parsedLengths = ensureNotFalsy(props.parsedLengths);
+                if (!fieldValue) {
+                    fieldValue = 0;
+                }
+                str += getNumberIndexString(
+                    parsedLengths,
+                    fieldValue
+                );
             }
         });
         return str;

@@ -82,19 +82,10 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             error: {}
         };
 
-        const docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>> = new Map();
-        documentWrites.forEach(writeRow => {
-            const docId = writeRow.document[this.primaryPath];
-            const docInDb = this.internals.documents.get(docId as any);
-            if (docInDb) {
-                docsInDb.set(docId as any, docInDb);
-            }
-        });
-
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             this.primaryPath as any,
-            docsInDb,
+            this.internals.documents,
             documentWrites
         );
         categorized.errors.forEach(err => {
@@ -104,12 +95,14 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         /**
          * Do inserts/updates
          */
+        const stateByIndex = Object.values(this.internals.byIndex);
+
         categorized.bulkInsertDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
             putWriteRowToState(
-                this.primaryPath as any,
-                this.schema,
+                docId as any,
                 this.internals,
+                stateByIndex,
                 writeRow,
                 undefined
             );
@@ -119,11 +112,11 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         categorized.bulkUpdateDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
             putWriteRowToState(
-                this.primaryPath as any,
-                this.schema,
+                docId as any,
                 this.internals,
+                stateByIndex,
                 writeRow,
-                docsInDb.get(docId as any)
+                this.internals.documents.get(docId as any)
             );
             ret.success[docId as any] = writeRow.document;
         });
@@ -151,7 +144,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         });
 
         this.changes$.next(categorized.eventBulk);
-
         return Promise.resolve(ret);
     }
 
