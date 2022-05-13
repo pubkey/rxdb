@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxDatabase · RxDB - Documentation</title>
+        <title>Query Optimizer · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-database.html" />
+    <link rel="next" href="premium.html" />
     
     
-    <link rel="prev" href="dev-mode.html" />
+    <link rel="prev" href="plugins.html" />
     
 
     </head>
@@ -208,7 +208,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.5" data-path="rx-database.html">
+        <li class="chapter " data-level="1.5" data-path="rx-database.html">
             
                 <a href="rx-database.html">
             
@@ -1698,7 +1698,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36" data-path="query-optimizer.html">
+        <li class="chapter active" data-level="1.36" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1916,7 +1916,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxDatabase</a>
+        <a href="." >Query Optimizer</a>
     </h1>
 </div>
 
@@ -1931,166 +1931,67 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxdatabase">RxDatabase</h1>
-<p>A RxDatabase-Object contains your collections and handles the synchronisation of change-events.</p>
-<h2 id="creation">Creation</h2>
-<p>The database is created by the asynchronous <code>.createRxDatabase()</code> function of the core RxDB module. It has the following parameters:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { createRxDatabase } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
+                                <h1 id="query-optimizer">Query Optimizer</h1>
+<p>The query optimizer can be used to determine which index is the best to use for a given query.
+Because RxDB is used in client side applications, it cannot do any background checks or measurments to optimizer the query plan because that would cause significant performance problems.</p>
+<p><strong>NOTICE:</strong> The query optimizer is part of the <a href="premium.html">RxDB Premium</a> plugin that must be purchased. It is not part of the default RxDB module.</p>
+<h2 id="usage">Usage</h2>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    findBestIndex
+} from <span class="hljs-string">&apos;rxdb-premium/plugins/query-optimizer&apos;</span>;
 
-<span class="hljs-comment">// because we use the PouchDB RxStorage, we have to add the indexeddb adapter first.</span>
-<span class="hljs-keyword">import</span> { getRxStoragePouch, addPouchPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/pouchdb&apos;</span>;
-addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-idb&apos;</span>));
-
-<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> createRxDatabase({
-  name: <span class="hljs-string">&apos;heroesdb&apos;</span>,                   <span class="hljs-comment">// &lt;- name</span>
-  storage: getRxStoragePouch(<span class="hljs-string">&apos;idb&apos;</span>),  <span class="hljs-comment">// &lt;- RxStorage</span>
-  password: <span class="hljs-string">&apos;myPassword&apos;</span>,             <span class="hljs-comment">// &lt;- password (optional)</span>
-  multiInstance: <span class="hljs-literal">true</span>,                <span class="hljs-comment">// &lt;- multiInstance (optional, default: true)</span>
-  eventReduce: <span class="hljs-literal">true</span>                   <span class="hljs-comment">// &lt;- eventReduce (optional, default: true)</span>
-  cleanupPolicy: {}                   <span class="hljs-comment">// &lt;- custom cleanup policy (optional) </span>
-});
-</code></pre>
-<h3 id="name">name</h3>
-<p>The database-name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same <code>RxStorage</code>, their data can be assumed as equal and they will share events between each other.
-Depending on the storage or adapter this can also be used to define the filesystem folder of your data.</p>
-<h3 id="storage">storage</h3>
-<p>RxDB works on top of an implementation of the <a href="rx-storage.html">RxStorage</a> interface. This interface is an abstraction that allows you to use different underlaying databases that actually handle the documents. Depending on your use case you might use a different <code>storage</code> with different tradeoffs in performance, bundle size or supported runtimes.</p>
-<p>There are many <code>RxStorage</code> implementations that can be used depending on the JavaScript environment and performance requirements.
-For example you can use the PouchDB storage with an IndexedDB adapter in the browser. Or use the LokiJS storage with the filesystem adapter in Node.js.</p>
-<ul>
-<li><a href="rx-storage.html">List of RxStorage implementations</a></li>
-</ul>
-<pre><code class="lang-javascript">
-<span class="hljs-comment">// use the PouchDB storage with indexeddb adapter...</span>
-<span class="hljs-keyword">import</span> { getRxStoragePouch, addPouchPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/pouchdb&apos;</span>;
-addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-idb&apos;</span>));
-
-<span class="hljs-keyword">const</span> dbPouch = <span class="hljs-keyword">await</span> createRxDatabase({
-  name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
-  storage: getRxStoragePouch(<span class="hljs-string">&apos;idb&apos;</span>)
-});
-
-
-<span class="hljs-comment">// ...or use the Dexie.js RxStorage that stores data in IndexedDB.</span>
-<span class="hljs-keyword">import</span> { getRxStorageDexie } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
-
-<span class="hljs-keyword">const</span> dbDexie = <span class="hljs-keyword">await</span> createRxDatabase({
-  name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
-  storage: getRxStorageDexie()
-});
-
-
-<span class="hljs-comment">// ...or use the LokiJS RxStorage with the indexeddb adapter.</span>
-<span class="hljs-keyword">import</span> { getRxStorageLoki } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/lokijs&apos;</span>;
-<span class="hljs-keyword">const</span> LokiIncrementalIndexedDBAdapter = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;lokijs/src/incremental-indexeddb-adapter&apos;</span>);
-
-<span class="hljs-keyword">const</span> dbLoki = <span class="hljs-keyword">await</span> createRxDatabase({
-  name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
-  storage: getRxStorageLoki({
-    adapter: <span class="hljs-keyword">new</span> LokiIncrementalIndexedDBAdapter()
-  })
-});
-</code></pre>
-<h3 id="password">password</h3>
-<p><code>(optional)</code>
-If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.</p>
-<h3 id="multiinstance">multiInstance</h3>
-<p><code>(optional=true)</code>
-When you create more than one instance of the same database in a single javascript-runtime, you should set <code>multiInstance</code> to <code>true</code>. This will enable the event sharing between the two instances. For exmaple when the user has opened multiple browser windows, events will be shared between them so that both windows react to the same changes.
-<code>multiInstance</code> should be set to <code>false</code> when you have single-instances like a single Node.js-process, a react-native-app, a cordova-app or a single-window electron app which can decrease the startup time because no instance coordination has to be done.</p>
-<h3 id="eventreduce">eventReduce</h3>
-<p><code>(optional=true)</code></p>
-<p>One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB uses the <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce Algorithm</a> to optimize observer or recurring queries.</p>
-<h3 id="ignoreduplicate">ignoreDuplicate</h3>
-<p><code>(optional=false)</code>
-If you create multiple RxDatabase-instances with the same name and same adapter, it&apos;s very likely that you have done something wrong.
-To prevent this common mistake, RxDB will throw an error when you do this.
-In some rare cases like unit-tests, you want to do this intentional by setting <code>ignoreDuplicate</code> to <code>true</code>.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> db1 = <span class="hljs-keyword">await</span> createRxDatabase({
-  name: <span class="hljs-string">&apos;heroesdb&apos;</span>,
-  storage: getRxStoragePouch(<span class="hljs-string">&apos;idb&apos;</span>),
-  ignoreDuplicate: <span class="hljs-literal">true</span>
-});
-<span class="hljs-keyword">const</span> db2 = <span class="hljs-keyword">await</span> createRxDatabase({
-  name: <span class="hljs-string">&apos;heroesdb&apos;</span>,
-  storage: getRxStoragePouch(<span class="hljs-string">&apos;idb&apos;</span>),
-  ignoreDuplicate: <span class="hljs-literal">true</span> <span class="hljs-comment">// this create-call will not throw because you explicitly allow it</span>
-});
-</code></pre>
-<h2 id="methods">Methods</h2>
-<h3 id="observe-with-">Observe with $</h3>
-<p>Calling this will return an <a href="http://reactivex.io/documentation/observable.html" target="_blank">rxjs-Observable</a> which streams all write events of the <code>RxDatabase</code>.</p>
-<pre><code class="lang-javascript">myDb.$.subscribe(changeEvent =&gt; <span class="hljs-built_in">console</span>.dir(changeEvent));
-</code></pre>
-<h3 id="exportjson">exportJSON()</h3>
-<p>Use this function to create a json-export from every piece of data in every collection of this database. You can pass <code>true</code> as a parameter to decrypt the encrypted data-fields of your document.</p>
-<p>Before <code>exportJSON()</code> and <code>importJSON()</code> can be used, you have to add the <code>json-dump</code> plugin.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { addRxPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { RxDBJsonDumpPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/json-dump&apos;</span>;
-addRxPlugin(RxDBJsonDumpPlugin);
-</code></pre>
-<pre><code class="lang-javascript">myDatabase.exportJSON()
-  .then(json =&gt; <span class="hljs-built_in">console</span>.dir(json));
-</code></pre>
-<h3 id="importjson">importJSON()</h3>
-<p>To import the json-dumps into your database, use this function.</p>
-<pre><code class="lang-javascript"><span class="hljs-comment">// import the dump to the database</span>
-emptyDatabase.importJSON(json)
-  .then(() =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;done&apos;</span>));
-</code></pre>
-<h3 id="backup">backup()</h3>
-<p>Writes the current (or ongoing) database state to the filesystem. <a href="backup.html">Read more</a></p>
-<h3 id="server">server()</h3>
-<p>Spawns a couchdb-compatible server from the database. <a href="custom-build.md#server">Read more</a></p>
-<h3 id="waitforleadership">waitForLeadership()</h3>
-<p>Returns a Promise which resolves when the RxDatabase becomes <a href="leader-election.html">elected leader</a>.</p>
-<h3 id="requestidlepromise">requestIdlePromise()</h3>
-<p>Returns a promise which resolves when the database is in idle. This works similar to <a href="https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback" target="_blank">requestIdleCallback</a> but tracks the idle-ness of the database instead of the CPU.
-Use this for semi-important tasks like cleanups which should not affect the speed of important tasks.</p>
-<pre><code class="lang-javascript">
-myDatabase.requestIdlePromise().then(() =&gt; {
-    <span class="hljs-comment">// this will run at the moment the database has nothing else to do</span>
-    myCollection.customCleanupFunction();
-});
-
-<span class="hljs-comment">// with timeout</span>
-myDatabase.requestIdlePromise(<span class="hljs-number">1000</span> <span class="hljs-comment">/* time in ms */</span>).then(() =&gt; {
-    <span class="hljs-comment">// this will run at the moment the database has nothing else to do</span>
-    <span class="hljs-comment">// or the timeout has passed</span>
-    myCollection.customCleanupFunction();
-});
-</code></pre>
-<h3 id="destroy">destroy()</h3>
-<p>Destroys the databases object-instance. This is to free up memory and stop all observings and replications.
-Returns a <code>Promise</code> that resolves when the database is destroyed.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">await</span> myDatabase.destroy();
-</code></pre>
-<h3 id="remove">remove()</h3>
-<p>Removes the database and wipes all data of it from the storage.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">await</span> myDatabase.remove();
-<span class="hljs-comment">// database is now gone</span>
-
-<span class="hljs-comment">// NOTICE: You can also remove a database without its instance</span>
-<span class="hljs-keyword">import</span> { removeRxDatabase } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
-removeRxDatabase(<span class="hljs-string">&apos;mydatabasename&apos;</span>, <span class="hljs-string">&apos;localstorage&apos;</span>);
-</code></pre>
-<h3 id="checkadapter">checkAdapter()</h3>
-<p>Checks if the given PouchDB adapter can be used with RxDB in the current environment.</p>
-<pre><code class="lang-javascript"><span class="hljs-comment">// must be imported from the pouchdb plugin</span>
 <span class="hljs-keyword">import</span> { 
-    checkAdapter
-} <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/pouchdb&apos;</span>;
+    getRxStorageIndexedDB
+} from <span class="hljs-string">&apos;rxdb-premium/plugins/indexeddb&apos;</span>;
 
-<span class="hljs-keyword">const</span> ok = <span class="hljs-keyword">await</span> checkAdapter(<span class="hljs-string">&apos;idb&apos;</span>);
-<span class="hljs-built_in">console</span>.dir(ok); <span class="hljs-comment">// true on most browsers, false on nodejs</span>
+<span class="hljs-keyword">const</span> bestIndexes = await findBestIndex({
+    schema: myRxJsonSchema,
+    <span class="hljs-comment">/**
+     * In this example we use the IndexedDB RxStorage,
+     * but any other storage can be used for testing.
+     */</span>
+    storage: getRxStorageIndexedDB(),
+    <span class="hljs-comment">/**
+     * Multiple queries can be optimized at the same time
+     * which decreases the overall runtime.
+     */</span>
+    queries: {
+        <span class="hljs-comment">/**
+         * Queries can be mapped by a query id,
+         * here we use myFirstQuery as query id.
+         */</span>
+        myFirstQuery: {
+            selector: {
+                age: {
+                    $gt: <span class="hljs-number">10</span>
+                }
+            },
+        },
+        mySecondQuery: {
+            selector: {
+                age: {
+                    $gt: <span class="hljs-number">10</span>
+                },
+                lastName: {
+                    $eq: <span class="hljs-string">&apos;Nakamoto&apos;</span>
+                }
+            },
+        }
+    },
+    testData: [<span class="hljs-comment">/** data for the documents. **/</span>]
+});
 </code></pre>
-<h3 id="isrxdatabase">isRxDatabase</h3>
-<p>Returns true if the given object is an instance of RxDatabase. Returns false if not.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { isRxDatabase } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">const</span> is = isRxDatabase(myObj);
-</code></pre>
-<hr>
-<p>If you are new to RxDB, you should continue <a href="rx-schema.html">here</a></p>
+<h2 id="important-details">Important details</h2>
+<ul>
+<li><p>This is a build time tool. You should use it to find the best indexes for your queries during <strong>build time</strong>. Then you store these results and you application can use the best indexes during <strong>run time</strong>.</p>
+</li>
+<li><p>It makes no sense to run time optimization with a different <code>RxStorage</code> (+settings) that what you use in production. The result of the query optimizer is heavily dependent on the RxStorage an JavaScript runtime. For example it makes no sense to run the optimization in Node.js and then use the optimized indexes in the browser.</p>
+</li>
+<li><p>It is very important the you use <strong>production like</strong> <code>testData</code>. Finding the best index heavily depends on data distribution and amount of stored/queried documents. For example if you store and query users with an <code>age</code> field, it makes no sense to just use a random number for the age because in production the <code>age</code> of your users is not equally distributed.</p>
+</li>
+<li><p>The higher you set <code>runs</code>, the more test cycles will be performed and the more <strong>significant</strong> will be the time measurements which leads to a better index selection.</p>
+</li>
+</ul>
 
                                 
                                 </section>
@@ -2118,12 +2019,12 @@ removeRxDatabase(<span class="hljs-string">&apos;mydatabasename&apos;</span>, <s
 
             
                 
-                <a href="dev-mode.html" class="navigation navigation-prev " aria-label="Previous page: Dev Mode">
+                <a href="plugins.html" class="navigation navigation-prev " aria-label="Previous page: Creating Plugins">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="rx-database.html#creation" class="navigation navigation-next " aria-label="Next page: Creation">
+                <a href="premium.html" class="navigation navigation-next " aria-label="Next page: RxDB Premium">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2134,7 +2035,7 @@ removeRxDatabase(<span class="hljs-string">&apos;mydatabasename&apos;</span>, <s
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDatabase","level":"1.5","depth":1,"next":{"title":"Creation","level":"1.5.1","depth":2,"anchor":"#creation","path":"rx-database.md","ref":"./rx-database.md#creation","articles":[{"title":"name","level":"1.5.1.1","depth":3,"anchor":"#name","path":"rx-database.md","ref":"./rx-database.md#name","articles":[]},{"title":"adapter","level":"1.5.1.2","depth":3,"anchor":"#adapter","path":"rx-database.md","ref":"./rx-database.md#adapter","articles":[]},{"title":"password","level":"1.5.1.3","depth":3,"anchor":"#password","path":"rx-database.md","ref":"./rx-database.md#password","articles":[]},{"title":"multiInstance","level":"1.5.1.4","depth":3,"anchor":"#multiinstance","path":"rx-database.md","ref":"./rx-database.md#multiinstance","articles":[]},{"title":"eventReduce","level":"1.5.1.5","depth":3,"anchor":"#eventreduce","path":"rx-database.md","ref":"./rx-database.md#eventreduce","articles":[]},{"title":"ignoreDuplicate","level":"1.5.1.6","depth":3,"anchor":"#ignoreduplicate","path":"rx-database.md","ref":"./rx-database.md#ignoreduplicate","articles":[]},{"title":"pouchSettings","level":"1.5.1.7","depth":3,"anchor":"#pouchSettings","path":"rx-database.md","ref":"./rx-database.md#pouchSettings","articles":[]}]},"previous":{"title":"Dev Mode","level":"1.4","depth":1,"path":"dev-mode.md","ref":"./dev-mode.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-database.md","mtime":"2022-05-12T22:25:26.740Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-12T22:27:34.909Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Query Optimizer","level":"1.36","depth":1,"next":{"title":"RxDB Premium","level":"1.37","depth":1,"path":"premium.md","ref":"./premium.md","articles":[]},"previous":{"title":"Creating Plugins","level":"1.35","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"query-optimizer.md","mtime":"2022-05-12T22:25:26.740Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-12T22:27:34.909Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
