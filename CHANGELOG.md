@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - ADD query optimizer to premium plugins.
+- FIX query planner did not pick the correct index on `$eq` operations.
 
 <!-- ADD new changes here! -->
 

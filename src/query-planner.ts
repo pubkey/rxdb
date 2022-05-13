@@ -25,9 +25,11 @@ export function getQueryPlan<RxDocType>(
     const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const selector = query.selector;
 
-    let indexes: string[][] = schema.indexes ? schema.indexes as any : [];
+    let indexes: string[][] = schema.indexes ? schema.indexes.slice(0) as any : [];
     if (query.index) {
         indexes = [query.index];
+    } else {
+        indexes.push([primaryPath]);
     }
 
     const optimalSortIndex = query.sort.map(sortField => Object.keys(sortField)[0]);
@@ -125,12 +127,10 @@ export function getQueryPlan<RxDocType>(
     return currentBestQueryPlan;
 }
 
-
 const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
 export function isLogicalOperator(operator: string): boolean {
     return LOGICAL_OPERATORS.has(operator);
 }
-
 
 export function getMatcherQueryOpts(operator: string, operatorValue: any): Partial<RxQueryPlanerOpts> {
     switch (operator) {
@@ -176,10 +176,14 @@ export function rateQueryPlan<RxDocType>(
 
     const pointsPerMatchingKey = 10;
     const idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === INDEX_MIN);
-    quality = quality + (idxOfFirstMinStartKey * pointsPerMatchingKey)
+    if (idxOfFirstMinStartKey > 0) {
+        quality = quality + (idxOfFirstMinStartKey * pointsPerMatchingKey)
+    }
 
     const idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === INDEX_MAX);
-    quality = quality + (idxOfFirstMaxEndKey * pointsPerMatchingKey)
+    if (idxOfFirstMaxEndKey > 0) {
+        quality = quality + (idxOfFirstMaxEndKey * pointsPerMatchingKey)
+    }
 
     const pointsIfNoReSortMustBeDone = 5;
     if (queryPlan.sortFieldsSameAsIndexFields) {

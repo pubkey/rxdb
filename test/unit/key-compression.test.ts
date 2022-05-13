@@ -45,7 +45,7 @@ config.parallel('key-compression.test.js', () => {
 
             assert.ok(!jsonString.includes('passportId'));
             assert.ok(jsonString.includes('myPassportId'));
-            assert.strictEqual(query.selector._id, 'myPassportId');
+            assert.deepStrictEqual(query.selector._id, { $eq: 'myPassportId' });
             c.database.destroy();
         });
         it('additional attribute', async () => {
@@ -57,7 +57,7 @@ config.parallel('key-compression.test.js', () => {
                 .where('age').eq(5)
                 .getPreparedQuery();
 
-            assert.strictEqual(query.selector.age, 5);
+            assert.deepStrictEqual(query.selector.age, { $eq: 5 });
             c.database.destroy();
         });
     });

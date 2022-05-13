@@ -127,6 +127,24 @@ config.parallel('query-planner.test.js', () => {
             assert.strictEqual(queryPlan.endKeys[0], INDEX_MAX);
             assert.ok(queryPlan.inclusiveStart);
         });
+        it('should use the best plan for an equals comparison', () => {
+            const schema = getHumanSchemaWithIndexes([]);
+            const query = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {
+                        passportId: 'asdf'
+                    }
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
+            assert.deepStrictEqual(queryPlan.index, ['passportId']);
+            assert.deepStrictEqual(queryPlan.startKeys[0], 'asdf');
+            assert.deepStrictEqual(queryPlan.endKeys[0], 'asdf');
+        });
     });
 
     describe('always prefer the better index', () => {

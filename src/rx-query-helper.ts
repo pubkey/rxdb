@@ -29,6 +29,28 @@ export function normalizeMangoQuery<RxDocType>(
 
     if (!normalizedMangoQuery.selector) {
         normalizedMangoQuery.selector = {};
+    } else {
+        normalizedMangoQuery.selector = flatClone(normalizedMangoQuery.selector);
+        /**
+         * In mango query, it is possible to have an
+         * equals comparison by directly assigning a value
+         * to a property, without the '$eq' operator.
+         * Like:
+         * selector: {
+         *   foo: 'bar'
+         * }
+         * For normalization, we have to normalize this
+         * so our checks can perform properly.
+         */
+        Object
+            .entries(normalizedMangoQuery.selector)
+            .forEach(([field, matcher]) => {
+                if (typeof matcher !== 'object' || matcher === null) {
+                    normalizedMangoQuery.selector[field] = {
+                        $eq: matcher
+                    };
+                }
+            });
     }
 
     /**
