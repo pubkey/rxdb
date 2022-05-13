@@ -27,7 +27,7 @@ import { rxDocumentProperties } from './entity-properties';
  * and does not conquer the observe$ and populate_ fields
  * @throws {Error}
  */
-export function checkFieldNameRegex(fieldName: string) {
+export function checkFieldNameRegex(fieldName: string, path: string) {
     if (fieldName === '_deleted') {
         return;
     }
@@ -36,6 +36,17 @@ export function checkFieldNameRegex(fieldName: string) {
         throw newRxError('SC23', {
             fieldName
         });
+    }
+
+    if (/\.patternProperties$/.test(path)) {
+        /**
+         * excludes keys of patternProperties from field name check,
+         * since they're supposed to be regular expressions
+         * (https://json-schema.org/draft/2020-12/json-schema-core.html#rfc.section.10.3.2)
+         *
+         * this only affects property attributes
+         */
+        return;
     }
 
     const regexStr = '^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$';
@@ -72,7 +83,7 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
             typeof fieldName === 'string' &&
             typeof schemaObj === 'object' &&
             !Array.isArray(schemaObj)
-        ) checkFieldNameRegex(fieldName);
+        ) checkFieldNameRegex(fieldName, path);
 
         // 'item' only allowed it type=='array'
         if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {

@@ -404,3 +404,35 @@ export function humanWithCompositePrimary(): HumanWithCompositePrimary {
         }
     };
 }
+
+export interface HumanWithPatternProperties {
+    passportId: string;
+    firstName: string;
+    lastName: string;
+    numericallyIndexedJSONData: {
+        [x: string]: boolean
+    }
+}
+
+export function humanWithPatternProperties(): HumanWithPatternProperties {
+    return {
+        passportId: randomString(12),
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
+        numericallyIndexedJSONData: {
+            1:true,
+            4:false
+       }
+    };
+}
+
+export function humanWithPatternPropertiesFail(): HumanWithPatternProperties {
+    return {
+        passportId: randomString(12),
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
+        numericallyIndexedJSONData: {
+            somefield: true,
+        }
+    };
+}
