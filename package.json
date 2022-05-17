@@ -153,7 +153,7 @@
     "unload": "2.3.1",
     "url": "^0.11.0",
     "util": "0.12.4",
-    "z-schema": "5.0.2"
+    "z-schema": "5.0.3"
   },
   "devDependencies": {
     "@babel/cli": "7.17.10",
