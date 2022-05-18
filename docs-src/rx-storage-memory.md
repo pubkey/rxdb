@@ -20,7 +20,7 @@ import {
 } from 'rxdb';
 import {
     getRxStorageMemory
-} from 'rxdb-premium/plugins/memory';
+} from 'rxdb/plugins/memory';
 
 const db = await createRxDatabase({
     name: 'exampledb',
