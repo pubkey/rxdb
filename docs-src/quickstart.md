@@ -15,7 +15,7 @@ import { createRxDatabase } from 'rxdb';
 import { getRxStoragePouch, addPouchPlugin } from 'rxdb/plugins/pouchdb';
 addPouchPlugin(require('pouchdb-adapter-idb'));
 
-const db = await createRxDatabase({
+const myDatabase = await createRxDatabase({
   name: 'heroesdb',
   storage: getRxStoragePouch('idb')
 });
@@ -47,7 +47,7 @@ const mySchema = {
             // number fields that are used in an index, must have set minium, maximum and multipleOf
             minimum: 0,
             maximum: 150,
-            multipleOf: '1'
+            multipleOf: 1
         }
     },
     required: ['firstName', 'lastName', 'passportId'],
