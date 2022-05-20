@@ -12,7 +12,8 @@ import {
     createRevision,
     sortDocumentsByLastWriteTime,
     RxDocumentData,
-    ensureInteger
+    ensureInteger,
+    objectPathMonad
 } from '../../';
 
 import {
@@ -22,7 +23,7 @@ import {
 import {
     rev as pouchCreateRevisison
 } from 'pouchdb-utils';
-import {EXAMPLE_REVISION_1} from '../helper/revisions';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
@@ -320,8 +321,8 @@ describe('util.test.js', () => {
     });
     describe('.ensureInteger()', () => {
         it('should return the given argument in case of integer', () => {
-             assert.doesNotThrow(() => ensureInteger(56));
-             assert.strictEqual(ensureInteger(56),56);
+            assert.doesNotThrow(() => ensureInteger(56));
+            assert.strictEqual(ensureInteger(56), 56);
         });
         [
             undefined,
@@ -331,10 +332,37 @@ describe('util.test.js', () => {
             1.2,
             Infinity,
             ''
-        ].map(value =>{
+        ].map(value => {
             it(`should throw error for ${value} argument`, () => {
                 assert.throws(() => ensureInteger(value));
             });
         })
+    });
+    describe('.objectPathMonad()', () => {
+        it('should get the correct values', () => {
+            const docData = {
+                top: 'top',
+                nes: {
+                    ted: 'nested'
+                }
+            }
+            assert.strictEqual(
+                objectPathMonad('top')(docData),
+                'top'
+            );
+
+            assert.strictEqual(
+                objectPathMonad('nes.ted')(docData),
+                'nested'
+            );
+            assert.strictEqual(
+                objectPathMonad('notHereTop')(docData),
+                undefined
+            );
+            assert.strictEqual(
+                objectPathMonad('not.here.nes.ted')(docData),
+                undefined
+            );
+        });
     });
 });

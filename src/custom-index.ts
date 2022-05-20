@@ -10,8 +10,7 @@ import type {
     RxDocumentData,
     RxJsonSchema
 } from './types';
-import objectPath from 'object-path';
-import { ensureNotFalsy } from './util';
+import { ensureNotFalsy, objectPathMonad, ObjectPathMonadFunction } from './util';
 import { INDEX_MAX } from './query-planner';
 
 
@@ -44,13 +43,7 @@ export function getIndexableStringMonad<RxDocType>(
          * Only in number fields.
          */
         parsedLengths?: ParsedLengths;
-
-        /**
-         * True if the fieldName is a complex
-         * path so we have to use the slower objectPath
-         * module instead of just getting the object property.
-         */
-        hasComplexPath: boolean;
+        getValueFn: ObjectPathMonadFunction<RxDocType>;
     }[] = index.map(fieldName => {
         const schemaPart = getSchemaByObjectPath(
             schema,
@@ -68,7 +61,8 @@ export function getIndexableStringMonad<RxDocType>(
             fieldName,
             schemaPart,
             parsedLengths,
-            hasComplexPath: fieldName.includes('.')
+            hasComplexPath: fieldName.includes('.'),
+            getValueFn: objectPathMonad(fieldName)
         }
     });
 
@@ -79,13 +73,7 @@ export function getIndexableStringMonad<RxDocType>(
             const schemaPart = props.schemaPart;
             const type = schemaPart.type;
 
-            /**
-             * TODO
-             * it is too likely that we often need the objectPath method
-             * because _meta.lwt is often used in the indexes.
-             * So we should find a ways to improve the performance here.
-             */
-            let fieldValue = props.hasComplexPath ? objectPath.get(docData, props.fieldName) : (docData as any)[props.fieldName];
+            let fieldValue = props.getValueFn(docData);
 
             if (type === 'string') {
                 if (!fieldValue) {
