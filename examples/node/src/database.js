@@ -14,6 +14,9 @@ const {
 addPouchPlugin(require('pouchdb-adapter-node-websql'));
 addPouchPlugin(require('pouchdb-adapter-http'));
 
+const { RxDBQueryBuilderPlugin } = require('../../../plugins/query-builder');
+addRxPlugin(RxDBQueryBuilderPlugin);
+
 const { RxDBEncryptionPlugin } = require('../../../plugins/encryption');
 addRxPlugin(RxDBEncryptionPlugin);
 
