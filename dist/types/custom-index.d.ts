@@ -3,12 +3,17 @@
  * we need to use our custom crafted indexes
  * so we can easily iterate over them. And sort plain arrays of document data.
  */
-import { JsonSchema, RxDocumentData, RxJsonSchema } from './types';
+import type { JsonSchema, RxDocumentData, RxJsonSchema } from './types';
 /**
  * Crafts an indexable string that can be used
  * to check if a document would be sorted below or above
  * another documents, dependent on the index values.
  * @monad for better performance
+ *
+ * IMPORTANT: Performance is really important here
+ * which is why we code so 'strange'.
+ * Always run performance tests when you want to
+ * change something in this method.
  */
 export declare function getIndexableStringMonad<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, index: string[]): (docData: RxDocumentData<RxDocType>) => string;
 declare type ParsedLengths = {

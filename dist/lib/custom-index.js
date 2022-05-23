@@ -1,7 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -12,8 +10,6 @@ exports.getStartIndexStringFromUpperBound = getStartIndexStringFromUpperBound;
 exports.getStringLengthOfIndexNumber = getStringLengthOfIndexNumber;
 
 var _rxSchemaHelper = require("./rx-schema-helper");
-
-var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("./util");
 
@@ -30,6 +26,11 @@ var _queryPlanner = require("./query-planner");
  * to check if a document would be sorted below or above 
  * another documents, dependent on the index values.
  * @monad for better performance
+ * 
+ * IMPORTANT: Performance is really important here
+ * which is why we code so 'strange'.
+ * Always run performance tests when you want to
+ * change something in this method.
  */
 function getIndexableStringMonad(schema, index) {
   /**
@@ -38,58 +39,48 @@ function getIndexableStringMonad(schema, index) {
    * to save performance when the returned
    * function is called many times.
    */
-  var fieldNameProperties = {};
-  index.forEach(function (fieldName) {
+  var fieldNameProperties = index.map(function (fieldName) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
-    fieldNameProperties[fieldName] = {
-      schemaPart: schemaPart
-    };
     var type = schemaPart.type;
+    var parsedLengths;
 
     if (type === 'number' || type === 'integer') {
-      var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-      fieldNameProperties[fieldName].parsedLengths = parsedLengths;
+      parsedLengths = getStringLengthOfIndexNumber(schemaPart);
     }
+
+    return {
+      fieldName: fieldName,
+      schemaPart: schemaPart,
+      parsedLengths: parsedLengths,
+      hasComplexPath: fieldName.includes('.'),
+      getValueFn: (0, _util.objectPathMonad)(fieldName)
+    };
   });
 
   var ret = function ret(docData) {
     var str = '';
-    index.forEach(function (fieldName) {
-      var schemaPart = fieldNameProperties[fieldName].schemaPart;
-
-      var fieldValue = _objectPath["default"].get(docData, fieldName);
-
+    fieldNameProperties.forEach(function (props) {
+      var schemaPart = props.schemaPart;
       var type = schemaPart.type;
+      var fieldValue = props.getValueFn(docData);
 
-      switch (type) {
-        case 'string':
-          var maxLength = schemaPart.maxLength;
+      if (type === 'string') {
+        if (!fieldValue) {
+          fieldValue = '';
+        }
 
-          if (!fieldValue) {
-            fieldValue = '';
-          }
+        str += fieldValue.padStart(schemaPart.maxLength, ' ');
+      } else if (type === 'boolean') {
+        var boolToStr = fieldValue ? '1' : '0';
+        str += boolToStr;
+      } else {
+        var parsedLengths = (0, _util.ensureNotFalsy)(props.parsedLengths);
 
-          str += fieldValue.padStart(maxLength, ' ');
-          break;
+        if (!fieldValue) {
+          fieldValue = 0;
+        }
 
-        case 'boolean':
-          var boolToStr = fieldValue ? '1' : '0';
-          str += boolToStr;
-          break;
-
-        case 'number':
-        case 'integer':
-          var parsedLengths = (0, _util.ensureNotFalsy)(fieldNameProperties[fieldName].parsedLengths);
-
-          if (!fieldValue) {
-            fieldValue = 0;
-          }
-
-          str += getNumberIndexString(parsedLengths, fieldValue);
-          break;
-
-        default:
-          throw new Error('unknown index type ' + type);
+        str += getNumberIndexString(parsedLengths, fieldValue);
       }
     });
     return str;

@@ -30,10 +30,17 @@ function attachmentMapKey(documentId, attachmentId) {
   return documentId + '||' + attachmentId;
 }
 
-function putWriteRowToState(primaryPath, schema, state, row, docInState) {
-  var docId = row.document[primaryPath];
+var SORT_BY_INDEX_STRING = function SORT_BY_INDEX_STRING(a, b) {
+  if (a.indexString < b.indexString) {
+    return -1;
+  } else {
+    return 1;
+  }
+};
+
+function putWriteRowToState(docId, state, stateByIndex, row, docInState) {
   state.documents.set(docId, row.document);
-  Object.values(state.byIndex).forEach(function (byIndex) {
+  stateByIndex.forEach(function (byIndex) {
     var docsWithIndex = byIndex.docsWithIndex;
     var newIndexString = byIndex.getIndexableString(row.document);
 
@@ -41,13 +48,7 @@ function putWriteRowToState(primaryPath, schema, state, row, docInState) {
       id: docId,
       doc: row.document,
       indexString: newIndexString
-    }, function (a, b) {
-      if (a.indexString < b.indexString) {
-        return -1;
-      } else {
-        return 1;
-      }
-    }, true),
+    }, SORT_BY_INDEX_STRING, true),
         insertPosition = _pushAtSortPosition[1];
     /**
      * Remove previous if it was in the state

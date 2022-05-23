@@ -30,7 +30,7 @@ export declare function categorizeBulkWriteRows<RxDocType>(storageInstance: RxSt
  * inside of the storage. Used to determine
  * which writes cause conflicts.
  */
-docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>>, 
+docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>>, 
 /**
  * The write rows that are passed to
  * RxStorageInstance().bulkWrite().

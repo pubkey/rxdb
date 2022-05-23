@@ -16,6 +16,30 @@ export function normalizeMangoQuery(schema, mangoQuery) {
 
   if (!normalizedMangoQuery.selector) {
     normalizedMangoQuery.selector = {};
+  } else {
+    normalizedMangoQuery.selector = flatClone(normalizedMangoQuery.selector);
+    /**
+     * In mango query, it is possible to have an
+     * equals comparison by directly assigning a value
+     * to a property, without the '$eq' operator.
+     * Like:
+     * selector: {
+     *   foo: 'bar'
+     * }
+     * For normalization, we have to normalize this
+     * so our checks can perform properly.
+     */
+
+    Object.entries(normalizedMangoQuery.selector).forEach(function (_ref) {
+      var field = _ref[0],
+          matcher = _ref[1];
+
+      if (typeof matcher !== 'object' || matcher === null) {
+        normalizedMangoQuery.selector[field] = {
+          $eq: matcher
+        };
+      }
+    });
   }
   /**
    * Ensure that if an index is specified,
@@ -53,9 +77,9 @@ export function normalizeMangoQuery(schema, mangoQuery) {
      */
     if (normalizedMangoQuery.index) {
       normalizedMangoQuery.sort = normalizedMangoQuery.index.map(function (field) {
-        var _ref;
+        var _ref2;
 
-        return _ref = {}, _ref[field] = 'asc', _ref;
+        return _ref2 = {}, _ref2[field] = 'asc', _ref2;
       });
     } else {
       /**
@@ -63,9 +87,9 @@ export function normalizeMangoQuery(schema, mangoQuery) {
        */
       if (schema.indexes) {
         var fieldsWithLogicalOperator = new Set();
-        Object.entries(normalizedMangoQuery.selector).forEach(function (_ref2) {
-          var field = _ref2[0],
-              matcher = _ref2[1];
+        Object.entries(normalizedMangoQuery.selector).forEach(function (_ref3) {
+          var field = _ref3[0],
+              matcher = _ref3[1];
           var hasLogical = false;
 
           if (typeof matcher === 'object' && matcher !== null) {
@@ -96,9 +120,9 @@ export function normalizeMangoQuery(schema, mangoQuery) {
 
         if (currentBestIndexForSort) {
           normalizedMangoQuery.sort = currentBestIndexForSort.map(function (field) {
-            var _ref3;
+            var _ref4;
 
-            return _ref3 = {}, _ref3[field] = 'asc', _ref3;
+            return _ref4 = {}, _ref4[field] = 'asc', _ref4;
           });
         }
       }
@@ -109,9 +133,9 @@ export function normalizeMangoQuery(schema, mangoQuery) {
 
 
       if (!normalizedMangoQuery.sort) {
-        var _ref4;
+        var _ref5;
 
-        normalizedMangoQuery.sort = [(_ref4 = {}, _ref4[primaryKey] = 'asc', _ref4)];
+        normalizedMangoQuery.sort = [(_ref5 = {}, _ref5[primaryKey] = 'asc', _ref5)];
       }
     }
   } else {

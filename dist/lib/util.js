@@ -30,6 +30,7 @@ exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
 exports.lastOfArray = lastOfArray;
 exports.nextTick = nextTick;
 exports.now = now;
+exports.objectPathMonad = objectPathMonad;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.parseRevision = parseRevision;
 exports.pluginMissing = pluginMissing;
@@ -810,5 +811,46 @@ function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
 
 function sortDocumentsByLastWriteTime(primaryPath, docs) {
   return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
+}
+/**
+ * To get specific nested path values from objects,
+ * RxDB normally uses the 'object-path' npm module.
+ * But when performance is really relevant, this is not fast enough.
+ * Instead we use a monad that can prepare some stuff up front
+ * and we can re-use the generated function.
+ */
+
+
+function objectPathMonad(objectPath) {
+  var splitted = objectPath.split('.');
+  /**
+   * Performance shortcut,
+   * if no nested path is used,
+   * directly return the field of the object.
+   */
+
+  if (splitted.length === 1) {
+    return function (obj) {
+      return obj[objectPath];
+    };
+  }
+
+  return function (obj) {
+    var currentVal = obj;
+    var t = 0;
+
+    while (t < splitted.length) {
+      var subPath = splitted[t];
+      currentVal = currentVal[subPath];
+
+      if (typeof currentVal === 'undefined') {
+        return currentVal;
+      }
+
+      t++;
+    }
+
+    return currentVal;
+  };
 }
 //# sourceMappingURL=util.js.map

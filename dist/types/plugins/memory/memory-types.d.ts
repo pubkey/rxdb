@@ -7,6 +7,11 @@ export declare type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxS
      */
     collectionStates: Map<string, MemoryStorageInternals<any>>;
 };
+export declare type MemoryStorageInternalsByIndex<RxDocType> = {
+    index: string[];
+    docsWithIndex: DocWithIndexString<RxDocType>[];
+    getIndexableString: (docData: RxDocumentData<RxDocType>) => string;
+};
 /**
  * The internals are shared between multiple storage instances
  * that have been created with the same [databaseName+collectionName] combination.
@@ -40,11 +45,7 @@ export declare type MemoryStorageInternals<RxDocType> = {
          * writes. Instead we can do a binary search over the exisiting array
          * because RxDB also knows the previous state of the document when we do a bulkWrite().
          */
-        [indexName: string]: {
-            index: string[];
-            docsWithIndex: DocWithIndexString<RxDocType>[];
-            getIndexableString: (docData: RxDocumentData<RxDocType>) => string;
-        };
+        [indexName: string]: MemoryStorageInternalsByIndex<RxDocType>;
     };
 };
 export declare type DocWithIndexString<RxDocType> = {

@@ -184,4 +184,13 @@ export declare function getDefaultRxDocumentMeta(): RxDocumentMeta;
 export declare function getDefaultRevision(): string;
 export declare function getSortDocumentsByLastWriteTimeComparator<RxDocType>(primaryPath: string): (a: RxDocumentData<RxDocType>, b: RxDocumentData<RxDocType>) => number;
 export declare function sortDocumentsByLastWriteTime<RxDocType>(primaryPath: string, docs: RxDocumentData<RxDocType>[]): RxDocumentData<RxDocType>[];
+/**
+ * To get specific nested path values from objects,
+ * RxDB normally uses the 'object-path' npm module.
+ * But when performance is really relevant, this is not fast enough.
+ * Instead we use a monad that can prepare some stuff up front
+ * and we can re-use the generated function.
+ */
+export declare type ObjectPathMonadFunction<T> = (obj: T) => any;
+export declare function objectPathMonad<T>(objectPath: string): ObjectPathMonadFunction<T>;
 export {};
