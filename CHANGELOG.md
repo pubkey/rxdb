@@ -3,15 +3,17 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX query planner did not pick the correct index on `$eq` operations.
-- IMPROVE performance of the memory RxStorage
-- IMPROVE performance of custom index creation
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.4.2 (23 May 2022)
+
+- FIX query planner did not pick the correct index on `$eq` operations.
+- IMPROVE performance of the memory RxStorage
+- IMPROVE performance of custom index creation
 
 ### 12.4.1 (12 May 2022)
 

@@ -4,14 +4,18 @@
  * so we can easily iterate over them. And sort plain arrays of document data.
  */
 import { getSchemaByObjectPath } from './rx-schema-helper';
-import objectPath from 'object-path';
-import { ensureNotFalsy } from './util';
+import { ensureNotFalsy, objectPathMonad } from './util';
 import { INDEX_MAX } from './query-planner';
 /**
  * Crafts an indexable string that can be used
  * to check if a document would be sorted below or above 
  * another documents, dependent on the index values.
  * @monad for better performance
+ * 
+ * IMPORTANT: Performance is really important here
+ * which is why we code so 'strange'.
+ * Always run performance tests when you want to
+ * change something in this method.
  */
 
 export function getIndexableStringMonad(schema, index) {
@@ -21,56 +25,48 @@ export function getIndexableStringMonad(schema, index) {
    * to save performance when the returned
    * function is called many times.
    */
-  var fieldNameProperties = {};
-  index.forEach(function (fieldName) {
+  var fieldNameProperties = index.map(function (fieldName) {
     var schemaPart = getSchemaByObjectPath(schema, fieldName);
-    fieldNameProperties[fieldName] = {
-      schemaPart: schemaPart
-    };
     var type = schemaPart.type;
+    var parsedLengths;
 
     if (type === 'number' || type === 'integer') {
-      var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-      fieldNameProperties[fieldName].parsedLengths = parsedLengths;
+      parsedLengths = getStringLengthOfIndexNumber(schemaPart);
     }
+
+    return {
+      fieldName: fieldName,
+      schemaPart: schemaPart,
+      parsedLengths: parsedLengths,
+      hasComplexPath: fieldName.includes('.'),
+      getValueFn: objectPathMonad(fieldName)
+    };
   });
 
   var ret = function ret(docData) {
     var str = '';
-    index.forEach(function (fieldName) {
-      var schemaPart = fieldNameProperties[fieldName].schemaPart;
-      var fieldValue = objectPath.get(docData, fieldName);
+    fieldNameProperties.forEach(function (props) {
+      var schemaPart = props.schemaPart;
       var type = schemaPart.type;
+      var fieldValue = props.getValueFn(docData);
 
-      switch (type) {
-        case 'string':
-          var maxLength = schemaPart.maxLength;
+      if (type === 'string') {
+        if (!fieldValue) {
+          fieldValue = '';
+        }
 
-          if (!fieldValue) {
-            fieldValue = '';
-          }
+        str += fieldValue.padStart(schemaPart.maxLength, ' ');
+      } else if (type === 'boolean') {
+        var boolToStr = fieldValue ? '1' : '0';
+        str += boolToStr;
+      } else {
+        var parsedLengths = ensureNotFalsy(props.parsedLengths);
 
-          str += fieldValue.padStart(maxLength, ' ');
-          break;
+        if (!fieldValue) {
+          fieldValue = 0;
+        }
 
-        case 'boolean':
-          var boolToStr = fieldValue ? '1' : '0';
-          str += boolToStr;
-          break;
-
-        case 'number':
-        case 'integer':
-          var parsedLengths = ensureNotFalsy(fieldNameProperties[fieldName].parsedLengths);
-
-          if (!fieldValue) {
-            fieldValue = 0;
-          }
-
-          str += getNumberIndexString(parsedLengths, fieldValue);
-          break;
-
-        default:
-          throw new Error('unknown index type ' + type);
+        str += getNumberIndexString(parsedLengths, fieldValue);
       }
     });
     return str;

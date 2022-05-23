@@ -12,10 +12,12 @@ export var INDEX_MIN = -Infinity;
 export function getQueryPlan(schema, query) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
   var selector = query.selector;
-  var indexes = schema.indexes ? schema.indexes : [];
+  var indexes = schema.indexes ? schema.indexes.slice(0) : [];
 
   if (query.index) {
     indexes = [query.index];
+  } else {
+    indexes.push([primaryPath]);
   }
 
   var optimalSortIndex = query.sort.map(function (sortField) {
@@ -162,11 +164,19 @@ export function rateQueryPlan(schema, query, queryPlan) {
   var idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(function (keyValue) {
     return keyValue === INDEX_MIN;
   });
-  quality = quality + idxOfFirstMinStartKey * pointsPerMatchingKey;
+
+  if (idxOfFirstMinStartKey > 0) {
+    quality = quality + idxOfFirstMinStartKey * pointsPerMatchingKey;
+  }
+
   var idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(function (keyValue) {
     return keyValue === INDEX_MAX;
   });
-  quality = quality + idxOfFirstMaxEndKey * pointsPerMatchingKey;
+
+  if (idxOfFirstMaxEndKey > 0) {
+    quality = quality + idxOfFirstMaxEndKey * pointsPerMatchingKey;
+  }
+
   var pointsIfNoReSortMustBeDone = 5;
 
   if (queryPlan.sortFieldsSameAsIndexFields) {

@@ -152,8 +152,6 @@ function createChangeEventBuffer(collection) {
 },{"rxjs/operators":673}],3:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -164,8 +162,6 @@ exports.getStartIndexStringFromUpperBound = getStartIndexStringFromUpperBound;
 exports.getStringLengthOfIndexNumber = getStringLengthOfIndexNumber;
 
 var _rxSchemaHelper = require("./rx-schema-helper");
-
-var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("./util");
 
@@ -182,6 +178,11 @@ var _queryPlanner = require("./query-planner");
  * to check if a document would be sorted below or above 
  * another documents, dependent on the index values.
  * @monad for better performance
+ * 
+ * IMPORTANT: Performance is really important here
+ * which is why we code so 'strange'.
+ * Always run performance tests when you want to
+ * change something in this method.
  */
 function getIndexableStringMonad(schema, index) {
   /**
@@ -190,58 +191,48 @@ function getIndexableStringMonad(schema, index) {
    * to save performance when the returned
    * function is called many times.
    */
-  var fieldNameProperties = {};
-  index.forEach(function (fieldName) {
+  var fieldNameProperties = index.map(function (fieldName) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
-    fieldNameProperties[fieldName] = {
-      schemaPart: schemaPart
-    };
     var type = schemaPart.type;
+    var parsedLengths;
 
     if (type === 'number' || type === 'integer') {
-      var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-      fieldNameProperties[fieldName].parsedLengths = parsedLengths;
+      parsedLengths = getStringLengthOfIndexNumber(schemaPart);
     }
+
+    return {
+      fieldName: fieldName,
+      schemaPart: schemaPart,
+      parsedLengths: parsedLengths,
+      hasComplexPath: fieldName.includes('.'),
+      getValueFn: (0, _util.objectPathMonad)(fieldName)
+    };
   });
 
   var ret = function ret(docData) {
     var str = '';
-    index.forEach(function (fieldName) {
-      var schemaPart = fieldNameProperties[fieldName].schemaPart;
-
-      var fieldValue = _objectPath["default"].get(docData, fieldName);
-
+    fieldNameProperties.forEach(function (props) {
+      var schemaPart = props.schemaPart;
       var type = schemaPart.type;
+      var fieldValue = props.getValueFn(docData);
 
-      switch (type) {
-        case 'string':
-          var maxLength = schemaPart.maxLength;
+      if (type === 'string') {
+        if (!fieldValue) {
+          fieldValue = '';
+        }
 
-          if (!fieldValue) {
-            fieldValue = '';
-          }
+        str += fieldValue.padStart(schemaPart.maxLength, ' ');
+      } else if (type === 'boolean') {
+        var boolToStr = fieldValue ? '1' : '0';
+        str += boolToStr;
+      } else {
+        var parsedLengths = (0, _util.ensureNotFalsy)(props.parsedLengths);
 
-          str += fieldValue.padStart(maxLength, ' ');
-          break;
+        if (!fieldValue) {
+          fieldValue = 0;
+        }
 
-        case 'boolean':
-          var boolToStr = fieldValue ? '1' : '0';
-          str += boolToStr;
-          break;
-
-        case 'number':
-        case 'integer':
-          var parsedLengths = (0, _util.ensureNotFalsy)(fieldNameProperties[fieldName].parsedLengths);
-
-          if (!fieldValue) {
-            fieldValue = 0;
-          }
-
-          str += getNumberIndexString(parsedLengths, fieldValue);
-          break;
-
-        default:
-          throw new Error('unknown index type ' + type);
+        str += getNumberIndexString(parsedLengths, fieldValue);
       }
     });
     return str;
@@ -376,7 +367,7 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
   return str;
 }
 
-},{"./query-planner":19,"./rx-schema-helper":30,"./util":36,"@babel/runtime/helpers/interopRequireDefault":43,"object-path":410}],4:[function(require,module,exports){
+},{"./query-planner":19,"./rx-schema-helper":30,"./util":36}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3734,10 +3725,12 @@ exports.INDEX_MIN = INDEX_MIN;
 function getQueryPlan(schema, query) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   var selector = query.selector;
-  var indexes = schema.indexes ? schema.indexes : [];
+  var indexes = schema.indexes ? schema.indexes.slice(0) : [];
 
   if (query.index) {
     indexes = [query.index];
+  } else {
+    indexes.push([primaryPath]);
   }
 
   var optimalSortIndex = query.sort.map(function (sortField) {
@@ -3888,11 +3881,19 @@ function rateQueryPlan(schema, query, queryPlan) {
   var idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(function (keyValue) {
     return keyValue === INDEX_MIN;
   });
-  quality = quality + idxOfFirstMinStartKey * pointsPerMatchingKey;
+
+  if (idxOfFirstMinStartKey > 0) {
+    quality = quality + idxOfFirstMinStartKey * pointsPerMatchingKey;
+  }
+
   var idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(function (keyValue) {
     return keyValue === INDEX_MAX;
   });
-  quality = quality + idxOfFirstMaxEndKey * pointsPerMatchingKey;
+
+  if (idxOfFirstMaxEndKey > 0) {
+    quality = quality + idxOfFirstMaxEndKey * pointsPerMatchingKey;
+  }
+
   var pointsIfNoReSortMustBeDone = 5;
 
   if (queryPlan.sortFieldsSameAsIndexFields) {
@@ -7106,6 +7107,30 @@ function normalizeMangoQuery(schema, mangoQuery) {
 
   if (!normalizedMangoQuery.selector) {
     normalizedMangoQuery.selector = {};
+  } else {
+    normalizedMangoQuery.selector = (0, _util.flatClone)(normalizedMangoQuery.selector);
+    /**
+     * In mango query, it is possible to have an
+     * equals comparison by directly assigning a value
+     * to a property, without the '$eq' operator.
+     * Like:
+     * selector: {
+     *   foo: 'bar'
+     * }
+     * For normalization, we have to normalize this
+     * so our checks can perform properly.
+     */
+
+    Object.entries(normalizedMangoQuery.selector).forEach(function (_ref) {
+      var field = _ref[0],
+          matcher = _ref[1];
+
+      if (typeof matcher !== 'object' || matcher === null) {
+        normalizedMangoQuery.selector[field] = {
+          $eq: matcher
+        };
+      }
+    });
   }
   /**
    * Ensure that if an index is specified,
@@ -7143,9 +7168,9 @@ function normalizeMangoQuery(schema, mangoQuery) {
      */
     if (normalizedMangoQuery.index) {
       normalizedMangoQuery.sort = normalizedMangoQuery.index.map(function (field) {
-        var _ref;
+        var _ref2;
 
-        return _ref = {}, _ref[field] = 'asc', _ref;
+        return _ref2 = {}, _ref2[field] = 'asc', _ref2;
       });
     } else {
       /**
@@ -7153,9 +7178,9 @@ function normalizeMangoQuery(schema, mangoQuery) {
        */
       if (schema.indexes) {
         var fieldsWithLogicalOperator = new Set();
-        Object.entries(normalizedMangoQuery.selector).forEach(function (_ref2) {
-          var field = _ref2[0],
-              matcher = _ref2[1];
+        Object.entries(normalizedMangoQuery.selector).forEach(function (_ref3) {
+          var field = _ref3[0],
+              matcher = _ref3[1];
           var hasLogical = false;
 
           if (typeof matcher === 'object' && matcher !== null) {
@@ -7186,9 +7211,9 @@ function normalizeMangoQuery(schema, mangoQuery) {
 
         if (currentBestIndexForSort) {
           normalizedMangoQuery.sort = currentBestIndexForSort.map(function (field) {
-            var _ref3;
+            var _ref4;
 
-            return _ref3 = {}, _ref3[field] = 'asc', _ref3;
+            return _ref4 = {}, _ref4[field] = 'asc', _ref4;
           });
         }
       }
@@ -7199,9 +7224,9 @@ function normalizeMangoQuery(schema, mangoQuery) {
 
 
       if (!normalizedMangoQuery.sort) {
-        var _ref4;
+        var _ref5;
 
-        normalizedMangoQuery.sort = [(_ref4 = {}, _ref4[primaryKey] = 'asc', _ref4)];
+        normalizedMangoQuery.sort = [(_ref5 = {}, _ref5[primaryKey] = 'asc', _ref5)];
       }
     }
   } else {
@@ -8953,6 +8978,7 @@ exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
 exports.lastOfArray = lastOfArray;
 exports.nextTick = nextTick;
 exports.now = now;
+exports.objectPathMonad = objectPathMonad;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.parseRevision = parseRevision;
 exports.pluginMissing = pluginMissing;
@@ -9733,6 +9759,47 @@ function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
 
 function sortDocumentsByLastWriteTime(primaryPath, docs) {
   return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
+}
+/**
+ * To get specific nested path values from objects,
+ * RxDB normally uses the 'object-path' npm module.
+ * But when performance is really relevant, this is not fast enough.
+ * Instead we use a monad that can prepare some stuff up front
+ * and we can re-use the generated function.
+ */
+
+
+function objectPathMonad(objectPath) {
+  var splitted = objectPath.split('.');
+  /**
+   * Performance shortcut,
+   * if no nested path is used,
+   * directly return the field of the object.
+   */
+
+  if (splitted.length === 1) {
+    return function (obj) {
+      return obj[objectPath];
+    };
+  }
+
+  return function (obj) {
+    var currentVal = obj;
+    var t = 0;
+
+    while (t < splitted.length) {
+      var subPath = splitted[t];
+      currentVal = currentVal[subPath];
+
+      if (typeof currentVal === 'undefined') {
+        return currentVal;
+      }
+
+      t++;
+    }
+
+    return currentVal;
+  };
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)

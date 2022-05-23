@@ -78,17 +78,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
       success: {},
       error: {}
     };
-    var docsInDb = new Map();
-    documentWrites.forEach(function (writeRow) {
-      var docId = writeRow.document[_this.primaryPath];
-
-      var docInDb = _this.internals.documents.get(docId);
-
-      if (docInDb) {
-        docsInDb.set(docId, docInDb);
-      }
-    });
-    var categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(this, this.primaryPath, docsInDb, documentWrites);
+    var categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(this, this.primaryPath, this.internals.documents, documentWrites);
     categorized.errors.forEach(function (err) {
       ret.error[err.documentId] = err;
     });
@@ -96,14 +86,15 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
      * Do inserts/updates
      */
 
+    var stateByIndex = Object.values(this.internals.byIndex);
     categorized.bulkInsertDocs.forEach(function (writeRow) {
       var docId = writeRow.document[_this.primaryPath];
-      (0, _memoryHelper.putWriteRowToState)(_this.primaryPath, _this.schema, _this.internals, writeRow, undefined);
+      (0, _memoryHelper.putWriteRowToState)(docId, _this.internals, stateByIndex, writeRow, undefined);
       ret.success[docId] = writeRow.document;
     });
     categorized.bulkUpdateDocs.forEach(function (writeRow) {
       var docId = writeRow.document[_this.primaryPath];
-      (0, _memoryHelper.putWriteRowToState)(_this.primaryPath, _this.schema, _this.internals, writeRow, docsInDb.get(docId));
+      (0, _memoryHelper.putWriteRowToState)(docId, _this.internals, stateByIndex, writeRow, _this.internals.documents.get(docId));
       ret.success[docId] = writeRow.document;
     });
     /**
