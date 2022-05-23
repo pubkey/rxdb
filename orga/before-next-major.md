@@ -55,10 +55,32 @@ Ensure that it works with typescript. Check the rxjs repo and find out how they 
 
 Rename the paths in the `exports` field in the `package.json` so that users can do `import {} from 'rxdb/core'` instead of the current `import {} from 'rxdb/plugins/core'`.
 
-# Move _rev, _deleted and _attachments into _meta
+## Move _rev, _deleted and _attachments into _meta
 
 From version `12.0.0` on, all document data is stored with an `_meta` field that can contain various flags and other values. This makes it easier for plugins to remember stuff that belongs to the document.
 In the future, the other meta field like `_rev`, `_deleted` and `_attachments` will be moved from the root level to the `_meta` field. This is **not** done directly in release `12.0.0` to ensure that there is a migration path.
+
+
+## Do not use md5 as default for revision creation
+
+Md5 is slow AF and we do not need cryptographically secure hashing anyways. Instead we should use something else
+which has better performance.
+Of course the pouchdb RxStorage still needs md5 but we could add the hashing function to the RxStorage.statics to make it variable.
+
+## Do not allow type mixing
+
+In the RxJsonSchema, a property of a document can have multiple types like
+
+```ts
+{
+    type?: JsonSchemaTypes | JsonSchemaTypes[];
+}
+```
+
+This is bad and should not be used. Instead each field must have exactly one type.
+Having mixed types causes many confusion, for example when the type is `['string', 'number']`,
+you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
+
 
 # Maybe
 

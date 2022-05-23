@@ -15,16 +15,13 @@ import { wait } from 'async-test-util';
  */
 describe('unit/performance.test.ts', () => {
     it('run the performance test', async function () {
-        if (config.isFastMode()) {
-            return;
-        }
         this.timeout(120 * 1000);
+        const runs = config.isFastMode() ? 1 : 40;
 
         const perfStorage = config.storage.getPerformanceStorage();
 
-        const totalTimeSums: { [k: string]: number } = {};
+        const totalTimes: { [k: string]: number[] } = {};
 
-        const runs = 5;
         const collectionsAmount = 3;
         const docsAmount = 300;
 
@@ -36,7 +33,6 @@ describe('unit/performance.test.ts', () => {
              */
             await wait(200);
 
-            console.log('---------------- ' + runsDone);
             runsDone++;
 
             let time = performance.now();
@@ -46,10 +42,10 @@ describe('unit/performance.test.ts', () => {
                     return;
                 }
                 const diff = performance.now() - time;
-                if (!totalTimeSums[flag]) {
-                    totalTimeSums[flag] = diff;
+                if (!totalTimes[flag]) {
+                    totalTimes[flag] = [diff];
                 } else {
-                    totalTimeSums[flag] = totalTimeSums[flag] + diff;
+                    totalTimes[flag].push(diff);
                 }
                 time = performance.now();
             }
@@ -132,7 +128,6 @@ describe('unit/performance.test.ts', () => {
                 },
                 sort: [{ var1: 'asc' }]
             });
-            console.dir(query.getPreparedQuery());
             const queryResult = await query.exec();
             updateTime('find-by-query');
             assert.strictEqual(queryResult.length, docsAmount + 1);
@@ -144,11 +139,30 @@ describe('unit/performance.test.ts', () => {
         const timeToLog: any = {
             description: perfStorage.description
         };
-        Object.entries(totalTimeSums).forEach(([key, totalTime]) => {
-            timeToLog[key] = totalTime / runs;
+        Object.entries(totalTimes).forEach(([key, times]) => {
+            timeToLog[key] = averageOfTimeValues(times, 50);
         });
 
         console.log('Performance test for ' + perfStorage.description);
         console.log(JSON.stringify(timeToLog, null, 4));
+        process.exit();
     });
 });
+
+
+export function averageOfTimeValues(
+    times: number[],
+    /**
+     * To better account for anomalies
+     * during time measurements,
+     * we strip the heighest x percent.
+     */
+    stripHeighestXPercent: number
+): number {
+    times = times.sort((a, b) => a - b);
+    const stripAmount = Math.floor(times.length * (stripHeighestXPercent * 0.01));
+    const useNumbers = times.slice(0, times.length - stripAmount);
+    let total = 0;
+    useNumbers.forEach(nr => total = total + nr);
+    return total / useNumbers.length;
+}
