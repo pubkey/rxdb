@@ -82,6 +82,11 @@ Having mixed types causes many confusion, for example when the type is `['string
 you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
 
 
+## Remove temporary documents
+
+https://github.com/pubkey/rxdb/pull/3777#issuecomment-1120669088
+
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument
