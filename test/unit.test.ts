@@ -64,4 +64,4 @@ import './unit/dexie-helper.test.js';
 import './unit/performance.test';
 import './unit/last.test.js';
 
-
+import './unit/double-del-bug.test.js';
