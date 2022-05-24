@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- UPGRADE PouchDB to `7.3.0` Thanks [@cetsupport](https://github.com/cetsupport)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
