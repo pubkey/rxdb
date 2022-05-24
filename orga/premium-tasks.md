@@ -10,6 +10,4 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 - Finish [this](https://github.com/andywer/threads.js/pull/402) Pull Request on `threads.js`
 - Update the [electron example](https://github.com/pubkey/rxdb/tree/master/examples/electron) and ensure that it is tested in the CI.
 
-- Update PouchDB to the newest version and make sure [the CI is green](https://github.com/pubkey/rxdb/pull/3763).
-
 (This list will be regulary updated with new Tasks)
