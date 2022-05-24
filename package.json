@@ -133,7 +133,7 @@
     "fast-deep-equal": "3.1.3",
     "get-graphql-from-jsonschema": "8.0.17",
     "graphql-client": "2.0.1",
-    "is-electron": "2.2.0",
+    "is-electron": "2.2.1",
     "is-my-json-valid": "2.20.6",
     "jsonschema-key-compression": "1.6.1",
     "lokijs": "1.5.12",
