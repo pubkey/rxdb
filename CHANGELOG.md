@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- SQLite RxStorage: Add support for specific query indexes.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
