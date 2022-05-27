@@ -3,13 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- SQLite RxStorage: Add support for specific query indexes.
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.4.3 (27 May 2022)
+
+- SQLite RxStorage: Add support for specific query indexes.
 
 ### 12.4.2 (23 May 2022)
 
