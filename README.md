@@ -1,19 +1,19 @@
-| Announcement                                                        |
-| :--: |
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **12.0.0** is now released, read the [ANNOUNCEMENT](./orga/releases/12.0.0.md) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
-
-
-
-<br />
-<br />
-<br />
-
-
 <!--
 | Announcement                                                        |
 | :--: |
-| Please take part in the [RxDB user survey 2021](https://forms.gle/aGPWdo2iELj4Ykkm9). This will help me to better plan the steps for the next major release. (takes about 2 minutes)
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **12.0.0** is now released, read the [ANNOUNCEMENT](./orga/releases/12.0.0.md) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
 -->
+
+
+
+<br />
+<br />
+<br />
+
+
+| Announcement                                                        |
+| :--: |
+| Please take part in the [RxDB user survey 2022](https://forms.gle/oxVToPJb6yGHkkMi7). This will help me to better plan the steps for the next major release. (takes about 2 minutes)
 
 
 
