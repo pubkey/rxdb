@@ -16,7 +16,7 @@ import {
 } from 'mingo';
 import { binaryMd5 } from 'pouchdb-md5';
 import { getDexieSortComparator } from './dexie-helper';
-import {
+import type {
     DexieSettings,
     DexieStorageInternals
 } from '../../types/plugins/dexie';
