@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Middleware-hooks · RxDB - Documentation</title>
+        <title>Transactions, Conflicts and Revisions · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="orm.html" />
+    <link rel="next" href="premium.html" />
     
     
-    <link rel="prev" href="rx-attachment.html" />
+    <link rel="prev" href="query-optimizer.html" />
     
 
     </head>
@@ -1386,7 +1386,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.12" data-path="middleware.html">
+        <li class="chapter " data-level="1.12" data-path="middleware.html">
             
                 <a href="middleware.html">
             
@@ -1711,7 +1711,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.37" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter active" data-level="1.37" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1929,7 +1929,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Middleware-hooks</a>
+        <a href="." >Transactions, Conflicts and Revisions</a>
     </h1>
 </div>
 
@@ -1944,210 +1944,44 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="middleware">Middleware</h1>
-<p>RxDB supports middleware-hooks like <a href="http://mongoosejs.com/docs/middleware.html" target="_blank">mongoose</a>.
-Middleware (also called pre and post hooks) are functions which are passed control during execution of asynchronous functions.
-The hooks are specified on RxCollection-level and help to create a clear what-happens-when-structure of your code.</p>
-<p>Hooks can be defined to run parallel or as series one after another.
-Hooks can be synchronous or asynchronous when they return a Promise.
-To stop the operation at a specific hook, throw an error.</p>
-<h2 id="list">List</h2>
-<p>RxDB supports the following hooks:</p>
+                                <h1 id="transactions-conflicts-and-revisions">Transactions, Conflicts and Revisions</h1>
+<p>In contrast to most SQL databases, RxDB does not have the concept of relational, ACID transactions. Instead, RxDB has to apply different techniques that better suite the offline-first, client side world.</p>
+<h2 id="why-rxdb-does-not-have-transactions">Why RxDB does not have transactions</h2>
+<p>When talking about transactions, we mean <a href="https://en.wikipedia.org/wiki/ACID" target="_blank">ACID transactions</a> that guarantee the properties of atomicity, consistency, isolation and durability.
+With an ACID transaction you can mutate data dependend on the current state of the database. It is ensured that no other database operations happen in between your transaction and after the transaction has finished, it is guaranteed that the new data is actually written to the disc.</p>
+<p>To implement ACID transactions on a <strong>single server</strong>, the database has to keep track on who is running transactions and then schedule these transactions so that they can run in isolation.</p>
+<p>As soon as you have to split your database on <strong>multiple servers</strong>, transaction handling becomes way more difficult. The servers have to communicate with each other to find a consens about which transaction can run and which has to wait. Network connections might break, or one server might complete its part of the transaction and then be required to roll back its changes because of an error on another server. </p>
+<p>But with RxDB you have <strong>multiple clients</strong> that can go randomly online or offline. The users can have different devices and the clock of these devices can go off by any time. To support ACID transactions here, RxDB would have to make the whole world stand still for all clients, while one client is doing a write operation. And even that can only work when all clients are online. Implementing that might be possible, but at the cost of an unpredictable amount of performance loss and not beaing able to support <a href="offline-first.html">offline-first</a>.</p>
+<blockquote>
+<p>A single write operation to a document is the only atomic thing you can do in RxDB.</p>
+</blockquote>
+<p>The benefits of not having to support transactions:</p>
 <ul>
-<li>preInsert</li>
-<li>postInsert</li>
-<li>preSave</li>
-<li>postSave</li>
-<li>preRemove</li>
-<li>postRemove</li>
-<li>postCreate</li>
+<li>Clients can read and write data without blocking each other.</li>
+<li>Clients can write data while being <strong>offline</strong> and then replicate with a server when they are <strong>online</strong> again, called <a href="offline-first.html">offline-first</a>.</li>
+<li>Creating a compatible backend for the replication is easy so that RxDB can replicate with any existing infrastructure.</li>
+<li>Optimizations like <a href="rx-storage-sharding.html">Sharding</a> can be used.</li>
 </ul>
-<h3 id="why-is-there-no-validate-hook">Why is there no validate-hook?</h3>
-<p>Different to mongoose, the validation on document-data is running on the field-level for every change to a document.
-This means if you set the value <code>lastName</code> of a RxDocument, then the validation will only run on the changed field, not the whole document.
-Therefore it is not useful to have validate-hooks when a document is written to the database.</p>
-<h2 id="use-cases">Use Cases</h2>
-<p>Middleware are useful for atomizing model logic and avoiding nested blocks of async code.
-Here are some other ideas:</p>
+<h2 id="revisions">Revisions</h2>
+<p>Working without transactions leads to having undefined state when doing multiple database operations at the same time. Most client side databases rely on a last-write-wrins stategy on write operations. This might be a viable solution for some cases, but often this leads to strange problems that are hard to debug.</p>
+<p>Instead, to ensure that the behavior of RxDB is <strong>always predictable</strong>, RxDB relies on <strong>revisions</strong> for version control.</p>
+<p>Each document is stored together with its revision string, that looks like <code>1-12080c42d471e3d2625e49dcca3b8e1a</code> and consists of:</p>
 <ul>
-<li>complex validation</li>
-<li>removing dependent documents</li>
-<li>asynchronous defaults</li>
-<li>asynchronous tasks that a certain action triggers</li>
-<li>triggering custom events</li>
-<li>notifications</li>
+<li>The revision height, a number that starts with <code>1</code> and is increased of each write to that document.</li>
+<li>A revision hash that is a hash string of the documents data. Different <a href="rx-storage.html">RxStorage</a> implementations might use different hashing methods.</li>
 </ul>
-<h2 id="usage">Usage</h2>
-<p>All hooks have the plain data as first parameter, and all but <code>preInsert</code> also have the <code>RxDocument</code>-instance as second parameter. If you want to modify the data in the hook, change attributes of the first parameter.</p>
-<p>All hook functions are also <code>this</code>-bind to the <code>RxCollection</code>-instance.</p>
-<h3 id="insert">Insert</h3>
-<p>An insert-hook receives the data-object of the new document.</p>
-<h4 id="lifecycle">lifecycle</h4>
-<ul>
-<li>RxCollection.insert is called</li>
-<li>preInsert series-hooks</li>
-<li>preInsert parallel-hooks</li>
-<li>schema validation runs</li>
-<li>new document is written to database</li>
-<li>postInsert series-hooks</li>
-<li>postInsert parallel-hooks</li>
-<li>event is emitted to RxDatabase and RxCollection</li>
-</ul>
-<h4 id="preinsert">preInsert</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData</span>)</span>{
-    <span class="hljs-comment">// set age to 50 before saving</span>
-    plainData.age = <span class="hljs-number">50</span>;
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// stop the insert-operation</span>
-myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData</span>)</span>{
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&apos;stop&apos;</span>);
-}, <span class="hljs-literal">false</span>);
-</code></pre>
-<h4 id="postinsert">postInsert</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.postInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.postInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.postInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
-</code></pre>
-<h3 id="save">Save</h3>
-<p>A save-hook receives the document which is saved.</p>
-<h4 id="lifecycle">lifecycle</h4>
-<ul>
-<li>RxDocument.save is called</li>
-<li>preSave series-hooks</li>
-<li>preSave parallel-hooks</li>
-<li>updated document is written to database</li>
-<li>postSave series-hooks</li>
-<li>postSave parallel-hooks</li>
-<li>event is emitted to RxDatabase and RxCollection</li>
-</ul>
-<h4 id="presave">preSave</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-    <span class="hljs-comment">// modify anyField before saving</span>
-    plainData.anyField = <span class="hljs-string">&apos;anyValue&apos;</span>;
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// stop the save-operation</span>
-myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&apos;stop&apos;</span>);
-}, <span class="hljs-literal">false</span>);
-</code></pre>
-<h4 id="postsave">postSave</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
-</code></pre>
-<h3 id="remove">Remove</h3>
-<p>An remove-hook receives the document which is removed.</p>
-<h4 id="lifecycle">lifecycle</h4>
-<ul>
-<li>RxDocument.remove is called</li>
-<li>preRemove series-hooks</li>
-<li>preRemove parallel-hooks</li>
-<li>deleted document is written to database</li>
-<li>postRemove series-hooks</li>
-<li>postRemove parallel-hooks</li>
-<li>event is emitted to RxDatabase and RxCollection</li>
-</ul>
-<h4 id="preremove">preRemove</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// stop the remove-operation</span>
-myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&apos;stop&apos;</span>);
-}, <span class="hljs-literal">false</span>);
-</code></pre>
-<h4 id="postremove">postRemove</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
-</code></pre>
-<h3 id="postcreate">postCreate</h3>
-<p>This hook is called whenever a <code>RxDocument</code> is constructed.
-You can use <code>postCreate</code> to modify every RxDocument-instance of the collection.
-This adds a flexible way to add specify behavior to every document. You can also use it to add custom getter/setter to documents. PostCreate-hooks cannot be <strong>asynchronous</strong>.</p>
-<pre><code class="lang-js">myCollection.postCreate(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plainData, rxDocument</span>)</span>{
-    <span class="hljs-built_in">Object</span>.defineProperty(rxDocument, <span class="hljs-string">&apos;myField&apos;</span>, {
-        get: () =&gt; <span class="hljs-string">&apos;foobar&apos;</span>,
-    });
-});
-
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> myCollection.findOne().exec();
-
-<span class="hljs-built_in">console</span>.log(doc.myField);
-<span class="hljs-comment">// &apos;foobar&apos;</span>
-</code></pre>
-<p>Notice: This hook does not run on already created or cached documents. Make sure to add <code>postCreate</code>-hooks before interacting with the collection.</p>
-<hr>
-<p>If you are new to RxDB, you should continue <a href="orm.html">here</a></p>
+<p>An operation to the RxDB data layer does not only contain the new document data, but also the previous document data with its revision string. If the previous revision matches the revision that is currently stored in the database, the write operation can succeed. If the previous revision is <strong>different</strong> than the revision that is currently stored in the database, the operation will throw a <code>local conflict</code> error.</p>
+<h2 id="conflicts">Conflicts</h2>
+<p>There are two types of conflicts in RxDB, the <strong>local conflict</strong> and the <strong>replication conflict</strong>.</p>
+<h3 id="local-conflicts">Local conflicts</h3>
+<p>A local conflict can happen when a write operation assumes a different previous document state, then what is currently stored in the database. This can happen when multiple parts of your application do simultaneous writes to the same document. This can happen on a single browser tab, or even when multiple tabs write at once or when a write appears while the document gets replicated from a remote server replication.</p>
+<p>When a local conflict appears, RxDB will throw an error. The calling code must then handle the error properly, depending on the application logic.</p>
+<p>Instead of handling local conflicts, in most cases it is easier to ensure that they cannot happen, by using <code>atomic</code> database operations like <a href="rx-document.html">atomicUpdate()</a>, <a href="rx-document.html">atomicPatch()</a> or <a href="rx-collection.html">atomicUpsert()</a>. These write operations have a build in way to handle conflicts by re-applying the mutation functions to the conflicting document state.</p>
+<h2 id="replication-conflicts">Replication conflicts</h2>
+<p>A replication conflict appears when mutliple clients write to the same documents at once and these documents are then replicated to the backend server. </p>
+<p>When you replicate with the <a href="replication-graphql.html">Graphql replication</a> and the <a href="replication.html">replication primitives</a>, RxDB assumes that the backend server is able to <strong>detect</strong> and <strong>resolve</strong> replication conflicts. </p>
+<p>So when two conflicting documents are send to the backend server, the backend server must detect the conflict which can be implemented by adding own revision flags, appending the document history, relying on the last update time and other solutions.</p>
+<p>To resolve the conflict, the backend must compare the conflicting document states and calculate a new state that might have a merge of the document versions or just drop one of them. Documents of solved conflicts will be then replicated to the clients again so that they can become in sync with the server state.</p>
 
                                 
                                 </section>
@@ -2175,12 +2009,12 @@ This adds a flexible way to add specify behavior to every document. You can also
 
             
                 
-                <a href="rx-attachment.html" class="navigation navigation-prev " aria-label="Previous page: RxAttachment">
+                <a href="query-optimizer.html" class="navigation navigation-prev " aria-label="Previous page: Query Optimizer">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="orm.html" class="navigation navigation-next " aria-label="Next page: ORM/DRM">
+                <a href="premium.html" class="navigation navigation-next " aria-label="Next page: RxDB Premium">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2191,7 +2025,7 @@ This adds a flexible way to add specify behavior to every document. You can also
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Middleware-hooks","level":"1.12","depth":1,"next":{"title":"ORM/DRM","level":"1.13","depth":1,"path":"orm.md","ref":"./orm.md","articles":[]},"previous":{"title":"RxAttachment","level":"1.11","depth":1,"path":"rx-attachment.md","ref":"./rx-attachment.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"middleware.md","mtime":"2022-05-31T23:38:21.601Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-31T23:43:12.310Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Transactions, Conflicts and Revisions","level":"1.37","depth":1,"next":{"title":"RxDB Premium","level":"1.38","depth":1,"path":"premium.md","ref":"./premium.md","articles":[]},"previous":{"title":"Query Optimizer","level":"1.36","depth":1,"path":"query-optimizer.md","ref":"./query-optimizer.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"transactions-conflicts-revisions.md","mtime":"2022-05-31T23:38:21.605Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-31T23:43:12.310Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
