@@ -152,6 +152,7 @@
 
 * [RxDB Premium](./premium.md)
 
+* [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md)
 
 * Tutorials
     * [Use RxDB with Typescript](./tutorials/typescript.md)
