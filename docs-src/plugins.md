@@ -103,4 +103,4 @@ collection.options.foo(); // 'bar'
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./adapters.md)
+If you are new to RxDB, you should continue [here](./query-optimizer.md)
