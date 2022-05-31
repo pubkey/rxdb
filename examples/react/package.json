@@ -15,7 +15,7 @@
     "rxjs": "7.5.5"
   },
   "devDependencies": {
-    "react-scripts": "4.0.3",
+    "react-scripts": "5.0.1",
     "rimraf": "3.0.2",
     "testcafe": "1.18.6",
     "local-web-server": "5.1.1"
