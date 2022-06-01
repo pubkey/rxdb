@@ -76,7 +76,7 @@ import { defineComponent } from 'vue';
 export default defineComponent({
   name: 'HelloWorld',
   props: {
-    name: {
+    msg: {
       type: String,
       required: true
     }

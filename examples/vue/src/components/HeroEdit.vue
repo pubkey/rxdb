@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts">
-import { RxHeroDocument } from "../RxDB";
+import { RxHeroDocument } from "@/RxDB";
 import { firstValueFrom } from "rxjs";
 import { skip, map } from "rxjs/operators";
 import { defineComponent, ref } from "vue";

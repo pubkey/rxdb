@@ -13,7 +13,7 @@
 <script lang="ts">
 import randomInt from 'random-int';
 import { defineComponent, ref } from 'vue';
-import { useDatabase } from '../database';
+import { useDatabase } from '@/database';
 
 export default defineComponent({
   name: 'HeroInsert',

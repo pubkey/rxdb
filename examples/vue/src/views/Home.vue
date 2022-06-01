@@ -14,10 +14,10 @@
 
 <script lang="ts">
 
-import { RxHeroDocument } from '../RxDB';
-import HeroList from '../components/HeroList.vue';
-import HeroInsert from '../components/HeroInsert.vue';
-import HeroEdit from '../components/HeroEdit.vue';
+import { RxHeroDocument } from '@/RxDB';
+import HeroList from '@/components/HeroList.vue';
+import HeroInsert from '@/components/HeroInsert.vue';
+import HeroEdit from '@/components/HeroEdit.vue';
 import { defineComponent, ref } from 'vue';
 
 

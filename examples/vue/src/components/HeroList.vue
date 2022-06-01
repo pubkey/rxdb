@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { RxHeroDocument, RxHeroesDatabase } from '../RxDB';
+import { RxHeroDocument } from '@/RxDB';
 import { tap } from 'rxjs/operators';;
 import { defineComponent, onUnmounted, ref } from 'vue';
 import { useDatabase } from '../database';
