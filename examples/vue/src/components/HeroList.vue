@@ -2,10 +2,10 @@
   <div class="hero-list">
     <ul v-if="!loading">
       <li v-for="hero in heroes" :key="hero.name">
-        <div class="color-box" v-bind:style="{ backgroundColor: hero.color }"></div>
+        <div class="color-box" :style="{ 'background-color': hero.color }"></div>
         <span class="hero-name">{{ hero.name }}</span>
         <div class="life">
-          <div class="currentPercent" v-bind:style="{ width: hero.hpPercent() +'%' }"></div>
+          <div class="currentPercent" :style="{ width: hero.hpPercent() +'%' }"></div>
         </div>
         <div class="actions">
           <i class="fa fa-pencil-square-o" aria-hidden="true" @click="onEditHeroClick(hero)"></i>
@@ -13,7 +13,7 @@
         </div>
       </li>
     </ul>
-    <span v-else>Loading..</span>
+    <span v-else>Loading...</span>
   </div>
 </template>
 

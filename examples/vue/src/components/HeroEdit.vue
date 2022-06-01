@@ -20,7 +20,7 @@
     <h5>
       <div
         class="color-box"
-        v-bind:style="{ backgroundColor: hero.color }"
+        :style="{ 'background-color': hero.color }"
       ></div>
       {{ hero.name }}
     </h5>
