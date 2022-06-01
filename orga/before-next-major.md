@@ -87,6 +87,12 @@ you could run a query selector like `$gt: 10` where it now is not clear if the s
 https://github.com/pubkey/rxdb/pull/3777#issuecomment-1120669088
 
 
+## Use Node.js Blob API
+
+In the `blobBufferUtil` methods we use Buffer in node and Blob in the browsers. Since node 18, Blob is supported in node so we might also use that here to remove some complexity.
+https://nodejs.org/api/buffer.html#class-blob
+
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument
