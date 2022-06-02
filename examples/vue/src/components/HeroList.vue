@@ -2,37 +2,37 @@
   <div class="hero-list">
     <ul v-if="!loading">
       <li v-for="hero in heroes" :key="hero.name">
-        <div class="color-box" v-bind:style="{ backgroundColor: hero.color }"></div>
+        <div class="color-box" :style="{ 'background-color': hero.color }"></div>
         <span class="hero-name">{{ hero.name }}</span>
         <div class="life">
-          <div class="currentPercent" v-bind:style="{ width: hero.hpPercent() +'%' }"></div>
+          <div class="currentPercent" :style="{ width: hero.hpPercent() +'%' }"></div>
         </div>
         <div class="actions">
-          <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="editHero(hero)"></i>
-          <i class="fa fa-trash-o" aria-hidden="true" v-on:click="removeHero(hero)"></i>
+          <i class="fa fa-pencil-square-o" aria-hidden="true" @click="onEditHeroClick(hero)"></i>
+          <i class="fa fa-trash-o" aria-hidden="true" @click="onRemoveHeroClick(hero)"></i>
         </div>
       </li>
     </ul>
-    <span v-else>Loading..</span>
+    <span v-else>Loading...</span>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import DatabaseService from '../services/Database.service';
-import { RxHeroDocument, RxHeroesDatabase } from '../RxDB';
-import { filter, first, map, debounce, startWith, tap } from 'rxjs/operators';
-import { timer, Subscription } from 'rxjs';
+import { RxHeroDocument } from '@/RxDB';
+import { tap } from 'rxjs/operators';
+import { defineComponent, onUnmounted, ref } from 'vue';
+import { useDatabase } from '../database';
 
-@Component({})
-export default class HeroList extends Vue {
-  private loading: boolean = false;
-  private heroes: RxHeroDocument[] = [];
-  private sub: Subscription | null = null;
-
-  public async mounted() {
-    const db = await DatabaseService.get();
-    this.sub = db.heroes
+export default defineComponent({
+  name: 'HeroList',
+  emits: [
+    'edit'
+  ],
+  setup(props, { emit }) {
+    const loading = ref<boolean>(false);
+    const heroes = ref<any[]>([]);
+    const database = useDatabase();
+    const sub = database.heroes
       .find({
         selector: {},
         sort: [{ name: 'asc' }]
@@ -40,31 +40,39 @@ export default class HeroList extends Vue {
       .$.pipe(
         tap(() => {
           // debounce to simulate slow load
-          setTimeout(() => (this.loading = false), 1000);
+          setTimeout(() => (loading.value = false), 1000);
         })
       )
-      .subscribe((heroes: RxHeroDocument[]) => {
-        this.heroes = heroes;
+      .subscribe((result: RxHeroDocument[]) => {
+        heroes.value = result;
       });
-  }
 
-  public beforeDestroy() {
-    if (this.sub) {
-      this.sub.unsubscribe();
-    }
-  }
+    onUnmounted(() => {
+      if (sub) {
+        sub.unsubscribe();
+      }
+    });
 
-  private removeHero(hero: RxHeroDocument) {
-    hero.remove();
+    const onEditHeroClick = (hero: RxHeroDocument) => {
+      emit('edit', hero);
+    };
+
+    const onRemoveHeroClick = (hero: RxHeroDocument) => {
+      hero.remove();
+    };
+
+    return {
+      loading,
+      heroes,
+      onEditHeroClick,
+      onRemoveHeroClick
+    };
   }
-  private editHero(hero: RxHeroDocument) {
-    this.$emit('edit', hero);
-  }
-}
+});
 </script>
 
 
-<style scoped lang="less">
+<style scoped lang="scss">
 ul {
   list-style: none;
   padding: 0 16px;

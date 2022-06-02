@@ -1,46 +1,44 @@
-<html>
-
+<html lang="en">
 <head>
-    <title>This page simulates two open tabs via iframes</title>
-    <style>
-        iframe {
-            width: 45%;
-            float: left;
-            height: 30%;
-            min-height: 500px;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0" />
+  <title>This page simulates two open tabs via iframes</title>
+  <style>
+    iframe {
+      width: 45%;
+      float: left;
+      height: 30%;
+      min-height: 500px;
+    }
+  </style>
 </head>
 
 <body>
+  <script>
+    window.removeFrame = function () {
+      var id = document.querySelector('#removeId').value;
+      var frame = document.querySelector('#frame_' + id);
+      console.log(frame);
+      frame.parentNode.removeChild(frame);
+    }
+  </script>
+  <input type="number" id="removeId" />
+  <input type="submit" id="submit" onclick="removeFrame();" />
 
-
-    <script>
-        window.removeFrame = function() {
-            var id = document.querySelector('#removeId').value;
-            var frame = document.querySelector('#frame_' + id);
-            console.log(frame);
-            frame.parentNode.removeChild(frame);
-        }
-    </script>
-    <input type="number" id="removeId" />
-    <input type="submit" id="submit" onclick="removeFrame();" />
-
-    <script>
-        var amount = parseInt(window.location.search.split('=')[1], 10);
-        if (isNaN(amount))
-            amount = 2;
-        console.log(amount);
-        var t = 0;
-        while (t < amount) {
-            var ifrm = document.createElement('iframe');
-            ifrm.setAttribute('src', '/index.html');
-            ifrm.id = 'frame_' + t;
-            document.body.appendChild(ifrm);
-            t++;
-        }
-    </script>
-
+  <script>
+    var amount = parseInt(window.location.search.split('=')[1], 10);
+    if (isNaN(amount))
+      amount = 2;
+    console.log(amount);
+    var t = 0;
+    while (t < amount) {
+      var ifrm = document.createElement('iframe');
+      ifrm.setAttribute('src', '/');
+      ifrm.id = 'frame_' + t;
+      document.body.appendChild(ifrm);
+      t++;
+    }
+  </script>
 </body>
 
 </html>
