@@ -36,7 +36,7 @@ export default defineComponent({
       console.log('Inserted new hero: ' + hero.value.name);
 
       hero.value = {};
-    }
+    };
 
     return {
       hero,

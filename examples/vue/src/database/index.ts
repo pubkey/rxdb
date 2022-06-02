@@ -1,10 +1,7 @@
 import { inject, Plugin } from 'vue';
 import { createRxDatabase, addRxPlugin } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 const KEY_DATABASE = Symbol('database');
-
-import { tap } from 'rxjs/operators';
 
 // import typings
 import {
@@ -46,11 +43,6 @@ const useAdapter = 'idb';
 
 console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':10101/';
-
-let doSync = true;
-if (window.location.hash === '#nosync') {
-  doSync = false;
-}
 
 export function useDatabase(): RxHeroesDatabase {
   return inject(KEY_DATABASE) as RxHeroesDatabase;

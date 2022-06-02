@@ -42,10 +42,10 @@
 </template>
 
 <script lang="ts">
-import { RxHeroDocument } from "@/RxDB";
-import { firstValueFrom } from "rxjs";
-import { skip, map } from "rxjs/operators";
-import { defineComponent, ref } from "vue";
+import { RxHeroDocument } from '@/RxDB';
+import { firstValueFrom } from 'rxjs';
+import { skip, map } from 'rxjs/operators';
+import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'HeroEdit',
@@ -88,7 +88,7 @@ export default defineComponent({
       console.log('heroEdit.onResyncClick()');
       formData.value = props.hero.hp;
       synced.value = true;
-    }
+    };
 
     return {
       synced,

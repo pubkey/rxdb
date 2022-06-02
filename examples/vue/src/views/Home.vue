@@ -33,12 +33,12 @@ export default defineComponent({
 
     const onEditHero = (hero: RxHeroDocument) => {
       edit.value = hero;
-    }
+    };
 
     return {
       edit,
       onEditHero
-    }
+    };
   }
 });
 

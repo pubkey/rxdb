@@ -19,7 +19,7 @@
 
 <script lang="ts">
 import { RxHeroDocument } from '@/RxDB';
-import { tap } from 'rxjs/operators';;
+import { tap } from 'rxjs/operators';
 import { defineComponent, onUnmounted, ref } from 'vue';
 import { useDatabase } from '../database';
 
