@@ -1,9 +1,18 @@
 const assert = require('assert');
 const {
+    createRxDatabase,
     addRxPlugin,
-    createRxDatabase
-} = require('../../../');
-addRxPlugin(require('pouchdb-adapter-idb'));
+    blobBufferUtil,
+} = require('rxdb');
+const { RxDBEncryptionPlugin } = require('rxdb/plugins/encryption');
+const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
+const { RxDBAttachmentsPlugin } = require('rxdb/plugins/attachments');
+const { getRxStoragePouch, addPouchPlugin } = require('rxdb/plugins/pouchdb');
+
+addRxPlugin(RxDBEncryptionPlugin);
+addRxPlugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBAttachmentsPlugin);
+addPouchPlugin(require('pouchdb-adapter-idb'));
 
 
 /**
@@ -15,8 +24,9 @@ module.exports = (function () {
         // issue #587 Icorrect working attachments in electron-render
         await (async function () {
             const db = await createRxDatabase({
-                name: 'foobar587' + new Date().getTime(),
-                adapter: 'idb',
+                // generate simple random ID to avoid conflicts when running tests at the same time
+                name: 'foobar587' + Math.round(Math.random() * 0xffffff).toString(16),
+                storage: getRxStoragePouch('idb'),
                 password: 'myLongAndStupidPassword',
                 multiInstance: true
             });
@@ -26,28 +36,30 @@ module.exports = (function () {
                 throw new Error('wrong BroadcastChannel-method chosen: ' + db.broadcastChannel.method.type);
             }
 
-            const col = await db.collection({
-                name: 'heroes',
-                schema: {
-                    version: 0,
-                    type: 'object',
-                    properties: {
-                        id: {
-                            type: 'string',
-                            primary: true
+            await db.addCollections({
+                heroes: {
+                    schema: {
+                        primaryKey: 'id',
+                        version: 0,
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            }
+                        },
+                        attachments: {
+                            encrypted: true
                         }
-                    },
-                    attachments: {
-                        encrypted: true
                     }
                 }
             });
-            const doc = await col.insert({
+            const doc = await db.heroes.insert({
                 id: 'foo'
             });
             assert.ok(doc);
 
-            const attachmentData = 'foo bar asldfkjalkdsfj';
+            const attachmentData = blobBufferUtil.createBlobBuffer('foo bar asldfkjalkdsfj', 'text/plain');
             const attachment = await doc.putAttachment({
                 id: 'cat.jpg',
                 data: attachmentData,

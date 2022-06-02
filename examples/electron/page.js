@@ -8,10 +8,8 @@ const heroesList = document.querySelector('#heroes-list');
 
 const syncURL = 'http://localhost:10102/db/heroes';
 
-const {
-    addRxPlugin
-} = require('rxdb');
-addRxPlugin(require('pouchdb-adapter-idb'));
+const { addPouchPlugin } = require('rxdb/plugins/pouchdb');
+addPouchPlugin(require('pouchdb-adapter-idb'));
 
 async function run() {
     /**
@@ -26,7 +24,7 @@ async function run() {
         'idb'
     );
     console.log('starting sync with ' + syncURL);
-    const syncState = await db.heroes.sync({
+    const syncState = await db.heroes.syncCouchDB({
         remote: syncURL,
         direction: {
             pull: true,
