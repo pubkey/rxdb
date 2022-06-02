@@ -1,8 +1,13 @@
-const {
-    createRxDatabase,
-    addPouchPlugin,
-    getRxStoragePouch
-} = require('rxdb');
+const { createRxDatabase, addRxPlugin } = require('rxdb');
+const { RxDBEncryptionPlugin } = require('rxdb/plugins/encryption');
+const { RxDBQueryBuilderPlugin } = require('rxdb/plugins/query-builder');
+const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
+const { getRxStoragePouch, addPouchPlugin } = require('rxdb/plugins/pouchdb');
+
+addRxPlugin(RxDBEncryptionPlugin);
+addRxPlugin(RxDBQueryBuilderPlugin);
+addRxPlugin(RxDBLeaderElectionPlugin);
+
 addPouchPlugin(require('pouchdb-adapter-memory'));
 
 const heroSchema = {
@@ -13,7 +18,8 @@ const heroSchema = {
     type: 'object',
     properties: {
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         color: {
             type: 'string'
