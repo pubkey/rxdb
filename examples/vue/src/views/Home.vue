@@ -41,21 +41,4 @@ export default defineComponent({
     };
   }
 });
-
-/*@Component({
-  components: {
-    HeroList,
-    HeroInsert,
-    HeroEdit
-  }
-})
-export default class Home extends Vue {
-  private edit: RxHeroDocument | null = null;
-
-  private editHero(hero: RxHeroDocument) {
-    this.edit = hero;
-  }
-}
-
-*/
 </script>
