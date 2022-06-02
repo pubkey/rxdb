@@ -40,8 +40,6 @@
     "@vue/eslint-config-typescript": "^10.0.0",
     "concurrently": "^7.2.1",
     "copy-webpack-plugin": "^11.0.0",
-    "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.0.1",
     "local-web-server": "^5.2.1",
     "node-sass": "^6.0.1",
     "sass-loader": "^12.6.0",
