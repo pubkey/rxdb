@@ -1,6 +1,15 @@
+const CopyPlugin = require('copy-webpack-plugin');
+
 module.exports = {
   configureWebpack: {
-    devtool: 'source-map'
+    devtool: 'source-map',
+    plugins: [
+      new CopyPlugin({
+        patterns: [
+          'test/multitab.html'
+        ],
+      }),
+    ],
   },
   pages: {
     index: {
