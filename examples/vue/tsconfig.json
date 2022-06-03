@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "esnext",
     "strict": true,
     "jsx": "preserve",
@@ -9,6 +9,8 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": false,
     "sourceMap": true,
     "baseUrl": ".",
     "types": [

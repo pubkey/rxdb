@@ -2,7 +2,7 @@
 /// <reference types="node" />
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
 import type { RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics, FilledMangoQuery } from '../../types';
-import { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
+import type { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 export declare const RxStorageDexieStatics: RxStorageStatics;
 export declare class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSettings> {
