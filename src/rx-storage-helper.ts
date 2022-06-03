@@ -521,13 +521,38 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         let data = flatClone(writeRow.document);
         data._meta = flatClone(data._meta);
 
-        // ensure primary key has not been changed
+        /**
+         * Do some checks in dev-mode
+         * that would be too performance expensive
+         * in production.
+         */
         if (overwritable.isDevMode()) {
+            // ensure that the primary key has not been changed
             data = fillPrimaryKey(
                 primaryPath,
                 rxJsonSchema,
                 data as any
             );
+
+            /**
+             * Ensure that _meta fields have been merged
+             * and not replaced.
+             * This is important so that when one plugin A
+             * sets a _meta field and another plugin B does a write
+             * to the document, it must be ensured that the
+             * field of plugin A was not removed.
+             */
+            if (writeRow.previous) {
+                Object.keys(writeRow.previous._meta)
+                    .forEach(metaFieldName => {
+                        if (!writeRow.document._meta.hasOwnProperty(metaFieldName)) {
+                            throw newRxError('SNH', {
+                                dataBefore: writeRow.previous,
+                                dataAfter: writeRow.document
+                            });
+                        }
+                    });
+            }
         }
 
         data._meta.lwt = now();
