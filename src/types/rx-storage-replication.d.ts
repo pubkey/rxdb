@@ -32,18 +32,27 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
 
 export type RxStorageInstanceReplicationState<RxDocType> = {
     input: RxStorageInstanceReplicationInput<RxDocType>;
-
     checkpointKey: {
-        down: string;
-        up: string;
+        [direction in RxStorageReplicationDirection]: string;
     }
 
     /**
-     * Resolves when the replication is in sync for the first time,
-     * so when the child has an equal state as the parent.
+     * Tracks if the streams are in sync
+     * or not.
      */
-    firstSyncDone: BehaviorSubject<boolean>;
-    lastDownstreamCheckpoint?: any;
+    firstSyncDone: {
+        [direction in RxStorageReplicationDirection]: BehaviorSubject<boolean>;
+    };
+
+    /**
+     * Contains the cancel state.
+     * Emit true here to cancel the replication.
+     */
+    canceled: BehaviorSubject<boolean>;
+
+    lastCheckpoint: {
+        [direction in RxStorageReplicationDirection]?: any;
+    };
 }
 
 export type RxConflictHandler<RxDocType> = (
@@ -55,3 +64,6 @@ export type RxConflictHandler<RxDocType> = (
 ) => Promise<{
     resolvedDocumentState: RxDocumentData<RxDocType>
 }>
+
+
+export type RxStorageReplicationDirection = 'up' | 'down';

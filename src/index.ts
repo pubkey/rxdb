@@ -79,6 +79,8 @@ export {
 
 export * from './rx-storage-helper';
 
+export * from './rx-storage-replication';
+
 export * from './custom-index';
 export * from './query-planner';
 
