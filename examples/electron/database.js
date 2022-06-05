@@ -1,16 +1,15 @@
 const { createRxDatabase, addRxPlugin } = require('rxdb');
 const { RxDBEncryptionPlugin } = require('rxdb/plugins/encryption');
 const { RxDBQueryBuilderPlugin } = require('rxdb/plugins/query-builder');
-const { RxDBServerPlugin } = require('rxdb/plugins/server');
-const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
+const { RxDBDevModePlugin } = require('rxdb/plugins/dev-mode');
 const { addPouchPlugin, getRxStoragePouch } = require('rxdb/plugins/pouchdb');
 
 addRxPlugin(RxDBEncryptionPlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
-addRxPlugin(RxDBLeaderElectionPlugin);
-addRxPlugin(RxDBServerPlugin);
+addRxPlugin(RxDBDevModePlugin);
 addPouchPlugin(require('pouchdb-adapter-memory'));
 addPouchPlugin(require('pouchdb-adapter-http'));
+addPouchPlugin(require('pouchdb-adapter-idb'));
 
 const heroSchema = {
     title: 'hero schema',
@@ -30,17 +29,11 @@ const heroSchema = {
     required: ['name', 'color']
 };
 
-let _getDatabase; // cached
-function getDatabase(name, adapter) {
-    if (!_getDatabase) _getDatabase = createDatabase(name, adapter);
-    return _getDatabase;
-}
-
 async function createDatabase(name, adapter) {
     const db = await createRxDatabase({
         name,
         storage: getRxStoragePouch(adapter),
-        password: 'myLongAndStupidPassword'
+        password: 'myLongAndStupidPassword',
     });
 
     console.log('creating hero-collection..');
@@ -53,5 +46,5 @@ async function createDatabase(name, adapter) {
     return db;
 }
 module.exports = {
-    getDatabase
+    createDatabase
 };

@@ -1,9 +1,15 @@
-const electron = require('electron');
+const database = require('./database');
 const renderTest = require('./test/render.test.js');
+const { addRxPlugin } = require('rxdb');
+const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
+const { RxDBReplicationCouchDBPlugin } = require('rxdb/plugins/replication-couchdb');
 
-require('babel-polyfill');
+addRxPlugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 const heroesList = document.querySelector('#heroes-list');
+
+const syncURL = 'http://localhost:10102/db/heroes';
 
 async function run() {
     /**
@@ -12,7 +18,26 @@ async function run() {
      */
     await renderTest();
 
-    const db = electron.remote.getGlobal('db'); // we get the db object from the main render
+    const dbSuffix = await window.getDBSuffix();
+
+    const db = await database.createDatabase(
+        'heroesdb' + dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
+        'idb'
+    );
+    
+    console.log('starting sync with ' + syncURL);
+    const syncState = await db.heroes.syncCouchDB({
+        remote: syncURL,
+        waitForLeadership: false,
+        direction: {
+            pull: true,
+            push: true
+        },
+        options: {
+            live: true
+        },
+    });
+    console.dir(syncState);
 
     /**
      * map the result of the find-query to the heroes-list in the dom

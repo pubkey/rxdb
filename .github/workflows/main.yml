@@ -399,18 +399,6 @@ jobs:
           working-directory: ./examples/electron
           run: npm run test
 
-      - name: electron-remote install
-        working-directory: ./examples/electron-remote
-        run: |
-          npm install --legacy-peer-deps
-
-      # TODO commented out because of random fails. Likely fixed when upgrade the electron version
-      - name: electron-remote test
-        uses: GabrielBB/xvfb-action@v1.5
-        with:
-          working-directory: ./examples/electron-remote
-          run: npm run test
-
   react:
     runs-on: ubuntu-20.04
     steps:
