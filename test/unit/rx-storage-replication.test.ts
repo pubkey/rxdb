@@ -161,10 +161,10 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         })
     }
 
-    config.parallel('helpers', () => {
+    describe('helpers', () => {
 
     });
-    config.parallel('up', () => {
+    describe('up', () => {
         it('it should write the initial data and also the ongoing insert', async () => {
             const parent = await createRxStorageInstance(1);
             const child = await createRxStorageInstance(0);
@@ -195,7 +195,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             cleanUp(replicationState);
         });
     });
-    config.parallel('down', () => {
+    describe('down', () => {
         it('it should write the initial data and also the ongoing insert', async () => {
             const parent = await createRxStorageInstance(0);
             const child = await createRxStorageInstance(1);
@@ -227,7 +227,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             cleanUp(replicationState);
         });
     });
-    config.parallel('conflict handling', () => {
+    describe('conflict handling', () => {
         it('both have inserted the exact same document -> no conflict handler must be called', async () => {
             const parent = await createRxStorageInstance(0);
             const child = await createRxStorageInstance(0);
@@ -305,7 +305,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
             await ensureEqualState(parent, child);
-            
+
             // revision must be 2 because it had to resolve a conflict.
             const parentDocs = await runQuery(parent);
             assert.ok(parentDocs[0]._rev.startsWith('2-'));
