@@ -161,6 +161,7 @@ export type {
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
     RxConflictHandler,
+    RxConflictHandlerInput,
     RxStorageReplicationDirection,
 
     // other stuff

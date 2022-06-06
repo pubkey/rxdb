@@ -62,12 +62,13 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     };
 }
 
+export type RxConflictHandlerInput<RxDocType> = {
+    parentDocumentState: RxDocumentData<RxDocType>;
+    assumedParentDocumentState?: RxDocumentData<RxDocType>;
+    newDocumentState: RxDocumentData<RxDocType>;
+};
 export type RxConflictHandler<RxDocType> = (
-    i: {
-        parentDocumentState: RxDocumentData<RxDocType>;
-        assumedParentDocumentState?: RxDocumentData<RxDocType>;
-        newDocumentState: RxDocumentData<RxDocType>;
-    }
+    i: RxConflictHandlerInput<RxDocType>
 ) => Promise<{
     resolvedDocumentState: RxDocumentData<RxDocType>
 }>
