@@ -1,10 +1,8 @@
 const database = require('./database');
 const renderTest = require('./test/render.test.js');
 const { addRxPlugin } = require('rxdb');
-const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
 const { RxDBReplicationCouchDBPlugin } = require('rxdb/plugins/replication-couchdb');
 
-addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 const heroesList = document.querySelector('#heroes-list');
@@ -22,7 +20,7 @@ async function run() {
 
     const db = await database.createDatabase(
         'heroesdb' + dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
-        'idb'
+        'memory'
     );
     
     console.log('starting sync with ' + syncURL);

@@ -64,8 +64,6 @@ app.on('ready', async function () {
     });
 
     createWindow();
-    // FIXME: if remove the next line, replication between windows will not work
-    await new Promise(resolve => setTimeout(resolve, 2000));
     createWindow();
 });
 

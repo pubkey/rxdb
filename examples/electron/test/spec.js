@@ -9,7 +9,6 @@ describe('Application launch', function() {
     before(async function() {
         this.app = await electron.launch({ args: [path.join(__dirname, '../main.js')] })
         app = this.app;
-        await AsyncTestUtil.wait(3000);
     });
 
     after(function() {
@@ -17,9 +16,18 @@ describe('Application launch', function() {
     });
 
     it('shows an initial window', async () => {
-        const windows = app.windows();
-        assert.strictEqual(windows.length, 2);
-        await AsyncTestUtil.wait(500);
+
+        // wait for all two windows to complete
+        await AsyncTestUtil.waitUntil(async () => {
+            const windows = app.windows();
+
+            if (windows.length !== 2) return false;
+
+            const isWindow1Finished = await windows[0].evaluate('!!window.addHero');
+            const isWindow2Finished = await windows[1].evaluate('!!window.addHero');
+         
+            return isWindow1Finished && isWindow2Finished;
+        });
     });
 
     it('insert one hero', async () => {

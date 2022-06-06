@@ -9,7 +9,6 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBDevModePlugin);
 addPouchPlugin(require('pouchdb-adapter-memory'));
 addPouchPlugin(require('pouchdb-adapter-http'));
-addPouchPlugin(require('pouchdb-adapter-idb'));
 
 const heroSchema = {
     title: 'hero schema',
