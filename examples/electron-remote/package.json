@@ -1,0 +1,24 @@
+{
+  "name": "rxdb-example-electron",
+  "main": "main.js",
+  "scripts": {
+    "preinstall": "npm run preinstall:rxdb",
+    "preinstall:rxdb": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/electron/rxdb-local.tgz)",
+    "start": "npm run electron",
+    "electron": "electron .",
+    "test": "mocha"
+  },
+  "dependencies": {
+    "@electron/remote": "^2.0.8",
+    "electron": "^19.0.2",
+    "pouchdb-adapter-http": "7.2.2",
+    "pouchdb-adapter-websql": "7.0.0",
+    "pouchdb-replication": "7.2.2",
+    "rxdb": "file:rxdb-local.tgz",
+    "rxjs": "^7.5.5"
+  },
+  "devDependencies": {
+    "mocha": "8.2.1",
+    "playwright-core": "1.22.2"
+  }
+}

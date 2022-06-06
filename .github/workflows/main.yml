@@ -392,11 +392,21 @@ jobs:
           npm run preinstall
           npm install --legacy-peer-deps
 
-      # TODO I had to disable that again because the tests randomly fail. We need to upgrade electron and spectron
       - name: electron test
         uses: GabrielBB/xvfb-action@v1.5
         with:
           working-directory: ./examples/electron
+          run: npm run test
+
+      - name: electron-remote install
+        working-directory: ./examples/electron-remote
+        run: |
+          npm install --legacy-peer-deps
+
+      - name: electron-remote test
+        uses: GabrielBB/xvfb-action@v1.5
+        with:
+          working-directory: ./examples/electron-remote
           run: npm run test
 
   react:
