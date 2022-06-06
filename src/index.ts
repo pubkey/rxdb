@@ -157,6 +157,13 @@ export type {
     RxStorageChangeEvent,
     RxStorageInstance,
 
+    // stuff from the RxStorage replication
+    RxStorageInstanceReplicationInput,
+    RxStorageInstanceReplicationState,
+    RxConflictHandler,
+    RxStorageReplicationDirection,
+
+    // other stuff
     RxDumpCollectionBase,
     RxDumpDatabaseAny,
     RxDumpDatabaseBase,

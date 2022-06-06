@@ -5,32 +5,21 @@ import * as schemaObjects from '../helper/schema-objects';
 import {
     addRxPlugin,
     randomCouchString,
-    getPseudoSchemaForVersion,
-    lastOfArray,
-    writeSingle,
-    blobBufferUtil,
-    flattenEvents,
-    flatClone,
-    RxJsonSchema,
-    ensureNotFalsy,
-    getFromObjectOrThrow,
-    shuffleArray,
     now,
-    getSingleDocument,
-    hashAttachmentData,
-    parseRevision,
-    getAttachmentSize,
     fillWithDefaultSettings,
     createRevision,
-    normalizeRxJsonSchema,
     replicateRxStorageInstance,
     awaitRxStorageReplicationFirstInSync,
     normalizeMangoQuery,
-    MangoQuery
+    MangoQuery,
+    RxConflictHandler,
+    RxDocumentData,
+    RxStorageInstance,
+    RxStorageInstanceReplicationState,
+    RxConflictHandlerInput
 } from '../../';
 
 import {
-    getCompressionStateByRxJsonSchema,
     RxDBKeyCompressionPlugin
 } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
@@ -38,36 +27,10 @@ import { RxDBValidatePlugin } from '../../plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
 import * as schemas from '../helper/schemas';
 
-import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import {
-    clone,
-    randomString,
-    wait,
     waitUntil
 } from 'async-test-util';
-import {
-    EventBulk,
-    FilledMangoQuery,
-    PreparedQuery,
-    RxConflictHandler,
-    RxDocumentData,
-    RxDocumentWriteData,
-    RxStorageBulkWriteResponse,
-    RxStorageChangeEvent,
-    RxStorageInstance,
-    RxStorageInstanceReplicationState
-} from '../../src/types';
-import { filter, map } from 'rxjs/operators';
-import {
-    EXAMPLE_REVISION_1,
-    EXAMPLE_REVISION_2,
-    EXAMPLE_REVISION_3,
-    EXAMPLE_REVISION_4
-} from '../helper/revisions';
-import { compressObject } from 'jsonschema-key-compression';
-import { SimpleHumanDocumentType } from '../helper/schema-objects';
 import { HumanDocumentType } from '../helper/schemas';
-import { RxConflictHandlerInput } from '../../dist/types/types';
 
 config.parallel('rx-storage-replication.test.js (implementation: ' + config.storage.name + ')', () => {
     const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = () => {
