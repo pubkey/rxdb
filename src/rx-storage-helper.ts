@@ -92,12 +92,21 @@ export async function writeSingle<RxDocType>(
     }
 }
 
+
 export function storageChangeEventToRxChangeEvent<DocType>(
     isLocal: boolean,
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
     rxCollection?: RxCollection,
 ): RxChangeEvent<DocType> {
     let documentData;
+
+    /**
+     * TODO
+     * this data design is shit,
+     * instead of having the documentData depending on the operation,
+     * we should always have a current doc data, that might or might not
+     * have set _deleted to true.
+     */
     if (rxStorageChangeEvent.change.operation !== 'DELETE') {
         documentData = rxStorageChangeEvent.change.doc;
     }

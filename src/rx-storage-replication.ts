@@ -6,6 +6,8 @@
  * this one is made for internal use where:
  * - No permission handling is needed.
  * - It does not have to be easy to implement a compatible backend.
+ *   Here we use another RxStorageImplementation as replication goal
+ *   so it has to exactly behave like the RxStorage interface defines.
  * 
  * This is made to be used internally by plugins
  * to get a really fast replication performance.
@@ -36,8 +38,12 @@ import {
     fastUnsecureHash,
     flatClone,
     lastOfArray,
+    now,
+    promiseWait,
     PROMISE_RESOLVE_VOID
 } from './util';
+
+const META_FLAG_SUFFIX = '-rev';
 
 export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
@@ -69,10 +75,14 @@ export function startReplicationDownstream<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
 
+    console.log('aaaaaaaaaaaaaaaaaaaaaaaaaa');
+
     let inQueueCount = 0;
     let streamQueue: Promise<any> = downstreamSyncOnce();
 
     function addRunAgain() {
+        console.log('downstream runAgain()');
+
         if (inQueueCount > 2) {
             return;
         }
@@ -83,12 +93,23 @@ export function startReplicationDownstream<RxDocType>(
             .then(() => inQueueCount = inQueueCount - 1);
     }
 
-    const sub = state.input.parent.changeStream().subscribe(() => {
+    const sub = state.input.parent.changeStream().subscribe((eventBulk) => {
+
+
+        console.log('down event -- 1');
+        console.dir(eventBulk);
+
         /**
-         * TODO add a filter
-         * to detect if the change came from the upstream.
+         * Do not trigger on changes that came from the upstream
          */
-        addRunAgain();
+        const hasNotFromUpstream = eventBulk.events.find(event => {
+            const checkDoc = event.change.doc ? event.change.doc : event.change.previous;
+            return !isDocumentStateFromUpstream(state, checkDoc as any);
+        })
+        console.log('down event -- 2 ' + hasNotFromUpstream);
+        if (hasNotFromUpstream) {
+            addRunAgain();
+        }
     });
     firstValueFrom(
         state.canceled.pipe(
@@ -105,27 +126,46 @@ export function startReplicationDownstream<RxDocType>(
 
 
     async function downstreamSyncOnce() {
-        const lastCheckpointDoc = await getLastCheckpointDoc(state, 'down');
-        let lastCheckpoint = lastCheckpointDoc ? lastCheckpointDoc.data : undefined;
+        console.log('downstreamSyncOnce()');
+
+        const checkpointState = await getLastCheckpointDoc(state, 'down');
+        const lastCheckpointDoc = checkpointState ? checkpointState.checkpointDoc : undefined;
 
         let done = false;
         while (!done && !state.canceled.getValue()) {
             const downResult = await state.input.parent.getChangedDocumentsSince(
                 state.input.bulkSize,
-                lastCheckpoint
+                state.lastCheckpoint.down
             );
             if (downResult.length !== 0) {
-                lastCheckpoint = lastOfArray(downResult).checkpoint;
+                state.lastCheckpoint.down = lastOfArray(downResult).checkpoint;
                 writeToChildQueue = writeToChildQueue.then((async () => {
-                    let writeRowsLeft: BulkWriteRow<RxDocType>[] = downResult.map(r => {
-                        const useDoc = flatClone(r.document);
-                        useDoc._meta = flatClone(r.document._meta);
-                        useDoc._meta[state.checkpointKey.down] = r.document;
-                        return { document: useDoc };
-                    });
+                    let writeRowsLeft: BulkWriteRow<RxDocType>[] = downResult
+                        .filter(r => !isDocumentStateFromUpstream(state, r.document))
+                        .map(r => {
+                            const useDoc = flatClone(r.document);
+                            useDoc._meta = flatClone(r.document._meta);
+                            useDoc._meta[state.checkpointKey.down] = r.document;
+                            /**
+                             * Remember the revision from when
+                             * the document was replicated via the downstream.
+                             * This is used in the upstream to detect that we do not have
+                             * to replicate this document state upwards.
+                             */
+                            useDoc._meta[state.checkpointKey.down + META_FLAG_SUFFIX] = useDoc._rev;
+                            return { document: useDoc };
+                        });
+
                     while (writeRowsLeft.length > 0 && !state.canceled.getValue()) {
+
+                        console.log('down write to child:');
+                        console.log(JSON.stringify(writeRowsLeft, null, 4));
                         const writeResult = await state.input.child.bulkWrite(writeRowsLeft);
+                        console.log('down write to child result:');
+                        console.dir(writeResult);
                         writeRowsLeft = [];
+
+                        console.log('down resolve conflicts');
                         await Promise.all(
                             Object.values(writeResult.error)
                                 .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
@@ -133,13 +173,15 @@ export function startReplicationDownstream<RxDocType>(
                                         state.input.conflictHandler,
                                         error
                                     );
+                                    console.log('down resolve conflicts  --- one done!');
                                     if (resolved) {
                                         /**
                                          * Keep the meta data of the original
                                          * document from the parent.
                                          */
                                         const resolvedDoc = flatClone(resolved);
-                                        resolvedDoc._meta = error.writeRow.document._meta;
+                                        resolvedDoc._meta = flatClone(error.writeRow.document._meta);
+                                        resolvedDoc._meta.lwt = now();
 
                                         writeRowsLeft.push({
                                             previous: ensureNotFalsy(error.documentInDb),
@@ -148,6 +190,7 @@ export function startReplicationDownstream<RxDocType>(
                                     }
                                 })
                         );
+                        console.log('down resolve conflicts DONE');
                     }
                 }));
             } else {
@@ -166,10 +209,7 @@ export function startReplicationDownstream<RxDocType>(
         await setCheckpoint(
             state,
             'down',
-            lastCheckpointDoc ? {
-                checkpointDoc: lastCheckpointDoc,
-                checkpoint: lastCheckpoint
-            } : undefined
+            lastCheckpointDoc
         );
     }
 }
@@ -187,6 +227,7 @@ export function startReplicationUpstream<RxDocType>(
     let streamQueue: Promise<any> = upstreamSyncOnce();
 
     function addRunAgain() {
+        console.log('upstream runAgain() ' + state.canceled.getValue());
         if (inQueueCount > 2) {
             return;
         }
@@ -196,13 +237,17 @@ export function startReplicationUpstream<RxDocType>(
             .catch(() => { })
             .then(() => inQueueCount = inQueueCount - 1);
     }
-    const sub = state.input.child.changeStream().subscribe(() => {
+    const sub = state.input.child.changeStream().subscribe((eventBulk) => {
         /**
-         * TODO add a filter to detect
-         * if the write did not happen
-         * by the downstream.
+         * Do not trigger on changes that came from the downstream
          */
-        addRunAgain();
+        const hasNotFromDownstream = eventBulk.events.find(event => {
+            const checkDoc = event.change.doc ? event.change.doc : event.change.previous;
+            return !isDocumentStateFromDownstream(state, checkDoc as any);
+        })
+        if (hasNotFromDownstream) {
+            addRunAgain();
+        }
     });
     firstValueFrom(
         state.canceled.pipe(
@@ -212,15 +257,20 @@ export function startReplicationUpstream<RxDocType>(
 
 
     async function upstreamSyncOnce() {
-        const lastCheckpointDoc = await getLastCheckpointDoc(state, 'up');
-        let lastCheckpoint = lastCheckpointDoc ? lastCheckpointDoc.data : undefined;
+        console.log('upstreamSyncOnce()');
+
+        const checkpointState = await getLastCheckpointDoc(state, 'up');
+        const lastCheckpointDoc = checkpointState ? checkpointState.checkpointDoc : undefined;
+
+        console.log('last checkpoint up:');
+        console.dir(state.lastCheckpoint.up);
         let hadConflicts = false;
 
         let done = false;
         while (!done && !state.canceled.getValue()) {
             const upResult = await state.input.child.getChangedDocumentsSince(
                 state.input.bulkSize,
-                lastCheckpoint
+                state.lastCheckpoint.up
             );
             if (
                 upResult.length === 0 ||
@@ -230,111 +280,148 @@ export function startReplicationUpstream<RxDocType>(
                 continue;
             }
 
-            lastCheckpoint = lastOfArray(upResult).checkpoint;
+            state.lastCheckpoint.up = lastOfArray(upResult).checkpoint;
+
+
+            console.log('NEW LAST CHECKPOINT UP:');
+            console.dir(state.lastCheckpoint.up);
+
             writeToParentQueue = writeToParentQueue.then((async () => {
                 if (state.canceled.getValue()) {
                     return;
                 }
 
-                const writeRowsToParent: BulkWriteRow<RxDocType>[] = upResult.map(r => {
-                    const useDoc = flatClone(r.document);
-                    useDoc._meta = flatClone(r.document._meta);
-                    delete useDoc._meta[state.checkpointKey.up];
+                const writeRowsToParent: BulkWriteRow<RxDocType>[] = upResult
+                    .filter(r => !isDocumentStateFromDownstream(state, r.document))
+                    .map(r => {
+                        const useDoc = flatClone(r.document);
+                        useDoc._meta = flatClone(r.document._meta);
+                        delete useDoc._meta[state.checkpointKey.up];
+                        delete useDoc._meta[state.checkpointKey.down];
+                        delete useDoc._meta[state.checkpointKey.down + META_FLAG_SUFFIX];
+                        useDoc._meta[state.checkpointKey.up + META_FLAG_SUFFIX] = useDoc._rev;
 
-                    return {
-                        previous: r.document._meta[state.checkpointKey.up] as any,
-                        document: useDoc
-                    };
-                });
+                        return {
+                            previous: r.document._meta[state.checkpointKey.down] as any,
+                            document: useDoc
+                        };
+                    });
+
+                console.log('upstream write to parent:');
+                console.log(JSON.stringify(writeRowsToParent, null, 4));
                 const parentWriteResult = await state.input.parent.bulkWrite(writeRowsToParent);
+                console.log('upstream write to parent result:');
+                console.log(JSON.stringify(parentWriteResult, null, 4));
 
-                /**
-                 * If writing to the parent caused a conflict,
-                 * we resolve that conflict and write the solution into the child
-                 * (not into the parent!)
-                 * A later run of upstreamSyncOnce() will then cause the actual
-                 * write to the parent or might cause another conflict to be resolved.
-                 */
-                let writeToChildRowsLeft: BulkWriteRow<RxDocType>[] = [];
-                await Promise.all(
-                    Object
-                        .values(parentWriteResult.error)
-                        .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
-                            const resolved = await resolveConflictError(
-                                state.input.conflictHandler,
-                                error
-                            );
-                            if (resolved) {
-                                const resolvedDoc = flatClone(resolved);
-                                resolvedDoc._meta = flatClone(resolvedDoc._meta);
-                                resolvedDoc._meta[state.checkpointKey.up] = ensureNotFalsy(error.documentInDb);
-                                writeToChildRowsLeft.push({
-                                    previous: error.writeRow.document,
-                                    document: resolvedDoc
-                                });
-                            }
-                        })
-                );
+                // TODO check if has non-409 errors and then throw
+                hadConflicts = Object.keys(parentWriteResult.error).length > 0;
 
 
-                while (
-                    writeToChildRowsLeft.length > 0 &&
-                    !state.canceled.getValue()
-                ) {
-                    const writeResult = await state.input.child.bulkWrite(writeToChildRowsLeft);
-                    writeToChildRowsLeft = [];
-                    /**
-                     * Writing the resolved conflicts back to the child again,
-                     * can also cause new conflicts, if a write happend on the child
-                     * in the meantime.
-                     */
-                    const errors = Object.values(writeResult.error);
-                    if (errors.length > 0) {
-                        await Promise.all(
-                            errors
-                                .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
-                                    const resolved = await resolveConflictError(
-                                        state.input.conflictHandler,
-                                        error
-                                    );
-                                    if (resolved) {
-                                        hadConflicts = true;
-                                        const resolvedDoc = flatClone(resolved);
-                                        resolvedDoc._meta = flatClone(resolvedDoc._meta);
-                                        resolvedDoc._meta[state.checkpointKey.up] = ensureNotFalsy(error.writeRow.document._meta[state.checkpointKey.up]);
-                                        writeToChildRowsLeft.push({
-                                            previous: ensureNotFalsy(error.documentInDb),
-                                            document: resolvedDoc
-                                        });
-                                    }
-                                })
-                        );
-                    }
-                }
+
+
+                // /**
+                //  * If writing to the parent caused a conflict,
+                //  * we resolve that conflict and write the solution into the child
+                //  * (not into the parent!)
+                //  * A later run of upstreamSyncOnce() will then cause the actual
+                //  * write to the parent or might cause another conflict to be resolved.
+                //  */
+                // let writeToChildRowsLeft: BulkWriteRow<RxDocType>[] = [];
+                // await Promise.all(
+                //     Object
+                //         .values(parentWriteResult.error)
+                //         .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
+                //             const resolved = await resolveConflictError(
+                //                 state.input.conflictHandler,
+                //                 error
+                //             );
+                //             if (resolved) {
+                //                 const resolvedDoc = flatClone(resolved);
+                //                 resolvedDoc._meta = flatClone(resolvedDoc._meta);
+                //                 resolvedDoc._meta[state.checkpointKey.up] = ensureNotFalsy(error.documentInDb);
+                //                 resolvedDoc._meta[state.checkpointKey.up + META_FLAG_SUFFIX.up] = resolvedDoc._rev;
+                //                 resolvedDoc._rev = createRevision(resolvedDoc, error.writeRow.document);
+                //                 resolvedDoc._meta.lwt = now();
+                //                 writeToChildRowsLeft.push({
+                //                     previous: error.writeRow.document,
+                //                     document: resolvedDoc
+                //                 });
+                //             }
+                //         })
+                // );
+
+
+                // while (
+                //     writeToChildRowsLeft.length > 0 &&
+                //     !state.canceled.getValue()
+                // ) {
+                //     hadConflicts = true;
+
+                //     console.log('upstream write resolved conflicts to child:');
+                //     console.dir(writeToChildRowsLeft);
+                //     const writeResult = await state.input.child.bulkWrite(writeToChildRowsLeft);
+                //     console.log('upstream write resolved conflicts to child: RESULT:');
+                //     console.dir(writeResult);
+                //     writeToChildRowsLeft = [];
+                //     /**
+                //      * Writing the resolved conflicts back to the child again,
+                //      * can also cause new conflicts, if a write happend on the child
+                //      * in the meantime.
+                //      */
+                //     const errors = Object.values(writeResult.error);
+                //     if (errors.length > 0) {
+                //         await Promise.all(
+                //             errors
+                //                 .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
+                //                     const resolved = await resolveConflictError(
+                //                         state.input.conflictHandler,
+                //                         error
+                //                     );
+                //                     if (resolved) {
+                //                         const resolvedDoc = flatClone(resolved);
+                //                         resolvedDoc._meta = flatClone(resolvedDoc._meta);
+                //                         resolvedDoc._meta[state.checkpointKey.up] = ensureNotFalsy(error.writeRow.document._meta[state.checkpointKey.up]);
+                //                         writeToChildRowsLeft.push({
+                //                             previous: ensureNotFalsy(error.documentInDb),
+                //                             document: resolvedDoc
+                //                         });
+                //                     }
+                //                 })
+                //         );
+                //     }
+                // }
             }));
         }
 
         await writeToParentQueue;
 
-        if (
-            !hadConflicts &&
-            !state.firstSyncDone.up.getValue()
-        ) {
-            state.firstSyncDone.up.next(true);
-        }
+
+        // if (
+        //     !hadConflicts &&
+        //     !state.firstSyncDone.up.getValue()
+        // ) {
+        //     state.firstSyncDone.up.next(true);
+        // }
 
 
         /**
          * Write the new checkpoint
          */
+
+        console.log('upstreram aAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
         await setCheckpoint(
             state,
             'up',
-            lastCheckpointDoc ? {
-                checkpointDoc: lastCheckpointDoc,
-                checkpoint: lastCheckpoint
-            } : undefined
+            lastCheckpointDoc
         );
+
+
+        if (hadConflicts) {
+            await promiseWait(0);
+            addRunAgain();
+        } else if (!state.firstSyncDone.up.getValue()) {
+            state.firstSyncDone.up.next(true);
+        }
     }
 }
 
@@ -342,9 +429,14 @@ export function startReplicationUpstream<RxDocType>(
 export async function getLastCheckpointDoc<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     direction: RxStorageReplicationDirection
-): Promise<RxDocumentData<InternalStoreDocType> | undefined> {
+): Promise<undefined | {
+    checkpoint: any;
+    checkpointDoc?: RxDocumentData<InternalStoreDocType>;
+}> {
     if (!state.input.checkPointInstance) {
-        return state.lastCheckpoint[direction];
+        return {
+            checkpoint: state.lastCheckpoint[direction]
+        };
     }
 
     const checkpointDocId = getPrimaryKeyOfInternalDocument(
@@ -360,7 +452,10 @@ export async function getLastCheckpointDoc<RxDocType>(
 
     const checkpointDoc = checkpointResult[checkpointDocId];
     if (checkpointDoc) {
-        return checkpointDoc;
+        return {
+            checkpoint: checkpointDoc.data,
+            checkpointDoc
+        };
     } else {
         return undefined;
     }
@@ -373,6 +468,7 @@ export function getCheckpointKey<RxDocType>(
 ): string {
     const hash = fastUnsecureHash([
         direction,
+        input.identifier,
         input.parent.storage.name,
         input.parent.databaseName,
         input.parent.collectionName,
@@ -380,9 +476,8 @@ export function getCheckpointKey<RxDocType>(
         input.child.databaseName,
         input.child.collectionName
     ].join('||'));
-    return 'rx-storage-replication-' + hash;
+    return 'rx-storage-replication-' + hash + '-' + direction;
 }
-
 
 
 /**
@@ -395,6 +490,10 @@ export async function resolveConflictError<RxDocType>(
     conflictHandler: RxConflictHandler<RxDocType>,
     error: RxStorageBulkWriteError<RxDocType>
 ): Promise<RxDocumentData<RxDocType> | undefined> {
+
+    console.log('resolve conflict error:');
+    console.dir(error);
+
     if (error.status !== 409) {
         /**
          * If this ever happens,
@@ -418,7 +517,10 @@ export async function resolveConflictError<RxDocType>(
             assumedParentDocumentState: error.writeRow.previous,
             parentDocumentState: documentInDb,
         });
-        return resolved.resolvedDocumentState;
+
+        const resolvedDoc = flatClone(resolved.resolvedDocumentState);
+        resolvedDoc._rev = createRevision(resolvedDoc, documentInDb);
+        return resolvedDoc;
     }
 }
 
@@ -426,11 +528,9 @@ export async function resolveConflictError<RxDocType>(
 export async function setCheckpoint<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     direction: RxStorageReplicationDirection,
-    checkpoint?: {
-        checkpointDoc: RxDocumentData<InternalStoreDocType>;
-        checkpoint: any;
-    }
+    checkpointDoc?: RxDocumentData<InternalStoreDocType>
 ) {
+    const checkpoint = state.lastCheckpoint[direction];
     if (
         checkpoint &&
         state.input.checkPointInstance &&
@@ -453,15 +553,19 @@ export async function setCheckpoint<RxDocType>(
             context: 'OTHER',
             _deleted: false,
             _attachments: {},
-            data: checkpoint.checkpoint,
+            data: checkpoint,
             _meta: {
-                lwt: new Date().getTime()
+                lwt: now()
             },
             _rev: ''
         };
-        newDoc._rev = createRevision(newDoc, checkpoint.checkpointDoc);
+        newDoc._rev = createRevision(newDoc, checkpointDoc);
+
+        console.log('######## write checkoint ' + direction);
+        console.dir(newDoc);
+
         await state.input.checkPointInstance.bulkWrite([{
-            previous: checkpoint.checkpointDoc,
+            previous: checkpointDoc,
             document: newDoc
         }]);
     }
@@ -482,3 +586,28 @@ export async function awaitRxStorageReplicationFirstInSync(
         ])
     );
 }
+
+export function isDocumentStateFromDownstream<RxDocType>(
+    state: RxStorageInstanceReplicationState<any>,
+    docData: RxDocumentData<RxDocType>
+): boolean {
+    const downstreamRev = docData._meta[state.checkpointKey.down + META_FLAG_SUFFIX];
+    if (downstreamRev && downstreamRev === docData._rev) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+export function isDocumentStateFromUpstream<RxDocType>(
+    state: RxStorageInstanceReplicationState<any>,
+    docData: RxDocumentData<RxDocType>
+): boolean {
+    const upstreamRev = docData._meta[state.checkpointKey.up + META_FLAG_SUFFIX];
+    if (upstreamRev && upstreamRev === docData._rev) {
+        return true;
+    } else {
+        return false;
+    }
+}
+

@@ -434,7 +434,12 @@ export function createRevision<RxDocType>(
 
     const docWithoutRev = Object.assign({}, docData, {
         _rev: undefined,
-        _rev_tree: undefined
+        _rev_tree: undefined,
+        /**
+         * All _meta properties MUST NOT be part of the
+         * revision hash!
+         */
+        _meta: undefined
     });
     const diggestString = JSON.stringify(docWithoutRev);
     const revisionHash = Md5.hash(diggestString);

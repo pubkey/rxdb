@@ -8,6 +8,13 @@ import type {
 } from './rx-storage.interface';
 
 export type RxStorageInstanceReplicationInput<RxDocType> = {
+    /**
+     * A string that uniquely identifies
+     * the replication.
+     * Ensures that checkpoint are not
+     * mixed with other replications.
+     */
+    identifier: string;
     bulkSize: number;
     conflictHandler: RxConflictHandler<RxDocType>;
 
@@ -51,7 +58,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     canceled: BehaviorSubject<boolean>;
 
     lastCheckpoint: {
-        [direction in RxStorageReplicationDirection]?: any;
+        [direction in RxStorageReplicationDirection]?: any
     };
 }
 
