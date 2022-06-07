@@ -139,7 +139,7 @@ export function throwIfIsStorageWriteError<RxDocType>(
             throw newRxError('COL19', {
                 collection: collection.name,
                 id: documentId,
-                pouchDbError: error,
+                error,
                 data: writeData
             });
         } else {
@@ -587,6 +587,11 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         hookParams.doc = data;
         runPluginHooks('preWriteToStorageInstance', hookParams);
         data = hookParams.doc;
+
+
+        // console.log('----------------------');
+        // console.dir(writeRow.previous);
+        // console.dir(data);
 
         /**
          * Update the revision after the hooks have run.

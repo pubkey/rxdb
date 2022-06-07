@@ -26,6 +26,7 @@ export declare class RxTypeError extends TypeError {
  * this lists all possible parameters
  */
 export interface RxErrorParameters {
+    readonly error?: any;
     readonly errors?: RxErrorItem[];
     readonly schemaPath?: string;
     readonly objPath?: string;
