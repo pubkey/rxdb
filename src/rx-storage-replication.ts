@@ -126,7 +126,7 @@ export function startReplicationDownstream<RxDocType>(
 
 
     async function downstreamSyncOnce() {
-        if (!state.canceled.getValue()) {
+        if (state.canceled.getValue()) {
             return;
         }
 
@@ -261,7 +261,7 @@ export function startReplicationUpstream<RxDocType>(
 
 
     async function upstreamSyncOnce() {
-        if (!state.canceled.getValue()) {
+        if (state.canceled.getValue()) {
             return;
         }
 
