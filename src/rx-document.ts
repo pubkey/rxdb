@@ -15,12 +15,15 @@ import {
     flatClone,
     PROMISE_RESOLVE_NULL,
     PROMISE_RESOLVE_VOID,
-    ensureNotFalsy
+    ensureNotFalsy,
+    parseRevision,
+    createRevision,
+    promiseWait
 } from './util';
 import {
     newRxError,
     newRxTypeError,
-    isPouchdbConflictError
+    isBulkWriteConflictError
 } from './rx-error';
 import {
     runPluginHooks
@@ -326,18 +329,31 @@ export const basePrototype = {
                     let done = false;
                     // we need a hacky while loop to stay incide the chain-link of _atomicQueue
                     // while still having the option to run a retry on conflicts
+                    let t = 0;
                     while (!done) {
+                        t++;
                         const oldData = this._dataSync$.getValue();
-                        try {
-                            // always await because mutationFunction might be async
-                            let newData = await mutationFunction(clone(this._dataSync$.getValue()), this);
-                            if (this.collection) {
-                                newData = this.collection.schema.fillObjectWithDefaults(newData);
-                            }
+                        // always await because mutationFunction might be async
+                        let newData = await mutationFunction(
+                            clone(oldData),
+                            this
+                        );
+                        if (this.collection) {
+                            newData = this.collection.schema.fillObjectWithDefaults(newData);
+                        }
 
+                        try {
+                            console.log('doc.atomicUpdate(' + t + ') saveData');
+                            console.dir({
+                                oldData: (oldData as any)._rev,
+                                newData: newData._rev
+                            });
                             await this._saveData(newData, oldData);
+                            console.log('doc.atomicUpdate(' + t + ') saveData DONE');
                             done = true;
-                        } catch (err) {
+                        } catch (err: any) {
+                            const useError = err.parameters && err.parameters.error ? err.parameters.error : err;
+                            console.dir(useError);
                             /**
                              * conflicts cannot happen by just using RxDB in one process
                              * There are two ways they still can appear which is
@@ -345,10 +361,15 @@ export const basePrototype = {
                              * Because atomicUpdate has a mutation function,
                              * we can just re-run the mutation until there is no conflict
                              */
-                            if (isPouchdbConflictError(err as any)) {
-                                // pouchdb conflict error -> retrying
+                            const isConflict = isBulkWriteConflictError(useError as any);
+                            if (isConflict) {
+                                console.log('############ is conflict!');
+                                // conflict error -> retrying
+                                newData._rev = createRevision(newData, isConflict.documentInDb);
+                                await promiseWait(300);
                             } else {
-                                rej(err);
+                                console.log('############ is NOT conflict!');
+                                rej(useError);
                                 return;
                             }
                         }
@@ -385,7 +406,6 @@ export const basePrototype = {
         newData: RxDocumentWriteData<RxDocumentType>,
         oldData: RxDocumentData<RxDocumentType>
     ): Promise<void> {
-        newData = newData;
 
         // deleted documents cannot be changed
         if (this._isDeleted$.getValue()) {
@@ -400,6 +420,15 @@ export const basePrototype = {
         await this.collection._runHooks('pre', 'save', newData, this);
         this.collection.schema.validate(newData);
 
+
+        // TODO REMOVE THIS CHECK
+        const p1 = parseRevision(oldData._rev);
+        const p2 = parseRevision(newData._rev);
+        newData._rev = createRevision(newData, oldData);
+        if ((p1.height + 1 !== p2.height)) {
+            // throw new Error('REVISION NOT INCREMENTED! ' + p1.height + ' ' + p2.height);
+        }
+
         const writeResult = await this.collection.storageInstance.bulkWrite([{
             previous: oldData,
             document: newData
@@ -407,7 +436,14 @@ export const basePrototype = {
 
         const isError = writeResult.error[this.primary];
         throwIfIsStorageWriteError(this.collection, this.primary, newData, isError);
-        ensureNotFalsy(writeResult.success[this.primary]);
+
+        console.log('_________________________');
+        console.log('_________________________');
+        console.log('# non error write:');
+        console.dir(oldData);
+        console.dir(newData);
+        console.dir(writeResult.success[this.primary]);
+        console.log('_________________________');
 
 
         return this.collection._runHooks('post', 'save', newData, this);

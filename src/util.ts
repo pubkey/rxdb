@@ -432,6 +432,11 @@ export function createRevision<RxDocType>(
     const previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
     const newRevisionHeight = previousRevisionHeigth + 1;
 
+
+    console.log('..............');
+    console.log('previousRevisionHeigth: ' + previousRevisionHeigth);
+    console.log('newRevisionHeight: ' + newRevisionHeight);
+
     const docWithoutRev = Object.assign({}, docData, {
         _rev: undefined,
         _rev_tree: undefined,

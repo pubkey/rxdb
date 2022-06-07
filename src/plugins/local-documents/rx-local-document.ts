@@ -2,7 +2,7 @@ import objectPath from 'object-path';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { overwritable } from '../../overwritable';
 import { basePrototype, createRxDocumentConstructor } from '../../rx-document';
-import { isPouchdbConflictError, newRxError, newRxTypeError } from '../../rx-error';
+import { isBulkWriteConflictError, newRxError, newRxTypeError } from '../../rx-error';
 import { writeSingle } from '../../rx-storage-helper';
 import type {
     LocalDocumentAtomicUpdateFunction,
@@ -16,7 +16,7 @@ import type {
     RxLocalDocument,
     RxLocalDocumentData
 } from '../../types';
-import { clone, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
+import { clone, createRevision, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
 import { getLocalDocStateByParent } from './local-documents-helper';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
@@ -125,9 +125,9 @@ const RxLocalDocumentPrototype: any = {
                     // while still having the option to run a retry on conflicts
                     while (!done) {
                         const oldDocData = this._dataSync$.getValue();
+                        const newData = await mutationFunction(clone(oldDocData.data), this);
                         try {
                             // always await because mutationFunction might be async
-                            const newData = await mutationFunction(clone(oldDocData.data), this);
 
                             const newDocData = flatClone(oldDocData);
                             newDocData.data = newData;
@@ -142,8 +142,10 @@ const RxLocalDocumentPrototype: any = {
                              * Because atomicUpdate has a mutation function,
                              * we can just re-run the mutation until there is no conflict
                              */
-                            if (isPouchdbConflictError(err as any)) {
-                                // pouchdb conflict error -> retrying
+                            const isConflict = isBulkWriteConflictError(err as any);
+                            if (isConflict) {
+                                // conflict error -> retrying
+                                newData._rev = createRevision(newData, isConflict.documentInDb);
                             } else {
                                 rej(err);
                                 return;

@@ -357,7 +357,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             const docs = await pouch.find({
                 selector: {
                     foo: {
-                        $gt: null
+                        $ne: null
                     }
                 },
                 sort: ['foo']
