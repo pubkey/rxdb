@@ -315,6 +315,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                         const newDocData = clone(docData);
                         newDocData.age = newDocData.age + 1;
                         newDocData._rev = createRevision(newDocData, docData);
+                        newDocData._meta.lwt = now();
                         const updateResult = await instance.bulkWrite([{
                             previous: docData,
                             document: newDocData
