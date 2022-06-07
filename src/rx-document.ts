@@ -16,7 +16,6 @@ import {
     PROMISE_RESOLVE_NULL,
     PROMISE_RESOLVE_VOID,
     ensureNotFalsy,
-    parseRevision,
     createRevision,
     promiseWait
 } from './util';
