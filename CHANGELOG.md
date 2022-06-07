@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX: RxStorage should never emit an eventBulk with an empty events array.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

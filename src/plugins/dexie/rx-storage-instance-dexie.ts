@@ -255,9 +255,11 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 ]);
             });
 
-        const endTime = now();
-        eventBulk.events.forEach(event => event.endTime = endTime);
-        this.changes$.next(eventBulk);
+        if (eventBulk.events.length > 0) {
+            const endTime = now();
+            eventBulk.events.forEach(event => event.endTime = endTime);
+            this.changes$.next(eventBulk);
+        }
 
         return ret;
     }
