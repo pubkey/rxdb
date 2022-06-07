@@ -24,12 +24,12 @@ import './unit/rx-storage-lokijs.test.js';
 import './unit/rx-storage-dexie.test.js';
 
 
-import './unit/rx-collection.test.js';
 
 import './unit/instance-of-check.test.js';
 import './unit/rx-schema.test.js';
 import './unit/bug-report.test.js';
 import './unit/rx-database.test.js';
+import './unit/rx-collection.test.js';
 import './unit/rx-document.test.js';
 import './unit/rx-query.test.js';
 import './unit/primary.test.js';

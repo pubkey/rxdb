@@ -324,7 +324,8 @@ export const basePrototype = {
      */
     atomicUpdate(this: RxDocument, mutationFunction: Function): Promise<RxDocument> {
         return new Promise((res, rej) => {
-            this._atomicQueue = this._atomicQueue
+            this._atomicQueue = this
+                ._atomicQueue
                 .then(async () => {
                     let done = false;
                     // we need a hacky while loop to stay incide the chain-link of _atomicQueue
@@ -334,26 +335,26 @@ export const basePrototype = {
                         t++;
                         const oldData = this._dataSync$.getValue();
                         // always await because mutationFunction might be async
-                        let newData = await mutationFunction(
-                            clone(oldData),
-                            this
-                        );
-                        if (this.collection) {
-                            newData = this.collection.schema.fillObjectWithDefaults(newData);
+                        let newData;
+
+                        try {
+                            newData = await mutationFunction(
+                                clone(oldData),
+                                this
+                            );
+                            if (this.collection) {
+                                newData = this.collection.schema.fillObjectWithDefaults(newData);
+                            }
+                        } catch (err) {
+                            rej(err);
+                            return;
                         }
 
                         try {
-                            console.log('doc.atomicUpdate(' + t + ') saveData');
-                            console.dir({
-                                oldData: (oldData as any)._rev,
-                                newData: newData._rev
-                            });
                             await this._saveData(newData, oldData);
-                            console.log('doc.atomicUpdate(' + t + ') saveData DONE');
                             done = true;
                         } catch (err: any) {
                             const useError = err.parameters && err.parameters.error ? err.parameters.error : err;
-                            console.dir(useError);
                             /**
                              * conflicts cannot happen by just using RxDB in one process
                              * There are two ways they still can appear which is
@@ -363,12 +364,10 @@ export const basePrototype = {
                              */
                             const isConflict = isBulkWriteConflictError(useError as any);
                             if (isConflict) {
-                                console.log('############ is conflict!');
                                 // conflict error -> retrying
                                 newData._rev = createRevision(newData, isConflict.documentInDb);
                                 await promiseWait(300);
                             } else {
-                                console.log('############ is NOT conflict!');
                                 rej(useError);
                                 return;
                             }
@@ -436,15 +435,6 @@ export const basePrototype = {
 
         const isError = writeResult.error[this.primary];
         throwIfIsStorageWriteError(this.collection, this.primary, newData, isError);
-
-        console.log('_________________________');
-        console.log('_________________________');
-        console.log('# non error write:');
-        console.dir(oldData);
-        console.dir(newData);
-        console.dir(writeResult.success[this.primary]);
-        console.log('_________________________');
-
 
         return this.collection._runHooks('post', 'save', newData, this);
     },

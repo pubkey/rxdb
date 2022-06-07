@@ -611,19 +611,22 @@ config.parallel('rx-document.test.js', () => {
                 const col = await humansCollection.create(1);
                 const doc = await col.findOne().exec(true);
 
+                // non-async mutation
                 try {
                     await doc.atomicUpdate(() => {
-                        throw new Error('ouch');
+                        throw new Error('throws intentional A');
                     });
                 } catch (err) { }
+
                 // async mutation
                 try {
                     await doc.atomicUpdate(async () => {
                         await wait(10);
-                        throw new Error('ouch');
+                        throw new Error('throws intentional B');
                     });
                 } catch (err) { }
 
+                // non throwing mutation
                 await doc.atomicUpdate(d => {
                     d.age = 150;
                     return d;

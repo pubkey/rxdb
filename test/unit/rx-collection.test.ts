@@ -26,7 +26,8 @@ import {
     now,
     RxDocument,
     getFromMapOrThrow,
-    RxCollectionCreator
+    RxCollectionCreator,
+    parseRevision
 } from '../../';
 
 import {
@@ -1627,23 +1628,9 @@ config.parallel('rx-collection.test.js', () => {
                     c.database.destroy();
                 });
                 it('should update the value', async function () {
-                    this.timeout(500);
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
                     const docId = docData.passportId;
-
-
-
-                    console.log('');
-                    console.log('');
-                    console.log('');
-                    console.log('');
-                    console.log('');
-                    console.log('');
-                    console.log('XXXXXXXXXXXXXXXXXX1');
-                    console.log('XXXXXXXXXXXXXXXXXX1');
-                    console.log('XXXXXXXXXXXXXXXXXX1');
-                    console.log('XXXXXXXXXXXXXXXXXX1');
 
                     await Promise.all([
                         c.atomicUpsert(docData),
@@ -1652,19 +1639,13 @@ config.parallel('rx-collection.test.js', () => {
                     ]);
 
 
-                    const byStorage = await c.storageInstance.findDocumentsById([docId], true);
-
-                    console.log('byStorage:');
-                    console.dir(byStorage[docId]);
-
+                    const viaStorage = await c.storageInstance.findDocumentsById([docId], true);
+                    const viaStorageDoc = viaStorage[docId];
+                    assert.strictEqual(parseRevision(viaStorageDoc._rev).height, 3);
 
                     const docData2 = clone(docData);
                     docData2.firstName = 'foobar';
-                    console.log('XXXXXXXXXXXXXX 2');
-                    console.log('XXXXXXXXXXXXXX 2');
-                    console.log('XXXXXXXXXXXXXX 2');
                     await c.atomicUpsert(docData2);
-                    process.exit();
                     const doc = await c.findOne().exec(true);
                     assert.strictEqual(doc.firstName, 'foobar');
 

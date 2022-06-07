@@ -77,16 +77,6 @@ describe('util.test.js', () => {
             });
             assert.strictEqual(hash1, hash2);
         });
-        it('should return the same value as pouchdb', async () => {
-            const docData = {
-                foo: 'bar',
-                bar: 'foo',
-                _rev_tree: '1-asdfasdf'
-            };
-            const ownRev = createRevision(docData as any);
-            const pouchRev = '1-' + pouchCreateRevisison(docData, true);
-            assert.strictEqual(ownRev, pouchRev);
-        });
     });
     describe('.sortObject()', () => {
         it('should sort when regex in object', () => {

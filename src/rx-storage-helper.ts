@@ -595,13 +595,6 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             !data._rev
         ) {
             data._rev = createRevision(data, writeRow.previous);
-
-            console.log('changed revisions:');
-            console.dir({
-                document: data._rev,
-                previous: previous ? previous._rev : null
-            });
-
         }
 
         return {

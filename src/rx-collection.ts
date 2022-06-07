@@ -496,7 +496,6 @@ export class RxCollectionBase<
         queue = queue
             .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
             .then((wasInserted) => {
-                console.log('wasInserted: ' + wasInserted.inserted);
                 if (!wasInserted.inserted) {
                     return _atomicUpsertUpdate(wasInserted.doc, useJson)
                         .then(() => wasInserted.doc);
@@ -928,13 +927,11 @@ function _atomicUpsertUpdate<RxDocType>(
     doc: RxDocumentBase<RxDocType>,
     json: RxDocumentData<RxDocType>
 ): Promise<RxDocumentBase<RxDocType>> {
-    console.log('_atomicUpsertUpdate()');
     return doc.atomicUpdate((_innerDoc: RxDocumentData<RxDocType>) => {
         return json;
     })
         .then(() => nextTick())
         .then(() => {
-            console.log('_atomicUpsertUpdate() DONE');
             return doc;
         });
 }
@@ -953,7 +950,6 @@ function _atomicUpsertEnsureRxDocumentExists(
         inserted: boolean
     }
 > {
-    console.log('_atomicUpsertEnsureRxDocumentExists()');
     /**
      * Optimisation shortcut,
      * first try to find the document in the doc-cache

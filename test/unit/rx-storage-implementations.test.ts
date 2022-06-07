@@ -651,8 +651,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
+                const key = 'foobar';
                 let docData: RxDocumentWriteData<TestDocType> = {
-                    key: 'foobar',
+                    key,
                     value: 'barfoo1',
                     _attachments: {},
                     _deleted: false,
@@ -677,10 +678,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 newDocData._meta.lwt = now();
                 newDocData._rev = createRevision(newDocData, docData);
 
-                console.log(JSON.stringify({
-                    previous: docData,
-                    document: clone(newDocData)
-                }, null, 4));
                 const res2 = await storageInstance.bulkWrite(
                     [{
                         previous: docData,
@@ -695,6 +692,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 newDocData._meta.foobar = 2;
                 newDocData._meta.lwt = now();
                 newDocData._rev = createRevision(newDocData, docData);
+                assert.strictEqual(parseRevision(newDocData._rev).height, 3);
 
                 const res3 = await storageInstance.bulkWrite(
                     [{
@@ -704,6 +702,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 );
                 assert.deepStrictEqual(res3.error, {});
                 docData = newDocData;
+
+
+                const viaStorage = await storageInstance.findDocumentsById([key], true);
+                const viaStorageDoc = ensureNotFalsy(viaStorage[key]);
+                assert.strictEqual(parseRevision(viaStorageDoc._rev).height, 3);
 
                 storageInstance.close();
             });

@@ -236,7 +236,6 @@ export type PouchBulkDocOptions = {
     new_edits?: boolean;
 
     // custom options for RxDB
-    set_new_edit_as_latest_revision?: boolean;
     isDeeper?: boolean;
     custom?: any;
 }

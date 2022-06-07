@@ -433,11 +433,7 @@ export function createRevision<RxDocType>(
     const newRevisionHeight = previousRevisionHeigth + 1;
 
 
-    console.log('..............');
-    console.log('previousRevisionHeigth: ' + previousRevisionHeigth);
-    console.log('newRevisionHeight: ' + newRevisionHeight);
-
-    const docWithoutRev = Object.assign({}, docData, {
+    const docWithoutRev: any = Object.assign({}, docData, {
         _rev: undefined,
         _rev_tree: undefined,
         /**
@@ -449,6 +445,20 @@ export function createRevision<RxDocType>(
          */
         _meta: undefined
     });
+
+    /**
+     * The revision height must be part of the hash
+     * as the last parameter of the document data.
+     * This is required to ensure we never ever create
+     * two different document states that have the same revision
+     * hash. Even writing the exact same document data
+     * must have to result in a different hash so that
+     * the replication can known if the state just looks equal
+     * or if it is really exactly the equal state in data and time.
+     */
+    delete docWithoutRev._rev;
+    docWithoutRev._rev = previousDocData ? newRevisionHeight : 1;
+
     const diggestString = JSON.stringify(docWithoutRev);
     const revisionHash = Md5.hash(diggestString);
 

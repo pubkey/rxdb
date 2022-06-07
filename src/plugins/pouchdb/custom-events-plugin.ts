@@ -6,6 +6,7 @@
  * Also we can better define what data we need for our events.
  * @link http://jsbin.com/pagebi/1/edit?js,output
  * @link https://github.com/pubkey/rxdb/blob/1f4115b69bdacbb853af9c637d70f5f184d4e474/src/rx-storage-pouchdb.ts#L273
+ * @link https://hasura.io/blog/couchdb-style-conflict-resolution-rxdb-hasura/
  */
 
 import type {
@@ -140,10 +141,14 @@ export function addCustomEventsPluginToPouch() {
         options: PouchBulkDocOptions,
         callback: Function
     ) {
+
         const startTime = now();
         const runId = i++;
 
-        // normalize input
+        /**
+         * Normalize inputs
+         * because there are many ways to call pouchdb.bulkDocs()
+         */
         if (typeof options === 'function') {
             callback = options;
             options = {};
@@ -298,16 +303,15 @@ export function addCustomEventsPluginToPouch() {
                     const useNewRev = useRevisions.start + '-' + newRev.hash;
 
                     hasNonErrorWrite = true;
-                    docs.push(
-                        Object.assign(
-                            {},
-                            insertDocsById.get(id),
-                            {
-                                _revisions: useRevisions,
-                                _rev: useNewRev
-                            }
-                        )
+                    const writeToPouchDocData = Object.assign(
+                        {},
+                        insertDocsById.get(id),
+                        {
+                            _revisions: useRevisions,
+                            _rev: useNewRev
+                        }
                     );
+                    docs.push(writeToPouchDocData);
                     usePouchResult.push({
                         ok: true,
                         id,
@@ -336,7 +340,8 @@ export function addCustomEventsPluginToPouch() {
         let callReturn: any;
         const callPromise = new Promise((res, rej) => {
             callReturn = oldBulkDocs.call(
-                this, docs,
+                this,
+                docs,
                 deeperOptions,
                 (err: any, result: (PouchBulkDocResultRow | PouchWriteError)[]) => {
                     if (err) {
@@ -396,6 +401,9 @@ export function addCustomEventsPluginToPouch() {
         if (options.custom) {
             return callPromise;
         }
+
+
+
         return callReturn;
     };
 
