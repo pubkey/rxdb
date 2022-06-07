@@ -494,7 +494,7 @@ export class RxCollectionBase<
         }
         queue = queue
             .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
-            .then((wasInserted: any) => {
+            .then((wasInserted) => {
                 if (!wasInserted.inserted) {
                     return _atomicUpsertUpdate(wasInserted.doc, useJson)
                         .then(() => wasInserted.doc);
