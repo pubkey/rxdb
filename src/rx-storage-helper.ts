@@ -588,11 +588,6 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         runPluginHooks('preWriteToStorageInstance', hookParams);
         data = hookParams.doc;
 
-
-        // console.log('----------------------');
-        // console.dir(writeRow.previous);
-        // console.dir(data);
-
         /**
          * Update the revision after the hooks have run.
          * Do not update the revision if no previous is given,
