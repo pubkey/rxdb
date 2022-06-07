@@ -249,7 +249,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await Promise.all(
                 instances
                     .map(async (instance, idx) => {
-                        const docData = Object.assign({}, document, {
+                        const docData = Object.assign({}, clone(document), {
                             firstName: idx === 0 ? 'parent' : 'child',
                             age: idx
                         });
