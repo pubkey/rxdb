@@ -359,8 +359,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                     foo: {
                         $ne: null
                     }
-                },
-                sort: ['foo']
+                }
             });
 
             assert.strictEqual(docs.docs.length, 1);
