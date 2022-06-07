@@ -22,7 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "apollo-server-express": "3.8.1",
-    "concurrently": "7.0.0",
+    "concurrently": "7.2.1",
     "cors": "2.8.5",
     "express-graphql": "0.12.0",
     "graphql": "15.8.0",
