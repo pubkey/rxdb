@@ -1,7 +1,9 @@
-const electron = require('electron');
+const remote = require('@electron/remote');
 const renderTest = require('./test/render.test.js');
+const { addRxPlugin } = require('rxdb');
+const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
 
-require('babel-polyfill');
+addRxPlugin(RxDBLeaderElectionPlugin);
 
 const heroesList = document.querySelector('#heroes-list');
 
@@ -12,7 +14,7 @@ async function run() {
      */
     await renderTest();
 
-    const db = electron.remote.getGlobal('db'); // we get the db object from the main render
+    const db = remote.getGlobal('db');
 
     /**
      * map the result of the find-query to the heroes-list in the dom

@@ -1,17 +1,13 @@
-const electron = require('electron');
 const database = require('./database');
 const renderTest = require('./test/render.test.js');
+const { addRxPlugin } = require('rxdb');
+const { RxDBReplicationCouchDBPlugin } = require('rxdb/plugins/replication-couchdb');
 
-require('babel-polyfill');
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 const heroesList = document.querySelector('#heroes-list');
 
 const syncURL = 'http://localhost:10102/db/heroes';
-
-const {
-    addRxPlugin
-} = require('rxdb');
-addRxPlugin(require('pouchdb-adapter-idb'));
 
 async function run() {
     /**
@@ -20,18 +16,24 @@ async function run() {
      */
     await renderTest();
 
-    const currentWindow = electron.remote.getCurrentWindow();
-    const db = await database.getDatabase(
-        'heroesdb' + currentWindow.custom.dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
-        'idb'
+    const dbSuffix = await window.getDBSuffix();
+
+    const db = await database.createDatabase(
+        'heroesdb' + dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
+        'memory'
     );
+    
     console.log('starting sync with ' + syncURL);
-    const syncState = await db.heroes.sync({
+    const syncState = await db.heroes.syncCouchDB({
         remote: syncURL,
+        waitForLeadership: false,
         direction: {
             pull: true,
             push: true
-        }
+        },
+        options: {
+            live: true
+        },
     });
     console.dir(syncState);
 

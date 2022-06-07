@@ -1,8 +1,8 @@
+const remote = require('@electron/remote/main');
 const electron = require('electron');
-require('electron-window-manager');
-const path = require('path');
-const url = require('url');
 const database = require('./database');
+
+remote.initialize();
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
@@ -11,54 +11,56 @@ const windows = [];
 
 global.db; // define the global db object
 
-function createWindow(dbSuffix) {
+function createWindow() {
     const width = 300;
     const height = 600;
     const w = new BrowserWindow({
         width,
         height,
         webPreferences: {
-            nodeIntegration: true
+            contextIsolation: false,
+            nodeIntegration: true,
         }
     });
 
-    w.loadURL(url.format({
-        pathname: path.join(__dirname, 'index.html'),
-        protocol: 'file:',
-        slashes: true
-    }));
+    remote.enable(w.webContents);
+
+    w.loadFile('index.html');
 
     const x = windows.length * width;
     const y = 0;
     w.setPosition(x, y);
-    w.custom = {
-        dbSuffix
-    };
     windows.push(w);
 }
 
 
-app.on('ready', async function() {
+app.on('ready', async function () {
     const dbSuffix = new Date().getTime(); // we add a random timestamp in dev-mode to reset the database on each start
 
-    global.db = await database.getDatabase(
+    electron.ipcMain.handle('getDBSuffix', () => dbSuffix);
+
+    const db = await database.createDatabase(
         'heroesdb' + dbSuffix,
         'memory'
     );
 
+    global.db = db;
+
     // show heroes table in console
-    global.db.heroes.find().sort('name').$.subscribe(heroDocs => {
+    db.heroes.find().sort('name').$.subscribe(heroDocs => {
         console.log('### got heroes(' + heroDocs.length + '):');
         heroDocs.forEach(doc => console.log(
             doc.name + '  |  ' + doc.color
         ));
     });
 
-    createWindow(dbSuffix);
-    createWindow(dbSuffix);
+    createWindow();
+    // FIXME: if remove the next line, replication between windows will not work
+    // await new Promise(resolve => setTimeout(resolve, 2000));
+    createWindow();
 });
 
-app.on('window-all-closed', function() {
+app.on('window-all-closed', function () {
     if (process.platform !== 'darwin')
         app.quit();
 });
