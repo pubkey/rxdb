@@ -330,9 +330,7 @@ export const basePrototype = {
                     let done = false;
                     // we need a hacky while loop to stay incide the chain-link of _atomicQueue
                     // while still having the option to run a retry on conflicts
-                    let t = 0;
                     while (!done) {
-                        t++;
                         const oldData = this._dataSync$.getValue();
                         // always await because mutationFunction might be async
                         let newData;

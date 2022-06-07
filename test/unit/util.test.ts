@@ -20,9 +20,6 @@ import {
     validateDatabaseName,
     deepFreezeWhenDevMode
 } from '../../plugins/dev-mode';
-import {
-    rev as pouchCreateRevisison
-} from 'pouchdb-utils';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 describe('util.test.js', () => {
