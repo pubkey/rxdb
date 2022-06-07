@@ -28,6 +28,7 @@ addRxPlugin(RxDBValidatePlugin);
 import * as schemas from '../helper/schemas';
 
 import {
+    clone,
     waitUntil
 } from 'async-test-util';
 import { HumanDocumentType } from '../helper/schemas';
@@ -35,6 +36,24 @@ import { HumanDocumentType } from '../helper/schemas';
 config.parallel('rx-storage-replication.test.js (implementation: ' + config.storage.name + ')', () => {
     const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = () => {
         throw new Error('THROWING_CONFLICT_HANDLER');
+    }
+    const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (i: RxConflictHandlerInput<HumanDocumentType>) => {
+        const docA = i.newDocumentState;
+        const docB = i.parentDocumentState;
+        const ageA = docA.age ? docA.age : 0;
+        const ageB = docB.age ? docB.age : 0;
+        if (ageA > ageB) {
+            return Promise.resolve({
+                resolvedDocumentState: docA
+            });
+        } else if (ageB > ageA) {
+            return Promise.resolve({
+                resolvedDocumentState: docB
+            });
+        } else {
+            console.error('EQUAL AGE !!!');
+            throw new Error('equal age');
+        }
     }
     function getDocData(partial: Partial<HumanDocumentType> = {}): RxDocumentData<HumanDocumentType> {
         const docData = Object.assign(
@@ -247,24 +266,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 parent,
                 child,
                 bulkSize: 100,
-                conflictHandler: (i: RxConflictHandlerInput<HumanDocumentType>) => {
-                    const docA = i.newDocumentState;
-                    const docB = i.parentDocumentState;
-                    const ageA = docA.age ? docA.age : 0;
-                    const ageB = docB.age ? docB.age : 0;
-                    if (ageA > ageB) {
-                        return Promise.resolve({
-                            resolvedDocumentState: docA
-                        });
-                    } else if (ageB > ageA) {
-                        return Promise.resolve({
-                            resolvedDocumentState: docB
-                        });
-                    } else {
-                        console.error('EQUAL AGE !!!');
-                        throw new Error('equal age');
-                    }
-                }
+                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
             await ensureEqualState(parent, child);
@@ -285,6 +287,53 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             const childDoc = (await runQuery(child))[0];
             // should only have the 'lwt' and the revision from the upstream AND the current state of the parent.
             assert.strictEqual(Object.keys(childDoc._meta).length, 3)
+
+            cleanUp(replicationState);
+        });
+        it('both have updated the document with different values', async () => {
+            const parent = await createRxStorageInstance(0);
+            const child = await createRxStorageInstance(0);
+            const instances = [parent, child];
+
+            const document = getDocData();
+
+            await Promise.all(
+                instances
+                    .map(async (instance, idx) => {
+                        // insert
+                        const docData = Object.assign({}, document, {
+                            firstName: idx === 0 ? 'parent' : 'child',
+                            age: idx
+                        });
+                        docData._rev = createRevision(docData);
+                        docData._meta.lwt = now();
+                        await instance.bulkWrite([{
+                            document: docData
+                        }]);
+
+                        // update
+                        const newDocData = clone(docData);
+                        newDocData.age = newDocData.age + 1;
+                        newDocData._rev = createRevision(newDocData, docData);
+                        const updateResult = await instance.bulkWrite([{
+                            previous: docData,
+                            document: newDocData
+                        }]);
+                        assert.deepStrictEqual(updateResult.error, {});
+                    })
+            );
+
+
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                parent,
+                child,
+                bulkSize: 100,
+                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
+            });
+
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+            await ensureEqualState(parent, child);
 
             cleanUp(replicationState);
         });
