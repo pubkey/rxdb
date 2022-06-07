@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - FIX: RxStorage should never emit an eventBulk with an empty events array.
+- Update PouchDB to `7.3.0`
 
 <!-- ADD new changes here! -->
 
