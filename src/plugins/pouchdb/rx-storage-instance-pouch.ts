@@ -85,17 +85,17 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          */
         const emittedEventBulkIds: ObliviousSet<string> = new ObliviousSet(60 * 1000);
 
-        const eventSub = emitter.subject.subscribe(async (ev) => {
+        const eventSub = emitter.subject.subscribe(async (eventBulk) => {
             if (
-                ev.events.length === 0 ||
-                emittedEventBulkIds.has(ev.id)
+                eventBulk.events.length === 0 ||
+                emittedEventBulkIds.has(eventBulk.id)
             ) {
                 return;
             }
-            emittedEventBulkIds.add(ev.id);
+            emittedEventBulkIds.add(eventBulk.id);
 
             // rewrite primaryPath of all events
-            ev.events.forEach(event => {
+            eventBulk.events.forEach(event => {
                 if (event.change.doc) {
                     event.change.doc = pouchSwapIdToPrimary(
                         this.primaryPath,
@@ -110,7 +110,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 }
             });
 
-            this.changes$.next(ev);
+            this.changes$.next(eventBulk);
         });
         this.subs.push(eventSub);
     }

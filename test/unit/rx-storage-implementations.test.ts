@@ -1690,6 +1690,49 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 sub.unsubscribe();
                 storageInstance.close();
             });
+            it('it should not emit an empty eventBulk when the write had only errors', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+                const sub = storageInstance.changeStream().subscribe(x => {
+                    emitted.push(x);
+                });
+
+                const writeData = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: EXAMPLE_REVISION_1,
+                    _deleted: false,
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+
+                // insert
+                const firstWriteResult = await storageInstance.bulkWrite([{
+                    document: writeData
+                }]);
+                assert.deepStrictEqual(firstWriteResult.error, {});
+
+                // insert again to cause conflict error
+                const secondWriteResult = await storageInstance.bulkWrite([{
+                    document: writeData
+                }]);
+                assert.deepStrictEqual(secondWriteResult.success, {});
+
+                assert.strictEqual(emitted.length, 1);
+                assert.strictEqual(emitted[0].events.length, 1);
+
+                sub.unsubscribe();
+                storageInstance.close();
+            });
         });
         describe('attachments', () => {
             if (!config.storage.hasAttachments) {
