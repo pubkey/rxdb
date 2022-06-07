@@ -301,7 +301,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 instances
                     .map(async (instance, idx) => {
                         // insert
-                        const docData = Object.assign({}, document, {
+                        const docData = Object.assign({}, clone(document), {
                             firstName: idx === 0 ? 'parent' : 'child',
                             age: idx
                         });
