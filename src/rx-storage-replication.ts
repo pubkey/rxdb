@@ -126,6 +126,10 @@ export function startReplicationDownstream<RxDocType>(
 
 
     async function downstreamSyncOnce() {
+        if (!state.canceled.getValue()) {
+            return;
+        }
+
         console.log('downstreamSyncOnce()');
 
         const checkpointState = await getLastCheckpointDoc(state, 'down');
@@ -257,6 +261,10 @@ export function startReplicationUpstream<RxDocType>(
 
 
     async function upstreamSyncOnce() {
+        if (!state.canceled.getValue()) {
+            return;
+        }
+
         console.log('upstreamSyncOnce()');
 
         const checkpointState = await getLastCheckpointDoc(state, 'up');
