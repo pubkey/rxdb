@@ -8,8 +8,6 @@
  * - 'npm run test:node' so it runs in nodejs
  * - 'npm run test:browser' so it runs in the browser
  */
-import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
 import {
@@ -18,7 +16,7 @@ import {
 } from '../../';
 
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async () => {
+    it('BUG: insert -> remove -> insert -> remove will fail with pouchdb', async () => {
 
         /**
          * If your test should only run in nodejs or only run in the browser,
@@ -37,27 +35,29 @@ describe('bug-report.test.js', () => {
 
         // create a schema
         const mySchema = {
+            title: 'example schema',
             version: 0,
-            primaryKey: 'passportId',
+            description: 'describes an example collection schema',
+            primaryKey: 'name',
             type: 'object',
             properties: {
-                passportId: {
-                    type: 'string',
-                    maxLength: 100
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
-            }
-        };
+              name: {
+                $comment: 'primary key MUST have a maximum length!',
+                type: 'string',
+                maxLength: 100,
+              },
+              gender: {
+                type: 'string',
+              },
+              birthyear: {
+                type: 'integer',
+                final: true,
+                minimum: 1900,
+                maximum: 2099,
+              },
+            },
+            required: ['name', 'gender'],
+          };
 
         // generate a random database-name
         const name = randomCouchString(10);
@@ -82,52 +82,33 @@ describe('bug-report.test.js', () => {
 
         // insert a document
         await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
+            name: 'test1',
+            gender: 'male',
+            birthyear: 2000
         });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
+        // remove a document
+        await collections.mycollection.findOne({
+            selector: {
+                name: 'test1'
             }
+        }).remove();
+
+        // insert document again
+        await collections.mycollection.insert({
+            name: 'test1',
+            gender: 'male',
+            birthyear: 2000
         });
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        // remove document again
+        await collections.mycollection.findOne({
+            selector: {
+                name: 'test1'
+            }
+        }).remove();
 
         // clean up afterwards
-        sub.unsubscribe();
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });
