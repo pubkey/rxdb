@@ -449,7 +449,9 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             cleanUp(replicationState);
 
-            process.exit(0); // TODO remove
+            if (process && process.exit) {
+                process.exit(0); // TODO remove
+            }
         });
     });
 });
