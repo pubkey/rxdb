@@ -5,6 +5,7 @@
  * Compared to the 'normal' replication plugins,
  * this one is made for internal use where:
  * - No permission handling is needed.
+ * - It is made so that the write amount on the parent is less but might increase on the child.
  * - It does not have to be easy to implement a compatible backend.
  *   Here we use another RxStorageImplementation as replication goal
  *   so it has to exactly behave like the RxStorage interface defines.
@@ -17,12 +18,15 @@ import {
     BehaviorSubject,
     combineLatest,
     filter,
-    firstValueFrom
+    firstValueFrom,
+    Subscription
 } from 'rxjs';
 import {
     getPrimaryKeyOfInternalDocument,
     InternalStoreDocType
 } from './rx-database-internal-store';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
+import { flatCloneDocWithMeta } from './rx-storage-helper';
 import type {
     BulkWriteRow,
     RxConflictHandler,
@@ -43,12 +47,19 @@ import {
     PROMISE_RESOLVE_VOID
 } from './util';
 
+/**
+ * Flags which state is assumed
+ * to be at the master RxStorage instance.
+ */
+const MASTER_STATE_FLAG = '-master';
+
 const META_FLAG_SUFFIX = '-rev';
 
 export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
 ): RxStorageInstanceReplicationState<RxDocType> {
     const state: RxStorageInstanceReplicationState<RxDocType> = {
+        primaryPath: getPrimaryFieldOfPrimaryKey(input.parent.schema.primaryKey),
         input,
         checkpointKey: {
             down: getCheckpointKey(input, 'down'),
@@ -59,7 +70,11 @@ export function replicateRxStorageInstance<RxDocType>(
             down: new BehaviorSubject<boolean>(false),
             up: new BehaviorSubject<boolean>(false)
         },
-        lastCheckpoint: {}
+        lastCheckpoint: {},
+        streamQueue: {
+            down: PROMISE_RESOLVE_VOID,
+            up: PROMISE_RESOLVE_VOID
+        }
     };
 
     startReplicationDownstream(state);
@@ -75,36 +90,69 @@ export function startReplicationDownstream<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
     let inQueueCount = 0;
-    let streamQueue: Promise<any> = downstreamSyncOnce();
+    state.streamQueue.down = state.streamQueue.down.then(() => downstreamSyncOnce());
 
     function addRunAgain() {
+        console.log('DOWN addRunAgain()');
         if (inQueueCount > 2) {
             return;
         }
         inQueueCount = inQueueCount + 1;
-        streamQueue = streamQueue
+        state.streamQueue.down = state.streamQueue.down
             .then(() => downstreamSyncOnce())
             .catch(() => { })
             .then(() => inQueueCount = inQueueCount - 1);
     }
 
-    const sub = state.input.parent.changeStream().subscribe((eventBulk) => {
-        /**
-         * Do not trigger on changes that came from the upstream
-         */
-        const hasNotFromUpstream = eventBulk.events.find(event => {
-            const checkDoc = event.change.doc ? event.change.doc : event.change.previous;
-            return !isDocumentStateFromUpstream(state, checkDoc as any);
-        });
-        if (hasNotFromUpstream) {
-            addRunAgain();
-        }
-    });
+    const subs: Subscription[] = [];
+
+    /**
+     * If a write on the parent happens, we have to trigger the downstream.
+     */
+    subs.push(
+        state.input.parent.changeStream().subscribe(async (eventBulk) => {
+            console.log('DOWN SUB EMITTED (parent)!');
+            console.log(JSON.stringify(eventBulk.events[0], null, 4));
+            /**
+             * Do not trigger on changes that came from the upstream
+             */
+            const hasNotFromUpstream = eventBulk.events.find(event => {
+                const checkDoc = event.change.doc ? event.change.doc : event.change.previous;
+                return !isDocumentStateFromUpstream(state, checkDoc as any);
+            });
+            if (hasNotFromUpstream) {
+            }
+            addRunAgain(); // TODO move up one line
+        })
+    );
+    /**
+     * If a write on the child happens,
+     * we also have to trigger a downstream because
+     * the downstream is the one that handles conflicts
+     * which might be required.
+     */
+    subs.push(
+        state.input.child.changeStream().subscribe(async (eventBulk) => {
+            return; // TODO
+            console.log('DOWN SUB EMITTED (child)!');
+            console.log(JSON.stringify(eventBulk.events[0], null, 4));
+            /**
+             * Do not trigger on changes that came from the upstream
+             */
+            const hasNotFromUpstream = eventBulk.events.find(event => {
+                const checkDoc = event.change.doc ? event.change.doc : event.change.previous;
+                return !isDocumentStateFromUpstream(state, checkDoc as any);
+            });
+            if (hasNotFromUpstream) {
+            }
+            addRunAgain(); // TODO move up one line
+        })
+    );
     firstValueFrom(
         state.canceled.pipe(
             filter(canceled => !!canceled)
         )
-    ).then(() => sub.unsubscribe());
+    ).then(() => subs.map(sub => sub.unsubscribe()));
 
 
     /**
@@ -115,7 +163,9 @@ export function startReplicationDownstream<RxDocType>(
 
 
     async function downstreamSyncOnce() {
+        console.log('# downstreamSyncOnce() START');
         if (state.canceled.getValue()) {
+            console.log('# downstreamSyncOnce() DONE (canceled)');
             return;
         }
         const checkpointState = await getLastCheckpointDoc(state, 'down');
@@ -127,57 +177,62 @@ export function startReplicationDownstream<RxDocType>(
                 state.input.bulkSize,
                 state.lastCheckpoint.down
             );
-            if (downResult.length !== 0) {
-                state.lastCheckpoint.down = lastOfArray(downResult).checkpoint;
-                writeToChildQueue = writeToChildQueue.then((async () => {
-                    let writeRowsLeft: BulkWriteRow<RxDocType>[] = downResult
-                        .filter(r => !isDocumentStateFromUpstream(state, r.document))
-                        .map(r => {
-                            const useDoc = flatClone(r.document);
-                            useDoc._meta = flatClone(r.document._meta);
-                            useDoc._meta[state.checkpointKey.down] = r.document;
-                            /**
-                             * Remember the revision from when
-                             * the document was replicated via the downstream.
-                             * This is used in the upstream to detect that we do not have
-                             * to replicate this document state upwards.
-                             */
-                            useDoc._meta[state.checkpointKey.down + META_FLAG_SUFFIX] = useDoc._rev;
-                            return { document: useDoc };
-                        });
-
-                    while (writeRowsLeft.length > 0 && !state.canceled.getValue()) {
-                        const writeResult = await state.input.child.bulkWrite(writeRowsLeft);
-                        writeRowsLeft = [];
-
-                        await Promise.all(
-                            Object.values(writeResult.error)
-                                .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
-                                    const resolved = await resolveConflictError(
-                                        state.input.conflictHandler,
-                                        error
-                                    );
-                                    if (resolved) {
-                                        /**
-                                         * Keep the meta data of the original
-                                         * document from the parent.
-                                         */
-                                        const resolvedDoc = flatClone(resolved);
-                                        resolvedDoc._meta = flatClone(error.writeRow.document._meta);
-                                        resolvedDoc._meta.lwt = now();
-
-                                        writeRowsLeft.push({
-                                            previous: ensureNotFalsy(error.documentInDb),
-                                            document: resolvedDoc
-                                        });
-                                    }
-                                })
-                        );
-                    }
-                }));
-            } else {
+            if (downResult.length === 0) {
                 done = true;
+                continue;
             }
+            state.lastCheckpoint.down = lastOfArray(downResult).checkpoint;
+            writeToChildQueue = writeToChildQueue.then((async () => {
+                let writeRowsLeft: BulkWriteRow<RxDocType>[] = downResult
+                    .filter(r => !isDocumentStateFromUpstream(state, r.document))
+                    .map(r => {
+                        const useDoc = flatCloneDocWithMeta(r.document);
+                        useDoc._meta[state.checkpointKey.up] = r.document;
+                        /**
+                         * Remember the revision from when
+                         * the document was replicated via the downstream.
+                         * This is used in the upstream to detect that we do not have
+                         * to replicate this document state upwards.
+                         */
+                        useDoc._meta[state.checkpointKey.down + META_FLAG_SUFFIX] = useDoc._rev;
+                        return { document: useDoc };
+                    });
+
+                console.log('writeRowsLeft: ' + writeRowsLeft.length);
+                while (writeRowsLeft.length > 0 && !state.canceled.getValue()) {
+                    const writeResult = await state.input.child.bulkWrite(writeRowsLeft);
+                    console.log('downstream write result:');
+                    console.log(JSON.stringify(writeResult, null, 4));
+                    writeRowsLeft = [];
+
+                    await Promise.all(
+                        Object.values(writeResult.error)
+                            .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
+                                const resolved = await resolveConflictError(
+                                    state.input.conflictHandler,
+                                    error
+                                );
+                                console.log('down: resolved conflict:');
+                                console.dir(resolved);
+
+                                if (resolved) {
+                                    /**
+                                     * Keep the meta data of the original
+                                     * document from the parent.
+                                     */
+                                    const resolvedDoc = flatClone(resolved);
+                                    resolvedDoc._meta = flatClone(error.writeRow.document._meta);
+                                    resolvedDoc._meta.lwt = now();
+
+                                    writeRowsLeft.push({
+                                        previous: ensureNotFalsy(error.documentInDb),
+                                        document: resolvedDoc
+                                    });
+                                }
+                            })
+                    );
+                }
+            }));
         }
         await writeToChildQueue;
 
@@ -206,19 +261,20 @@ export function startReplicationUpstream<RxDocType>(
     let writeToParentQueue: Promise<any> = PROMISE_RESOLVE_VOID;
 
     let inQueueCount = 0;
-    let streamQueue: Promise<any> = upstreamSyncOnce();
+    state.streamQueue.up = state.streamQueue.up.then(() => upstreamSyncOnce());
 
     function addRunAgain() {
         if (inQueueCount > 2) {
-            return;
+            return state.streamQueue.up;
         }
         inQueueCount = inQueueCount + 1;
-        streamQueue = streamQueue
+        state.streamQueue.up = state.streamQueue.up
             .then(() => upstreamSyncOnce())
             .catch(() => { })
             .then(() => inQueueCount = inQueueCount - 1);
+        return state.streamQueue.up;
     }
-    const sub = state.input.child.changeStream().subscribe((eventBulk) => {
+    const sub = state.input.child.changeStream().subscribe(async (eventBulk) => {
         /**
          * Do not trigger on changes that came from the downstream
          */
@@ -227,8 +283,8 @@ export function startReplicationUpstream<RxDocType>(
             return !isDocumentStateFromDownstream(state, checkDoc as any);
         })
         if (hasNotFromDownstream) {
-            addRunAgain();
         }
+        addRunAgain(); // TODO move up one line
     });
     firstValueFrom(
         state.canceled.pipe(
@@ -238,6 +294,7 @@ export function startReplicationUpstream<RxDocType>(
 
 
     async function upstreamSyncOnce() {
+        console.log('# upstreamSyncOnce() START');
         if (state.canceled.getValue()) {
             return;
         }
@@ -248,6 +305,7 @@ export function startReplicationUpstream<RxDocType>(
 
         let done = false;
         while (!done && !state.canceled.getValue()) {
+            console.log('--- 1');
             const upResult = await state.input.child.getChangedDocumentsSince(
                 state.input.bulkSize,
                 state.lastCheckpoint.up
@@ -266,25 +324,67 @@ export function startReplicationUpstream<RxDocType>(
                     return;
                 }
 
-                const writeRowsToParent: BulkWriteRow<RxDocType>[] = upResult
-                    .filter(r => !isDocumentStateFromDownstream(state, r.document))
-                    .map(r => {
-                        const useDoc = flatClone(r.document);
-                        useDoc._meta = flatClone(r.document._meta);
-                        delete useDoc._meta[state.checkpointKey.up];
-                        delete useDoc._meta[state.checkpointKey.down];
-                        delete useDoc._meta[state.checkpointKey.down + META_FLAG_SUFFIX];
-                        useDoc._meta[state.checkpointKey.up + META_FLAG_SUFFIX] = useDoc._rev;
+                const writeRowsToChild: {
+                    [docId: string]: BulkWriteRow<RxDocType>
+                } = {};
+                const writeRowsToParent: BulkWriteRow<RxDocType>[] = [];
+                upResult.forEach(r => {
+                    if (isDocumentStateFromDownstream(state, r.document)) {
+                        return;
+                    }
+                    const docId: string = (r.document as any)[state.primaryPath];
+                    const useDoc = flatCloneDocWithMeta(r.document);
+                    delete useDoc._meta[state.checkpointKey.up];
+                    delete useDoc._meta[state.checkpointKey.down];
+                    delete useDoc._meta[state.checkpointKey.down + META_FLAG_SUFFIX];
+                    useDoc._meta[state.checkpointKey.up + META_FLAG_SUFFIX] = useDoc._rev;
+                    const previous = r.document._meta[state.checkpointKey.up] as any;
+                    useDoc._rev = createRevision(useDoc, previous);
 
-                        return {
-                            previous: r.document._meta[state.checkpointKey.down] as any,
-                            document: useDoc
-                        };
+
+                    const toChildNewData = flatCloneDocWithMeta(r.document);
+                    toChildNewData._rev = createRevision(toChildNewData, r.document);
+                    toChildNewData._meta[state.checkpointKey.up + META_FLAG_SUFFIX] = toChildNewData._rev;
+                    toChildNewData._meta[state.checkpointKey.up] = useDoc;
+
+
+                    writeRowsToChild[docId] = {
+                        previous: r.document,
+                        document: toChildNewData
+                    };
+                    writeRowsToParent.push({
+                        previous,
+                        document: useDoc
                     });
+                });
                 const parentWriteResult = await state.input.parent.bulkWrite(writeRowsToParent);
+                console.log('up parentWriteResult:');
+                console.dir(parentWriteResult);
+
+                const parentWriteErrors = new Set(Object.keys(parentWriteResult.error));
+                /**
+                 * TODO here we have the most critical point in the replicaiton.
+                 * If the child RxStorage is closed or the process exits between
+                 * the write to parent and the write to the child,
+                 * we can land in a state where the child does not remember
+                 * that a document was already pushed to the parent
+                 * and will try to do that again which will lead to a replication conflict
+                 * even if there should be none.
+                 */
+                const useWriteRowsToChild: BulkWriteRow<RxDocType>[] = [];
+                Object.entries(writeRowsToChild).forEach(([docId, writeRow]) => {
+                    if (!parentWriteErrors.has(docId)) {
+                        useWriteRowsToChild.push(writeRow);
+                    }
+                })
+                const childWriteResult = await state.input.child.bulkWrite(useWriteRowsToChild);
+
+                console.log('upstream write result:');
+                console.log(JSON.stringify(parentWriteResult, null, 4));
 
                 // TODO check if has non-409 errors and then throw
-                hadConflicts = Object.keys(parentWriteResult.error).length > 0;
+                hadConflicts = Object.keys(parentWriteResult.error).length > 0 ||
+                    Object.keys(childWriteResult.error).length > 0;
             }));
         }
 
@@ -310,8 +410,17 @@ export function startReplicationUpstream<RxDocType>(
 
 
         if (hadConflicts) {
-            await promiseWait(0);
-            addRunAgain();
+            /**
+             * If we had a conflict,
+             * we have to first wait until the downstream
+             * is idle so we know that it had resolved all conflicts.
+             * Then we can run the upstream again.
+             */
+            state.streamQueue.up = state.streamQueue.up
+                .then(() => state.streamQueue.down)
+                .then(() => {
+                    addRunAgain();
+                });
         } else if (!state.firstSyncDone.up.getValue()) {
             state.firstSyncDone.up.next(true);
         }
@@ -420,6 +529,9 @@ export async function setCheckpoint<RxDocType>(
     checkpointDoc?: RxDocumentData<InternalStoreDocType>
 ) {
     const checkpoint = state.lastCheckpoint[direction];
+    /**
+     * TODO only write checkpoint if it is different from before.
+     */
     if (
         checkpoint &&
         state.input.checkPointInstance &&
@@ -430,7 +542,15 @@ export async function setCheckpoint<RxDocType>(
          * for data that has been fetched from the parent
          * but not been written to the child.
          */
-        !state.canceled.getValue()
+        !state.canceled.getValue() &&
+        /**
+         * Only write checkpoint if it is different from before
+         * to have less writes to the storage.
+         */
+        (
+            !checkpointDoc ||
+            JSON.stringify(checkpointDoc.data) !== JSON.stringify(checkpoint)
+        )
     ) {
         const checkpointKey = state.checkpointKey[direction];
         const newDoc: RxDocumentData<InternalStoreDocType<any>> = {
@@ -472,10 +592,39 @@ export async function awaitRxStorageReplicationFirstInSync(
     );
 }
 
+export async function awaitRxStorageReplicationIdle(
+    state: RxStorageInstanceReplicationState<any>
+) {
+    await awaitRxStorageReplicationFirstInSync(state);
+    while (true) {
+        const { down, up } = state.streamQueue;
+        await Promise.all([
+            up,
+            down
+        ]);
+        /**
+         * If the Promises have not been reasigned
+         * after awaiting them, we know that the replication
+         * is in idle state at this point in time.
+         */
+        if (
+            down === state.streamQueue.down &&
+            up === state.streamQueue.up
+        ) {
+            return;
+        }
+    }
+}
+
 export function isDocumentStateFromDownstream<RxDocType>(
     state: RxStorageInstanceReplicationState<any>,
     docData: RxDocumentData<RxDocType>
 ): boolean {
+    /**
+     * TODO this can be done without the META_FLAG_SUFFIX
+     * by instead just comparing the revision of the current state
+     * and the assumed parent state.
+     */
     const downstreamRev = docData._meta[state.checkpointKey.down + META_FLAG_SUFFIX];
     if (downstreamRev && downstreamRev === docData._rev) {
         return true;

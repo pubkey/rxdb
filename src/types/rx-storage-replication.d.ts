@@ -25,6 +25,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * is written back to the parent.
      */
     child: RxStorageInstance<RxDocType, any, any>;
+
     /**
      * If the child storage is persistend,
      * we have to also store the replication checkpoint in a persistend way.
@@ -38,6 +39,8 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
 };
 
 export type RxStorageInstanceReplicationState<RxDocType> = {
+    // store the primaryPath here for better reuse and performance.
+    primaryPath: string;
     input: RxStorageInstanceReplicationInput<RxDocType>;
     checkpointKey: {
         [direction in RxStorageReplicationDirection]: string;
@@ -60,6 +63,14 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     lastCheckpoint: {
         [direction in RxStorageReplicationDirection]?: any
     };
+
+    /**
+     * Can be used to detect if the replication is doing something
+     * or if it is in an idle state.
+     */
+    streamQueue: {
+        [direction in RxStorageReplicationDirection]: Promise<any>;
+    }
 }
 
 export type RxConflictHandlerInput<RxDocType> = {

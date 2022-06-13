@@ -469,7 +469,19 @@ export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWrite
     return useDoc;
 }
 
-
+/**
+ * Flat clone the document data
+ * and also the _meta field.
+ * Used many times when we want to change the meta
+ * during replication etc.
+ */
+export function flatCloneDocWithMeta<RxDocType>(
+    doc: RxDocumentData<RxDocType>
+): RxDocumentData<RxDocType> {
+    const ret = flatClone(doc);
+    ret._meta = flatClone(doc._meta);
+    return ret;
+}
 
 /**
  * Each event is labeled with the id

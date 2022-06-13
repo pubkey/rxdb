@@ -16,7 +16,9 @@ import {
     RxDocumentData,
     RxStorageInstance,
     RxStorageInstanceReplicationState,
-    RxConflictHandlerInput
+    RxConflictHandlerInput,
+    getFromObjectOrThrow,
+    awaitRxStorageReplicationIdle
 } from '../../';
 
 import {
@@ -29,7 +31,9 @@ import * as schemas from '../helper/schemas';
 
 import {
     clone,
-    waitUntil
+    wait,
+    waitUntil,
+    randomBoolean
 } from 'async-test-util';
 import { HumanDocumentType } from '../helper/schemas';
 
@@ -139,7 +143,13 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             const withoutMetaB = Object.assign({}, docB, {
                 _meta: undefined
             });
-            assert.deepStrictEqual(withoutMetaA, withoutMetaB);
+            try {
+                assert.deepStrictEqual(withoutMetaA, withoutMetaB);
+            } catch (err) {
+                console.log('## ERROR: State not equal');
+                console.log(JSON.stringify(docA, null, 4));
+                console.log(JSON.stringify(docB, null, 4));
+            }
         })
     }
 
@@ -273,6 +283,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             // revision must be 2 because it had to resolve a conflict.
             const parentDocs = await runQuery(parent);
+            console.log('parentDocs:');
+            console.dir(parentDocs);
             assert.ok(parentDocs[0]._rev.startsWith('2-'));
 
 
@@ -286,7 +298,9 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             const childDoc = (await runQuery(child))[0];
             // should only have the 'lwt' and the revision from the upstream AND the current state of the parent.
-            assert.strictEqual(Object.keys(childDoc._meta).length, 3)
+            console.log('childDoc._meta:');
+            console.dir(childDoc);
+            assert.strictEqual(Object.keys(childDoc._meta).length, 4);
 
             cleanUp(replicationState);
         });
@@ -335,6 +349,144 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             await awaitRxStorageReplicationFirstInSync(replicationState);
             await ensureEqualState(parent, child);
+
+            cleanUp(replicationState);
+        });
+    });
+    describe('stability', () => {
+        it('do many writes while replication is running', async () => {
+            const writeAmount = config.isFastMode() ? 10 : 50;
+
+            const parent = await createRxStorageInstance(0);
+            const child = await createRxStorageInstance(0);
+            const instances = [parent, child];
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                parent,
+                child,
+                bulkSize: Math.ceil(writeAmount / 4),
+                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
+            });
+
+            console.log('');
+            console.log('');
+            console.log('');
+            console.log('');
+            console.log('');
+            console.log('XXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXX 11111111111111');
+            console.log('XXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXX');
+            console.log('');
+            console.log('');
+            console.log('');
+            console.log('');
+            console.log('');
+
+            // insert
+            const document = getDocData();
+            document.passportId = 'foobar';
+            const docId = document.passportId;
+            await Promise.all(
+                instances
+                    .map(async (instance, idx) => {
+                        // insert
+                        const docData = Object.assign({}, clone(document), {
+                            firstName: idx === 0 ? 'parent' : 'child',
+                            age: idx
+                        });
+                        docData._rev = createRevision(docData);
+                        docData._meta.lwt = now();
+                        const insertResult = await instance.bulkWrite([{
+                            document: docData
+                        }]);
+                        assert.deepStrictEqual(insertResult.error, {});
+                    })
+            );
+            await awaitRxStorageReplicationIdle(replicationState);
+            await ensureEqualState(parent, child);
+
+            console.log('');
+            console.log('');
+            console.log('');
+            console.log('');
+            console.log('');
+            console.log('XXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXX 2222222222222222');
+            console.log('XXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXX');
+            console.log('');
+            console.log('');
+            console.log('');
+            console.log('');
+            console.log('');
+
+
+            // do many updates
+            async function updateDocOnce(
+                instance: RxStorageInstance<HumanDocumentType, any, any>,
+                flag: string
+            ) {
+                let done = false;
+                while (!done) {
+                    await wait(0);
+                    if (randomBoolean()) {
+                    }
+
+                    const current = await instance.findDocumentsById([docId], true);
+                    const currentDocState = getFromObjectOrThrow(current, docId);
+
+                    const newDocState = clone(currentDocState);
+                    newDocState._meta.lwt = now();
+                    newDocState._rev = createRevision(newDocState, currentDocState);
+                    newDocState.lastName = randomCouchString(12);
+                    newDocState.firstName = flag;
+                    newDocState.age = now() - 1654764095;
+
+                    console.log('START user mutation ' + flag + ' -- ' + newDocState._rev);
+                    const writeResult = await instance.bulkWrite([{
+                        previous: currentDocState,
+                        document: newDocState
+                    }]);
+                    if (Object.keys(writeResult.success).length > 0) {
+                        console.log('DONE user mutation ' + flag + ' -- ' + newDocState._rev);
+                        done = true;
+                    }
+                }
+            }
+
+            const promises: Promise<any>[] = [];
+            new Array(writeAmount)
+                .fill(0)
+                .forEach(() => {
+                    instances.forEach((instance, idx) => {
+                        promises.push(
+                            updateDocOnce(
+                                instance,
+                                idx === 0 ? 'parent' : 'child'
+                            )
+                        );
+                    })
+                });
+            await Promise.all(promises);
+            console.log('# all mutate promises DONE');
+
+
+            console.log('# wait for idle');
+            await awaitRxStorageReplicationIdle(replicationState);
+            console.log('# wait for idle DONE');
+
+            console.log('# start wait!');
+            await wait(500);
+            console.log('# Wait done');
+
+
+            await ensureEqualState(parent, child);
+            process.exit();
 
             cleanUp(replicationState);
         });
