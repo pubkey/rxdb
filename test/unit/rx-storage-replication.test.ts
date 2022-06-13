@@ -56,8 +56,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             });
         } else {
             console.error('EQUAL AGE !!!');
-            console.dir(docA);
-            console.dir(docB);
+            console.log(JSON.stringify(i, null, 4));
             throw new Error('equal age');
         }
     }
