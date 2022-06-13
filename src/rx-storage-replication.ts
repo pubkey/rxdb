@@ -312,6 +312,12 @@ export function startReplicationUpstream<RxDocType>(
                         document: useDoc
                     });
                 });
+
+                if (writeRowsToMaster.length === 0) {
+                    hadConflicts = false;
+                    return;
+                }
+
                 const masterWriteResult = await state.input.masterInstance.bulkWrite(writeRowsToMaster);
 
                 const masterWriteErrors = new Set(Object.keys(masterWriteResult.error));

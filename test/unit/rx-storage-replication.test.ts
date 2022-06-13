@@ -173,8 +173,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
             // check inital doc
-            const docsOnChild = await runQuery(forkInstance);
-            assert.strictEqual(docsOnChild.length, 1);
+            const docsOnFork = await runQuery(forkInstance);
+            assert.strictEqual(docsOnFork.length, 1);
 
             // check ongoing doc
             await masterInstance.bulkWrite([{
@@ -182,8 +182,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             }]);
 
             await waitUntil(async () => {
-                const docsOnChild2 = await runQuery(forkInstance);
-                return docsOnChild2.length === 2;
+                const docsOnFork2 = await runQuery(forkInstance);
+                return docsOnFork2.length === 2;
             });
 
             cleanUp(replicationState);
@@ -205,8 +205,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
             // check inital doc
-            const docsOnParent = await runQuery(masterInstance);
-            assert.strictEqual(docsOnParent.length, 1);
+            const docsOnMaster = await runQuery(masterInstance);
+            assert.strictEqual(docsOnMaster.length, 1);
 
             // check ongoing doc
             await forkInstance.bulkWrite([{
@@ -214,8 +214,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             }]);
 
             await waitUntil(async () => {
-                const docsOnParent2 = await runQuery(masterInstance);
-                return docsOnParent2.length === 2;
+                const docsOnMaster2 = await runQuery(masterInstance);
+                return docsOnMaster2.length === 2;
             });
 
             cleanUp(replicationState);
@@ -245,8 +245,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             await ensureEqualState(masterInstance, forkInstance);
 
-            const parentDocs = await runQuery(masterInstance);
-            assert.ok(parentDocs[0]._rev.startsWith('1-'));
+            const masterDocs = await runQuery(masterInstance);
+            assert.ok(masterDocs[0]._rev.startsWith('1-'));
 
 
             await cleanUp(replicationState);
@@ -262,7 +262,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 instances
                     .map(async (instance, idx) => {
                         const docData = Object.assign({}, clone(document), {
-                            firstName: idx === 0 ? 'parent' : 'child',
+                            firstName: idx === 0 ? 'master' : 'fork',
                             age: idx
                         });
                         docData._rev = createRevision(docData);
@@ -284,21 +284,21 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await ensureEqualState(masterInstance, forkInstance);
 
             // revision must be 2 because it had to resolve a conflict.
-            const parentDocs = await runQuery(masterInstance);
-            assert.ok(parentDocs[0]._rev.startsWith('2-'));
+            const masterDocs = await runQuery(masterInstance);
+            assert.ok(masterDocs[0]._rev.startsWith('2-'));
 
 
 
             /**
              * Ensure it only contains the _meta fields that we really need.
              */
-            const parentDoc = (await runQuery(masterInstance))[0];
+            const masterDoc = (await runQuery(masterInstance))[0];
             // should only have the 'lwt' and the revision from the upstream.
-            assert.strictEqual(Object.keys(parentDoc._meta).length, 2)
+            assert.strictEqual(Object.keys(masterDoc._meta).length, 2)
 
-            const childDoc = (await runQuery(forkInstance))[0];
-            // should only have the 'lwt' AND the current state of the parent.
-            assert.strictEqual(Object.keys(childDoc._meta).length, 2);
+            const forkDoc = (await runQuery(forkInstance))[0];
+            // should only have the 'lwt' AND the current state of the master.
+            assert.strictEqual(Object.keys(forkDoc._meta).length, 2);
 
             cleanUp(replicationState);
         });
@@ -375,7 +375,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                     .map(async (instance, idx) => {
                         // insert
                         const docData = Object.assign({}, clone(document), {
-                            firstName: idx === 0 ? 'parent' : 'child',
+                            firstName: idx === 0 ? 'master' : 'fork',
                             age: idx
                         });
                         docData._rev = createRevision(docData);
