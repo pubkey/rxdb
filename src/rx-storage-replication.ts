@@ -113,6 +113,8 @@ export function startReplicationDownstream<RxDocType>(
      * If a write on the master happens, we have to trigger the downstream.
      */
     const sub = state.input.masterInstance.changeStream().subscribe(async (eventBulk) => {
+        addRunAgain(); // TODO move down again
+        return;
         /**
          * Do not trigger on changes that came from the upstream
          */
@@ -121,7 +123,6 @@ export function startReplicationDownstream<RxDocType>(
             return !isDocumentStateFromUpstream(state, checkDoc as any);
         });
         if (hasNotFromUpstream) {
-            addRunAgain();
         }
     });
     firstValueFrom(
@@ -162,6 +163,7 @@ export function startReplicationDownstream<RxDocType>(
                     .map(r => {
                         const useDoc = flatCloneDocWithMeta(r.document);
                         useDoc._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] = r.document;
+                        delete useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX];
                         return { document: useDoc };
                     });
                 while (writeRowsLeft.length > 0 && !state.canceled.getValue()) {
@@ -301,8 +303,8 @@ export function startReplicationUpstream<RxDocType>(
 
 
                     const toChildNewData = flatCloneDocWithMeta(r.document);
-                    toChildNewData._rev = createRevision(toChildNewData, r.document);
                     toChildNewData._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] = useDoc;
+                    toChildNewData._rev = createRevision(toChildNewData, r.document);
 
 
                     writeRowsToChild[docId] = {
@@ -433,6 +435,7 @@ export function getCheckpointKey<RxDocType>(
  * Returns the resolved document.
  * If document is not in conflict, returns undefined.
  * If error is non-409, it throws an error.
+ * Conflicts are only solved in the downstream, never in the upstream.
  */
 export async function resolveConflictError<RxDocType>(
     conflictHandler: RxConflictHandler<RxDocType>,
@@ -457,12 +460,13 @@ export async function resolveConflictError<RxDocType>(
          * We have a conflict, resolve it!
          */
         const resolved = await conflictHandler({
-            newDocumentState: error.writeRow.document,
-            assumedMasterDocumentState: error.writeRow.previous,
-            masterDocumentState: documentInDb,
+            documentStateAtForkTime: error.writeRow.previous,
+            newDocumentStateInMaster: error.writeRow.document,
+            currentForkDocumentState: documentInDb
         });
 
-        const resolvedDoc = flatClone(resolved.resolvedDocumentState);
+        const resolvedDoc = flatCloneDocWithMeta(resolved.resolvedDocumentState);
+        resolvedDoc._meta.lwt = now();
         resolvedDoc._rev = createRevision(resolvedDoc, documentInDb);
         return resolvedDoc;
     }
@@ -575,10 +579,15 @@ export function isDocumentStateFromUpstream<RxDocType>(
     state: RxStorageInstanceReplicationState<any>,
     docData: RxDocumentData<RxDocType>
 ): boolean {
+    console.log('isDocumentStateFromUpstream()');
+    console.log(JSON.stringify(docData, null, 4));
+
     const upstreamRev = docData._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX];
     if (upstreamRev && upstreamRev === docData._rev) {
+        console.log('TRUE');
         return true;
     } else {
+        console.log('FALSE');
         return false;
     }
 }

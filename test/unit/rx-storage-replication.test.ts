@@ -42,8 +42,15 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         throw new Error('THROWING_CONFLICT_HANDLER');
     }
     const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (i: RxConflictHandlerInput<HumanDocumentType>) => {
-        const docA = i.newDocumentState;
-        const docB = i.masterDocumentState;
+        const docA = i.newDocumentStateInMaster;
+        const docB = i.currentForkDocumentState;
+
+        // if (!i.assumedMasterDocumentState) {
+        //     return Promise.resolve({
+        //         resolvedDocumentState: i.newDocumentState
+        //     });
+        // }
+
         const ageA = docA.age ? docA.age : 0;
         const ageB = docB.age ? docB.age : 0;
         if (ageA > ageB) {
@@ -55,9 +62,9 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 resolvedDocumentState: docB
             });
         } else {
-            console.error('EQUAL AGE !!!');
+            console.error('EQUAL AGE (' + ageA + ') !!!');
             console.log(JSON.stringify(i, null, 4));
-            throw new Error('equal age');
+            throw new Error('equal age ' + ageA);
         }
     }
     function getDocData(partial: Partial<HumanDocumentType> = {}): RxDocumentData<HumanDocumentType> {
@@ -389,6 +396,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await ensureEqualState(masterInstance, forkInstance);
 
             // do many updates
+            let updateId = 10;
             async function updateDocOnce(
                 instance: RxStorageInstance<HumanDocumentType, any, any>,
                 flag: string
@@ -404,10 +412,10 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
                     const newDocState = clone(currentDocState);
                     newDocState._meta.lwt = now();
-                    newDocState._rev = createRevision(newDocState, currentDocState);
                     newDocState.lastName = randomCouchString(12);
                     newDocState.firstName = flag;
-                    newDocState.age = now() - 1654764095;
+                    newDocState.age = updateId++;
+                    newDocState._rev = createRevision(newDocState, currentDocState);
 
                     const writeResult = await instance.bulkWrite([{
                         previous: currentDocState,
@@ -440,6 +448,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await ensureEqualState(masterInstance, forkInstance);
 
             cleanUp(replicationState);
+
+            process.exit(0); // TODO remove
         });
     });
 });
