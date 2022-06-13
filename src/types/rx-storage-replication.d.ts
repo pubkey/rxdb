@@ -18,21 +18,32 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
     bulkSize: number;
     conflictHandler: RxConflictHandler<RxDocType>;
 
-    parent: RxStorageInstance<RxDocType, any, any>;
     /**
-     * The child is the one that contains the forked chain of document writes.
-     * All conflicts are solved on the child and only resolved correct document data
-     * is written back to the parent.
+     * The RxStorage instance of the master branch that is
+     * replicated with the fork branch.
+     * The replication algorithm is made to make
+     * as less writes on the master as possible.
+     * The master instance is always 'the truth' which
+     * does never contain conflicting document states.
+     * All conflicts are handled on the fork branch
+     * before being replicated to the master.
      */
-    child: RxStorageInstance<RxDocType, any, any>;
+    masterInstance: RxStorageInstance<RxDocType, any, any>;
 
     /**
-     * If the child storage is persistend,
+     * The fork is the one that contains the forked chain of document writes.
+     * All conflicts are solved on the fork and only resolved correct document data
+     * is written back to the parent.
+     */
+    forkInstance: RxStorageInstance<RxDocType, any, any>;
+
+    /**
+     * If the fork storage is persistend,
      * we have to also store the replication checkpoint in a persistend way.
      * Therefore we need access to another storage instance that can save meta data.
      * 
      * Normally you will use myRxDatabase.internalStore
-     * but only if the child storage is really persistend
+     * but only if the fork storage is really persistend
      * (will keep it's state after a process restart).
      */
     checkPointInstance?: RxStorageInstance<InternalStoreDocType, any, any>;
@@ -42,9 +53,13 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     // store the primaryPath here for better reuse and performance.
     primaryPath: string;
     input: RxStorageInstanceReplicationInput<RxDocType>;
-    checkpointKey: {
-        [direction in RxStorageReplicationDirection]: string;
-    }
+
+    /**
+     * Used in checkpoints and ._meta fields
+     * to ensure we do not mix up meta data of
+     * different replications.
+     */
+    checkpointKey: string;
 
     /**
      * Tracks if the streams are in sync
@@ -74,8 +89,8 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
 }
 
 export type RxConflictHandlerInput<RxDocType> = {
-    parentDocumentState: RxDocumentData<RxDocType>;
-    assumedParentDocumentState?: RxDocumentData<RxDocType>;
+    masterDocumentState: RxDocumentData<RxDocType>;
+    assumedMasterDocumentState?: RxDocumentData<RxDocType>;
     newDocumentState: RxDocumentData<RxDocType>;
 };
 export type RxConflictHandler<RxDocType> = (

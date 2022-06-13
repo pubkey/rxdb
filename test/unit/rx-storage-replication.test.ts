@@ -43,7 +43,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
     }
     const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (i: RxConflictHandlerInput<HumanDocumentType>) => {
         const docA = i.newDocumentState;
-        const docB = i.parentDocumentState;
+        const docB = i.masterDocumentState;
         const ageA = docA.age ? docA.age : 0;
         const ageB = docB.age ? docB.age : 0;
         if (ageA > ageB) {
@@ -118,8 +118,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
     async function cleanUp(replicationState: RxStorageInstanceReplicationState<any>) {
         replicationState.canceled.next(true);
         await Promise.all([
-            replicationState.input.parent.close(),
-            replicationState.input.child.close()
+            replicationState.input.masterInstance.close(),
+            replicationState.input.forkInstance.close()
         ]);
         if (replicationState.input.checkPointInstance) {
             await replicationState.input.checkPointInstance.close();
@@ -158,29 +158,29 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
     });
     describe('up', () => {
         it('it should write the initial data and also the ongoing insert', async () => {
-            const parent = await createRxStorageInstance(1);
-            const child = await createRxStorageInstance(0);
+            const masterInstance = await createRxStorageInstance(1);
+            const forkInstance = await createRxStorageInstance(0);
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                parent,
-                child,
+                masterInstance,
+                forkInstance,
                 bulkSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
             // check inital doc
-            const docsOnChild = await runQuery(child);
+            const docsOnChild = await runQuery(forkInstance);
             assert.strictEqual(docsOnChild.length, 1);
 
             // check ongoing doc
-            await parent.bulkWrite([{
+            await masterInstance.bulkWrite([{
                 document: getDocData()
             }]);
 
             await waitUntil(async () => {
-                const docsOnChild2 = await runQuery(child);
+                const docsOnChild2 = await runQuery(forkInstance);
                 return docsOnChild2.length === 2;
             });
 
@@ -189,30 +189,30 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
     });
     describe('down', () => {
         it('it should write the initial data and also the ongoing insert', async () => {
-            const parent = await createRxStorageInstance(0);
-            const child = await createRxStorageInstance(1);
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(1);
 
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                parent,
-                child,
+                masterInstance,
+                forkInstance,
                 bulkSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
             // check inital doc
-            const docsOnParent = await runQuery(parent);
+            const docsOnParent = await runQuery(masterInstance);
             assert.strictEqual(docsOnParent.length, 1);
 
             // check ongoing doc
-            await child.bulkWrite([{
+            await forkInstance.bulkWrite([{
                 document: getDocData()
             }]);
 
             await waitUntil(async () => {
-                const docsOnParent2 = await runQuery(parent);
+                const docsOnParent2 = await runQuery(masterInstance);
                 return docsOnParent2.length === 2;
             });
 
@@ -221,9 +221,9 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
     });
     describe('conflict handling', () => {
         it('both have inserted the exact same document -> no conflict handler must be called', async () => {
-            const parent = await createRxStorageInstance(0);
-            const child = await createRxStorageInstance(0);
-            const instances = [parent, child];
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(0);
+            const instances = [masterInstance, forkInstance];
 
             const document = getDocData();
 
@@ -234,25 +234,25 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                parent,
-                child,
+                masterInstance,
+                forkInstance,
                 bulkSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
-            await ensureEqualState(parent, child);
+            await ensureEqualState(masterInstance, forkInstance);
 
-            const parentDocs = await runQuery(parent);
+            const parentDocs = await runQuery(masterInstance);
             assert.ok(parentDocs[0]._rev.startsWith('1-'));
 
 
             await cleanUp(replicationState);
         });
         it('both have inserted the same document with different properties', async () => {
-            const parent = await createRxStorageInstance(0);
-            const child = await createRxStorageInstance(0);
-            const instances = [parent, child];
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(0);
+            const instances = [masterInstance, forkInstance];
 
             const document = getDocData();
 
@@ -273,18 +273,16 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                parent,
-                child,
+                masterInstance,
+                forkInstance,
                 bulkSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
-            await ensureEqualState(parent, child);
+            await ensureEqualState(masterInstance, forkInstance);
 
             // revision must be 2 because it had to resolve a conflict.
-            const parentDocs = await runQuery(parent);
-            console.log('parentDocs:');
-            console.dir(parentDocs);
+            const parentDocs = await runQuery(masterInstance);
             assert.ok(parentDocs[0]._rev.startsWith('2-'));
 
 
@@ -292,22 +290,20 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             /**
              * Ensure it only contains the _meta fields that we really need.
              */
-            const parentDoc = (await runQuery(parent))[0];
+            const parentDoc = (await runQuery(masterInstance))[0];
             // should only have the 'lwt' and the revision from the upstream.
             assert.strictEqual(Object.keys(parentDoc._meta).length, 2)
 
-            const childDoc = (await runQuery(child))[0];
-            // should only have the 'lwt' and the revision from the upstream AND the current state of the parent.
-            console.log('childDoc._meta:');
-            console.dir(childDoc);
-            assert.strictEqual(Object.keys(childDoc._meta).length, 4);
+            const childDoc = (await runQuery(forkInstance))[0];
+            // should only have the 'lwt' AND the current state of the parent.
+            assert.strictEqual(Object.keys(childDoc._meta).length, 2);
 
             cleanUp(replicationState);
         });
         it('both have updated the document with different values', async () => {
-            const parent = await createRxStorageInstance(0);
-            const child = await createRxStorageInstance(0);
-            const instances = [parent, child];
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(0);
+            const instances = [masterInstance, forkInstance];
 
             const document = getDocData();
 
@@ -316,7 +312,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                     .map(async (instance, idx) => {
                         // insert
                         const docData = Object.assign({}, clone(document), {
-                            firstName: idx === 0 ? 'parent' : 'child',
+                            firstName: idx === 0 ? 'master' : 'fork',
                             age: idx
                         });
                         docData._rev = createRevision(docData);
@@ -341,14 +337,14 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                parent,
-                child,
+                masterInstance,
+                forkInstance,
                 bulkSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
             });
 
             await awaitRxStorageReplicationFirstInSync(replicationState);
-            await ensureEqualState(parent, child);
+            await ensureEqualState(masterInstance, forkInstance);
 
             cleanUp(replicationState);
         });
@@ -357,33 +353,16 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         it('do many writes while replication is running', async () => {
             const writeAmount = config.isFastMode() ? 10 : 50;
 
-            const parent = await createRxStorageInstance(0);
-            const child = await createRxStorageInstance(0);
-            const instances = [parent, child];
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(0);
+            const instances = [masterInstance, forkInstance];
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                parent,
-                child,
+                masterInstance,
+                forkInstance,
                 bulkSize: Math.ceil(writeAmount / 4),
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
             });
-
-            console.log('');
-            console.log('');
-            console.log('');
-            console.log('');
-            console.log('');
-            console.log('XXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXX 11111111111111');
-            console.log('XXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXX');
-            console.log('');
-            console.log('');
-            console.log('');
-            console.log('');
-            console.log('');
 
             // insert
             const document = getDocData();
@@ -406,25 +385,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                     })
             );
             await awaitRxStorageReplicationIdle(replicationState);
-            await ensureEqualState(parent, child);
-
-            console.log('');
-            console.log('');
-            console.log('');
-            console.log('');
-            console.log('');
-            console.log('XXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXX 2222222222222222');
-            console.log('XXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXX');
-            console.log('');
-            console.log('');
-            console.log('');
-            console.log('');
-            console.log('');
-
+            await ensureEqualState(masterInstance, forkInstance);
 
             // do many updates
             async function updateDocOnce(
@@ -433,8 +394,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             ) {
                 let done = false;
                 while (!done) {
-                    await wait(0);
                     if (randomBoolean()) {
+                        await wait(0);
                     }
 
                     const current = await instance.findDocumentsById([docId], true);
@@ -447,13 +408,11 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                     newDocState.firstName = flag;
                     newDocState.age = now() - 1654764095;
 
-                    console.log('START user mutation ' + flag + ' -- ' + newDocState._rev);
                     const writeResult = await instance.bulkWrite([{
                         previous: currentDocState,
                         document: newDocState
                     }]);
                     if (Object.keys(writeResult.success).length > 0) {
-                        console.log('DONE user mutation ' + flag + ' -- ' + newDocState._rev);
                         done = true;
                     }
                 }
@@ -467,26 +426,17 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                         promises.push(
                             updateDocOnce(
                                 instance,
-                                idx === 0 ? 'parent' : 'child'
+                                idx === 0 ? 'master' : 'fork'
                             )
                         );
                     })
                 });
             await Promise.all(promises);
-            console.log('# all mutate promises DONE');
 
 
-            console.log('# wait for idle');
             await awaitRxStorageReplicationIdle(replicationState);
-            console.log('# wait for idle DONE');
 
-            console.log('# start wait!');
-            await wait(500);
-            console.log('# Wait done');
-
-
-            await ensureEqualState(parent, child);
-            process.exit();
+            await ensureEqualState(masterInstance, forkInstance);
 
             cleanUp(replicationState);
         });
