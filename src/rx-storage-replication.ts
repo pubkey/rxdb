@@ -336,11 +336,14 @@ export function startReplicationUpstream<RxDocType>(
                         useWriteRowsToChild.push(writeRow);
                     }
                 })
-                const childWriteResult = await state.input.forkInstance.bulkWrite(useWriteRowsToChild);
+                let childWriteResult;
+                if (useWriteRowsToChild.length > 0) {
+                    childWriteResult = await state.input.forkInstance.bulkWrite(useWriteRowsToChild);
+                }
 
                 // TODO check if has non-409 errors and then throw
                 hadConflicts = Object.keys(masterWriteResult.error).length > 0 ||
-                    Object.keys(childWriteResult.error).length > 0;
+                    (!!childWriteResult && Object.keys(childWriteResult.error).length > 0);
             }));
         }
 
