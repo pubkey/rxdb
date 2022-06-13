@@ -352,7 +352,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
     });
     describe('stability', () => {
         it('do many writes while replication is running', async () => {
-            const writeAmount = config.isFastMode() ? 10 : 50;
+            const writeAmount = config.isFastMode() ? 10 : 100;
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);

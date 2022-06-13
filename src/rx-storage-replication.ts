@@ -171,6 +171,8 @@ export function startReplicationDownstream<RxDocType>(
                     await Promise.all(
                         Object.values(writeResult.error)
                             .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
+                                console.log('resolve conflict:');
+                                console.log(JSON.stringify(error, null, 4));
                                 const resolved = await resolveConflictError(
                                     state.input.conflictHandler,
                                     error
