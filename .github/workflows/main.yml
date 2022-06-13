@@ -393,7 +393,7 @@ jobs:
           npm install --legacy-peer-deps
 
       - name: electron test
-        uses: GabrielBB/xvfb-action@v1.5
+        uses: GabrielBB/xvfb-action@v1.6
         with:
           working-directory: ./examples/electron
           run: npm run test
@@ -404,7 +404,7 @@ jobs:
           npm install --legacy-peer-deps
 
       - name: electron-remote test
-        uses: GabrielBB/xvfb-action@v1.5
+        uses: GabrielBB/xvfb-action@v1.6
         with:
           working-directory: ./examples/electron-remote
           run: npm run test
