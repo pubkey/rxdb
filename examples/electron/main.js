@@ -1,41 +1,34 @@
 const electron = require('electron');
-require('electron-window-manager');
 const path = require('path');
-const url = require('url');
+const { addRxPlugin } = require('rxdb');
+const { RxDBServerPlugin } = require('rxdb/plugins/server');
 const database = require('./database');
 
-const { addRxPlugin } = require('rxdb');
-addRxPlugin(require('rxdb/plugins/server').RxDBServerPlugin);
-addRxPlugin(require('pouchdb-adapter-memory'));
+addRxPlugin(RxDBServerPlugin);
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
 const windows = [];
 
-function createWindow(dbSuffix) {
+function createWindow() {
     const width = 300;
     const height = 600;
     const w = new BrowserWindow({
         width,
         height,
         webPreferences: {
-            nodeIntegration: true
+            contextIsolation: false,
+            nodeIntegration: true,
+            preload: path.join(__dirname, 'preload.js')
         }
     });
 
-    w.loadURL(url.format({
-        pathname: path.join(__dirname, 'index.html'),
-        protocol: 'file:',
-        slashes: true
-    }));
+    w.loadFile('index.html');
 
     const x = windows.length * width;
     const y = 0;
     w.setPosition(x, y);
-    w.custom = {
-        dbSuffix
-    };
     windows.push(w);
 }
 
@@ -43,7 +36,9 @@ function createWindow(dbSuffix) {
 app.on('ready', async function () {
     const dbSuffix = new Date().getTime(); // we add a random timestamp in dev-mode to reset the database on each start
 
-    const db = await database.getDatabase(
+    electron.ipcMain.handle('getDBSuffix', () => dbSuffix);
+
+    const db = await database.createDatabase(
         'heroesdb' + dbSuffix,
         'memory'
     );
@@ -68,8 +63,8 @@ app.on('ready', async function () {
         ));
     });
 
-    createWindow(dbSuffix);
-    createWindow(dbSuffix);
+    createWindow();
+    createWindow();
 });
 
 app.on('window-all-closed', function () {

@@ -1,9 +1,9 @@
 <template>
   <div class="insert">
-    <form v-on:submit.prevent="onSubmit" name="insertForm">
-      <input v-model="name" autocomplete="off" type="text" name="name" placeholder="Name">
+    <form @submit.prevent="onFormSubmit" name="insertForm">
+      <input v-model="hero.name" autocomplete="off" type="text" name="name" placeholder="Name">
       <br>
-      <input v-model="color" autocomplete="off" type="text" name="color" placeholder="Color">
+      <input v-model="hero.color" autocomplete="off" type="text" name="color" placeholder="Color">
       <br>
       <button>Submit</button>
     </form>
@@ -11,40 +11,43 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
 import randomInt from 'random-int';
-import DatabaseService from '../services/Database.service';
-import { RxHeroDocument, RxHeroesDatabase } from '../RxDB';
+import { defineComponent, ref } from 'vue';
+import { useDatabase } from '@/database';
 
+export default defineComponent({
+  name: 'HeroInsert',
+  setup() {
+    const hero = ref<any>({});
+    const database = useDatabase();
 
-@Component({})
-export default class HeroInsert extends Vue {
-  private name: string = '';
-  private color: string = '';
+    const onFormSubmit = async() => {
+      console.log('OnSubmit');
 
-  public async onSubmit() {
-    console.log('OnSubmit');
-    console.dir(this);
-    const db: RxHeroesDatabase = await DatabaseService.get();
-    const obj = {
-      name: this.name,
-      color: this.color,
-      hp: 100,
-      maxHP: randomInt(100, 1000),
-      skills: []
+      const obj = {
+        name: hero.value.name,
+        color: hero.value.color,
+        hp: 100,
+        maxHP: randomInt(100, 1000),
+        skills: []
+      };
+      console.dir(obj);
+      await database.heroes.insert(obj);
+      console.log('Inserted new hero: ' + hero.value.name);
+
+      hero.value = {};
     };
-    console.dir(obj);
-    await db.heroes.insert(obj);
-    console.log('Inserted new hero: ' + this.name);
 
-    this.name = '';
-    this.color = '';
+    return {
+      hero,
+      onFormSubmit
+    };
   }
-}
+});
 </script>
 
 
-<style scoped lang="less">
+<style scoped lang="scss">
 input {
   font-size: 16px;
   font-weight: lighter;

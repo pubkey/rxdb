@@ -26,7 +26,8 @@ import {
     now,
     RxDocument,
     getFromMapOrThrow,
-    RxCollectionCreator
+    RxCollectionCreator,
+    parseRevision
 } from '../../';
 
 import {
@@ -1597,12 +1598,14 @@ config.parallel('rx-collection.test.js', () => {
                     assert.ok(isRxDocument(docs[0]));
                     c.database.destroy();
                 });
-                it('should not crash when upserting the same doc in parallel many times with random waits', async () => {
+                it('should not crash when upserting the same doc in parallel many times with random waits', async function () {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
+                    docData.firstName = 'test-many-atomic-upsert';
 
                     let t = 0;
-                    const amount = config.isFastMode() ? 20 : 200;
+                    const amount = config.isFastMode() ? 20 : 5;
+
                     const docs = await Promise.all(
                         new Array(amount)
                             .fill(0)
@@ -1611,7 +1614,7 @@ config.parallel('rx-collection.test.js', () => {
                                 upsertData.lastName = idx + '';
                                 const randomWait = randomBoolean() ? wait(randomNumber(0, 30)) : Promise.resolve();
                                 return randomWait
-                                    .then(() => c.atomicUpsert(docData))
+                                    .then(() => c.atomicUpsert(upsertData))
                                     .then(doc => {
                                         t++;
                                         return doc;
@@ -1624,9 +1627,10 @@ config.parallel('rx-collection.test.js', () => {
 
                     c.database.destroy();
                 });
-                it('should update the value', async () => {
+                it('should update the value', async function () {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
+                    const docId = docData.passportId;
 
                     await Promise.all([
                         c.atomicUpsert(docData),
@@ -1634,11 +1638,17 @@ config.parallel('rx-collection.test.js', () => {
                         c.atomicUpsert(docData)
                     ]);
 
+
+                    const viaStorage = await c.storageInstance.findDocumentsById([docId], true);
+                    const viaStorageDoc = viaStorage[docId];
+                    assert.strictEqual(parseRevision(viaStorageDoc._rev).height, 3);
+
                     const docData2 = clone(docData);
                     docData2.firstName = 'foobar';
                     await c.atomicUpsert(docData2);
                     const doc = await c.findOne().exec(true);
                     assert.strictEqual(doc.firstName, 'foobar');
+
 
                     c.database.destroy();
                 });

@@ -7,7 +7,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 
-import AsyncTestUtil, { waitUntil } from 'async-test-util';
+import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 import {
     createRxDatabase,
     RxDocument,
@@ -28,7 +28,7 @@ import {
 import { HumanDocumentType } from '../helper/schemas';
 
 config.parallel('reactive-query.test.js', () => {
-    describe('positive', () => {
+    config.parallel('positive', () => {
         it('get results of array when .subscribe() and filled array later', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
@@ -152,6 +152,22 @@ config.parallel('reactive-query.test.js', () => {
 
             assert.strictEqual(countBefore, countAfter);
 
+            c.database.destroy();
+        });
+        it('changing many documents in one write should not lead to many query result emits', async () => {
+            const c = await humansCollection.create(0);
+
+            const emitted: any[] = [];
+            const sub = c.find().$.subscribe(results => emitted.push(results));
+            await waitUntil(() => emitted.length > 0);
+
+            await c.bulkInsert(
+                new Array(10).fill(0).map(() => schemaObjects.human())
+            );
+            await wait(config.isFastMode() ? 50 : 100);
+            assert.strictEqual(emitted.length, 2);
+
+            sub.unsubscribe();
             c.database.destroy();
         });
     });

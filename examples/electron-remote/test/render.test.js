@@ -1,10 +1,17 @@
 const assert = require('assert');
 const {
     createRxDatabase,
-    addPouchPlugin,
+    addRxPlugin,
     blobBufferUtil,
-    getRxStoragePouch
-} = require('../../../');
+} = require('rxdb');
+const { RxDBEncryptionPlugin } = require('rxdb/plugins/encryption');
+const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
+const { RxDBAttachmentsPlugin } = require('rxdb/plugins/attachments');
+const { getRxStoragePouch, addPouchPlugin } = require('rxdb/plugins/pouchdb');
+
+addRxPlugin(RxDBEncryptionPlugin);
+addRxPlugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBAttachmentsPlugin);
 addPouchPlugin(require('pouchdb-adapter-idb'));
 
 
@@ -17,7 +24,8 @@ module.exports = (function () {
         // issue #587 Icorrect working attachments in electron-render
         await (async function () {
             const db = await createRxDatabase({
-                name: 'foobar587' + new Date().getTime(),
+                // generate simple random ID to avoid conflicts when running tests at the same time
+                name: 'foobar587' + Math.round(Math.random() * 0xffffff).toString(16),
                 storage: getRxStoragePouch('idb'),
                 password: 'myLongAndStupidPassword',
                 multiInstance: true
@@ -36,7 +44,8 @@ module.exports = (function () {
                         type: 'object',
                         properties: {
                             id: {
-                                type: 'string'
+                                type: 'string',
+                                maxLength: 100
                             }
                         },
                         attachments: {

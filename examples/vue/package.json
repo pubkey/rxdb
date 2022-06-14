@@ -1,5 +1,5 @@
 {
-  "name": "vue2",
+  "name": "vue3",
   "description": "A Vue.js project together with RxDB",
   "version": "1.0.0",
   "author": "pubkey",
@@ -10,39 +10,80 @@
     "server": "pouchdb-server --host 0.0.0.0 -p 10101 -m -d /tmp/pouchdb-server/ -n true",
     "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "postbuild": "cp test/multitab.html ./dist/multitab.html",
     "build:serve": "ws -p 8888 -d dist/",
     "lint": "vue-cli-service lint",
     "test:run": "testcafe chrome -e test/ --hostname localhost --selector-timeout 30000",
     "test": "concurrently \"npm run build:serve\" \"npm run test:run\" --kill-others --success first"
   },
   "dependencies": {
-    "async-test-util": "2.0.0",
-    "pouchdb-adapter-http": "7.2.2",
-    "pouchdb-adapter-idb": "7.2.2",
+    "pouchdb-adapter-http": "7.3.0",
+    "pouchdb-adapter-idb": "7.3.0",
     "pouchdb-server": "4.2.0",
     "random-int": "3.0.0",
     "register-service-worker": "1.7.2",
     "rxdb": "file:rxdb-local.tgz",
-    "vue": "2.6.14",
-    "vue-class-component": "7.2.6",
-    "vue-property-decorator": "9.1.2",
-    "vue-router": "3.5.4",
-    "rxjs": "7.5.5"
+    "rxjs": "7.5.5",
+    "vue": "3.2.37",
+    "vue-router": "4.0.16"
   },
   "devDependencies": {
-    "@types/node": "14.18.18",
+    "@types/node": "17.0.36",
     "@types/pouchdb-adapter-http": "6.1.3",
     "@types/pouchdb-adapter-idb": "6.1.4",
-    "@vue/cli-plugin-pwa": "4.5.17",
-    "@vue/cli-plugin-typescript": "4.5.17",
-    "@vue/cli-service": "4.5.17",
-    "concurrently": "7.0.0",
-    "less": "4.1.2",
-    "less-loader": "7.3.0",
-    "local-web-server": "5.1.1",
-    "testcafe": "1.18.6",
-    "typescript": "4.5.5",
-    "vue-template-compiler": "2.6.14"
+    "@typescript-eslint/eslint-plugin": "5.6.0",
+    "@typescript-eslint/parser": "5.27.0",
+    "@vue/cli-plugin-eslint": "5.0.4",
+    "@vue/cli-plugin-pwa": "5.0.4",
+    "@vue/cli-plugin-typescript": "5.0.4",
+    "@vue/cli-service": "5.0.4",
+    "@vue/compiler-sfc": "3.2.37",
+    "@vue/eslint-config-typescript": "10.0.0",
+    "async-test-util": "2.0.0",
+    "concurrently": "7.2.1",
+    "copy-webpack-plugin": "11.0.0",
+    "eslint": "8.16.0",
+    "eslint-plugin-vue": "8.7.1",
+    "local-web-server": "5.2.1",
+    "node-sass": "6.0.1",
+    "sass-loader": "12.6.0",
+    "testcafe": "1.19.0",
+    "typescript": "4.6.4"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended",
+      "@vue/typescript/recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "parser": "@typescript-eslint/parser"
+    },
+    "rules": {
+      "semi": [
+        "error",
+        "always"
+      ],
+      "quotes": [
+        "error",
+        "single",
+        {
+          "avoidEscape": true
+        }
+      ],
+      "no-prototype-builtins": "off",
+      "no-useless-escape": "off",
+      "vue/multi-word-component-names": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-inferrable-types": "off",
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/ban-types": "off"
+    }
   }
 }

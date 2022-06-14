@@ -642,6 +642,74 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 storageInstance.close();
             });
+            it('should be able to do a write where only _meta fields are changed', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const key = 'foobar';
+                let docData: RxDocumentWriteData<TestDocType> = {
+                    key,
+                    value: 'barfoo1',
+                    _attachments: {},
+                    _deleted: false,
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now(),
+                        foobar: 0
+                    }
+                };
+                docData._rev = createRevision(docData);
+
+                const res1 = await storageInstance.bulkWrite(
+                    [{
+                        document: clone(docData)
+                    }]
+                );
+                assert.deepStrictEqual(res1.error, {});
+
+                // change once
+                let newDocData: RxDocumentWriteData<TestDocType> = clone(docData);
+                newDocData._meta.foobar = 1;
+                newDocData._meta.lwt = now();
+                newDocData._rev = createRevision(newDocData, docData);
+
+                const res2 = await storageInstance.bulkWrite(
+                    [{
+                        previous: docData,
+                        document: clone(newDocData)
+                    }]
+                );
+                assert.deepStrictEqual(res2.error, {});
+                docData = newDocData;
+
+                // change again
+                newDocData = clone(docData);
+                newDocData._meta.foobar = 2;
+                newDocData._meta.lwt = now();
+                newDocData._rev = createRevision(newDocData, docData);
+                assert.strictEqual(parseRevision(newDocData._rev).height, 3);
+
+                const res3 = await storageInstance.bulkWrite(
+                    [{
+                        previous: docData,
+                        document: clone(newDocData)
+                    }]
+                );
+                assert.deepStrictEqual(res3.error, {});
+                docData = newDocData;
+
+
+                const viaStorage = await storageInstance.findDocumentsById([key], true);
+                const viaStorageDoc = ensureNotFalsy(viaStorage[key]);
+                assert.strictEqual(parseRevision(viaStorageDoc._rev).height, 3);
+
+                storageInstance.close();
+            });
             it('should be able to create another instance after a write', async () => {
                 const databaseName = randomCouchString(12);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -1686,6 +1754,49 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 assert.strictEqual(lastEvent.change.operation, 'DELETE');
                 assert.ok(lastEvent.change.previous);
+
+                sub.unsubscribe();
+                storageInstance.close();
+            });
+            it('it should not emit an empty eventBulk when the write had only errors', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+                const sub = storageInstance.changeStream().subscribe(x => {
+                    emitted.push(x);
+                });
+
+                const writeData = {
+                    key: 'foobar',
+                    value: 'one',
+                    _rev: EXAMPLE_REVISION_1,
+                    _deleted: false,
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+
+                // insert
+                const firstWriteResult = await storageInstance.bulkWrite([{
+                    document: writeData
+                }]);
+                assert.deepStrictEqual(firstWriteResult.error, {});
+
+                // insert again to cause conflict error
+                const secondWriteResult = await storageInstance.bulkWrite([{
+                    document: writeData
+                }]);
+                assert.deepStrictEqual(secondWriteResult.success, {});
+
+                assert.strictEqual(emitted.length, 1);
+                assert.strictEqual(emitted[0].events.length, 1);
 
                 sub.unsubscribe();
                 storageInstance.close();

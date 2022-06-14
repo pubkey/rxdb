@@ -150,6 +150,8 @@
 
 * [Query Optimizer](./query-optimizer.md)
 
+* [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md)
+
 * [RxDB Premium](./premium.md)
 
 

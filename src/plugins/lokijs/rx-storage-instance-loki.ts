@@ -146,7 +146,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             ret.error[err.documentId] = err;
         });
         localState.databaseState.saveQueue.addWrite();
-        this.changes$.next(categorized.eventBulk);
+
+        if (categorized.eventBulk.events.length > 0) {
+            this.changes$.next(categorized.eventBulk);
+        }
 
         return ret;
     }

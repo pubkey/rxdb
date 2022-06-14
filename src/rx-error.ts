@@ -5,8 +5,8 @@
 import { overwritable } from './overwritable';
 import type {
     RxErrorParameters,
-    PouchWriteError,
-    RxErrorKey
+    RxErrorKey,
+    RxStorageBulkWriteError
 } from './types';
 
 /**
@@ -122,12 +122,18 @@ export function newRxTypeError(
     );
 }
 
-export function isPouchdbConflictError(err: RxError | RxTypeError): boolean {
+
+/**
+ * Returns the error if it is a 409 conflict,
+ * return false if it is another error.
+ */
+export function isBulkWriteConflictError<RxDocType>(
+    err: RxStorageBulkWriteError<RxDocType> | any
+): RxStorageBulkWriteError<RxDocType> | false {
     if (
-        err.parameters && err.parameters.pouchDbError &&
-        (err.parameters.pouchDbError as PouchWriteError).status === 409
+        err.status === 409
     ) {
-        return true;
+        return err;
     } else {
         return false;
     }

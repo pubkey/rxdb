@@ -16,7 +16,7 @@ import { wait } from 'async-test-util';
 describe('unit/performance.test.ts', () => {
     it('run the performance test', async function () {
         this.timeout(120 * 1000);
-        const runs = config.isFastMode() ? 1 : 10;
+        const runs = config.isFastMode() ? 1 : 6;
 
         const perfStorage = config.storage.getPerformanceStorage();
 
