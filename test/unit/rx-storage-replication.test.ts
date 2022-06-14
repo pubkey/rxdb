@@ -365,6 +365,24 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
+
+
+            /**
+             * Wrap bulkWrite() to count the calls
+             */
+            let writesOnMaster = 0;
+            let writesOnFork = 0;
+            const masterBulkWriteBefore = masterInstance.bulkWrite.bind(masterInstance);
+            masterInstance.bulkWrite = (i) => {
+                writesOnMaster++;
+                return masterBulkWriteBefore(i);
+            };
+            const forkBulkWriteBefore = forkInstance.bulkWrite.bind(forkInstance);
+            forkInstance.bulkWrite = (i) => {
+                writesOnFork++;
+                return forkBulkWriteBefore(i);
+            };
+
             const instances = [masterInstance, forkInstance];
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
@@ -450,6 +468,17 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await ensureEqualState(masterInstance, forkInstance);
 
             cleanUp(replicationState);
+
+
+            /**
+             * Check write amounts
+             */
+            await wait(2000);
+            console.dir({
+                writesOnMaster,
+                writesOnFork
+            });
+
 
             if (process && process.exit) {
                 process.exit(0); // TODO remove
