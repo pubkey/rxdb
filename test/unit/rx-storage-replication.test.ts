@@ -471,16 +471,10 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             /**
              * Check write amounts
              */
-            await wait(2000);
             console.dir({
                 writesOnMaster,
                 writesOnFork
             });
-
-
-            if (process && process.exit) {
-                process.exit(0); // TODO remove
-            }
         });
     });
 });
