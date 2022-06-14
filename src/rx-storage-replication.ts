@@ -42,6 +42,7 @@ import {
     flatClone,
     lastOfArray,
     now,
+    parseRevision,
     PROMISE_RESOLVE_VOID
 } from './util';
 
@@ -189,8 +190,32 @@ export function startReplicationDownstream<RxDocType>(
                     await Promise.all(
                         Object.values(writeResult.error)
                             .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
+
                                 console.log('resolve conflict:');
                                 console.log(JSON.stringify(error, null, 4));
+
+
+                                /**
+                                 * The PouchDB RxStorage sometimes emits too old
+                                 * document states when calling getChangedDocumentsSince()
+                                 * Therefore we filter out conflicts where the new master state
+                                 * is older then the master state at fork time.
+                                 * 
+                                 * On other RxStorage implementations this should never be the case
+                                 * because getChangedDocumentsSince() must always return the current newest
+                                 * document state, not the state at the write time of the event.
+                                 */
+                                const docInDb = ensureNotFalsy(error.documentInDb);
+                                const docAtForkTime: RxDocumentData<RxDocType> | undefined = docInDb._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] as any;
+                                if (docAtForkTime) {
+                                    const newRevHeigth = parseRevision(error.writeRow.document._rev).height;
+                                    const docInMasterRevHeight = parseRevision(docAtForkTime._rev).height;
+                                    if (newRevHeigth <= docInMasterRevHeight) {
+                                        return;
+                                    }
+                                }
+
+
                                 const resolved = await resolveConflictError(
                                     state.input.conflictHandler,
                                     error

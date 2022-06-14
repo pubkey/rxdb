@@ -1428,6 +1428,73 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 storageInstance.close();
             });
+            it('if withDeleted=true then even the non-deleted document must be found', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+                const insertResult = await storageInstance.bulkWrite(
+                    [
+                        {
+                            document: {
+                                key: 'del',
+                                value: 'barfoo',
+                                _deleted: false,
+                                _attachments: {},
+                                _rev: EXAMPLE_REVISION_1,
+                                _meta: {
+                                    lwt: now()
+                                }
+                            }
+                        },
+                        {
+                            document: {
+                                key: 'non-del',
+                                value: 'barfoo',
+                                _deleted: false,
+                                _attachments: {},
+                                _rev: EXAMPLE_REVISION_1,
+                                _meta: {
+                                    lwt: now()
+                                }
+                            }
+                        }
+                    ]
+                );
+                const previous = getFromObjectOrThrow(insertResult.success, 'del');
+                const deleteWriteResult = await storageInstance.bulkWrite(
+                    [{
+                        previous,
+                        document: {
+                            key: 'del',
+                            value: 'barfoo',
+                            _deleted: true,
+                            _attachments: {},
+                            _rev: EXAMPLE_REVISION_2,
+                            _meta: {
+                                lwt: now()
+                            }
+                        }
+                    }]
+                );
+                assert.deepStrictEqual(deleteWriteResult.error, {});
+
+                const found = await storageInstance.findDocumentsById([
+                    'del',
+                    'non-del'
+                ], true);
+
+                assert.strictEqual(
+                    Object.keys(found).length,
+                    2
+                );
+
+                storageInstance.close();
+            });
         });
         describe('.getChangedDocumentsSince()', () => {
             it('should get the latests change', async () => {

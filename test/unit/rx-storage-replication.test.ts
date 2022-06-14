@@ -426,10 +426,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                     if (randomBoolean()) {
                         await wait(0);
                     }
-
                     const current = await instance.findDocumentsById([docId], true);
                     const currentDocState = getFromObjectOrThrow(current, docId);
-
                     const newDocState = clone(currentDocState);
                     newDocState._meta.lwt = now();
                     newDocState.lastName = randomCouchString(12);
