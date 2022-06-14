@@ -182,10 +182,6 @@ export function startReplicationDownstream<RxDocType>(
                         return { document: useDoc };
                     });
 
-
-                console.log('downstream init write rows:');
-                console.dir(writeRowsLeft);
-
                 while (writeRowsLeft.length > 0 && !state.canceled.getValue()) {
                     const writeResult = await state.input.forkInstance.bulkWrite(writeRowsLeft);
                     writeRowsLeft = [];
@@ -193,11 +189,6 @@ export function startReplicationDownstream<RxDocType>(
                     await Promise.all(
                         Object.values(writeResult.error)
                             .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
-
-                                console.log('resolve conflict:');
-                                console.log(JSON.stringify(error, null, 4));
-
-
                                 /**
                                  * The PouchDB RxStorage sometimes emits too old
                                  * document states when calling getChangedDocumentsSince()
@@ -373,10 +364,7 @@ export function startReplicationUpstream<RxDocType>(
                     return;
                 }
 
-                console.log('upstream write:');
-                console.log(JSON.stringify(writeRowsToMaster, null, 4));
                 const masterWriteResult = await state.input.masterInstance.bulkWrite(writeRowsToMaster);
-                console.log(JSON.stringify(masterWriteResult, null, 4));
                 const masterWriteErrors = new Set(Object.keys(masterWriteResult.error));
                 /**
                  * TODO here we have the most critical point in the replicaiton.
@@ -632,9 +620,6 @@ export function isDocumentStateFromUpstream<RxDocType>(
     state: RxStorageInstanceReplicationState<any>,
     docData: RxDocumentData<RxDocType>
 ): boolean {
-    console.log('isDocumentStateFromUpstream()');
-    console.log(JSON.stringify(docData, null, 4));
-
     const upstreamRev = docData._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX];
     if (
         (upstreamRev && upstreamRev === docData._rev) ||
@@ -642,10 +627,8 @@ export function isDocumentStateFromUpstream<RxDocType>(
             docData._meta[state.checkpointKey + UPSTREAM_MARKING_WRITE_FLAG_SUFFIX] === docData._rev
         )
     ) {
-        console.log('TRUE');
         return true;
     } else {
-        console.log('FALSE');
         return false;
     }
 }
