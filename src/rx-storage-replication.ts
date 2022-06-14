@@ -52,6 +52,17 @@ import {
  * and contains the full document.
  */
 const MASTER_CURRENT_STATE_FLAG_SUFFIX = '-master';
+
+/**
+ * Flags that a document write happened to
+ * update the 'current master' meta field, after
+ * the document has been pushed by the upstream.
+ * Contains the revision.
+ * Document states where this flag is equal to the current
+ * revision, must not be upstreamed again.
+ */
+const UPSTREAM_MARKING_WRITE_FLAG_SUFFIX = '-after-up';
+
 /**
  * Flags that a document state was written to the master
  * by the upstream from the fork.
@@ -166,6 +177,11 @@ export function startReplicationDownstream<RxDocType>(
                         delete useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX];
                         return { document: useDoc };
                     });
+
+
+                console.log('downstream init write rows:');
+                console.dir(writeRowsLeft);
+
                 while (writeRowsLeft.length > 0 && !state.canceled.getValue()) {
                     const writeResult = await state.input.forkInstance.bulkWrite(writeRowsLeft);
                     writeRowsLeft = [];
@@ -294,17 +310,21 @@ export function startReplicationUpstream<RxDocType>(
                     if (isDocumentStateFromDownstream(state, r.document)) {
                         return;
                     }
+                    if (isDocumentStateFromUpstream(state, r.document)) {
+                        return;
+                    }
                     const docId: string = (r.document as any)[state.primaryPath];
                     const useDoc = flatCloneDocWithMeta(r.document);
                     delete useDoc._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX];
                     useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX] = useDoc._rev;
                     const previous = r.document._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] as any;
-                    useDoc._rev = createRevision(useDoc, previous);
 
 
                     const toChildNewData = flatCloneDocWithMeta(r.document);
                     toChildNewData._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] = useDoc;
+                    toChildNewData._meta.lwt = now();
                     toChildNewData._rev = createRevision(toChildNewData, r.document);
+                    toChildNewData._meta[state.checkpointKey + UPSTREAM_MARKING_WRITE_FLAG_SUFFIX] = toChildNewData._rev;
 
 
                     writeRowsToChild[docId] = {
@@ -322,8 +342,10 @@ export function startReplicationUpstream<RxDocType>(
                     return;
                 }
 
+                console.log('upstream write:');
+                console.log(JSON.stringify(writeRowsToMaster, null, 4));
                 const masterWriteResult = await state.input.masterInstance.bulkWrite(writeRowsToMaster);
-
+                console.log(JSON.stringify(masterWriteResult, null, 4));
                 const masterWriteErrors = new Set(Object.keys(masterWriteResult.error));
                 /**
                  * TODO here we have the most critical point in the replicaiton.
@@ -583,7 +605,12 @@ export function isDocumentStateFromUpstream<RxDocType>(
     console.log(JSON.stringify(docData, null, 4));
 
     const upstreamRev = docData._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX];
-    if (upstreamRev && upstreamRev === docData._rev) {
+    if (
+        (upstreamRev && upstreamRev === docData._rev) ||
+        (
+            docData._meta[state.checkpointKey + UPSTREAM_MARKING_WRITE_FLAG_SUFFIX] === docData._rev
+        )
+    ) {
         console.log('TRUE');
         return true;
     } else {

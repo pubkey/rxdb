@@ -39,9 +39,9 @@ import { HumanDocumentType } from '../helper/schemas';
 
 config.parallel('rx-storage-replication.test.js (implementation: ' + config.storage.name + ')', () => {
     const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = () => {
-        throw new Error('THROWING_CONFLICT_HANDLER');
+        throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called.');
     }
-    const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (i: RxConflictHandlerInput<HumanDocumentType>) => {
+    const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = async (i: RxConflictHandlerInput<HumanDocumentType>) => {
         const docA = i.newDocumentStateInMaster;
         const docB = i.currentForkDocumentState;
 
@@ -54,13 +54,13 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         const ageA = docA.age ? docA.age : 0;
         const ageB = docB.age ? docB.age : 0;
         if (ageA > ageB) {
-            return Promise.resolve({
+            return {
                 resolvedDocumentState: docA
-            });
+            };
         } else if (ageB > ageA) {
-            return Promise.resolve({
+            return {
                 resolvedDocumentState: docB
-            });
+            };
         } else {
             console.error('EQUAL AGE (' + ageA + ') !!!');
             console.log(JSON.stringify(i, null, 4));
@@ -164,7 +164,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
     describe('helpers', () => {
 
     });
-    describe('up', () => {
+    describe('down', () => {
         it('it should write the initial data and also the ongoing insert', async () => {
             const masterInstance = await createRxStorageInstance(1);
             const forkInstance = await createRxStorageInstance(0);
@@ -195,7 +195,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             cleanUp(replicationState);
         });
     });
-    describe('down', () => {
+    describe('up', () => {
         it('it should write the initial data and also the ongoing insert', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(1);
@@ -213,6 +213,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             // check inital doc
             const docsOnMaster = await runQuery(masterInstance);
             assert.strictEqual(docsOnMaster.length, 1);
+
+
 
             // check ongoing doc
             await forkInstance.bulkWrite([{
@@ -304,7 +306,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             const forkDoc = (await runQuery(forkInstance))[0];
             // should only have the 'lwt' AND the current state of the master.
-            assert.strictEqual(Object.keys(forkDoc._meta).length, 2);
+            assert.strictEqual(Object.keys(forkDoc._meta).length, 3);
 
             cleanUp(replicationState);
         });
