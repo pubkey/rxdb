@@ -3,7 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- UPDATE Node.js to version `v18.2.0`
+- UPDATE Node.js to version `18.3.0`
 
 <!-- ADD new changes here! -->
 
