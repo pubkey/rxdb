@@ -288,6 +288,9 @@ export function startReplicationUpstream<RxDocType>(
             return !isDocumentStateFromDownstream(state, checkDoc as any);
         })
         if (hasNotFromDownstream) {
+            if (state.input.waitBeforePersist) {
+                await state.input.waitBeforePersist();
+            }
             addRunAgain();
         }
     });

@@ -47,6 +47,18 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * (will keep it's state after a process restart).
      */
     checkPointInstance?: RxStorageInstance<InternalStoreDocType, any, any>;
+
+    /**
+     * When a write happens to the fork,
+     * normally the replication will directly try to persist.
+     * 
+     * For many use cases, it is better to await the next event loop tick
+     * or to wait until the RxDatabase is idle or requestIdleCallback() calls
+     * to ensure the CPU is idle.
+     * This can improve performance because the persistence will not affect UI
+     * renders.
+     */
+    waitBeforePersist?: () => Promise<any>;
 };
 
 export type RxStorageInstanceReplicationState<RxDocType> = {

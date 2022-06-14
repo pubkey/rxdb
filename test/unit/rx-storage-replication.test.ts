@@ -18,7 +18,8 @@ import {
     RxStorageInstanceReplicationState,
     RxConflictHandlerInput,
     getFromObjectOrThrow,
-    awaitRxStorageReplicationIdle
+    awaitRxStorageReplicationIdle,
+    promiseWait
 } from '../../';
 
 import {
@@ -358,18 +359,15 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             cleanUp(replicationState);
         });
-    });
-    describe('stability', () => {
-        it('do many writes while replication is running', async () => {
-            const writeAmount = config.isFastMode() ? 5 : 30;
+        it('doing many writes on the fork should not lead to many writes on the master', async () => {
+            const writeAmount = config.isFastMode() ? 5 : 100;
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
 
-
             /**
-             * Wrap bulkWrite() to count the calls
-             */
+            * Wrap bulkWrite() to count the calls
+            */
             let writesOnMaster = 0;
             let writesOnFork = 0;
             const masterBulkWriteBefore = masterInstance.bulkWrite.bind(masterInstance);
@@ -382,6 +380,84 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 writesOnFork++;
                 return forkBulkWriteBefore(i);
             };
+
+
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                masterInstance,
+                forkInstance,
+                bulkSize: Math.ceil(writeAmount / 4),
+                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
+                /**
+                 * To give the fork some time to do additional writes
+                 * before the persistence is running,
+                 * we await 50 milliseconds.
+                 */
+                waitBeforePersist: () => promiseWait(70)
+            });
+
+            // insert
+            const document = getDocData();
+            document.passportId = 'foobar';
+            const docId = document.passportId;
+            const docData = Object.assign({}, clone(document), {
+                age: 0
+            });
+            docData._rev = createRevision(docData);
+            docData._meta.lwt = now();
+            const insertResult = await forkInstance.bulkWrite([{
+                document: docData
+            }]);
+            assert.deepStrictEqual(insertResult.error, {});
+
+
+            let updateId = 10;
+            async function updateDocOnce() {
+                let done = false;
+                while (!done) {
+                    if (randomBoolean()) {
+                        await wait(0);
+                    }
+                    const current = await forkInstance.findDocumentsById([docId], true);
+                    const currentDocState = getFromObjectOrThrow(current, docId);
+                    const newDocState = clone(currentDocState);
+                    newDocState._meta.lwt = now();
+                    newDocState.lastName = randomCouchString(12);
+                    newDocState.age = updateId++;
+                    newDocState._rev = createRevision(newDocState, currentDocState);
+
+                    const writeResult = await forkInstance.bulkWrite([{
+                        previous: currentDocState,
+                        document: newDocState
+                    }]);
+                    if (Object.keys(writeResult.success).length > 0) {
+                        done = true;
+                    }
+                }
+            }
+
+
+            let writesDone = 0;
+            while (writeAmount > writesDone) {
+                writesDone++;
+                await updateDocOnce();
+            }
+
+            /**
+             * Check write amounts
+             */
+            assert.ok(writesOnMaster < writeAmount);
+            assert.ok(writesOnMaster < writesOnFork);
+
+            cleanUp(replicationState);
+        });
+    });
+    describe('stability', () => {
+        it('do many writes while replication is running', async () => {
+            const writeAmount = config.isFastMode() ? 5 : 30;
+
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(0);
 
             const instances = [masterInstance, forkInstance];
             const replicationState = replicateRxStorageInstance({
@@ -466,15 +542,6 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await ensureEqualState(masterInstance, forkInstance);
 
             cleanUp(replicationState);
-
-
-            /**
-             * Check write amounts
-             */
-            console.dir({
-                writesOnMaster,
-                writesOnFork
-            });
         });
     });
 });
