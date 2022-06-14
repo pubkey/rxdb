@@ -57,6 +57,9 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * to ensure the CPU is idle.
      * This can improve performance because the persistence will not affect UI
      * renders.
+     * 
+     * But: The longer you wait here, the higher is the risk of loosing fork
+     * writes when the replicatoin is destroyed unexpected.
      */
     waitBeforePersist?: () => Promise<any>;
 };

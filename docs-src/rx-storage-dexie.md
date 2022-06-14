@@ -1,9 +1,9 @@
 # RxStorage Dexie.js
 
-Instead of using PouchDB as underlying storage engine, you can also use [Dexie.js](https://github.com/dexie/Dexie.js).
-Dexie.js is a minimal wrapper around IndexedDB that has a good performance.
+To store the data inside of IndexedDB in the browser, you can also use the [Dexie.js](https://github.com/dexie/Dexie.js) [RxStorage](./rx-storage.md).
 
-For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/mingo) query handler. And a copy of the query planner from the [PouchDB-find](https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules/pouchdb-find) plugin.
+Dexie.js is a minimal wrapper around IndexedDB that has a good performance.
+For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/mingo) query handler.
 
 **IMPORTANT:** The Dexie.js `RxStorage` is in **beta** mode. It may get breaking changes in any minor new RxDB version. Use at your own risk.
 
@@ -15,8 +15,7 @@ For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/m
 ## Cons
   - Does not support CouchDB replication.
   - It does not support attachments. (Make a pull request)
-  - Running many operations can be slow because the underlying [IndexedDB is slow](./slow-indexeddb.md).
-
+  - Does not use a [Batched Cursor](./slow-indexeddb.md) which makes it slower then the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
 
 ## Usage
 

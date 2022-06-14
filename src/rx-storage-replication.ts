@@ -12,6 +12,9 @@
  * 
  * This is made to be used internally by plugins
  * to get a really fast replication performance.
+ * 
+ * The replication works like git, where the fork contains all new writes
+ * and must be merged with the master before it can push it's new state to the master.
  */
 
 import {

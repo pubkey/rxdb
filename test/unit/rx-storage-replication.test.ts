@@ -444,10 +444,15 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             }
 
             /**
-             * Check write amounts
+             * Check write amounts.
+             * Comparing the write amount in fast mode
+             * makes no sense because we do too less writes
+             * to make a difference.
              */
-            assert.ok(writesOnMaster < writeAmount);
-            assert.ok(writesOnMaster < writesOnFork);
+            if(!config.isFastMode()){
+                assert.ok(writesOnMaster < writeAmount);
+                assert.ok(writesOnMaster < writesOnFork);
+            }
 
             cleanUp(replicationState);
         });
