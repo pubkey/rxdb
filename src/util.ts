@@ -529,6 +529,8 @@ export function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]> {
     return Array.isArray(x);
 }
 
+
+const USE_NODE_BLOB_BUFFER_METHODS = typeof FileReader === 'undefined';
 export const blobBufferUtil = {
     /**
      * depending if we are on node or browser,
@@ -547,14 +549,14 @@ export const blobBufferUtil = {
             } as any);
         }
 
-        try {
-            // for browsers
-            blobBuffer = new Blob([data], {
-                type
-            } as any);
-        } catch (e) {
+        if (USE_NODE_BLOB_BUFFER_METHODS) {
             // for node
             blobBuffer = Buffer.from(data, {
+                type
+            } as any);
+        } else {
+            // for browsers
+            blobBuffer = new Blob([data], {
                 type
             } as any);
         }
@@ -578,7 +580,15 @@ export const blobBufferUtil = {
             );
         }
 
-        try {
+
+        if (USE_NODE_BLOB_BUFFER_METHODS) {
+            // for node
+            blobBuffer = Buffer.from(
+                base64String,
+                'base64'
+            );
+            return blobBuffer;
+        } else {
             /**
              * For browsers.
              * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
@@ -586,15 +596,7 @@ export const blobBufferUtil = {
             const base64Response = await fetch(`data:${type};base64,${base64String}`);
             const blob = await base64Response.blob();
             return blob;
-        } catch (e) {
-            // for node
-            blobBuffer = Buffer.from(
-                base64String,
-                'base64'
-            );
         }
-
-        return blobBuffer;
     },
     isBlobBuffer(data: any): boolean {
         if ((typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) || data instanceof Blob) {
@@ -607,7 +609,8 @@ export const blobBufferUtil = {
         if (typeof blobBuffer === 'string') {
             return Promise.resolve(blobBuffer);
         }
-        if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
+
+        if (USE_NODE_BLOB_BUFFER_METHODS) {
             // node
             return nextTick()
                 .then(() => blobBuffer.toString());

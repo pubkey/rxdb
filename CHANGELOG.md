@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- UPDATE Node.js to version `18.3.0`
 - FIX: RxStorage should never emit an eventBulk with an empty events array.
 - Update PouchDB to `7.3.0` Thanks [@cetsupport](https://github.com/cetsupport).
 - CHANGE (RxStorage) revision hash must not include the `_meta` field.

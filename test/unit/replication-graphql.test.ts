@@ -39,6 +39,7 @@ import {
 import {
     getLastPullDocument,
     getLastPushCheckpoint,
+    RxReplicationError,
     setLastPullDocument
 } from '../../plugins/replication';
 import * as schemas from '../helper/schemas';
@@ -1413,7 +1414,10 @@ describe('replication-graphql.test.ts', () => {
                     first()
                 ).toPromise();
 
-                assert.ok(ensureNotFalsy(error).toString().includes('foobar'));
+                if (!error || (error as RxReplicationError<any>).type !== 'pull') {
+                    console.dir(error);
+                    throw error;
+                }
 
                 replicationState.cancel();
                 c.database.destroy();
