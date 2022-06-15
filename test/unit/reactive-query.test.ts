@@ -157,7 +157,7 @@ config.parallel('reactive-query.test.js', () => {
         it('changing many documents in one write should not lead to many query result emits', async () => {
             const c = await humansCollection.create(0);
 
-            const emitted: any[] = [];
+            const emitted: RxDocument<HumanDocumentType>[][] = [];
             const sub = c.find().$.subscribe(results => emitted.push(results));
             await waitUntil(() => emitted.length > 0);
 
@@ -165,7 +165,10 @@ config.parallel('reactive-query.test.js', () => {
                 new Array(10).fill(0).map(() => schemaObjects.human())
             );
             await wait(config.isFastMode() ? 50 : 100);
-            assert.strictEqual(emitted.length, 2);
+            assert.strictEqual(
+                emitted.length, 2,
+                JSON.stringify(emitted.map(result => result.map(doc => doc.toJSON())), null, 4)
+            );
 
             sub.unsubscribe();
             c.database.destroy();
