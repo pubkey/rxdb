@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 12.5.1 (15 June 2022)
+
 ### 12.5.0 (15 June 2022)
 
 - UPDATE Node.js to version `18.3.0`
