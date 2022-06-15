@@ -145,6 +145,7 @@ export class RxQueryBase<
                         return false;
                     }
                 }),
+                filter(result => !!result),
                 /**
                  * Map the result set to a single RxDocument or an array,
                  * depending on query type

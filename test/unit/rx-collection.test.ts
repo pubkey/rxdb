@@ -1604,7 +1604,7 @@ config.parallel('rx-collection.test.js', () => {
                     docData.firstName = 'test-many-atomic-upsert';
 
                     let t = 0;
-                    const amount = config.isFastMode() ? 20 : 5;
+                    const amount = config.isFastMode() ? 20 : 200;
 
                     const docs = await Promise.all(
                         new Array(amount)

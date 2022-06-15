@@ -92,12 +92,21 @@ export async function writeSingle<RxDocType>(
     }
 }
 
+
 export function storageChangeEventToRxChangeEvent<DocType>(
     isLocal: boolean,
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
     rxCollection?: RxCollection,
 ): RxChangeEvent<DocType> {
     let documentData;
+
+    /**
+     * TODO
+     * this data design is shit,
+     * instead of having the documentData depending on the operation,
+     * we should always have a current doc data, that might or might not
+     * have set _deleted to true.
+     */
     if (rxStorageChangeEvent.change.operation !== 'DELETE') {
         documentData = rxStorageChangeEvent.change.doc;
     }
@@ -460,7 +469,19 @@ export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWrite
     return useDoc;
 }
 
-
+/**
+ * Flat clone the document data
+ * and also the _meta field.
+ * Used many times when we want to change the meta
+ * during replication etc.
+ */
+export function flatCloneDocWithMeta<RxDocType>(
+    doc: RxDocumentData<RxDocType>
+): RxDocumentData<RxDocType> {
+    const ret = flatClone(doc);
+    ret._meta = flatClone(doc._meta);
+    return ret;
+}
 
 /**
  * Each event is labeled with the id
@@ -578,11 +599,6 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         hookParams.doc = data;
         runPluginHooks('preWriteToStorageInstance', hookParams);
         data = hookParams.doc;
-
-
-        // console.log('----------------------');
-        // console.dir(writeRow.previous);
-        // console.dir(data);
 
         /**
          * Update the revision after the hooks have run.

@@ -7,6 +7,7 @@
 - FIX: RxStorage should never emit an eventBulk with an empty events array.
 - Update PouchDB to `7.3.0` Thanks [@cetsupport](https://github.com/cetsupport).
 - CHANGE (RxStorage) revision hash must not include the `_meta` field.
+- Added new Stream replication for internal usage in plugins.
 
 <!-- ADD new changes here! -->
 

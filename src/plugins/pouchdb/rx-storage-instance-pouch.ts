@@ -59,6 +59,13 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     private subs: Subscription[] = [];
     private primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
+
+    /**
+     * Some PouchDB operations give wrong results when they run in parallel.
+     * So we have to ensure they are queued up.
+     */
+    private nonParallelQueue: Promise<any> = PROMISE_RESOLVE_VOID;
+
     constructor(
         public readonly storage: RxStorage<PouchStorageInternals, PouchSettings>,
         public readonly databaseName: string,
@@ -173,52 +180,54 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         });
 
         const previousDocsInDb: Map<string, RxDocumentData<any>> = new Map();
-        const pouchResult = await this.internals.pouch.bulkDocs(writeDocs, {
-            new_edits: false,
-            custom: {
-                primaryPath: this.primaryPath,
-                writeRowById,
-                insertDocsById,
-                previousDocsInDb
-            }
-        } as any);
-
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
             error: {}
         };
-        await Promise.all(
-            pouchResult.map(async (resultRow) => {
-                const writeRow = getFromMapOrThrow(writeRowById, resultRow.id);
-                if ((resultRow as PouchWriteError).error) {
-                    const previousDoc = getFromMapOrThrow(previousDocsInDb, resultRow.id);
-                    const err: RxStorageBulkWriteError<RxDocType> = {
-                        isError: true,
-                        status: 409,
-                        documentId: resultRow.id,
-                        writeRow,
-                        documentInDb: pouchDocumentDataToRxDocumentData(
-                            this.primaryPath,
-                            previousDoc
-                        )
-                    };
-                    ret.error[resultRow.id] = err;
-                } else {
-                    let pushObj: RxDocumentData<RxDocType> = flatClone(writeRow.document) as any;
-                    pushObj = pouchSwapIdToPrimary(this.primaryPath, pushObj);
-                    pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
-
-                    // replace the inserted attachments with their diggest
-                    pushObj._attachments = {};
-                    if (!writeRow.document._attachments) {
-                        writeRow.document._attachments = {};
-                    } else {
-                        pushObj._attachments = await writeAttachmentsToAttachments(writeRow.document._attachments);
-                    }
-                    ret.success[resultRow.id] = pushObj;
+        this.nonParallelQueue = this.nonParallelQueue.then(async () => {
+            const pouchResult = await this.internals.pouch.bulkDocs(writeDocs, {
+                new_edits: false,
+                custom: {
+                    primaryPath: this.primaryPath,
+                    writeRowById,
+                    insertDocsById,
+                    previousDocsInDb
                 }
-            })
-        );
+            } as any);
+            return Promise.all(
+                pouchResult.map(async (resultRow) => {
+                    const writeRow = getFromMapOrThrow(writeRowById, resultRow.id);
+                    if ((resultRow as PouchWriteError).error) {
+                        const previousDoc = getFromMapOrThrow(previousDocsInDb, resultRow.id);
+                        const err: RxStorageBulkWriteError<RxDocType> = {
+                            isError: true,
+                            status: 409,
+                            documentId: resultRow.id,
+                            writeRow,
+                            documentInDb: pouchDocumentDataToRxDocumentData(
+                                this.primaryPath,
+                                previousDoc
+                            )
+                        };
+                        ret.error[resultRow.id] = err;
+                    } else {
+                        let pushObj: RxDocumentData<RxDocType> = flatClone(writeRow.document) as any;
+                        pushObj = pouchSwapIdToPrimary(this.primaryPath, pushObj);
+                        pushObj._rev = (resultRow as PouchBulkDocResultRow).rev;
+
+                        // replace the inserted attachments with their diggest
+                        pushObj._attachments = {};
+                        if (!writeRow.document._attachments) {
+                            writeRow.document._attachments = {};
+                        } else {
+                            pushObj._attachments = await writeAttachmentsToAttachments(writeRow.document._attachments);
+                        }
+                        ret.success[resultRow.id] = pushObj;
+                    }
+                })
+            );
+        });
+        await this.nonParallelQueue;
         return ret;
     }
 
@@ -261,53 +270,53 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * @link https://stackoverflow.com/a/63516761/3443137
          */
         if (deleted) {
-            const viaChanges = await this.internals.pouch.changes({
-                live: false,
-                since: 0,
-                doc_ids: ids,
-                style: 'all_docs'
-            });
-
             const retDocs: { [documentId: string]: RxDocumentData<RxDocType> } = {};
-            await Promise.all(
-                viaChanges.results.map(async (result) => {
-                    const firstDoc = await this.internals.pouch.get(
-                        result.id,
-                        {
-                            rev: result.changes[0].rev,
-                            deleted: 'ok',
-                            style: 'all_docs'
-                        }
-                    );
-                    const useFirstDoc = pouchDocumentDataToRxDocumentData(
-                        this.primaryPath,
-                        firstDoc
-                    );
-                    retDocs[result.id] = useFirstDoc;
-                })
-            );
-            return retDocs;
-        }
-
-
-        const pouchResult = await this.internals.pouch.allDocs({
-            include_docs: true,
-            keys: ids
-        });
-
-        const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
-        pouchResult.rows
-            .filter(row => !!row.doc)
-            .forEach(row => {
-                let docData = row.doc;
-                docData = pouchDocumentDataToRxDocumentData(
-                    this.primaryPath,
-                    docData
+            this.nonParallelQueue = this.nonParallelQueue.then(async () => {
+                const viaChanges = await this.internals.pouch.changes({
+                    live: false,
+                    since: 0,
+                    doc_ids: ids,
+                    style: 'all_docs'
+                });
+                await Promise.all(
+                    viaChanges.results.map(async (result) => {
+                        const firstDoc = await this.internals.pouch.get(
+                            result.id,
+                            {
+                                rev: result.changes[0].rev,
+                                deleted: 'ok',
+                                style: 'all_docs'
+                            }
+                        );
+                        const useFirstDoc = pouchDocumentDataToRxDocumentData(
+                            this.primaryPath,
+                            firstDoc
+                        );
+                        retDocs[result.id] = useFirstDoc;
+                    })
                 );
-                ret[row.id] = docData;
             });
+            await this.nonParallelQueue;
+            return retDocs;
+        } else {
+            const pouchResult = await this.internals.pouch.allDocs({
+                include_docs: true,
+                keys: ids
+            });
+            const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
+            pouchResult.rows
+                .filter(row => !!row.doc)
+                .forEach(row => {
+                    let docData = row.doc;
+                    docData = pouchDocumentDataToRxDocumentData(
+                        this.primaryPath,
+                        docData
+                    );
+                    ret[row.id] = docData;
+                });
 
-        return ret;
+            return ret;
+        }
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {

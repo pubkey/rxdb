@@ -16,7 +16,6 @@ import {
     PROMISE_RESOLVE_NULL,
     PROMISE_RESOLVE_VOID,
     ensureNotFalsy,
-    parseRevision,
     createRevision,
     promiseWait
 } from './util';
@@ -417,14 +416,6 @@ export const basePrototype = {
         await this.collection._runHooks('pre', 'save', newData, this);
         this.collection.schema.validate(newData);
 
-
-        // TODO REMOVE THIS CHECK
-        const p1 = parseRevision(oldData._rev);
-        const p2 = parseRevision(newData._rev);
-        newData._rev = createRevision(newData, oldData);
-        if ((p1.height + 1 !== p2.height)) {
-            // throw new Error('REVISION NOT INCREMENTED! ' + p1.height + ' ' + p2.height);
-        }
 
         const writeResult = await this.collection.storageInstance.bulkWrite([{
             previous: oldData,

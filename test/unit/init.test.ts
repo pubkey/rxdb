@@ -35,10 +35,15 @@ if (config.platform.name !== 'node') {
     /**
      * exit with non-zero on unhandledRejection
      */
-    process.on('unhandledRejection', function (err) {
+    process.on('unhandledRejection', function (error, p) {
         console.log('init.test.js: unhandledRejection');
-        console.error(err);
-        process.exit(1);
+
+        // use log and error because some CI terminals do not show errors.
+        console.dir(p);
+        console.dir((error as any).stack);
+        console.error(error);
+        console.dir(error);
+        process.exit(5);
     });
 
     // log version

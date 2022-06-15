@@ -79,6 +79,8 @@ export {
 
 export * from './rx-storage-helper';
 
+export * from './rx-storage-replication';
+
 export * from './custom-index';
 export * from './query-planner';
 
@@ -155,6 +157,14 @@ export type {
     RxStorageChangeEvent,
     RxStorageInstance,
 
+    // stuff from the RxStorage replication
+    RxStorageInstanceReplicationInput,
+    RxStorageInstanceReplicationState,
+    RxConflictHandler,
+    RxConflictHandlerInput,
+    RxStorageReplicationDirection,
+
+    // other stuff
     RxDumpCollectionBase,
     RxDumpDatabaseAny,
     RxDumpDatabaseBase,
