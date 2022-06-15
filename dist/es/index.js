@@ -21,6 +21,7 @@ export * from './rx-query-helper';
 export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, getPreviousVersions, toTypedRxJsonSchema } from './rx-schema';
 export { getPseudoSchemaForVersion, getSchemaByObjectPath, fillPrimaryKey, getPrimaryFieldOfPrimaryKey, getComposedPrimaryKeyOfDocumentData, normalizeRxJsonSchema, fillWithDefaultSettings, RX_META_SCHEMA, getFinalFields } from './rx-schema-helper';
 export * from './rx-storage-helper';
+export * from './rx-storage-replication';
 export * from './custom-index';
 export * from './query-planner';
 export { _clearHook // used in tests

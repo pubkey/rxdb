@@ -360,6 +360,8 @@ var RxQueryBase = /*#__PURE__*/function () {
           } else {
             return false;
           }
+        }), (0, _operators.filter)(function (result) {
+          return !!result;
         }),
         /**
          * Map the result set to a single RxDocument or an array,

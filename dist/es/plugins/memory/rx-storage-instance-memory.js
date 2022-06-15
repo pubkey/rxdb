@@ -91,7 +91,11 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     categorized.attachmentsRemove.forEach(function (attachment) {
       attachmentsMap["delete"](attachmentMapKey(attachment.documentId, attachment.attachmentId));
     });
-    this.changes$.next(categorized.eventBulk);
+
+    if (categorized.eventBulk.events.length > 0) {
+      this.changes$.next(categorized.eventBulk);
+    }
+
     return Promise.resolve(ret);
   };
 

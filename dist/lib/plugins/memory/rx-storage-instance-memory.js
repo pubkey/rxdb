@@ -111,7 +111,11 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     categorized.attachmentsRemove.forEach(function (attachment) {
       attachmentsMap["delete"]((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId));
     });
-    this.changes$.next(categorized.eventBulk);
+
+    if (categorized.eventBulk.events.length > 0) {
+      this.changes$.next(categorized.eventBulk);
+    }
+
     return Promise.resolve(ret);
   };
 

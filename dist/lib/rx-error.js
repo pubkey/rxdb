@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxTypeError = exports.RxError = void 0;
-exports.isPouchdbConflictError = isPouchdbConflictError;
+exports.isBulkWriteConflictError = isBulkWriteConflictError;
 exports.newRxError = newRxError;
 exports.newRxTypeError = newRxTypeError;
 
@@ -133,10 +133,15 @@ function newRxError(code, parameters) {
 function newRxTypeError(code, parameters) {
   return new RxTypeError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }
+/**
+ * Returns the error if it is a 409 conflict,
+ * return false if it is another error.
+ */
 
-function isPouchdbConflictError(err) {
-  if (err.parameters && err.parameters.pouchDbError && err.parameters.pouchDbError.status === 409) {
-    return true;
+
+function isBulkWriteConflictError(err) {
+  if (err.status === 409) {
+    return err;
   } else {
     return false;
   }

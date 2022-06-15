@@ -333,6 +333,8 @@ export var RxQueryBase = /*#__PURE__*/function () {
           } else {
             return false;
           }
+        }), filter(function (result) {
+          return !!result;
         }),
         /**
          * Map the result set to a single RxDocument or an array,

@@ -225,12 +225,14 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
             return Promise.reject(e);
           }
         })).then(function () {
-          var endTime = (0, _util.now)();
-          eventBulk.events.forEach(function (event) {
-            return event.endTime = endTime;
-          });
+          if (eventBulk.events.length > 0) {
+            var endTime = (0, _util.now)();
+            eventBulk.events.forEach(function (event) {
+              return event.endTime = endTime;
+            });
 
-          _this2.changes$.next(eventBulk);
+            _this2.changes$.next(eventBulk);
+          }
 
           return ret;
         });

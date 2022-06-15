@@ -113,9 +113,14 @@ export function newRxError(code, parameters) {
 export function newRxTypeError(code, parameters) {
   return new RxTypeError(code, overwritable.tunnelErrorMessage(code), parameters);
 }
-export function isPouchdbConflictError(err) {
-  if (err.parameters && err.parameters.pouchDbError && err.parameters.pouchDbError.status === 409) {
-    return true;
+/**
+ * Returns the error if it is a 409 conflict,
+ * return false if it is another error.
+ */
+
+export function isBulkWriteConflictError(err) {
+  if (err.status === 409) {
+    return err;
   } else {
     return false;
   }

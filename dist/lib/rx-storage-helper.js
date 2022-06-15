@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = void 0;
 exports.categorizeBulkWriteRows = categorizeBulkWriteRows;
+exports.flatCloneDocWithMeta = flatCloneDocWithMeta;
 exports.getAllDocuments = void 0;
 exports.getAttachmentSize = getAttachmentSize;
 exports.getSingleDocument = void 0;
@@ -104,6 +105,13 @@ exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = RX_DATABASE_LOCAL_DOCS_STORAGE_NAM
 
 function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
   var documentData;
+  /**
+   * TODO
+   * this data design is shit,
+   * instead of having the documentData depending on the operation,
+   * we should always have a current doc data, that might or might not
+   * have set _deleted to true.
+   */
 
   if (rxStorageChangeEvent.change.operation !== 'DELETE') {
     documentData = rxStorageChangeEvent.change.doc;
@@ -135,7 +143,7 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
       throw (0, _rxError.newRxError)('COL19', {
         collection: collection.name,
         id: documentId,
-        pouchDbError: error,
+        error: error,
         data: writeData
       });
     } else {
@@ -405,6 +413,19 @@ function stripAttachmentsDataFromDocument(doc) {
   return useDoc;
 }
 /**
+ * Flat clone the document data
+ * and also the _meta field.
+ * Used many times when we want to change the meta
+ * during replication etc.
+ */
+
+
+function flatCloneDocWithMeta(doc) {
+  var ret = (0, _util.flatClone)(doc);
+  ret._meta = (0, _util.flatClone)(doc._meta);
+  return ret;
+}
+/**
  * Each event is labeled with the id
  * to make it easy to filter out duplicates.
  */
@@ -447,10 +468,35 @@ rxJsonSchema) {
 
   function transformDocumentDataFromRxDBToRxStorage(writeRow) {
     var data = (0, _util.flatClone)(writeRow.document);
-    data._meta = (0, _util.flatClone)(data._meta); // ensure primary key has not been changed
+    data._meta = (0, _util.flatClone)(data._meta);
+    /**
+     * Do some checks in dev-mode
+     * that would be too performance expensive
+     * in production.
+     */
 
     if (_overwritable.overwritable.isDevMode()) {
+      // ensure that the primary key has not been changed
       data = (0, _rxSchemaHelper.fillPrimaryKey)(primaryPath, rxJsonSchema, data);
+      /**
+       * Ensure that _meta fields have been merged
+       * and not replaced.
+       * This is important so that when one plugin A
+       * sets a _meta field and another plugin B does a write
+       * to the document, it must be ensured that the
+       * field of plugin A was not removed.
+       */
+
+      if (writeRow.previous) {
+        Object.keys(writeRow.previous._meta).forEach(function (metaFieldName) {
+          if (!writeRow.document._meta.hasOwnProperty(metaFieldName)) {
+            throw (0, _rxError.newRxError)('SNH', {
+              dataBefore: writeRow.previous,
+              dataAfter: writeRow.document
+            });
+          }
+        });
+      }
     }
 
     data._meta.lwt = (0, _util.now)();

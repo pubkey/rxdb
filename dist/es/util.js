@@ -5,26 +5,6 @@ import { default as deepClone } from 'clone';
  * programmatically but by using the correct import
  */
 
-function _catch(body, recover) {
-  try {
-    var result = body();
-  } catch (e) {
-    return recover(e);
-  }
-
-  if (result && result.then) {
-    return result.then(void 0, recover);
-  }
-
-  return result;
-}
-/**
- * this is a very fast hashing but its unsecure
- * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
- * @return a number as hash-result
- */
-
-
 export function pluginMissing(pluginKey) {
   var keyParts = pluginKey.split('-');
   var pluginName = 'RxDB';
@@ -34,6 +14,12 @@ export function pluginMissing(pluginKey) {
   pluginName += 'Plugin';
   return new Error("You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n            import { " + pluginName + " } from 'rxdb/plugins/" + pluginKey + "';\n            addRxPlugin(" + pluginName + ");\n        ");
 }
+/**
+ * this is a very fast hashing but its unsecure
+ * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
+ * @return a number as hash-result
+ */
+
 export function fastUnsecureHash(obj) {
   if (typeof obj !== 'string') obj = JSON.stringify(obj);
   var hashValue = 0,
@@ -415,8 +401,30 @@ export function createRevision(docData, previousDocData) {
   var newRevisionHeight = previousRevisionHeigth + 1;
   var docWithoutRev = Object.assign({}, docData, {
     _rev: undefined,
-    _rev_tree: undefined
+    _rev_tree: undefined,
+
+    /**
+     * All _meta properties MUST NOT be part of the
+     * revision hash.
+     * Plugins might temporarily store data in the _meta
+     * field and strip it away when the document is replicated
+     * or written to another storage.
+     */
+    _meta: undefined
   });
+  /**
+   * The revision height must be part of the hash
+   * as the last parameter of the document data.
+   * This is required to ensure we never ever create
+   * two different document states that have the same revision
+   * hash. Even writing the exact same document data
+   * must have to result in a different hash so that
+   * the replication can known if the state just looks equal
+   * or if it is really exactly the equal state in data and time.
+   */
+
+  delete docWithoutRev._rev;
+  docWithoutRev._rev = previousDocData ? newRevisionHeight : 1;
   var diggestString = JSON.stringify(docWithoutRev);
   var revisionHash = Md5.hash(diggestString);
   return newRevisionHeight + '-' + revisionHash;
@@ -480,6 +488,7 @@ export function isMaybeReadonlyArray(x) {
   // still performing runtime type inspection.
   return Array.isArray(x);
 }
+var USE_NODE_BLOB_BUFFER_METHODS = typeof FileReader === 'undefined';
 export var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
@@ -495,14 +504,14 @@ export var blobBufferUtil = {
       });
     }
 
-    try {
-      // for browsers
-      blobBuffer = new Blob([data], {
-        type: type
-      });
-    } catch (e) {
+    if (USE_NODE_BLOB_BUFFER_METHODS) {
       // for node
       blobBuffer = Buffer.from(data, {
+        type: type
+      });
+    } else {
+      // for browsers
+      blobBuffer = new Blob([data], {
         type: type
       });
     }
@@ -516,7 +525,6 @@ export var blobBufferUtil = {
    */
   createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
     try {
-      var _exit2 = false;
       var blobBuffer;
 
       if (isElectronRenderer) {
@@ -524,25 +532,19 @@ export var blobBufferUtil = {
         return Promise.resolve(Buffer.from(base64String, 'base64'));
       }
 
-      var _temp2 = _catch(function () {
+      if (USE_NODE_BLOB_BUFFER_METHODS) {
+        // for node
+        blobBuffer = Buffer.from(base64String, 'base64');
+        return Promise.resolve(blobBuffer);
+      } else {
         /**
          * For browsers.
          * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
          */
         return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
-          return Promise.resolve(base64Response.blob()).then(function (blob) {
-            _exit2 = true;
-            return blob;
-          });
+          return Promise.resolve(base64Response.blob());
         });
-      }, function () {
-        // for node
-        blobBuffer = Buffer.from(base64String, 'base64');
-      });
-
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function (_result) {
-        return _exit2 ? _result : blobBuffer;
-      }) : _exit2 ? _temp2 : blobBuffer);
+      }
     } catch (e) {
       return Promise.reject(e);
     }
@@ -559,7 +561,7 @@ export var blobBufferUtil = {
       return Promise.resolve(blobBuffer);
     }
 
-    if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
+    if (USE_NODE_BLOB_BUFFER_METHODS) {
       // node
       return nextTick().then(function () {
         return blobBuffer.toString();

@@ -12,6 +12,11 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     private changes$;
     private subs;
     private primaryPath;
+    /**
+     * Some PouchDB operations give wrong results when they run in parallel.
+     * So we have to ensure they are queued up.
+     */
+    private nonParallelQueue;
     constructor(storage: RxStorage<PouchStorageInternals, PouchSettings>, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: Readonly<PouchStorageInternals>, options: Readonly<PouchSettings>);
     close(): Promise<void>;
     remove(): Promise<void>;

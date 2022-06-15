@@ -355,23 +355,35 @@ var RxLocalDocumentPrototype = {
           }, void 0, function () {
             var oldDocData = _this2._dataSync$.getValue();
 
-            var _temp = _catch(function () {
-              // always await because mutationFunction might be async
-              return Promise.resolve(mutationFunction((0, _util.clone)(oldDocData.data), _this2)).then(function (newData) {
+            return Promise.resolve(mutationFunction((0, _util.clone)(oldDocData.data), _this2)).then(function (newData) {
+              var _temp = _catch(function () {
+                // always await because mutationFunction might be async
                 var newDocData = (0, _util.flatClone)(oldDocData);
                 newDocData.data = newData;
                 return Promise.resolve(_this2._saveData(newDocData, oldDocData)).then(function () {
                   done = true;
                 });
-              });
-            }, function (err) {
-              if ((0, _rxError.isPouchdbConflictError)(err)) {} else {
-                rej(err);
-                _exit2 = true;
-              }
-            });
+              }, function (err) {
+                /**
+                 * conflicts cannot happen by just using RxDB in one process
+                 * There are two ways they still can appear which is
+                 * replication and multi-tab usage
+                 * Because atomicUpdate has a mutation function,
+                 * we can just re-run the mutation until there is no conflict
+                 */
+                var isConflict = (0, _rxError.isBulkWriteConflictError)(err);
 
-            if (_temp && _temp.then) return _temp.then(function () {});
+                if (isConflict) {
+                  // conflict error -> retrying
+                  newData._rev = (0, _util.createRevision)(newData, isConflict.documentInDb);
+                } else {
+                  rej(err);
+                  _exit2 = true;
+                }
+              });
+
+              if (_temp && _temp.then) return _temp.then(function () {});
+            });
           });
 
           return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(_temp4) : _temp4(_temp5));

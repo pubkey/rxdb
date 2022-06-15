@@ -3,9 +3,9 @@ import objectPath from 'object-path';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { overwritable } from '../../overwritable';
 import { basePrototype, createRxDocumentConstructor } from '../../rx-document';
-import { isPouchdbConflictError, newRxError, newRxTypeError } from '../../rx-error';
+import { isBulkWriteConflictError, newRxError, newRxTypeError } from '../../rx-error';
 import { writeSingle } from '../../rx-storage-helper';
-import { clone, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
+import { clone, createRevision, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
 import { getLocalDocStateByParent } from './local-documents-helper';
 
 function _catch(body, recover) {
@@ -337,23 +337,35 @@ var RxLocalDocumentPrototype = {
           }, void 0, function () {
             var oldDocData = _this2._dataSync$.getValue();
 
-            var _temp = _catch(function () {
-              // always await because mutationFunction might be async
-              return Promise.resolve(mutationFunction(clone(oldDocData.data), _this2)).then(function (newData) {
+            return Promise.resolve(mutationFunction(clone(oldDocData.data), _this2)).then(function (newData) {
+              var _temp = _catch(function () {
+                // always await because mutationFunction might be async
                 var newDocData = flatClone(oldDocData);
                 newDocData.data = newData;
                 return Promise.resolve(_this2._saveData(newDocData, oldDocData)).then(function () {
                   done = true;
                 });
-              });
-            }, function (err) {
-              if (isPouchdbConflictError(err)) {} else {
-                rej(err);
-                _exit2 = true;
-              }
-            });
+              }, function (err) {
+                /**
+                 * conflicts cannot happen by just using RxDB in one process
+                 * There are two ways they still can appear which is
+                 * replication and multi-tab usage
+                 * Because atomicUpdate has a mutation function,
+                 * we can just re-run the mutation until there is no conflict
+                 */
+                var isConflict = isBulkWriteConflictError(err);
 
-            if (_temp && _temp.then) return _temp.then(function () {});
+                if (isConflict) {
+                  // conflict error -> retrying
+                  newData._rev = createRevision(newData, isConflict.documentInDb);
+                } else {
+                  rej(err);
+                  _exit2 = true;
+                }
+              });
+
+              if (_temp && _temp.then) return _temp.then(function () {});
+            });
           });
 
           return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(_temp4) : _temp4(_temp5));

@@ -71,6 +71,13 @@ bulkWriteRows: BulkWriteRow<RxDocType>[]): {
 export declare function stripAttachmentsDataFromRow<RxDocType>(writeRow: BulkWriteRow<RxDocType>): BulkWriteRow<RxDocType>;
 export declare function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWriteData<RxDocType>): RxDocumentData<RxDocType>;
 /**
+ * Flat clone the document data
+ * and also the _meta field.
+ * Used many times when we want to change the meta
+ * during replication etc.
+ */
+export declare function flatCloneDocWithMeta<RxDocType>(doc: RxDocumentData<RxDocType>): RxDocumentData<RxDocType>;
+/**
  * Each event is labeled with the id
  * to make it easy to filter out duplicates.
  */

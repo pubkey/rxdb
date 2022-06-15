@@ -147,6 +147,19 @@ Object.keys(_rxStorage2).forEach(function (key) {
   });
 });
 
+var _rxStorageReplication = require("./rx-storage-replication");
+
+Object.keys(_rxStorageReplication).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _rxStorageReplication[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxStorageReplication[key];
+    }
+  });
+});
+
 var _rxChangeEvent = require("./rx-change-event");
 
 Object.keys(_rxChangeEvent).forEach(function (key) {

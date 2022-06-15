@@ -193,7 +193,9 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
         });
         localState.databaseState.saveQueue.addWrite();
 
-        _this3.changes$.next(categorized.eventBulk);
+        if (categorized.eventBulk.events.length > 0) {
+          _this3.changes$.next(categorized.eventBulk);
+        }
 
         return ret;
       });

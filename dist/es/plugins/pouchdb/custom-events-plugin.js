@@ -6,6 +6,7 @@
  * Also we can better define what data we need for our events.
  * @link http://jsbin.com/pagebi/1/edit?js,output
  * @link https://github.com/pubkey/rxdb/blob/1f4115b69bdacbb853af9c637d70f5f184d4e474/src/rx-storage-pouchdb.ts#L273
+ * @link https://hasura.io/blog/couchdb-style-conflict-resolution-rxdb-hasura/
  */
 import PouchDBCore from 'pouchdb-core';
 import { Subject } from 'rxjs';
@@ -337,10 +338,11 @@ export function addCustomEventsPluginToPouch() {
               useRevisions.ids.unshift(newRev.hash);
               var useNewRev = useRevisions.start + '-' + newRev.hash;
               hasNonErrorWrite = true;
-              docs.push(Object.assign({}, insertDocsById.get(id), {
+              var writeToPouchDocData = Object.assign({}, insertDocsById.get(id), {
                 _revisions: useRevisions,
                 _rev: useNewRev
-              }));
+              });
+              docs.push(writeToPouchDocData);
               usePouchResult.push({
                 ok: true,
                 id: id,
@@ -430,7 +432,11 @@ export function addCustomEventsPluginToPouch() {
       var _this4 = this;
 
       var startTime = now();
-      var runId = i++; // normalize input
+      var runId = i++;
+      /**
+       * Normalize inputs
+       * because there are many ways to call pouchdb.bulkDocs()
+       */
 
       if (typeof options === 'function') {
         callback = options;

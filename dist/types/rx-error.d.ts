@@ -1,7 +1,7 @@
 /**
  * here we use custom errors with the additional field 'parameters'
  */
-import type { RxErrorParameters, RxErrorKey } from './types';
+import type { RxErrorParameters, RxErrorKey, RxStorageBulkWriteError } from './types';
 export declare class RxError extends Error {
     code: RxErrorKey;
     message: string;
@@ -24,4 +24,8 @@ export declare class RxTypeError extends TypeError {
 }
 export declare function newRxError(code: RxErrorKey, parameters?: RxErrorParameters): RxError;
 export declare function newRxTypeError(code: RxErrorKey, parameters?: RxErrorParameters): RxTypeError;
-export declare function isPouchdbConflictError(err: RxError | RxTypeError): boolean;
+/**
+ * Returns the error if it is a 409 conflict,
+ * return false if it is another error.
+ */
+export declare function isBulkWriteConflictError<RxDocType>(err: RxStorageBulkWriteError<RxDocType> | any): RxStorageBulkWriteError<RxDocType> | false;

@@ -535,8 +535,8 @@ var basePrototype = {
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
         try {
-          var _temp4 = function _temp4(_result2) {
-            if (_exit2) return _result2;
+          var _temp7 = function _temp7(_result3) {
+            if (_exit2) return _result3;
             res(_this2);
           };
 
@@ -544,33 +544,67 @@ var basePrototype = {
           var done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
           // while still having the option to run a retry on conflicts
 
-          var _temp5 = _for(function () {
+          var _temp8 = _for(function () {
             return !_exit2 && !done;
           }, void 0, function () {
-            var oldData = _this2._dataSync$.getValue();
+            function _temp4(_result) {
+              if (_exit2) return _result;
 
-            var _temp = _catch(function () {
-              // always await because mutationFunction might be async
-              return Promise.resolve(mutationFunction((0, _util.clone)(_this2._dataSync$.getValue()), _this2)).then(function (newData) {
-                if (_this2.collection) {
-                  newData = _this2.collection.schema.fillObjectWithDefaults(newData);
-                }
-
+              var _temp2 = _catch(function () {
                 return Promise.resolve(_this2._saveData(newData, oldData)).then(function () {
                   done = true;
                 });
+              }, function (err) {
+                var useError = err.parameters && err.parameters.error ? err.parameters.error : err;
+                /**
+                 * conflicts cannot happen by just using RxDB in one process
+                 * There are two ways they still can appear which is
+                 * replication and multi-tab usage
+                 * Because atomicUpdate has a mutation function,
+                 * we can just re-run the mutation until there is no conflict
+                 */
+
+                var isConflict = (0, _rxError.isBulkWriteConflictError)(useError);
+
+                var _temp = function () {
+                  if (isConflict) {
+                    // conflict error -> retrying
+                    newData._rev = (0, _util.createRevision)(newData, isConflict.documentInDb);
+                    return Promise.resolve((0, _util.promiseWait)(300)).then(function () {});
+                  } else {
+                    rej(useError);
+                    _exit2 = true;
+                  }
+                }();
+
+                return _temp && _temp.then ? _temp.then(function () {}) : void 0;
+              });
+
+              if (_temp2 && _temp2.then) return _temp2.then(function () {});
+            }
+
+            var oldData = _this2._dataSync$.getValue(); // always await because mutationFunction might be async
+
+
+            var newData;
+
+            var _temp3 = _catch(function () {
+              return Promise.resolve(mutationFunction((0, _util.clone)(oldData), _this2)).then(function (_mutationFunction) {
+                newData = _mutationFunction;
+
+                if (_this2.collection) {
+                  newData = _this2.collection.schema.fillObjectWithDefaults(newData);
+                }
               });
             }, function (err) {
-              if ((0, _rxError.isPouchdbConflictError)(err)) {} else {
-                rej(err);
-                _exit2 = true;
-              }
+              rej(err);
+              _exit2 = true;
             });
 
-            if (_temp && _temp.then) return _temp.then(function () {});
+            return _temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3);
           });
 
-          return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(_temp4) : _temp4(_temp5));
+          return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(_temp7) : _temp7(_temp8));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -600,8 +634,7 @@ var basePrototype = {
     try {
       var _this4 = this;
 
-      newData = newData; // deleted documents cannot be changed
-
+      // deleted documents cannot be changed
       if (_this4._isDeleted$.getValue()) {
         throw (0, _rxError.newRxError)('DOC11', {
           id: _this4.primary,
@@ -621,7 +654,6 @@ var basePrototype = {
         }])).then(function (writeResult) {
           var isError = writeResult.error[_this4.primary];
           (0, _rxStorageHelper.throwIfIsStorageWriteError)(_this4.collection, _this4.primary, newData, isError);
-          (0, _util.ensureNotFalsy)(writeResult.success[_this4.primary]);
           return _this4.collection._runHooks('post', 'save', newData, _this4);
         });
       });

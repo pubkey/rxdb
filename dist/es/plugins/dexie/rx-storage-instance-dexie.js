@@ -208,12 +208,14 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
             return Promise.reject(e);
           }
         })).then(function () {
-          var endTime = now();
-          eventBulk.events.forEach(function (event) {
-            return event.endTime = endTime;
-          });
+          if (eventBulk.events.length > 0) {
+            var endTime = now();
+            eventBulk.events.forEach(function (event) {
+              return event.endTime = endTime;
+            });
 
-          _this2.changes$.next(eventBulk);
+            _this2.changes$.next(eventBulk);
+          }
 
           return ret;
         });
