@@ -449,9 +449,15 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
              * makes no sense because we do too less writes
              * to make a difference.
              */
-            if(!config.isFastMode()){
-                assert.ok(writesOnMaster < writeAmount);
-                assert.ok(writesOnMaster < writesOnFork);
+            if (!config.isFastMode()) {
+                assert.ok(
+                    writesOnMaster < writeAmount,
+                    'Writes on master(' + writesOnMaster + ') not smaller then writeAmount (' + writeAmount + ')'
+                );
+                assert.ok(
+                    writesOnMaster < writesOnFork,
+                    'Writes on master(' + writesOnMaster + ') not smaller then writes on fork (' + writesOnFork + ')'
+                );
             }
 
             cleanUp(replicationState);
