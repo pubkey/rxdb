@@ -165,8 +165,8 @@ config.parallel('reactive-query.test.js', () => {
                 new Array(10).fill(0).map(() => schemaObjects.human())
             );
             await wait(config.isFastMode() ? 50 : 100);
-            assert.strictEqual(
-                emitted.length, 2,
+            assert.ok(
+                emitted.length <= 3,
                 JSON.stringify(emitted.map(result => result.map(doc => doc.toJSON())), null, 4)
             );
 
