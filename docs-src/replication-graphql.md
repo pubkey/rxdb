@@ -159,7 +159,7 @@ const pullQueryBuilder = doc => {
         };
     }
     const query = `{
-        feedForRxDBReplication(lastId: "${doc.name}", minUpdatedAt: ${doc.updatedAt}, limit: 5) {
+        feedForRxDBReplication(lastId: "${doc.id}", minUpdatedAt: ${doc.updatedAt}, limit: 5) {
             id,
             name,
             lastName,
