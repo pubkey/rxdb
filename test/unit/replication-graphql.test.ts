@@ -2141,6 +2141,79 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 db.destroy();
             });
+            it('#??? atomicUpsert fails when graphql is enabled', async () => {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    storage: config.storage.getStorage(),
+                    multiInstance: false,
+                    eventReduce: true,
+                    password: randomCouchString(10),
+                });
+                const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
+                const collections = await db.addCollections({
+                    humans: {
+                        schema,
+                    },
+                });
+                const collection = collections.humans;
+
+                const server = await SpawnServer.spawn();
+                assert.strictEqual(server.getDocuments().length, 0);
+
+                // start live replication
+                const replicationState = collection.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder,
+                    },
+                    pull: {
+                        batchSize,
+                        queryBuilder,
+                    },
+                    live: true,
+                    deletedFlag: 'deleted',
+                });
+
+                // ensure we are in sync even when there are no doc in the db at this moment
+                await replicationState.awaitInitialReplication();
+
+                // add one doc to the client database
+                const testData = getTestData(1).pop();
+                delete (testData as any).deleted;
+                await collection.insert(testData);
+
+                // sync
+                await replicationState.run();
+
+                assert.strictEqual(server.getDocuments().length, 1);
+
+                // update document
+                const newAge = 1111;
+                await collection.atomicUpsert({
+                    id: testData?.id,
+                    age: newAge,
+                    name: testData?.name,
+                    updatedAt: testData?.updatedAt,
+                });
+
+                const docAfter = await collection.findOne().exec(true);
+                assert.strictEqual(docAfter.age, newAge);
+
+                // check server
+                await replicationState.run();
+
+                await AsyncTestUtil.waitUntil(() => {
+                    const serverDocs = server.getDocuments();
+                    const notUpdated = serverDocs.find(
+                        (d: any) => d.age !== newAge
+                    );
+                    return !notUpdated;
+                });
+
+                server.close();
+                db.destroy();
+            });
             it('#2048 GraphQL .run() fires exponentially on push errors', async () => {
                 if (config.isFastMode()) {
                     // this test takes too long, do not run in fast mode
