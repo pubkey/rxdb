@@ -3,6 +3,9 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- Only check if final field have been changed in dev-mode.
+- Fix `atomicUpsert()` broken when document was replicated before. [#3856](https://github.com/pubkey/rxdb/pull/3856). Thanks [@AntonOfTheWoods](https://github.com/AntonOfTheWoods)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

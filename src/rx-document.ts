@@ -402,6 +402,7 @@ export const basePrototype = {
         newData: RxDocumentWriteData<RxDocumentType>,
         oldData: RxDocumentData<RxDocumentType>
     ): Promise<void> {
+        newData = flatClone(newData);
 
         // deleted documents cannot be changed
         if (this._isDeleted$.getValue()) {
@@ -411,8 +412,23 @@ export const basePrototype = {
             });
         }
 
+        /**
+         * Meta values must always be merged
+         * instead of overwritten.
+         * This ensures that different plugins do not overwrite
+         * each others meta properties.
+         */
+        newData._meta = Object.assign(
+            {},
+            oldData._meta,
+            newData._meta
+        )
+
         // ensure modifications are ok
-        this.collection.schema.validateChange(oldData, newData);
+        if (overwritable.isDevMode()) {
+            this.collection.schema.validateChange(oldData, newData);
+        }
+
         await this.collection._runHooks('pre', 'save', newData, this);
         this.collection.schema.validate(newData);
 
