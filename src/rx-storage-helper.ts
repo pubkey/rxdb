@@ -680,28 +680,27 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         collectionName: storageInstance.collectionName,
         databaseName: storageInstance.databaseName,
         options: storageInstance.options,
-        async bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
+        bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
             const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows
                 .map(row => transformDocumentDataFromRxDBToRxStorage(row));
 
-            const writeResult = await database.lockedRun(
+            return database.lockedRun(
                 () => storageInstance.bulkWrite(
                     toStorageWriteRows
                 )
-            );
-
-            const ret: RxStorageBulkWriteResponse<RxDocType> = {
-                success: {},
-                error: {}
-            };
-            Object.entries(writeResult.success).forEach(([k, v]) => {
-                ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
+            ).then(writeResult => {
+                const ret: RxStorageBulkWriteResponse<RxDocType> = {
+                    success: {},
+                    error: {}
+                };
+                Object.entries(writeResult.success).forEach(([k, v]) => {
+                    ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
+                });
+                Object.entries(writeResult.error).forEach(([k, error]) => {
+                    ret.error[k] = transformErrorDataFromRxStorageToRxDB(error);
+                });
+                return ret;
             });
-            Object.entries(writeResult.error).forEach(([k, error]) => {
-                ret.error[k] = transformErrorDataFromRxStorageToRxDB(error);
-            });
-
-            return ret;
         },
         query(preparedQuery) {
             return database.lockedRun(

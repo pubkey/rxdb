@@ -439,8 +439,6 @@ export class RxCollectionBase<
      * same as bulkInsert but overwrites existing document with same primary
      */
     async bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<RxDocument<RxDocumentType, OrmMethods>[]> {
-        console.log('bulkUpsert():');
-        console.dir(docsData);
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
         docsData.forEach(docData => {
