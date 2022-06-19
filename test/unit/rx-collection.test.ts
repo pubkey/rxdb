@@ -1134,9 +1134,6 @@ config.parallel('rx-collection.test.js', () => {
                     console.dir(docsAfter.map(d => d.toJSON(true)));
                     assert.strictEqual(docsAfter.length, 5);
                     c.database.destroy();
-
-
-                    // process.exit();
                 });
                 it('remove on findOne', async () => {
                     const c = await humansCollection.create(10);
@@ -1166,8 +1163,6 @@ config.parallel('rx-collection.test.js', () => {
                         name: randomCouchString(10),
                         storage: config.storage.getStorage(),
                     });
-
-
 
                     const collectionsCreator: { [k: string]: RxCollectionCreator } = {};
                     collectionNames.forEach(collectionName => {
@@ -2303,7 +2298,6 @@ config.parallel('rx-collection.test.js', () => {
              * or do additional writes. So we have to check for the revisions+docId strings.
              */
             const resultIds = new Set<string>();
-            console.dir(emitted);
             emitted.forEach(oneResult => {
                 let resultId = '';
                 Array.from(oneResult.entries()).forEach(([docId, docData]) => {
