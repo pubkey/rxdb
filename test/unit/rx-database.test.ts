@@ -18,9 +18,7 @@ import {
     getPrimaryKeyOfInternalDocument,
     INTERNAL_CONTEXT_ENCRYPTION,
     getSingleDocument,
-    parseRevision,
-    RxDatabase,
-    RxStorageQueryResult
+    RxDatabase
 } from '../../';
 
 

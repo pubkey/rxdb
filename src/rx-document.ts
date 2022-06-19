@@ -16,8 +16,7 @@ import {
     PROMISE_RESOLVE_NULL,
     PROMISE_RESOLVE_VOID,
     ensureNotFalsy,
-    createRevision,
-    promiseWait
+    createRevision
 } from './util';
 import {
     newRxError,

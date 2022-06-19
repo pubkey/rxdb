@@ -5,8 +5,7 @@ import {
 import {
     blobBufferUtil,
     createRevision,
-    flatClone,
-    now
+    flatClone
 } from './../util';
 import {
     newRxError

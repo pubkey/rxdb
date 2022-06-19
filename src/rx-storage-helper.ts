@@ -26,7 +26,6 @@ import type {
     StringKeys
 } from './types';
 import {
-    ensureNotFalsy,
     firstPropertyValueOfObject,
     flatClone,
     now,
