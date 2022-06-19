@@ -18,7 +18,8 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS,
     getDefaultRxDocumentMeta,
     getDefaultRevision,
-    nextTick
+    nextTick,
+    createRevision
 } from './util';
 import {
     fillObjectDataBeforeInsert,
@@ -324,14 +325,14 @@ export class RxCollectionBase<
         const docsMap: Map<string, RxDocumentType> = new Map();
         const insertRows: BulkWriteRow<RxDocumentType>[] = docs.map(doc => {
             docsMap.set((doc as any)[this.schema.primaryPath] as any, doc);
-            const row: BulkWriteRow<RxDocumentType> = {
-                document: Object.assign(doc, {
-                    _attachments: {},
-                    _meta: getDefaultRxDocumentMeta(),
-                    _rev: getDefaultRevision(),
-                    _deleted: false
-                })
-            };
+            const docData = Object.assign(doc, {
+                _attachments: {},
+                _meta: getDefaultRxDocumentMeta(),
+                _rev: getDefaultRevision(),
+                _deleted: false
+            });
+            docData._rev = createRevision(docData);
+            const row: BulkWriteRow<RxDocumentType> = { document: docData };
             return row;
         });
 
@@ -402,6 +403,7 @@ export class RxCollectionBase<
         const removeDocs: BulkWriteRow<RxDocumentType>[] = docsData.map(doc => {
             const writeDoc = flatClone(doc);
             writeDoc._deleted = true;
+            writeDoc._rev = createRevision(writeDoc, doc);
             return {
                 previous: doc,
                 document: writeDoc
@@ -437,6 +439,8 @@ export class RxCollectionBase<
      * same as bulkInsert but overwrites existing document with same primary
      */
     async bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<RxDocument<RxDocumentType, OrmMethods>[]> {
+        console.log('bulkUpsert():');
+        console.dir(docsData);
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
         docsData.forEach(docData => {

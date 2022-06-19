@@ -34,11 +34,16 @@ export type RxDocumentMeta = {
      */
     lwt: number;
 
+    sub?: {
+        is: string;
+        of: string;
+    };
+
     /**
      * Any other value can be attached to the _meta data.
      * Mostly done by plugins to mark documents.
      */
-    [k: string]: PlainJsonValue;
+    [k: string]: PlainJsonValue | any;
 };
 
 export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {

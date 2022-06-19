@@ -170,6 +170,7 @@ const RxLocalDocumentPrototype: any = {
         const state = await getLocalDocStateByParent(this.parent);
         const oldData: RxDocumentData<RxLocalDocumentData> = this._dataSync$.getValue() as any;
         newData.id = (this as any).id;
+        newData._rev = createRevision(newData, oldData);
         return state.storageInstance.bulkWrite([{
             previous: oldData,
             document: newData
@@ -194,6 +195,7 @@ const RxLocalDocumentPrototype: any = {
             _rev: getDefaultRevision(),
             _attachments: {}
         };
+        writeData._rev = createRevision(writeData, this._data);
         return writeSingle(state.storageInstance, {
             previous: this._data,
             document: writeData

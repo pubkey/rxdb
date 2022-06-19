@@ -1,4 +1,5 @@
 import {
+    createRevision,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta
@@ -48,6 +49,7 @@ export async function insertLocal<DocData = any>(
         _rev: getDefaultRevision(),
         _attachments: {}
     };
+    docData._rev = createRevision(docData);
 
     return writeSingle(
         state.storageInstance,

@@ -517,7 +517,12 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
         it('querying fast should still return the same RxDocument', async () => {
-            if (!config.platform.isNode()) return;
+            if (
+                !config.platform.isNode() ||
+                config.storage.name !== 'pouchdb'
+            ) {
+                return;
+            }
             // use a 'slow' adapter because memory might be to fast
             const leveldown = require('leveldown');
             const db = await createRxDatabase({

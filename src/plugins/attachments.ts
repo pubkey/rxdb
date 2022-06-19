@@ -4,7 +4,9 @@ import {
 
 import {
     blobBufferUtil,
-    flatClone
+    createRevision,
+    flatClone,
+    now
 } from './../util';
 import {
     newRxError
@@ -20,7 +22,7 @@ import type {
     RxAttachmentCreator,
     RxAttachmentWriteData
 } from '../types';
-import { hashAttachmentData, writeSingle } from '../rx-storage-helper';
+import { flatCloneDocWithMeta, hashAttachmentData, writeSingle } from '../rx-storage-helper';
 import { runAsyncPluginHooks } from '../hooks';
 
 function ensureSchemaSupportsAttachments(doc: any) {
@@ -71,14 +73,17 @@ export class RxAttachment {
     async remove(): Promise<void> {
         this.doc._atomicQueue = this.doc._atomicQueue
             .then(async () => {
-                const docWriteData: RxDocumentWriteData<{}> = flatClone(this.doc._data);
+                const docWriteData: RxDocumentWriteData<{}> = flatCloneDocWithMeta(this.doc._data);
                 docWriteData._attachments = flatClone(docWriteData._attachments);
                 delete docWriteData._attachments[this.id];
+
+
+                docWriteData._rev = createRevision(docWriteData, this.doc._data);
 
                 const writeResult: RxDocumentData<any> = await writeSingle(
                     this.doc.collection.storageInstance,
                     {
-                        previous: flatClone(this.doc._data),
+                        previous: flatClone(this.doc._data), // TODO do we need a flatClone here?
                         document: docWriteData
                     }
                 );
@@ -181,7 +186,7 @@ export async function putAttachment(
                 }
             }
 
-            const docWriteData: RxDocumentWriteData<{}> = flatClone(this._data);
+            const docWriteData: RxDocumentWriteData<{}> = flatCloneDocWithMeta(this._data);
             docWriteData._attachments = flatClone(docWriteData._attachments);
 
             docWriteData._attachments[id] = {
@@ -190,6 +195,8 @@ export async function putAttachment(
                 type,
                 data
             };
+
+            docWriteData._rev = createRevision(docWriteData, this._data);
 
             const writeRow = {
                 previous: flatClone(this._data),
