@@ -17,6 +17,7 @@ import {
     lastOfArray,
     getAllDocuments,
     RxCollection,
+    createRevision,
 } from '../../';
 
 import {
@@ -970,6 +971,7 @@ config.parallel('data-migration.test.js', () => {
                         // }
                     } as any
                 );
+                insertDocData._rev = createRevision(insertDocData);
                 await collection.storageInstance.bulkWrite([{
                     document: insertDocData
                 }]);

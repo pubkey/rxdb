@@ -16,8 +16,7 @@ import {
     PROMISE_RESOLVE_NULL,
     PROMISE_RESOLVE_VOID,
     ensureNotFalsy,
-    createRevision,
-    promiseWait
+    createRevision
 } from './util';
 import {
     newRxError,
@@ -363,7 +362,6 @@ export const basePrototype = {
                             if (isConflict) {
                                 // conflict error -> retrying
                                 newData._rev = createRevision(newData, isConflict.documentInDb);
-                                await promiseWait(300);
                             } else {
                                 rej(useError);
                                 return;
@@ -422,7 +420,7 @@ export const basePrototype = {
             {},
             oldData._meta,
             newData._meta
-        )
+        );
 
         // ensure modifications are ok
         if (overwritable.isDevMode()) {
@@ -430,6 +428,7 @@ export const basePrototype = {
         }
 
         await this.collection._runHooks('pre', 'save', newData, this);
+        newData._rev = createRevision(newData, oldData);
         this.collection.schema.validate(newData);
 
 
@@ -488,6 +487,7 @@ export const basePrototype = {
         return collection._runHooks('pre', 'remove', deletedData, this)
             .then(async () => {
                 deletedData._deleted = true;
+                deletedData._rev = createRevision(deletedData, this._data);
 
                 const writeResult = await collection.storageInstance.bulkWrite([{
                     previous: this._data,

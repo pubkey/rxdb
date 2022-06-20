@@ -26,10 +26,10 @@ import type {
     StringKeys
 } from './types';
 import {
-    createRevision,
     firstPropertyValueOfObject,
     flatClone,
     now,
+    parseRevision,
     randomCouchString
 } from './util';
 
@@ -556,6 +556,25 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             );
 
             /**
+             * Ensure that the new revision is higher
+             * then the previous one
+             */
+            if (writeRow.previous) {
+                const prev = parseRevision(writeRow.previous._rev);
+                const current = parseRevision(writeRow.document._rev);
+                if (current.height <= prev.height) {
+                    throw newRxError('SNH', {
+                        dataBefore: writeRow.previous,
+                        dataAfter: writeRow.document,
+                        args: {
+                            prev,
+                            current
+                        }
+                    });
+                }
+            }
+
+            /**
              * Ensure that _meta fields have been merged
              * and not replaced.
              * This is important so that when one plugin A
@@ -577,6 +596,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         }
 
         data._meta.lwt = now();
+
         const hookParams = {
             database,
             primaryPath,
@@ -600,17 +620,18 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         runPluginHooks('preWriteToStorageInstance', hookParams);
         data = hookParams.doc;
 
+
         /**
-         * Update the revision after the hooks have run.
-         * Do not update the revision if no previous is given,
-         * because the migration plugin must be able to do an insert
-         * with a pre-created revision.
+         * Do not update the revision here.
+         * The caller of bulkWrite() must be able to set
+         * the revision and to be sure that the given revision
+         * is used when storing the document.
+         * The revision must be provided by the caller of bulkWrite().
          */
-        if (
-            writeRow.previous ||
-            !data._rev
-        ) {
-            data._rev = createRevision(data, writeRow.previous);
+        if (!data._rev) {
+            throw newRxError('SNH', {
+                data
+            });
         }
 
         return {
@@ -633,6 +654,24 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         return hookParams.doc;
     }
 
+    function transformErrorDataFromRxStorageToRxDB<RxDocType>(
+        error: RxStorageBulkWriteError<RxDocType>
+    ): RxStorageBulkWriteError<RxDocType> {
+        const ret = flatClone(error);
+        ret.writeRow = flatClone(ret.writeRow);
+
+        if (ret.documentInDb) {
+            ret.documentInDb = transformDocumentDataFromRxStorageToRxDB(ret.documentInDb);
+        }
+
+        ret.writeRow.document = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.document);
+        if (ret.writeRow.previous) {
+            ret.writeRow.previous = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.previous);
+        }
+
+        return ret;
+    }
+
     const ret: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
         storage: storageInstance.storage,
         schema: storageInstance.schema,
@@ -643,6 +682,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
             const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows
                 .map(row => transformDocumentDataFromRxDBToRxStorage(row));
+
             return database.lockedRun(
                 () => storageInstance.bulkWrite(
                     toStorageWriteRows
@@ -652,13 +692,12 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                     success: {},
                     error: {}
                 };
-                Object.entries(writeResult.error).forEach(([k, v]) => {
-                    ret.error[k] = v;
-                });
                 Object.entries(writeResult.success).forEach(([k, v]) => {
                     ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
                 });
-
+                Object.entries(writeResult.error).forEach(([k, error]) => {
+                    ret.error[k] = transformErrorDataFromRxStorageToRxDB(error);
+                });
                 return ret;
             });
         },

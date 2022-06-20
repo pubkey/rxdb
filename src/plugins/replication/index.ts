@@ -28,6 +28,7 @@ import {
     setLastPushCheckpoint
 } from './replication-checkpoint';
 import {
+    createRevision,
     ensureInteger,
     ensureNotFalsy,
     flatClone,
@@ -437,13 +438,14 @@ export class RxReplicationStateBase<RxDocType> {
                     _rev: getDefaultRevision()
                 }
             );
+            writeDoc._rev = createRevision(writeDoc, docStateInLocalStorageInstance);
             setLastWritePullReplication(
                 this.replicationIdentifierHash,
                 writeDoc,
                 nextRevisionHeight
             );
             bulkWriteData.push({
-                previous: docStateInLocalStorageInstance ? docStateInLocalStorageInstance : undefined,
+                previous: docStateInLocalStorageInstance,
                 document: writeDoc
             });
         }

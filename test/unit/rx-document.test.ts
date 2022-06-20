@@ -439,7 +439,12 @@ config.parallel('rx-document.test.js', () => {
                 c.database.destroy();
             });
             it('should work when inserting on a slow storage', async () => {
-                if (!config.platform.isNode()) return;
+                if (
+                    !config.platform.isNode() ||
+                    config.storage.name !== 'pouchdb'
+                ) {
+                    return;
+                }
                 // use a 'slow' adapter because memory might be to fast
                 const leveldown = require('leveldown');
                 const db = await createRxDatabase({
@@ -454,15 +459,19 @@ config.parallel('rx-document.test.js', () => {
                 const c = cols.humans;
                 await c.insert(schemaObjects.simpleHuman());
                 const doc = await c.findOne().exec();
+
                 doc.atomicUpdate((innerDoc: any) => {
                     innerDoc.firstName = 'foobar';
                     return innerDoc;
                 });
+
                 await doc.atomicUpdate((innerDoc: any) => {
                     innerDoc.firstName = 'foobar2';
                     return innerDoc;
                 });
+
                 await AsyncTestUtil.wait(50);
+
                 await doc.atomicUpdate((innerDoc: any) => {
                     innerDoc.firstName = 'foobar3';
                     return innerDoc;

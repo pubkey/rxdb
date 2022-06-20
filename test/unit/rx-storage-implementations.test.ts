@@ -1667,9 +1667,18 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
 
                 const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
-                const sub = storageInstance.changeStream().subscribe(x => {
-                    emitted.push(x);
-                });
+                const sub = storageInstance.changeStream()
+                    .pipe(
+                        /**
+                         * Ensure the observable of changeStream()
+                         * is compatible with rxjs operators.
+                         */
+                        map(x => x),
+                        filter(() => true)
+                    )
+                    .subscribe(x => {
+                        emitted.push(x);
+                    });
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -1687,53 +1696,18 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     document: writeData
                 }]);
 
-                await wait(100);
+                /**
+                 * Do not await any time after the insert.
+                 * By definition, a call to bulkWrite()
+                 * must have emitted all of its resulting events
+                 * BEFORE the call to bulkWrite() returns.
+                 */
+
                 assert.strictEqual(emitted.length, 1);
                 assert.strictEqual(emitted[0].events.length, 1);
 
                 // should contain the _meta data
                 assert.ok((emitted as any)[0].events[0].change.doc._meta.lwt);
-
-                sub.unsubscribe();
-                storageInstance.close();
-            });
-            it('should be compatible with rxjs operators', async () => {
-                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {},
-                    multiInstance: false
-                });
-
-                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
-                const sub = storageInstance.changeStream()
-                    .pipe(
-                        map(x => x),
-                        filter(() => true)
-                    )
-                    .subscribe(x => {
-                        emitted.push(x);
-                    });
-
-                const writeData = {
-                    key: 'foobar',
-                    value: 'one',
-                    _rev: EXAMPLE_REVISION_1,
-                    _deleted: false,
-                    _attachments: {},
-                    _meta: {
-                        lwt: now()
-                    }
-                };
-
-                // insert
-                await storageInstance.bulkWrite([{
-                    document: writeData
-                }]);
-
-                await wait(100);
-                assert.strictEqual(emitted.length, 1);
 
                 sub.unsubscribe();
                 storageInstance.close();

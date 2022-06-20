@@ -20,3 +20,4 @@ pouch__all_dbs__/
 .eslintcache
 isolate-*
 release-body.md
+/test-db-*

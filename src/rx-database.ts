@@ -590,7 +590,11 @@ export async function _removeAllOfCollection(
         const writeDoc = flatClone(doc);
         writeDoc._deleted = true;
         writeDoc._rev = createRevision(writeDoc, doc);
-        writeDoc._meta = { lwt: now() };
+        writeDoc._meta = Object.assign(
+            {},
+            doc._meta,
+            { lwt: now() }
+        );
         return {
             previous: doc,
             document: writeDoc

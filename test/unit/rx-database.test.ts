@@ -18,7 +18,7 @@ import {
     getPrimaryKeyOfInternalDocument,
     INTERNAL_CONTEXT_ENCRYPTION,
     getSingleDocument,
-    parseRevision
+    RxDatabase
 } from '../../';
 
 
@@ -382,6 +382,26 @@ config.parallel('rx-database.test.js', () => {
                         schema: schemas.human
                     }
                 });
+
+                async function getStoreDocs(db: RxDatabase) {
+                    const result = await db.internalStore.query(
+                        db.storage.statics.prepareQuery(
+                            db.internalStore.schema,
+                            {
+                                selector: {
+                                    context: 'collection'
+                                },
+                                sort: [{ id: 'asc' }],
+                                skip: 0
+                            }
+                        )
+                    );
+                    return result.documents;
+                }
+                const storeDocsBefore = await getStoreDocs(db1);
+
+
+
                 await db1.destroy();
 
                 const db2 = await createRxDatabase({
@@ -396,23 +416,17 @@ config.parallel('rx-database.test.js', () => {
                     }
                 });
 
-                const internalStoreDocs = await db2.internalStore.query(
-                    db2.storage.statics.prepareQuery(
-                        db2.internalStore.schema,
-                        {
-                            selector: {
-                                context: 'collection'
-                            },
-                            sort: [{ id: 'asc' }],
-                            skip: 0
-                        }
-                    )
-                );
+                const storeDocsAfter = await getStoreDocs(db1);
 
-                // revision height must still be 1
-                const doc = Object.values(internalStoreDocs.documents)[0];
-                const parsedRev = parseRevision(doc._rev);
-                assert.strictEqual(parsedRev.height, 1);
+
+                /**
+                 * Revision must still be the same as before
+                 * because no write happened.
+                 */
+                assert.strictEqual(
+                    storeDocsBefore[0]._rev,
+                    storeDocsAfter[0]._rev
+                );
 
                 await db2.destroy();
             });
