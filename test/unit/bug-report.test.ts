@@ -9,7 +9,6 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
 import {
@@ -38,12 +37,13 @@ describe('bug-report.test.js', () => {
         // create a schema
         const mySchema = {
             version: 0,
-            primaryKey: 'passportId',
+            primaryKey: 'id',
             type: 'object',
             properties: {
-                passportId: {
+                id: {
                     type: 'string',
-                    maxLength: 100
+                    maxLength: 100,
+                    primary: true,
                 },
                 firstName: {
                     type: 'string'
@@ -81,12 +81,14 @@ describe('bug-report.test.js', () => {
         });
 
         // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        await collections.mycollection.bulkUpsert([
+            { id: 'id0001', firstName: 'Arnold', lastName: 'Snarold'},
+            { id: 'id0002', firstName: 'Brian', lastName: 'Koolun'},
+            { id: 'id0003', firstName: 'Ramish', lastName: 'Signna'},
+            { id: 'id0004', firstName: 'Ian', lastName: 'Putternal'},
+            { id: 'id0005', firstName: 'Milian', lastName: 'Sanchez'},
+            { id: 'id0006', firstName: 'Kascey', lastName: 'Piannal'},
+          ]);
 
         /**
          * to simulate the event-propagation over multiple browser-tabs,
@@ -106,24 +108,44 @@ describe('bug-report.test.js', () => {
         });
 
         // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        const set1 = await collectionInOtherTab.mycollection.find({
+            selector: {
+              '$or': [
+                { firstName: {'$eq': 'Ian' } },
+                { lastName: {'$eq': 'Piannal' } }
+              ]
+            }
+          }).exec();
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
+         * our first test should return 2 matches
+        */
+        assert.strictEqual(set1.length, 2);
 
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        const set2 = await collectionInOtherTab.mycollection.find({
+            selector: {
+              firstName: { '$regex': /.*ian.*/gi}
+            }
+          }).exec();
+
+        //  this second set should return 4 items ('Biran', 'Ian' & 'Milian')
+        assert.strictEqual(set2.length, 3);
+
+
+        const set3 = await collectionInOtherTab.mycollection.find({
+            selector: {
+              '$or': [
+                { firstName: {'$regex': /.*ian.*/gi } },
+                { surName: {'$regex': /.*ian.*/gi } }
+              ]
+            }
+          }).exec();
+
+        //  this second set should return 4 items ('Biran', 'Ian', 'Milian' and b/c of surname 'Kascey Piannal' )
+        assert.strictEqual(set3.length, 4);
+
 
         // clean up afterwards
         sub.unsubscribe();
