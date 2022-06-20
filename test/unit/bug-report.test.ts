@@ -46,17 +46,22 @@ describe('bug-report.test.js', () => {
                     primary: true,
                 },
                 firstName: {
-                    type: 'string'
+                    type: 'string',
+                    maxLength: 100,
                 },
                 lastName: {
-                    type: 'string'
+                    type: 'string',
+                    maxLength: 100,
                 },
                 age: {
                     type: 'integer',
                     minimum: 0,
                     maximum: 150
                 }
-            }
+            },
+            indexes: [
+                'firstName', 'lastName'
+            ]
         };
 
         // generate a random database-name
