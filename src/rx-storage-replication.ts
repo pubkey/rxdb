@@ -493,39 +493,43 @@ export function startReplicationUpstream<RxDocType>(
                                 );
                             })
                     );
-                    const forkWriteResult = await state.input.forkInstance.bulkWrite(conflictWriteFork);
-                    /**
-                     * Errors in the forkWriteResult must not be handled
-                     * because they have been caused by a write to the forkInstance
-                     * in between which will anyway trigger a new upstream cycle
-                     * that will then resolved the conflict again.
-                     */
 
-                    console.log('up writeToMasterQueue inner START - 4');
-                    console.dir(forkWriteResult.success);
-                    console.dir(Object.keys(forkWriteResult.success));
+                    if (conflictWriteFork.length > 0) {
 
-                    const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta>[] = [];
-                    Object
-                        .keys(forkWriteResult.success)
-                        .forEach((docId) => {
-                            console.log('docId ' + docId);
-                            console.dir(conflictWriteMeta);
-                            useMetaWrites.push(
-                                conflictWriteMeta[docId]
-                            );
-                        });
-                    console.log('up writeToMasterQueue inner START - 4.5');
-                    console.dir(useMetaWrites);
-                    try {
-                        await state.input.metaInstance.bulkWrite(useMetaWrites);
-                    } catch (err) {
-                        console.log('ERROR IN UP CYCLE');
-                        console.dir(err);
-                        process.exit(5);
+                        const forkWriteResult = await state.input.forkInstance.bulkWrite(conflictWriteFork);
+                        /**
+                         * Errors in the forkWriteResult must not be handled
+                         * because they have been caused by a write to the forkInstance
+                         * in between which will anyway trigger a new upstream cycle
+                         * that will then resolved the conflict again.
+                         */
+
+                        console.log('up writeToMasterQueue inner START - 4');
+                        console.dir(forkWriteResult.success);
+                        console.dir(Object.keys(forkWriteResult.success));
+
+                        const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta>[] = [];
+                        Object
+                            .keys(forkWriteResult.success)
+                            .forEach((docId) => {
+                                console.log('docId ' + docId);
+                                console.dir(conflictWriteMeta);
+                                useMetaWrites.push(
+                                    conflictWriteMeta[docId]
+                                );
+                            });
+                        console.log('up writeToMasterQueue inner START - 4.5');
+                        console.dir(useMetaWrites);
+                        try {
+                            await state.input.metaInstance.bulkWrite(useMetaWrites);
+                        } catch (err) {
+                            console.log('ERROR IN UP CYCLE');
+                            console.dir(err);
+                            process.exit(5);
+                        }
+                        // TODO what to do with conflicts while writing to the metaInstance?
+                        console.log('up writeToMasterQueue inner START - 5');
                     }
-                    // TODO what to do with conflicts while writing to the metaInstance?
-                    console.log('up writeToMasterQueue inner START - 5');
                 }
             }));
         }
