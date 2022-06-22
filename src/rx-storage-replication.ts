@@ -46,8 +46,6 @@ import {
     fastUnsecureHash,
     lastOfArray,
     now,
-    parseRevision,
-    promiseWait,
     PROMISE_RESOLVE_VOID
 } from './util';
 
@@ -416,7 +414,6 @@ export function startReplicationUpstream<RxDocType>(
 
                 // used to not have infinity loop during development
                 // that cannot be exited via Ctrl+C
-                // TODO remove this
                 // await promiseWait(0);
 
                 if (state.canceled.getValue()) {

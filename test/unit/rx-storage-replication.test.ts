@@ -333,7 +333,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             // should only have the 'lwt' and the revision from the upstream.
             assert.strictEqual(Object.keys(masterDoc._meta).length, 2)
 
-            const forkDoc = (await runQuery(forkInstance))[0];
+            // const forkDoc = (await runQuery(forkInstance))[0];
             // should only have the 'lwt' AND the current state of the master.
             // assert.strictEqual(Object.keys(forkDoc._meta).length, 3); // TODO
 
