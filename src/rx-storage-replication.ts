@@ -24,48 +24,32 @@ import {
     firstValueFrom
 } from 'rxjs';
 import {
-    getPrimaryKeyOfInternalDocument,
-    InternalStoreDocType
-} from './rx-database-internal-store';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
+    fillWithDefaultSettings,
+    getComposedPrimaryKeyOfDocumentData,
+    getPrimaryFieldOfPrimaryKey
+} from './rx-schema-helper';
 import { flatCloneDocWithMeta } from './rx-storage-helper';
 import type {
     BulkWriteRow,
     RxConflictHandler,
     RxDocumentData,
+    RxJsonSchema,
     RxStorageBulkWriteError,
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
-    RxStorageReplicationDirection
+    RxStorageReplicationDirection,
+    RxStorageReplicationMeta
 } from './types';
 import {
     createRevision,
     ensureNotFalsy,
     fastUnsecureHash,
-    flatClone,
     lastOfArray,
     now,
     parseRevision,
     PROMISE_RESOLVE_VOID
 } from './util';
 
-/**
- * Flags which document state is assumed
- * to be the current state at the master RxStorage instance.
- * Used in the ._meta of the document data that is stored at the client
- * and contains the full document.
- */
-const MASTER_CURRENT_STATE_FLAG_SUFFIX = '-master';
-
-/**
- * Flags that a document write happened to
- * update the 'current master' meta field, after
- * the document has been pushed by the upstream.
- * Contains the revision.
- * Document states where this flag is equal to the current
- * revision, must not be upstreamed again.
- */
-const UPSTREAM_MARKING_WRITE_FLAG_SUFFIX = '-after-up';
 
 /**
  * Flags that a document state was written to the master
@@ -78,6 +62,54 @@ const UPSTREAM_MARKING_WRITE_FLAG_SUFFIX = '-after-up';
  * calls so that the emitted events can be detected as being from the upstream.
  */
 const FROM_FORK_FLAG_SUFFIX = '-fork';
+
+
+export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> = fillWithDefaultSettings({
+    primaryKey: {
+        key: 'id',
+        fields: [
+            'replicationIdentifier',
+            'itemId',
+            'isCheckpoint'
+        ],
+        separator: '|'
+    },
+    type: 'object',
+    version: 0,
+    additionalProperties: false,
+    properties: {
+        id: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 100
+        },
+        replicationIdentifier: {
+            type: 'string'
+        },
+        isCheckpoint: {
+            type: 'string',
+            enum: [
+                '0',
+                '1'
+            ],
+            maxLength: 1
+        },
+        itemId: {
+            type: 'string'
+        },
+        data: {
+            type: 'object',
+            additionalProperties: true
+        }
+    },
+    required: [
+        'id',
+        'replicationIdentifier',
+        'isCheckpoint',
+        'itemId',
+        'data'
+    ]
+});
 
 export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
@@ -171,66 +203,106 @@ export function startReplicationDownstream<RxDocType>(
                 done = true;
                 continue;
             }
+
+            const useDownDocs = downResult
+                .map(r => r.document)
+                .filter(d => !isDocumentStateFromUpstream(state, d));
             state.lastCheckpoint.down = lastOfArray(downResult).checkpoint;
             writeToChildQueue = writeToChildQueue.then((async () => {
-                let writeRowsLeft: BulkWriteRow<RxDocType>[] = downResult
-                    .filter(r => !isDocumentStateFromUpstream(state, r.document))
-                    .map(r => {
-                        const useDoc = flatCloneDocWithMeta(r.document);
-                        useDoc._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] = r.document;
-                        delete useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX];
-                        return { document: useDoc };
+
+
+                const downDocsById: {
+                    [docId: string]: RxDocumentData<RxDocType>
+                } = {};
+                const docIds = useDownDocs
+                    .map(d => {
+                        const id = (d as any)[state.primaryPath];
+                        downDocsById[id] = d;
+                        return id;
                     });
 
-                while (writeRowsLeft.length > 0 && !state.canceled.getValue()) {
-                    const writeResult = await state.input.forkInstance.bulkWrite(writeRowsLeft);
-                    writeRowsLeft = [];
+                const [
+                    currentForkState,
+                    assumedMasterState
+                ] = await Promise.all([
+                    state.input.forkInstance.findDocumentsById(docIds, true),
+                    getAssumedMasterState(
+                        state,
+                        docIds
+                    )
+                ]);
 
-                    await Promise.all(
-                        Object.values(writeResult.error)
-                            .map(async (error: RxStorageBulkWriteError<RxDocType>) => {
-                                /**
-                                 * The PouchDB RxStorage sometimes emits too old
-                                 * document states when calling getChangedDocumentsSince()
-                                 * Therefore we filter out conflicts where the new master state
-                                 * is older then the master state at fork time.
-                                 * 
-                                 * On other RxStorage implementations this should never be the case
-                                 * because getChangedDocumentsSince() must always return the current newest
-                                 * document state, not the state at the write time of the event.
-                                 */
-                                const docInDb = ensureNotFalsy(error.documentInDb);
-                                const docAtForkTime: RxDocumentData<RxDocType> | undefined = docInDb._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] as any;
-                                if (docAtForkTime) {
-                                    const newRevHeigth = parseRevision(error.writeRow.document._rev).height;
-                                    const docInMasterRevHeight = parseRevision(docAtForkTime._rev).height;
-                                    if (newRevHeigth <= docInMasterRevHeight) {
-                                        return;
-                                    }
-                                }
+                const writeRowsToFork: BulkWriteRow<RxDocType>[] = [];
+                const writeRowsToMeta: {
+                    [docId: string]: BulkWriteRow<RxStorageReplicationMeta>
+                } = {};
+                const useMetaWriteRows: BulkWriteRow<RxStorageReplicationMeta>[] = [];
+                docIds.forEach(docId => {
+                    const forkState: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
+                    const masterState = downDocsById[docId];
+                    const assumedMaster = assumedMasterState[docId];
 
+                    if (
+                        forkState && assumedMaster &&
+                        assumedMaster.docData._rev !== forkState._rev
+                    ) {
+                        /**
+                         * We have a non-upstream-replicated
+                         * local write to the fork.
+                         * This means we ignore the downstream of this document
+                         * because anyway the upstream will first resolve the conflict.
+                         */
+                        return;
+                    }
 
-                                const resolved = await resolveConflictError(
-                                    state.input.conflictHandler,
-                                    error
-                                );
-                                if (resolved) {
-                                    /**
-                                     * Keep the meta data of the original
-                                     * document from the master.
-                                     */
-                                    const resolvedDoc = flatClone(resolved);
-                                    resolvedDoc._meta = flatClone(error.writeRow.document._meta);
-                                    resolvedDoc._meta.lwt = now();
+                    if (
+                        forkState &&
+                        forkState._rev === masterState._rev
+                    ) {
+                        /**
+                         * Document states are exactly equal.
+                         * This can happen when the replication is shut down
+                         * unexpected like when the user goes offline.
+                         * 
+                         * Only when the assumedMaster is differnt from the forkState,
+                         * we have to patch the document in the meta instance.
+                         */
 
-                                    writeRowsLeft.push({
-                                        previous: ensureNotFalsy(error.documentInDb),
-                                        document: resolvedDoc
-                                    });
-                                }
-                            })
+                        if (
+                            !assumedMaster ||
+                            assumedMaster.docData._rev !== forkState._rev
+                        ) {
+                            useMetaWriteRows.push(
+                                getMetaWriteRow(
+                                    state,
+                                    forkState,
+                                    assumedMaster ? assumedMaster.metaDocument : undefined
+                                )
+                            );
+                        }
+                        return;
+                    }
+
+                    /**
+                     * All other master states need to be written to the forkInstance
+                     * and metaInstance.
+                     */
+                    writeRowsToFork.push({
+                        previous: forkState,
+                        document: masterState
+                    });
+                    writeRowsToMeta[docId] = getMetaWriteRow(
+                        state,
+                        masterState,
+                        assumedMaster ? assumedMaster.metaDocument : undefined
                     );
-                }
+                });
+
+                const forkWriteResult = await state.input.forkInstance.bulkWrite(writeRowsToFork);
+                Object.keys(forkWriteResult.success).forEach((docId) => {
+                    useMetaWriteRows.push(writeRowsToMeta[docId]);
+                });
+                await state.input.metaInstance.bulkWrite(useMetaWriteRows);
             }));
         }
         await writeToChildQueue;
@@ -324,71 +396,108 @@ export function startReplicationUpstream<RxDocType>(
                     return;
                 }
 
-                const writeRowsToChild: {
-                    [docId: string]: BulkWriteRow<RxDocType>
-                } = {};
-                const writeRowsToMaster: BulkWriteRow<RxDocType>[] = [];
-                upResult.forEach(r => {
-                    if (isDocumentStateFromDownstream(state, r.document)) {
-                        return;
-                    }
-                    if (isDocumentStateFromUpstream(state, r.document)) {
-                        return;
-                    }
-                    const docId: string = (r.document as any)[state.primaryPath];
-                    const useDoc = flatCloneDocWithMeta(r.document);
-                    delete useDoc._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX];
-                    useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX] = useDoc._rev;
-                    const previous = r.document._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] as any;
 
-
-                    const toChildNewData = flatCloneDocWithMeta(r.document);
-                    toChildNewData._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] = useDoc;
-                    toChildNewData._meta.lwt = now();
-                    toChildNewData._rev = createRevision(toChildNewData, r.document);
-                    toChildNewData._meta[state.checkpointKey + UPSTREAM_MARKING_WRITE_FLAG_SUFFIX] = toChildNewData._rev;
-
-
-                    writeRowsToChild[docId] = {
-                        previous: r.document,
-                        document: toChildNewData
-                    };
-                    writeRowsToMaster.push({
-                        previous,
-                        document: useDoc
-                    });
-                });
-
-                if (writeRowsToMaster.length === 0) {
-                    hadConflicts = false;
+                const useUpDocs = upResult
+                    .filter(r => (
+                        !isDocumentStateFromDownstream(state, r.document) &&
+                        !isDocumentStateFromUpstream(state, r.document)
+                    ))
+                    .map(r => r.document);
+                if (useUpDocs.length === 0) {
                     return;
                 }
 
+                const assumedMasterState = await getAssumedMasterState(
+                    state,
+                    useUpDocs.map(d => (d as any)[state.primaryPath])
+                );
+
+
+                const writeRowsToMaster: BulkWriteRow<RxDocType>[] = [];
+                const writeRowsToMeta: {
+                    [docId: string]: BulkWriteRow<RxStorageReplicationMeta>
+                } = {};
+
+                useUpDocs.forEach(doc => {
+                    const docId: string = (doc as any)[state.primaryPath];
+                    const useDoc = flatCloneDocWithMeta(doc);
+                    useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX] = useDoc._rev;
+
+                    const assumedMasterDoc = assumedMasterState[docId];
+
+                    writeRowsToMaster.push({
+                        previous: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
+                        document: useDoc
+                    });
+                    writeRowsToMeta[docId] = getMetaWriteRow(
+                        state,
+                        useDoc,
+                        assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined
+                    );
+                });
+
                 const masterWriteResult = await state.input.masterInstance.bulkWrite(writeRowsToMaster);
-                const masterWriteErrors = new Set(Object.keys(masterWriteResult.error));
-                /**
-                 * TODO here we have the most critical point in the replicaiton.
-                 * If the child RxStorage is closed or the process exits between
-                 * the write to master and the write to the child,
-                 * we can land in a state where the child does not remember
-                 * that a document was already pushed to the master
-                 * and will try to do that again which will lead to a replication conflict
-                 * even if there should be none.
-                 */
-                const useWriteRowsToChild: BulkWriteRow<RxDocType>[] = [];
-                Object.entries(writeRowsToChild).forEach(([docId, writeRow]) => {
-                    if (!masterWriteErrors.has(docId)) {
-                        useWriteRowsToChild.push(writeRow);
-                    }
-                })
-                let childWriteResult;
-                if (useWriteRowsToChild.length > 0) {
-                    childWriteResult = await state.input.forkInstance.bulkWrite(useWriteRowsToChild);
+
+
+                const useWriteRowsToMeta: BulkWriteRow<RxStorageReplicationMeta>[] = [];
+                Object.keys(masterWriteResult.success).forEach(docId => {
+                    useWriteRowsToMeta.push(writeRowsToMeta[docId]);
+                });
+                if (useWriteRowsToMeta.length > 0) {
+                    await state.input.metaInstance.bulkWrite(useWriteRowsToMeta);
+                    // TODO what happens when we have conflicts here?
                 }
 
-                // TODO check if has non-409 errors and then throw
-                hadConflicts = Object.keys(masterWriteResult.error).length > 0 ||
-                    (!!childWriteResult && Object.keys(childWriteResult.error).length > 0);
+                /**
+                 * Resolve conflicts by writing a new document
+                 * state to the fork instance and the 'real' master state
+                 * to the meta instance.
+                 * 
+                 * TODO check if has non-409 errors and then throw
+                 */
+                if (Object.keys(masterWriteResult.error).length > 0) {
+                    hadConflicts = true;
+                    const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
+                    const conflictWriteMeta: { [docId: string]: BulkWriteRow<RxStorageReplicationMeta> } = {};
+                    await Promise.all(
+                        Object
+                            .entries(masterWriteResult.error)
+                            .map(async ([docId, error]) => {
+                                const resolved = await resolveConflictError(
+                                    state.input.conflictHandler,
+                                    error
+                                );
+                                if (resolved) {
+                                    conflictWriteFork.push({
+                                        previous: error.documentInDb,
+                                        document: resolved
+                                    });
+                                }
+                                const assumedMasterDoc = assumedMasterState[docId];
+                                conflictWriteMeta[docId] = getMetaWriteRow(
+                                    state,
+                                    ensureNotFalsy(error.documentInDb),
+                                    assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined
+                                );
+                            })
+                    );
+                    const forkWriteResult = await state.input.forkInstance.bulkWrite(conflictWriteFork);
+                    /**
+                     * Errors in the forkWriteResult must not be handled
+                     * because they have been caused by a write to the forkInstance
+                     * in between which will anyway trigger a new upstream cycle
+                     * that will then resolved the conflict again.
+                     */
+
+                    const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta>[] = [];
+                    Object.keys(forkWriteResult.success).forEach(([docId]) => {
+                        useMetaWrites.push(
+                            conflictWriteMeta[docId]
+                        );
+                    });
+                    await state.input.metaInstance.bulkWrite(useMetaWrites);
+                    // TODO what to do with conflicts while writing to the metaInstance?
+                }
             }));
         }
 
@@ -403,12 +512,9 @@ export function startReplicationUpstream<RxDocType>(
         if (hadConflicts) {
             /**
              * If we had a conflict,
-             * we have to first wait until the downstream
-             * is idle so we know that it had resolved all conflicts.
-             * Then we can run the upstream again.
+             * we directly re-trigger the upstream cycle.
              */
             state.streamQueue.up = state.streamQueue.up
-                .then(() => state.streamQueue.down)
                 .then(() => {
                     addRunAgain();
                 });
@@ -424,19 +530,17 @@ export async function getLastCheckpointDoc<RxDocType>(
     direction: RxStorageReplicationDirection
 ): Promise<undefined | {
     checkpoint: any;
-    checkpointDoc?: RxDocumentData<InternalStoreDocType>;
+    checkpointDoc?: RxDocumentData<RxStorageReplicationMeta>;
 }> {
-    if (!state.input.checkPointInstance) {
-        return {
-            checkpoint: state.lastCheckpoint[direction]
-        };
-    }
-
-    const checkpointDocId = getPrimaryKeyOfInternalDocument(
-        state.checkpointKey + '-' + direction,
-        'OTHER'
+    const checkpointDocId = getComposedPrimaryKeyOfDocumentData(
+        RX_REPLICATION_META_INSTANCE_SCHEMA,
+        {
+            isCheckpoint: '1',
+            itemId: direction,
+            replicationIdentifier: state.checkpointKey
+        }
     );
-    const checkpointResult = await state.input.checkPointInstance.findDocumentsById(
+    const checkpointResult = await state.input.metaInstance.findDocumentsById(
         [
             checkpointDocId
         ],
@@ -517,12 +621,11 @@ export async function resolveConflictError<RxDocType>(
 export async function setCheckpoint<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     direction: RxStorageReplicationDirection,
-    checkpointDoc?: RxDocumentData<InternalStoreDocType>
+    checkpointDoc?: RxDocumentData<RxStorageReplicationMeta>
 ) {
     const checkpoint = state.lastCheckpoint[direction];
     if (
         checkpoint &&
-        state.input.checkPointInstance &&
         /**
          * If the replication is already canceled,
          * we do not write a checkpoint
@@ -540,14 +643,11 @@ export async function setCheckpoint<RxDocType>(
             JSON.stringify(checkpointDoc.data) !== JSON.stringify(checkpoint)
         )
     ) {
-        const checkpointKeyWithDirection = state.checkpointKey + '-' + direction;
-        const newDoc: RxDocumentData<InternalStoreDocType<any>> = {
-            key: checkpointKeyWithDirection,
-            id: getPrimaryKeyOfInternalDocument(
-                checkpointKeyWithDirection,
-                'OTHER'
-            ),
-            context: 'OTHER',
+        const newDoc: RxDocumentData<RxStorageReplicationMeta> = {
+            id: '',
+            isCheckpoint: '1',
+            itemId: direction,
+            replicationIdentifier: state.checkpointKey,
             _deleted: false,
             _attachments: {},
             data: checkpoint,
@@ -556,8 +656,12 @@ export async function setCheckpoint<RxDocType>(
             },
             _rev: ''
         };
+        newDoc.id = getComposedPrimaryKeyOfDocumentData(
+            RX_REPLICATION_META_INSTANCE_SCHEMA,
+            newDoc
+        );
         newDoc._rev = createRevision(newDoc, checkpointDoc);
-        await state.input.checkPointInstance.bulkWrite([{
+        await state.input.metaInstance.bulkWrite([{
             previous: checkpointDoc,
             document: newDoc
         }]);
@@ -608,28 +712,90 @@ export function isDocumentStateFromDownstream<RxDocType>(
     state: RxStorageInstanceReplicationState<any>,
     docData: RxDocumentData<RxDocType>
 ): boolean {
-    const latestMasterDocState: RxDocumentData<RxDocType> | undefined = docData._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] as any;
-    if (latestMasterDocState && latestMasterDocState._rev === docData._rev) {
-        return true;
-    } else {
-        return false;
-    }
+    return false;
 }
 
 export function isDocumentStateFromUpstream<RxDocType>(
     state: RxStorageInstanceReplicationState<any>,
     docData: RxDocumentData<RxDocType>
 ): boolean {
-    const upstreamRev = docData._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX];
-    if (
-        (upstreamRev && upstreamRev === docData._rev) ||
-        (
-            docData._meta[state.checkpointKey + UPSTREAM_MARKING_WRITE_FLAG_SUFFIX] === docData._rev
-        )
-    ) {
-        return true;
-    } else {
-        return false;
+    return false;
+}
+
+
+export async function getAssumedMasterState<RxDocType>(
+    state: RxStorageInstanceReplicationState<RxDocType>,
+    docIds: string[]
+): Promise<{
+    [docId: string]: {
+        docData: RxDocumentData<RxDocType>;
+        metaDocument: RxDocumentData<RxStorageReplicationMeta>
     }
+}> {
+    const metaDocs = await state.input.metaInstance.findDocumentsById(
+        docIds.map(docId => {
+            const useId = getComposedPrimaryKeyOfDocumentData(
+                RX_REPLICATION_META_INSTANCE_SCHEMA,
+                {
+                    itemId: docId,
+                    replicationIdentifier: state.checkpointKey,
+                    isCheckpoint: '0'
+                }
+            );
+            return useId;
+        }),
+        true
+    );
+
+    const ret: {
+        [docId: string]: {
+            docData: RxDocumentData<RxDocType>;
+            metaDocument: RxDocumentData<RxStorageReplicationMeta>
+        }
+    } = {};
+    Object
+        .values(metaDocs)
+        .forEach((metaDoc) => {
+            ret[metaDoc.itemId] = {
+                docData: metaDoc.data,
+                metaDocument: metaDoc
+            };
+        });
+
+    return ret;
+}
+
+
+export function getMetaWriteRow<RxDocType>(
+    state: RxStorageInstanceReplicationState<RxDocType>,
+    newMasterDocState: RxDocumentData<RxDocType>,
+    previous?: RxDocumentData<RxStorageReplicationMeta>
+): BulkWriteRow<RxStorageReplicationMeta> {
+    const docId: string = (newMasterDocState as any)[state.primaryPath];
+    const newMeta: RxDocumentData<RxStorageReplicationMeta> = previous ? flatCloneDocWithMeta(
+        previous
+    ) : {
+        id: '',
+        replicationIdentifier: state.checkpointKey,
+        isCheckpoint: '0',
+        itemId: docId,
+        data: newMasterDocState,
+        _attachments: {},
+        _deleted: false,
+        _rev: '',
+        _meta: {
+            lwt: 0
+        }
+    };
+    newMeta._rev = createRevision(newMeta, previous);
+    newMeta._meta.lwt = now();
+    newMeta.id = getComposedPrimaryKeyOfDocumentData(
+        RX_REPLICATION_META_INSTANCE_SCHEMA,
+        newMeta
+    );
+    return {
+        previous,
+        document: newMeta
+    };
 }
 

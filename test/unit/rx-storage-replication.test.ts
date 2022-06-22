@@ -19,7 +19,8 @@ import {
     RxConflictHandlerInput,
     getFromObjectOrThrow,
     awaitRxStorageReplicationIdle,
-    promiseWait
+    promiseWait,
+    RX_REPLICATION_META_INSTANCE_SCHEMA
 } from '../../';
 
 import {
@@ -109,6 +110,16 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
         return storageInstance;
     }
+    async function createMetaInstance(): Promise<RxStorageInstance<RxStorageReplicationMeta>> {
+        const instance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
+            databaseName: randomCouchString(12),
+            collectionName: randomCouchString(12),
+            schema: RX_REPLICATION_META_INSTANCE_SCHEMA,
+            options: {},
+            multiInstance: false
+        });
+        return instance;
+    }
     async function runQuery<RxDocType>(
         storageInstance: RxStorageInstance<RxDocType, any, any>,
         mangoQuery: MangoQuery<RxDocType> = {}
@@ -128,11 +139,9 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         replicationState.canceled.next(true);
         await Promise.all([
             replicationState.input.masterInstance.close(),
-            replicationState.input.forkInstance.close()
+            replicationState.input.forkInstance.close(),
+            replicationState.input.metaInstance.close()
         ]);
-        if (replicationState.input.checkPointInstance) {
-            await replicationState.input.checkPointInstance.close();
-        }
     }
 
     async function ensureEqualState<RxDocType>(
@@ -169,11 +178,13 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         it('it should write the initial data and also the ongoing insert', async () => {
             const masterInstance = await createRxStorageInstance(1);
             const forkInstance = await createRxStorageInstance(0);
+            const metaInstance = await createMetaInstance();
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
                 masterInstance,
                 forkInstance,
+                metaInstance,
                 bulkSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
@@ -200,12 +211,13 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         it('it should write the initial data and also the ongoing insert', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(1);
-
+            const metaInstance = await createMetaInstance();
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
                 masterInstance,
                 forkInstance,
+                metaInstance,
                 bulkSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
@@ -234,6 +246,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         it('both have inserted the exact same document -> no conflict handler must be called', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
+            const metaInstance = await createMetaInstance();
             const instances = [masterInstance, forkInstance];
 
             const document = getDocData();
@@ -247,6 +260,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 identifier: randomCouchString(10),
                 masterInstance,
                 forkInstance,
+                metaInstance,
                 bulkSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
@@ -263,6 +277,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         it('both have inserted the same document with different properties', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
+            const metaInstance = await createMetaInstance();
             const instances = [masterInstance, forkInstance];
 
             const document = getDocData();
@@ -286,6 +301,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 identifier: randomCouchString(10),
                 masterInstance,
                 forkInstance,
+                metaInstance,
                 bulkSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
             });
@@ -314,6 +330,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         it('both have updated the document with different values', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
+            const metaInstance = await createMetaInstance();
             const instances = [masterInstance, forkInstance];
 
             const document = getDocData();
@@ -350,6 +367,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 identifier: randomCouchString(10),
                 masterInstance,
                 forkInstance,
+                metaInstance,
                 bulkSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
             });
@@ -364,6 +382,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
+            const metaInstance = await createMetaInstance();
 
             /**
             * Wrap bulkWrite() to count the calls
@@ -386,6 +405,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 identifier: randomCouchString(10),
                 masterInstance,
                 forkInstance,
+                metaInstance,
                 bulkSize: Math.ceil(writeAmount / 4),
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 /**
@@ -474,12 +494,14 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
+            const metaInstance = await createMetaInstance();
 
             const instances = [masterInstance, forkInstance];
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
                 masterInstance,
                 forkInstance,
+                metaInstance,
                 bulkSize: Math.ceil(writeAmount / 4),
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
             });
