@@ -187,6 +187,7 @@ export function startReplicationDownstream<RxDocType>(
 
 
     async function downstreamSyncOnce() {
+        console.log('downstreamSyncOnce()');
         if (state.canceled.getValue()) {
             return;
         }
@@ -368,6 +369,7 @@ export function startReplicationUpstream<RxDocType>(
 
 
     async function upstreamSyncOnce() {
+        console.log('upstreamSyncOnce()');
         if (state.canceled.getValue()) {
             return;
         }
@@ -378,6 +380,7 @@ export function startReplicationUpstream<RxDocType>(
 
         let done = false;
         while (!done && !state.canceled.getValue()) {
+            console.log('upstreamSyncOnce() one checkpoint cycle');
             const upResult = await state.input.forkInstance.getChangedDocumentsSince(
                 state.input.bulkSize,
                 state.lastCheckpoint.up
@@ -396,6 +399,8 @@ export function startReplicationUpstream<RxDocType>(
                     return;
                 }
 
+                console.log('up writeToMasterQueue inner START');
+
 
                 const useUpDocs = upResult
                     .filter(r => (
@@ -413,6 +418,7 @@ export function startReplicationUpstream<RxDocType>(
                 );
 
 
+                console.log('up writeToMasterQueue inner START - 1');
                 const writeRowsToMaster: BulkWriteRow<RxDocType>[] = [];
                 const writeRowsToMeta: {
                     [docId: string]: BulkWriteRow<RxStorageReplicationMeta>
@@ -436,6 +442,7 @@ export function startReplicationUpstream<RxDocType>(
                     );
                 });
 
+                console.log('up writeToMasterQueue inner START - 2');
                 const masterWriteResult = await state.input.masterInstance.bulkWrite(writeRowsToMaster);
 
 
@@ -455,6 +462,7 @@ export function startReplicationUpstream<RxDocType>(
                  * 
                  * TODO check if has non-409 errors and then throw
                  */
+                console.log('up writeToMasterQueue inner START - 3');
                 if (Object.keys(masterWriteResult.error).length > 0) {
                     hadConflicts = true;
                     const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
@@ -489,19 +497,38 @@ export function startReplicationUpstream<RxDocType>(
                      * that will then resolved the conflict again.
                      */
 
+                    console.log('up writeToMasterQueue inner START - 4');
+                    console.dir(forkWriteResult.success);
+                    console.dir(Object.keys(forkWriteResult.success));
+
                     const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta>[] = [];
-                    Object.keys(forkWriteResult.success).forEach(([docId]) => {
-                        useMetaWrites.push(
-                            conflictWriteMeta[docId]
-                        );
-                    });
-                    await state.input.metaInstance.bulkWrite(useMetaWrites);
+                    Object
+                        .keys(forkWriteResult.success)
+                        .forEach((docId) => {
+                            console.log('docId ' + docId);
+                            console.dir(conflictWriteMeta);
+                            useMetaWrites.push(
+                                conflictWriteMeta[docId]
+                            );
+                        });
+                    console.log('up writeToMasterQueue inner START - 4.5');
+                    console.dir(useMetaWrites);
+                    try {
+                        await state.input.metaInstance.bulkWrite(useMetaWrites);
+                    } catch (err) {
+                        console.log('ERROR IN UP CYCLE');
+                        console.dir(err);
+                        process.exit(5);
+                    }
                     // TODO what to do with conflicts while writing to the metaInstance?
+                    console.log('up writeToMasterQueue inner START - 5');
                 }
             }));
         }
 
+        console.log('up await writeToMasterQueue');
         await writeToMasterQueue;
+        console.log('up await writeToMasterQueue DONE');
 
         await setCheckpoint(
             state,
@@ -509,6 +536,7 @@ export function startReplicationUpstream<RxDocType>(
             lastCheckpointDoc
         );
 
+        console.log('upstream hadConflicts: ' + hadConflicts);
         if (hadConflicts) {
             /**
              * If we had a conflict,
