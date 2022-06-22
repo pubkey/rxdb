@@ -47,6 +47,7 @@ import {
     lastOfArray,
     now,
     parseRevision,
+    promiseWait,
     PROMISE_RESOLVE_VOID
 } from './util';
 
@@ -243,9 +244,21 @@ export function startReplicationDownstream<RxDocType>(
                     const masterState = downDocsById[docId];
                     const assumedMaster = assumedMasterState[docId];
 
+
+                    console.log('--------------- downstream state AA');
+                    console.dir(forkState);
+                    console.dir(masterState);
+                    console.dir(assumedMaster);
+                    console.log('--------------- downstream state BB');
+
                     if (
-                        forkState && assumedMaster &&
-                        assumedMaster.docData._rev !== forkState._rev
+                        (
+                            forkState && assumedMaster &&
+                            assumedMaster.docData._rev !== forkState._rev
+                        ) ||
+                        (
+                            forkState && !assumedMaster
+                        )
                     ) {
                         /**
                          * We have a non-upstream-replicated
@@ -268,7 +281,6 @@ export function startReplicationDownstream<RxDocType>(
                          * Only when the assumedMaster is differnt from the forkState,
                          * we have to patch the document in the meta instance.
                          */
-
                         if (
                             !assumedMaster ||
                             assumedMaster.docData._rev !== forkState._rev
@@ -300,6 +312,8 @@ export function startReplicationDownstream<RxDocType>(
                 });
 
                 if (writeRowsToFork.length > 0) {
+                    console.log('down writeRowsToFork:');
+                    console.dir(writeRowsToFork);
                     const forkWriteResult = await state.input.forkInstance.bulkWrite(writeRowsToFork);
                     Object.keys(forkWriteResult.success).forEach((docId) => {
                         useMetaWriteRows.push(writeRowsToMeta[docId]);
@@ -399,6 +413,12 @@ export function startReplicationUpstream<RxDocType>(
 
             state.lastCheckpoint.up = lastOfArray(upResult).checkpoint;
             writeToMasterQueue = writeToMasterQueue.then((async () => {
+
+                // used to not have infinity loop during development
+                // that cannot be exited via Ctrl+C
+                // TODO remove this
+                // await promiseWait(0);
+
                 if (state.canceled.getValue()) {
                     return;
                 }
@@ -415,6 +435,9 @@ export function startReplicationUpstream<RxDocType>(
                 if (useUpDocs.length === 0) {
                     return;
                 }
+
+                console.log('useUpDocs:');
+                console.dir(useUpDocs);
 
                 const assumedMasterState = await getAssumedMasterState(
                     state,
@@ -435,6 +458,18 @@ export function startReplicationUpstream<RxDocType>(
 
                     const assumedMasterDoc = assumedMasterState[docId];
 
+                    /**
+                     * If the master state is equal to the
+                     * fork state, we can assume that the document state is already
+                     * replicated.
+                     */
+                    if (
+                        assumedMasterDoc &&
+                        assumedMasterDoc.docData._rev === useDoc._rev
+                    ) {
+                        return;
+                    }
+
                     writeRowsToMaster.push({
                         previous: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
                         document: useDoc
@@ -446,8 +481,18 @@ export function startReplicationUpstream<RxDocType>(
                     );
                 });
 
+                console.log('#### UP:');
+                console.dir(writeRowsToMaster);
+
                 console.log('up writeToMasterQueue inner START - 2');
+                console.dir(writeRowsToMaster);
+                if (writeRowsToMaster.length === 0) {
+                    return;
+                }
                 const masterWriteResult = await state.input.masterInstance.bulkWrite(writeRowsToMaster);
+
+                console.log('UP masterWriteResult:');
+                console.log(JSON.stringify(masterWriteResult, null, 4));
 
 
                 const useWriteRowsToMeta: BulkWriteRow<RxStorageReplicationMeta>[] = [];
@@ -481,7 +526,7 @@ export function startReplicationUpstream<RxDocType>(
                                 );
                                 if (resolved) {
                                     conflictWriteFork.push({
-                                        previous: error.documentInDb,
+                                        previous: error.writeRow.document,
                                         document: resolved
                                     });
                                 }
@@ -494,6 +539,9 @@ export function startReplicationUpstream<RxDocType>(
                             })
                     );
 
+                    console.log('UP conflictWriteFork:');
+                    console.dir(conflictWriteFork);
+
                     if (conflictWriteFork.length > 0) {
 
                         const forkWriteResult = await state.input.forkInstance.bulkWrite(conflictWriteFork);
@@ -505,21 +553,19 @@ export function startReplicationUpstream<RxDocType>(
                          */
 
                         console.log('up writeToMasterQueue inner START - 4');
-                        console.dir(forkWriteResult.success);
+                        console.dir(forkWriteResult);
                         console.dir(Object.keys(forkWriteResult.success));
 
                         const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta>[] = [];
                         Object
                             .keys(forkWriteResult.success)
                             .forEach((docId) => {
-                                console.log('docId ' + docId);
-                                console.dir(conflictWriteMeta);
                                 useMetaWrites.push(
                                     conflictWriteMeta[docId]
                                 );
                             });
                         console.log('up writeToMasterQueue inner START - 4.5');
-                        console.dir(useMetaWrites);
+                        console.log(JSON.stringify(useMetaWrites, null, 4));
                         try {
                             if (useMetaWrites.length > 0) {
                                 await state.input.metaInstance.bulkWrite(useMetaWrites);
@@ -615,10 +661,11 @@ export function getCheckpointKey<RxDocType>(
 
 /**
  * Resolves a conflict error.
- * Returns the resolved document.
+ * Returns the resolved document that must be written to the fork.
+ * Then the new document state can be pushed upstream.
  * If document is not in conflict, returns undefined.
  * If error is non-409, it throws an error.
- * Conflicts are only solved in the downstream, never in the upstream.
+ * Conflicts are only solved in the upstream, never in the downstream.
  */
 export async function resolveConflictError<RxDocType>(
     conflictHandler: RxConflictHandler<RxDocType>,
@@ -643,14 +690,14 @@ export async function resolveConflictError<RxDocType>(
          * We have a conflict, resolve it!
          */
         const resolved = await conflictHandler({
-            documentStateAtForkTime: error.writeRow.previous,
-            newDocumentStateInMaster: error.writeRow.document,
-            currentForkDocumentState: documentInDb
+            assumedMasterState: error.writeRow.previous,
+            newDocumentState: error.writeRow.document,
+            realMasterState: documentInDb
         });
 
         const resolvedDoc = flatCloneDocWithMeta(resolved.resolvedDocumentState);
         resolvedDoc._meta.lwt = now();
-        resolvedDoc._rev = createRevision(resolvedDoc, documentInDb);
+        resolvedDoc._rev = createRevision(resolvedDoc, error.writeRow.document);
         return resolvedDoc;
     }
 }
@@ -825,6 +872,7 @@ export function getMetaWriteRow<RxDocType>(
             lwt: 0
         }
     };
+    newMeta.data = newMasterDocState;
     newMeta._rev = createRevision(newMeta, previous);
     newMeta._meta.lwt = now();
     newMeta.id = getComposedPrimaryKeyOfDocumentData(

@@ -147,9 +147,9 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
 }
 
 export type RxConflictHandlerInput<RxDocType> = {
-    documentStateAtForkTime?: RxDocumentData<RxDocType>;
-    newDocumentStateInMaster: RxDocumentData<RxDocType>;
-    currentForkDocumentState: RxDocumentData<RxDocType>;
+    assumedMasterState?: RxDocumentData<RxDocType>;
+    realMasterState: RxDocumentData<RxDocType>;
+    newDocumentState: RxDocumentData<RxDocType>;
 };
 export type RxConflictHandler<RxDocType> = (
     i: RxConflictHandlerInput<RxDocType>

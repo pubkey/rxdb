@@ -163,6 +163,7 @@ export type {
     RxConflictHandler,
     RxConflictHandlerInput,
     RxStorageReplicationDirection,
+    RxStorageReplicationMeta,
 
     // other stuff
     RxDumpCollectionBase,

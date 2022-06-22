@@ -20,7 +20,8 @@ import {
     getFromObjectOrThrow,
     awaitRxStorageReplicationIdle,
     promiseWait,
-    RX_REPLICATION_META_INSTANCE_SCHEMA
+    RX_REPLICATION_META_INSTANCE_SCHEMA,
+    RxStorageReplicationMeta
 } from '../../';
 
 import {
@@ -44,8 +45,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called.');
     }
     const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = async (i: RxConflictHandlerInput<HumanDocumentType>) => {
-        const docA = i.newDocumentStateInMaster;
-        const docB = i.currentForkDocumentState;
+        const docA = i.newDocumentState;
+        const docB = i.realMasterState;
 
         // if (!i.assumedMasterDocumentState) {
         //     return Promise.resolve({
@@ -110,8 +111,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
         return storageInstance;
     }
-    async function createMetaInstance(): Promise<RxStorageInstance<RxStorageReplicationMeta>> {
-        const instance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
+    async function createMetaInstance(): Promise<RxStorageInstance<RxStorageReplicationMeta, any, any>> {
+        const instance = await config.storage.getStorage().createStorageInstance<RxStorageReplicationMeta>({
             databaseName: randomCouchString(12),
             collectionName: randomCouchString(12),
             schema: RX_REPLICATION_META_INSTANCE_SCHEMA,
@@ -281,6 +282,13 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             const instances = [masterInstance, forkInstance];
 
             const document = getDocData();
+
+
+            console.log('XXXXXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXXXXX');
 
             await Promise.all(
                 instances
