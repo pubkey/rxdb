@@ -521,7 +521,9 @@ export function startReplicationUpstream<RxDocType>(
                         console.log('up writeToMasterQueue inner START - 4.5');
                         console.dir(useMetaWrites);
                         try {
-                            await state.input.metaInstance.bulkWrite(useMetaWrites);
+                            if (useMetaWrites.length > 0) {
+                                await state.input.metaInstance.bulkWrite(useMetaWrites);
+                            }
                         } catch (err) {
                             console.log('ERROR IN UP CYCLE');
                             console.dir(err);
