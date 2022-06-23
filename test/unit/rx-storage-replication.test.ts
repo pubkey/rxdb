@@ -214,6 +214,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             const forkInstance = await createRxStorageInstance(1);
             const metaInstance = await createMetaInstance();
 
+
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
                 masterInstance,
@@ -272,7 +273,6 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             const masterDocs = await runQuery(masterInstance);
             assert.ok(masterDocs[0]._rev.startsWith('1-'));
 
-
             await cleanUp(replicationState);
         });
         it('both have inserted the same document with different properties', async () => {
@@ -284,11 +284,6 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             const document = getDocData();
 
 
-            console.log('XXXXXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXXXXX');
 
             await Promise.all(
                 instances
@@ -430,7 +425,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             // insert
             const document = getDocData();
-            document.passportId = 'foobar';
+            document.passportId = 'foobar-x';
             const docId = document.passportId;
             const docData = Object.assign({}, clone(document), {
                 age: 0
@@ -458,10 +453,15 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                     newDocState.age = updateId++;
                     newDocState._rev = createRevision(newDocState, currentDocState);
 
-                    const writeResult = await forkInstance.bulkWrite([{
+                    const writeRow = {
                         previous: currentDocState,
                         document: newDocState
-                    }]);
+                    };
+                    console.log('TEST WRITE ROW:');
+                    console.dir(writeRow);
+                    const writeResult = await forkInstance.bulkWrite([writeRow]);
+                    console.log('TEST WRITE RESUKLT:');
+                    console.dir(writeResult);
                     if (Object.keys(writeResult.success).length > 0) {
                         done = true;
                     }
@@ -497,7 +497,11 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 );
             }
 
+
             cleanUp(replicationState);
+
+            await wait(500);
+            process.exit();
         });
     });
     describe('stability', () => {
@@ -587,11 +591,16 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await Promise.all(promises);
 
 
+
+
             await awaitRxStorageReplicationIdle(replicationState);
 
             await ensureEqualState(masterInstance, forkInstance);
 
             cleanUp(replicationState);
+
+
+            process.exit();
         });
     });
 });
