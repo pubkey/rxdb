@@ -500,8 +500,8 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
             cleanUp(replicationState);
 
-            await wait(500);
-            process.exit();
+            //await wait(500);
+            //process.exit();
         });
     });
     describe('stability', () => {
@@ -600,7 +600,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             cleanUp(replicationState);
 
 
-            process.exit();
+            // process.exit();
         });
     });
 });
