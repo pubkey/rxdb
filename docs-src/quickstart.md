@@ -7,17 +7,16 @@
 
 `npm install rxdb rxjs --save`
 
-- Create a database with the PouchDB [RxStorage](./rx-storage.md) (You can also use other storages based on [LokiJS](./rx-storage-lokijs.md) or [Dexie.js](./rx-storage-dexie.md)).
+- Create a database with the Dexie.js [RxStorage](./rx-storage.md) (You can also use any other [RxStorage](./rx-storage.md) that is based on a different storage engine)
 
 ```ts
 import { createRxDatabase } from 'rxdb';
+import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
-import { getRxStoragePouch, addPouchPlugin } from 'rxdb/plugins/pouchdb';
-addPouchPlugin(require('pouchdb-adapter-idb'));
 
 const myDatabase = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStoragePouch('idb')
+  storage: getRxStorageDexie()
 });
 ```
 
