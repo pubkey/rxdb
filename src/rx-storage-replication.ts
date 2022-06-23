@@ -458,7 +458,7 @@ export function startReplicationUpstream<RxDocType>(
                      */
                     if (
                         assumedMasterDoc &&
-                        parseRevision(assumedMasterDoc.docData._rev).height > parseRevision(useDoc._rev).height
+                        parseRevision(assumedMasterDoc.docData._rev).height >= parseRevision(useDoc._rev).height
                     ) {
                         return;
                     }
