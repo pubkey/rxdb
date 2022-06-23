@@ -16,6 +16,7 @@ import type {
     RxCollection,
     RxDatabase,
     RxDocumentData,
+    RxDocumentDataById,
     RxDocumentWriteData,
     RxJsonSchema,
     RxStorageBulkWriteError,
@@ -714,7 +715,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             return database.lockedRun(
                 () => storageInstance.findDocumentsById(ids, deleted)
             ).then(findResult => {
-                const ret: { [documentId: string]: RxDocumentData<RxDocType>; } = {};
+                const ret: RxDocumentDataById<RxDocType> = {};
                 Object.entries(findResult).forEach(([key, doc]) => {
                     ret[key] = transformDocumentDataFromRxStorageToRxDB(doc);
                 });

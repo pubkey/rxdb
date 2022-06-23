@@ -138,9 +138,11 @@ export type {
 
     // stuff from the RxStorage interface
     RxDocumentData,
+    RxDocumentDataById,
     RxDocumentWriteData,
     WithDeleted,
     BulkWriteRow,
+    BulkWriteRowById,
     RxAttachmentDataMeta,
     RxAttachmentData,
     RxAttachmentWriteData,
@@ -163,6 +165,7 @@ export type {
     RxConflictHandler,
     RxConflictHandlerInput,
     RxStorageReplicationDirection,
+    RxStorageReplicationMeta,
 
     // other stuff
     RxDumpCollectionBase,

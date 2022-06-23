@@ -13,6 +13,7 @@ import type {
     BulkWriteRow,
     EventBulk,
     RxDocumentData,
+    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -152,8 +153,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     async findDocumentsById(
         docIds: string[],
         withDeleted: boolean
-    ): Promise<{ [documentId: string]: RxDocumentData<RxDocType>; }> {
-        const ret: { [documentId: string]: RxDocumentData<RxDocType>; } = {};
+    ): Promise<RxDocumentDataById<RxDocType>> {
+        const ret: RxDocumentDataById<RxDocType> = {};
         docIds.forEach(docId => {
             const docInDb = this.internals.documents.get(docId);
             if (

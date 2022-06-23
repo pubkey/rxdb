@@ -6,6 +6,7 @@ import type {
     BulkWriteRow,
     EventBulk,
     RxDocumentData,
+    RxDocumentDataById,
     RxStorage,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -28,7 +29,7 @@ export type InWorkerStorage = {
     findDocumentsById<DocumentData>(
         instanceId: number,
         ids: string[], deleted: boolean
-    ): Promise<{ [documentId: string]: RxDocumentData<DocumentData> }>;
+    ): Promise<RxDocumentDataById<DocumentData>>;
     query<DocumentData>(
         instanceId: number,
         preparedQuery: any
@@ -83,7 +84,7 @@ export function wrappedWorkerRxStorage<T, D>(
             instanceId: number,
             ids: string[],
             deleted: boolean
-        ): Promise<{ [documentId: string]: RxDocumentData<DocumentData> }> {
+        ): Promise<RxDocumentDataById<DocumentData>> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.findDocumentsById(ids, deleted);
         },
