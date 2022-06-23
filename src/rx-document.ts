@@ -431,7 +431,6 @@ export const basePrototype = {
         newData._rev = createRevision(newData, oldData);
         this.collection.schema.validate(newData);
 
-
         const writeResult = await this.collection.storageInstance.bulkWrite([{
             previous: oldData,
             document: newData
