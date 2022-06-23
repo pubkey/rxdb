@@ -127,7 +127,7 @@ var putAttachment = function putAttachment(attachmentData) {
                 }
               }
 
-              var docWriteData = (0, _util.flatClone)(_this8._data);
+              var docWriteData = (0, _rxStorageHelper.flatCloneDocWithMeta)(_this8._data);
               docWriteData._attachments = (0, _util.flatClone)(docWriteData._attachments);
               docWriteData._attachments[id] = {
                 digest: newDigest,
@@ -135,6 +135,7 @@ var putAttachment = function putAttachment(attachmentData) {
                 type: type,
                 data: data
               };
+              docWriteData._rev = (0, _util.createRevision)(docWriteData, _this8._data);
               var writeRow = {
                 previous: (0, _util.flatClone)(_this8._data),
                 document: (0, _util.flatClone)(docWriteData)
@@ -210,11 +211,13 @@ var RxAttachment = /*#__PURE__*/function () {
 
       _this2.doc._atomicQueue = _this2.doc._atomicQueue.then(function () {
         try {
-          var docWriteData = (0, _util.flatClone)(_this2.doc._data);
+          var docWriteData = (0, _rxStorageHelper.flatCloneDocWithMeta)(_this2.doc._data);
           docWriteData._attachments = (0, _util.flatClone)(docWriteData._attachments);
           delete docWriteData._attachments[_this2.id];
+          docWriteData._rev = (0, _util.createRevision)(docWriteData, _this2.doc._data);
           return Promise.resolve((0, _rxStorageHelper.writeSingle)(_this2.doc.collection.storageInstance, {
             previous: (0, _util.flatClone)(_this2.doc._data),
+            // TODO do we need a flatClone here?
             document: docWriteData
           })).then(function (writeResult) {
             var newData = (0, _util.flatClone)(_this2.doc._data);

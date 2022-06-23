@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter, startWith, mergeMap, shareReplay } from 'rxjs/operators';
-import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, RXJS_SHARE_REPLAY_DEFAULTS, getDefaultRxDocumentMeta, getDefaultRevision, nextTick } from './util';
+import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, RXJS_SHARE_REPLAY_DEFAULTS, getDefaultRxDocumentMeta, getDefaultRevision, nextTick, createRevision } from './util';
 import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { newRxError, newRxTypeError } from './rx-error';
@@ -199,13 +199,15 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         var docsMap = new Map();
         var insertRows = docs.map(function (doc) {
           docsMap.set(doc[_this6.schema.primaryPath], doc);
+          var docData = Object.assign(doc, {
+            _attachments: {},
+            _meta: getDefaultRxDocumentMeta(),
+            _rev: getDefaultRevision(),
+            _deleted: false
+          });
+          docData._rev = createRevision(docData);
           var row = {
-            document: Object.assign(doc, {
-              _attachments: {},
-              _meta: getDefaultRxDocumentMeta(),
-              _rev: getDefaultRevision(),
-              _deleted: false
-            })
+            document: docData
           };
           return row;
         });
@@ -265,6 +267,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           var removeDocs = docsData.map(function (doc) {
             var writeDoc = flatClone(doc);
             writeDoc._deleted = true;
+            writeDoc._rev = createRevision(writeDoc, doc);
             return {
               previous: doc,
               document: writeDoc

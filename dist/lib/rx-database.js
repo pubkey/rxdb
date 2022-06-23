@@ -134,9 +134,9 @@ var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collect
         var writeDoc = (0, _util.flatClone)(doc);
         writeDoc._deleted = true;
         writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
-        writeDoc._meta = {
+        writeDoc._meta = Object.assign({}, doc._meta, {
           lwt: (0, _util.now)()
-        };
+        });
         return {
           previous: doc,
           document: writeDoc

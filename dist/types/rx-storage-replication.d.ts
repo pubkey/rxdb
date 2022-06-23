@@ -16,8 +16,8 @@
  * The replication works like git, where the fork contains all new writes
  * and must be merged with the master before it can push it's new state to the master.
  */
-import { InternalStoreDocType } from './rx-database-internal-store';
-import type { RxConflictHandler, RxDocumentData, RxStorageBulkWriteError, RxStorageInstanceReplicationInput, RxStorageInstanceReplicationState, RxStorageReplicationDirection } from './types';
+import type { BulkWriteRow, RxConflictHandler, RxDocumentData, RxJsonSchema, RxStorageBulkWriteError, RxStorageInstanceReplicationInput, RxStorageInstanceReplicationState, RxStorageReplicationDirection, RxStorageReplicationMeta } from './types';
+export declare const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>>;
 export declare function replicateRxStorageInstance<RxDocType>(input: RxStorageInstanceReplicationInput<RxDocType>): RxStorageInstanceReplicationState<RxDocType>;
 /**
  * Writes all documents from the master to the fork.
@@ -29,19 +29,25 @@ export declare function startReplicationDownstream<RxDocType>(state: RxStorageIn
 export declare function startReplicationUpstream<RxDocType>(state: RxStorageInstanceReplicationState<RxDocType>): void;
 export declare function getLastCheckpointDoc<RxDocType>(state: RxStorageInstanceReplicationState<RxDocType>, direction: RxStorageReplicationDirection): Promise<undefined | {
     checkpoint: any;
-    checkpointDoc?: RxDocumentData<InternalStoreDocType>;
+    checkpointDoc?: RxDocumentData<RxStorageReplicationMeta>;
 }>;
 export declare function getCheckpointKey<RxDocType>(input: RxStorageInstanceReplicationInput<RxDocType>): string;
 /**
  * Resolves a conflict error.
- * Returns the resolved document.
+ * Returns the resolved document that must be written to the fork.
+ * Then the new document state can be pushed upstream.
  * If document is not in conflict, returns undefined.
  * If error is non-409, it throws an error.
- * Conflicts are only solved in the downstream, never in the upstream.
+ * Conflicts are only solved in the upstream, never in the downstream.
  */
 export declare function resolveConflictError<RxDocType>(conflictHandler: RxConflictHandler<RxDocType>, error: RxStorageBulkWriteError<RxDocType>): Promise<RxDocumentData<RxDocType> | undefined>;
-export declare function setCheckpoint<RxDocType>(state: RxStorageInstanceReplicationState<RxDocType>, direction: RxStorageReplicationDirection, checkpointDoc?: RxDocumentData<InternalStoreDocType>): Promise<void>;
+export declare function setCheckpoint<RxDocType>(state: RxStorageInstanceReplicationState<RxDocType>, direction: RxStorageReplicationDirection, checkpointDoc?: RxDocumentData<RxStorageReplicationMeta>): Promise<void>;
 export declare function awaitRxStorageReplicationFirstInSync(state: RxStorageInstanceReplicationState<any>): Promise<[boolean, boolean]>;
 export declare function awaitRxStorageReplicationIdle(state: RxStorageInstanceReplicationState<any>): Promise<void>;
-export declare function isDocumentStateFromDownstream<RxDocType>(state: RxStorageInstanceReplicationState<any>, docData: RxDocumentData<RxDocType>): boolean;
-export declare function isDocumentStateFromUpstream<RxDocType>(state: RxStorageInstanceReplicationState<any>, docData: RxDocumentData<RxDocType>): boolean;
+export declare function getAssumedMasterState<RxDocType>(state: RxStorageInstanceReplicationState<RxDocType>, docIds: string[]): Promise<{
+    [docId: string]: {
+        docData: RxDocumentData<RxDocType>;
+        metaDocument: RxDocumentData<RxStorageReplicationMeta>;
+    };
+}>;
+export declare function getMetaWriteRow<RxDocType>(state: RxStorageInstanceReplicationState<RxDocType>, newMasterDocState: RxDocumentData<RxDocType>, previous?: RxDocumentData<RxStorageReplicationMeta>): BulkWriteRow<RxStorageReplicationMeta>;

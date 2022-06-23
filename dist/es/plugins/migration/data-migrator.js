@@ -47,6 +47,7 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
               var writeDeleted = flatClone(docData);
               writeDeleted._deleted = true;
               writeDeleted._attachments = {};
+              writeDeleted._rev = createRevision(writeDeleted, docData);
               return {
                 previous: docData,
                 document: writeDeleted

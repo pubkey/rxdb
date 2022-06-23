@@ -224,13 +224,15 @@ var RxCollectionBase = /*#__PURE__*/function () {
         var docsMap = new Map();
         var insertRows = docs.map(function (doc) {
           docsMap.set(doc[_this6.schema.primaryPath], doc);
+          var docData = Object.assign(doc, {
+            _attachments: {},
+            _meta: (0, _util.getDefaultRxDocumentMeta)(),
+            _rev: (0, _util.getDefaultRevision)(),
+            _deleted: false
+          });
+          docData._rev = (0, _util.createRevision)(docData);
           var row = {
-            document: Object.assign(doc, {
-              _attachments: {},
-              _meta: (0, _util.getDefaultRxDocumentMeta)(),
-              _rev: (0, _util.getDefaultRevision)(),
-              _deleted: false
-            })
+            document: docData
           };
           return row;
         });
@@ -290,6 +292,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
           var removeDocs = docsData.map(function (doc) {
             var writeDoc = (0, _util.flatClone)(doc);
             writeDoc._deleted = true;
+            writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
             return {
               previous: doc,
               document: writeDoc

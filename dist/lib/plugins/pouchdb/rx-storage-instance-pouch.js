@@ -486,18 +486,26 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
           return retDocs;
         });
       } else {
-        return Promise.resolve(_this11.internals.pouch.allDocs({
-          include_docs: true,
-          keys: ids
-        })).then(function (pouchResult) {
-          var ret = {};
-          pouchResult.rows.filter(function (row) {
-            return !!row.doc;
-          }).forEach(function (row) {
-            var docData = row.doc;
-            docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this11.primaryPath, docData);
-            ret[row.id] = docData;
-          });
+        var ret = {};
+        _this11.nonParallelQueue = _this11.nonParallelQueue.then(function () {
+          try {
+            return Promise.resolve(_this11.internals.pouch.allDocs({
+              include_docs: true,
+              keys: ids
+            })).then(function (pouchResult) {
+              pouchResult.rows.filter(function (row) {
+                return !!row.doc;
+              }).forEach(function (row) {
+                var docData = row.doc;
+                docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this11.primaryPath, docData);
+                ret[row.id] = docData;
+              });
+            });
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        });
+        return Promise.resolve(_this11.nonParallelQueue).then(function () {
           return ret;
         });
       }

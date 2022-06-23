@@ -535,7 +535,7 @@ var basePrototype = {
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
         try {
-          var _temp7 = function _temp7(_result3) {
+          var _temp6 = function _temp6(_result3) {
             if (_exit2) return _result3;
             res(_this2);
           };
@@ -544,13 +544,13 @@ var basePrototype = {
           var done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
           // while still having the option to run a retry on conflicts
 
-          var _temp8 = _for(function () {
+          var _temp7 = _for(function () {
             return !_exit2 && !done;
           }, void 0, function () {
-            function _temp4(_result) {
+            function _temp3(_result) {
               if (_exit2) return _result;
 
-              var _temp2 = _catch(function () {
+              var _temp = _catch(function () {
                 return Promise.resolve(_this2._saveData(newData, oldData)).then(function () {
                   done = true;
                 });
@@ -566,21 +566,16 @@ var basePrototype = {
 
                 var isConflict = (0, _rxError.isBulkWriteConflictError)(useError);
 
-                var _temp = function () {
-                  if (isConflict) {
-                    // conflict error -> retrying
-                    newData._rev = (0, _util.createRevision)(newData, isConflict.documentInDb);
-                    return Promise.resolve((0, _util.promiseWait)(300)).then(function () {});
-                  } else {
-                    rej(useError);
-                    _exit2 = true;
-                  }
-                }();
-
-                return _temp && _temp.then ? _temp.then(function () {}) : void 0;
+                if (isConflict) {
+                  // conflict error -> retrying
+                  newData._rev = (0, _util.createRevision)(newData, isConflict.documentInDb);
+                } else {
+                  rej(useError);
+                  _exit2 = true;
+                }
               });
 
-              if (_temp2 && _temp2.then) return _temp2.then(function () {});
+              if (_temp && _temp.then) return _temp.then(function () {});
             }
 
             var oldData = _this2._dataSync$.getValue(); // always await because mutationFunction might be async
@@ -588,7 +583,7 @@ var basePrototype = {
 
             var newData;
 
-            var _temp3 = _catch(function () {
+            var _temp2 = _catch(function () {
               return Promise.resolve(mutationFunction((0, _util.clone)(oldData), _this2)).then(function (_mutationFunction) {
                 newData = _mutationFunction;
 
@@ -601,10 +596,10 @@ var basePrototype = {
               _exit2 = true;
             });
 
-            return _temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3);
+            return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
           });
 
-          return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(_temp7) : _temp7(_temp8));
+          return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -634,18 +629,31 @@ var basePrototype = {
     try {
       var _this4 = this;
 
-      // deleted documents cannot be changed
+      newData = (0, _util.flatClone)(newData); // deleted documents cannot be changed
+
       if (_this4._isDeleted$.getValue()) {
         throw (0, _rxError.newRxError)('DOC11', {
           id: _this4.primary,
           document: _this4
         });
-      } // ensure modifications are ok
+      }
+      /**
+       * Meta values must always be merged
+       * instead of overwritten.
+       * This ensures that different plugins do not overwrite
+       * each others meta properties.
+       */
 
 
-      _this4.collection.schema.validateChange(oldData, newData);
+      newData._meta = Object.assign({}, oldData._meta, newData._meta); // ensure modifications are ok
+
+      if (_overwritable.overwritable.isDevMode()) {
+        _this4.collection.schema.validateChange(oldData, newData);
+      }
 
       return Promise.resolve(_this4.collection._runHooks('pre', 'save', newData, _this4)).then(function () {
+        newData._rev = (0, _util.createRevision)(newData, oldData);
+
         _this4.collection.schema.validate(newData);
 
         return Promise.resolve(_this4.collection.storageInstance.bulkWrite([{
@@ -711,6 +719,7 @@ var basePrototype = {
     return collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       try {
         deletedData._deleted = true;
+        deletedData._rev = (0, _util.createRevision)(deletedData, _this6._data);
         return Promise.resolve(collection.storageInstance.bulkWrite([{
           previous: _this6._data,
           document: deletedData

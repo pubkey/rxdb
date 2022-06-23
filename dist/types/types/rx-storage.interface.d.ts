@@ -7,6 +7,7 @@ import type {
     EventBulk,
     PreparedQuery,
     RxDocumentData,
+    RxDocumentDataById,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstanceCreationParams,
@@ -253,9 +254,7 @@ export interface RxStorageInstance<
          * If set to true, deleted documents will also be returned.
          */
         withDeleted: boolean
-    ): Promise<{
-        [documentId: string]: RxDocumentData<RxDocType>
-    }>;
+    ): Promise<RxDocumentDataById<RxDocType>>;
 
     /**
      * Runs a NoSQL 'mango' query over the storage

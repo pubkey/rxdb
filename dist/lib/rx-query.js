@@ -287,6 +287,7 @@ var RxQueryBase = /*#__PURE__*/function () {
       ret = docs;
 
       if (Array.isArray(docs)) {
+        // TODO use a bulk operation instead of running .remove() on each document
         return Promise.all(docs.map(function (doc) {
           return doc.remove();
         }));

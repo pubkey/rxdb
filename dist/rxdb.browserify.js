@@ -1686,7 +1686,7 @@ function addCustomEventsPluginToPouch() {
               });
             } else {
               var useRevisions = {
-                start: docInDb ? docInDb._revisions.start + 1 : newRev.height,
+                start: newRev.height,
                 ids: docInDb ? docInDb._revisions.ids.slice(0) : []
               };
               useRevisions.ids.unshift(newRev.hash);
@@ -3238,18 +3238,26 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
           return retDocs;
         });
       } else {
-        return Promise.resolve(_this11.internals.pouch.allDocs({
-          include_docs: true,
-          keys: ids
-        })).then(function (pouchResult) {
-          var ret = {};
-          pouchResult.rows.filter(function (row) {
-            return !!row.doc;
-          }).forEach(function (row) {
-            var docData = row.doc;
-            docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this11.primaryPath, docData);
-            ret[row.id] = docData;
-          });
+        var ret = {};
+        _this11.nonParallelQueue = _this11.nonParallelQueue.then(function () {
+          try {
+            return Promise.resolve(_this11.internals.pouch.allDocs({
+              include_docs: true,
+              keys: ids
+            })).then(function (pouchResult) {
+              pouchResult.rows.filter(function (row) {
+                return !!row.doc;
+              }).forEach(function (row) {
+                var docData = row.doc;
+                docData = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this11.primaryPath, docData);
+                ret[row.id] = docData;
+              });
+            });
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        });
+        return Promise.resolve(_this11.nonParallelQueue).then(function () {
           return ret;
         });
       }
@@ -4298,13 +4306,15 @@ var RxCollectionBase = /*#__PURE__*/function () {
         var docsMap = new Map();
         var insertRows = docs.map(function (doc) {
           docsMap.set(doc[_this6.schema.primaryPath], doc);
+          var docData = Object.assign(doc, {
+            _attachments: {},
+            _meta: (0, _util.getDefaultRxDocumentMeta)(),
+            _rev: (0, _util.getDefaultRevision)(),
+            _deleted: false
+          });
+          docData._rev = (0, _util.createRevision)(docData);
           var row = {
-            document: Object.assign(doc, {
-              _attachments: {},
-              _meta: (0, _util.getDefaultRxDocumentMeta)(),
-              _rev: (0, _util.getDefaultRevision)(),
-              _deleted: false
-            })
+            document: docData
           };
           return row;
         });
@@ -4364,6 +4374,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
           var removeDocs = docsData.map(function (doc) {
             var writeDoc = (0, _util.flatClone)(doc);
             writeDoc._deleted = true;
+            writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
             return {
               previous: doc,
               document: writeDoc
@@ -5431,9 +5442,9 @@ var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collect
         var writeDoc = (0, _util.flatClone)(doc);
         writeDoc._deleted = true;
         writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
-        writeDoc._meta = {
+        writeDoc._meta = Object.assign({}, doc._meta, {
           lwt: (0, _util.now)()
-        };
+        });
         return {
           previous: doc,
           document: writeDoc
@@ -6701,7 +6712,7 @@ var basePrototype = {
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
         try {
-          var _temp7 = function _temp7(_result3) {
+          var _temp6 = function _temp6(_result3) {
             if (_exit2) return _result3;
             res(_this2);
           };
@@ -6710,13 +6721,13 @@ var basePrototype = {
           var done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
           // while still having the option to run a retry on conflicts
 
-          var _temp8 = _for(function () {
+          var _temp7 = _for(function () {
             return !_exit2 && !done;
           }, void 0, function () {
-            function _temp4(_result) {
+            function _temp3(_result) {
               if (_exit2) return _result;
 
-              var _temp2 = _catch(function () {
+              var _temp = _catch(function () {
                 return Promise.resolve(_this2._saveData(newData, oldData)).then(function () {
                   done = true;
                 });
@@ -6732,21 +6743,16 @@ var basePrototype = {
 
                 var isConflict = (0, _rxError.isBulkWriteConflictError)(useError);
 
-                var _temp = function () {
-                  if (isConflict) {
-                    // conflict error -> retrying
-                    newData._rev = (0, _util.createRevision)(newData, isConflict.documentInDb);
-                    return Promise.resolve((0, _util.promiseWait)(300)).then(function () {});
-                  } else {
-                    rej(useError);
-                    _exit2 = true;
-                  }
-                }();
-
-                return _temp && _temp.then ? _temp.then(function () {}) : void 0;
+                if (isConflict) {
+                  // conflict error -> retrying
+                  newData._rev = (0, _util.createRevision)(newData, isConflict.documentInDb);
+                } else {
+                  rej(useError);
+                  _exit2 = true;
+                }
               });
 
-              if (_temp2 && _temp2.then) return _temp2.then(function () {});
+              if (_temp && _temp.then) return _temp.then(function () {});
             }
 
             var oldData = _this2._dataSync$.getValue(); // always await because mutationFunction might be async
@@ -6754,7 +6760,7 @@ var basePrototype = {
 
             var newData;
 
-            var _temp3 = _catch(function () {
+            var _temp2 = _catch(function () {
               return Promise.resolve(mutationFunction((0, _util.clone)(oldData), _this2)).then(function (_mutationFunction) {
                 newData = _mutationFunction;
 
@@ -6767,10 +6773,10 @@ var basePrototype = {
               _exit2 = true;
             });
 
-            return _temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3);
+            return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
           });
 
-          return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(_temp7) : _temp7(_temp8));
+          return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -6800,18 +6806,31 @@ var basePrototype = {
     try {
       var _this4 = this;
 
-      // deleted documents cannot be changed
+      newData = (0, _util.flatClone)(newData); // deleted documents cannot be changed
+
       if (_this4._isDeleted$.getValue()) {
         throw (0, _rxError.newRxError)('DOC11', {
           id: _this4.primary,
           document: _this4
         });
-      } // ensure modifications are ok
+      }
+      /**
+       * Meta values must always be merged
+       * instead of overwritten.
+       * This ensures that different plugins do not overwrite
+       * each others meta properties.
+       */
 
 
-      _this4.collection.schema.validateChange(oldData, newData);
+      newData._meta = Object.assign({}, oldData._meta, newData._meta); // ensure modifications are ok
+
+      if (_overwritable.overwritable.isDevMode()) {
+        _this4.collection.schema.validateChange(oldData, newData);
+      }
 
       return Promise.resolve(_this4.collection._runHooks('pre', 'save', newData, _this4)).then(function () {
+        newData._rev = (0, _util.createRevision)(newData, oldData);
+
         _this4.collection.schema.validate(newData);
 
         return Promise.resolve(_this4.collection.storageInstance.bulkWrite([{
@@ -6877,6 +6896,7 @@ var basePrototype = {
     return collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       try {
         deletedData._deleted = true;
+        deletedData._rev = (0, _util.createRevision)(deletedData, _this6._data);
         return Promise.resolve(collection.storageInstance.bulkWrite([{
           previous: _this6._data,
           document: deletedData
@@ -7602,6 +7622,7 @@ var RxQueryBase = /*#__PURE__*/function () {
       ret = docs;
 
       if (Array.isArray(docs)) {
+        // TODO use a bulk operation instead of running .remove() on each document
         return Promise.all(docs.map(function (doc) {
           return doc.remove();
         }));
@@ -8206,7 +8227,6 @@ var RxSchema = /*#__PURE__*/function () {
   /**
    * checks if a given change on a document is allowed
    * Ensures that:
-   * - primary is not modified
    * - final fields are not modified
    * @throws {Error} if not valid
    */
@@ -8866,6 +8886,26 @@ rxJsonSchema) {
       // ensure that the primary key has not been changed
       data = (0, _rxSchemaHelper.fillPrimaryKey)(primaryPath, rxJsonSchema, data);
       /**
+       * Ensure that the new revision is higher
+       * then the previous one
+       */
+
+      if (writeRow.previous) {
+        var prev = (0, _util.parseRevision)(writeRow.previous._rev);
+        var current = (0, _util.parseRevision)(writeRow.document._rev);
+
+        if (current.height <= prev.height) {
+          throw (0, _rxError.newRxError)('SNH', {
+            dataBefore: writeRow.previous,
+            dataAfter: writeRow.document,
+            args: {
+              prev: prev,
+              current: current
+            }
+          });
+        }
+      }
+      /**
        * Ensure that _meta fields have been merged
        * and not replaced.
        * This is important so that when one plugin A
@@ -8873,6 +8913,7 @@ rxJsonSchema) {
        * to the document, it must be ensured that the
        * field of plugin A was not removed.
        */
+
 
       if (writeRow.previous) {
         Object.keys(writeRow.previous._meta).forEach(function (metaFieldName) {
@@ -8910,14 +8951,17 @@ rxJsonSchema) {
     (0, _hooks.runPluginHooks)('preWriteToStorageInstance', hookParams);
     data = hookParams.doc;
     /**
-     * Update the revision after the hooks have run.
-     * Do not update the revision if no previous is given,
-     * because the migration plugin must be able to do an insert
-     * with a pre-created revision.
+     * Do not update the revision here.
+     * The caller of bulkWrite() must be able to set
+     * the revision and to be sure that the given revision
+     * is used when storing the document.
+     * The revision must be provided by the caller of bulkWrite().
      */
 
-    if (writeRow.previous || !data._rev) {
-      data._rev = (0, _util.createRevision)(data, writeRow.previous);
+    if (!data._rev) {
+      throw (0, _rxError.newRxError)('SNH', {
+        data: data
+      });
     }
 
     return {
@@ -8935,6 +8979,23 @@ rxJsonSchema) {
     };
     (0, _hooks.runPluginHooks)('postReadFromInstance', hookParams);
     return hookParams.doc;
+  }
+
+  function transformErrorDataFromRxStorageToRxDB(error) {
+    var ret = (0, _util.flatClone)(error);
+    ret.writeRow = (0, _util.flatClone)(ret.writeRow);
+
+    if (ret.documentInDb) {
+      ret.documentInDb = transformDocumentDataFromRxStorageToRxDB(ret.documentInDb);
+    }
+
+    ret.writeRow.document = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.document);
+
+    if (ret.writeRow.previous) {
+      ret.writeRow.previous = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.previous);
+    }
+
+    return ret;
   }
 
   var ret = {
@@ -8955,15 +9016,15 @@ rxJsonSchema) {
           success: {},
           error: {}
         };
-        Object.entries(writeResult.error).forEach(function (_ref6) {
+        Object.entries(writeResult.success).forEach(function (_ref6) {
           var k = _ref6[0],
               v = _ref6[1];
-          ret.error[k] = v;
-        });
-        Object.entries(writeResult.success).forEach(function (_ref7) {
-          var k = _ref7[0],
-              v = _ref7[1];
           ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
+        });
+        Object.entries(writeResult.error).forEach(function (_ref7) {
+          var k = _ref7[0],
+              error = _ref7[1];
+          ret.error[k] = transformErrorDataFromRxStorageToRxDB(error);
         });
         return ret;
       });
@@ -9056,19 +9117,16 @@ rxJsonSchema) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = void 0;
+exports.getAssumedMasterState = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = exports.RX_REPLICATION_META_INSTANCE_SCHEMA = void 0;
 exports.getCheckpointKey = getCheckpointKey;
 exports.getLastCheckpointDoc = void 0;
-exports.isDocumentStateFromDownstream = isDocumentStateFromDownstream;
-exports.isDocumentStateFromUpstream = isDocumentStateFromUpstream;
+exports.getMetaWriteRow = getMetaWriteRow;
 exports.replicateRxStorageInstance = replicateRxStorageInstance;
 exports.setCheckpoint = exports.resolveConflictError = void 0;
 exports.startReplicationDownstream = startReplicationDownstream;
 exports.startReplicationUpstream = startReplicationUpstream;
 
 var _rxjs = require("rxjs");
-
-var _rxDatabaseInternalStore = require("./rx-database-internal-store");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
 
@@ -9283,6 +9341,32 @@ function _for(test, update, body) {
  * The replication works like git, where the fork contains all new writes
  * and must be merged with the master before it can push it's new state to the master.
  */
+var getAssumedMasterState = function getAssumedMasterState(state, docIds) {
+  try {
+    return Promise.resolve(state.input.metaInstance.findDocumentsById(docIds.map(function (docId) {
+      var useId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, {
+        itemId: docId,
+        replicationIdentifier: state.checkpointKey,
+        isCheckpoint: '0'
+      });
+      return useId;
+    }), true)).then(function (metaDocs) {
+      var ret = {};
+      Object.values(metaDocs).forEach(function (metaDoc) {
+        ret[metaDoc.itemId] = {
+          docData: metaDoc.data,
+          metaDocument: metaDoc
+        };
+      });
+      return ret;
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.getAssumedMasterState = getAssumedMasterState;
+
 var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state) {
   return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
     var _exit = false;
@@ -9326,8 +9410,8 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpointDoc) {
   try {
     var checkpoint = state.lastCheckpoint[direction];
 
-    var _temp16 = function () {
-      if (checkpoint && state.input.checkPointInstance &&
+    var _temp18 = function () {
+      if (checkpoint &&
       /**
        * If the replication is already canceled,
        * we do not write a checkpoint
@@ -9341,11 +9425,11 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpointDoc) {
        * to have less writes to the storage.
        */
       !checkpointDoc || JSON.stringify(checkpointDoc.data) !== JSON.stringify(checkpoint))) {
-        var checkpointKeyWithDirection = state.checkpointKey + '-' + direction;
         var newDoc = {
-          key: checkpointKeyWithDirection,
-          id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(checkpointKeyWithDirection, 'OTHER'),
-          context: 'OTHER',
+          id: '',
+          isCheckpoint: '1',
+          itemId: direction,
+          replicationIdentifier: state.checkpointKey,
           _deleted: false,
           _attachments: {},
           data: checkpoint,
@@ -9354,15 +9438,16 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpointDoc) {
           },
           _rev: ''
         };
+        newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
         newDoc._rev = (0, _util.createRevision)(newDoc, checkpointDoc);
-        return Promise.resolve(state.input.checkPointInstance.bulkWrite([{
+        return Promise.resolve(state.input.metaInstance.bulkWrite([{
           previous: checkpointDoc,
           document: newDoc
         }])).then(function () {});
       }
     }();
 
-    return Promise.resolve(_temp16 && _temp16.then ? _temp16.then(function () {}) : void 0);
+    return Promise.resolve(_temp18 && _temp18.then ? _temp18.then(function () {}) : void 0);
   } catch (e) {
     return Promise.reject(e);
   }
@@ -9372,10 +9457,11 @@ exports.setCheckpoint = setCheckpoint;
 
 /**
  * Resolves a conflict error.
- * Returns the resolved document.
+ * Returns the resolved document that must be written to the fork.
+ * Then the new document state can be pushed upstream.
  * If document is not in conflict, returns undefined.
  * If error is non-409, it throws an error.
- * Conflicts are only solved in the downstream, never in the upstream.
+ * Conflicts are only solved in the upstream, never in the downstream.
  */
 var resolveConflictError = function resolveConflictError(conflictHandler, error) {
   try {
@@ -9400,13 +9486,13 @@ var resolveConflictError = function resolveConflictError(conflictHandler, error)
        * We have a conflict, resolve it!
        */
       return Promise.resolve(conflictHandler({
-        documentStateAtForkTime: error.writeRow.previous,
-        newDocumentStateInMaster: error.writeRow.document,
-        currentForkDocumentState: documentInDb
+        assumedMasterState: error.writeRow.previous,
+        newDocumentState: error.writeRow.document,
+        realMasterState: documentInDb
       })).then(function (resolved) {
         var resolvedDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(resolved.resolvedDocumentState);
         resolvedDoc._meta.lwt = (0, _util.now)();
-        resolvedDoc._rev = (0, _util.createRevision)(resolvedDoc, documentInDb);
+        resolvedDoc._rev = (0, _util.createRevision)(resolvedDoc, error.writeRow.document);
         return resolvedDoc;
       });
     }
@@ -9419,14 +9505,12 @@ exports.resolveConflictError = resolveConflictError;
 
 var getLastCheckpointDoc = function getLastCheckpointDoc(state, direction) {
   try {
-    if (!state.input.checkPointInstance) {
-      return Promise.resolve({
-        checkpoint: state.lastCheckpoint[direction]
-      });
-    }
-
-    var checkpointDocId = (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(state.checkpointKey + '-' + direction, 'OTHER');
-    return Promise.resolve(state.input.checkPointInstance.findDocumentsById([checkpointDocId], false)).then(function (checkpointResult) {
+    var checkpointDocId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, {
+      isCheckpoint: '1',
+      itemId: direction,
+      replicationIdentifier: state.checkpointKey
+    });
+    return Promise.resolve(state.input.metaInstance.findDocumentsById([checkpointDocId], false)).then(function (checkpointResult) {
       var checkpointDoc = checkpointResult[checkpointDocId];
 
       if (checkpointDoc) {
@@ -9446,23 +9530,6 @@ var getLastCheckpointDoc = function getLastCheckpointDoc(state, direction) {
 exports.getLastCheckpointDoc = getLastCheckpointDoc;
 
 /**
- * Flags which document state is assumed
- * to be the current state at the master RxStorage instance.
- * Used in the ._meta of the document data that is stored at the client
- * and contains the full document.
- */
-var MASTER_CURRENT_STATE_FLAG_SUFFIX = '-master';
-/**
- * Flags that a document write happened to
- * update the 'current master' meta field, after
- * the document has been pushed by the upstream.
- * Contains the revision.
- * Document states where this flag is equal to the current
- * revision, must not be upstreamed again.
- */
-
-var UPSTREAM_MARKING_WRITE_FLAG_SUFFIX = '-after-up';
-/**
  * Flags that a document state was written to the master
  * by the upstream from the fork.
  * Used in the ._meta of the document data that is stored at the master
@@ -9472,8 +9539,41 @@ var UPSTREAM_MARKING_WRITE_FLAG_SUFFIX = '-after-up';
  * TODO instead of doing that, we should have a way to 'mark' bulkWrite()
  * calls so that the emitted events can be detected as being from the upstream.
  */
-
 var FROM_FORK_FLAG_SUFFIX = '-fork';
+var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
+  primaryKey: {
+    key: 'id',
+    fields: ['replicationIdentifier', 'itemId', 'isCheckpoint'],
+    separator: '|'
+  },
+  type: 'object',
+  version: 0,
+  additionalProperties: false,
+  properties: {
+    id: {
+      type: 'string',
+      minLength: 1,
+      maxLength: 100
+    },
+    replicationIdentifier: {
+      type: 'string'
+    },
+    isCheckpoint: {
+      type: 'string',
+      "enum": ['0', '1'],
+      maxLength: 1
+    },
+    itemId: {
+      type: 'string'
+    },
+    data: {
+      type: 'object',
+      additionalProperties: true
+    }
+  },
+  required: ['id', 'replicationIdentifier', 'isCheckpoint', 'itemId', 'data']
+});
+exports.RX_REPLICATION_META_INSTANCE_SCHEMA = RX_REPLICATION_META_INSTANCE_SCHEMA;
 
 function replicateRxStorageInstance(input) {
   var state = {
@@ -9534,72 +9634,90 @@ function startReplicationDownstream(state) {
               return;
             }
 
+            var useDownDocs = downResult.map(function (r) {
+              return r.document;
+            });
             state.lastCheckpoint.down = (0, _util.lastOfArray)(downResult).checkpoint;
             writeToChildQueue = writeToChildQueue.then(function () {
               try {
-                var writeRowsLeft = downResult.filter(function (r) {
-                  return !isDocumentStateFromUpstream(state, r.document);
-                }).map(function (r) {
-                  var useDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(r.document);
-                  useDoc._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] = r.document;
-                  delete useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX];
-                  return {
-                    document: useDoc
-                  };
+                var downDocsById = {};
+                var docIds = useDownDocs.map(function (d) {
+                  var id = d[state.primaryPath];
+                  downDocsById[id] = d;
+                  return id;
                 });
+                return Promise.resolve(Promise.all([state.input.forkInstance.findDocumentsById(docIds, true), getAssumedMasterState(state, docIds)])).then(function (_ref) {
+                  var currentForkState = _ref[0],
+                      assumedMasterState = _ref[1];
 
-                var _temp4 = _for(function () {
-                  return writeRowsLeft.length > 0 && !state.canceled.getValue();
-                }, void 0, function () {
-                  return Promise.resolve(state.input.forkInstance.bulkWrite(writeRowsLeft)).then(function (writeResult) {
-                    writeRowsLeft = [];
-                    return Promise.resolve(Promise.all(Object.values(writeResult.error).map(function (error) {
-                      try {
-                        /**
-                         * The PouchDB RxStorage sometimes emits too old
-                         * document states when calling getChangedDocumentsSince()
-                         * Therefore we filter out conflicts where the new master state
-                         * is older then the master state at fork time.
-                         * 
-                         * On other RxStorage implementations this should never be the case
-                         * because getChangedDocumentsSince() must always return the current newest
-                         * document state, not the state at the write time of the event.
-                         */
-                        var docInDb = (0, _util.ensureNotFalsy)(error.documentInDb);
-                        var docAtForkTime = docInDb._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX];
-
-                        if (docAtForkTime) {
-                          var newRevHeigth = (0, _util.parseRevision)(error.writeRow.document._rev).height;
-                          var docInMasterRevHeight = (0, _util.parseRevision)(docAtForkTime._rev).height;
-
-                          if (newRevHeigth <= docInMasterRevHeight) {
-                            return Promise.resolve();
-                          }
-                        }
-
-                        return Promise.resolve(resolveConflictError(state.input.conflictHandler, error)).then(function (resolved) {
-                          if (resolved) {
-                            /**
-                             * Keep the meta data of the original
-                             * document from the master.
-                             */
-                            var resolvedDoc = (0, _util.flatClone)(resolved);
-                            resolvedDoc._meta = (0, _util.flatClone)(error.writeRow.document._meta);
-                            resolvedDoc._meta.lwt = (0, _util.now)();
-                            writeRowsLeft.push({
-                              previous: (0, _util.ensureNotFalsy)(error.documentInDb),
-                              document: resolvedDoc
-                            });
-                          }
-                        });
-                      } catch (e) {
-                        return Promise.reject(e);
+                  function _temp5() {
+                    var _temp3 = function () {
+                      if (useMetaWriteRows.length > 0) {
+                        return Promise.resolve(state.input.metaInstance.bulkWrite(useMetaWriteRows)).then(function () {});
                       }
-                    }))).then(function () {});
-                  });
-                });
+                    }();
 
-                return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
+                    if (_temp3 && _temp3.then) return _temp3.then(function () {});
+                  }
+
+                  var writeRowsToFork = [];
+                  var writeRowsToMeta = {};
+                  var useMetaWriteRows = [];
+                  docIds.forEach(function (docId) {
+                    var forkState = currentForkState[docId];
+                    var masterState = downDocsById[docId];
+                    var assumedMaster = assumedMasterState[docId];
+
+                    if (forkState && assumedMaster && assumedMaster.docData._rev !== forkState._rev || forkState && !assumedMaster) {
+                      /**
+                       * We have a non-upstream-replicated
+                       * local write to the fork.
+                       * This means we ignore the downstream of this document
+                       * because anyway the upstream will first resolve the conflict.
+                       */
+                      return;
+                    }
+
+                    if (forkState && forkState._rev === masterState._rev) {
+                      /**
+                       * Document states are exactly equal.
+                       * This can happen when the replication is shut down
+                       * unexpected like when the user goes offline.
+                       * 
+                       * Only when the assumedMaster is differnt from the forkState,
+                       * we have to patch the document in the meta instance.
+                       */
+                      if (!assumedMaster || assumedMaster.docData._rev !== forkState._rev) {
+                        useMetaWriteRows.push(getMetaWriteRow(state, forkState, assumedMaster ? assumedMaster.metaDocument : undefined));
+                      }
+
+                      return;
+                    }
+                    /**
+                     * All other master states need to be written to the forkInstance
+                     * and metaInstance.
+                     */
+
+
+                    writeRowsToFork.push({
+                      previous: forkState,
+                      document: masterState
+                    });
+                    writeRowsToMeta[docId] = getMetaWriteRow(state, masterState, assumedMaster ? assumedMaster.metaDocument : undefined);
+                  });
+
+                  var _temp4 = function () {
+                    if (writeRowsToFork.length > 0) {
+                      return Promise.resolve(state.input.forkInstance.bulkWrite(writeRowsToFork)).then(function (forkWriteResult) {
+                        Object.keys(forkWriteResult.success).forEach(function (docId) {
+                          useMetaWriteRows.push(writeRowsToMeta[docId]);
+                        });
+                      });
+                    }
+                  }();
+
+                  return _temp4 && _temp4.then ? _temp4.then(_temp5) : _temp5(_temp4);
+                });
               } catch (e) {
                 return Promise.reject(e);
               }
@@ -9636,26 +9754,8 @@ function startReplicationDownstream(state) {
    */
 
 
-  var sub = state.input.masterInstance.changeStream().subscribe(function (eventBulk) {
-    try {
-      addRunAgain(); // TODO move down again
-
-      return Promise.resolve();
-      /**
-       * Do not trigger on changes that came from the upstream
-       */
-
-      var hasNotFromUpstream = eventBulk.events.find(function (event) {
-        var checkDoc = event.change.doc ? event.change.doc : event.change.previous;
-        return !isDocumentStateFromUpstream(state, checkDoc);
-      });
-
-      if (hasNotFromUpstream) {}
-
-      return Promise.resolve();
-    } catch (e) {
-      return Promise.reject(e);
-    }
+  var sub = state.input.masterInstance.changeStream().subscribe(function () {
+    addRunAgain();
   });
   (0, _rxjs.firstValueFrom)(state.canceled.pipe((0, _rxjs.filter)(function (canceled) {
     return !!canceled;
@@ -9682,22 +9782,10 @@ function startReplicationUpstream(state) {
       }
 
       return Promise.resolve(getLastCheckpointDoc(state, 'up')).then(function (checkpointState) {
-        function _temp12() {
+        function _temp11() {
           return Promise.resolve(writeToMasterQueue).then(function () {
             return Promise.resolve(setCheckpoint(state, 'up', lastCheckpointDoc)).then(function () {
-              if (hadConflicts) {
-                /**
-                 * If we had a conflict,
-                 * we have to first wait until the downstream
-                 * is idle so we know that it had resolved all conflicts.
-                 * Then we can run the upstream again.
-                 */
-                state.streamQueue.up = state.streamQueue.up.then(function () {
-                  return state.streamQueue.down;
-                }).then(function () {
-                  addRunAgain();
-                });
-              } else if (!state.firstSyncDone.up.getValue()) {
+              if (!hadConflictWrites && !state.firstSyncDone.up.getValue()) {
                 state.firstSyncDone.up.next(true);
               }
             });
@@ -9705,10 +9793,20 @@ function startReplicationUpstream(state) {
         }
 
         var lastCheckpointDoc = checkpointState ? checkpointState.checkpointDoc : undefined;
-        var hadConflicts = false;
+        /**
+         * If this goes to true,
+         * it means that we have to do a new write to the
+         * fork instance to resolve a conflict.
+         * In that case, state.firstSyncDone.up
+         * must not be set to true, because
+         * an additional upstream cycle must be used
+         * to push the resolved conflict state.
+         */
+
+        var hadConflictWrites = false;
         var done = false;
 
-        var _temp11 = _for(function () {
+        var _temp10 = _for(function () {
           return !done && !state.canceled.getValue();
         }, void 0, function () {
           return Promise.resolve(state.input.forkInstance.getChangedDocumentsSince(state.input.bulkSize, state.lastCheckpoint.up)).then(function (upResult) {
@@ -9720,83 +9818,145 @@ function startReplicationUpstream(state) {
             state.lastCheckpoint.up = (0, _util.lastOfArray)(upResult).checkpoint;
             writeToMasterQueue = writeToMasterQueue.then(function () {
               try {
+                // used to not have infinity loop during development
+                // that cannot be exited via Ctrl+C
+                // await promiseWait(0);
                 if (state.canceled.getValue()) {
                   return Promise.resolve();
                 }
 
-                var writeRowsToChild = {};
-                var writeRowsToMaster = [];
-                upResult.forEach(function (r) {
-                  if (isDocumentStateFromDownstream(state, r.document)) {
-                    return;
-                  }
-
-                  if (isDocumentStateFromUpstream(state, r.document)) {
-                    return;
-                  }
-
-                  var docId = r.document[state.primaryPath];
-                  var useDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(r.document);
-                  delete useDoc._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX];
-                  useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX] = useDoc._rev;
-                  var previous = r.document._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX];
-                  var toChildNewData = (0, _rxStorageHelper.flatCloneDocWithMeta)(r.document);
-                  toChildNewData._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX] = useDoc;
-                  toChildNewData._meta.lwt = (0, _util.now)();
-                  toChildNewData._rev = (0, _util.createRevision)(toChildNewData, r.document);
-                  toChildNewData._meta[state.checkpointKey + UPSTREAM_MARKING_WRITE_FLAG_SUFFIX] = toChildNewData._rev;
-                  writeRowsToChild[docId] = {
-                    previous: r.document,
-                    document: toChildNewData
-                  };
-                  writeRowsToMaster.push({
-                    previous: previous,
-                    document: useDoc
-                  });
+                var useUpDocs = upResult.map(function (r) {
+                  return r.document;
                 });
 
-                if (writeRowsToMaster.length === 0) {
-                  hadConflicts = false;
+                if (useUpDocs.length === 0) {
                   return Promise.resolve();
                 }
 
-                return Promise.resolve(state.input.masterInstance.bulkWrite(writeRowsToMaster)).then(function (masterWriteResult) {
-                  function _temp14() {
-                    // TODO check if has non-409 errors and then throw
-                    hadConflicts = Object.keys(masterWriteResult.error).length > 0 || !!childWriteResult && Object.keys(childWriteResult.error).length > 0;
+                return Promise.resolve(getAssumedMasterState(state, useUpDocs.map(function (d) {
+                  return d[state.primaryPath];
+                }))).then(function (assumedMasterState) {
+                  var writeRowsToMaster = [];
+                  var writeRowsToMeta = {};
+                  useUpDocs.forEach(function (doc) {
+                    var docId = doc[state.primaryPath];
+                    var useDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
+                    useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX] = useDoc._rev;
+                    var assumedMasterDoc = assumedMasterState[docId];
+                    /**
+                     * If the master state is equal to the
+                     * fork state, we can assume that the document state is already
+                     * replicated.
+                     */
+
+                    if (assumedMasterDoc && assumedMasterDoc.docData._rev === useDoc._rev) {
+                      return;
+                    }
+                    /**
+                     * If the assumed master state has a heigher revision height
+                     * then the current document state,
+                     * we can assume that a downstream replication has happend in between
+                     * and we can drop this upstream replication.
+                     * 
+                     * TODO there is no real reason why this should ever happen,
+                     * however the replication did not work on the PouchDB RxStorage
+                     * without this fix.
+                     */
+
+
+                    if (assumedMasterDoc && (0, _util.parseRevision)(assumedMasterDoc.docData._rev).height >= (0, _util.parseRevision)(useDoc._rev).height) {
+                      return;
+                    }
+
+                    writeRowsToMaster.push({
+                      previous: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
+                      document: useDoc
+                    });
+                    writeRowsToMeta[docId] = getMetaWriteRow(state, useDoc, assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined);
+                  });
+
+                  if (writeRowsToMaster.length === 0) {
+                    return;
                   }
 
-                  var masterWriteErrors = new Set(Object.keys(masterWriteResult.error));
-                  /**
-                   * TODO here we have the most critical point in the replicaiton.
-                   * If the child RxStorage is closed or the process exits between
-                   * the write to master and the write to the child,
-                   * we can land in a state where the child does not remember
-                   * that a document was already pushed to the master
-                   * and will try to do that again which will lead to a replication conflict
-                   * even if there should be none.
-                   */
+                  return Promise.resolve(state.input.masterInstance.bulkWrite(writeRowsToMaster)).then(function (masterWriteResult) {
+                    function _temp16() {
+                      var _temp14 = function () {
+                        if (Object.keys(masterWriteResult.error).length > 0) {
+                          var conflictWriteFork = [];
+                          var conflictWriteMeta = {};
+                          return Promise.resolve(Promise.all(Object.entries(masterWriteResult.error).map(function (_ref2) {
+                            try {
+                              var _docId = _ref2[0],
+                                  error = _ref2[1];
+                              return Promise.resolve(resolveConflictError(state.input.conflictHandler, error)).then(function (resolved) {
+                                if (resolved) {
+                                  conflictWriteFork.push({
+                                    previous: error.writeRow.document,
+                                    document: resolved
+                                  });
+                                }
 
-                  var useWriteRowsToChild = [];
-                  Object.entries(writeRowsToChild).forEach(function (_ref) {
-                    var docId = _ref[0],
-                        writeRow = _ref[1];
+                                var assumedMasterDoc = assumedMasterState[_docId];
+                                conflictWriteMeta[_docId] = getMetaWriteRow(state, (0, _util.ensureNotFalsy)(error.documentInDb), assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined);
+                              });
+                            } catch (e) {
+                              return Promise.reject(e);
+                            }
+                          }))).then(function () {
+                            var _temp13 = function () {
+                              if (conflictWriteFork.length > 0) {
+                                hadConflictWrites = true;
+                                return Promise.resolve(state.input.forkInstance.bulkWrite(conflictWriteFork)).then(function (forkWriteResult) {
+                                  /**
+                                   * Errors in the forkWriteResult must not be handled
+                                   * because they have been caused by a write to the forkInstance
+                                   * in between which will anyway trigger a new upstream cycle
+                                   * that will then resolved the conflict again.
+                                   */
+                                  var useMetaWrites = [];
+                                  Object.keys(forkWriteResult.success).forEach(function (docId) {
+                                    useMetaWrites.push(conflictWriteMeta[docId]);
+                                  });
 
-                    if (!masterWriteErrors.has(docId)) {
-                      useWriteRowsToChild.push(writeRow);
+                                  var _temp12 = function () {
+                                    if (useMetaWrites.length > 0) {
+                                      return Promise.resolve(state.input.metaInstance.bulkWrite(useMetaWrites)).then(function () {});
+                                    }
+                                  }();
+
+                                  if (_temp12 && _temp12.then) return _temp12.then(function () {});
+                                }); // TODO what to do with conflicts while writing to the metaInstance?
+                              }
+                            }();
+
+                            if (_temp13 && _temp13.then) return _temp13.then(function () {});
+                          });
+                        }
+                      }();
+
+                      if (_temp14 && _temp14.then) return _temp14.then(function () {});
                     }
+
+                    var useWriteRowsToMeta = [];
+                    Object.keys(masterWriteResult.success).forEach(function (docId) {
+                      useWriteRowsToMeta.push(writeRowsToMeta[docId]);
+                    });
+
+                    var _temp15 = function () {
+                      if (useWriteRowsToMeta.length > 0) {
+                        return Promise.resolve(state.input.metaInstance.bulkWrite(useWriteRowsToMeta)).then(function () {}); // TODO what happens when we have conflicts here?
+                      }
+                    }();
+
+                    return _temp15 && _temp15.then ? _temp15.then(_temp16) : _temp16(_temp15);
+                    /**
+                     * Resolve conflicts by writing a new document
+                     * state to the fork instance and the 'real' master state
+                     * to the meta instance.
+                     * Non-409 errors will be detected by resolveConflictError()
+                     */
                   });
-                  var childWriteResult;
-
-                  var _temp13 = function () {
-                    if (useWriteRowsToChild.length > 0) {
-                      return Promise.resolve(state.input.forkInstance.bulkWrite(useWriteRowsToChild)).then(function (_state$input$forkInst) {
-                        childWriteResult = _state$input$forkInst;
-                      });
-                    }
-                  }();
-
-                  return _temp13 && _temp13.then ? _temp13.then(_temp14) : _temp14(_temp13);
                 });
               } catch (e) {
                 return Promise.reject(e);
@@ -9805,7 +9965,7 @@ function startReplicationUpstream(state) {
           });
         });
 
-        return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
+        return _temp10 && _temp10.then ? _temp10.then(_temp11) : _temp11(_temp10);
       });
     } catch (e) {
       return Promise.reject(e);
@@ -9832,33 +9992,19 @@ function startReplicationUpstream(state) {
     return state.streamQueue.up;
   }
 
-  var sub = state.input.forkInstance.changeStream().subscribe(function (eventBulk) {
+  var sub = state.input.forkInstance.changeStream().subscribe(function () {
     try {
-      /**
-       * Do not trigger on changes that came from the downstream
-       */
-      var hasNotFromDownstream = eventBulk.events.find(function (event) {
-        var checkDoc = event.change.doc ? event.change.doc : event.change.previous;
-        return !isDocumentStateFromDownstream(state, checkDoc);
-      });
+      var _temp8 = function _temp8() {
+        addRunAgain();
+      };
 
-      var _temp8 = function () {
-        if (hasNotFromDownstream) {
-          var _temp9 = function _temp9() {
-            addRunAgain();
-          };
-
-          var _temp10 = function () {
-            if (state.input.waitBeforePersist) {
-              return Promise.resolve(state.input.waitBeforePersist()).then(function () {});
-            }
-          }();
-
-          return _temp10 && _temp10.then ? _temp10.then(_temp9) : _temp9(_temp10);
+      var _temp9 = function () {
+        if (state.input.waitBeforePersist) {
+          return Promise.resolve(state.input.waitBeforePersist()).then(function () {});
         }
       }();
 
-      return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(function () {}) : void 0);
+      return Promise.resolve(_temp9 && _temp9.then ? _temp9.then(_temp8) : _temp8(_temp9));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -9875,27 +10021,32 @@ function getCheckpointKey(input) {
   return 'rx-storage-replication-' + hash;
 }
 
-function isDocumentStateFromDownstream(state, docData) {
-  var latestMasterDocState = docData._meta[state.checkpointKey + MASTER_CURRENT_STATE_FLAG_SUFFIX];
-
-  if (latestMasterDocState && latestMasterDocState._rev === docData._rev) {
-    return true;
-  } else {
-    return false;
-  }
+function getMetaWriteRow(state, newMasterDocState, previous) {
+  var docId = newMasterDocState[state.primaryPath];
+  var newMeta = previous ? (0, _rxStorageHelper.flatCloneDocWithMeta)(previous) : {
+    id: '',
+    replicationIdentifier: state.checkpointKey,
+    isCheckpoint: '0',
+    itemId: docId,
+    data: newMasterDocState,
+    _attachments: {},
+    _deleted: false,
+    _rev: '',
+    _meta: {
+      lwt: 0
+    }
+  };
+  newMeta.data = newMasterDocState;
+  newMeta._rev = (0, _util.createRevision)(newMeta, previous);
+  newMeta._meta.lwt = (0, _util.now)();
+  newMeta.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, newMeta);
+  return {
+    previous: previous,
+    document: newMeta
+  };
 }
 
-function isDocumentStateFromUpstream(state, docData) {
-  var upstreamRev = docData._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX];
-
-  if (upstreamRev && upstreamRev === docData._rev || docData._meta[state.checkpointKey + UPSTREAM_MARKING_WRITE_FLAG_SUFFIX] === docData._rev) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-},{"./rx-database-internal-store":23,"./rx-schema-helper":30,"./rx-storage-helper":32,"./util":37,"rxjs":448}],34:[function(require,module,exports){
+},{"./rx-schema-helper":30,"./rx-storage-helper":32,"./util":37,"rxjs":448}],34:[function(require,module,exports){
 "use strict";
 
 },{}],35:[function(require,module,exports){

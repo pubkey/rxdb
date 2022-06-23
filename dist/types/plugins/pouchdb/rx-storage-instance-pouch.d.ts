@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, PouchChangedDocumentsSinceCheckpoint, PouchSettings, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
+import type { BulkWriteRow, EventBulk, PouchChangedDocumentsSinceCheckpoint, PouchSettings, PreparedQuery, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
 import { PouchStorageInternals } from './pouchdb-helper';
 export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<RxDocType, PouchStorageInternals, PouchSettings> {
     readonly storage: RxStorage<PouchStorageInternals, PouchSettings>;
@@ -23,9 +23,7 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
-    findDocumentsById(ids: string[], deleted: boolean): Promise<{
-        [documentId: string]: RxDocumentData<RxDocType>;
-    }>;
+    findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
     cleanup(_minimumDeletedTime: number): Promise<boolean>;
     getChangedDocumentsSince(limit: number, checkpoint?: PouchChangedDocumentsSinceCheckpoint): Promise<{

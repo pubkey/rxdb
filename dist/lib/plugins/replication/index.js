@@ -749,9 +749,10 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
                   _meta: (0, _util.getDefaultRxDocumentMeta)(),
                   _rev: (0, _util.getDefaultRevision)()
                 });
+                writeDoc._rev = (0, _util.createRevision)(writeDoc, docStateInLocalStorageInstance);
                 (0, _revisionFlag.setLastWritePullReplication)(_this13.replicationIdentifierHash, writeDoc, nextRevisionHeight);
                 bulkWriteData.push({
-                  previous: docStateInLocalStorageInstance ? docStateInLocalStorageInstance : undefined,
+                  previous: docStateInLocalStorageInstance,
                   document: writeDoc
                 });
               }

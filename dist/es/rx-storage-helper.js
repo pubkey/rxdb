@@ -6,7 +6,7 @@ import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { createRevision, firstPropertyValueOfObject, flatClone, now, randomCouchString } from './util';
+import { firstPropertyValueOfObject, flatClone, now, parseRevision, randomCouchString } from './util';
 
 /**
  * Writes a single document,
@@ -433,6 +433,26 @@ rxJsonSchema) {
       // ensure that the primary key has not been changed
       data = fillPrimaryKey(primaryPath, rxJsonSchema, data);
       /**
+       * Ensure that the new revision is higher
+       * then the previous one
+       */
+
+      if (writeRow.previous) {
+        var prev = parseRevision(writeRow.previous._rev);
+        var current = parseRevision(writeRow.document._rev);
+
+        if (current.height <= prev.height) {
+          throw newRxError('SNH', {
+            dataBefore: writeRow.previous,
+            dataAfter: writeRow.document,
+            args: {
+              prev: prev,
+              current: current
+            }
+          });
+        }
+      }
+      /**
        * Ensure that _meta fields have been merged
        * and not replaced.
        * This is important so that when one plugin A
@@ -440,6 +460,7 @@ rxJsonSchema) {
        * to the document, it must be ensured that the
        * field of plugin A was not removed.
        */
+
 
       if (writeRow.previous) {
         Object.keys(writeRow.previous._meta).forEach(function (metaFieldName) {
@@ -477,14 +498,17 @@ rxJsonSchema) {
     runPluginHooks('preWriteToStorageInstance', hookParams);
     data = hookParams.doc;
     /**
-     * Update the revision after the hooks have run.
-     * Do not update the revision if no previous is given,
-     * because the migration plugin must be able to do an insert
-     * with a pre-created revision.
+     * Do not update the revision here.
+     * The caller of bulkWrite() must be able to set
+     * the revision and to be sure that the given revision
+     * is used when storing the document.
+     * The revision must be provided by the caller of bulkWrite().
      */
 
-    if (writeRow.previous || !data._rev) {
-      data._rev = createRevision(data, writeRow.previous);
+    if (!data._rev) {
+      throw newRxError('SNH', {
+        data: data
+      });
     }
 
     return {
@@ -502,6 +526,23 @@ rxJsonSchema) {
     };
     runPluginHooks('postReadFromInstance', hookParams);
     return hookParams.doc;
+  }
+
+  function transformErrorDataFromRxStorageToRxDB(error) {
+    var ret = flatClone(error);
+    ret.writeRow = flatClone(ret.writeRow);
+
+    if (ret.documentInDb) {
+      ret.documentInDb = transformDocumentDataFromRxStorageToRxDB(ret.documentInDb);
+    }
+
+    ret.writeRow.document = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.document);
+
+    if (ret.writeRow.previous) {
+      ret.writeRow.previous = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.previous);
+    }
+
+    return ret;
   }
 
   var ret = {
@@ -522,15 +563,15 @@ rxJsonSchema) {
           success: {},
           error: {}
         };
-        Object.entries(writeResult.error).forEach(function (_ref6) {
+        Object.entries(writeResult.success).forEach(function (_ref6) {
           var k = _ref6[0],
               v = _ref6[1];
-          ret.error[k] = v;
-        });
-        Object.entries(writeResult.success).forEach(function (_ref7) {
-          var k = _ref7[0],
-              v = _ref7[1];
           ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
+        });
+        Object.entries(writeResult.error).forEach(function (_ref7) {
+          var k = _ref7[0],
+              error = _ref7[1];
+          ret.error[k] = transformErrorDataFromRxStorageToRxDB(error);
         });
         return ret;
       });

@@ -210,7 +210,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { getChangesSinceLastPushCheckpoint, getLastPullDocument, setLastPullDocument, setLastPushCheckpoint } from './replication-checkpoint';
-import { ensureInteger, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getHeightOfRevision, hash, lastOfArray, now, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
+import { createRevision, ensureInteger, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getHeightOfRevision, hash, lastOfArray, now, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
 import { overwritable } from '../../overwritable';
 import { setLastWritePullReplication, wasLastWriteFromPullReplication } from './revision-flag';
 import { newRxError } from '../../rx-error';
@@ -689,9 +689,10 @@ export var RxReplicationStateBase = /*#__PURE__*/function () {
                   _meta: getDefaultRxDocumentMeta(),
                   _rev: getDefaultRevision()
                 });
+                writeDoc._rev = createRevision(writeDoc, docStateInLocalStorageInstance);
                 setLastWritePullReplication(_this13.replicationIdentifierHash, writeDoc, nextRevisionHeight);
                 bulkWriteData.push({
-                  previous: docStateInLocalStorageInstance ? docStateInLocalStorageInstance : undefined,
+                  previous: docStateInLocalStorageInstance,
                   document: writeDoc
                 });
               }

@@ -1,7 +1,7 @@
 import { map } from 'rxjs/operators';
-import { blobBufferUtil, flatClone } from './../util';
+import { blobBufferUtil, createRevision, flatClone } from './../util';
 import { newRxError } from '../rx-error';
-import { hashAttachmentData, writeSingle } from '../rx-storage-helper';
+import { flatCloneDocWithMeta, hashAttachmentData, writeSingle } from '../rx-storage-helper';
 import { runAsyncPluginHooks } from '../hooks';
 
 function ensureSchemaSupportsAttachments(doc) {
@@ -104,7 +104,7 @@ export var putAttachment = function putAttachment(attachmentData) {
                 }
               }
 
-              var docWriteData = flatClone(_this8._data);
+              var docWriteData = flatCloneDocWithMeta(_this8._data);
               docWriteData._attachments = flatClone(docWriteData._attachments);
               docWriteData._attachments[id] = {
                 digest: newDigest,
@@ -112,6 +112,7 @@ export var putAttachment = function putAttachment(attachmentData) {
                 type: type,
                 data: data
               };
+              docWriteData._rev = createRevision(docWriteData, _this8._data);
               var writeRow = {
                 previous: flatClone(_this8._data),
                 document: flatClone(docWriteData)
@@ -184,11 +185,13 @@ export var RxAttachment = /*#__PURE__*/function () {
 
       _this2.doc._atomicQueue = _this2.doc._atomicQueue.then(function () {
         try {
-          var docWriteData = flatClone(_this2.doc._data);
+          var docWriteData = flatCloneDocWithMeta(_this2.doc._data);
           docWriteData._attachments = flatClone(docWriteData._attachments);
           delete docWriteData._attachments[_this2.id];
+          docWriteData._rev = createRevision(docWriteData, _this2.doc._data);
           return Promise.resolve(writeSingle(_this2.doc.collection.storageInstance, {
             previous: flatClone(_this2.doc._data),
+            // TODO do we need a flatClone here?
             document: docWriteData
           })).then(function (writeResult) {
             var newData = flatClone(_this2.doc._data);

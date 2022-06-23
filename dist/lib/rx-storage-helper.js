@@ -479,6 +479,26 @@ rxJsonSchema) {
       // ensure that the primary key has not been changed
       data = (0, _rxSchemaHelper.fillPrimaryKey)(primaryPath, rxJsonSchema, data);
       /**
+       * Ensure that the new revision is higher
+       * then the previous one
+       */
+
+      if (writeRow.previous) {
+        var prev = (0, _util.parseRevision)(writeRow.previous._rev);
+        var current = (0, _util.parseRevision)(writeRow.document._rev);
+
+        if (current.height <= prev.height) {
+          throw (0, _rxError.newRxError)('SNH', {
+            dataBefore: writeRow.previous,
+            dataAfter: writeRow.document,
+            args: {
+              prev: prev,
+              current: current
+            }
+          });
+        }
+      }
+      /**
        * Ensure that _meta fields have been merged
        * and not replaced.
        * This is important so that when one plugin A
@@ -486,6 +506,7 @@ rxJsonSchema) {
        * to the document, it must be ensured that the
        * field of plugin A was not removed.
        */
+
 
       if (writeRow.previous) {
         Object.keys(writeRow.previous._meta).forEach(function (metaFieldName) {
@@ -523,14 +544,17 @@ rxJsonSchema) {
     (0, _hooks.runPluginHooks)('preWriteToStorageInstance', hookParams);
     data = hookParams.doc;
     /**
-     * Update the revision after the hooks have run.
-     * Do not update the revision if no previous is given,
-     * because the migration plugin must be able to do an insert
-     * with a pre-created revision.
+     * Do not update the revision here.
+     * The caller of bulkWrite() must be able to set
+     * the revision and to be sure that the given revision
+     * is used when storing the document.
+     * The revision must be provided by the caller of bulkWrite().
      */
 
-    if (writeRow.previous || !data._rev) {
-      data._rev = (0, _util.createRevision)(data, writeRow.previous);
+    if (!data._rev) {
+      throw (0, _rxError.newRxError)('SNH', {
+        data: data
+      });
     }
 
     return {
@@ -548,6 +572,23 @@ rxJsonSchema) {
     };
     (0, _hooks.runPluginHooks)('postReadFromInstance', hookParams);
     return hookParams.doc;
+  }
+
+  function transformErrorDataFromRxStorageToRxDB(error) {
+    var ret = (0, _util.flatClone)(error);
+    ret.writeRow = (0, _util.flatClone)(ret.writeRow);
+
+    if (ret.documentInDb) {
+      ret.documentInDb = transformDocumentDataFromRxStorageToRxDB(ret.documentInDb);
+    }
+
+    ret.writeRow.document = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.document);
+
+    if (ret.writeRow.previous) {
+      ret.writeRow.previous = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.previous);
+    }
+
+    return ret;
   }
 
   var ret = {
@@ -568,15 +609,15 @@ rxJsonSchema) {
           success: {},
           error: {}
         };
-        Object.entries(writeResult.error).forEach(function (_ref6) {
+        Object.entries(writeResult.success).forEach(function (_ref6) {
           var k = _ref6[0],
               v = _ref6[1];
-          ret.error[k] = v;
-        });
-        Object.entries(writeResult.success).forEach(function (_ref7) {
-          var k = _ref7[0],
-              v = _ref7[1];
           ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
+        });
+        Object.entries(writeResult.error).forEach(function (_ref7) {
+          var k = _ref7[0],
+              error = _ref7[1];
+          ret.error[k] = transformErrorDataFromRxStorageToRxDB(error);
         });
         return ret;
       });

@@ -21,7 +21,6 @@ export var RxSchema = /*#__PURE__*/function () {
   /**
    * checks if a given change on a document is allowed
    * Ensures that:
-   * - primary is not modified
    * - final fields are not modified
    * @throws {Error} if not valid
    */
