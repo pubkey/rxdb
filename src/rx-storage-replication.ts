@@ -48,6 +48,7 @@ import {
     fastUnsecureHash,
     lastOfArray,
     now,
+    parseRevision,
     PROMISE_RESOLVE_VOID
 } from './util';
 
@@ -422,7 +423,8 @@ export function startReplicationUpstream<RxDocType>(
                     state,
                     useUpDocs.map(d => (d as any)[state.primaryPath])
                 );
-
+                //console.log('assumed master state:');
+                //console.dir(assumedMasterState);
 
                 console.log('up writeToMasterQueue inner START - 1');
                 const writeRowsToMaster: BulkWriteRow<RxDocType>[] = [];
@@ -443,6 +445,20 @@ export function startReplicationUpstream<RxDocType>(
                     if (
                         assumedMasterDoc &&
                         assumedMasterDoc.docData._rev === useDoc._rev
+                    ) {
+                        return;
+                    }
+
+                    /**
+                     * If the assumed master state has a heigher revision height
+                     * then the current document state,
+                     * we can assume that a downstream replication has happend in between
+                     * and we can drop this upstream replication.
+                     * 
+                     */
+                    if (
+                        assumedMasterDoc &&
+                        parseRevision(assumedMasterDoc.docData._rev).height > parseRevision(useDoc._rev).height
                     ) {
                         return;
                     }
