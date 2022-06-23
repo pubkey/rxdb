@@ -179,7 +179,6 @@ export function startReplicationDownstream<RxDocType>(
 
 
     async function downstreamSyncOnce() {
-        console.log('downstreamSyncOnce()');
         if (state.canceled.getValue()) {
             return;
         }
@@ -226,13 +225,6 @@ export function startReplicationDownstream<RxDocType>(
                     const forkState: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
                     const masterState = downDocsById[docId];
                     const assumedMaster = assumedMasterState[docId];
-
-
-                    console.log('--------------- downstream state AA');
-                    console.dir(forkState);
-                    console.dir(masterState);
-                    console.dir(assumedMaster);
-                    console.log('--------------- downstream state BB');
 
                     if (
                         (
@@ -295,8 +287,6 @@ export function startReplicationDownstream<RxDocType>(
                 });
 
                 if (writeRowsToFork.length > 0) {
-                    console.log('down writeRowsToFork:');
-                    console.dir(writeRowsToFork);
                     const forkWriteResult = await state.input.forkInstance.bulkWrite(writeRowsToFork);
                     Object.keys(forkWriteResult.success).forEach((docId) => {
                         useMetaWriteRows.push(writeRowsToMeta[docId]);
@@ -348,11 +338,9 @@ export function startReplicationUpstream<RxDocType>(
         return state.streamQueue.up;
     }
     const sub = state.input.forkInstance.changeStream().subscribe(async () => {
-        console.log('# UP fork instance emitted change');
         if (state.input.waitBeforePersist) {
             await state.input.waitBeforePersist();
         }
-        console.log('# UP fork instance emitted change run again');
         addRunAgain();
     });
     firstValueFrom(
@@ -363,7 +351,6 @@ export function startReplicationUpstream<RxDocType>(
 
 
     async function upstreamSyncOnce() {
-        console.log('upstreamSyncOnce()');
         if (state.canceled.getValue()) {
             return;
         }
@@ -384,7 +371,6 @@ export function startReplicationUpstream<RxDocType>(
 
         let done = false;
         while (!done && !state.canceled.getValue()) {
-            console.log('upstreamSyncOnce() one checkpoint cycle');
             const upResult = await state.input.forkInstance.getChangedDocumentsSince(
                 state.input.bulkSize,
                 state.lastCheckpoint.up
@@ -408,25 +394,15 @@ export function startReplicationUpstream<RxDocType>(
                     return;
                 }
 
-                console.log('up writeToMasterQueue inner START');
-
-
                 const useUpDocs = upResult.map(r => r.document);
                 if (useUpDocs.length === 0) {
                     return;
                 }
 
-                console.log('useUpDocs:');
-                console.dir(useUpDocs);
-
                 const assumedMasterState = await getAssumedMasterState(
                     state,
                     useUpDocs.map(d => (d as any)[state.primaryPath])
                 );
-                //console.log('assumed master state:');
-                //console.dir(assumedMasterState);
-
-                console.log('up writeToMasterQueue inner START - 1');
                 const writeRowsToMaster: BulkWriteRow<RxDocType>[] = [];
                 const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
 
@@ -455,6 +431,9 @@ export function startReplicationUpstream<RxDocType>(
                      * we can assume that a downstream replication has happend in between
                      * and we can drop this upstream replication.
                      * 
+                     * TODO there is no real reason why this should ever happen,
+                     * however the replication did not work on the PouchDB RxStorage
+                     * without this fix.
                      */
                     if (
                         assumedMasterDoc &&
@@ -474,19 +453,10 @@ export function startReplicationUpstream<RxDocType>(
                     );
                 });
 
-                console.log('#### UP:');
-                console.dir(writeRowsToMaster);
-
-                console.log('up writeToMasterQueue inner START - 2');
-                console.dir(writeRowsToMaster);
                 if (writeRowsToMaster.length === 0) {
                     return;
                 }
                 const masterWriteResult = await state.input.masterInstance.bulkWrite(writeRowsToMaster);
-
-                console.log('UP masterWriteResult:');
-                console.log(JSON.stringify(masterWriteResult, null, 4));
-
 
                 const useWriteRowsToMeta: BulkWriteRow<RxStorageReplicationMeta>[] = [];
                 Object.keys(masterWriteResult.success).forEach(docId => {
@@ -501,10 +471,8 @@ export function startReplicationUpstream<RxDocType>(
                  * Resolve conflicts by writing a new document
                  * state to the fork instance and the 'real' master state
                  * to the meta instance.
-                 * 
-                 * TODO check if has non-409 errors and then throw
+                 * Non-409 errors will be detected by resolveConflictError()
                  */
-                console.log('up writeToMasterQueue inner START - 3');
                 if (Object.keys(masterWriteResult.error).length > 0) {
                     const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
                     const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
@@ -531,9 +499,6 @@ export function startReplicationUpstream<RxDocType>(
                             })
                     );
 
-                    console.log('UP conflictWriteFork:');
-                    console.dir(conflictWriteFork);
-
                     if (conflictWriteFork.length > 0) {
                         hadConflictWrites = true;
 
@@ -544,11 +509,6 @@ export function startReplicationUpstream<RxDocType>(
                          * in between which will anyway trigger a new upstream cycle
                          * that will then resolved the conflict again.
                          */
-
-                        console.log('up writeToMasterQueue inner START - 4');
-                        console.dir(forkWriteResult);
-                        console.dir(Object.keys(forkWriteResult.success));
-
                         const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta>[] = [];
                         Object
                             .keys(forkWriteResult.success)
@@ -557,35 +517,22 @@ export function startReplicationUpstream<RxDocType>(
                                     conflictWriteMeta[docId]
                                 );
                             });
-                        console.log('up writeToMasterQueue inner START - 4.5');
-                        console.log(JSON.stringify(useMetaWrites, null, 4));
-                        try {
-                            if (useMetaWrites.length > 0) {
-                                await state.input.metaInstance.bulkWrite(useMetaWrites);
-                            }
-                        } catch (err) {
-                            console.log('ERROR IN UP CYCLE');
-                            console.dir(err);
-                            process.exit(5);
+                        if (useMetaWrites.length > 0) {
+                            await state.input.metaInstance.bulkWrite(useMetaWrites);
                         }
                         // TODO what to do with conflicts while writing to the metaInstance?
-                        console.log('up writeToMasterQueue inner START - 5');
                     }
                 }
             }));
         }
 
-        console.log('up await writeToMasterQueue');
         await writeToMasterQueue;
-        console.log('up await writeToMasterQueue DONE');
 
         await setCheckpoint(
             state,
             'up',
             lastCheckpointDoc
         );
-
-        console.log('upstream hadConflictWrites: ' + hadConflictWrites);
         if (
             !hadConflictWrites &&
             !state.firstSyncDone.up.getValue()

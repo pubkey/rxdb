@@ -300,22 +300,24 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             await this.nonParallelQueue;
             return retDocs;
         } else {
-            const pouchResult = await this.internals.pouch.allDocs({
-                include_docs: true,
-                keys: ids
-            });
             const ret: RxDocumentDataById<RxDocType> = {};
-            pouchResult.rows
-                .filter(row => !!row.doc)
-                .forEach(row => {
-                    let docData = row.doc;
-                    docData = pouchDocumentDataToRxDocumentData(
-                        this.primaryPath,
-                        docData
-                    );
-                    ret[row.id] = docData;
+            this.nonParallelQueue = this.nonParallelQueue.then(async () => {
+                const pouchResult = await this.internals.pouch.allDocs({
+                    include_docs: true,
+                    keys: ids
                 });
-
+                pouchResult.rows
+                    .filter(row => !!row.doc)
+                    .forEach(row => {
+                        let docData = row.doc;
+                        docData = pouchDocumentDataToRxDocumentData(
+                            this.primaryPath,
+                            docData
+                        );
+                        ret[row.id] = docData;
+                    });
+            });
+            await this.nonParallelQueue;
             return ret;
         }
     }

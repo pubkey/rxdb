@@ -258,11 +258,6 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                     .map(instance => instance.bulkWrite([{ document }]))
             );
 
-                console.log('XXXXXXXXXXXXXXXXXXXX');
-                console.log('XXXXXXXXXXXXXXXXXXXX');
-                console.log('XXXXXXXXXXXXXXXXXXXX');
-                console.log('XXXXXXXXXXXXXXXXXXXX');
-
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
                 masterInstance,
@@ -271,10 +266,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 bulkSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
-
-            console.log('# await first in sync');
             await awaitRxStorageReplicationFirstInSync(replicationState);
-            console.log('# await first in sync DONE');
 
             await ensureEqualState(masterInstance, forkInstance);
 
@@ -317,10 +309,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
             });
 
-            console.log('AA - 1');
-
             await awaitRxStorageReplicationFirstInSync(replicationState);
-            console.log('AA - 2');
             await ensureEqualState(masterInstance, forkInstance);
 
             // revision must be 2 because it had to resolve a conflict.
@@ -465,11 +454,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                         previous: currentDocState,
                         document: newDocState
                     };
-                    console.log('TEST WRITE ROW:');
-                    console.dir(writeRow);
                     const writeResult = await forkInstance.bulkWrite([writeRow]);
-                    console.log('TEST WRITE RESUKLT:');
-                    console.dir(writeResult);
                     if (Object.keys(writeResult.success).length > 0) {
                         done = true;
                     }
