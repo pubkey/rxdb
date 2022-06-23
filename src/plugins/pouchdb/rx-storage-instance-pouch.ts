@@ -15,6 +15,7 @@ import type {
     PouchWriteError,
     PreparedQuery,
     RxDocumentData,
+    RxDocumentDataById,
     RxJsonSchema,
     RxStorage,
     RxStorageBulkWriteError,
@@ -259,7 +260,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return ret;
     }
 
-    async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
+    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
         /**
          * On deleted documents, PouchDB will only return the tombstone.
          * So we have to get the properties directly for each document
@@ -270,7 +271,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          * @link https://stackoverflow.com/a/63516761/3443137
          */
         if (deleted) {
-            const retDocs: { [documentId: string]: RxDocumentData<RxDocType> } = {};
+            const retDocs: RxDocumentDataById<RxDocType> = {};
             this.nonParallelQueue = this.nonParallelQueue.then(async () => {
                 const viaChanges = await this.internals.pouch.changes({
                     live: false,
@@ -303,7 +304,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 include_docs: true,
                 keys: ids
             });
-            const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
+            const ret: RxDocumentDataById<RxDocType> = {};
             pouchResult.rows
                 .filter(row => !!row.doc)
                 .forEach(row => {

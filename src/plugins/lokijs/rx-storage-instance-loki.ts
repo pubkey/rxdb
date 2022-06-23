@@ -28,7 +28,8 @@ import type {
     LokiLocalDatabaseState,
     EventBulk,
     LokiChangesCheckpoint,
-    StringKeys
+    StringKeys,
+    RxDocumentDataById
 } from '../../types';
 import {
     closeLokiCollections,
@@ -153,13 +154,13 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
         return ret;
     }
-    async findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
+    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'findDocumentsById', [ids, deleted]);
         }
 
-        const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
+        const ret: RxDocumentDataById<RxDocType> = {};
         ids.forEach(id => {
             const documentInDb = localState.collection.by(this.primaryPath, id);
             if (

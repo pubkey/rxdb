@@ -31,8 +31,10 @@ import {
 import { flatCloneDocWithMeta } from './rx-storage-helper';
 import type {
     BulkWriteRow,
+    BulkWriteRowById,
     RxConflictHandler,
     RxDocumentData,
+    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteError,
     RxStorageInstanceReplicationInput,
@@ -158,18 +160,8 @@ export function startReplicationDownstream<RxDocType>(
     /**
      * If a write on the master happens, we have to trigger the downstream.
      */
-    const sub = state.input.masterInstance.changeStream().subscribe(async (eventBulk) => {
-        addRunAgain(); // TODO move down again
-        return;
-        /**
-         * Do not trigger on changes that came from the upstream
-         */
-        const hasNotFromUpstream = eventBulk.events.find(event => {
-            const checkDoc = event.change.doc ? event.change.doc : event.change.previous;
-            return !isDocumentStateFromUpstream(state, checkDoc as any);
-        });
-        if (hasNotFromUpstream) {
-        }
+    const sub = state.input.masterInstance.changeStream().subscribe(() => {
+        addRunAgain();
     });
     firstValueFrom(
         state.canceled.pipe(
@@ -204,16 +196,10 @@ export function startReplicationDownstream<RxDocType>(
                 continue;
             }
 
-            const useDownDocs = downResult
-                .map(r => r.document)
-                .filter(d => !isDocumentStateFromUpstream(state, d));
+            const useDownDocs = downResult.map(r => r.document);
             state.lastCheckpoint.down = lastOfArray(downResult).checkpoint;
             writeToChildQueue = writeToChildQueue.then((async () => {
-
-
-                const downDocsById: {
-                    [docId: string]: RxDocumentData<RxDocType>
-                } = {};
+                const downDocsById: RxDocumentDataById<RxDocType> = {};
                 const docIds = useDownDocs
                     .map(d => {
                         const id = (d as any)[state.primaryPath];
@@ -233,9 +219,7 @@ export function startReplicationDownstream<RxDocType>(
                 ]);
 
                 const writeRowsToFork: BulkWriteRow<RxDocType>[] = [];
-                const writeRowsToMeta: {
-                    [docId: string]: BulkWriteRow<RxStorageReplicationMeta>
-                } = {};
+                const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
                 const useMetaWriteRows: BulkWriteRow<RxStorageReplicationMeta>[] = [];
                 docIds.forEach(docId => {
                     const forkState: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
@@ -362,20 +346,13 @@ export function startReplicationUpstream<RxDocType>(
             .then(() => inQueueCount = inQueueCount - 1);
         return state.streamQueue.up;
     }
-    const sub = state.input.forkInstance.changeStream().subscribe(async (eventBulk) => {
-        /**
-         * Do not trigger on changes that came from the downstream
-         */
-        const hasNotFromDownstream = eventBulk.events.find(event => {
-            const checkDoc = event.change.doc ? event.change.doc : event.change.previous;
-            return !isDocumentStateFromDownstream(state, checkDoc as any);
-        })
-        if (hasNotFromDownstream) {
-            if (state.input.waitBeforePersist) {
-                await state.input.waitBeforePersist();
-            }
-            addRunAgain();
+    const sub = state.input.forkInstance.changeStream().subscribe(async () => {
+        console.log('# UP fork instance emitted change');
+        if (state.input.waitBeforePersist) {
+            await state.input.waitBeforePersist();
         }
+        console.log('# UP fork instance emitted change run again');
+        addRunAgain();
     });
     firstValueFrom(
         state.canceled.pipe(
@@ -392,7 +369,17 @@ export function startReplicationUpstream<RxDocType>(
 
         const checkpointState = await getLastCheckpointDoc(state, 'up');
         const lastCheckpointDoc = checkpointState ? checkpointState.checkpointDoc : undefined;
-        let hadConflicts = false;
+
+        /**
+         * If this goes to true,
+         * it means that we have to do a new write to the
+         * fork instance to resolve a conflict.
+         * In that case, state.firstSyncDone.up
+         * must not be set to true, because
+         * an additional upstream cycle must be used
+         * to push the resolved conflict state.
+         */
+        let hadConflictWrites = false;
 
         let done = false;
         while (!done && !state.canceled.getValue()) {
@@ -423,12 +410,7 @@ export function startReplicationUpstream<RxDocType>(
                 console.log('up writeToMasterQueue inner START');
 
 
-                const useUpDocs = upResult
-                    .filter(r => (
-                        !isDocumentStateFromDownstream(state, r.document) &&
-                        !isDocumentStateFromUpstream(state, r.document)
-                    ))
-                    .map(r => r.document);
+                const useUpDocs = upResult.map(r => r.document);
                 if (useUpDocs.length === 0) {
                     return;
                 }
@@ -444,9 +426,7 @@ export function startReplicationUpstream<RxDocType>(
 
                 console.log('up writeToMasterQueue inner START - 1');
                 const writeRowsToMaster: BulkWriteRow<RxDocType>[] = [];
-                const writeRowsToMeta: {
-                    [docId: string]: BulkWriteRow<RxStorageReplicationMeta>
-                } = {};
+                const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
 
                 useUpDocs.forEach(doc => {
                     const docId: string = (doc as any)[state.primaryPath];
@@ -510,9 +490,8 @@ export function startReplicationUpstream<RxDocType>(
                  */
                 console.log('up writeToMasterQueue inner START - 3');
                 if (Object.keys(masterWriteResult.error).length > 0) {
-                    hadConflicts = true;
                     const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
-                    const conflictWriteMeta: { [docId: string]: BulkWriteRow<RxStorageReplicationMeta> } = {};
+                    const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
                     await Promise.all(
                         Object
                             .entries(masterWriteResult.error)
@@ -540,6 +519,7 @@ export function startReplicationUpstream<RxDocType>(
                     console.dir(conflictWriteFork);
 
                     if (conflictWriteFork.length > 0) {
+                        hadConflictWrites = true;
 
                         const forkWriteResult = await state.input.forkInstance.bulkWrite(conflictWriteFork);
                         /**
@@ -589,17 +569,11 @@ export function startReplicationUpstream<RxDocType>(
             lastCheckpointDoc
         );
 
-        console.log('upstream hadConflicts: ' + hadConflicts);
-        if (hadConflicts) {
-            /**
-             * If we had a conflict,
-             * we directly re-trigger the upstream cycle.
-             */
-            state.streamQueue.up = state.streamQueue.up
-                .then(() => {
-                    addRunAgain();
-                });
-        } else if (!state.firstSyncDone.up.getValue()) {
+        console.log('upstream hadConflictWrites: ' + hadConflictWrites);
+        if (
+            !hadConflictWrites &&
+            !state.firstSyncDone.up.getValue()
+        ) {
             state.firstSyncDone.up.next(true);
         }
     }
@@ -789,21 +763,6 @@ export async function awaitRxStorageReplicationIdle(
         }
     }
 }
-
-export function isDocumentStateFromDownstream<RxDocType>(
-    state: RxStorageInstanceReplicationState<any>,
-    docData: RxDocumentData<RxDocType>
-): boolean {
-    return false;
-}
-
-export function isDocumentStateFromUpstream<RxDocType>(
-    state: RxStorageInstanceReplicationState<any>,
-    docData: RxDocumentData<RxDocType>
-): boolean {
-    return false;
-}
-
 
 export async function getAssumedMasterState<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,

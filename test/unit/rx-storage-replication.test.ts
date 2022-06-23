@@ -258,6 +258,11 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                     .map(instance => instance.bulkWrite([{ document }]))
             );
 
+                console.log('XXXXXXXXXXXXXXXXXXXX');
+                console.log('XXXXXXXXXXXXXXXXXXXX');
+                console.log('XXXXXXXXXXXXXXXXXXXX');
+                console.log('XXXXXXXXXXXXXXXXXXXX');
+
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
                 masterInstance,
@@ -266,7 +271,10 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 bulkSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
+
+            console.log('# await first in sync');
             await awaitRxStorageReplicationFirstInSync(replicationState);
+            console.log('# await first in sync DONE');
 
             await ensureEqualState(masterInstance, forkInstance);
 

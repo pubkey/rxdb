@@ -25,7 +25,8 @@ import type {
     RxStorageInstanceCreationParams,
     EventBulk,
     DexieChangesCheckpoint,
-    StringKeys
+    StringKeys,
+    RxDocumentDataById
 } from '../../types';
 import {
     DexiePreparedQuery,
@@ -267,9 +268,9 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     async findDocumentsById(
         ids: string[],
         deleted: boolean
-    ): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
+    ): Promise<RxDocumentDataById<RxDocType>> {
         const state = await this.internals;
-        const ret: { [documentId: string]: RxDocumentData<RxDocType> } = {};
+        const ret: RxDocumentDataById<RxDocType> = {};
 
         await state.dexieDb.transaction(
             'r',

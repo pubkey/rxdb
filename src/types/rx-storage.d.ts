@@ -48,6 +48,10 @@ export type RxDocumentData<T> = T & {
     _meta: RxDocumentMeta;
 }
 
+export type RxDocumentDataById<RxDocType> = {
+    [documentId: string]: RxDocumentData<RxDocType>;
+}
+
 /**
  * The document data how it is send to the
  * storage instance to save it.
@@ -72,7 +76,7 @@ export type WithDeleted<DocType> = DocType & {
 /**
  * Send to the bulkWrite() method of a storage instance.
  */
-export type BulkWriteRow<DocumentData> = {
+export type BulkWriteRow<RxDocType> = {
     /**
      * The current document state in the storage engine,
      * assumed by the application.
@@ -84,12 +88,15 @@ export type BulkWriteRow<DocumentData> = {
      * This will later allow us to use something different then the _rev key for conflict detection
      * when we implement other storage instances.
      */
-    previous?: RxDocumentData<DocumentData>,
+    previous?: RxDocumentData<RxDocType>,
     /**
      * The new document data to be stored in the storage instance.
      */
-    document: RxDocumentWriteData<DocumentData>
+    document: RxDocumentWriteData<RxDocType>
 };
+export type BulkWriteRowById<RxDocType> = {
+    [documentId: string]: BulkWriteRow<RxDocType>;
+}
 
 
 /**
@@ -180,9 +187,7 @@ export type RxStorageBulkWriteResponse<DocData> = {
      * A map that is indexed by the documentId
      * contains all succeded writes.
      */
-    success: {
-        [documentId: string]: RxDocumentData<DocData>;
-    };
+    success: RxDocumentDataById<DocData>;
 
     /**
      * A map that is indexed by the documentId

@@ -11,7 +11,8 @@ import type {
     RxStorageChangeEvent,
     RxStorageQueryResult,
     EventBulk,
-    RxStorageStatics
+    RxStorageStatics,
+    RxDocumentDataById
 } from '../../types';
 import { InWorkerStorage } from './in-worker';
 
@@ -101,7 +102,7 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
             documentWrites
         );
     }
-    findDocumentsById(ids: string[], deleted: boolean): Promise<{ [documentId: string]: RxDocumentData<RxDocType> }> {
+    findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
         return this.internals.worker.findDocumentsById(
             this.internals.instanceId,
             ids,
