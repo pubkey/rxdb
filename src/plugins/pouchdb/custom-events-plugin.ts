@@ -296,7 +296,7 @@ export function addCustomEventsPluginToPouch() {
                     });
                 } else {
                     const useRevisions = {
-                        start: docInDb ? docInDb._revisions.start + 1 : newRev.height,
+                        start: newRev.height,
                         ids: docInDb ? docInDb._revisions.ids.slice(0) : []
                     };
                     useRevisions.ids.unshift(newRev.hash);

@@ -21,7 +21,8 @@ import {
     parseRevision,
     getAttachmentSize,
     fillWithDefaultSettings,
-    createRevision
+    createRevision,
+    flatCloneDocWithMeta
 } from '../../';
 
 import {
@@ -755,6 +756,53 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     storageInstance.close(),
                     storageInstance2.close()
                 ]);
+            });
+            it('should be able to jump more then 1 revision height in a single write operation', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+
+                // insert
+                const docData: RxDocumentWriteData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'barfoo1',
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _rev: EXAMPLE_REVISION_1,
+                    _attachments: {}
+                };
+                const insertResponse = await storageInstance.bulkWrite(
+                    [{
+                        document: clone(docData)
+                    }]
+                );
+                assert.deepStrictEqual(insertResponse.error, {});
+
+                // update
+                const updated = flatCloneDocWithMeta(docData);
+                updated.value = 'barfoo2';
+                updated._meta.lwt = now();
+                updated._rev = EXAMPLE_REVISION_4;
+                const updateResponse = await storageInstance.bulkWrite(
+                    [{
+                        previous: docData,
+                        document: updated
+                    }]
+                );
+                assert.deepStrictEqual(updateResponse.error, {});
+
+                // find again
+                const getDocFromDb = await storageInstance.findDocumentsById([docData.key], false);
+                const docFromDb = getFromObjectOrThrow(getDocFromDb, docData.key);
+                assert.strictEqual(docFromDb._rev, EXAMPLE_REVISION_4);
+
+                storageInstance.close();
             });
         });
         describe('.getSortComparator()', () => {
