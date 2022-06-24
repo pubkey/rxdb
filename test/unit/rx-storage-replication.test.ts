@@ -98,7 +98,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             collectionName: randomCouchString(12),
             schema: fillWithDefaultSettings(schemas.human),
             options: {},
-            multiInstance: false
+            multiInstance: true
         });
 
         if (documentAmount > 0) {
@@ -117,7 +117,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             collectionName: randomCouchString(12),
             schema: RX_REPLICATION_META_INSTANCE_SCHEMA,
             options: {},
-            multiInstance: false
+            multiInstance: true
         });
         return instance;
     }
@@ -142,7 +142,13 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             replicationState.input.masterInstance.close(),
             replicationState.input.forkInstance.close(),
             replicationState.input.metaInstance.close()
-        ]);
+        ]).catch(() => {
+            /**
+             * Closing the instances might error
+             * when they are used in multiple replications
+             * that have already closed them.
+             */
+        });
     }
 
     async function ensureEqualState<RxDocType>(
@@ -242,6 +248,124 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             });
 
             cleanUp(replicationState);
+        });
+    });
+    describe('different configurations', () => {
+        it('should be able to replicate A->Master<-B', async () => {
+
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstanceA = await createRxStorageInstance(0);
+            const metaInstanceA = await createMetaInstance();
+            const forkInstanceB = await createRxStorageInstance(0);
+            const metaInstanceB = await createMetaInstance();
+
+            const replicationStateAtoMaster = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                masterInstance,
+                forkInstance: forkInstanceA,
+                metaInstance: metaInstanceA,
+                bulkSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER
+            });
+            const replicationStateBtoMaster = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                masterInstance,
+                forkInstance: forkInstanceB,
+                metaInstance: metaInstanceB,
+                bulkSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER
+            });
+
+            // insert a document on A
+            const writeData = getDocData();
+            await forkInstanceA.bulkWrite([{ document: writeData }]);
+
+
+            // find the document on B
+            await waitUntil(async () => {
+                try {
+                    const foundAgain = await forkInstanceB.findDocumentsById([writeData.passportId], false);
+                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                    assert.strictEqual(foundDoc.passportId, writeData.passportId);
+                    return true;
+                } catch (err) {
+                    return false;
+                }
+            }, 10 * 1000, 100);
+
+
+            await cleanUp(replicationStateAtoMaster);
+            await cleanUp(replicationStateBtoMaster);
+        });
+        it('should be able to replicate A->B->C->Master', async () => {
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstanceA = await createRxStorageInstance(0);
+            const metaInstanceA = await createMetaInstance();
+            const forkInstanceB = await createRxStorageInstance(0);
+            const metaInstanceB = await createMetaInstance();
+            const forkInstanceC = await createRxStorageInstance(0);
+            const metaInstanceC = await createMetaInstance();
+
+            const replicationStateAtoB = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                masterInstance: forkInstanceB,
+                forkInstance: forkInstanceA,
+                metaInstance: metaInstanceA,
+                bulkSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER
+            });
+            const replicationStateBtoC = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                masterInstance: forkInstanceC,
+                forkInstance: forkInstanceB,
+                metaInstance: metaInstanceB,
+                bulkSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER
+            });
+            const replicationStateCtoMaster = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                masterInstance: masterInstance,
+                forkInstance: forkInstanceC,
+                metaInstance: metaInstanceC,
+                bulkSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER
+            });
+
+
+            // insert a document on A
+            const writeData = getDocData();
+            await forkInstanceA.bulkWrite([{ document: writeData }]);
+
+            // find the document on master
+            await waitUntil(async () => {
+                try {
+                    const foundAgain = await forkInstanceB.findDocumentsById([writeData.passportId], false);
+                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                    assert.strictEqual(foundDoc.passportId, writeData.passportId);
+                    return true;
+                } catch (err) {
+                    return false;
+                }
+            }, 10 * 1000, 100);
+
+            // insert a document on Master
+            const writeDataMaster = getDocData();
+            await masterInstance.bulkWrite([{ document: writeDataMaster }]);
+            // find the document on A
+            await waitUntil(async () => {
+                try {
+                    const foundAgain = await forkInstanceB.findDocumentsById([writeDataMaster.passportId], false);
+                    const foundDoc = getFromObjectOrThrow(foundAgain, writeDataMaster.passportId);
+                    assert.strictEqual(foundDoc.passportId, writeDataMaster.passportId);
+                    return true;
+                } catch (err) {
+                    return false;
+                }
+            }, 10 * 1000, 100);
+
+            await cleanUp(replicationStateAtoB);
+            await cleanUp(replicationStateBtoC);
+            await cleanUp(replicationStateCtoMaster);
         });
     });
     describe('conflict handling', () => {
