@@ -50,6 +50,7 @@ import type {
 import type { RxStorageLoki } from './rx-storage-lokijs';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
+import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
 
 let instanceId = now();
 
@@ -392,6 +393,12 @@ export async function createLokiStorageInstance<RxDocType>(
         internals,
         params.options,
         databaseSettings
+    );
+
+    addRxStorageMultiInstanceSupport(
+        params,
+        instance,
+        internals.leaderElector ? internals.leaderElector.broadcastChannel : undefined
     );
 
     /**

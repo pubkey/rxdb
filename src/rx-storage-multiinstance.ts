@@ -85,7 +85,12 @@ export async function removeBroadcastChannelReference(
 
 export function addRxStorageMultiInstanceSupport<RxDocType>(
     instanceCreationParams: RxStorageInstanceCreationParams<RxDocType, any>,
-    instance: RxStorageInstance<RxDocType, any, any>
+    instance: RxStorageInstance<RxDocType, any, any>,
+    /**
+     * If provided, that channel will be used
+     * instead of an own one.
+     */
+    providedBroadcastChannel?: BroadcastChannel<any>
 ) {
     if (!instanceCreationParams.multiInstance) {
         return;
@@ -96,7 +101,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     type Emit = EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
 
 
-    const broadcastChannel = getBroadcastChannelReference(storage);
+    const broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(storage);
     const changesFromOtherInstances$: Subject<Emit> = new Subject();
 
     const eventListener = (msg: RxStorageMultiInstanceBroadcastType) => {
@@ -133,7 +138,9 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     instance.close = async function () {
         sub.unsubscribe();
         broadcastChannel.removeEventListener('message', eventListener);
-        await removeBroadcastChannelReference(storage);
+        if (!providedBroadcastChannel) {
+            await removeBroadcastChannelReference(storage);
+        }
         return oldClose();
     }
 }
