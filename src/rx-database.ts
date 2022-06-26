@@ -190,9 +190,6 @@ export class RxDatabaseBase<
 
         // emit into own stream
         this.eventBulks$.next(changeEventBulk);
-
-        // write to socket to inform other instances about the change
-        writeToSocket(this as any, changeEventBulk);
     }
 
     /**
@@ -537,37 +534,6 @@ function throwIfDatabaseNameUsed(
 }
 
 /**
- * writes the changeEvent to the broadcastChannel
- */
-export function writeToSocket(
-    rxDatabase: RxDatabase,
-    changeEventBulk: RxChangeEventBulk<any>
-): Promise<boolean> {
-    if (rxDatabase.destroyed) {
-        return PROMISE_RESOLVE_FALSE;
-    }
-
-    return rxDatabase.storageToken
-        .then(storageToken => {
-            if (
-                !rxDatabase.storage.statics.doesBroadcastChangestream() &&
-                rxDatabase.multiInstance &&
-                rxDatabase.broadcastChannel &&
-                !changeEventBulk.internal &&
-                rxDatabase.token === changeEventBulk.databaseToken &&
-                storageToken === changeEventBulk.storageToken
-
-            ) {
-                return rxDatabase.broadcastChannel
-                    .postMessage(changeEventBulk)
-                    .then(() => true);
-            } else {
-                return PROMISE_RESOLVE_FALSE;
-            }
-        });
-}
-
-/**
  * returns the primary for a given collection-data
  * used in the internal pouchdb-instances
  */
@@ -605,24 +571,6 @@ export async function _removeAllOfCollection(
         .then(() => relevantDocs);
 }
 
-function _prepareBroadcastChannel<Collections>(rxDatabase: RxDatabase<Collections>): void {
-    // listen to changes from other instances that come over the BroadcastChannel
-    ensureNotFalsy(rxDatabase.broadcastChannel)
-        .addEventListener('message', async (changeEventBulk: RxChangeEventBulk<any>) => {
-            const databaseStorageToken = await rxDatabase.storageToken;
-            if (
-                // not same storage-state
-                changeEventBulk.storageToken !== databaseStorageToken ||
-                // this db instance was sender
-                changeEventBulk.databaseToken === rxDatabase.token
-            ) {
-                return;
-            }
-            rxDatabase.$emit(changeEventBulk);
-        });
-}
-
-
 /**
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.
@@ -643,17 +591,6 @@ async function createRxDatabaseStorageInstance<Internals, InstanceCreationOption
         }
     );
     return internalStore;
-}
-
-/**
- * do the async things for this database
- */
-async function prepare<Internals, InstanceCreationOptions, Collections>(
-    rxDatabase: RxDatabaseBase<Internals, InstanceCreationOptions, Collections>
-): Promise<void> {
-    if (rxDatabase.multiInstance) {
-        _prepareBroadcastChannel<Collections>(rxDatabase as any);
-    }
 }
 
 export function createRxDatabase<
@@ -731,22 +668,20 @@ export function createRxDatabase<
             broadcastChannel,
             cleanupPolicy
         ) as any;
-        return prepare(rxDatabase)
-            .then(() => runAsyncPluginHooks('createRxDatabase', {
-                database: rxDatabase,
-                creator: {
-                    storage,
-                    instanceCreationOptions,
-                    name,
-                    password,
-                    multiInstance,
-                    eventReduce,
-                    ignoreDuplicate,
-                    options,
-                    localDocuments
-                }
-            }))
-            .then(() => rxDatabase);
+        return runAsyncPluginHooks('createRxDatabase', {
+            database: rxDatabase,
+            creator: {
+                storage,
+                instanceCreationOptions,
+                name,
+                password,
+                multiInstance,
+                eventReduce,
+                ignoreDuplicate,
+                options,
+                localDocuments
+            }
+        }).then(() => rxDatabase);
     });
 }
 

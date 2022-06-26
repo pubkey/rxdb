@@ -2462,207 +2462,223 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             await instances.a.close();
             await instances.b.close();
         }
-        describe('RxStorageInstance', () => {
-            it('should be able to write and read documents', async () => {
-                const instances = await getMultiInstanceRxStorageInstance();
+        it('should be able to write and read documents', async () => {
+            const instances = await getMultiInstanceRxStorageInstance();
 
-                const emittedB: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
-                instances.b.changeStream().subscribe(ev => emittedB.push(ev));
-                const emittedA: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
-                instances.a.changeStream().subscribe(ev => emittedA.push(ev));
+            const emittedB: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+            instances.b.changeStream().subscribe(ev => emittedB.push(ev));
+            const emittedA: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+            instances.a.changeStream().subscribe(ev => emittedA.push(ev));
 
-                // insert a document on A
-                const writeData = getWriteData();
-                await instances.a.bulkWrite([{ document: writeData }]);
+            // insert a document on A
+            const writeData = getWriteData();
+            await instances.a.bulkWrite([{ document: writeData }]);
 
-                // find the document on B
-                await waitUntil(async () => {
-                    try {
-                        const foundAgain = await instances.b.findDocumentsById([writeData.key], false);
-                        const foundDoc = getFromObjectOrThrow(foundAgain, writeData.key);
-                        assert.strictEqual(foundDoc.key, writeData.key);
-                        return true;
-                    } catch (err) {
-                        return false;
-                    }
-                }, 10 * 1000, 100);
+            // find the document on B
+            await waitUntil(async () => {
+                try {
+                    const foundAgain = await instances.b.findDocumentsById([writeData.key], false);
+                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.key);
+                    assert.strictEqual(foundDoc.key, writeData.key);
+                    return true;
+                } catch (err) {
+                    return false;
+                }
+            }, 10 * 1000, 100);
 
-                // find via query
-                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery<TestDocType>(
-                    instances.b.schema,
-                    {
-                        selector: {},
-                        limit: 1,
-                        sort: [{ key: 'asc' }],
-                        skip: 0
-                    }
-                );
-
-                const foundViaQuery = await instances.b.query(preparedQuery);
-                assert.strictEqual(foundViaQuery.documents.length, 1);
-                const foundViaQueryDoc = foundViaQuery.documents.find(doc => doc.key === writeData.key);
-                assert.ok(foundViaQueryDoc);
-
-                // close both
-                await closeMultiInstanceRxStorageInstance(instances);
-            });
-            /**
-             * RxStorage implementations that need some kind of cross-JavaScript-process handling,
-             * like via BroadcastChannel etc, have shown problem when one instance is closed while
-             * the other is running a query on the remote instance.
-             * This case must be properly handled by having or timeout or detecting that the current leader died etc.
-             */
-            it('should be able to finish a query even when the leading instance gets closed', async () => {
-                const instances = await getMultiInstanceRxStorageInstance();
-
-                // insert a document on A
-                await instances.a.bulkWrite([{ document: getWriteData() }]);
-
-                const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery<TestDocType>(
-                    instances.b.schema,
-                    {
-                        selector: {},
-                        limit: 1,
-                        sort: [{ key: 'asc' }],
-                        skip: 0
-                    }
-                );
-
-                const queryResultBefore = await instances.b.query(preparedQuery);
-                assert.ok(queryResultBefore);
-
-                // close A while starting a query on B
-                const queryResultPromise = instances.b.query(preparedQuery);
-                instances.a.close();
-
-                // the query should still resolve.
-                await queryResultPromise;
-
-                await instances.b.close();
-            });
-            it('should not mix up documents stored with different schema versions', async () => {
-                const storageInstanceV0 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    options: {},
-                    multiInstance: false
-                });
-                const storageInstanceV1 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<TestDocType>(1, 'key'),
-                    options: {},
-                    multiInstance: false
-                });
-
-                const writeResponseV0 = await storageInstanceV0.bulkWrite(
-                    [{
-                        document: {
-                            key: 'foobar0',
-                            value: '0',
-                            _deleted: false,
-                            _meta: {
-                                lwt: now()
-                            },
-                            _rev: EXAMPLE_REVISION_1,
-                            _attachments: {}
-                        }
-                    }]
-                );
-                const writeResponseV1 = await storageInstanceV1.bulkWrite(
-                    [{
-                        document: {
-                            key: 'foobar1',
-                            value: '1',
-                            _deleted: false,
-                            _meta: {
-                                lwt: now()
-                            },
-                            _rev: EXAMPLE_REVISION_1,
-                            _attachments: {}
-                        }
-                    }]
-                );
-                assert.deepStrictEqual(writeResponseV0.error, {});
-                assert.deepStrictEqual(writeResponseV1.error, {});
-
-
-                const plainQuery = {
+            // find via query
+            const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+                instances.b.schema,
+                {
                     selector: {},
-                    sort: [{ key: 'asc' }]
-                };
-                const preparedQueryV0 = config.storage.getStorage().statics.prepareQuery(
-                    getPseudoSchemaForVersion<TestDocType>(0, 'key'),
-                    clone(plainQuery)
-                );
-                const resultV0 = await storageInstanceV0.query(preparedQueryV0);
-                assert.strictEqual(resultV0.documents.length, 1);
-                assert.strictEqual(resultV0.documents[0].value, '0');
+                    limit: 1,
+                    sort: [{ key: 'asc' }],
+                    skip: 0
+                }
+            );
 
+            const foundViaQuery = await instances.b.query(preparedQuery);
+            assert.strictEqual(foundViaQuery.documents.length, 1);
+            const foundViaQueryDoc = foundViaQuery.documents.find(doc => doc.key === writeData.key);
+            assert.ok(foundViaQueryDoc);
 
-                const preparedQueryV1 = config.storage.getStorage().statics.prepareQuery(
-                    getPseudoSchemaForVersion<TestDocType>(1, 'key'),
-                    clone(plainQuery)
-                );
-                const resultV1 = await storageInstanceV1.query(preparedQueryV1);
-                assert.strictEqual(resultV1.documents.length, 1);
-                assert.strictEqual(resultV1.documents[0].value, '1');
+            // close both
+            await closeMultiInstanceRxStorageInstance(instances);
+        });
+        /**
+         * RxStorage implementations that need some kind of cross-JavaScript-process handling,
+         * like via BroadcastChannel etc, have shown problem when one instance is closed while
+         * the other is running a query on the remote instance.
+         * This case must be properly handled by having or timeout or detecting that the current leader died etc.
+         */
+        it('should be able to finish a query even when the leading instance gets closed', async () => {
+            const instances = await getMultiInstanceRxStorageInstance();
 
+            // insert a document on A
+            await instances.a.bulkWrite([{ document: getWriteData() }]);
 
-                storageInstanceV0.close();
-                storageInstanceV1.close();
+            const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+                instances.b.schema,
+                {
+                    selector: {},
+                    limit: 1,
+                    sort: [{ key: 'asc' }],
+                    skip: 0
+                }
+            );
+
+            const queryResultBefore = await instances.b.query(preparedQuery);
+            assert.ok(queryResultBefore);
+
+            // close A while starting a query on B
+            const queryResultPromise = instances.b.query(preparedQuery);
+            instances.a.close();
+
+            // the query should still resolve.
+            await queryResultPromise;
+
+            await instances.b.close();
+        });
+        it('should not mix up documents stored with different schema versions', async () => {
+            const storageInstanceV0 = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                databaseName: randomCouchString(12),
+                collectionName: randomCouchString(12),
+                schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                options: {},
+                multiInstance: false
             });
-            it('should not mix up documents stored in a different database name', async () => {
-                const collectionName = 'aaaaa';
-                const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
-                const storageInstance1 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName: randomCouchString(12),
-                    collectionName,
-                    schema,
-                    options: {},
-                    multiInstance: false
-                });
+            const storageInstanceV1 = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                databaseName: randomCouchString(12),
+                collectionName: randomCouchString(12),
+                schema: getPseudoSchemaForVersion<TestDocType>(1, 'key'),
+                options: {},
+                multiInstance: false
+            });
 
-                const writeResponse = await storageInstance1.bulkWrite(
-                    [{
-                        document: {
-                            key: 'foobar0',
-                            value: '0',
-                            _deleted: false,
-                            _meta: {
-                                lwt: now()
-                            },
-                            _rev: EXAMPLE_REVISION_1,
-                            _attachments: {}
-                        }
-                    }]
-                );
-                assert.deepStrictEqual(writeResponse.error, {});
-                await storageInstance1.close();
-
-
-                const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseName: randomCouchString(12),
-                    collectionName,
-                    schema,
-                    options: {},
-                    multiInstance: false
-                });
-
-                const allDocsQuery = config.storage.getStorage().statics.prepareQuery(
-                    schema,
-                    {
-                        selector: {},
-                        skip: 0,
-                        sort: [{ key: 'asc' }]
+            const writeResponseV0 = await storageInstanceV0.bulkWrite(
+                [{
+                    document: {
+                        key: 'foobar0',
+                        value: '0',
+                        _deleted: false,
+                        _meta: {
+                            lwt: now()
+                        },
+                        _rev: EXAMPLE_REVISION_1,
+                        _attachments: {}
                     }
-                );
-                const allDocs = await storageInstance2.query(allDocsQuery);
-                assert.deepStrictEqual(allDocs.documents, []);
+                }]
+            );
+            const writeResponseV1 = await storageInstanceV1.bulkWrite(
+                [{
+                    document: {
+                        key: 'foobar1',
+                        value: '1',
+                        _deleted: false,
+                        _meta: {
+                            lwt: now()
+                        },
+                        _rev: EXAMPLE_REVISION_1,
+                        _attachments: {}
+                    }
+                }]
+            );
+            assert.deepStrictEqual(writeResponseV0.error, {});
+            assert.deepStrictEqual(writeResponseV1.error, {});
 
-                storageInstance2.close();
+
+            const plainQuery = {
+                selector: {},
+                sort: [{ key: 'asc' }]
+            };
+            const preparedQueryV0 = config.storage.getStorage().statics.prepareQuery(
+                getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                clone(plainQuery)
+            );
+            const resultV0 = await storageInstanceV0.query(preparedQueryV0);
+            assert.strictEqual(resultV0.documents.length, 1);
+            assert.strictEqual(resultV0.documents[0].value, '0');
+
+
+            const preparedQueryV1 = config.storage.getStorage().statics.prepareQuery(
+                getPseudoSchemaForVersion<TestDocType>(1, 'key'),
+                clone(plainQuery)
+            );
+            const resultV1 = await storageInstanceV1.query(preparedQueryV1);
+            assert.strictEqual(resultV1.documents.length, 1);
+            assert.strictEqual(resultV1.documents[0].value, '1');
+
+
+            storageInstanceV0.close();
+            storageInstanceV1.close();
+        });
+        it('should not mix up documents stored in a different database name', async () => {
+            const collectionName = 'aaaaa';
+            const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
+            const storageInstance1 = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                databaseName: randomCouchString(12),
+                collectionName,
+                schema,
+                options: {},
+                multiInstance: false
             });
+
+            const writeResponse = await storageInstance1.bulkWrite(
+                [{
+                    document: {
+                        key: 'foobar0',
+                        value: '0',
+                        _deleted: false,
+                        _meta: {
+                            lwt: now()
+                        },
+                        _rev: EXAMPLE_REVISION_1,
+                        _attachments: {}
+                    }
+                }]
+            );
+            assert.deepStrictEqual(writeResponse.error, {});
+            await storageInstance1.close();
+
+
+            const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                databaseName: randomCouchString(12),
+                collectionName,
+                schema,
+                options: {},
+                multiInstance: false
+            });
+
+            const allDocsQuery = config.storage.getStorage().statics.prepareQuery(
+                schema,
+                {
+                    selector: {},
+                    skip: 0,
+                    sort: [{ key: 'asc' }]
+                }
+            );
+            const allDocs = await storageInstance2.query(allDocsQuery);
+            assert.deepStrictEqual(allDocs.documents, []);
+
+            storageInstance2.close();
+        });
+        it('should emit events from one instance to the other', async () => {
+            const instances = await getMultiInstanceRxStorageInstance();
+
+            const emittedB: any[] = [];
+            const sub = instances.b.changeStream().subscribe(ev => emittedB.push(ev));
+
+            const writeData = getWriteData();
+            await instances.a.bulkWrite([{
+                document: writeData
+            }]);
+
+
+            await waitUntil(() => emittedB.length > 0);
+            assert.strictEqual(emittedB[0].events[0].documentId, writeData.key);
+
+            sub.unsubscribe();
+            await closeMultiInstanceRxStorageInstance(instances);
         });
     });
     describe('migration', () => {

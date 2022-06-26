@@ -1197,6 +1197,14 @@ config.parallel('rx-collection.test.js', () => {
                         return;
                     }
 
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+
                     const dbName = randomCouchString();
 
                     const createDb = async () => {
@@ -1214,16 +1222,21 @@ config.parallel('rx-collection.test.js', () => {
                     const db1 = await createDb();
                     await db1.collections['human-2'].insert(schemaObjects.simpleHuman());
 
+                    console.log('------------- 1');
+
                     // remove the collection on one database
                     await db1['human-2'].remove();
+                    console.log('------------- 2');
 
                     const db2 = await createDb();
 
+                    console.log('------------- 3');
                     /**
                      * Getting the changes in the other database should have an empty result.
                      */
                     const changesResult = await db2['human-2'].storageInstance.getChangedDocumentsSince(10);
                     assert.strictEqual(changesResult.length, 0);
+                    console.log('------------- 4');
 
                     db1.destroy();
                     db2.destroy();
