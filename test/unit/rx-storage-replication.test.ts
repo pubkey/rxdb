@@ -90,12 +90,14 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
         return withMeta;
     }
     async function createRxStorageInstance(
-        documentAmount: number = 0
+        documentAmount: number = 0,
+        databaseName: string = randomCouchString(12),
+        collectionName: string = randomCouchString(12)
     ): Promise<RxStorageInstance<HumanDocumentType, any, any>> {
 
         const storageInstance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
-            databaseName: randomCouchString(12),
-            collectionName: randomCouchString(12),
+            databaseName,
+            collectionName,
             schema: fillWithDefaultSettings(schemas.human),
             options: {},
             multiInstance: true
@@ -367,6 +369,61 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await cleanUp(replicationStateBtoC);
             await cleanUp(replicationStateCtoMaster);
         });
+        it('on multi instance it should be able to mount on top of the same storage config with a different instance', async () => {
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
+
+
+            const databaseName = randomCouchString(12);
+            const collectionName = randomCouchString(12);
+
+            const masterInstanceA = await createRxStorageInstance(0, databaseName, collectionName);
+            const masterInstanceB = await createRxStorageInstance(0, databaseName, collectionName);
+
+            const forkInstanceA = await createRxStorageInstance(0);
+            const metaInstanceA = await createMetaInstance();
+            const forkInstanceB = await createRxStorageInstance(0);
+            const metaInstanceB = await createMetaInstance();
+
+
+            const replicationStateAtoMaster = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                masterInstance: masterInstanceA,
+                forkInstance: forkInstanceA,
+                metaInstance: metaInstanceA,
+                bulkSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER
+            });
+            const replicationStateBtoMaster = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                masterInstance: masterInstanceB,
+                forkInstance: forkInstanceB,
+                metaInstance: metaInstanceB,
+                bulkSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER
+            });
+
+            // insert a document on A
+            const writeData = getDocData();
+            await forkInstanceA.bulkWrite([{ document: writeData }]);
+
+
+            // find the document on B
+            await waitUntil(async () => {
+                try {
+                    const foundAgain = await forkInstanceB.findDocumentsById([writeData.passportId], false);
+                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                    assert.strictEqual(foundDoc.passportId, writeData.passportId);
+                    return true;
+                } catch (err) {
+                    return false;
+                }
+            }, 10 * 1000, 100);
+
+            await cleanUp(replicationStateAtoMaster);
+            await cleanUp(replicationStateBtoMaster);
+        });
     });
     describe('conflict handling', () => {
         it('both have inserted the exact same document -> no conflict handler must be called', async () => {
@@ -616,9 +673,6 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
 
             cleanUp(replicationState);
-
-            //await wait(500);
-            //process.exit();
         });
     });
     describe('stability', () => {
