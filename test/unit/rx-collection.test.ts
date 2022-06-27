@@ -454,7 +454,7 @@ describe('rx-collection.test.js', () => {
             });
         });
         describe('.find()', () => {
-            config.parallel('find all', () => {
+            describe('find all', () => {
                 describe('positive', () => {
                     it('find all', async () => {
                         const c = await humansCollection.create();
