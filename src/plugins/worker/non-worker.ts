@@ -1,5 +1,9 @@
 import { Observable, Subject, Subscription } from 'rxjs';
-import { spawn, Worker } from 'threads';
+import {
+    spawn,
+    Worker,
+    Thread
+} from 'threads';
 import type {
     RxJsonSchema,
     RxStorage,
@@ -14,6 +18,7 @@ import type {
     RxStorageStatics,
     RxDocumentDataById
 } from '../../types';
+import { getFromMapOrThrow, promiseWait } from '../../util';
 import { InWorkerStorage } from './in-worker';
 
 declare type WorkerStorageInternals = {
@@ -26,36 +31,42 @@ declare type RxStorageWorkerSettings = {
     workerInput: any;
 }
 
+
 /**
  * We have no way to detect if a worker is no longer needed.
- * Instead we reuse open workers so that creating many databases,
- * does not flood the OS by opening many threads.
+ * So we create the worker process on the first RxStorageInstance
+ * and have to close it again of no more RxStorageInstances are non-closed.
  */
-const WORKER_BY_INPUT: Map<any, Promise<InWorkerStorage>> = new Map();
-
+const WORKER_BY_INSTANCE: Map<RxStorageWorker, {
+    workerPromise: Promise<InWorkerStorage>;
+    refs: Set<RxStorageInstanceWorker<any>>;
+}> = new Map();
 export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
     public name = 'worker';
 
-    public readonly workerPromise: Promise<InWorkerStorage>;
     constructor(
         public readonly settings: RxStorageWorkerSettings,
         public readonly statics: RxStorageStatics
-    ) {
-        const workerInput = this.settings.workerInput;
-        let workerPromise = WORKER_BY_INPUT.get(workerInput);
-        if (!workerPromise) {
-            workerPromise = spawn<InWorkerStorage>(new Worker(this.settings.workerInput)) as any;
-            WORKER_BY_INPUT.set(workerInput, workerPromise as any);
-        }
-        this.workerPromise = workerPromise as any;
-    }
+    ) { }
 
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, any>
     ): Promise<RxStorageInstanceWorker<RxDocType>> {
-        const worker = await this.workerPromise;
+
+
+        let workerState = WORKER_BY_INSTANCE.get(this);
+        if (!workerState) {
+            workerState = {
+                workerPromise: spawn<InWorkerStorage>(new Worker(this.settings.workerInput)) as any,
+                refs: new Set()
+            };
+            WORKER_BY_INSTANCE.set(this, workerState);
+        }
+
+
+        const worker = await workerState.workerPromise;
         const instanceId = await worker.createStorageInstance(params);
-        return new RxStorageInstanceWorker(
+        const instance = new RxStorageInstanceWorker(
             this,
             params.databaseName,
             params.collectionName,
@@ -67,6 +78,9 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
             },
             params.options
         );
+        workerState.refs.add(instance);
+
+        return instance;
     }
 }
 
@@ -81,7 +95,7 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
     private subs: Subscription[] = [];
 
     constructor(
-        public readonly storage: RxStorage<WorkerStorageInternals, any>,
+        public readonly storage: RxStorageWorker,
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
@@ -144,16 +158,18 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
             minDeletedTime
         );
     }
-    close(): Promise<void> {
+    async close(): Promise<void> {
         this.subs.forEach(sub => sub.unsubscribe());
-        return this.internals.worker.close(
+        await this.internals.worker.close(
             this.internals.instanceId
         );
+        await removeWorkerRef(this);
     }
-    remove(): Promise<void> {
-        return this.internals.worker.remove(
+    async remove(): Promise<void> {
+        await this.internals.worker.remove(
             this.internals.instanceId
         );
+        await removeWorkerRef(this);
     }
 }
 
@@ -162,4 +178,22 @@ export function getRxStorageWorker(
 ): RxStorageWorker {
     const storage = new RxStorageWorker(settings, settings.statics);
     return storage;
+}
+
+
+export async function removeWorkerRef(
+    instance: RxStorageInstanceWorker<any>
+) {
+    const workerState = getFromMapOrThrow(WORKER_BY_INSTANCE, instance.storage);
+    workerState.refs.delete(instance);
+    if (workerState.refs.size === 0) {
+        WORKER_BY_INSTANCE.delete(instance.storage);
+        await workerState.workerPromise;
+        workerState.workerPromise
+            .then(worker => {
+                // TODO we should not need the promiseWait()
+                return promiseWait(3000)
+                    .then(() => Thread.terminate(worker as any));
+            });
+    }
 }

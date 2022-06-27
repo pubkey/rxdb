@@ -2386,6 +2386,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             it('should have deleted all data', async () => {
                 const databaseName = randomCouchString(12);
                 const collectionName = randomCouchString(12);
+
+
+                console.log('AAAAAAAAAAAAAAAAAAAa');
+                console.log('AAAAAAAAAAAAAAAAAAAa');
+                console.log('AAAAAAAAAAAAAAAAAAAa');
+
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName,
                     collectionName,
@@ -2407,7 +2413,11 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }
                 ]);
+
+                console.log('aaaaaaaaaaaa -1');
+
                 await storageInstance.remove();
+                console.log('aaaaaaaaaaaa -2');
                 const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseName,
                     collectionName,
@@ -2415,7 +2425,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
+                console.log('aaaaaaaaaaaa -3');
+
                 const docs = await storageInstance2.findDocumentsById(['foobar'], false);
+                console.log('aaaaaaaaaaaa -4');
                 assert.strictEqual(Object.keys(docs).length, 0);
 
                 storageInstance2.close();
@@ -2517,15 +2530,17 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             // insert a document on A
             await instances.a.bulkWrite([{ document: getWriteData() }]);
 
-            const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery<TestDocType>(
-                instances.b.schema,
-                {
-                    selector: {},
-                    limit: 1,
-                    sort: [{ key: 'asc' }],
-                    skip: 0
-                }
-            );
+            const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage()
+                .statics
+                .prepareQuery<TestDocType>(
+                    instances.b.schema,
+                    {
+                        selector: {},
+                        limit: 1,
+                        sort: [{ key: 'asc' }],
+                        skip: 0
+                    }
+                );
 
             const queryResultBefore = await instances.b.query(preparedQuery);
             assert.ok(queryResultBefore);
@@ -2663,10 +2678,17 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             storageInstance2.close();
         });
         it('should emit events from one instance to the other', async () => {
+            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX---');
             const instances = await getMultiInstanceRxStorageInstance();
 
             const emittedB: any[] = [];
             const sub = instances.b.changeStream().subscribe(ev => emittedB.push(ev));
+
+            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+
 
             const writeData = getWriteData();
             await instances.a.bulkWrite([{

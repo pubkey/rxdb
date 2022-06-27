@@ -1149,7 +1149,15 @@ config.parallel('rx-collection.test.js', () => {
                  * @link https://github.com/pubkey/rxdb/pull/3785
                  */
                 it('#3785 should work when the collection name contains a dash or other special characters', async () => {
-                    if (!config.storage.hasPersistence) {
+                    if (
+                        !config.storage.hasPersistence ||
+                        /**
+                         * TODO this test makes no sense in lokijs-worker
+                         * because there we use the in-memory persistence
+                         * which is not really persistent between different writes.
+                         */
+                        config.storage.name === 'lokijs-worker'
+                    ) {
                         return;
                     }
 

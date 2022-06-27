@@ -308,6 +308,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             return requestRemoteInstance(this, 'remove', []);
         }
         localState.databaseState.database.removeCollection(localState.collection.name);
+        await localState.databaseState.saveQueue.run();
         return this.close();
     }
 }
@@ -375,6 +376,8 @@ export async function createLokiStorageInstance<RxDocType>(
     databaseSettings: LokiDatabaseSettings
 ): Promise<RxStorageInstanceLoki<RxDocType>> {
     const internals: LokiStorageInternals = {};
+
+
 
     if (params.multiInstance) {
         const leaderElector = getLokiLeaderElector(storage, params.databaseName);

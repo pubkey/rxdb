@@ -2,10 +2,6 @@
 
 With the worker plugin, you can put the `RxStorage` of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the percieved performance of your application. RxDB uses [threads.js](https://github.com/andywer/threads.js/) to create the Worker process an to communicate with it.
 
-In theory you can put any `RxStorage` implementation into a worker. For now this is only tested with the [LokiJS RxStorage](./rx-storage-lokijs.md).
-
-
-
 ## On the worker process
 
 ```ts
@@ -83,6 +79,35 @@ const database = await createRxDatabase({
     )
 });
 ```
+
+
+## One worker per database
+
+Each call to `getRxStorageWorker()` will create a different worker instance so that when you have more then one `RxDatabase`, each database will have its own JavaScript worker process.
+
+To reuse the worker instance in more then one `RxDatabase`, you can store the output of `getRxStorageWorker()` into a variable an use that one. Reusing the worker can decrease the initial page load, but you might get slower database operations.
+
+```ts
+// just call getRxStorageWorker() once
+const workerStorage = getRxStorageWorker({
+    statics: RxStorageLokiStatics,
+    workerInput: 'path/to/worker.js'
+});
+
+// use the same storage for both databases.
+const databaseA = await createRxDatabase({
+    name: 'mydatabaseA',
+    storage: workerStorage
+});
+const databaseB = await createRxDatabase({
+    name: 'mydatabaseB',
+    storage: workerStorage
+});
+
+```
+
+
+
 
 
 --------------------------------------------------------------------------------

@@ -88,7 +88,6 @@ export function getLokiDatabase(
          */
         const hasPersistence: boolean = !!databaseSettings.adapter;
         databaseState = (async () => {
-
             let persistenceMethod = hasPersistence ? 'adapter' : 'memory';
             if (databaseSettings.persistenceMethod) {
                 persistenceMethod = databaseSettings.persistenceMethod;
@@ -129,12 +128,18 @@ export function getLokiDatabase(
              */
             if (hasPersistence) {
                 const loadDatabasePromise = new Promise<void>((res, rej) => {
-                    database.loadDatabase({}, (err) => {
-                        if (useSettings.autoloadCallback) {
-                            useSettings.autoloadCallback(err);
-                        }
-                        err ? rej(err) : res();
-                    });
+                    try {
+                        database.loadDatabase({
+                            recursiveWait: false
+                        }, (err) => {
+                            if (useSettings.autoloadCallback) {
+                                useSettings.autoloadCallback(err);
+                            }
+                            err ? rej(err) : res();
+                        });
+                    } catch (err) {
+                        rej(err);
+                    }
                 });
                 lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(() => loadDatabasePromise);
                 await loadDatabasePromise;
