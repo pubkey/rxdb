@@ -410,6 +410,7 @@ export function startReplicationUpstream<RxDocType>(
                     const docId: string = (doc as any)[state.primaryPath];
                     const useDoc = flatCloneDocWithMeta(doc);
                     useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX] = useDoc._rev;
+                    useDoc._meta.lwt = now();
 
                     const assumedMasterDoc = assumedMasterState[docId];
 
