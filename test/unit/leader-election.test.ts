@@ -20,9 +20,9 @@ import {
     RxDBLeaderElectionPlugin
 } from '../../plugins/leader-election';
 
-config.parallel('leader-election.test.js', () => {
+describe('leader-election.test.js', () => {
     addRxPlugin(RxDBLeaderElectionPlugin);
-    describe('.die()', () => {
+    config.parallel('.die()', () => {
         it('other instance applies on death of leader', async () => {
             const name = randomCouchString(10);
             const c = await humansCollection.createMultiInstance(name);
@@ -39,7 +39,7 @@ config.parallel('leader-election.test.js', () => {
         });
     });
 
-    describe('election', () => {
+    config.parallel('election', () => {
         it('a single instance should always elect itself as leader', async () => {
             const c1 = await humansCollection.createMultiInstance(randomCouchString(10));
             const db1 = c1.database;
@@ -165,7 +165,7 @@ config.parallel('leader-election.test.js', () => {
             await Promise.all(nonDeadDbs.map(db => db.destroy()));
         });
     });
-    describe('integration', () => {
+    config.parallel('integration', () => {
         it('non-multiInstance should always be leader', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
