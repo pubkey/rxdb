@@ -1152,11 +1152,11 @@ config.parallel('rx-collection.test.js', () => {
                     if (
                         !config.storage.hasPersistence ||
                         /**
-                         * TODO this test makes no sense in lokijs-worker
+                         * TODO this test makes no sense in dexie-worker
                          * because there we use the in-memory persistence
                          * which is not really persistent between different writes.
                          */
-                        config.storage.name === 'lokijs-worker'
+                        config.storage.name === 'dexie-worker'
                     ) {
                         return;
                     }

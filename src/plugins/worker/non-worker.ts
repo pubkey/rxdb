@@ -191,7 +191,7 @@ export async function removeWorkerRef(
         await workerState.workerPromise;
         workerState.workerPromise
             .then(worker => {
-                // TODO we should not need the promiseWait()
+                // TODO we should not need the promiseWait
                 return promiseWait(3000)
                     .then(() => Thread.terminate(worker as any));
             });
