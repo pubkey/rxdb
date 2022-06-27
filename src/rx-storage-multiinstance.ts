@@ -104,6 +104,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     const broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(storage);
     const changesFromOtherInstances$: Subject<Emit> = new Subject();
 
+
     const eventListener = (msg: RxStorageMultiInstanceBroadcastType) => {
         if (
             msg.storageName === storage.name &&
@@ -117,7 +118,11 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
 
     const oldChangestream$ = instance.changeStream();
 
+    let closed = false;
     const sub = oldChangestream$.subscribe(eventBulk => {
+        if (closed) {
+            return;
+        }
         broadcastChannel.postMessage({
             storageName: storage.name,
             databaseName: instanceCreationParams.databaseName,
@@ -133,8 +138,10 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     }
 
     const oldClose = instance.close.bind(instance);
+
     instance.close = async function () {
         sub.unsubscribe();
+        closed = true;
         broadcastChannel.removeEventListener('message', eventListener);
         if (!providedBroadcastChannel) {
             await removeBroadcastChannelReference(storage);
