@@ -18,7 +18,7 @@ import type {
     RxStorageStatics,
     RxDocumentDataById
 } from '../../types';
-import { getFromMapOrThrow, promiseWait } from '../../util';
+import { getFromMapOrThrow } from '../../util';
 import { InWorkerStorage } from './in-worker';
 
 declare type WorkerStorageInternals = {
@@ -56,7 +56,6 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
 
         let workerState = WORKER_BY_INSTANCE.get(this);
         if (!workerState) {
-            console.log('WORKER CREATE ' + params.collectionName);
             workerState = {
                 workerPromise: spawn<InWorkerStorage>(new Worker(this.settings.workerInput)) as any,
                 refs: new Set()
@@ -166,20 +165,11 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
             return;
         }
         this.closed = true;
-        console.log('RxStorageInstanceWorker close(' + this.collectionName + ') 0');
         this.subs.forEach(sub => sub.unsubscribe());
-        console.log('RxStorageInstanceWorker close(' + this.collectionName + ') 1');
-        try {
-            await this.internals.worker.close(
-                this.internals.instanceId
-            );
-        } catch (err) {
-            console.log('!! CANNOT CALL worker.close');
-            console.dir(err);
-        }
-        console.log('RxStorageInstanceWorker close(' + this.collectionName + ') 2');
+        await this.internals.worker.close(
+            this.internals.instanceId
+        );
         await removeWorkerRef(this);
-        console.log('RxStorageInstanceWorker close(' + this.collectionName + ') 3');
     }
     async remove(): Promise<void> {
         await this.internals.worker.remove(
@@ -204,17 +194,8 @@ export async function removeWorkerRef(
     const workerState = getFromMapOrThrow(WORKER_BY_INSTANCE, instance.storage);
     workerState.refs.delete(instance);
     if (workerState.refs.size === 0) {
-        console.log('removeWorkerRef() REMOVE 0 ' + instance.collectionName);
         WORKER_BY_INSTANCE.delete(instance.storage);
         await workerState.workerPromise
-            .then(worker => {
-                console.log('removeWorkerRef() REMOVE 1 ' + instance.collectionName);
-                return Thread.terminate(worker as any).then(() => {
-                    console.log('removeWorkerRef() REMOVE 2 ' + instance.collectionName);
-                });
-                // TODO we should not need the promiseWait
-                return promiseWait(1000)
-                    .then(() => Thread.terminate(worker as any)).catch(() => { });
-            });
+            .then(worker => Thread.terminate(worker as any));
     }
 }

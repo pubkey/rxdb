@@ -39,7 +39,7 @@ describe('leader-election.test.js', () => {
         });
     });
 
-    config.parallel('election', () => {
+    describe('election', () => {
         it('a single instance should always elect itself as leader', async () => {
             const c1 = await humansCollection.createMultiInstance(randomCouchString(10));
             const db1 = c1.database;
