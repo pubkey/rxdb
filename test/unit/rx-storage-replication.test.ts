@@ -40,7 +40,9 @@ import {
 } from 'async-test-util';
 import { HumanDocumentType } from '../helper/schemas';
 
-config.parallel('rx-storage-replication.test.js (implementation: ' + config.storage.name + ')', () => {
+
+const useParallel = config.storage.name === 'dexie-worker' ? describe : config.parallel;
+useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.name + ')', () => {
     const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = () => {
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called.');
     }
