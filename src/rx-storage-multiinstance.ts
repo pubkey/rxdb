@@ -138,14 +138,19 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     }
 
     const oldClose = instance.close.bind(instance);
-
     instance.close = async function () {
-        sub.unsubscribe();
         closed = true;
+        sub.unsubscribe();
         broadcastChannel.removeEventListener('message', eventListener);
         if (!providedBroadcastChannel) {
             await removeBroadcastChannelReference(storage);
         }
         return oldClose();
+    }
+
+    const oldRemove = instance.remove.bind(instance);
+    instance.remove = async function () {
+        closed = true;
+        return oldRemove();
     }
 }
