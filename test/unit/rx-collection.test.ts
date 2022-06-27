@@ -1305,7 +1305,7 @@ describe('rx-collection.test.js', () => {
                 });
             });
         });
-        config.parallel('.findOne()', () => {
+        describe('.findOne()', () => {
             describe('positive', () => {
                 it('find a single document', async () => {
                     const c = await humansCollection.create();
