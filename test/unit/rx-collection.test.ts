@@ -1376,8 +1376,8 @@ describe('rx-collection.test.js', () => {
                     c.database.destroy();
                 });
                 it('BUG: insert and find very often', async function () {
-                    this.timeout(10 * 1000);
-                    const amount = config.isFastMode() ? 3 : 10;
+                    this.timeout(20 * 1000);
+                    const amount = config.isFastMode() ? 3 : 6;
                     for (let i = 0; i < amount; i++) {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),
