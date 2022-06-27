@@ -43,6 +43,7 @@ if (config.platform.name !== 'node') {
         console.dir((error as any).stack);
         console.error(error);
         console.dir(error);
+        console.log('------- END OF unhandledRejection debug logs');
         process.exit(5);
     });
 

@@ -140,6 +140,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
 
     async function cleanUp(replicationState: RxStorageInstanceReplicationState<any>) {
         replicationState.canceled.next(true);
+
         await Promise.all([
             replicationState.input.masterInstance.close(),
             replicationState.input.forkInstance.close(),
@@ -213,7 +214,7 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 return docsOnFork2.length === 2;
             });
 
-            cleanUp(replicationState);
+            await cleanUp(replicationState);
         });
     });
     describe('up', () => {
@@ -249,17 +250,19 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 return docsOnMaster2.length === 2;
             });
 
-            cleanUp(replicationState);
+            await cleanUp(replicationState);
         });
     });
     describe('different configurations', () => {
         it('should be able to replicate A->Master<-B', async () => {
-
             const masterInstance = await createRxStorageInstance(0);
             const forkInstanceA = await createRxStorageInstance(0);
             const metaInstanceA = await createMetaInstance();
             const forkInstanceB = await createRxStorageInstance(0);
             const metaInstanceB = await createMetaInstance();
+
+            console.log('xxxx - 0');
+
 
             const replicationStateAtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
@@ -269,6 +272,10 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 bulkSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
+
+
+            console.log('xxxx - 0.1');
+
             const replicationStateBtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
                 masterInstance,
@@ -278,10 +285,14 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
 
+            console.log('xxxx - 0.2');
+
+
             // insert a document on A
             const writeData = getDocData();
             await forkInstanceA.bulkWrite([{ document: writeData }]);
 
+            console.log('xxxx - 0.3');
 
             // find the document on B
             await waitUntil(async () => {
@@ -296,8 +307,20 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             }, 10 * 1000, 100);
 
 
+            console.log('xxxx - 0.4');
+
+
             await cleanUp(replicationStateAtoMaster);
+
+            console.log('xxxx - 0.5');
+
             await cleanUp(replicationStateBtoMaster);
+
+
+            console.log('xxxx - 0.6');
+
+            // process.exit();
+
         });
         it('should be able to replicate A->B->C->Master', async () => {
             const masterInstance = await createRxStorageInstance(0);
@@ -370,9 +393,6 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
             await cleanUp(replicationStateCtoMaster);
         });
         it('on multi instance it should be able to mount on top of the same storage config with a different instance', async () => {
-
-            return; // TODO
-
             if (!config.storage.hasMultiInstance) {
                 return;
             }
@@ -680,8 +700,6 @@ config.parallel('rx-storage-replication.test.js (implementation: ' + config.stor
     });
     describe('stability', () => {
         it('do many writes while replication is running', async () => {
-            return; // TODO this test fails on the lokijs storage
-
             const writeAmount = config.isFastMode() ? 5 : 30;
 
             const masterInstance = await createRxStorageInstance(0);

@@ -56,6 +56,7 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
 
         let workerState = WORKER_BY_INSTANCE.get(this);
         if (!workerState) {
+            console.log('WORKER CREATE ' + params.collectionName);
             workerState = {
                 workerPromise: spawn<InWorkerStorage>(new Worker(this.settings.workerInput)) as any,
                 refs: new Set()
@@ -93,6 +94,8 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
      */
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
     private subs: Subscription[] = [];
+
+    private closed: boolean = false;
 
     constructor(
         public readonly storage: RxStorageWorker,
@@ -159,16 +162,30 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
         );
     }
     async close(): Promise<void> {
+        if (this.closed) {
+            return;
+        }
+        this.closed = true;
+        console.log('RxStorageInstanceWorker close(' + this.collectionName + ') 0');
         this.subs.forEach(sub => sub.unsubscribe());
-        await this.internals.worker.close(
-            this.internals.instanceId
-        );
+        console.log('RxStorageInstanceWorker close(' + this.collectionName + ') 1');
+        try {
+            await this.internals.worker.close(
+                this.internals.instanceId
+            );
+        } catch (err) {
+            console.log('!! CANNOT CALL worker.close');
+            console.dir(err);
+        }
+        console.log('RxStorageInstanceWorker close(' + this.collectionName + ') 2');
         await removeWorkerRef(this);
+        console.log('RxStorageInstanceWorker close(' + this.collectionName + ') 3');
     }
     async remove(): Promise<void> {
         await this.internals.worker.remove(
             this.internals.instanceId
         );
+        this.closed = true;
         await removeWorkerRef(this);
     }
 }
@@ -187,13 +204,17 @@ export async function removeWorkerRef(
     const workerState = getFromMapOrThrow(WORKER_BY_INSTANCE, instance.storage);
     workerState.refs.delete(instance);
     if (workerState.refs.size === 0) {
+        console.log('removeWorkerRef() REMOVE 0 ' + instance.collectionName);
         WORKER_BY_INSTANCE.delete(instance.storage);
-        await workerState.workerPromise;
-        workerState.workerPromise
+        await workerState.workerPromise
             .then(worker => {
+                console.log('removeWorkerRef() REMOVE 1 ' + instance.collectionName);
+                return Thread.terminate(worker as any).then(() => {
+                    console.log('removeWorkerRef() REMOVE 2 ' + instance.collectionName);
+                });
                 // TODO we should not need the promiseWait
-                return promiseWait(3000)
-                    .then(() => Thread.terminate(worker as any));
+                return promiseWait(1000)
+                    .then(() => Thread.terminate(worker as any)).catch(() => { });
             });
     }
 }

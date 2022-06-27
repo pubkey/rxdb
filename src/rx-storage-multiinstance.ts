@@ -105,7 +105,6 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     const changesFromOtherInstances$: Subject<Emit> = new Subject();
 
     const eventListener = (msg: RxStorageMultiInstanceBroadcastType) => {
-        console.log('eventListener emitted');
         if (
             msg.storageName === storage.name &&
             msg.databaseName === instanceCreationParams.databaseName &&
@@ -119,7 +118,6 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     const oldChangestream$ = instance.changeStream();
 
     const sub = oldChangestream$.subscribe(eventBulk => {
-        console.log('oldChangestream$ emitted');
         broadcastChannel.postMessage({
             storageName: storage.name,
             databaseName: instanceCreationParams.databaseName,
