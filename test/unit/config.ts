@@ -9,7 +9,7 @@ import * as path from 'path';
 import parallel from 'mocha.parallel';
 import type { RxTestStorage } from '../../';
 import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
-import { getRxStorageLoki, RxStorageLokiStatics } from '../../plugins/lokijs';
+import { getRxStorageLoki } from '../../plugins/lokijs';
 import { getRxStorageDexie, RxStorageDexieStatics } from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
 import { getRxStorageMemory } from '../../plugins/memory';
@@ -200,7 +200,7 @@ export function setDefaultStorage(storageKey: string) {
                     return {
                         storage: getRxStorageWorker(
                             {
-                                statics: RxStorageLokiStatics,
+                                statics: RxStorageDexieStatics,
                                 workerInput: dexieMemoryWorkerPath
                             }
                         ),
