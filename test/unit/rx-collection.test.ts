@@ -510,9 +510,8 @@ describe('rx-collection.test.js', () => {
                         assert.deepStrictEqual(docs, []);
                         db.destroy();
                     });
-                    it('BUG: insert and find very often', async () => {
-                        const amount = config.isFastMode() ? 3 : 10;
-                        for (let i = 0; i < amount; i++) {
+                    runXTimes(config.isFastMode() ? 3 : 10, idx => {
+                        it('BUG: insert and find very often (' + idx + ')', async () => {
                             const db = await createRxDatabase({
                                 name: randomCouchString(10),
                                 storage: config.storage.getStorage(),
@@ -530,7 +529,7 @@ describe('rx-collection.test.js', () => {
                             const doc = docs[0];
                             assert.strictEqual(passportId, (doc as any)._data.passportId);
                             db.destroy();
-                        }
+                        });
                     });
                 });
                 describe('negative', () => {
