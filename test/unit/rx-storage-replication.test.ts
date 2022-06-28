@@ -103,7 +103,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
             collectionName,
             schema: fillWithDefaultSettings(schemas.human),
             options: {},
-            multiInstance: false
+            multiInstance: true
         });
 
         if (documentAmount > 0) {
@@ -123,7 +123,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
             collectionName: randomCouchString(12),
             schema: RX_REPLICATION_META_INSTANCE_SCHEMA,
             options: {},
-            multiInstance: false
+            multiInstance: true
         });
         return instance;
     }
