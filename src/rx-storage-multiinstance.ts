@@ -93,6 +93,7 @@ export async function removeBroadcastChannelReference(
     }
     state.refs.delete(refObject);
     if (state.refs.size === 0) {
+        console.log('close channel ' + databaseInstanceToken);
         BROADCAST_CHANNEL_BY_TOKEN.delete(databaseInstanceToken);
         return state.bc.close();
     }
@@ -179,7 +180,6 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     const oldRemove = instance.remove.bind(instance);
     instance.remove = async function () {
         closed = true;
-
         sub.unsubscribe();
         broadcastChannel.removeEventListener('message', eventListener);
         if (!providedBroadcastChannel) {

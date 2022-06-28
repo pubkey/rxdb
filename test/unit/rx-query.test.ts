@@ -100,11 +100,6 @@ describe('rx-query.test.js', () => {
             col.database.destroy();
         });
         it('should get a valid string-representation with two sort params', async () => {
-            if (config.storage.name === 'lokijs') {
-                // TODO why does this test not work on lokijs?
-                return;
-            }
-
             const col = await humansCollection.createAgeIndex();
             const q = col.find().sort({
                 passportId: 'desc', age: 'desc'

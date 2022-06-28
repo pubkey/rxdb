@@ -360,8 +360,10 @@ export class RxDatabaseBase<
      * delete all data of the collection and its previous versions
      */
     removeCollection(collectionName: string): Promise<void> {
+        console.log('removeCollection() - 0');
         let destroyPromise = PROMISE_RESOLVE_VOID;
         if ((this.collections as any)[collectionName]) {
+            console.log('removeCollection() - 1');
             destroyPromise = (this.collections as any)[collectionName].destroy();
         }
 
@@ -566,6 +568,7 @@ export async function _removeAllOfCollection(
     rxDatabase: RxDatabaseBase<any, any, any>,
     collectionName: string
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
+    console.log('_removeAllOfCollection()');
     const docs = await getAllCollectionDocuments(rxDatabase.internalStore, rxDatabase.storage);
     const relevantDocs = docs
         .filter((colDoc) => colDoc.data.name === collectionName);

@@ -1225,21 +1225,31 @@ describe('rx-collection.test.js', () => {
                         return db;
                     }
 
+
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXX');
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXX');
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXX');
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXX');
+                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXX');
+
                     const db1 = await createDb();
+                    console.log('db1 token: ' + db1.token);
                     await db1.collections['human-2'].insert(schemaObjects.simpleHuman());
 
                     // remove the collection on one database
                     await db1['human-2'].remove();
+                    await db1.destroy();
 
                     const db2 = await createDb();
-
+                    
                     /**
                      * Getting the changes in the other database should have an empty result.
                      */
+                    console.log('xxx-1');
                     const changesResult = await db2['human-2'].storageInstance.getChangedDocumentsSince(10);
+                    console.log('xxx-2');
                     assert.strictEqual(changesResult.length, 0);
 
-                    db1.destroy();
                     db2.destroy();
                 });
             });
@@ -1814,10 +1824,6 @@ describe('rx-collection.test.js', () => {
                     c.database.destroy();
                 });
                 it('should be possible to re-create the collection with different schema', async () => {
-                    if (config.storage.name === 'lokijs') {
-                        // TODO why does this test not work on lokijs?
-                        return;
-                    }
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
                         storage: config.storage.getStorage()
@@ -1842,10 +1848,6 @@ describe('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should not contain document when re-creating', async () => {
-                    if (config.storage.name === 'lokijs') {
-                        // TODO why does this test not work on lokijs?
-                        return;
-                    }
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
                         storage: config.storage.getStorage()
@@ -1875,10 +1877,6 @@ describe('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should have deleted the local documents', async () => {
-                    if (config.storage.name === 'lokijs') {
-                        // TODO why does this test not work on lokijs?
-                        return;
-                    }
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
                         storage: config.storage.getStorage()
@@ -1908,10 +1906,6 @@ describe('rx-collection.test.js', () => {
                     await db.destroy();
                 });
                 it('should delete when older versions exist', async () => {
-                    if (config.storage.name === 'lokijs') {
-                        // TODO why does this test not work on lokijs?
-                        return;
-                    }
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
                         storage: config.storage.getStorage()

@@ -7,7 +7,10 @@ import {
     LeaderElector,
     BroadcastChannel
 } from 'broadcast-channel';
-import { getBroadcastChannelReference, removeBroadcastChannelReference } from '../rx-storage-multiinstance';
+import {
+    getBroadcastChannelReference,
+    removeBroadcastChannelReference
+} from '../rx-storage-multiinstance';
 
 import type {
     RxDatabase,

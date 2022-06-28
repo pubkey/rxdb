@@ -1,6 +1,7 @@
 import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import lokijs, { Collection } from 'lokijs';
 import type {
+    DeepReadonly,
     LokiDatabaseSettings,
     LokiDatabaseState,
     LokiLocalDatabaseState,
@@ -19,12 +20,12 @@ import { LokiSaveQueue } from './loki-save-queue';
 import type { DeterministicSortComparator } from 'event-reduce-js';
 import { newRxError } from '../../rx-error';
 import {
-    BroadcastChannel,
-    createLeaderElection,
     LeaderElector,
     OnMessageHandler
 } from 'broadcast-channel';
 import type { RxStorageLoki } from './rx-storage-lokijs';
+import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
+import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
@@ -244,43 +245,18 @@ export function getLokiSortComparator<RxDocType>(
     return fun;
 }
 
-
 export function getLokiLeaderElector(
-    storage: RxStorageLoki,
+    databaseInstanceToken: string,
+    broadcastChannelRefObject: any,
     databaseName: string
 ): LeaderElector {
-    let electorState = storage.leaderElectorByLokiDbName.get(databaseName);
-    if (!electorState) {
-        /**
-         * TODO ensure that if possible the leader elector
-         * from the leader-election-plugin is reused.
-         */
-        const channelName = 'rxdb-lokijs-' + databaseName;
-        const channel = new BroadcastChannel(channelName);
-        const elector = createLeaderElection(channel);
-        electorState = {
-            leaderElector: elector,
-            intancesCount: 1
-        }
-        storage.leaderElectorByLokiDbName.set(databaseName, electorState);
-    } else {
-        electorState.intancesCount = electorState.intancesCount + 1;
-    }
-    return electorState.leaderElector;
-}
-
-export function removeLokiLeaderElectorReference(
-    storage: RxStorageLoki,
-    databaseName: string
-) {
-    const electorState = storage.leaderElectorByLokiDbName.get(databaseName);
-    if (electorState) {
-        electorState.intancesCount = electorState.intancesCount - 1;
-        if (electorState.intancesCount === 0) {
-            electorState.leaderElector.broadcastChannel.close();
-            storage.leaderElectorByLokiDbName.delete(databaseName);
-        }
-    }
+    const broadcastChannel = getBroadcastChannelReference(
+        databaseInstanceToken,
+        databaseName,
+        broadcastChannelRefObject
+    );
+    const elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
+    return elector;
 }
 
 /**
