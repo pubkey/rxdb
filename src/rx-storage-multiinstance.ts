@@ -19,7 +19,6 @@ import { mergeWith } from 'rxjs/operators';
 import type {
     EventBulk,
     RxDocumentData,
-    RxStorage,
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageInstanceCreationParams
@@ -30,16 +29,20 @@ import {
 } from 'broadcast-channel';
 
 /**
- * The broadcast-channel is reused
- * for all RxStorageInstances of the same RxStorage.
- * This ensures that when more then one RxDatabase is created, we still only have one BroadcastChannel.
- * Also it makes it still possible to simulate multi-instance usage in the unit tests
- * where we can just use two different RxStorage objects so that the BroadcastChannels do not mix up.
+ * The broadcast-channel is reused by the databaseInstanceToken.
+ * This is required so that it is easy to simulate multi-tab usage
+ * in the test where different instances of the same RxDatabase must
+ * have different broadcast channels.
+ * But also it ensures that for each RxDatabase we only create a single
+ * broadcast channel that can even be reused in the leader election plugin.
+ * 
+ * TODO at the end of the unit tests,
+ * we should ensure that all channels are closed and cleaned up.
+ * Otherwise we have forgot something.
  */
-export const BROADCAST_CHANNEL_BY_STORAGE: Map<RxStorage<any, any>, {
+export const BROADCAST_CHANNEL_BY_TOKEN: Map<string, {
     bc: BroadcastChannel<RxStorageMultiInstanceBroadcastType>;
     refs: number;
-    storage: RxStorage<any, any>;
 }> = new Map();
 
 
@@ -51,16 +54,21 @@ export type RxStorageMultiInstanceBroadcastType = {
 }
 
 export function getBroadcastChannelReference(
-    storage: RxStorage<any, any>
+    databaseInstanceToken: string,
+    databaseName: string
 ): BroadcastChannel<RxStorageMultiInstanceBroadcastType> {
-    let state = BROADCAST_CHANNEL_BY_STORAGE.get(storage);
+    let state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
     if (!state) {
         state = {
-            bc: new BroadcastChannel('RxDB:' + storage.name),
-            refs: 1,
-            storage
+            /**
+             * We have to use the databaseName instead of the databaseInstanceToken
+             * in the BroadcastChannel name because different instances must end with the same
+             * channel name to be able to broadcast messages between each other.
+             */
+            bc: new BroadcastChannel('RxDB:' + databaseName),
+            refs: 1
         };
-        BROADCAST_CHANNEL_BY_STORAGE.set(storage, state);
+        BROADCAST_CHANNEL_BY_TOKEN.set(databaseInstanceToken, state);
     } else {
         state.refs = state.refs + 1;
     }
@@ -68,16 +76,16 @@ export function getBroadcastChannelReference(
 }
 
 export async function removeBroadcastChannelReference(
-    storage: RxStorage<any, any>
+    databaseInstanceToken: string
 ) {
-    const state = BROADCAST_CHANNEL_BY_STORAGE.get(storage);
+    const state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
     if (!state) {
         return;
     }
     state.refs = state.refs - 1;
     if (state.refs === 0) {
         console.log('refs === 0');
-        BROADCAST_CHANNEL_BY_STORAGE.delete(storage);
+        BROADCAST_CHANNEL_BY_TOKEN.delete(databaseInstanceToken);
         return state.bc.close();
     }
 }
@@ -101,7 +109,12 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     type Emit = EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
 
 
-    const broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(storage);
+    const broadcastChannel = providedBroadcastChannel ?
+        providedBroadcastChannel :
+        getBroadcastChannelReference(
+            instanceCreationParams.databaseInstanceToken,
+            instance.databaseName
+        );
     const changesFromOtherInstances$: Subject<Emit> = new Subject();
 
 
@@ -111,6 +124,8 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
             msg.databaseName === instanceCreationParams.databaseName &&
             msg.collectionName === instanceCreationParams.collectionName
         ) {
+            console.log('event listenert:');
+            console.dir(msg);
             changesFromOtherInstances$.next(msg.eventBulk);
         }
     };
@@ -123,6 +138,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
         if (closed) {
             return;
         }
+        console.log('post message:');
         broadcastChannel.postMessage({
             storageName: storage.name,
             databaseName: instanceCreationParams.databaseName,
@@ -143,7 +159,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
         sub.unsubscribe();
         broadcastChannel.removeEventListener('message', eventListener);
         if (!providedBroadcastChannel) {
-            await removeBroadcastChannelReference(storage);
+            await removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken);
         }
         return oldClose();
     }

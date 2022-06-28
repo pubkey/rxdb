@@ -232,6 +232,7 @@ describe('rx-storage-lokijs.test.js', () => {
             );
 
             const storageInstance = await storage.createStorageInstance<{ key: string }>({
+                databaseInstanceToken: randomCouchString(10),
                 databaseName: dbLocation,
                 collectionName: randomCouchString(12),
                 schema: getPseudoSchemaForVersion(0, 'key'),
@@ -281,6 +282,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 databaseName
             );
             const storageInstance = await storage.createStorageInstance<{ key: string }>({
+                databaseInstanceToken: randomCouchString(10),
                 databaseName: dbLocation,
                 collectionName: randomCouchString(12),
                 schema: getPseudoSchemaForVersion(0, 'key'),
@@ -343,6 +345,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 });
 
                 const storageInstance = await storage.createStorageInstance({
+                    databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     multiInstance: false,
@@ -415,6 +418,7 @@ describe('rx-storage-lokijs.test.js', () => {
             );
             const collectionName = randomCouchString(12);
             const storageInstance = await storage.createStorageInstance<{ key: string }>({
+                databaseInstanceToken: randomCouchString(10),
                 databaseName: dbLocation,
                 collectionName,
                 schema: getPseudoSchemaForVersion(0, 'key'),
@@ -438,6 +442,7 @@ describe('rx-storage-lokijs.test.js', () => {
             await storageInstance.close();
 
             const storageInstance2 = await storage.createStorageInstance<{ key: string }>({
+                databaseInstanceToken: randomCouchString(10),
                 databaseName: dbLocation,
                 collectionName,
                 schema: getPseudoSchemaForVersion(0, 'key'),

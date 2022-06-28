@@ -217,6 +217,7 @@ export async function createOldCollection(
 ): Promise<OldRxCollection> {
     const database = dataMigrator.newestCollection.database;
     const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
+        databaseInstanceToken: database.token,
         databaseName: database.name,
         collectionName: dataMigrator.newestCollection.name,
         schema: schemaObj,

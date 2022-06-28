@@ -7,18 +7,19 @@ import {
     LeaderElector,
     BroadcastChannel
 } from 'broadcast-channel';
+import { getBroadcastChannelReference, removeBroadcastChannelReference } from '../rx-storage-multiinstance';
 
 import type {
     RxDatabase,
     RxPlugin
 } from '../types';
 import {
-    ensureNotFalsy,
     PROMISE_RESOLVE_TRUE
 } from '../util';
 
 const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
 const LEADER_ELECTOR_BY_BROADCAST_CHANNEL: WeakMap<BroadcastChannel, LeaderElector> = new WeakMap();
+
 
 /**
  * Returns the leader elector of a broadcast channel.
@@ -33,9 +34,27 @@ export function getLeaderElectorByBroadcastChannel(broadcastChannel: BroadcastCh
     return elector;
 }
 
-
+/**
+ * @overwrites RxDatabase().leaderElector for caching
+ */
 export function getForDatabase(this: RxDatabase): LeaderElector {
-    const broadcastChannel = ensureNotFalsy(this.broadcastChannel);
+
+
+    const broadcastChannel = getBroadcastChannelReference(
+        this.token,
+        this.name
+    );
+
+    /**
+     * Clean up the reference on RxDatabase.destroy()
+     */
+    const oldDestroy = this.destroy.bind(this);
+    this.destroy = function () {
+        removeBroadcastChannelReference(this.token);
+        return oldDestroy();
+    }
+
+
     let elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
     if (!elector) {
         elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
@@ -44,6 +63,12 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
             elector
         );
     }
+
+    /**
+     * Overwrite for caching
+     */
+    this.leaderElector = () => elector;
+
     return elector;
 }
 

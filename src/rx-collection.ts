@@ -998,6 +998,7 @@ export function createRxCollection(
     }: any
 ): Promise<RxCollection> {
     const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
+        databaseInstanceToken: database.token,
         databaseName: database.name,
         collectionName: name,
         schema: schema.jsonSchema,

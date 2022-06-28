@@ -468,6 +468,7 @@ export async function mustUseLocalState(
     ) {
         // own is leader, use local instance
         instance.internals.localState = createLokiLocalState<any>({
+            databaseInstanceToken: instance.databaseInstanceToken,
             databaseName: instance.databaseName,
             collectionName: instance.collectionName,
             options: instance.options,

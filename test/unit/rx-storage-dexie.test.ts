@@ -159,6 +159,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
 
             const databaseName = randomCouchString(12);
             const storageInstance = await storage.createStorageInstance<HumanDocumentType>({
+                databaseInstanceToken: randomCouchString(10),
                 databaseName,
                 collectionName: randomCouchString(12),
                 schema,

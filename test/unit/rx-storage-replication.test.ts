@@ -98,6 +98,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
     ): Promise<RxStorageInstance<HumanDocumentType, any, any>> {
 
         const storageInstance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
+            databaseInstanceToken: randomCouchString(10),
             databaseName,
             collectionName,
             schema: fillWithDefaultSettings(schemas.human),
@@ -117,6 +118,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
     }
     async function createMetaInstance(): Promise<RxStorageInstance<RxStorageReplicationMeta, any, any>> {
         const instance = await config.storage.getStorage().createStorageInstance<RxStorageReplicationMeta>({
+            databaseInstanceToken: randomCouchString(10),
             databaseName: randomCouchString(12),
             collectionName: randomCouchString(12),
             schema: RX_REPLICATION_META_INSTANCE_SCHEMA,

@@ -88,19 +88,19 @@ Each call to `getRxStorageWorker()` will create a different worker instance so t
 To reuse the worker instance in more then one `RxDatabase`, you can store the output of `getRxStorageWorker()` into a variable an use that one. Reusing the worker can decrease the initial page load, but you might get slower database operations.
 
 ```ts
-// just call getRxStorageWorker() once
+// Call getRxStorageWorker() exactly once
 const workerStorage = getRxStorageWorker({
     statics: RxStorageLokiStatics,
     workerInput: 'path/to/worker.js'
 });
 
 // use the same storage for both databases.
-const databaseA = await createRxDatabase({
-    name: 'mydatabaseA',
+const databaseOne = await createRxDatabase({
+    name: 'database-one',
     storage: workerStorage
 });
-const databaseB = await createRxDatabase({
-    name: 'mydatabaseB',
+const databaseTwo = await createRxDatabase({
+    name: 'database-two',
     storage: workerStorage
 });
 

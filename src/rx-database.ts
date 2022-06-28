@@ -1,7 +1,8 @@
 import { IdleQueue } from 'custom-idle-queue';
-import { BroadcastChannel } from 'broadcast-channel';
-
-import type { LeaderElector } from 'broadcast-channel';
+import type {
+    LeaderElector,
+    BroadcastChannel
+} from 'broadcast-channel';
 import type {
     CollectionsOfDatabase,
     RxDatabase,
@@ -76,6 +77,7 @@ import {
     INTERNAL_CONTEXT_COLLECTION,
     INTERNAL_STORE_SCHEMA
 } from './rx-database-internal-store';
+import { BROADCAST_CHANNEL_BY_TOKEN } from './rx-storage-multiinstance';
 
 /**
  * stores the used database names
@@ -91,6 +93,7 @@ export class RxDatabaseBase<
     > {
     constructor(
         public readonly name: string,
+        public readonly token: string,
         public readonly storage: RxStorage<Internals, InstanceCreationOptions>,
         public readonly instanceCreationOptions: InstanceCreationOptions,
         public readonly password: any,
@@ -102,14 +105,6 @@ export class RxDatabaseBase<
          * Stores information documents about the collections of the database
          */
         public readonly internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>,
-        /**
-         * Set if multiInstance: true
-         * This broadcast channel is used to send events to other instances like
-         * other browser tabs or nodejs processes.
-         * We transfer everything in EventBulks because sending many small events has been shown
-         * to be performance expensive.
-         */
-        public readonly broadcastChannel?: BroadcastChannel<RxChangeEventBulk<any>>,
         public readonly cleanupPolicy?: Partial<RxCleanupPolicy>
     ) {
         DB_COUNT++;
@@ -146,7 +141,26 @@ export class RxDatabaseBase<
         return this.observable$;
     }
 
-    public readonly token: string = randomCouchString(10);
+
+    /**
+     * Set if multiInstance: true
+     * This broadcast channel is used to send events to other instances like
+     * other browser tabs or nodejs processes.
+     * We transfer everything in EventBulks because sending many small events has been shown
+     * to be performance expensive.
+     * 
+     * @deprecated The broadcast channel has been moved out of the RxDatabase and is part of the
+     * RxStorage but only if it is needed there.
+     * @see ./rx-storage-multiinstance.ts
+     * 
+     */
+    get broadcastChannel(): BroadcastChannel<RxChangeEventBulk<any>> | undefined {
+        const bcState = BROADCAST_CHANNEL_BY_TOKEN.get(this.token);
+        if (bcState) {
+            return bcState.bc as any;
+        }
+    }
+
     public _subs: Subscription[] = [];
     public destroyed: boolean = false;
     public collections: Collections = {} as any;
@@ -172,6 +186,8 @@ export class RxDatabaseBase<
      * by the database.
      * Used to detect duplicates that come in again via BroadcastChannel
      * or other streams.
+     * TODO instead of having this here, we should add a test to ensure each RxStorage
+     * behaves equal and does never emit duplicate eventBulks.
      */
     public emittedEventBulkIds: ObliviousSet<string> = new ObliviousSet(60 * 1000);
 
@@ -360,6 +376,7 @@ export class RxDatabaseBase<
                             return createRxCollectionStorageInstance(
                                 this.asRxDatabase,
                                 {
+                                    databaseInstanceToken: this.token,
                                     databaseName: this.name,
                                     collectionName,
                                     schema: knownVersionDoc.data.schema,
@@ -576,6 +593,7 @@ export async function _removeAllOfCollection(
  * to store schemas and other configuration stuff.
  */
 async function createRxDatabaseStorageInstance<Internals, InstanceCreationOptions>(
+    databaseInstanceToken: string,
     storage: RxStorage<Internals, InstanceCreationOptions>,
     databaseName: string,
     options: InstanceCreationOptions,
@@ -583,6 +601,7 @@ async function createRxDatabaseStorageInstance<Internals, InstanceCreationOption
 ): Promise<RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>> {
     const internalStore = await storage.createStorageInstance<InternalStoreDocType>(
         {
+            databaseInstanceToken,
             databaseName,
             collectionName: INTERNAL_STORAGE_NAME,
             schema: INTERNAL_STORE_SCHEMA,
@@ -635,21 +654,15 @@ export function createRxDatabase<
     }
     USED_DATABASE_NAMES.add(name);
 
-    let broadcastChannel: BroadcastChannel | undefined;
-    if (multiInstance) {
-        broadcastChannel = new BroadcastChannel(
-            'RxDB:' +
-            name + ':' +
-            'socket'
-        );
-    }
-
     const idleQueue = new IdleQueue();
+
+    const databaseInstanceToken = randomCouchString(10);
 
     return createRxDatabaseStorageInstance<
         Internals,
         InstanceCreationOptions
     >(
+        databaseInstanceToken,
         storage,
         name,
         instanceCreationOptions as any,
@@ -657,6 +670,7 @@ export function createRxDatabase<
     ).then(storageInstance => {
         const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
             name,
+            databaseInstanceToken,
             storage,
             instanceCreationOptions,
             password,
@@ -665,7 +679,6 @@ export function createRxDatabase<
             options,
             idleQueue,
             storageInstance,
-            broadcastChannel,
             cleanupPolicy
         ) as any;
         return runAsyncPluginHooks('createRxDatabase', {
@@ -695,7 +708,9 @@ export async function removeRxDatabase(
     databaseName: string,
     storage: RxStorage<any, any>
 ): Promise<string[]> {
+    const databaseInstanceToken = randomCouchString(10);
     const dbInternalsStorageInstance = await createRxDatabaseStorageInstance(
+        databaseInstanceToken,
         storage,
         databaseName,
         {},
@@ -716,6 +731,7 @@ export async function removeRxDatabase(
                 removedCollectionNames.push(collectionName);
                 const storageInstance = await storage.createStorageInstance<any>(
                     {
+                        databaseInstanceToken,
                         databaseName,
                         collectionName,
                         schema,

@@ -67,7 +67,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
     public closed = false;
 
+
     constructor(
+        public readonly databaseInstanceToken: string,
         public readonly storage: RxStorageLoki,
         public readonly databaseName: string,
         public readonly collectionName: string,
@@ -389,6 +391,7 @@ export async function createLokiStorageInstance<RxDocType>(
     }
 
     const instance = new RxStorageInstanceLoki(
+        params.databaseInstanceToken,
         storage,
         params.databaseName,
         params.collectionName,

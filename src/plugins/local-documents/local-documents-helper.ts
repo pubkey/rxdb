@@ -18,6 +18,7 @@ import type {
     RxLocalDocumentData,
     RxStorage
 } from '../../types';
+import { randomCouchString } from '../../util';
 
 const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();
 
@@ -27,6 +28,7 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
     const collectionName = parent.database ? parent.name : '';
     const statePromise = (async () => {
         let storageInstance = await createLocalDocumentStorageInstance(
+            database.token,
             database.storage,
             database.name,
             collectionName,
@@ -101,6 +103,7 @@ export function getLocalDocStateByParent(parent: LocalDocumentParent): Promise<L
 
 
 export function createLocalDocumentStorageInstance(
+    databaseInstanceToken: string,
     storage: RxStorage<any, any>,
     databaseName: string,
     collectionName: string,
@@ -108,6 +111,7 @@ export function createLocalDocumentStorageInstance(
     multiInstance: boolean
 ) {
     return storage.createStorageInstance<RxLocalDocumentData>({
+        databaseInstanceToken,
         databaseName: databaseName,
         /**
          * Use a different collection name for the local documents instance
@@ -134,7 +138,9 @@ export async function removeLocalDocumentsStorageInstance(
     databaseName: string,
     collectionName: string
 ) {
+    const databaseInstanceToken = randomCouchString(10);
     const storageInstance = await createLocalDocumentStorageInstance(
+        databaseInstanceToken,
         storage,
         databaseName,
         collectionName,
