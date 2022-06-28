@@ -29,9 +29,9 @@ addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBJsonDumpPlugin } from '../../plugins/json-dump';
 addRxPlugin(RxDBJsonDumpPlugin);
 
-config.parallel('rx-document.test.js', () => {
-    describe('statics', () => { });
-    describe('prototype-merge', () => {
+describe('rx-document.test.js', () => {
+    config.parallel('statics', () => { });
+    config.parallel('prototype-merge', () => {
         describe('RxSchema.getDocumentPrototype()', () => {
             it('should get an object with all main-fields', async () => {
                 const schema = createRxSchema(schemas.human);
@@ -123,7 +123,7 @@ config.parallel('rx-document.test.js', () => {
         });
 
     });
-    describe('.get()', () => {
+    config.parallel('.get()', () => {
         describe('positive', () => {
             it('get a value', async () => {
                 const c = await humansCollection.create(1);
@@ -151,7 +151,7 @@ config.parallel('rx-document.test.js', () => {
         });
         describe('negative', () => { });
     });
-    describe('.set()', () => {
+    config.parallel('.set()', () => {
         describe('negative', () => {
             it('should only not work on non-temporary document', async () => {
                 const c = await humansCollection.createNested(5);
@@ -168,7 +168,7 @@ config.parallel('rx-document.test.js', () => {
             });
         });
     });
-    describe('.remove()', () => {
+    config.parallel('.remove()', () => {
         describe('positive', () => {
             it('delete 1 document', async () => {
                 const c = await humansCollection.create(5);
@@ -251,7 +251,7 @@ config.parallel('rx-document.test.js', () => {
             });
         });
     });
-    describe('.update()', () => {
+    config.parallel('.update()', () => {
         describe('positive', () => {
             it('$set a value with a mongo like query', async () => {
                 const c = await humansCollection.createPrimary(1);
@@ -372,7 +372,7 @@ config.parallel('rx-document.test.js', () => {
             });
         });
     });
-    describe('.atomicUpdate()', () => {
+    config.parallel('.atomicUpdate()', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
@@ -646,7 +646,7 @@ config.parallel('rx-document.test.js', () => {
             });
         });
     });
-    describe('.atomicPatch()', () => {
+    config.parallel('.atomicPatch()', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
@@ -687,7 +687,7 @@ config.parallel('rx-document.test.js', () => {
             });
         });
     });
-    describe('.toJSON()', () => {
+    config.parallel('.toJSON()', () => {
         it('should get the documents data as json', async () => {
             const c = await humansCollection.create(1);
             const doc: any = await c.findOne().exec();
@@ -758,7 +758,7 @@ config.parallel('rx-document.test.js', () => {
             db.destroy();
         });
     });
-    describe('.toMutableJSON()', () => {
+    config.parallel('.toMutableJSON()', () => {
         it('should be able to mutate the output', async () => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec(true);
@@ -767,7 +767,7 @@ config.parallel('rx-document.test.js', () => {
             c.database.destroy();
         });
     });
-    describe('pseudo-Proxy', () => {
+    config.parallel('pseudo-Proxy', () => {
         describe('get', () => {
             it('top-value', async () => {
                 const c = await humansCollection.create(1);
@@ -881,7 +881,7 @@ config.parallel('rx-document.test.js', () => {
             });
         });
     });
-    describe('issues', () => {
+    config.parallel('issues', () => {
         it('#66 - insert -> remove -> upsert does not give new state', async () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();

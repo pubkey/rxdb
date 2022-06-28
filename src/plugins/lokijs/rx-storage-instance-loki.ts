@@ -29,7 +29,8 @@ import type {
     EventBulk,
     LokiChangesCheckpoint,
     StringKeys,
-    RxDocumentDataById
+    RxDocumentDataById,
+    DeepReadonly
 } from '../../types';
 import {
     closeLokiCollections,
@@ -39,7 +40,6 @@ import {
     stripLokiKey,
     getLokiSortComparator,
     getLokiLeaderElector,
-    removeLokiLeaderElectorReference,
     requestRemoteInstance,
     mustUseLocalState,
     handleRemoteRequest
@@ -50,6 +50,7 @@ import type {
 import type { RxStorageLoki } from './rx-storage-lokijs';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
+import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
 
 let instanceId = now();
 
@@ -66,7 +67,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
     public closed = false;
 
+
     constructor(
+        public readonly databaseInstanceToken: string,
         public readonly storage: RxStorageLoki,
         public readonly databaseName: string,
         public readonly collectionName: string,
@@ -299,7 +302,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 ]
             );
         }
-        removeLokiLeaderElectorReference(this.storage, this.databaseName);
     }
     async remove(): Promise<void> {
         const localState = await mustUseLocalState(this);
@@ -307,6 +309,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             return requestRemoteInstance(this, 'remove', []);
         }
         localState.databaseState.database.removeCollection(localState.collection.name);
+        await localState.databaseState.saveQueue.run();
         return this.close();
     }
 }
@@ -375,8 +378,15 @@ export async function createLokiStorageInstance<RxDocType>(
 ): Promise<RxStorageInstanceLoki<RxDocType>> {
     const internals: LokiStorageInternals = {};
 
+    const broadcastChannelRefObject: DeepReadonly<any> = {};
+
+
     if (params.multiInstance) {
-        const leaderElector = getLokiLeaderElector(storage, params.databaseName);
+        const leaderElector = getLokiLeaderElector(
+            params.databaseInstanceToken,
+            broadcastChannelRefObject,
+            params.databaseName
+        );
         internals.leaderElector = leaderElector;
     } else {
         // optimisation shortcut, directly create db is non multi instance.
@@ -385,6 +395,7 @@ export async function createLokiStorageInstance<RxDocType>(
     }
 
     const instance = new RxStorageInstanceLoki(
+        params.databaseInstanceToken,
         storage,
         params.databaseName,
         params.collectionName,
@@ -394,10 +405,36 @@ export async function createLokiStorageInstance<RxDocType>(
         databaseSettings
     );
 
-    /**
-     * Directly create the localState if the db becomes leader.
-     */
+    addRxStorageMultiInstanceSupport(
+        params,
+        instance,
+        internals.leaderElector ? internals.leaderElector.broadcastChannel : undefined
+    );
+
     if (params.multiInstance) {
+        /**
+         * Clean up the broadcast-channel reference on close()
+         */
+        const closeBefore = instance.close.bind(instance);
+        instance.close = function () {
+            removeBroadcastChannelReference(
+                params.databaseInstanceToken,
+                broadcastChannelRefObject
+            );
+            return closeBefore();
+        };
+        const removeBefore = instance.remove.bind(instance);
+        instance.remove = function () {
+            removeBroadcastChannelReference(
+                params.databaseInstanceToken,
+                broadcastChannelRefObject
+            );
+            return removeBefore();
+        };
+
+        /**
+         * Directly create the localState when/if the db becomes leader.
+         */
         ensureNotFalsy(internals.leaderElector)
             .awaitLeadership()
             .then(() => {

@@ -9,8 +9,8 @@ import * as path from 'path';
 import parallel from 'mocha.parallel';
 import type { RxTestStorage } from '../../';
 import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
-import { getRxStorageLoki, RxStorageLokiStatics } from '../../plugins/lokijs';
-import { getRxStorageDexie } from '../../plugins/dexie';
+import { getRxStorageLoki } from '../../plugins/lokijs';
+import { getRxStorageDexie, RxStorageDexieStatics } from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
 import { getRxStorageMemory } from '../../plugins/memory';
 import { CUSTOM_STORAGE } from './custom-storage';
@@ -142,42 +142,6 @@ export function setDefaultStorage(storageKey: string) {
                 hasRegexSupport: true
             };
             break;
-        case 'lokijs-worker':
-            const lokiMemoryWorkerPath = require('path').join(
-                '../../../../dist/lib/plugins/worker/workers/',
-                'lokijs-memory.worker.js'
-            );
-            const lokiFsWorkerPath = require('path').join(
-                '../../../../dist/lib/plugins/worker/workers/',
-                'lokijs-fs.worker.js'
-            );
-            console.log('lokiMemoryWorkerPath: ' + lokiMemoryWorkerPath);
-            config.storage = {
-                name: 'lokijs-worker',
-                getStorage: () => getRxStorageWorker(
-                    {
-                        statics: RxStorageLokiStatics,
-                        workerInput: lokiMemoryWorkerPath
-                    }
-                ),
-                getPerformanceStorage() {
-                    return {
-                        storage: getRxStorageWorker(
-                            {
-                                statics: RxStorageLokiStatics,
-                                workerInput: lokiFsWorkerPath
-                            }
-                        ),
-                        description: 'loki-worker-fs'
-                    };
-                },
-                hasPersistence: true,
-                hasMultiInstance: true,
-                hasCouchDBReplication: false,
-                hasAttachments: false,
-                hasRegexSupport: true
-            };
-            break;
         case 'dexie':
             config.storage = {
                 name: 'dexie',
@@ -213,6 +177,38 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
+                hasCouchDBReplication: false,
+                hasAttachments: false,
+                hasRegexSupport: true
+            };
+            break;
+        case 'dexie-worker':
+            const dexieMemoryWorkerPath = require('path').join(
+                '../../../../dist/lib/plugins/worker/workers/',
+                'dexie-memory.worker.js'
+            );
+            console.log('dexieMemoryWorkerPath: ' + dexieMemoryWorkerPath);
+            config.storage = {
+                name: 'dexie-worker',
+                getStorage: () => getRxStorageWorker(
+                    {
+                        statics: RxStorageDexieStatics,
+                        workerInput: dexieMemoryWorkerPath
+                    }
+                ),
+                getPerformanceStorage() {
+                    return {
+                        storage: getRxStorageWorker(
+                            {
+                                statics: RxStorageDexieStatics,
+                                workerInput: dexieMemoryWorkerPath
+                            }
+                        ),
+                        description: 'dexie-worker-memory'
+                    };
+                },
+                hasPersistence: false,
+                hasMultiInstance: false,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true

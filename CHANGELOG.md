@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- The worker RxStorage will no longer reuse the worker so that multiple RxDatabase instances can use different workers for better performance.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

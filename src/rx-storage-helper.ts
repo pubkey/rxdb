@@ -7,7 +7,10 @@ import { map } from 'rxjs/operators';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
-import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
+import {
+    fillPrimaryKey,
+    getPrimaryFieldOfPrimaryKey
+} from './rx-schema-helper';
 import type {
     BulkWriteRow,
     EventBulk,

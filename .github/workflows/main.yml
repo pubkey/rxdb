@@ -178,7 +178,7 @@ jobs:
 
   # run the node tests for the LokiJS RxStorage in a different
   # task to run in parallel.
-  node-lokijs-worker:
+  node-dexie-worker:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -205,11 +205,11 @@ jobs:
       - name: build
         run: npm run build
 
-      - name: npm run test:node:lokijs-worker
-        run: npm run test:node:lokijs-worker
+      - name: npm run test:node:dexie-worker
+        run: npm run test:node:dexie-worker
 
-      - name: npm run test:fast:lokijs-worker
-        run: npm run test:fast:lokijs-worker
+      - name: npm run test:fast:dexie-worker
+        run: npm run test:fast:dexie-worker
 
   # run the node tests for the Dexie.js RxStorage in a different
   # task to run in parallel.

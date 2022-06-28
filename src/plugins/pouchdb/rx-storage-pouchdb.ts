@@ -28,6 +28,7 @@ import PouchDBFind from 'pouchdb-find';
 import { RxStoragePouchStatics } from './pouch-statics';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { addCustomEventsPluginToPouch } from './custom-events-plugin';
+import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
 export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
     public name: string = 'pouchdb';
     public statics = RxStoragePouchStatics;
@@ -83,7 +84,7 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             params.options
         );
         await createIndexesOnPouch(pouch, params.schema);
-        return new RxStorageInstancePouch(
+        const instance = new RxStorageInstancePouch(
             this,
             params.databaseName,
             params.collectionName,
@@ -93,6 +94,13 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             },
             params.options
         );
+
+        addRxStorageMultiInstanceSupport(
+            params,
+            instance
+        );
+
+        return instance;
     }
 }
 

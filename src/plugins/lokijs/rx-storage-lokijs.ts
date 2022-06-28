@@ -38,9 +38,6 @@ export const RxStorageLokiStatics: RxStorageStatics = {
         });
     },
     hashKey: 'md5',
-    doesBroadcastChangestream() {
-        return false;
-    },
     prepareQuery<RxDocType>(
         _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: MangoQuery<RxDocType>

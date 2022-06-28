@@ -144,6 +144,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             schema = normalizeRxJsonSchema(schema);
 
             const storageInstance = await storage.createStorageInstance<HumanDocumentType>({
+                databaseInstanceToken: randomCouchString(10),
                 databaseName: randomCouchString(12),
                 collectionName: randomCouchString(12),
                 schema,

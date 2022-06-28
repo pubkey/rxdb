@@ -1,7 +1,8 @@
 import assert from 'assert';
 import { waitUntil } from 'async-test-util';
 import {
-    dbCount
+    dbCount,
+    BROADCAST_CHANNEL_BY_TOKEN
 } from '../../';
 import { OPEN_POUCHDB_STORAGE_INSTANCES } from '../../plugins/pouchdb';
 import config from './config';
@@ -21,5 +22,11 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             console.dir(OPEN_POUCHDB_STORAGE_INSTANCES);
             throw new Error('no all storage instances have been closed');
         }
+    });
+    it('ensure all BroadcastChannels are closed', () => {
+        assert.strictEqual(
+            BROADCAST_CHANNEL_BY_TOKEN.size,
+            0
+        );
     });
 });

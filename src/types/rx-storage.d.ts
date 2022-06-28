@@ -210,6 +210,23 @@ export type RxStorageQueryResult<RxDocType> = {
 }
 
 export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> = {
+
+    /**
+     * A string to uniquely identify the instance of the JavaScript object
+     * of the RxDatabase where this RxStorageInstance belongs to.
+     * In most cases you would use RxDatabase.token here.
+     * 
+     * This is used so that we can add caching or reuse stuff that belongs to the same RxDatabase.
+     * For example the BroadcastChannel that is used for event propagation between multiple browser tabs
+     * is cached by this token.
+     * 
+     * In theory we could just use the databaseName for that. But to make it easier in unit tests
+     * to simulate cross-tab usage, we cannot assume that the databaseName is unique in a single
+     * JavaScript process. Therefore we use the instance token instead.
+     */
+    databaseInstanceToken: string;
+
+
     databaseName: string;
     collectionName: string;
     schema: RxJsonSchema<RxDocumentData<RxDocType>>;

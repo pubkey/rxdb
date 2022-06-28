@@ -44,6 +44,7 @@ import {
 import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
+import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
 
 let instanceId = now();
 
@@ -417,6 +418,11 @@ export async function createDexieStorageInstance<RxDocType>(
         internals,
         params.options,
         settings
+    );
+
+    addRxStorageMultiInstanceSupport(
+        params,
+        instance
     );
 
     return instance;

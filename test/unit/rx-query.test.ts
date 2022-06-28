@@ -22,8 +22,8 @@ import {
 
 import { firstValueFrom } from 'rxjs';
 
-config.parallel('rx-query.test.js', () => {
-    describe('.constructor', () => {
+describe('rx-query.test.js', () => {
+    config.parallel('.constructor', () => {
         it('should throw dev-mode error on wrong query object', async () => {
             const col = await humansCollection.create(0);
 
@@ -56,7 +56,7 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('.toJSON()', () => {
+    config.parallel('.toJSON()', () => {
         it('should produce the correct selector-object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -83,7 +83,7 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('.toString()', () => {
+    config.parallel('.toString()', () => {
         it('should get a valid string-representation', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -160,7 +160,7 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('immutable', () => {
+    config.parallel('immutable', () => {
         it('should not be the same object (sort)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -187,7 +187,7 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('QueryCache.js', () => {
+    config.parallel('QueryCache.js', () => {
         it('return the same object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -284,7 +284,7 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('result caching', () => {
+    config.parallel('result caching', () => {
         /**
          * The object stored in the query cache should be
          * exact the same as the object used in a document data.
@@ -316,7 +316,7 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('.doesDocMatchQuery()', () => {
+    config.parallel('.doesDocMatchQuery()', () => {
         it('should match', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('firstName').ne('foobar');
@@ -405,7 +405,7 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('.exec()', () => {
+    config.parallel('.exec()', () => {
         it('should throw if top level field is not known to the schema', async () => {
             const col = await humansCollection.create(0);
 
@@ -766,7 +766,7 @@ config.parallel('rx-query.test.js', () => {
             c.database.destroy();
         });
     });
-    describe('update', () => {
+    config.parallel('update', () => {
         describe('positive', () => {
             it('updates a value on a query', async () => {
                 const c = await humansCollection.create(2);
@@ -851,7 +851,7 @@ config.parallel('rx-query.test.js', () => {
             });
         });
     });
-    describe('issues', () => {
+    config.parallel('issues', () => {
         describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {
             it('schema example 1', async () => {
                 const schema: RxJsonSchema<{ user_id: string; user_pwd: string; last_login: number; status: string; }> = {
