@@ -1,7 +1,6 @@
 import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import lokijs, { Collection } from 'lokijs';
 import type {
-    DeepReadonly,
     LokiDatabaseSettings,
     LokiDatabaseState,
     LokiLocalDatabaseState,
@@ -23,7 +22,6 @@ import {
     LeaderElector,
     OnMessageHandler
 } from 'broadcast-channel';
-import type { RxStorageLoki } from './rx-storage-lokijs';
 import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 
