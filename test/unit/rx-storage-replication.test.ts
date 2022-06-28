@@ -265,9 +265,6 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
             const forkInstanceB = await createRxStorageInstance(0);
             const metaInstanceB = await createMetaInstance();
 
-            console.log('xxxx - 0');
-
-
             const replicationStateAtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
                 masterInstance,
@@ -276,9 +273,6 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                 bulkSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
-
-
-            console.log('xxxx - 0.1');
 
             const replicationStateBtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
@@ -289,14 +283,9 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
 
-            console.log('xxxx - 0.2');
-
-
             // insert a document on A
             const writeData = getDocData();
             await forkInstanceA.bulkWrite([{ document: writeData }]);
-
-            console.log('xxxx - 0.3');
 
             // find the document on B
             await waitUntil(async () => {
@@ -310,21 +299,8 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                 }
             }, 10 * 1000, 100);
 
-
-            console.log('xxxx - 0.4');
-
-
             await cleanUp(replicationStateAtoMaster);
-
-            console.log('xxxx - 0.5');
-
             await cleanUp(replicationStateBtoMaster);
-
-
-            console.log('xxxx - 0.6');
-
-            // process.exit();
-
         });
         it('should be able to replicate A->B->C->Master', async () => {
 

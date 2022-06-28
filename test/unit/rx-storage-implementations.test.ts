@@ -2457,10 +2457,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
-                console.log('aaaaaaaaaaaa -3');
 
                 const docs = await storageInstance2.findDocumentsById(['foobar'], false);
-                console.log('aaaaaaaaaaaa -4');
                 assert.strictEqual(Object.keys(docs).length, 0);
 
                 storageInstance2.close();
@@ -2716,17 +2714,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             storageInstance2.close();
         });
         it('should emit events from one instance to the other', async () => {
-            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX---');
             const instances = await getMultiInstanceRxStorageInstance();
 
             const emittedB: any[] = [];
             const sub = instances.b.changeStream().subscribe(ev => emittedB.push(ev));
-
-            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
-            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
-
 
             const writeData = getWriteData();
             await instances.a.bulkWrite([{

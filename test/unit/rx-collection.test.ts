@@ -1137,7 +1137,6 @@ describe('rx-collection.test.js', () => {
                         assert.strictEqual(doc.deleted, true);
                     });
                     const docsAfter = await c.find().exec();
-                    console.dir(docsAfter.map(d => d.toJSON(true)));
                     assert.strictEqual(docsAfter.length, 5);
                     c.database.destroy();
                 });
@@ -1224,13 +1223,6 @@ describe('rx-collection.test.js', () => {
                         });
                         return db;
                     }
-
-
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXX');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXX');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXX');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXX');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXX');
 
                     const db1 = await createDb();
                     console.log('db1 token: ' + db1.token);

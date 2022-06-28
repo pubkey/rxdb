@@ -93,7 +93,6 @@ export async function removeBroadcastChannelReference(
     }
     state.refs.delete(refObject);
     if (state.refs.size === 0) {
-        console.log('close channel ' + databaseInstanceToken);
         BROADCAST_CHANNEL_BY_TOKEN.delete(databaseInstanceToken);
         return state.bc.close();
     }
