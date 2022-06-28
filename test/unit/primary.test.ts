@@ -483,12 +483,14 @@ config.parallel('primary.test.js', () => {
                 age: 56,
             });
 
+
             const dbInOtherTab = await createRxDatabase({
                 name,
                 storage: getRxStoragePouch('memory'),
                 eventReduce: true,
                 ignoreDuplicate: true,
             });
+
             const collectionInOtherTab = await dbInOtherTab.addCollections({
                 mycollection: {
                     schema: getSchema(1),
@@ -505,9 +507,10 @@ config.parallel('primary.test.js', () => {
                 .eq('Bob')
                 .exec(true);
 
-
-            db.destroy();
-            dbInOtherTab.destroy();
+            await Promise.all([
+                db.destroy(),
+                dbInOtherTab.destroy()
+            ]);
         });
         it('#3562 _id must be allowed as primaryKey', async () => {
             const mySchema: RxJsonSchema<any> = {

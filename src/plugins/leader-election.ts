@@ -42,7 +42,8 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
 
     const broadcastChannel = getBroadcastChannelReference(
         this.token,
-        this.name
+        this.name,
+        this
     );
 
     /**
@@ -50,7 +51,7 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
      */
     const oldDestroy = this.destroy.bind(this);
     this.destroy = function () {
-        removeBroadcastChannelReference(this.token);
+        removeBroadcastChannelReference(this.token, this);
         return oldDestroy();
     }
 

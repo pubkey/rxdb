@@ -42,20 +42,29 @@ import {
  */
 export const BROADCAST_CHANNEL_BY_TOKEN: Map<string, {
     bc: BroadcastChannel<RxStorageMultiInstanceBroadcastType>;
-    refs: number;
+    /**
+     * Contains all context objects that currently use the channel.
+     * If this becomes empty, we can close the channel
+     */
+    refs: Set<any>;
 }> = new Map();
 
 
 export type RxStorageMultiInstanceBroadcastType = {
     storageName: string;
     collectionName: string;
+    /**
+     * collection.schema.version
+     */
+    version: number;
     databaseName: string;
     eventBulk: EventBulk<any>;
 }
 
 export function getBroadcastChannelReference(
     databaseInstanceToken: string,
-    databaseName: string
+    databaseName: string,
+    refObject: any
 ): BroadcastChannel<RxStorageMultiInstanceBroadcastType> {
     let state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
     if (!state) {
@@ -66,25 +75,24 @@ export function getBroadcastChannelReference(
              * channel name to be able to broadcast messages between each other.
              */
             bc: new BroadcastChannel('RxDB:' + databaseName),
-            refs: 1
+            refs: new Set<any>()
         };
         BROADCAST_CHANNEL_BY_TOKEN.set(databaseInstanceToken, state);
-    } else {
-        state.refs = state.refs + 1;
     }
+    state.refs.add(refObject);
     return state.bc;
 }
 
 export async function removeBroadcastChannelReference(
-    databaseInstanceToken: string
+    databaseInstanceToken: string,
+    refObject: any
 ) {
     const state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
     if (!state) {
         return;
     }
-    state.refs = state.refs - 1;
-    if (state.refs === 0) {
-        console.log('refs === 0');
+    state.refs.delete(refObject);
+    if (state.refs.size === 0) {
         BROADCAST_CHANNEL_BY_TOKEN.delete(databaseInstanceToken);
         return state.bc.close();
     }
@@ -113,8 +121,10 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
         providedBroadcastChannel :
         getBroadcastChannelReference(
             instanceCreationParams.databaseInstanceToken,
-            instance.databaseName
+            instance.databaseName,
+            instance
         );
+
     const changesFromOtherInstances$: Subject<Emit> = new Subject();
 
 
@@ -122,10 +132,9 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
         if (
             msg.storageName === storage.name &&
             msg.databaseName === instanceCreationParams.databaseName &&
-            msg.collectionName === instanceCreationParams.collectionName
+            msg.collectionName === instanceCreationParams.collectionName &&
+            msg.version === instanceCreationParams.schema.version
         ) {
-            console.log('event listenert:');
-            console.dir(msg);
             changesFromOtherInstances$.next(msg.eventBulk);
         }
     };
@@ -138,11 +147,11 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
         if (closed) {
             return;
         }
-        console.log('post message:');
         broadcastChannel.postMessage({
             storageName: storage.name,
             databaseName: instanceCreationParams.databaseName,
             collectionName: instanceCreationParams.collectionName,
+            version: instanceCreationParams.schema.version,
             eventBulk
         });
     });
@@ -159,7 +168,10 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
         sub.unsubscribe();
         broadcastChannel.removeEventListener('message', eventListener);
         if (!providedBroadcastChannel) {
-            await removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken);
+            await removeBroadcastChannelReference(
+                instanceCreationParams.databaseInstanceToken,
+                instance
+            );
         }
         return oldClose();
     }
@@ -167,6 +179,15 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     const oldRemove = instance.remove.bind(instance);
     instance.remove = async function () {
         closed = true;
+
+        sub.unsubscribe();
+        broadcastChannel.removeEventListener('message', eventListener);
+        if (!providedBroadcastChannel) {
+            await removeBroadcastChannelReference(
+                instanceCreationParams.databaseInstanceToken,
+                instance
+            );
+        }
         return oldRemove();
     }
 }

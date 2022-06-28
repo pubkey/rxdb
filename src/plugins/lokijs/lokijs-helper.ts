@@ -251,6 +251,10 @@ export function getLokiLeaderElector(
 ): LeaderElector {
     let electorState = storage.leaderElectorByLokiDbName.get(databaseName);
     if (!electorState) {
+        /**
+         * TODO ensure that if possible the leader elector
+         * from the leader-election-plugin is reused.
+         */
         const channelName = 'rxdb-lokijs-' + databaseName;
         const channel = new BroadcastChannel(channelName);
         const elector = createLeaderElection(channel);
