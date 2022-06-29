@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 12.6.2 (29 June 2022)
+
 ### 12.6.1 (29 June 2022)
 
 - FIX RxStorageReplication must work with local documents.
