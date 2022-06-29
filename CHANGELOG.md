@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX RxStorageReplication must work with local documents.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

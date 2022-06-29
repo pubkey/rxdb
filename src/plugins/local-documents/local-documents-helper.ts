@@ -156,12 +156,14 @@ export function getCollectionLocalInstanceName(collectionName: string): string {
 }
 
 export const RX_LOCAL_DOCUMENT_SCHEMA: RxJsonSchema<RxDocumentData<RxLocalDocumentData>> = fillWithDefaultSettings({
+    title: 'RxLocalDocument',
     version: 0,
     primaryKey: 'id',
     type: 'object',
     properties: {
         id: {
-            type: 'string'
+            type: 'string',
+            maxLength: 128
         },
         data: {
             type: 'object',

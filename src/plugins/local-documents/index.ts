@@ -13,6 +13,7 @@ import {
     removeLocalDocumentsStorageInstance
 } from './local-documents-helper';
 
+export * from './local-documents-helper';
 export * from './local-documents';
 export * from './rx-local-document';
 export type {

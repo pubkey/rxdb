@@ -24,6 +24,11 @@ import {
     RxStorageReplicationMeta
 } from '../../';
 
+
+import {
+    RxLocalDocumentData,
+    RX_LOCAL_DOCUMENT_SCHEMA
+} from '../../plugins/local-documents';
 import {
     RxDBKeyCompressionPlugin
 } from '../../plugins/key-compression';
@@ -39,11 +44,12 @@ import {
     randomBoolean
 } from 'async-test-util';
 import { HumanDocumentType } from '../helper/schemas';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 
 const useParallel = config.storage.name === 'dexie-worker' ? describe : config.parallel;
 useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.name + ')', () => {
-    const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = () => {
+    const THROWING_CONFLICT_HANDLER: RxConflictHandler<any> = () => {
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called.');
     }
     const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = async (i: RxConflictHandlerInput<HumanDocumentType>) => {
@@ -789,6 +795,81 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
 
 
             // process.exit();
+        });
+    });
+    describe('issues', () => {
+        it('should be able to replicate local documents', async () => {
+            const masterInstance = await config.storage.getStorage().createStorageInstance<RxLocalDocumentData>({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName: randomCouchString(10),
+                collectionName: randomCouchString(10),
+                schema: RX_LOCAL_DOCUMENT_SCHEMA,
+                options: {},
+                multiInstance: true
+            });
+            const forkInstance = await config.storage.getStorage().createStorageInstance<RxLocalDocumentData>({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName: randomCouchString(10),
+                collectionName: randomCouchString(10),
+                schema: RX_LOCAL_DOCUMENT_SCHEMA,
+                options: {},
+                multiInstance: true
+            });
+            const metaInstance = await createMetaInstance();
+
+            // add master doc
+            // check ongoing doc
+            await forkInstance.bulkWrite([{
+                document: {
+                    id: 'master',
+                    data: {
+                        foo: 'bar'
+                    },
+                    _deleted: false,
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    },
+                    _rev: EXAMPLE_REVISION_1
+                }
+            }]);
+
+
+            const replicationState = replicateRxStorageInstance<RxLocalDocumentData>({
+                identifier: randomCouchString(10),
+                masterInstance,
+                forkInstance,
+                metaInstance,
+                bulkSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER
+            });
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+
+            const docsOnMaster = await runQuery(masterInstance);
+            assert.strictEqual(docsOnMaster.length, 1);
+
+            // check ongoing doc
+            await forkInstance.bulkWrite([{
+                document: {
+                    id: 'fork',
+                    data: {
+                        foo: 'bar'
+                    },
+                    _deleted: false,
+                    _attachments: {},
+                    _meta: {
+                        lwt: now()
+                    },
+                    _rev: EXAMPLE_REVISION_1
+                }
+            }]);
+
+            await waitUntil(async () => {
+                const docsOnMaster2 = await runQuery(masterInstance);
+                return docsOnMaster2.length === 2;
+            });
+
+            await cleanUp(replicationState);
         });
     });
 });
