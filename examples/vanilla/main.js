@@ -32,6 +32,7 @@ const syncURL = 'http://' + window.location.hostname + ':10102/';
 window.RxDB
     .createRxDatabase({
         name: 'heroesdb',
+        // some change on commit 93e174bbab9515e8f8fe3ed21c58d18cb2095314 made getRxStoragePouch brake
         storage: RxDB.getRxStoragePouch('idb'),
         password: 'myLongAndStupidPassword'
     })
