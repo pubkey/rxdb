@@ -301,36 +301,7 @@ config.parallel('primary.test.js', () => {
                     c1.database.destroy();
                     c2.database.destroy();
                 });
-                it('get new field-value when other db changes', async () => {
-                    if (!config.storage.hasMultiInstance) {
-                        return;
-                    }
-                    const name = randomCouchString(10);
-                    const c1 = await humansCollection.createPrimary(0, name);
-                    const c2 = await humansCollection.createPrimary(0, name);
-                    const obj = schemaObjects.simpleHuman();
-
-                    await c1.insert(obj);
-                    const doc = await c1.findOne().exec(true);
-
-                    let value: any;
-                    let count = 0;
-                    const pW8 = AsyncTestUtil.waitResolveable(1000);
-                    (doc as any).firstName$.subscribe((newVal: any) => {
-                        value = newVal;
-                        count++;
-                        if (count >= 2) pW8.resolve();
-                    });
-                    const doc2 = await c2.findOne().exec(true);
-                    await doc2.atomicPatch({ firstName: 'foobar' });
-                    await pW8.promise;
-                    await AsyncTestUtil.waitUntil(() => value === 'foobar');
-                    assert.strictEqual(count, 2);
-                    c1.database.destroy();
-                    c2.database.destroy();
-                });
             });
-            describe('negative', () => { });
         });
     });
     describe('Composite Primary', () => {

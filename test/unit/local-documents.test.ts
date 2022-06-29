@@ -334,12 +334,15 @@ config.parallel('local-documents.test.js', () => {
             const doc1 = await db.insertLocal('foobar', {
                 foo: 'bar'
             });
-            const doc2 = await db2.getLocal('foobar');
-            assert.ok(doc2);
+            let doc2: RxLocalDocument<any, any> | null;
+            await waitUntil(async () => {
+                doc2 = await db2.getLocal('foobar');
+                return !!doc2;
+            });
 
             await doc1.atomicPatch({ foo: 'bar2' });
             await AsyncTestUtil.waitUntil(() => {
-                return doc2.get('foo') === 'bar2';
+                return ensureNotFalsy(doc2).get('foo') === 'bar2';
             }, 1000, 50);
 
             db.destroy();
@@ -362,12 +365,16 @@ config.parallel('local-documents.test.js', () => {
             const doc1 = await db.insertLocal('foobar', {
                 foo: 'bar'
             });
-            const doc2 = await db2.getLocal('foobar');
-            assert.ok(doc2);
+
+            let doc2: RxLocalDocument<any, any> | null = undefined as any;
+            await waitUntil(async () => {
+                doc2 = await db2.getLocal('foobar');
+                return !!doc2;
+            });
 
             doc1.remove();
 
-            await doc2.deleted$
+            await ensureNotFalsy(doc2).deleted$
                 .pipe(
                     filter(d => d === true),
                     first()
@@ -394,11 +401,13 @@ config.parallel('local-documents.test.js', () => {
             const doc1 = await db.insertLocal('foobar', {
                 foo: 'bar'
             });
-            const doc2 = await db2.getLocal<TestDocType>('foobar');
 
             await doc1.atomicPatch({ foo: 'bar2' });
 
-            await waitUntil(() => doc2 && doc2.toJSON().data.foo === 'bar2');
+            await waitUntil(async () => {
+                const doc2 = await db2.getLocal<TestDocType>('foobar');
+                return doc2 && doc2.toJSON().data.foo === 'bar2';
+            });
 
             db.destroy();
             db2.destroy();
@@ -531,21 +540,29 @@ config.parallel('local-documents.test.js', () => {
                 age: 10
             });
 
-            const doc2 = await c2.humans.findOne().exec();
-            const localDoc2 = await c2.humans.getLocal('foobar');
-            if (!localDoc2) {
-                throw new Error('localDoc2 missing');
-            }
+            let doc2: RxLocalDocument<any, any> | null = undefined as any;
+            await waitUntil(async () => {
+                doc2 = await c2.humans.findOne().exec();
+                return !!doc2;
+            });
+
+
+
+            let localDoc2: RxLocalDocument<any, any> | null = undefined as any;
+            await waitUntil(async () => {
+                localDoc2 = await c2.humans.getLocal('foobar');
+                return !!localDoc2;
+            });
             await doc.atomicPatch({ age: 50 });
 
-            await AsyncTestUtil.waitUntil(() => doc2.age === 50);
+            await AsyncTestUtil.waitUntil(() => (doc2 as any).age === 50);
             await AsyncTestUtil.wait(20);
-            assert.strictEqual(localDoc2.get('age'), 10);
+            assert.strictEqual(ensureNotFalsy(localDoc2).get('age'), 10);
             await localDoc.atomicPatch({ age: 66, foo: 'bar' });
 
-            await AsyncTestUtil.waitUntil(() => localDoc2.get('age') === 66);
+            await AsyncTestUtil.waitUntil(() => ensureNotFalsy(localDoc2).get('age') === 66);
             await AsyncTestUtil.wait(20);
-            assert.strictEqual(doc2.get('age'), 50);
+            assert.strictEqual(ensureNotFalsy(doc2).get('age'), 50);
 
             db.destroy();
             db2.destroy();
