@@ -234,9 +234,9 @@ var setLastPullDocument = function setLastPullDocument(collection, replicationId
           lastPulledDoc: lastPulledDoc
         };
         newDoc._rev = (0, _util.createRevision)(newDoc, lastPullCheckpointDoc);
-        newDoc._meta = {
+        newDoc._meta = Object.assign({}, lastPullCheckpointDoc._meta, {
           lwt: (0, _util.now)()
-        };
+        });
         return (0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
           previous: lastPullCheckpointDoc,
           document: newDoc
@@ -379,9 +379,9 @@ var setLastPushCheckpoint = function setLastPushCheckpoint(collection, replicati
           data: {
             checkpoint: checkpoint
           },
-          _meta: {
+          _meta: Object.assign({}, doc._meta, {
             lwt: (0, _util.now)()
-          },
+          }),
           _rev: (0, _util.getDefaultRevision)(),
           _deleted: false,
           _attachments: {}

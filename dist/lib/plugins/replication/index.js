@@ -746,7 +746,7 @@ var RxReplicationStateBase = /*#__PURE__*/function () {
 
                 var writeDoc = Object.assign({}, pulledDocument, {
                   _attachments: {},
-                  _meta: (0, _util.getDefaultRxDocumentMeta)(),
+                  _meta: Object.assign((0, _util.getDefaultRxDocumentMeta)(), docStateInLocalStorageInstance ? docStateInLocalStorageInstance._meta : {}),
                   _rev: (0, _util.getDefaultRevision)()
                 });
                 writeDoc._rev = (0, _util.createRevision)(writeDoc, docStateInLocalStorageInstance);
