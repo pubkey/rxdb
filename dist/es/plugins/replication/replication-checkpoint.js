@@ -223,9 +223,9 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
           lastPulledDoc: lastPulledDoc
         };
         newDoc._rev = createRevision(newDoc, lastPullCheckpointDoc);
-        newDoc._meta = {
+        newDoc._meta = Object.assign({}, lastPullCheckpointDoc._meta, {
           lwt: now()
-        };
+        });
         return writeSingle(collection.database.internalStore, {
           previous: lastPullCheckpointDoc,
           document: newDoc
@@ -362,9 +362,9 @@ export var setLastPushCheckpoint = function setLastPushCheckpoint(collection, re
           data: {
             checkpoint: checkpoint
           },
-          _meta: {
+          _meta: Object.assign({}, doc._meta, {
             lwt: now()
-          },
+          }),
           _rev: getDefaultRevision(),
           _deleted: false,
           _attachments: {}
