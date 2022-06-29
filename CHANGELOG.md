@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - The worker RxStorage will no longer reuse the worker so that multiple RxDatabase instances can use different workers for better performance.
+- Cross-Tab event propagation is now handled by the RxStorage implementations, not by the RxDatabase. This allows to better combine RxStorages and plugins/wrappers.
 
 <!-- ADD new changes here! -->
 
