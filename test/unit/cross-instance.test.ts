@@ -218,7 +218,12 @@ config.parallel('cross-instance.test.js', () => {
             await c1.human.insert(schemaObjects.encryptedHuman());
 
             const doc1 = await c1.human.findOne().exec(true);
-            const doc2 = await c2.human.findOne().exec(true);
+
+            let doc2: typeof doc1 | null = null;
+            await waitUntil(async () => {
+                doc2 = await c2.human.findOne().exec(true);
+                return !!doc2;
+            });
 
             let receivedCollection = 0;
             c2.human.$.subscribe(() => {
@@ -273,7 +278,11 @@ config.parallel('cross-instance.test.js', () => {
             await c1.human.insert(schemaObjects.encryptedObjectHuman());
 
             const doc1 = await c1.human.findOne().exec(true);
-            const doc2 = await c2.human.findOne().exec(true);
+            let doc2: typeof doc1 | null = null;
+            await waitUntil(async () => {
+                doc2 = await c2.human.findOne().exec(true);
+                return !!doc2;
+            });
 
             let receivedCollection = 0;
             c2.human.$.subscribe(() => {
