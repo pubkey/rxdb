@@ -434,10 +434,14 @@ export class RxReplicationStateBase<RxDocType> {
                 pulledDocument as WithDeleted<RxDocType>,
                 {
                     _attachments: {},
-                    _meta: getDefaultRxDocumentMeta(),
+                    _meta: Object.assign(
+                        getDefaultRxDocumentMeta(),
+                        docStateInLocalStorageInstance ? docStateInLocalStorageInstance._meta : {}
+                    ),
                     _rev: getDefaultRevision()
                 }
             );
+
             writeDoc._rev = createRevision(writeDoc, docStateInLocalStorageInstance);
             setLastWritePullReplication(
                 this.replicationIdentifierHash,

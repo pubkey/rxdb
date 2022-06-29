@@ -15,12 +15,15 @@ import {
     randomCouchString,
     promiseWait,
     RxDatabase,
+    RxDocument,
+    ensureNotFalsy,
 } from '../../';
 
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 import { getRxStoragePouch } from '../../plugins/pouchdb';
+import { HumanDocumentType } from './../helper/schemas';
 
 config.parallel('cross-instance.test.js', () => {
     if (!config.storage.hasMultiInstance) {
@@ -159,15 +162,20 @@ config.parallel('cross-instance.test.js', () => {
             await c1.insert(schemaObjects.human());
 
             const doc1 = await c1.findOne().exec(true);
-            const doc2 = await c2.findOne().exec(true);
+
+            let doc2: RxDocument<HumanDocumentType> | null = null as any;
+            await waitUntil(async () => {
+                doc2 = await c2.findOne().exec();
+                return !!doc2;
+            });
 
             let received = 0;
-            doc2.$.subscribe(() => {
+            ensureNotFalsy(doc2).$.subscribe(() => {
                 received = received + 1;
             });
 
             let firstNameAfter: any;
-            doc2.get$('firstName').subscribe((newValue: any) => {
+            ensureNotFalsy(doc2).get$('firstName').subscribe((newValue: any) => {
                 firstNameAfter = newValue;
             });
 

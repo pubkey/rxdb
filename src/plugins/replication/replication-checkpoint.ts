@@ -96,9 +96,13 @@ export async function setLastPushCheckpoint(
             data: {
                 checkpoint
             },
-            _meta: {
-                lwt: now()
-            },
+            _meta: Object.assign(
+                {},
+                doc._meta,
+                {
+                    lwt: now()
+                }
+            ),
             _rev: getDefaultRevision(),
             _deleted: false,
             _attachments: {}
@@ -286,7 +290,11 @@ export async function setLastPullDocument<RxDocType>(
         const newDoc = flatClone(lastPullCheckpointDoc);
         newDoc.data = { lastPulledDoc: lastPulledDoc as any };
         newDoc._rev = createRevision(newDoc, lastPullCheckpointDoc);
-        newDoc._meta = { lwt: now() };
+        newDoc._meta = Object.assign(
+            {},
+            lastPullCheckpointDoc._meta,
+            { lwt: now() }
+        );
         return writeSingle<InternalStoreReplicationPullDocType<RxDocType>>(
             collection.database.internalStore,
             {
