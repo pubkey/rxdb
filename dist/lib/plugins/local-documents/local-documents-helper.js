@@ -147,12 +147,14 @@ function getCollectionLocalInstanceName(collectionName) {
 }
 
 var RX_LOCAL_DOCUMENT_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
+  title: 'RxLocalDocument',
   version: 0,
   primaryKey: 'id',
   type: 'object',
   properties: {
     id: {
-      type: 'string'
+      type: 'string',
+      maxLength: 128
     },
     data: {
       type: 'object',

@@ -3,13 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX RxStorageReplication must work with local documents.
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.6.1 (29 June 2022)
+
+- FIX RxStorageReplication must work with local documents.
 
 ### 12.6.0 (29 June 2022)
 

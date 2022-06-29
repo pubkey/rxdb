@@ -1,5 +1,6 @@
 import { getLocal, getLocal$, insertLocal, upsertLocal } from './local-documents';
 import { closeStateByParent, createLocalDocStateByParent, removeLocalDocumentsStorageInstance } from './local-documents-helper';
+export * from './local-documents-helper';
 export * from './local-documents';
 export * from './rx-local-document';
 export var RxDBLocalDocumentsPlugin = {

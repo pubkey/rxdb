@@ -24,6 +24,18 @@ Object.keys(_localDocuments).forEach(function (key) {
 
 var _localDocumentsHelper = require("./local-documents-helper");
 
+Object.keys(_localDocumentsHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _localDocumentsHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _localDocumentsHelper[key];
+    }
+  });
+});
+
 var _rxLocalDocument = require("./rx-local-document");
 
 Object.keys(_rxLocalDocument).forEach(function (key) {
