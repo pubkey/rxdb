@@ -13,6 +13,8 @@ exports.waitForLeadership = waitForLeadership;
 
 var _broadcastChannel = require("broadcast-channel");
 
+var _rxStorageMultiinstance = require("../rx-storage-multiinstance");
+
 var _util = require("../util");
 
 /**
@@ -35,15 +37,38 @@ function getLeaderElectorByBroadcastChannel(broadcastChannel) {
 
   return elector;
 }
+/**
+ * @overwrites RxDatabase().leaderElector for caching
+ */
+
 
 function getForDatabase() {
-  var broadcastChannel = (0, _util.ensureNotFalsy)(this.broadcastChannel);
+  var broadcastChannel = (0, _rxStorageMultiinstance.getBroadcastChannelReference)(this.token, this.name, this);
+  /**
+   * Clean up the reference on RxDatabase.destroy()
+   */
+
+  var oldDestroy = this.destroy.bind(this);
+
+  this.destroy = function () {
+    (0, _rxStorageMultiinstance.removeBroadcastChannelReference)(this.token, this);
+    return oldDestroy();
+  };
+
   var elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
 
   if (!elector) {
     elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
     LEADER_ELECTORS_OF_DB.set(this, elector);
   }
+  /**
+   * Overwrite for caching
+   */
+
+
+  this.leaderElector = function () {
+    return elector;
+  };
 
   return elector;
 }

@@ -4,7 +4,8 @@ import { add as unloadAdd } from 'unload';
 import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../../util';
 import { LokiSaveQueue } from './loki-save-queue';
 import { newRxError } from '../../rx-error';
-import { BroadcastChannel, createLeaderElection } from 'broadcast-channel';
+import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
+import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 
 /**
  * If the local state must be used, that one is returned.
@@ -247,6 +248,7 @@ export var mustUseLocalState = function mustUseLocalState(instance) {
       if (leaderElector.isLeader && !instance.internals.localState) {
         // own is leader, use local instance
         instance.internals.localState = createLokiLocalState({
+          databaseInstanceToken: instance.databaseInstanceToken,
           databaseName: instance.databaseName,
           collectionName: instance.collectionName,
           options: instance.options,
@@ -566,13 +568,19 @@ export function getLokiDatabase(databaseName, databaseSettings) {
         var _temp4 = function () {
           if (hasPersistence) {
             var loadDatabasePromise = new Promise(function (res, rej) {
-              database.loadDatabase({}, function (err) {
-                if (useSettings.autoloadCallback) {
-                  useSettings.autoloadCallback(err);
-                }
+              try {
+                database.loadDatabase({
+                  recursiveWait: false
+                }, function (err) {
+                  if (useSettings.autoloadCallback) {
+                    useSettings.autoloadCallback(err);
+                  }
 
-                err ? rej(err) : res();
-              });
+                  err ? rej(err) : res();
+                });
+              } catch (err) {
+                rej(err);
+              }
             });
             lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(function () {
               return loadDatabasePromise;
@@ -644,34 +652,9 @@ export function getLokiSortComparator(_schema, query) {
 
   return fun;
 }
-export function getLokiLeaderElector(storage, databaseName) {
-  var electorState = storage.leaderElectorByLokiDbName.get(databaseName);
-
-  if (!electorState) {
-    var channelName = 'rxdb-lokijs-' + databaseName;
-    var channel = new BroadcastChannel(channelName);
-    var elector = createLeaderElection(channel);
-    electorState = {
-      leaderElector: elector,
-      intancesCount: 1
-    };
-    storage.leaderElectorByLokiDbName.set(databaseName, electorState);
-  } else {
-    electorState.intancesCount = electorState.intancesCount + 1;
-  }
-
-  return electorState.leaderElector;
-}
-export function removeLokiLeaderElectorReference(storage, databaseName) {
-  var electorState = storage.leaderElectorByLokiDbName.get(databaseName);
-
-  if (electorState) {
-    electorState.intancesCount = electorState.intancesCount - 1;
-
-    if (electorState.intancesCount === 0) {
-      electorState.leaderElector.broadcastChannel.close();
-      storage.leaderElectorByLokiDbName["delete"](databaseName);
-    }
-  }
+export function getLokiLeaderElector(databaseInstanceToken, broadcastChannelRefObject, databaseName) {
+  var broadcastChannel = getBroadcastChannelReference(databaseInstanceToken, databaseName, broadcastChannelRefObject);
+  var elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
+  return elector;
 }
 //# sourceMappingURL=lokijs-helper.js.map

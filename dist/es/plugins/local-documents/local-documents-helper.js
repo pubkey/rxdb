@@ -3,9 +3,11 @@ import { DocCache } from '../../doc-cache';
 import { newRxError } from '../../rx-error';
 import { fillWithDefaultSettings } from '../../rx-schema-helper';
 import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent } from '../../rx-storage-helper';
+import { randomCouchString } from '../../util';
 export var removeLocalDocumentsStorageInstance = function removeLocalDocumentsStorageInstance(storage, databaseName, collectionName) {
   try {
-    return Promise.resolve(createLocalDocumentStorageInstance(storage, databaseName, collectionName, {}, false)).then(function (storageInstance) {
+    var databaseInstanceToken = randomCouchString(10);
+    return Promise.resolve(createLocalDocumentStorageInstance(databaseInstanceToken, storage, databaseName, collectionName, {}, false)).then(function (storageInstance) {
       return Promise.resolve(storageInstance.remove()).then(function () {});
     });
   } catch (e) {
@@ -19,7 +21,7 @@ export function createLocalDocStateByParent(parent) {
 
   var statePromise = function () {
     try {
-      return Promise.resolve(createLocalDocumentStorageInstance(database.storage, database.name, collectionName, database.instanceCreationOptions, database.multiInstance)).then(function (storageInstance) {
+      return Promise.resolve(createLocalDocumentStorageInstance(database.token, database.storage, database.name, collectionName, database.instanceCreationOptions, database.multiInstance)).then(function (storageInstance) {
         storageInstance = getWrappedStorageInstance(database, storageInstance, RX_LOCAL_DOCUMENT_SCHEMA);
         var docCache = new DocCache();
         /**
@@ -88,8 +90,9 @@ export function getLocalDocStateByParent(parent) {
 
   return statePromise;
 }
-export function createLocalDocumentStorageInstance(storage, databaseName, collectionName, instanceCreationOptions, multiInstance) {
+export function createLocalDocumentStorageInstance(databaseInstanceToken, storage, databaseName, collectionName, instanceCreationOptions, multiInstance) {
   return storage.createStorageInstance({
+    databaseInstanceToken: databaseInstanceToken,
     databaseName: databaseName,
 
     /**

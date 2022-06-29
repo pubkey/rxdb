@@ -7,6 +7,7 @@ import PouchDBFind from 'pouchdb-find';
 import { RxStoragePouchStatics } from './pouch-statics';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { addCustomEventsPluginToPouch } from './custom-events-plugin';
+import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
 
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
@@ -114,9 +115,11 @@ export var RxStoragePouch = /*#__PURE__*/function () {
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this4.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
-          return new RxStorageInstancePouch(_this4, params.databaseName, params.collectionName, params.schema, {
+          var instance = new RxStorageInstancePouch(_this4, params.databaseName, params.collectionName, params.schema, {
             pouch: pouch
           }, params.options);
+          addRxStorageMultiInstanceSupport(params, instance);
+          return instance;
         });
       });
     } catch (e) {

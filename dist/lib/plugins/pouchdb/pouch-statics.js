@@ -27,9 +27,6 @@ var RxStoragePouchStatics = {
     return (0, _pouchdbHelper.pouchHash)(data);
   },
   hashKey: 'md5',
-  doesBroadcastChangestream: function doesBroadcastChangestream() {
-    return false;
-  },
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
 

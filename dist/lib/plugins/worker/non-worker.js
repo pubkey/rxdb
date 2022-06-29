@@ -5,32 +5,48 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxStorageWorker = exports.RxStorageInstanceWorker = void 0;
 exports.getRxStorageWorker = getRxStorageWorker;
+exports.removeWorkerRef = void 0;
 
 var _rxjs = require("rxjs");
 
 var _threads = require("threads");
 
+var _util = require("../../util");
+
+var removeWorkerRef = function removeWorkerRef(instance) {
+  try {
+    var workerState = (0, _util.getFromMapOrThrow)(WORKER_BY_INSTANCE, instance.storage);
+    workerState.refs["delete"](instance);
+
+    var _temp2 = function () {
+      if (workerState.refs.size === 0) {
+        WORKER_BY_INSTANCE["delete"](instance.storage);
+        return Promise.resolve(workerState.workerPromise.then(function (worker) {
+          return _threads.Thread.terminate(worker);
+        })).then(function () {});
+      }
+    }();
+
+    return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.removeWorkerRef = removeWorkerRef;
+
 /**
  * We have no way to detect if a worker is no longer needed.
- * Instead we reuse open workers so that creating many databases,
- * does not flood the OS by opening many threads.
+ * So we create the worker process on the first RxStorageInstance
+ * and have to close it again of no more RxStorageInstances are non-closed.
  */
-var WORKER_BY_INPUT = new Map();
+var WORKER_BY_INSTANCE = new Map();
 
 var RxStorageWorker = /*#__PURE__*/function () {
   function RxStorageWorker(settings, statics) {
     this.name = 'worker';
     this.settings = settings;
     this.statics = statics;
-    var workerInput = this.settings.workerInput;
-    var workerPromise = WORKER_BY_INPUT.get(workerInput);
-
-    if (!workerPromise) {
-      workerPromise = (0, _threads.spawn)(new _threads.Worker(this.settings.workerInput));
-      WORKER_BY_INPUT.set(workerInput, workerPromise);
-    }
-
-    this.workerPromise = workerPromise;
   }
 
   var _proto = RxStorageWorker.prototype;
@@ -39,13 +55,25 @@ var RxStorageWorker = /*#__PURE__*/function () {
     try {
       var _this2 = this;
 
-      return Promise.resolve(_this2.workerPromise).then(function (worker) {
+      var workerState = WORKER_BY_INSTANCE.get(_this2);
+
+      if (!workerState) {
+        workerState = {
+          workerPromise: (0, _threads.spawn)(new _threads.Worker(_this2.settings.workerInput)),
+          refs: new Set()
+        };
+        WORKER_BY_INSTANCE.set(_this2, workerState);
+      }
+
+      return Promise.resolve(workerState.workerPromise).then(function (worker) {
         return Promise.resolve(worker.createStorageInstance(params)).then(function (instanceId) {
-          return new RxStorageInstanceWorker(_this2, params.databaseName, params.collectionName, params.schema, {
+          var instance = new RxStorageInstanceWorker(_this2, params.databaseName, params.collectionName, params.schema, {
             rxStorage: _this2,
             instanceId: instanceId,
             worker: worker
           }, params.options);
+          workerState.refs.add(instance);
+          return instance;
         });
       });
     } catch (e) {
@@ -68,6 +96,7 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
 
     this.changes$ = new _rxjs.Subject();
     this.subs = [];
+    this.closed = false;
     this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
@@ -116,14 +145,38 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
   };
 
   _proto2.close = function close() {
-    this.subs.forEach(function (sub) {
-      return sub.unsubscribe();
-    });
-    return this.internals.worker.close(this.internals.instanceId);
+    try {
+      var _this7 = this;
+
+      if (_this7.closed) {
+        return Promise.resolve();
+      }
+
+      _this7.closed = true;
+
+      _this7.subs.forEach(function (sub) {
+        return sub.unsubscribe();
+      });
+
+      return Promise.resolve(_this7.internals.worker.close(_this7.internals.instanceId)).then(function () {
+        return Promise.resolve(removeWorkerRef(_this7)).then(function () {});
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   _proto2.remove = function remove() {
-    return this.internals.worker.remove(this.internals.instanceId);
+    try {
+      var _this9 = this;
+
+      return Promise.resolve(_this9.internals.worker.remove(_this9.internals.instanceId)).then(function () {
+        _this9.closed = true;
+        return Promise.resolve(removeWorkerRef(_this9)).then(function () {});
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   return RxStorageInstanceWorker;

@@ -2,7 +2,8 @@
  * this plugin adds the leader-election-capabilities to rxdb
  */
 import { createLeaderElection } from 'broadcast-channel';
-import { ensureNotFalsy, PROMISE_RESOLVE_TRUE } from '../util';
+import { getBroadcastChannelReference, removeBroadcastChannelReference } from '../rx-storage-multiinstance';
+import { PROMISE_RESOLVE_TRUE } from '../util';
 var LEADER_ELECTORS_OF_DB = new WeakMap();
 var LEADER_ELECTOR_BY_BROADCAST_CHANNEL = new WeakMap();
 /**
@@ -20,14 +21,37 @@ export function getLeaderElectorByBroadcastChannel(broadcastChannel) {
 
   return elector;
 }
+/**
+ * @overwrites RxDatabase().leaderElector for caching
+ */
+
 export function getForDatabase() {
-  var broadcastChannel = ensureNotFalsy(this.broadcastChannel);
+  var broadcastChannel = getBroadcastChannelReference(this.token, this.name, this);
+  /**
+   * Clean up the reference on RxDatabase.destroy()
+   */
+
+  var oldDestroy = this.destroy.bind(this);
+
+  this.destroy = function () {
+    removeBroadcastChannelReference(this.token, this);
+    return oldDestroy();
+  };
+
   var elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
 
   if (!elector) {
     elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
     LEADER_ELECTORS_OF_DB.set(this, elector);
   }
+  /**
+   * Overwrite for caching
+   */
+
+
+  this.leaderElector = function () {
+    return elector;
+  };
 
   return elector;
 }

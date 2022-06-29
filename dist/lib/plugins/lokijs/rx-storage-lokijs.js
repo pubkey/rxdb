@@ -27,9 +27,6 @@ var RxStorageLokiStatics = {
     });
   },
   hashKey: 'md5',
-  doesBroadcastChangestream: function doesBroadcastChangestream() {
-    return false;
-  },
   prepareQuery: function prepareQuery(_schema, mutateableQuery) {
     if (Object.keys((0, _util.ensureNotFalsy)(mutateableQuery.selector)).length > 0) {
       mutateableQuery.selector = {

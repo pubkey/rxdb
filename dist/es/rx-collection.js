@@ -962,6 +962,7 @@ export function createRxCollection(_ref2) {
       _ref2$cacheReplacemen = _ref2.cacheReplacementPolicy,
       cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref2$cacheReplacemen;
   var storageInstanceCreationParams = {
+    databaseInstanceToken: database.token,
     databaseName: database.name,
     collectionName: name,
     schema: schema.jsonSchema,

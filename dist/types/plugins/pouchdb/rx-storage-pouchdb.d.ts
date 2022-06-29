@@ -10,7 +10,6 @@ export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, 
     statics: Readonly<{
         hash(data: string | Blob | Buffer): Promise<string>;
         hashKey: string;
-        doesBroadcastChangestream(): boolean;
         prepareQuery<RxDocType>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
         getSortComparator<RxDocType_1>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType_1>>, preparedQuery: any): import("event-reduce-js").DeterministicSortComparator<RxDocType_1>;
         getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType_2>>, preparedQuery: any): import("event-reduce-js").QueryMatcher<import("../../types").RxDocumentData<RxDocType_2>>;

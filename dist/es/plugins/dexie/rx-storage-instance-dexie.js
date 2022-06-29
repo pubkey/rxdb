@@ -5,11 +5,13 @@ import { closeDexieDb, fromDexieToStorage, fromStorageToDexie, getDexieDbWithTab
 import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
+import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
 export var createDexieStorageInstance = function createDexieStorageInstance(storage, params, settings) {
   try {
     var _internals = getDexieDbWithTables(params.databaseName, params.collectionName, settings, params.schema);
 
     var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, _internals, params.options, settings);
+    addRxStorageMultiInstanceSupport(params, instance);
     return Promise.resolve(instance);
   } catch (e) {
     return Promise.reject(e);

@@ -17,15 +17,36 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var _rxStorageHelper = require("../../rx-storage-helper");
 
+var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
+
 var createLokiStorageInstance = function createLokiStorageInstance(storage, params, databaseSettings) {
   try {
-    var _temp7 = function _temp7() {
-      var instance = new RxStorageInstanceLoki(storage, params.databaseName, params.collectionName, params.schema, _internals, params.options, databaseSettings);
-      /**
-       * Directly create the localState if the db becomes leader.
-       */
+    var _temp5 = function _temp5() {
+      var instance = new RxStorageInstanceLoki(params.databaseInstanceToken, storage, params.databaseName, params.collectionName, params.schema, _internals, params.options, databaseSettings);
+      (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(params, instance, _internals.leaderElector ? _internals.leaderElector.broadcastChannel : undefined);
 
       if (params.multiInstance) {
+        /**
+         * Clean up the broadcast-channel reference on close()
+         */
+        var closeBefore = instance.close.bind(instance);
+
+        instance.close = function () {
+          (0, _rxStorageMultiinstance.removeBroadcastChannelReference)(params.databaseInstanceToken, broadcastChannelRefObject);
+          return closeBefore();
+        };
+
+        var removeBefore = instance.remove.bind(instance);
+
+        instance.remove = function () {
+          (0, _rxStorageMultiinstance.removeBroadcastChannelReference)(params.databaseInstanceToken, broadcastChannelRefObject);
+          return removeBefore();
+        };
+        /**
+         * Directly create the localState when/if the db becomes leader.
+         */
+
+
         (0, _util.ensureNotFalsy)(_internals.leaderElector).awaitLeadership().then(function () {
           if (!instance.closed) {
             (0, _lokijsHelper.mustUseLocalState)(instance);
@@ -37,10 +58,11 @@ var createLokiStorageInstance = function createLokiStorageInstance(storage, para
     };
 
     var _internals = {};
+    var broadcastChannelRefObject = {};
 
-    var _temp8 = function () {
+    var _temp6 = function () {
       if (params.multiInstance) {
-        var leaderElector = (0, _lokijsHelper.getLokiLeaderElector)(storage, params.databaseName);
+        var leaderElector = (0, _lokijsHelper.getLokiLeaderElector)(params.databaseInstanceToken, broadcastChannelRefObject, params.databaseName);
         _internals.leaderElector = leaderElector;
       } else {
         // optimisation shortcut, directly create db is non multi instance.
@@ -49,7 +71,7 @@ var createLokiStorageInstance = function createLokiStorageInstance(storage, para
       }
     }();
 
-    return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(_temp7) : _temp7(_temp8));
+    return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
   } catch (e) {
     return Promise.reject(e);
   }
@@ -107,13 +129,14 @@ exports.createLokiLocalState = createLokiLocalState;
 var instanceId = (0, _util.now)();
 
 var RxStorageInstanceLoki = /*#__PURE__*/function () {
-  function RxStorageInstanceLoki(storage, databaseName, collectionName, schema, internals, options, databaseSettings) {
+  function RxStorageInstanceLoki(databaseInstanceToken, storage, databaseName, collectionName, schema, internals, options, databaseSettings) {
     var _this = this;
 
     this.changes$ = new _rxjs.Subject();
     this.lastChangefeedSequence = 0;
     this.instanceId = instanceId++;
     this.closed = false;
+    this.databaseInstanceToken = databaseInstanceToken;
     this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
@@ -347,10 +370,6 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   _proto.close = function close() {
     try {
-      var _temp3 = function _temp3() {
-        (0, _lokijsHelper.removeLokiLeaderElectorReference)(_this13.storage, _this13.databaseName);
-      };
-
       var _this13 = this;
 
       _this13.closed = true;
@@ -359,7 +378,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
       _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this13);
 
-      var _temp4 = function () {
+      var _temp2 = function () {
         if (_this13.internals.localState) {
           return Promise.resolve(_this13.internals.localState).then(function (localState) {
             return Promise.resolve((0, _lokijsHelper.getLokiDatabase)(_this13.databaseName, _this13.databaseSettings)).then(function (dbState) {
@@ -371,7 +390,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
         }
       }();
 
-      return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -387,7 +406,9 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
         }
 
         localState.databaseState.database.removeCollection(localState.collection.name);
-        return _this15.close();
+        return Promise.resolve(localState.databaseState.saveQueue.run()).then(function () {
+          return _this15.close();
+        });
       });
     } catch (e) {
       return Promise.reject(e);

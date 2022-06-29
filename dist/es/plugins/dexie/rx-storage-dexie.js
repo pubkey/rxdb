@@ -13,9 +13,6 @@ export var RxStorageDexieStatics = {
     });
   },
   hashKey: 'md5',
-  doesBroadcastChangestream: function doesBroadcastChangestream() {
-    return false;
-  },
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     if (!mutateableQuery.sort) {
       throw newRxError('SNH', {

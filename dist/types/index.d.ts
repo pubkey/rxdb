@@ -20,6 +20,7 @@ export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, getPr
 export { getPseudoSchemaForVersion, getSchemaByObjectPath, fillPrimaryKey, getPrimaryFieldOfPrimaryKey, getComposedPrimaryKeyOfDocumentData, normalizeRxJsonSchema, fillWithDefaultSettings, RX_META_SCHEMA, getFinalFields } from './rx-schema-helper';
 export * from './rx-storage-helper';
 export * from './rx-storage-replication';
+export * from './rx-storage-multiinstance';
 export * from './custom-index';
 export * from './query-planner';
 export { _clearHook } from './hooks';

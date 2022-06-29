@@ -21,9 +21,12 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var _rxStorageHelper = require("../../rx-storage-helper");
 
+var _util = require("../../util");
+
 var removeLocalDocumentsStorageInstance = function removeLocalDocumentsStorageInstance(storage, databaseName, collectionName) {
   try {
-    return Promise.resolve(createLocalDocumentStorageInstance(storage, databaseName, collectionName, {}, false)).then(function (storageInstance) {
+    var databaseInstanceToken = (0, _util.randomCouchString)(10);
+    return Promise.resolve(createLocalDocumentStorageInstance(databaseInstanceToken, storage, databaseName, collectionName, {}, false)).then(function (storageInstance) {
       return Promise.resolve(storageInstance.remove()).then(function () {});
     });
   } catch (e) {
@@ -40,7 +43,7 @@ function createLocalDocStateByParent(parent) {
 
   var statePromise = function () {
     try {
-      return Promise.resolve(createLocalDocumentStorageInstance(database.storage, database.name, collectionName, database.instanceCreationOptions, database.multiInstance)).then(function (storageInstance) {
+      return Promise.resolve(createLocalDocumentStorageInstance(database.token, database.storage, database.name, collectionName, database.instanceCreationOptions, database.multiInstance)).then(function (storageInstance) {
         storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(database, storageInstance, RX_LOCAL_DOCUMENT_SCHEMA);
         var docCache = new _docCache.DocCache();
         /**
@@ -111,8 +114,9 @@ function getLocalDocStateByParent(parent) {
   return statePromise;
 }
 
-function createLocalDocumentStorageInstance(storage, databaseName, collectionName, instanceCreationOptions, multiInstance) {
+function createLocalDocumentStorageInstance(databaseInstanceToken, storage, databaseName, collectionName, instanceCreationOptions, multiInstance) {
   return storage.createStorageInstance({
+    databaseInstanceToken: databaseInstanceToken,
     databaseName: databaseName,
 
     /**

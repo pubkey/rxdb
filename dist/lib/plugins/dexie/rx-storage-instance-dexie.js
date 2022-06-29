@@ -19,11 +19,14 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
 
 var _rxStorageHelper = require("../../rx-storage-helper");
 
+var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
+
 var createDexieStorageInstance = function createDexieStorageInstance(storage, params, settings) {
   try {
     var _internals = (0, _dexieHelper.getDexieDbWithTables)(params.databaseName, params.collectionName, settings, params.schema);
 
     var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, _internals, params.options, settings);
+    (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(params, instance);
     return Promise.resolve(instance);
   } catch (e) {
     return Promise.reject(e);

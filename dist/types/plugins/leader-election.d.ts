@@ -8,6 +8,9 @@ import type { RxDatabase, RxPlugin } from '../types';
  * Used to ensure we reuse the same elector for the channel each time.
  */
 export declare function getLeaderElectorByBroadcastChannel(broadcastChannel: BroadcastChannel): LeaderElector;
+/**
+ * @overwrites RxDatabase().leaderElector for caching
+ */
 export declare function getForDatabase(this: RxDatabase): LeaderElector;
 export declare function isLeader(this: RxDatabase): boolean;
 export declare function waitForLeadership(this: RxDatabase): Promise<boolean>;

@@ -690,6 +690,7 @@ export function startReplicationUpstream(state) {
                     var docId = doc[state.primaryPath];
                     var useDoc = flatCloneDocWithMeta(doc);
                     useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX] = useDoc._rev;
+                    useDoc._meta.lwt = now();
                     var assumedMasterDoc = assumedMasterState[docId];
                     /**
                      * If the master state is equal to the

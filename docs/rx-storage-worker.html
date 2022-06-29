@@ -1946,7 +1946,6 @@
                                 
                                 <h1 id="worker-rxstorage">Worker RxStorage</h1>
 <p>With the worker plugin, you can put the <code>RxStorage</code> of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker&apos;s process which can improve the percieved performance of your application. RxDB uses <a href="https://github.com/andywer/threads.js/" target="_blank">threads.js</a> to create the Worker process an to communicate with it.</p>
-<p>In theory you can put any <code>RxStorage</code> implementation into a worker. For now this is only tested with the <a href="rx-storage-lokijs.html">LokiJS RxStorage</a>.</p>
 <h2 id="on-the-worker-process">On the worker process</h2>
 <pre><code class="lang-ts"><span class="hljs-comment">// worker.ts</span>
 
@@ -2014,6 +2013,25 @@ You can copy them to a location where it can be served from the webserver and th
     )
 });
 </code></pre>
+<h2 id="one-worker-per-database">One worker per database</h2>
+<p>Each call to <code>getRxStorageWorker()</code> will create a different worker instance so that when you have more then one <code>RxDatabase</code>, each database will have its own JavaScript worker process.</p>
+<p>To reuse the worker instance in more then one <code>RxDatabase</code>, you can store the output of <code>getRxStorageWorker()</code> into a variable an use that one. Reusing the worker can decrease the initial page load, but you might get slower database operations.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">// Call getRxStorageWorker() exactly once</span>
+<span class="hljs-keyword">const</span> workerStorage = getRxStorageWorker({
+    statics: RxStorageLokiStatics,
+    workerInput: <span class="hljs-string">&apos;path/to/worker.js&apos;</span>
+});
+
+<span class="hljs-comment">// use the same storage for both databases.</span>
+<span class="hljs-keyword">const</span> databaseOne = await createRxDatabase({
+    name: <span class="hljs-string">&apos;database-one&apos;</span>,
+    storage: workerStorage
+});
+<span class="hljs-keyword">const</span> databaseTwo = await createRxDatabase({
+    name: <span class="hljs-string">&apos;database-two&apos;</span>,
+    storage: workerStorage
+});
+</code></pre>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="rx-storage-sharding.html">here</a></p>
 
@@ -2059,7 +2077,7 @@ You can copy them to a location where it can be served from the webserver and th
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxStorage Worker","level":"1.25","depth":1,"next":{"title":"RxStorage Sharding","level":"1.26","depth":1,"path":"rx-storage-sharding.md","ref":"./rx-storage-sharding.md","articles":[]},"previous":{"title":"RxStorage SQLite","level":"1.24","depth":1,"path":"rx-storage-sqlite.md","ref":"./rx-storage-sqlite.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-worker.md","mtime":"2022-06-23T20:43:21.686Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-06-23T20:44:42.974Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage Worker","level":"1.25","depth":1,"next":{"title":"RxStorage Sharding","level":"1.26","depth":1,"path":"rx-storage-sharding.md","ref":"./rx-storage-sharding.md","articles":[]},"previous":{"title":"RxStorage SQLite","level":"1.24","depth":1,"path":"rx-storage-sqlite.md","ref":"./rx-storage-sqlite.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-worker.md","mtime":"2022-06-29T12:01:23.888Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-06-29T12:02:51.967Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

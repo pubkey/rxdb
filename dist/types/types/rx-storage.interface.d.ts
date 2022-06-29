@@ -129,18 +129,6 @@ export type RxStorageStatics = Readonly<{
     hashKey: string;
 
     /**
-     * A function that returns true
-     * if the RxStorage does broadcast events between
-     * multiple instances, like multiple browser tabs
-     * or node.js processes.
-     * If this returns false, RxDB will use its own BroadcastChannel
-     * to ensure all other instances know about changes.
-     * If it returns true, RxDB will not broadcast the events
-     * to save performance.
-     */
-    doesBroadcastChangestream(): boolean;
-
-    /**
      * PouchDB and others have some bugs
      * and behaviors that must be worked arround
      * before querying the db.
@@ -313,6 +301,12 @@ export interface RxStorageInstance<
      * of all changes that happen to the
      * storage instance.
      * Do not forget to unsubscribe.
+     * 
+     * If the RxStorage support multi-instance,
+     * and the storage is persistend,
+     * then the emitted changes of one RxStorageInstance
+     * must be also emitted to other instances with the same databaseName+collectionName.
+     * See ./rx-storage-multiinstance.ts
      */
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
 

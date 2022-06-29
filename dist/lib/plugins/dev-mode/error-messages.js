@@ -56,7 +56,7 @@ var ERROR_MESSAGES = {
   DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
   DB8: 'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
   DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
-  DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addRxPlugin(require(\'pouchdb-adapter-leveldb\'));',
+  DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
   DB11: 'createRxDatabase(): Invalid db-name, folder-paths must not have an ending slash',
   // rx-collection
   COL1: 'RxDocument.insert() You cannot insert an existing document',

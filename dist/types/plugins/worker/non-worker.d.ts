@@ -14,12 +14,11 @@ export declare class RxStorageWorker implements RxStorage<WorkerStorageInternals
     readonly settings: RxStorageWorkerSettings;
     readonly statics: RxStorageStatics;
     name: string;
-    readonly workerPromise: Promise<InWorkerStorage>;
     constructor(settings: RxStorageWorkerSettings, statics: RxStorageStatics);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<RxStorageInstanceWorker<RxDocType>>;
 }
 export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxDocType, WorkerStorageInternals, any> {
-    readonly storage: RxStorage<WorkerStorageInternals, any>;
+    readonly storage: RxStorageWorker;
     readonly databaseName: string;
     readonly collectionName: string;
     readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>;
@@ -31,7 +30,8 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
      */
     private changes$;
     private subs;
-    constructor(storage: RxStorage<WorkerStorageInternals, any>, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: WorkerStorageInternals, options: Readonly<any>);
+    private closed;
+    constructor(storage: RxStorageWorker, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: WorkerStorageInternals, options: Readonly<any>);
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>>;
@@ -46,4 +46,5 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
     remove(): Promise<void>;
 }
 export declare function getRxStorageWorker(settings: RxStorageWorkerSettings): RxStorageWorker;
+export declare function removeWorkerRef(instance: RxStorageInstanceWorker<any>): Promise<void>;
 export {};

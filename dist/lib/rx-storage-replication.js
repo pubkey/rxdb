@@ -728,6 +728,7 @@ function startReplicationUpstream(state) {
                     var docId = doc[state.primaryPath];
                     var useDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
                     useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX] = useDoc._rev;
+                    useDoc._meta.lwt = (0, _util.now)();
                     var assumedMasterDoc = assumedMasterState[docId];
                     /**
                      * If the master state is equal to the

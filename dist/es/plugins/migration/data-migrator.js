@@ -179,6 +179,7 @@ export var createOldCollection = function createOldCollection(version, schemaObj
   try {
     var database = dataMigrator.newestCollection.database;
     var storageInstanceCreationParams = {
+      databaseInstanceToken: database.token,
       databaseName: database.name,
       collectionName: dataMigrator.newestCollection.name,
       schema: schemaObj,
