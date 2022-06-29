@@ -120,12 +120,14 @@ export function getCollectionLocalInstanceName(collectionName) {
   return 'plugin-local-documents-' + collectionName;
 }
 export var RX_LOCAL_DOCUMENT_SCHEMA = fillWithDefaultSettings({
+  title: 'RxLocalDocument',
   version: 0,
   primaryKey: 'id',
   type: 'object',
   properties: {
     id: {
-      type: 'string'
+      type: 'string',
+      maxLength: 128
     },
     data: {
       type: 'object',
