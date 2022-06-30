@@ -15,7 +15,8 @@ export {
     removeRxDatabase,
     isRxDatabase,
     dbCount,
-    _collectionNamePrimary // used in tests
+    _collectionNamePrimary, // used in tests
+    isRxDatabaseFirstTimeInstantiated
 } from './rx-database';
 export {
     INTERNAL_CONTEXT_COLLECTION,

@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD `isRxDatabaseFirstTimeInstantiated()`
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

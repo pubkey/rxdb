@@ -40,7 +40,8 @@ import {
     newRxError
 } from './rx-error';
 import {
-    createRxSchema, RxSchema
+    createRxSchema,
+    RxSchema
 } from './rx-schema';
 import { overwritable } from './overwritable';
 import {
@@ -748,7 +749,6 @@ export async function removeRxDatabase(
             })
     );
 
-
     await runAsyncPluginHooks('postRemoveRxDatabase', {
         databaseName,
         storage
@@ -764,4 +764,19 @@ export function isRxDatabase(obj: any) {
 
 export function dbCount(): number {
     return DB_COUNT;
+}
+
+
+/**
+ * Returns true if the given RxDatabase was the first
+ * instance that was created on the storage with this name.
+ * 
+ * Can be used for some optimizations because on the first instantiation,
+ * we can assume that no data was written before.
+ */
+export async function isRxDatabaseFirstTimeInstantiated(
+    database: RxDatabase
+): Promise<boolean> {
+    const tokenDoc = await database.storageTokenDocument;
+    return tokenDoc.data.instanceToken === database.token;
 }

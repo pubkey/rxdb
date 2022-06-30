@@ -1,12 +1,5 @@
 import config from './config';
 import assert from 'assert';
-import memdown from 'memdown';
-
-let leveldown: any;
-if (config.platform.isNode())
-    leveldown = require('leveldown');
-
-const path = require('path');
 
 import {
     isRxCollection,
@@ -18,14 +11,13 @@ import {
     getPrimaryKeyOfInternalDocument,
     INTERNAL_CONTEXT_ENCRYPTION,
     getSingleDocument,
-    RxDatabase
+    RxDatabase,
+    isRxDatabaseFirstTimeInstantiated
 } from '../../';
 
 
 import {
-    addPouchPlugin,
-    getPouchLocation,
-    getRxStoragePouch
+    getPouchLocation
 } from '../../plugins/pouchdb';
 
 import AsyncTestUtil from 'async-test-util';
@@ -40,26 +32,13 @@ addRxPlugin(RxDBEncryptionPlugin);
 config.parallel('rx-database.test.js', () => {
     describe('.create()', () => {
         describe('positive', () => {
-            it('memdown', async () => {
-                if (!config.platform.isNode()) return;
-                addPouchPlugin(require('pouchdb-adapter-leveldb'));
+            it('normal', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch(memdown)
+                    storage: config.storage.getStorage()
                 });
                 assert.ok(isRxDatabase(db));
                 db.destroy();
-            });
-            it('leveldown', async () => {
-                if (!config.platform.isNode()) return;
-                if (path.join('..', 'x') !== '..\\x') { // leveldown does not work on windows
-                    const db = await createRxDatabase({
-                        name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                        storage: getRxStoragePouch(leveldown)
-                    });
-                    assert.ok(isRxDatabase(db));
-                    db.destroy();
-                }
             });
             it('with password', async () => {
                 const db = await createRxDatabase({
@@ -71,18 +50,36 @@ config.parallel('rx-database.test.js', () => {
                 db.destroy();
             });
             it('2 instances on same adapter (if ignoreDuplicate is true)', async () => {
-                addPouchPlugin(require('pouchdb-adapter-memory'));
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
+
+                assert.strictEqual(
+                    await isRxDatabaseFirstTimeInstantiated(db),
+                    true
+                );
+
                 const db2 = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
+
+                assert.notStrictEqual(
+                    db.token,
+                    db2.token
+                );
+
+                if (config.storage.hasMultiInstance) {
+                    assert.strictEqual(
+                        await isRxDatabaseFirstTimeInstantiated(db2),
+                        false
+                    );
+                }
+
                 db.destroy();
                 db2.destroy();
             });
@@ -90,12 +87,12 @@ config.parallel('rx-database.test.js', () => {
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory')
+                    storage: config.storage.getStorage()
                 });
                 await db.destroy();
                 const db2 = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory')
+                    storage: config.storage.getStorage()
                 });
                 db2.destroy();
             });
@@ -104,13 +101,13 @@ config.parallel('rx-database.test.js', () => {
                 const password = randomCouchString(12);
                 const db = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     password,
                     ignoreDuplicate: true
                 });
                 const db2 = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     password,
                     ignoreDuplicate: true
                 });
@@ -137,7 +134,7 @@ config.parallel('rx-database.test.js', () => {
                 const password = randomCouchString(12);
                 const db = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     instanceCreationOptions: {
                         ajax: 'bar'
                     },
@@ -169,16 +166,6 @@ config.parallel('rx-database.test.js', () => {
                     'ending'
                 );
             });
-            it('should crash with invalid adapter', async () => {
-                await AsyncTestUtil.assertThrows(
-                    () => createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch({}),
-                    }),
-                    'RxError',
-                    'adapter'
-                );
-            });
             it('should crash with invalid password (no string)', async () => {
                 await AsyncTestUtil.assertThrows(
                     () => createRxDatabase({
@@ -206,7 +193,7 @@ config.parallel('rx-database.test.js', () => {
                 const password = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     password,
                     ignoreDuplicate: true
                 });
@@ -296,16 +283,19 @@ config.parallel('rx-database.test.js', () => {
                 db.destroy();
             });
             it('the schema-object should be saved in the internal storage instance', async () => {
-                addPouchPlugin(require('pouchdb-adapter-memory'));
+                if (config.storage.name !== 'pouchdb') {
+                    return;
+                }
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory')
+                    storage: config.storage.getStorage()
                 });
                 await db.addCollections({
                     human0: {
                         schema: schemas.human
                     }
                 });
+                // TODO check storage instance instead of pouchdb
                 const colDoc = await (db.internalStore.internals.pouch as any).get('collection|human0-' + schemas.human.version);
                 const compareSchema = createRxSchema(schemas.human);
                 assert.deepStrictEqual(compareSchema.jsonSchema, colDoc.data.schema);
@@ -327,9 +317,12 @@ config.parallel('rx-database.test.js', () => {
                 db.destroy();
             });
             it('collectionsCollection should contain schema.version', async () => {
+                if (config.storage.name !== 'pouchdb') {
+                    return;
+                }
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory')
+                    storage: config.storage.getStorage()
                 });
                 const collections = await db.addCollections({
                     human: {
@@ -339,6 +332,7 @@ config.parallel('rx-database.test.js', () => {
                 const collection = collections.human;
                 const version = collection.schema.version;
                 assert.deepStrictEqual(version, 0);
+                // TODO check storage instance instead of pouchdb
                 const internalDoc = await (db.internalStore.internals.pouch as any).get('collection|human-' + version);
                 assert.deepStrictEqual(internalDoc.data.version, version);
                 db.destroy();
@@ -370,11 +364,15 @@ config.parallel('rx-database.test.js', () => {
                 db2.destroy();
             });
             it('should not do a write to the internalStore when creating a previous existing collection', async () => {
+                if (config.storage.name === 'lokijs') {
+                    // TODO
+                    return;
+                }
                 const name = randomCouchString(10);
                 const collectionName = 'foobar';
                 const db1 = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
                 await db1.addCollections({
@@ -399,14 +397,11 @@ config.parallel('rx-database.test.js', () => {
                     return result.documents;
                 }
                 const storeDocsBefore = await getStoreDocs(db1);
-
-
-
                 await db1.destroy();
 
                 const db2 = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
 
@@ -417,7 +412,6 @@ config.parallel('rx-database.test.js', () => {
                 });
 
                 const storeDocsAfter = await getStoreDocs(db1);
-
 
                 /**
                  * Revision must still be the same as before
@@ -549,16 +543,23 @@ config.parallel('rx-database.test.js', () => {
                 db.destroy();
             });
             it('create 2 times on same adapter with different schema', async () => {
+                if (!config.storage.hasMultiInstance) {
+                    return;
+                }
+                if (config.storage.name === 'lokijs') {
+                    // TODO
+                    return;
+                }
                 const name = randomCouchString(10);
                 const collectionName = 'foobar';
                 const db1 = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
                 const db2 = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
                 const col1 = await db1.addCollections({
@@ -674,12 +675,6 @@ config.parallel('rx-database.test.js', () => {
                 5
             );
             assert.strictEqual(pouchPath, 'subfolder/mydb-rxdb-5-humans');
-        });
-    });
-
-    describe('wait a bit', () => {
-        it('w8 a bit', (done) => {
-            setTimeout(done, 30);
         });
     });
 });
