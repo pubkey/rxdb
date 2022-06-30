@@ -47,7 +47,6 @@ import {
     ensureNotFalsy,
     fastUnsecureHash,
     getDefaultRevision,
-    getDefaultRxDocumentMeta,
     lastOfArray,
     now,
     parseRevision,
@@ -673,7 +672,9 @@ export async function setCheckpoint<RxDocType>(
             _deleted: false,
             _attachments: {},
             data: checkpoint,
-            _meta: getDefaultRxDocumentMeta(),
+            _meta: {
+                lwt: now()
+            },
             _rev: getDefaultRevision()
         };
         newDoc.id = getComposedPrimaryKeyOfDocumentData(
