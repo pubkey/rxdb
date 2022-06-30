@@ -8,7 +8,13 @@ import type {
     RxStorageBulkWriteError,
     RxStorageInstance
 } from './types';
-import { createRevision, ensureNotFalsy, getDefaultRevision, now, randomCouchString } from './util';
+import {
+    createRevision,
+    ensureNotFalsy,
+    getDefaultRevision,
+    getDefaultRxDocumentMeta,
+    randomCouchString
+} from './util';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
@@ -17,6 +23,15 @@ export const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primi
 
 export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDocType<any>>> = fillWithDefaultSettings({
     version: 0,
+    /**
+     * Do not change the title,
+     * we have to flag this schema so that
+     * some RxStorage implementations are able
+     * to detect if the created RxStorageInstance
+     * is from the internals or not,
+     * to do some optimizations in some cases.
+     */
+    title: 'RxInternalDocument',
     primaryKey: {
         key: 'id',
         fields: [
@@ -82,6 +97,7 @@ export type InternalStoreDocType<Data = any> = {
  */
 export type InternalStoreStorageTokenDocType = InternalStoreDocType<{
     token: string;
+    instanceToken: string;
 }>;
 
 /**
@@ -141,7 +157,9 @@ export async function getAllCollectionDocuments(
  * we set a storage-token and use it in the broadcast-channel
  */
 export const STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
-export async function ensureStorageTokenExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<string> {
+export async function ensureStorageTokenDocumentExists<Collections = any>(
+    rxDatabase: RxDatabase<Collections>
+): Promise<RxDocumentData<InternalStoreStorageTokenDocType>> {
     const storageTokenDocumentId = getPrimaryKeyOfInternalDocument(
         STORAGE_TOKEN_DOCUMENT_KEY,
         INTERNAL_CONTEXT_STORAGE_TOKEN
@@ -154,17 +172,22 @@ export async function ensureStorageTokenExists<Collections = any>(rxDatabase: Rx
      */
     const storageToken = randomCouchString(10);
     try {
-        const docData = {
+        const docData: RxDocumentData<InternalStoreStorageTokenDocType> = {
             id: storageTokenDocumentId,
             context: INTERNAL_CONTEXT_STORAGE_TOKEN,
             key: STORAGE_TOKEN_DOCUMENT_KEY,
             data: {
-                token: storageToken
+                token: storageToken,
+                /**
+                 * We add the instance token here
+                 * to be able to detect if a given RxDatabase instance
+                 * is the first instance that was ever created
+                 * or if databases have existed earlier.
+                 */
+                instanceToken: rxDatabase.token
             },
             _deleted: false,
-            _meta: {
-                lwt: now()
-            },
+            _meta: getDefaultRxDocumentMeta(),
             _rev: getDefaultRevision(),
             _attachments: {}
         };
@@ -175,7 +198,7 @@ export async function ensureStorageTokenExists<Collections = any>(rxDatabase: Rx
                 document: docData
             }
         );
-        return storageToken;
+        return docData;
     } catch (err: RxStorageBulkWriteError<InternalStoreStorageTokenDocType> | any) {
         /**
          * If we get a 409 error,
@@ -187,7 +210,7 @@ export async function ensureStorageTokenExists<Collections = any>(rxDatabase: Rx
             (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).status === 409
         ) {
             const storageTokenDocInDb = (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).documentInDb;
-            return ensureNotFalsy(storageTokenDocInDb).data.token;
+            return ensureNotFalsy(storageTokenDocInDb);
         }
         throw err;
     }

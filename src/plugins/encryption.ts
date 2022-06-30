@@ -26,8 +26,8 @@ import {
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
+    getDefaultRxDocumentMeta,
     hash,
-    now,
     PROMISE_RESOLVE_FALSE
 } from '../util';
 import { writeSingle } from '../rx-storage-helper';
@@ -96,9 +96,7 @@ export async function storePasswordHashIntoDatabase(
         },
         _deleted: false,
         _attachments: {},
-        _meta: {
-            lwt: now()
-        },
+        _meta: getDefaultRxDocumentMeta(),
         _rev: getDefaultRevision()
     };
     docData._rev = createRevision(docData);

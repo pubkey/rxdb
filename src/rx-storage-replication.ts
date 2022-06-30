@@ -46,6 +46,8 @@ import {
     createRevision,
     ensureNotFalsy,
     fastUnsecureHash,
+    getDefaultRevision,
+    getDefaultRxDocumentMeta,
     lastOfArray,
     now,
     parseRevision,
@@ -671,10 +673,8 @@ export async function setCheckpoint<RxDocType>(
             _deleted: false,
             _attachments: {},
             data: checkpoint,
-            _meta: {
-                lwt: now()
-            },
-            _rev: ''
+            _meta: getDefaultRxDocumentMeta(),
+            _rev: getDefaultRevision()
         };
         newDoc.id = getComposedPrimaryKeyOfDocumentData(
             RX_REPLICATION_META_INSTANCE_SCHEMA,
@@ -787,7 +787,7 @@ export function getMetaWriteRow<RxDocType>(
         data: newMasterDocState,
         _attachments: {},
         _deleted: false,
-        _rev: '',
+        _rev: getDefaultRevision(),
         _meta: {
             lwt: 0
         }

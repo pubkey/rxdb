@@ -34,7 +34,7 @@ import {
     PROMISE_RESOLVE_VOID,
     getDefaultRevision,
     createRevision,
-    now
+    getDefaultRxDocumentMeta
 } from './util';
 import {
     newRxError
@@ -59,6 +59,7 @@ import {
     createRxCollection
 } from './rx-collection';
 import {
+    flatCloneDocWithMeta,
     getSingleDocument,
     getWrappedStorageInstance,
     INTERNAL_STORAGE_NAME
@@ -69,11 +70,12 @@ import {
 } from './rx-collection-helper';
 import { ObliviousSet } from 'oblivious-set';
 import {
-    ensureStorageTokenExists,
+    ensureStorageTokenDocumentExists,
     getAllCollectionDocuments,
     getPrimaryKeyOfInternalDocument,
     InternalStoreCollectionDocType,
     InternalStoreDocType,
+    InternalStoreStorageTokenDocType,
     INTERNAL_CONTEXT_COLLECTION,
     INTERNAL_STORE_SCHEMA
 } from './rx-database-internal-store';
@@ -88,11 +90,19 @@ const USED_DATABASE_NAMES: Set<string> = new Set();
 let DB_COUNT = 0;
 
 export class RxDatabaseBase<
-    Internals, InstanceCreationOptions,
+    Internals,
+    InstanceCreationOptions,
     Collections = CollectionsOfDatabase,
     > {
+
+    public readonly idleQueue: IdleQueue = new IdleQueue();
+
     constructor(
         public readonly name: string,
+        /**
+         * Uniquely identifies the instance
+         * of this RxDatabase.
+         */
         public readonly token: string,
         public readonly storage: RxStorage<Internals, InstanceCreationOptions>,
         public readonly instanceCreationOptions: InstanceCreationOptions,
@@ -100,7 +110,6 @@ export class RxDatabaseBase<
         public readonly multiInstance: boolean,
         public readonly eventReduce: boolean = false,
         public options: any = {},
-        public readonly idleQueue: IdleQueue,
         /**
          * Stores information documents about the collections of the database
          */
@@ -115,6 +124,9 @@ export class RxDatabaseBase<
          * conflict with the collection names etc.
          * So only if it is not pseudoInstance,
          * we have all values to prepare a real RxDatabase.
+         * 
+         * TODO this is ugly, we should use a different way in the dev-mode
+         * so that all non-dev-mode code can be cleaner.
          */
         if (this.name !== 'pseudoInstance') {
             /**
@@ -133,7 +145,8 @@ export class RxDatabaseBase<
              * Do not await the creation because it would run
              * in a critical path that increases startup time.
              */
-            this.storageToken = ensureStorageTokenExists(this.asRxDatabase);
+            this.storageTokenDocument = ensureStorageTokenDocumentExists(this.asRxDatabase);
+            this.storageToken = this.storageTokenDocument.then(doc => doc.data.token);
         }
     }
 
@@ -180,6 +193,11 @@ export class RxDatabaseBase<
      * work with the promise when we need the value.
      */
     public storageToken: Promise<string> = PROMISE_RESOLVE_FALSE as any;
+    /**
+     * Stores the whole state of the internal storage token document.
+     * We need this in some plugins.
+     */
+    public storageTokenDocument: Promise<RxDocumentData<InternalStoreStorageTokenDocType>> = PROMISE_RESOLVE_FALSE as any;
 
     /**
      * Contains the ids of all event bulks that have been emitted
@@ -222,10 +240,9 @@ export class RxDatabaseBase<
         if (!doc) {
             throw newRxError('SNH', { name, schema });
         }
-        const writeDoc = flatClone(doc);
+        const writeDoc = flatCloneDocWithMeta(doc);
         writeDoc._deleted = true;
         writeDoc._rev = createRevision(writeDoc, doc);
-        writeDoc._meta = { lwt: now() };
 
         await this.internalStore.bulkWrite([{
             document: writeDoc,
@@ -283,12 +300,10 @@ export class RxDatabaseBase<
                     name: collectionName as any,
                     schemaHash: schema.hash,
                     schema: schema.jsonSchema,
-                    version: schema.version,
+                    version: schema.version
                 },
                 _deleted: false,
-                _meta: {
-                    lwt: now()
-                },
+                _meta: getDefaultRxDocumentMeta(),
                 _rev: getDefaultRevision(),
                 _attachments: {}
             };
@@ -569,14 +584,9 @@ export async function _removeAllOfCollection(
     const relevantDocs = docs
         .filter((colDoc) => colDoc.data.name === collectionName);
     const writeRows = relevantDocs.map(doc => {
-        const writeDoc = flatClone(doc);
+        const writeDoc = flatCloneDocWithMeta(doc);
         writeDoc._deleted = true;
         writeDoc._rev = createRevision(writeDoc, doc);
-        writeDoc._meta = Object.assign(
-            {},
-            doc._meta,
-            { lwt: now() }
-        );
         return {
             previous: doc,
             document: writeDoc
@@ -591,7 +601,7 @@ export async function _removeAllOfCollection(
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.
  */
-async function createRxDatabaseStorageInstance<Internals, InstanceCreationOptions>(
+export async function createRxDatabaseStorageInstance<Internals, InstanceCreationOptions>(
     databaseInstanceToken: string,
     storage: RxStorage<Internals, InstanceCreationOptions>,
     databaseName: string,
@@ -642,7 +652,6 @@ export function createRxDatabase<
         options,
         localDocuments
     });
-
     if (password) {
         overwritable.validatePassword(password);
     }
@@ -652,8 +661,6 @@ export function createRxDatabase<
         throwIfDatabaseNameUsed(name);
     }
     USED_DATABASE_NAMES.add(name);
-
-    const idleQueue = new IdleQueue();
 
     const databaseInstanceToken = randomCouchString(10);
 
@@ -676,7 +683,6 @@ export function createRxDatabase<
             multiInstance,
             eventReduce,
             options,
-            idleQueue,
             storageInstance,
             cleanupPolicy
         ) as any;

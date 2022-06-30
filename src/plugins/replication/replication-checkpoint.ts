@@ -6,6 +6,7 @@ import type {
     DeepReadonlyObject
 } from '../../types';
 import {
+    flatCloneDocWithMeta,
     getSingleDocument,
     writeSingle
 } from '../../rx-storage-helper';
@@ -13,8 +14,8 @@ import {
     createRevision,
     flatClone,
     getDefaultRevision,
-    lastOfArray,
-    now
+    getDefaultRxDocumentMeta,
+    lastOfArray
 } from '../../util';
 import { wasLastWriteFromPullReplication } from './revision-flag';
 import {
@@ -74,9 +75,7 @@ export async function setLastPushCheckpoint(
                 checkpoint
             },
             _deleted: false,
-            _meta: {
-                lwt: now()
-            },
+            _meta: getDefaultRxDocumentMeta(),
             _rev: getDefaultRevision(),
             _attachments: {}
         };
@@ -96,13 +95,7 @@ export async function setLastPushCheckpoint(
             data: {
                 checkpoint
             },
-            _meta: Object.assign(
-                {},
-                doc._meta,
-                {
-                    lwt: now()
-                }
-            ),
+            _meta: flatClone(doc._meta),
             _rev: getDefaultRevision(),
             _deleted: false,
             _attachments: {}
@@ -272,9 +265,7 @@ export async function setLastPullDocument<RxDocType>(
             data: {
                 lastPulledDoc: lastPulledDoc as any
             },
-            _meta: {
-                lwt: now()
-            },
+            _meta: getDefaultRxDocumentMeta(),
             _rev: getDefaultRevision(),
             _deleted: false,
             _attachments: {}
@@ -287,14 +278,9 @@ export async function setLastPullDocument<RxDocType>(
             }
         );
     } else {
-        const newDoc = flatClone(lastPullCheckpointDoc);
+        const newDoc = flatCloneDocWithMeta(lastPullCheckpointDoc);
         newDoc.data = { lastPulledDoc: lastPulledDoc as any };
         newDoc._rev = createRevision(newDoc, lastPullCheckpointDoc);
-        newDoc._meta = Object.assign(
-            {},
-            lastPullCheckpointDoc._meta,
-            { lwt: now() }
-        );
         return writeSingle<InternalStoreReplicationPullDocType<RxDocType>>(
             collection.database.internalStore,
             {
