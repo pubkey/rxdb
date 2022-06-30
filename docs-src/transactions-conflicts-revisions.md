@@ -5,7 +5,7 @@ In contrast to most SQL databases, RxDB does not have the concept of relational,
 ## Why RxDB does not have transactions
 
 When talking about transactions, we mean [ACID transactions](https://en.wikipedia.org/wiki/ACID) that guarantee the properties of atomicity, consistency, isolation and durability.
-With an ACID transaction you can mutate data dependend on the current state of the database. It is ensured that no other database operations happen in between your transaction and after the transaction has finished, it is guaranteed that the new data is actually written to the disc.
+With an ACID transaction you can mutate data dependent on the current state of the database. It is ensured that no other database operations happen in between your transaction and after the transaction has finished, it is guaranteed that the new data is actually written to the disc.
 
 To implement ACID transactions on a **single server**, the database has to keep track on who is running transactions and then schedule these transactions so that they can run in isolation.
 
@@ -30,7 +30,7 @@ Working without transactions leads to having undefined state when doing multiple
 Instead, to ensure that the behavior of RxDB is **always predictable**, RxDB relies on **revisions** for version control.
 
 Each document is stored together with its revision string, that looks like `1-12080c42d471e3d2625e49dcca3b8e1a` and consists of:
-- The revision height, a number that starts with `1` and is increased of each write to that document.
+- The revision height, a number that starts with `1` and is increased with each write to that document.
 - A revision hash that is a hash string of the documents data. Different [RxStorage](./rx-storage.md) implementations might use different hashing methods.
 
 An operation to the RxDB data layer does not only contain the new document data, but also the previous document data with its revision string. If the previous revision matches the revision that is currently stored in the database, the write operation can succeed. If the previous revision is **different** than the revision that is currently stored in the database, the operation will throw a `local conflict` error.
