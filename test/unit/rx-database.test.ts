@@ -364,7 +364,10 @@ config.parallel('rx-database.test.js', () => {
                 db2.destroy();
             });
             it('should not do a write to the internalStore when creating a previous existing collection', async () => {
-                if (config.storage.name === 'lokijs') {
+                if (
+                    !config.storage.hasPersistence ||
+                    config.storage.name === 'lokijs'
+                ) {
                     // TODO
                     return;
                 }
