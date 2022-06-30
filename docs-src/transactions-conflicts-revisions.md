@@ -25,7 +25,7 @@ The benefits of not having to support transactions:
 
 ## Revisions
 
-Working without transactions leads to having undefined state when doing multiple database operations at the same time. Most client side databases rely on a last-write-wrins stategy on write operations. This might be a viable solution for some cases, but often this leads to strange problems that are hard to debug.
+Working without transactions leads to having undefined state when doing multiple database operations at the same time. Most client side databases rely on a last-write-wins stategy on write operations. This might be a viable solution for some cases, but often this leads to strange problems that are hard to debug.
 
 Instead, to ensure that the behavior of RxDB is **always predictable**, RxDB relies on **revisions** for version control.
 
