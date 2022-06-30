@@ -4,9 +4,13 @@ import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxJsonSche
 import { Subject, Subscription, Observable } from 'rxjs';
 import type { RxBackupState } from './plugins/backup';
 import { ObliviousSet } from 'oblivious-set';
-import { InternalStoreCollectionDocType, InternalStoreDocType } from './rx-database-internal-store';
+import { InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType } from './rx-database-internal-store';
 export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collections = CollectionsOfDatabase> {
     readonly name: string;
+    /**
+     * Uniquely identifies the instance
+     * of this RxDatabase.
+     */
     readonly token: string;
     readonly storage: RxStorage<Internals, InstanceCreationOptions>;
     readonly instanceCreationOptions: InstanceCreationOptions;
@@ -14,13 +18,18 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly multiInstance: boolean;
     readonly eventReduce: boolean;
     options: any;
-    readonly idleQueue: IdleQueue;
     /**
      * Stores information documents about the collections of the database
      */
     readonly internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>;
     readonly cleanupPolicy?: Partial<RxCleanupPolicy> | undefined;
-    constructor(name: string, token: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce: boolean, options: any, idleQueue: IdleQueue, 
+    readonly idleQueue: IdleQueue;
+    constructor(name: string, 
+    /**
+     * Uniquely identifies the instance
+     * of this RxDatabase.
+     */
+    token: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce: boolean, options: any, 
     /**
      * Stores information documents about the collections of the database
      */
@@ -54,6 +63,11 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * work with the promise when we need the value.
      */
     storageToken: Promise<string>;
+    /**
+     * Stores the whole state of the internal storage token document.
+     * We need this in some plugins.
+     */
+    storageTokenDocument: Promise<RxDocumentData<InternalStoreStorageTokenDocType>>;
     /**
      * Contains the ids of all event bulks that have been emitted
      * by the database.
@@ -142,6 +156,11 @@ export declare function _collectionNamePrimary(name: string, schema: RxJsonSchem
  * @return resolves all known collection-versions
  */
 export declare function _removeAllOfCollection(rxDatabase: RxDatabaseBase<any, any, any>, collectionName: string): Promise<RxDocumentData<InternalStoreCollectionDocType>[]>;
+/**
+ * Creates the storage instances that are used internally in the database
+ * to store schemas and other configuration stuff.
+ */
+export declare function createRxDatabaseStorageInstance<Internals, InstanceCreationOptions>(databaseInstanceToken: string, storage: RxStorage<Internals, InstanceCreationOptions>, databaseName: string, options: InstanceCreationOptions, multiInstance: boolean): Promise<RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>>;
 export declare function createRxDatabase<Collections = {
     [key: string]: RxCollection;
 }, Internals = any, InstanceCreationOptions = any>({ storage, instanceCreationOptions, name, password, multiInstance, eventReduce, ignoreDuplicate, options, cleanupPolicy, localDocuments }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections, Internals, InstanceCreationOptions>>;
@@ -154,3 +173,11 @@ export declare function createRxDatabase<Collections = {
 export declare function removeRxDatabase(databaseName: string, storage: RxStorage<any, any>): Promise<string[]>;
 export declare function isRxDatabase(obj: any): boolean;
 export declare function dbCount(): number;
+/**
+ * Returns true if the given RxDatabase was the first
+ * instance that was created on the storage with this name.
+ *
+ * Can be used for some optimizations because on the first instantiation,
+ * we can assume that no data was written before.
+ */
+export declare function isRxDatabaseFirstTimeInstantiated(database: RxDatabase): Promise<boolean>;

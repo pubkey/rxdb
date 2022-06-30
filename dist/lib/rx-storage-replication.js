@@ -322,7 +322,7 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpointDoc) {
           _meta: {
             lwt: (0, _util.now)()
           },
-          _rev: ''
+          _rev: (0, _util.getDefaultRevision)()
         };
         newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
         newDoc._rev = (0, _util.createRevision)(newDoc, checkpointDoc);
@@ -918,7 +918,7 @@ function getMetaWriteRow(state, newMasterDocState, previous) {
     data: newMasterDocState,
     _attachments: {},
     _deleted: false,
-    _rev: '',
+    _rev: (0, _util.getDefaultRevision)(),
     _meta: {
       lwt: 0
     }

@@ -89,9 +89,7 @@ var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabase(rxDat
       },
       _deleted: false,
       _attachments: {},
-      _meta: {
-        lwt: (0, _util.now)()
-      },
+      _meta: (0, _util.getDefaultRxDocumentMeta)(),
       _rev: (0, _util.getDefaultRevision)()
     };
     docData._rev = (0, _util.createRevision)(docData);

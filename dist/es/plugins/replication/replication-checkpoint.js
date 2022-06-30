@@ -1,5 +1,5 @@
-import { getSingleDocument, writeSingle } from '../../rx-storage-helper';
-import { createRevision, flatClone, getDefaultRevision, lastOfArray, now } from '../../util';
+import { flatCloneDocWithMeta, getSingleDocument, writeSingle } from '../../rx-storage-helper';
+import { createRevision, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, lastOfArray } from '../../util';
 import { wasLastWriteFromPullReplication } from './revision-flag';
 import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES } from '../../rx-database-internal-store'; //
 // things for the push-checkpoint
@@ -206,9 +206,7 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
           data: {
             lastPulledDoc: lastPulledDoc
           },
-          _meta: {
-            lwt: now()
-          },
+          _meta: getDefaultRxDocumentMeta(),
           _rev: getDefaultRevision(),
           _deleted: false,
           _attachments: {}
@@ -218,14 +216,11 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
           document: insertData
         });
       } else {
-        var newDoc = flatClone(lastPullCheckpointDoc);
+        var newDoc = flatCloneDocWithMeta(lastPullCheckpointDoc);
         newDoc.data = {
           lastPulledDoc: lastPulledDoc
         };
         newDoc._rev = createRevision(newDoc, lastPullCheckpointDoc);
-        newDoc._meta = Object.assign({}, lastPullCheckpointDoc._meta, {
-          lwt: now()
-        });
         return writeSingle(collection.database.internalStore, {
           previous: lastPullCheckpointDoc,
           document: newDoc
@@ -344,9 +339,7 @@ export var setLastPushCheckpoint = function setLastPushCheckpoint(collection, re
             checkpoint: checkpoint
           },
           _deleted: false,
-          _meta: {
-            lwt: now()
-          },
+          _meta: getDefaultRxDocumentMeta(),
           _rev: getDefaultRevision(),
           _attachments: {}
         };
@@ -362,9 +355,7 @@ export var setLastPushCheckpoint = function setLastPushCheckpoint(collection, re
           data: {
             checkpoint: checkpoint
           },
-          _meta: Object.assign({}, doc._meta, {
-            lwt: now()
-          }),
+          _meta: flatClone(doc._meta),
           _rev: getDefaultRevision(),
           _deleted: false,
           _attachments: {}

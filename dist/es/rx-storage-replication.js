@@ -19,7 +19,7 @@
 import { BehaviorSubject, combineLatest, filter, firstValueFrom } from 'rxjs';
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import { flatCloneDocWithMeta } from './rx-storage-helper';
-import { createRevision, ensureNotFalsy, fastUnsecureHash, lastOfArray, now, parseRevision, PROMISE_RESOLVE_VOID } from './util';
+import { createRevision, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, lastOfArray, now, parseRevision, PROMISE_RESOLVE_VOID } from './util';
 /**
  * Flags that a document state was written to the master
  * by the upstream from the fork.
@@ -306,7 +306,7 @@ export var setCheckpoint = function setCheckpoint(state, direction, checkpointDo
           _meta: {
             lwt: now()
           },
-          _rev: ''
+          _rev: getDefaultRevision()
         };
         newDoc.id = getComposedPrimaryKeyOfDocumentData(RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
         newDoc._rev = createRevision(newDoc, checkpointDoc);
@@ -878,7 +878,7 @@ export function getMetaWriteRow(state, newMasterDocState, previous) {
     data: newMasterDocState,
     _attachments: {},
     _deleted: false,
-    _rev: '',
+    _rev: getDefaultRevision(),
     _meta: {
       lwt: 0
     }

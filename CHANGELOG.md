@@ -3,13 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD `isRxDatabaseFirstTimeInstantiated()`
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.6.5 (30 June 2022)
+
+- ADD `isRxDatabaseFirstTimeInstantiated()`
 
 ### 12.6.4 (30 June 2022)
 

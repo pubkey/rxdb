@@ -10,6 +10,7 @@ var _exportNames = {
   isRxDatabase: true,
   dbCount: true,
   _collectionNamePrimary: true,
+  isRxDatabaseFirstTimeInstantiated: true,
   INTERNAL_CONTEXT_COLLECTION: true,
   INTERNAL_CONTEXT_ENCRYPTION: true,
   INTERNAL_CONTEXT_REPLICATION_PRIMITIVES: true,
@@ -220,6 +221,12 @@ Object.defineProperty(exports, "isRxDatabase", {
   enumerable: true,
   get: function get() {
     return _rxDatabase.isRxDatabase;
+  }
+});
+Object.defineProperty(exports, "isRxDatabaseFirstTimeInstantiated", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.isRxDatabaseFirstTimeInstantiated;
   }
 });
 Object.defineProperty(exports, "isRxDocument", {

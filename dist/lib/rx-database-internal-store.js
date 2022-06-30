@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAllCollectionDocuments = exports.ensureStorageTokenExists = exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = exports.INTERNAL_CONTEXT_ENCRYPTION = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
+exports.getAllCollectionDocuments = exports.ensureStorageTokenDocumentExists = exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = exports.INTERNAL_CONTEXT_ENCRYPTION = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
 exports.getPrimaryKeyOfInternalDocument = getPrimaryKeyOfInternalDocument;
 
 var _rxSchemaHelper = require("./rx-schema-helper");
@@ -26,7 +26,7 @@ function _catch(body, recover) {
   return result;
 }
 
-var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
+var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists(rxDatabase) {
   try {
     var storageTokenDocumentId = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
     /**
@@ -42,12 +42,18 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
         context: INTERNAL_CONTEXT_STORAGE_TOKEN,
         key: STORAGE_TOKEN_DOCUMENT_KEY,
         data: {
-          token: storageToken
+          token: storageToken,
+
+          /**
+           * We add the instance token here
+           * to be able to detect if a given RxDatabase instance
+           * is the first instance that was ever created
+           * or if databases have existed earlier.
+           */
+          instanceToken: rxDatabase.token
         },
         _deleted: false,
-        _meta: {
-          lwt: (0, _util.now)()
-        },
+        _meta: (0, _util.getDefaultRxDocumentMeta)(),
         _rev: (0, _util.getDefaultRevision)(),
         _attachments: {}
       };
@@ -55,7 +61,7 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
       return Promise.resolve((0, _rxStorageHelper.writeSingle)(rxDatabase.internalStore, {
         document: docData
       })).then(function () {
-        return storageToken;
+        return docData;
       });
     }, function (err) {
       /**
@@ -65,7 +71,7 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
        */
       if (err.isError && err.status === 409) {
         var storageTokenDocInDb = err.documentInDb;
-        return (0, _util.ensureNotFalsy)(storageTokenDocInDb).data.token;
+        return (0, _util.ensureNotFalsy)(storageTokenDocInDb);
       }
 
       throw err;
@@ -75,7 +81,7 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
   }
 };
 
-exports.ensureStorageTokenExists = ensureStorageTokenExists;
+exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
 
 /**
  * Returns all internal documents
@@ -118,6 +124,16 @@ var INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = INTERNAL_CONTEXT_REPLICATION_PRIMITIVES;
 var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   version: 0,
+
+  /**
+   * Do not change the title,
+   * we have to flag this schema so that
+   * some RxStorage implementations are able
+   * to detect if the created RxStorageInstance
+   * is from the internals or not,
+   * to do some optimizations in some cases.
+   */
+  title: 'RxInternalDocument',
   primaryKey: {
     key: 'id',
     fields: ['context', 'key'],

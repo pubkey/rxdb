@@ -16,6 +16,7 @@ export declare type InternalStoreDocType<Data = any> = {
  */
 export declare type InternalStoreStorageTokenDocType = InternalStoreDocType<{
     token: string;
+    instanceToken: string;
 }>;
 /**
  * Stores information about the collections.
@@ -42,4 +43,4 @@ export declare function getAllCollectionDocuments(storageInstance: RxStorageInst
  * we set a storage-token and use it in the broadcast-channel
  */
 export declare const STORAGE_TOKEN_DOCUMENT_KEY = "storageToken";
-export declare function ensureStorageTokenExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<string>;
+export declare function ensureStorageTokenDocumentExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<RxDocumentData<InternalStoreStorageTokenDocType>>;
