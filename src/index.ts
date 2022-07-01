@@ -133,6 +133,10 @@ export type {
     RxDocumentBase,
     StringKeys,
 
+    InternalStoreDocType,
+    InternalStoreStorageTokenDocType,
+    InternalStoreCollectionDocType,
+
     // stuff from the RxStorage interface
     RxDocumentData,
     RxDocumentDataById,

@@ -3,6 +3,9 @@ import {
     getComposedPrimaryKeyOfDocumentData
 } from './rx-schema-helper';
 import type {
+    InternalStoreCollectionDocType,
+    InternalStoreDocType,
+    InternalStoreStorageTokenDocType,
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
@@ -22,6 +25,7 @@ export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 export const INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
 export const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
+
 /**
  * Do not change the title,
  * we have to flag the internal schema so that
@@ -87,35 +91,6 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDoc
     }
 });
 
-export type InternalStoreDocType<Data = any> = {
-    id: string;
-    key: string;
-    context: string;
-    data: Data;
-}
-
-/**
- * Stores information about the collections.
- * The collection.name is the 'key' value.
- */
-export type InternalStoreStorageTokenDocType = InternalStoreDocType<{
-    token: string;
-    instanceToken: string;
-}>;
-
-/**
- * Stores information about the collections.
- * The collection.name is the 'key' value.
- */
-export type InternalStoreCollectionDocType = InternalStoreDocType<{
-    /**
-     * Plain name of the collection
-     */
-    name: string;
-    schema: RxJsonSchema<any>;
-    schemaHash: string;
-    version: number;
-}>;
 
 export function getPrimaryKeyOfInternalDocument(
     key: string,
