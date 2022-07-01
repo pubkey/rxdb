@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 12.6.6 (1 July 2022)
+
 ### 12.6.5 (30 June 2022)
 
 - ADD `isRxDatabaseFirstTimeInstantiated()`

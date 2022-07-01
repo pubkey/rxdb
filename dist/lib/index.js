@@ -11,11 +11,6 @@ var _exportNames = {
   dbCount: true,
   _collectionNamePrimary: true,
   isRxDatabaseFirstTimeInstantiated: true,
-  INTERNAL_CONTEXT_COLLECTION: true,
-  INTERNAL_CONTEXT_ENCRYPTION: true,
-  INTERNAL_CONTEXT_REPLICATION_PRIMITIVES: true,
-  getPrimaryKeyOfInternalDocument: true,
-  STORAGE_TOKEN_DOCUMENT_KEY: true,
   overwritable: true,
   isRxCollection: true,
   RxCollectionBase: true,
@@ -43,24 +38,6 @@ var _exportNames = {
   getFinalFields: true,
   _clearHook: true
 };
-Object.defineProperty(exports, "INTERNAL_CONTEXT_COLLECTION", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION;
-  }
-});
-Object.defineProperty(exports, "INTERNAL_CONTEXT_ENCRYPTION", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabaseInternalStore.INTERNAL_CONTEXT_ENCRYPTION;
-  }
-});
-Object.defineProperty(exports, "INTERNAL_CONTEXT_REPLICATION_PRIMITIVES", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabaseInternalStore.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES;
-  }
-});
 Object.defineProperty(exports, "RX_META_SCHEMA", {
   enumerable: true,
   get: function get() {
@@ -77,12 +54,6 @@ Object.defineProperty(exports, "RxSchema", {
   enumerable: true,
   get: function get() {
     return _rxSchema.RxSchema;
-  }
-});
-Object.defineProperty(exports, "STORAGE_TOKEN_DOCUMENT_KEY", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabaseInternalStore.STORAGE_TOKEN_DOCUMENT_KEY;
   }
 });
 Object.defineProperty(exports, "_clearHook", {
@@ -193,12 +164,6 @@ Object.defineProperty(exports, "getPrimaryFieldOfPrimaryKey", {
     return _rxSchemaHelper.getPrimaryFieldOfPrimaryKey;
   }
 });
-Object.defineProperty(exports, "getPrimaryKeyOfInternalDocument", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument;
-  }
-});
 Object.defineProperty(exports, "getPseudoSchemaForVersion", {
   enumerable: true,
   get: function get() {
@@ -283,6 +248,18 @@ var _plugin = require("./plugin");
 var _rxDatabase = require("./rx-database");
 
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
+
+Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxDatabaseInternalStore[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxDatabaseInternalStore[key];
+    }
+  });
+});
 
 var _overwritable = require("./overwritable");
 
