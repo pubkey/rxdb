@@ -1,9 +1,9 @@
 import type { Observable } from 'rxjs';
 import type { RxReplicationStateBase } from '../../plugins/replication';
 import { RxReplicationError } from '../../plugins/replication/rx-replication-error';
-import { InternalStoreDocType } from '../../rx-database-internal-store';
 import type {
     DeepReadonlyObject,
+    InternalStoreDocType,
     RxCollection,
     RxDocumentData
 } from '../../types';

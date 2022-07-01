@@ -2,6 +2,7 @@ export * from './pouch';
 export * from './rx-attachment';
 export * from './rx-collection';
 export * from './rx-database';
+export * from './rx-database-internal-store';
 export * from './rx-document';
 export * from './rx-error';
 export * from './rx-plugin';
