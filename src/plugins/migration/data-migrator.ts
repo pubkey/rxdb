@@ -43,7 +43,8 @@ import type {
     WithAttachmentsData,
     RxJsonSchema,
     RxDocumentData,
-    RxStorageInstanceCreationParams
+    RxStorageInstanceCreationParams,
+    InternalStoreCollectionDocType
 } from '../../types';
 import {
     RxSchema,
@@ -58,7 +59,10 @@ import {
     getAllDocuments,
     getWrappedStorageInstance
 } from '../../rx-storage-helper';
-import { getPrimaryKeyOfInternalDocument, InternalStoreCollectionDocType, INTERNAL_CONTEXT_COLLECTION } from '../../rx-database-internal-store';
+import {
+    getPrimaryKeyOfInternalDocument,
+    INTERNAL_CONTEXT_COLLECTION
+} from '../../rx-database-internal-store';
 
 export class DataMigrator {
 

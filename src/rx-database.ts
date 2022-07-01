@@ -22,7 +22,10 @@ import type {
     RxDatabaseCreator,
     RxChangeEventBulk,
     RxDocumentData,
-    RxCleanupPolicy
+    RxCleanupPolicy,
+    InternalStoreDocType,
+    InternalStoreStorageTokenDocType,
+    InternalStoreCollectionDocType
 } from './types';
 
 import {
@@ -74,9 +77,6 @@ import {
     ensureStorageTokenDocumentExists,
     getAllCollectionDocuments,
     getPrimaryKeyOfInternalDocument,
-    InternalStoreCollectionDocType,
-    InternalStoreDocType,
-    InternalStoreStorageTokenDocType,
     INTERNAL_CONTEXT_COLLECTION,
     INTERNAL_STORE_SCHEMA
 } from './rx-database-internal-store';

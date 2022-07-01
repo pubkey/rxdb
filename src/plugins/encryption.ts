@@ -18,7 +18,8 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxDocumentWriteData,
-    RxStorageBulkWriteError
+    RxStorageBulkWriteError,
+    InternalStoreDocType
 } from '../types';
 import {
     clone,
@@ -33,7 +34,6 @@ import {
 import { writeSingle } from '../rx-storage-helper';
 import {
     getPrimaryKeyOfInternalDocument,
-    InternalStoreDocType,
     INTERNAL_CONTEXT_ENCRYPTION
 } from '../rx-database-internal-store';
 
