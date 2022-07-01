@@ -364,13 +364,6 @@ config.parallel('rx-database.test.js', () => {
                 db2.destroy();
             });
             it('should not do a write to the internalStore when creating a previous existing collection', async () => {
-                if (
-                    !config.storage.hasPersistence ||
-                    config.storage.name === 'lokijs'
-                ) {
-                    // TODO
-                    return;
-                }
                 const name = randomCouchString(10);
                 const collectionName = 'foobar';
                 const db1 = await createRxDatabase({
@@ -414,7 +407,7 @@ config.parallel('rx-database.test.js', () => {
                     }
                 });
 
-                const storeDocsAfter = await getStoreDocs(db1);
+                const storeDocsAfter = await getStoreDocs(db2);
 
                 /**
                  * Revision must still be the same as before
