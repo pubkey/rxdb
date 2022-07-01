@@ -217,9 +217,7 @@ var setLastPullDocument = function setLastPullDocument(collection, replicationId
           data: {
             lastPulledDoc: lastPulledDoc
           },
-          _meta: {
-            lwt: (0, _util.now)()
-          },
+          _meta: (0, _util.getDefaultRxDocumentMeta)(),
           _rev: (0, _util.getDefaultRevision)(),
           _deleted: false,
           _attachments: {}
@@ -229,14 +227,11 @@ var setLastPullDocument = function setLastPullDocument(collection, replicationId
           document: insertData
         });
       } else {
-        var newDoc = (0, _util.flatClone)(lastPullCheckpointDoc);
+        var newDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(lastPullCheckpointDoc);
         newDoc.data = {
           lastPulledDoc: lastPulledDoc
         };
         newDoc._rev = (0, _util.createRevision)(newDoc, lastPullCheckpointDoc);
-        newDoc._meta = Object.assign({}, lastPullCheckpointDoc._meta, {
-          lwt: (0, _util.now)()
-        });
         return (0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
           previous: lastPullCheckpointDoc,
           document: newDoc
@@ -361,9 +356,7 @@ var setLastPushCheckpoint = function setLastPushCheckpoint(collection, replicati
             checkpoint: checkpoint
           },
           _deleted: false,
-          _meta: {
-            lwt: (0, _util.now)()
-          },
+          _meta: (0, _util.getDefaultRxDocumentMeta)(),
           _rev: (0, _util.getDefaultRevision)(),
           _attachments: {}
         };
@@ -379,9 +372,7 @@ var setLastPushCheckpoint = function setLastPushCheckpoint(collection, replicati
           data: {
             checkpoint: checkpoint
           },
-          _meta: Object.assign({}, doc._meta, {
-            lwt: (0, _util.now)()
-          }),
+          _meta: (0, _util.flatClone)(doc._meta),
           _rev: (0, _util.getDefaultRevision)(),
           _deleted: false,
           _attachments: {}

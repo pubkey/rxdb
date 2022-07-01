@@ -707,6 +707,7 @@ var _exportNames = {
   isRxDatabase: true,
   dbCount: true,
   _collectionNamePrimary: true,
+  isRxDatabaseFirstTimeInstantiated: true,
   INTERNAL_CONTEXT_COLLECTION: true,
   INTERNAL_CONTEXT_ENCRYPTION: true,
   INTERNAL_CONTEXT_REPLICATION_PRIMITIVES: true,
@@ -917,6 +918,12 @@ Object.defineProperty(exports, "isRxDatabase", {
   enumerable: true,
   get: function get() {
     return _rxDatabase.isRxDatabase;
+  }
+});
+Object.defineProperty(exports, "isRxDatabaseFirstTimeInstantiated", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.isRxDatabaseFirstTimeInstantiated;
   }
 });
 Object.defineProperty(exports, "isRxDocument", {
@@ -5155,7 +5162,7 @@ function isRxCollection(obj) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAllCollectionDocuments = exports.ensureStorageTokenExists = exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = exports.INTERNAL_CONTEXT_ENCRYPTION = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
+exports.getAllCollectionDocuments = exports.ensureStorageTokenDocumentExists = exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = exports.INTERNAL_CONTEXT_ENCRYPTION = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
 exports.getPrimaryKeyOfInternalDocument = getPrimaryKeyOfInternalDocument;
 
 var _rxSchemaHelper = require("./rx-schema-helper");
@@ -5178,7 +5185,7 @@ function _catch(body, recover) {
   return result;
 }
 
-var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
+var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists(rxDatabase) {
   try {
     var storageTokenDocumentId = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
     /**
@@ -5194,12 +5201,18 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
         context: INTERNAL_CONTEXT_STORAGE_TOKEN,
         key: STORAGE_TOKEN_DOCUMENT_KEY,
         data: {
-          token: storageToken
+          token: storageToken,
+
+          /**
+           * We add the instance token here
+           * to be able to detect if a given RxDatabase instance
+           * is the first instance that was ever created
+           * or if databases have existed earlier.
+           */
+          instanceToken: rxDatabase.token
         },
         _deleted: false,
-        _meta: {
-          lwt: (0, _util.now)()
-        },
+        _meta: (0, _util.getDefaultRxDocumentMeta)(),
         _rev: (0, _util.getDefaultRevision)(),
         _attachments: {}
       };
@@ -5207,7 +5220,7 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
       return Promise.resolve((0, _rxStorageHelper.writeSingle)(rxDatabase.internalStore, {
         document: docData
       })).then(function () {
-        return storageToken;
+        return docData;
       });
     }, function (err) {
       /**
@@ -5217,7 +5230,7 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
        */
       if (err.isError && err.status === 409) {
         var storageTokenDocInDb = err.documentInDb;
-        return (0, _util.ensureNotFalsy)(storageTokenDocInDb).data.token;
+        return (0, _util.ensureNotFalsy)(storageTokenDocInDb);
       }
 
       throw err;
@@ -5227,7 +5240,7 @@ var ensureStorageTokenExists = function ensureStorageTokenExists(rxDatabase) {
   }
 };
 
-exports.ensureStorageTokenExists = ensureStorageTokenExists;
+exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
 
 /**
  * Returns all internal documents
@@ -5270,6 +5283,16 @@ var INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = INTERNAL_CONTEXT_REPLICATION_PRIMITIVES;
 var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   version: 0,
+
+  /**
+   * Do not change the title,
+   * we have to flag this schema so that
+   * some RxStorage implementations are able
+   * to detect if the created RxStorageInstance
+   * is from the internals or not,
+   * to do some optimizations in some cases.
+   */
+  title: 'RxInternalDocument',
   primaryKey: {
     key: 'id',
     fields: ['context', 'key'],
@@ -5333,9 +5356,10 @@ exports.RxDatabaseBase = void 0;
 exports._collectionNamePrimary = _collectionNamePrimary;
 exports._removeAllOfCollection = void 0;
 exports.createRxDatabase = createRxDatabase;
+exports.createRxDatabaseStorageInstance = void 0;
 exports.dbCount = dbCount;
 exports.isRxDatabase = isRxDatabase;
-exports.removeRxDatabase = void 0;
+exports.removeRxDatabase = exports.isRxDatabaseFirstTimeInstantiated = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -5366,6 +5390,25 @@ var _obliviousSet = require("oblivious-set");
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
 
 var _rxStorageMultiinstance = require("./rx-storage-multiinstance");
+
+/**
+ * Returns true if the given RxDatabase was the first
+ * instance that was created on the storage with this name.
+ * 
+ * Can be used for some optimizations because on the first instantiation,
+ * we can assume that no data was written before.
+ */
+var isRxDatabaseFirstTimeInstantiated = function isRxDatabaseFirstTimeInstantiated(database) {
+  try {
+    return Promise.resolve(database.storageTokenDocument).then(function (tokenDoc) {
+      return tokenDoc.data.instanceToken === database.token;
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.isRxDatabaseFirstTimeInstantiated = isRxDatabaseFirstTimeInstantiated;
 
 /**
  * Removes the database and all its known data
@@ -5435,6 +5478,8 @@ var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(d
   }
 };
 
+exports.createRxDatabaseStorageInstance = createRxDatabaseStorageInstance;
+
 /**
  * removes all internal docs of a given collection
  * @return resolves all known collection-versions
@@ -5446,12 +5491,9 @@ var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collect
         return colDoc.data.name === collectionName;
       });
       var writeRows = relevantDocs.map(function (doc) {
-        var writeDoc = (0, _util.flatClone)(doc);
+        var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
         writeDoc._deleted = true;
         writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
-        writeDoc._meta = Object.assign({}, doc._meta, {
-          lwt: (0, _util.now)()
-        });
         return {
           previous: doc,
           document: writeDoc
@@ -5476,16 +5518,21 @@ var USED_DATABASE_NAMES = new Set();
 var DB_COUNT = 0;
 
 var RxDatabaseBase = /*#__PURE__*/function () {
-  function RxDatabaseBase(name, token, storage, instanceCreationOptions, password, multiInstance) {
+  function RxDatabaseBase(name,
+  /**
+   * Uniquely identifies the instance
+   * of this RxDatabase.
+   */
+  token, storage, instanceCreationOptions, password, multiInstance) {
     var eventReduce = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
     var options = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
-    var idleQueue = arguments.length > 8 ? arguments[8] : undefined;
     var
     /**
      * Stores information documents about the collections of the database
      */
-    internalStore = arguments.length > 9 ? arguments[9] : undefined;
-    var cleanupPolicy = arguments.length > 10 ? arguments[10] : undefined;
+    internalStore = arguments.length > 8 ? arguments[8] : undefined;
+    var cleanupPolicy = arguments.length > 9 ? arguments[9] : undefined;
+    this.idleQueue = new _customIdleQueue.IdleQueue();
     this._subs = [];
     this.destroyed = false;
     this.collections = {};
@@ -5494,6 +5541,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
       return changeEventBulk.events;
     }));
     this.storageToken = _util.PROMISE_RESOLVE_FALSE;
+    this.storageTokenDocument = _util.PROMISE_RESOLVE_FALSE;
     this.emittedEventBulkIds = new _obliviousSet.ObliviousSet(60 * 1000);
     this.name = name;
     this.token = token;
@@ -5503,7 +5551,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     this.multiInstance = multiInstance;
     this.eventReduce = eventReduce;
     this.options = options;
-    this.idleQueue = idleQueue;
     this.internalStore = internalStore;
     this.cleanupPolicy = cleanupPolicy;
     DB_COUNT++;
@@ -5513,6 +5560,9 @@ var RxDatabaseBase = /*#__PURE__*/function () {
      * conflict with the collection names etc.
      * So only if it is not pseudoInstance,
      * we have all values to prepare a real RxDatabase.
+     * 
+     * TODO this is ugly, we should use a different way in the dev-mode
+     * so that all non-dev-mode code can be cleaner.
      */
 
     if (this.name !== 'pseudoInstance') {
@@ -5528,7 +5578,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
        * in a critical path that increases startup time.
        */
 
-      this.storageToken = (0, _rxDatabaseInternalStore.ensureStorageTokenExists)(this.asRxDatabase);
+      this.storageTokenDocument = (0, _rxDatabaseInternalStore.ensureStorageTokenDocumentExists)(this.asRxDatabase);
+      this.storageToken = this.storageTokenDocument.then(function (doc) {
+        return doc.data.token;
+      });
     }
   }
 
@@ -5567,12 +5620,9 @@ var RxDatabaseBase = /*#__PURE__*/function () {
           });
         }
 
-        var writeDoc = (0, _util.flatClone)(doc);
+        var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
         writeDoc._deleted = true;
         writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
-        writeDoc._meta = {
-          lwt: (0, _util.now)()
-        };
         return Promise.resolve(_this2.internalStore.bulkWrite([{
           document: writeDoc,
           previous: doc
@@ -5633,9 +5683,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
             version: schema.version
           },
           _deleted: false,
-          _meta: {
-            lwt: (0, _util.now)()
-          },
+          _meta: (0, _util.getDefaultRxDocumentMeta)(),
           _rev: (0, _util.getDefaultRevision)(),
           _attachments: {}
         };
@@ -5983,10 +6031,9 @@ function createRxDatabase(_ref3) {
   }
 
   USED_DATABASE_NAMES.add(name);
-  var idleQueue = new _customIdleQueue.IdleQueue();
   var databaseInstanceToken = (0, _util.randomCouchString)(10);
   return createRxDatabaseStorageInstance(databaseInstanceToken, storage, name, instanceCreationOptions, multiInstance).then(function (storageInstance) {
-    var rxDatabase = new RxDatabaseBase(name, databaseInstanceToken, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, idleQueue, storageInstance, cleanupPolicy);
+    var rxDatabase = new RxDatabaseBase(name, databaseInstanceToken, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, storageInstance, cleanupPolicy);
     return (0, _hooks.runAsyncPluginHooks)('createRxDatabase', {
       database: rxDatabase,
       creator: {
@@ -9584,7 +9631,7 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpointDoc) {
           _meta: {
             lwt: (0, _util.now)()
           },
-          _rev: ''
+          _rev: (0, _util.getDefaultRevision)()
         };
         newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
         newDoc._rev = (0, _util.createRevision)(newDoc, checkpointDoc);
@@ -10180,7 +10227,7 @@ function getMetaWriteRow(state, newMasterDocState, previous) {
     data: newMasterDocState,
     _attachments: {},
     _deleted: false,
-    _rev: '',
+    _rev: (0, _util.getDefaultRevision)(),
     _meta: {
       lwt: 0
     }

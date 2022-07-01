@@ -7,7 +7,7 @@ import AES from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
 import { newRxTypeError, newRxError } from '../rx-error';
 import objectPath from 'object-path';
-import { clone, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, hash, now, PROMISE_RESOLVE_FALSE } from '../util';
+import { clone, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, hash, PROMISE_RESOLVE_FALSE } from '../util';
 import { writeSingle } from '../rx-storage-helper';
 import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_ENCRYPTION } from '../rx-database-internal-store';
 
@@ -66,9 +66,7 @@ export var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabas
       },
       _deleted: false,
       _attachments: {},
-      _meta: {
-        lwt: now()
-      },
+      _meta: getDefaultRxDocumentMeta(),
       _rev: getDefaultRevision()
     };
     docData._rev = createRevision(docData);
