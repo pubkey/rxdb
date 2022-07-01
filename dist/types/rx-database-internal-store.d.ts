@@ -1,4 +1,4 @@
-import type { RxDatabase, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstance } from './types';
+import type { InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType, RxDatabase, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstance } from './types';
 export declare const INTERNAL_CONTEXT_COLLECTION = "collection";
 export declare const INTERNAL_CONTEXT_STORAGE_TOKEN = "storage-token";
 export declare const INTERNAL_CONTEXT_ENCRYPTION = "plugin-encryption";
@@ -13,33 +13,6 @@ export declare const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = "plugin-replicati
  */
 export declare const INTERNAL_STORE_SCHEMA_TITLE = "RxInternalDocument";
 export declare const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDocType<any>>>;
-export declare type InternalStoreDocType<Data = any> = {
-    id: string;
-    key: string;
-    context: string;
-    data: Data;
-};
-/**
- * Stores information about the collections.
- * The collection.name is the 'key' value.
- */
-export declare type InternalStoreStorageTokenDocType = InternalStoreDocType<{
-    token: string;
-    instanceToken: string;
-}>;
-/**
- * Stores information about the collections.
- * The collection.name is the 'key' value.
- */
-export declare type InternalStoreCollectionDocType = InternalStoreDocType<{
-    /**
-     * Plain name of the collection
-     */
-    name: string;
-    schema: RxJsonSchema<any>;
-    schemaHash: string;
-    version: number;
-}>;
 export declare function getPrimaryKeyOfInternalDocument(key: string, context: string): string;
 /**
  * Returns all internal documents

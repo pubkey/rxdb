@@ -8,9 +8,8 @@
  *
  */
 import { Observable } from 'rxjs';
-import type { RxCollection, RxDatabase, MigrationState, NumberFunctionMap, OldRxCollection, RxJsonSchema, RxDocumentData } from '../../types';
+import type { RxCollection, RxDatabase, MigrationState, NumberFunctionMap, OldRxCollection, RxJsonSchema, RxDocumentData, InternalStoreCollectionDocType } from '../../types';
 import { RxSchema } from '../../rx-schema';
-import { InternalStoreCollectionDocType } from '../../rx-database-internal-store';
 export declare class DataMigrator {
     newestCollection: RxCollection;
     migrationStrategies: NumberFunctionMap;

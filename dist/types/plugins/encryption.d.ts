@@ -3,8 +3,7 @@
  * It's using crypto-js/aes for password-encryption
  * @link https://github.com/brix/crypto-js
  */
-import type { RxPlugin, RxDatabase } from '../types';
-import { InternalStoreDocType } from '../rx-database-internal-store';
+import type { RxPlugin, RxDatabase, InternalStoreDocType } from '../types';
 export declare const MINIMUM_PASSWORD_LENGTH: 8;
 export declare function encryptString(value: string, password: string): string;
 export declare function decryptString(cipherText: string, password: any): string;

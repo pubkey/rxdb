@@ -56,6 +56,19 @@ Object.keys(_rxDatabase).forEach(function (key) {
   });
 });
 
+var _rxDatabaseInternalStore = require("./rx-database-internal-store");
+
+Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _rxDatabaseInternalStore[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxDatabaseInternalStore[key];
+    }
+  });
+});
+
 var _rxDocument = require("./rx-document");
 
 Object.keys(_rxDocument).forEach(function (key) {
