@@ -18,13 +18,8 @@ export {
     _collectionNamePrimary, // used in tests
     isRxDatabaseFirstTimeInstantiated
 } from './rx-database';
-export {
-    INTERNAL_CONTEXT_COLLECTION,
-    INTERNAL_CONTEXT_ENCRYPTION,
-    INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
-    getPrimaryKeyOfInternalDocument,
-    STORAGE_TOKEN_DOCUMENT_KEY
-} from './rx-database-internal-store';
+
+export * from './rx-database-internal-store';
 
 export {
     overwritable

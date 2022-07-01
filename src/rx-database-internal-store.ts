@@ -1,5 +1,7 @@
-import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
-import { writeSingle } from './rx-storage-helper';
+import {
+    fillWithDefaultSettings,
+    getComposedPrimaryKeyOfDocumentData
+} from './rx-schema-helper';
 import type {
     RxDatabase,
     RxDocumentData,
@@ -20,18 +22,19 @@ export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 export const INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
 export const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
+/**
+ * Do not change the title,
+ * we have to flag the internal schema so that
+ * some RxStorage implementations are able
+ * to detect if the created RxStorageInstance
+ * is from the internals or not,
+ * to do some optimizations in some cases.
+ */
+export const INTERNAL_STORE_SCHEMA_TITLE = 'RxInternalDocument';
 
 export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDocType<any>>> = fillWithDefaultSettings({
     version: 0,
-    /**
-     * Do not change the title,
-     * we have to flag this schema so that
-     * some RxStorage implementations are able
-     * to detect if the created RxStorageInstance
-     * is from the internals or not,
-     * to do some optimizations in some cases.
-     */
-    title: 'RxInternalDocument',
+    title: INTERNAL_STORE_SCHEMA_TITLE,
     primaryKey: {
         key: 'id',
         fields: [
@@ -114,7 +117,6 @@ export type InternalStoreCollectionDocType = InternalStoreDocType<{
     version: number;
 }>;
 
-
 export function getPrimaryKeyOfInternalDocument(
     key: string,
     context: string
@@ -157,13 +159,15 @@ export async function getAllCollectionDocuments(
  * we set a storage-token and use it in the broadcast-channel
  */
 export const STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
+
+export const STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(
+    STORAGE_TOKEN_DOCUMENT_KEY,
+    INTERNAL_CONTEXT_STORAGE_TOKEN
+);
+
 export async function ensureStorageTokenDocumentExists<Collections = any>(
     rxDatabase: RxDatabase<Collections>
 ): Promise<RxDocumentData<InternalStoreStorageTokenDocType>> {
-    const storageTokenDocumentId = getPrimaryKeyOfInternalDocument(
-        STORAGE_TOKEN_DOCUMENT_KEY,
-        INTERNAL_CONTEXT_STORAGE_TOKEN
-    );
 
     /**
      * To have less read-write cycles,
@@ -171,47 +175,48 @@ export async function ensureStorageTokenDocumentExists<Collections = any>(
      * and only fetch the existing one if a conflict happened.
      */
     const storageToken = randomCouchString(10);
-    try {
-        const docData: RxDocumentData<InternalStoreStorageTokenDocType> = {
-            id: storageTokenDocumentId,
-            context: INTERNAL_CONTEXT_STORAGE_TOKEN,
-            key: STORAGE_TOKEN_DOCUMENT_KEY,
-            data: {
-                token: storageToken,
-                /**
-                 * We add the instance token here
-                 * to be able to detect if a given RxDatabase instance
-                 * is the first instance that was ever created
-                 * or if databases have existed earlier.
-                 */
-                instanceToken: rxDatabase.token
-            },
-            _deleted: false,
-            _meta: getDefaultRxDocumentMeta(),
-            _rev: getDefaultRevision(),
-            _attachments: {}
-        };
-        docData._rev = createRevision(docData);
-        await writeSingle<InternalStoreStorageTokenDocType>(
-            rxDatabase.internalStore,
-            {
-                document: docData
-            }
-        );
-        return docData;
-    } catch (err: RxStorageBulkWriteError<InternalStoreStorageTokenDocType> | any) {
-        /**
-         * If we get a 409 error,
-         * it means another instance already inserted the storage token.
-         * So we get that token from the database and return that one.
-         */
-        if (
-            err.isError &&
-            (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).status === 409
-        ) {
-            const storageTokenDocInDb = (err as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).documentInDb;
-            return ensureNotFalsy(storageTokenDocInDb);
-        }
-        throw err;
+
+    const docData: RxDocumentData<InternalStoreStorageTokenDocType> = {
+        id: STORAGE_TOKEN_DOCUMENT_ID,
+        context: INTERNAL_CONTEXT_STORAGE_TOKEN,
+        key: STORAGE_TOKEN_DOCUMENT_KEY,
+        data: {
+            token: storageToken,
+            /**
+             * We add the instance token here
+             * to be able to detect if a given RxDatabase instance
+             * is the first instance that was ever created
+             * or if databases have existed earlier on that storage
+             * with the same database name.
+             */
+            instanceToken: rxDatabase.token
+        },
+        _deleted: false,
+        _meta: getDefaultRxDocumentMeta(),
+        _rev: getDefaultRevision(),
+        _attachments: {}
+    };
+    docData._rev = createRevision(docData);
+
+    const writeResult = await rxDatabase.internalStore.bulkWrite(
+        [{ document: docData }]
+    );
+    if (writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
+        return writeResult.success[STORAGE_TOKEN_DOCUMENT_ID];
     }
+
+    /**
+     * If we get a 409 error,
+     * it means another instance already inserted the storage token.
+     * So we get that token from the database and return that one.
+     */
+    const error = ensureNotFalsy(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
+    if (
+        error.isError &&
+        (error as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).status === 409
+    ) {
+        const storageTokenDocInDb = (error as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).documentInDb;
+        return ensureNotFalsy(storageTokenDocInDb);
+    }
+    throw error;
 }
