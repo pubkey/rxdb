@@ -1,71 +1,57 @@
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
-import { writeSingle } from './rx-storage-helper';
 import { createRevision, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './util';
-
-function _catch(body, recover) {
-  try {
-    var result = body();
-  } catch (e) {
-    return recover(e);
-  }
-
-  if (result && result.then) {
-    return result.then(void 0, recover);
-  }
-
-  return result;
-}
-
 export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists(rxDatabase) {
   try {
-    var storageTokenDocumentId = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
     /**
      * To have less read-write cycles,
      * we just try to insert a new document
      * and only fetch the existing one if a conflict happened.
      */
-
     var storageToken = randomCouchString(10);
-    return Promise.resolve(_catch(function () {
-      var docData = {
-        id: storageTokenDocumentId,
-        context: INTERNAL_CONTEXT_STORAGE_TOKEN,
-        key: STORAGE_TOKEN_DOCUMENT_KEY,
-        data: {
-          token: storageToken,
+    var docData = {
+      id: STORAGE_TOKEN_DOCUMENT_ID,
+      context: INTERNAL_CONTEXT_STORAGE_TOKEN,
+      key: STORAGE_TOKEN_DOCUMENT_KEY,
+      data: {
+        token: storageToken,
 
-          /**
-           * We add the instance token here
-           * to be able to detect if a given RxDatabase instance
-           * is the first instance that was ever created
-           * or if databases have existed earlier.
-           */
-          instanceToken: rxDatabase.token
-        },
-        _deleted: false,
-        _meta: getDefaultRxDocumentMeta(),
-        _rev: getDefaultRevision(),
-        _attachments: {}
-      };
-      docData._rev = createRevision(docData);
-      return Promise.resolve(writeSingle(rxDatabase.internalStore, {
-        document: docData
-      })).then(function () {
-        return docData;
-      });
-    }, function (err) {
+        /**
+         * We add the instance token here
+         * to be able to detect if a given RxDatabase instance
+         * is the first instance that was ever created
+         * or if databases have existed earlier on that storage
+         * with the same database name.
+         */
+        instanceToken: rxDatabase.token
+      },
+      _deleted: false,
+      _meta: getDefaultRxDocumentMeta(),
+      _rev: getDefaultRevision(),
+      _attachments: {}
+    };
+    docData._rev = createRevision(docData);
+    return Promise.resolve(rxDatabase.internalStore.bulkWrite([{
+      document: docData
+    }])).then(function (writeResult) {
+      if (writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
+        return writeResult.success[STORAGE_TOKEN_DOCUMENT_ID];
+      }
       /**
        * If we get a 409 error,
        * it means another instance already inserted the storage token.
        * So we get that token from the database and return that one.
        */
-      if (err.isError && err.status === 409) {
-        var storageTokenDocInDb = err.documentInDb;
+
+
+      var error = ensureNotFalsy(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
+
+      if (error.isError && error.status === 409) {
+        var storageTokenDocInDb = error.documentInDb;
         return ensureNotFalsy(storageTokenDocInDb);
       }
 
-      throw err;
-    }));
+      throw error;
+    });
   } catch (e) {
     return Promise.reject(e);
   }
@@ -104,18 +90,19 @@ export var INTERNAL_CONTEXT_COLLECTION = 'collection';
 export var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 export var INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
 export var INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
+/**
+ * Do not change the title,
+ * we have to flag the internal schema so that
+ * some RxStorage implementations are able
+ * to detect if the created RxStorageInstance
+ * is from the internals or not,
+ * to do some optimizations in some cases.
+ */
+
+export var INTERNAL_STORE_SCHEMA_TITLE = 'RxInternalDocument';
 export var INTERNAL_STORE_SCHEMA = fillWithDefaultSettings({
   version: 0,
-
-  /**
-   * Do not change the title,
-   * we have to flag this schema so that
-   * some RxStorage implementations are able
-   * to detect if the created RxStorageInstance
-   * is from the internals or not,
-   * to do some optimizations in some cases.
-   */
-  title: 'RxInternalDocument',
+  title: INTERNAL_STORE_SCHEMA_TITLE,
   primaryKey: {
     key: 'id',
     fields: ['context', 'key'],
@@ -162,4 +149,5 @@ export function getPrimaryKeyOfInternalDocument(key, context) {
   });
 }
 export var STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
+export var STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
 //# sourceMappingURL=rx-database-internal-store.js.map

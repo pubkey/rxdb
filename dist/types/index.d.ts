@@ -8,7 +8,7 @@ import './types/modules/modifiyjs.d';
 export { addRxPlugin } from './plugin';
 export { createRxDatabase, removeRxDatabase, isRxDatabase, dbCount, _collectionNamePrimary, // used in tests
 isRxDatabaseFirstTimeInstantiated } from './rx-database';
-export { INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_ENCRYPTION, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES, getPrimaryKeyOfInternalDocument, STORAGE_TOKEN_DOCUMENT_KEY } from './rx-database-internal-store';
+export * from './rx-database-internal-store';
 export { overwritable } from './overwritable';
 export { isRxCollection, RxCollectionBase, createRxCollection } from './rx-collection';
 export { fillObjectDataBeforeInsert } from './rx-collection-helper';

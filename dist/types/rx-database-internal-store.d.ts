@@ -3,6 +3,15 @@ export declare const INTERNAL_CONTEXT_COLLECTION = "collection";
 export declare const INTERNAL_CONTEXT_STORAGE_TOKEN = "storage-token";
 export declare const INTERNAL_CONTEXT_ENCRYPTION = "plugin-encryption";
 export declare const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = "plugin-replication-primitives";
+/**
+ * Do not change the title,
+ * we have to flag the internal schema so that
+ * some RxStorage implementations are able
+ * to detect if the created RxStorageInstance
+ * is from the internals or not,
+ * to do some optimizations in some cases.
+ */
+export declare const INTERNAL_STORE_SCHEMA_TITLE = "RxInternalDocument";
 export declare const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDocType<any>>>;
 export declare type InternalStoreDocType<Data = any> = {
     id: string;
@@ -43,4 +52,5 @@ export declare function getAllCollectionDocuments(storageInstance: RxStorageInst
  * we set a storage-token and use it in the broadcast-channel
  */
 export declare const STORAGE_TOKEN_DOCUMENT_KEY = "storageToken";
+export declare const STORAGE_TOKEN_DOCUMENT_ID: string;
 export declare function ensureStorageTokenDocumentExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<RxDocumentData<InternalStoreStorageTokenDocType>>;
