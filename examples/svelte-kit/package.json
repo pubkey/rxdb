@@ -1,0 +1,42 @@
+{
+	"name": "noteskit",
+	"version": "0.0.1",
+	"author": "fredguth",
+	"scripts": {
+		"dev": "svelte-kit dev",
+		"db":"mkdir -p .svelte-kit/db; cd .svelte-kit/db; pouchdb-server --dir . -o 0.0.0.0",
+		"build": "svelte-kit build",
+		"package": "svelte-kit package",
+		"preview": "svelte-kit preview",
+		"prepare": "svelte-kit sync",
+		"check": "svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "prettier --check --plugin-search-dir=. . && eslint .",
+		"format": "prettier --write --plugin-search-dir=. ."
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "next",
+		"@sveltejs/kit": "next",
+		"@typescript-eslint/eslint-plugin": "^5.27.0",
+		"@typescript-eslint/parser": "^5.27.0",
+		"eslint": "^8.16.0",
+		"eslint-config-prettier": "^8.3.0",
+		"eslint-plugin-svelte3": "^4.0.0",
+		"events": "^3.3.0",
+		"pouchdb-adapter-http": "^7.2.2",
+		"pouchdb-adapter-idb": "^7.2.2",
+		"pouchdb-debug": "^7.2.1",
+		"pouchdb-server": "^4.2.0",
+		"prettier": "^2.6.2",
+		"prettier-plugin-svelte": "^2.7.0",
+		"process": "^0.11.10",
+		"rxdb": "^12.6.7",
+		"rxjs": "^7.1.0",
+		"svelte": "^3.44.0",
+		"svelte-check": "^2.7.1",
+		"svelte-preprocess": "^4.10.6",
+		"tslib": "^2.3.1",
+		"typescript": "^4.7.2"
+	},
+	"type": "module"
+}
