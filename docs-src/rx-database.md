@@ -78,7 +78,7 @@ If you want to use encrypted fields in the collections of a database, you have t
 
 ### multiInstance
 `(optional=true)`
-When you create more than one instance of the same database in a single javascript-runtime, you should set `multiInstance` to ```true```. This will enable the event sharing between the two instances. For exmaple when the user has opened multiple browser windows, events will be shared between them so that both windows react to the same changes.
+When you create more than one instance of the same database in a single javascript-runtime, you should set `multiInstance` to ```true```. This will enable the event sharing between the two instances. For example when the user has opened multiple browser windows, events will be shared between them so that both windows react to the same changes.
 `multiInstance` should be set to `false` when you have single-instances like a single Node.js-process, a react-native-app, a cordova-app or a single-window electron app which can decrease the startup time because no instance coordination has to be done.
 
 ### eventReduce

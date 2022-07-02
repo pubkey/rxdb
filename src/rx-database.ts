@@ -581,7 +581,7 @@ export async function _removeAllOfCollection(
     rxDatabase: RxDatabaseBase<any, any, any>,
     collectionName: string
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
-    const docs = await getAllCollectionDocuments(rxDatabase.internalStore, rxDatabase.storage);
+    const docs = await getAllCollectionDocuments(rxDatabase.internalStore);
     const relevantDocs = docs
         .filter((colDoc) => colDoc.data.name === collectionName);
     const writeRows = relevantDocs.map(doc => {
@@ -724,8 +724,7 @@ export async function removeRxDatabase(
     );
 
     const collectionDocs = await getAllCollectionDocuments(
-        dbInternalsStorageInstance,
-        storage
+        dbInternalsStorageInstance
     );
 
     const removedCollectionNames: string[] = [];

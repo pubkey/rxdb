@@ -13,7 +13,6 @@
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
-
 const myDatabase = await createRxDatabase({
   name: 'heroesdb',
   storage: getRxStorageDexie()
@@ -79,11 +78,9 @@ const myDocument = await myDatabase.humans.insert({
 - Subscribe to a document value
 
 ```ts
-
 myDocument.lastName$.subscribe(lastName => {
     console.log('lastName is now ' + lastName);
 });
-
 ```
 
 
