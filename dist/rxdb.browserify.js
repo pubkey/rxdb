@@ -5209,9 +5209,9 @@ exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
  * Returns all internal documents
  * with context 'collection'
  */
-var getAllCollectionDocuments = function getAllCollectionDocuments(storageInstance, storage) {
+var getAllCollectionDocuments = function getAllCollectionDocuments(storageInstance) {
   try {
-    var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
+    var getAllQueryPrepared = storageInstance.storage.statics.prepareQuery(storageInstance.schema, {
       selector: {
         context: INTERNAL_CONTEXT_COLLECTION
       },
@@ -5387,7 +5387,7 @@ var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
   try {
     var databaseInstanceToken = (0, _util.randomCouchString)(10);
     return Promise.resolve(createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
-      return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(dbInternalsStorageInstance, storage)).then(function (collectionDocs) {
+      return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(dbInternalsStorageInstance)).then(function (collectionDocs) {
         var removedCollectionNames = [];
         return Promise.resolve(Promise.all(collectionDocs.map(function (colDoc) {
           try {
@@ -5453,7 +5453,7 @@ exports.createRxDatabaseStorageInstance = createRxDatabaseStorageInstance;
  */
 var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collectionName) {
   try {
-    return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(rxDatabase.internalStore, rxDatabase.storage)).then(function (docs) {
+    return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(rxDatabase.internalStore)).then(function (docs) {
       var relevantDocs = docs.filter(function (colDoc) {
         return colDoc.data.name === collectionName;
       });

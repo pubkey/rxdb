@@ -45,7 +45,7 @@ export var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
   try {
     var databaseInstanceToken = randomCouchString(10);
     return Promise.resolve(createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
-      return Promise.resolve(getAllCollectionDocuments(dbInternalsStorageInstance, storage)).then(function (collectionDocs) {
+      return Promise.resolve(getAllCollectionDocuments(dbInternalsStorageInstance)).then(function (collectionDocs) {
         var removedCollectionNames = [];
         return Promise.resolve(Promise.all(collectionDocs.map(function (colDoc) {
           try {
@@ -107,7 +107,7 @@ export var createRxDatabaseStorageInstance = function createRxDatabaseStorageIns
  */
 export var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collectionName) {
   try {
-    return Promise.resolve(getAllCollectionDocuments(rxDatabase.internalStore, rxDatabase.storage)).then(function (docs) {
+    return Promise.resolve(getAllCollectionDocuments(rxDatabase.internalStore)).then(function (docs) {
       var relevantDocs = docs.filter(function (colDoc) {
         return colDoc.data.name === collectionName;
       });

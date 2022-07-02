@@ -61,9 +61,9 @@ export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumen
  * Returns all internal documents
  * with context 'collection'
  */
-export var getAllCollectionDocuments = function getAllCollectionDocuments(storageInstance, storage) {
+export var getAllCollectionDocuments = function getAllCollectionDocuments(storageInstance) {
   try {
-    var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
+    var getAllQueryPrepared = storageInstance.storage.statics.prepareQuery(storageInstance.schema, {
       selector: {
         context: INTERNAL_CONTEXT_COLLECTION
       },
