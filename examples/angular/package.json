@@ -76,7 +76,7 @@
     "async-test-util": "2.0.0",
     "concurrently": "7.2.2",
     "got": "11.8.5",
-    "local-web-server": "5.1.1",
+    "local-web-server": "5.2.1",
     "pouchdb-server": "4.2.0",
     "testcafe": "1.18.6",
     "ts-mocha": "8.0.0",

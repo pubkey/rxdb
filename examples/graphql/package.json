@@ -28,7 +28,7 @@
     "graphql": "15.8.0",
     "graphql-client": "2.0.1",
     "graphql-subscriptions": "1.2.1",
-    "local-web-server": "5.1.1",
+    "local-web-server": "5.2.1",
     "normalize.css": "8.0.1",
     "pouchdb-adapter-idb": "7.2.2",
     "rxdb": "file:rxdb-local.tgz",
