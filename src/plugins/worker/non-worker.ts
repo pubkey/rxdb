@@ -44,9 +44,6 @@ const WORKER_BY_INSTANCE: Map<RxStorageWorker, {
     refs: Set<RxStorageInstanceWorker<any>>;
 }> = new Map();
 
-
-let x = 0;
-
 export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
     public name = 'worker';
 
