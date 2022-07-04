@@ -275,6 +275,17 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                  */
                 assert.ok(ensureNotFalsy(first.documentInDb).value, writeData.value);
 
+                /**
+                 * The documentInDb must not have any additional attributes.
+                 * Some RxStorage implementations store meta fields 
+                 * together with normal document data.
+                 * These fields must never be leaked to 409 conflict errors
+                 */
+                assert.deepStrictEqual(
+                    Object.keys(ensureNotFalsy(first.documentInDb)).sort(),
+                    Object.keys(writeData).sort()
+                );
+
                 assert.ok(first.writeRow);
 
                 storageInstance.close();

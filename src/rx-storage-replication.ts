@@ -830,6 +830,6 @@ export const defaultConflictHandler: RxConflictHandler<any> = async function (
      * drop the fork state and use the master state instead.
      */
     return {
-        documentData: i.assumedMasterState
+        documentData: i.realMasterState
     };
 }
