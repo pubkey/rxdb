@@ -33,6 +33,8 @@ import type {
     BulkWriteRow,
     BulkWriteRowById,
     RxConflictHandler,
+    RxConflictHandlerInput,
+    RxConflictHandlerOutput,
     RxDocumentData,
     RxDocumentDataById,
     RxJsonSchema,
@@ -46,6 +48,7 @@ import {
     createRevision,
     ensureNotFalsy,
     fastUnsecureHash,
+    flatClone,
     getDefaultRevision,
     lastOfArray,
     now,
@@ -625,13 +628,25 @@ export async function resolveConflictError<RxDocType>(
         /**
          * We have a conflict, resolve it!
          */
-        const resolved = await conflictHandler({
+        const conflictHandlerOutput = await conflictHandler({
             assumedMasterState: error.writeRow.previous,
             newDocumentState: error.writeRow.document,
             realMasterState: documentInDb
-        });
+        }, 'rx-storage-replication');
 
-        const resolvedDoc = flatCloneDocWithMeta(resolved.resolvedDocumentState);
+        const resolvedDoc: RxDocumentData<RxDocType> = Object.assign(
+            {},
+            conflictHandlerOutput.documentData,
+            {
+                /**
+                 * Because the resolved conflict is written to the fork,
+                 * we have to keep/update the forks _meta data, not the masters.
+                 */
+                _meta: flatClone(error.writeRow.document._meta),
+                _rev: getDefaultRevision(),
+                _attachments: flatClone(error.writeRow.document._attachments)
+            }
+        );
         resolvedDoc._meta.lwt = now();
         resolvedDoc._rev = createRevision(resolvedDoc, error.writeRow.document);
         return resolvedDoc;
@@ -806,3 +821,15 @@ export function getMetaWriteRow<RxDocType>(
     };
 }
 
+export const defaultConflictHandler: RxConflictHandler<any> = async function (
+    i: RxConflictHandlerInput<any>,
+    _context: string
+): Promise<RxConflictHandlerOutput<any>> {
+    /**
+     * The default conflict handler will always
+     * drop the fork state and use the master state instead.
+     */
+    return {
+        documentData: i.assumedMasterState
+    };
+}

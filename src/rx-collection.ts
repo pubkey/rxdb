@@ -86,7 +86,8 @@ import type {
     CollectionsOfDatabase,
     RxChangeEventBulk,
     RxLocalDocumentData,
-    RxDocumentBase
+    RxDocumentBase,
+    RxConflictHandler
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -109,6 +110,7 @@ import {
     storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError
 } from './rx-storage-helper';
+import { defaultConflictHandler } from './rx-storage-replication';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -139,7 +141,8 @@ export class RxCollectionBase<
         public attachments: KeyFunctionMap = {},
         public options: any = {},
         public cacheReplacementPolicy: RxCacheReplacementPolicy = defaultCacheReplacementPolicy,
-        public statics: KeyFunctionMap = {}
+        public statics: KeyFunctionMap = {},
+        public conflictHandler: RxConflictHandler<RxDocumentType> = defaultConflictHandler
     ) {
         _applyHookFunctions(this.asRxCollection);
     }
@@ -201,7 +204,6 @@ export class RxCollectionBase<
         );
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
 
-
         /**
          * Instead of resolving the EventBulk array here and spit it into
          * single events, we should fully work with event bulks internally
@@ -241,6 +243,25 @@ export class RxCollectionBase<
                     if (doc) {
                         doc._handleChangeEvent(cE);
                     }
+                })
+        );
+
+        /**
+         * Resolve the conflict tasks
+         * of the RxStorageInstance
+         */
+        this._subs.push(
+            this.storageInstance
+                .conflictResultionTasks()
+                .subscribe(task => {
+                    this
+                        .conflictHandler(task.input, task.context)
+                        .then(output => {
+                            this.storageInstance.resolveConflictResultionTask({
+                                id: task.id,
+                                output
+                            });
+                        });
                 })
         );
 
@@ -994,7 +1015,8 @@ export function createRxCollection(
         attachments = {},
         options = {},
         localDocuments = false,
-        cacheReplacementPolicy = defaultCacheReplacementPolicy
+        cacheReplacementPolicy = defaultCacheReplacementPolicy,
+        conflictHandler = defaultConflictHandler
     }: any
 ): Promise<RxCollection> {
     const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
@@ -1026,7 +1048,8 @@ export function createRxCollection(
             attachments,
             options,
             cacheReplacementPolicy,
-            statics
+            statics,
+            conflictHandler
         );
 
         return collection

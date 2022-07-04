@@ -5,6 +5,8 @@
 import type {
     BulkWriteRow,
     EventBulk,
+    RxConflictResultionTask,
+    RxConflictResultionTaskSolution,
     RxDocumentData,
     RxDocumentDataById,
     RxStorage,
@@ -18,28 +20,28 @@ import { getFromMapOrThrow } from '../../util';
 import { Observable } from 'rxjs';
 
 
-export type InWorkerStorage = {
-    createStorageInstance<RxDocType>(
+export type InWorkerStorage<RxDocType> = {
+    createStorageInstance(
         params: RxStorageInstanceCreationParams<RxDocType, any>
     ): Promise<number>;
-    bulkWrite<DocumentData>(
+    bulkWrite(
         instanceId: number,
-        documentWrites: BulkWriteRow<DocumentData>[]
-    ): Promise<RxStorageBulkWriteResponse<DocumentData>>;
-    findDocumentsById<DocumentData>(
+        documentWrites: BulkWriteRow<RxDocType>[]
+    ): Promise<RxStorageBulkWriteResponse<RxDocType>>;
+    findDocumentsById(
         instanceId: number,
         ids: string[], deleted: boolean
-    ): Promise<RxDocumentDataById<DocumentData>>;
-    query<DocumentData>(
+    ): Promise<RxDocumentDataById<RxDocType>>;
+    query(
         instanceId: number,
         preparedQuery: any
-    ): Promise<RxStorageQueryResult<DocumentData>>;
+    ): Promise<RxStorageQueryResult<RxDocType>>;
     getAttachmentData(
         instanceId: number,
         documentId: string,
         attachmentId: string
     ): Promise<string>;
-    getChangedDocumentsSince<RxDocType>(
+    getChangedDocumentsSince(
         instanceId: number,
         limit: number,
         checkpoint: any
@@ -47,12 +49,20 @@ export type InWorkerStorage = {
         document: RxDocumentData<RxDocType>;
         checkpoint: any;
     }[]>;
-    changeStream<DocumentData>(
+    changeStream(
         instanceById: number
-    ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>>;
+    ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
     cleanup(instanceId: number, minDeletedTime: number): Promise<boolean>;
     close(instanceId: number): Promise<void>;
     remove(instanceId: number): Promise<void>;
+
+    conflictResultionTasks(
+        instanceById: number
+    ): Observable<RxConflictResultionTask<RxDocType>>;
+    resolveConflictResultionTask(
+        instanceById: number,
+        taskSolution: RxConflictResultionTaskSolution<RxDocType>
+    ): Promise<void>;
 }
 
 export function wrappedWorkerRxStorage<T, D>(
@@ -63,7 +73,7 @@ export function wrappedWorkerRxStorage<T, D>(
     let nextId = 0;
     const instanceById: Map<number, any> = new Map();
 
-    const exposeMe: InWorkerStorage = {
+    const exposeMe: InWorkerStorage<any> = {
         /**
          * RxStorageInstance
          */
@@ -140,6 +150,20 @@ export function wrappedWorkerRxStorage<T, D>(
         remove(instanceId: number) {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.remove();
+        },
+
+        conflictResultionTasks<RxDocType>(
+            instanceId: number
+        ): Observable<RxConflictResultionTask<RxDocType>> {
+            const instance = getFromMapOrThrow(instanceById, instanceId);
+            return instance.conflictResultionTasks();
+        },
+        resolveConflictResultionTask<RxDocType>(
+            instanceId: number,
+            taskSolution: RxConflictResultionTaskSolution<RxDocType>
+        ): Promise<void> {
+            const instance = getFromMapOrThrow(instanceById, instanceId);
+            return instance.resolveConflictResultionTask(taskSolution);
         }
     }
     expose(exposeMe);

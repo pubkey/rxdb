@@ -1,7 +1,3 @@
-/**
- * this tests the reactive behaviour of RxDocument
- */
-
 import assert from 'assert';
 import { wait, waitUntil } from 'async-test-util';
 

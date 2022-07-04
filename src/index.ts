@@ -160,11 +160,16 @@ export type {
     RxStorageChangeEvent,
     RxStorageInstance,
 
+    // conflict handling
+    RxConflictHandler,
+    RxConflictHandlerInput,
+    RxConflictHandlerOutput,
+    RxConflictResultionTask,
+    RxConflictResultionTaskSolution,
+
     // stuff from the RxStorage replication
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
-    RxConflictHandler,
-    RxConflictHandlerInput,
     RxStorageReplicationDirection,
     RxStorageReplicationMeta,
 

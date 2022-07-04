@@ -88,7 +88,7 @@ export const RxDBDevModePlugin: RxPlugin = {
             }
         },
         preCreateRxCollection: {
-            after: function (args: RxCollectionCreator & { name: string; }) {
+            after: function (args: RxCollectionCreator<any> & { name: string; }) {
                 ensureCollectionNameValid(args);
                 checkOrmDocumentMethods(args.schema as any, args.methods);
                 if (args.name.charAt(0) === '_') {

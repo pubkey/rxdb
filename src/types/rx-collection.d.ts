@@ -1,7 +1,8 @@
 import type {
     RxJsonSchema,
     RxDocument,
-    MigrationStrategies
+    MigrationStrategies,
+    RxConflictHandler
 } from './';
 import type {
     RxCollectionBase
@@ -22,8 +23,8 @@ export interface NumberFunctionMap {
  * Notice the name of the collection is set onle level higher
  * when calling addCollections()
  */
-export type RxCollectionCreator = {
-    schema: RxJsonSchema<any>;
+export type RxCollectionCreator<RxDocType = any> = {
+    schema: RxJsonSchema<RxDocType>;
     instanceCreationOptions?: any;
     migrationStrategies?: MigrationStrategies;
     autoMigrate?: boolean;
@@ -37,6 +38,15 @@ export type RxCollectionCreator = {
      */
     localDocuments?: boolean;
     cacheReplacementPolicy?: RxCacheReplacementPolicy;
+
+    /**
+     * Depending on which plugins or storage is used,
+     * the RxCollection might need a way to resolve conflicts
+     * which is done by this conflict handler.
+     * If no conflict handler is provided, a master-always-wins handler
+     * will be used as default
+     */
+    conflictHandler?: RxConflictHandler<RxDocType>;
 }
 
 export interface MigrationState {

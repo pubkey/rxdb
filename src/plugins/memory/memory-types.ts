@@ -1,6 +1,8 @@
+import { Subject } from 'rxjs';
 import type {
     DexiePreparedQuery,
     RxAttachmentWriteData,
+    RxConflictResultionTask,
     RxDocumentData,
     RxStorage
 } from '../../types';
@@ -14,11 +16,10 @@ export type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMe
     collectionStates: Map<string, MemoryStorageInternals<any>>;
 };
 
-
 export type MemoryStorageInternalsByIndex<RxDocType> = {
     index: string[];
     docsWithIndex: DocWithIndexString<RxDocType>[];
-    getIndexableString: (docData: RxDocumentData<RxDocType>) => string
+    getIndexableString: (docData: RxDocumentData<RxDocType>) => string;
 };
 
 /**
@@ -43,7 +44,7 @@ export type MemoryStorageInternals<RxDocType> = {
      * Attachments data, indexed by a combined string
      * consisting of [documentId + '||' + attachmentId]
      */
-    attachments: Map<string, RxAttachmentWriteData>
+    attachments: Map<string, RxAttachmentWriteData>;
     byIndex: {
         /**
          * Because RxDB requires a deterministic sorting
@@ -55,9 +56,15 @@ export type MemoryStorageInternals<RxDocType> = {
          * because RxDB also knows the previous state of the document when we do a bulkWrite().
          */
         [indexName: string]: MemoryStorageInternalsByIndex<RxDocType>;
-    }
-};
+    };
 
+    /**
+     * To easier test the conflict resolution,
+     * the memory storage exposes the conflict resolution task subject
+     * so that we can inject own tasks during tests.
+     */
+    conflictResultionTasks$: Subject<RxConflictResultionTask<RxDocType>>;
+};
 
 export type DocWithIndexString<RxDocType> = {
     id: string;

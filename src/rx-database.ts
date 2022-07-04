@@ -258,7 +258,7 @@ export class RxDatabaseBase<
      * So it must be as fast as possible.
      */
     async addCollections<CreatedCollections = Partial<Collections>>(collectionCreators: {
-        [key in keyof CreatedCollections]: RxCollectionCreator
+        [key in keyof CreatedCollections]: RxCollectionCreator<any>
     }): Promise<{ [key in keyof CreatedCollections]: RxCollection }> {
         const jsonSchemas: { [key in keyof CreatedCollections]: RxJsonSchema<any> } = {} as any;
         const schemas: { [key in keyof CreatedCollections]: RxSchema<any> } = {} as any;
@@ -267,7 +267,7 @@ export class RxDatabaseBase<
 
         Object.entries(collectionCreators).forEach(([name, args]) => {
             const collectionName: keyof CreatedCollections = name as any;
-            const rxJsonSchema = (args as RxCollectionCreator).schema;
+            const rxJsonSchema = (args as RxCollectionCreator<any>).schema;
             jsonSchemas[collectionName] = rxJsonSchema;
             const schema = createRxSchema(rxJsonSchema);
             schemas[collectionName] = schema;
@@ -325,7 +325,7 @@ export class RxDatabaseBase<
             );
 
             // run hooks
-            const hookData: RxCollectionCreator & { name: string; } = flatClone(args) as any;
+            const hookData: RxCollectionCreator<any> & { name: string; } = flatClone(args) as any;
             (hookData as any).database = this;
             hookData.name = name;
             runPluginHooks('preCreateRxCollection', hookData);

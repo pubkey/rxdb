@@ -30,8 +30,11 @@ import type {
     StringKeys
 } from './types';
 import {
+    createRevision,
     firstPropertyValueOfObject,
     flatClone,
+    getDefaultRevision,
+    getDefaultRxDocumentMeta,
     now,
     parseRevision,
     randomCouchString
@@ -103,7 +106,6 @@ export function storageChangeEventToRxChangeEvent<DocType>(
     rxCollection?: RxCollection,
 ): RxChangeEvent<DocType> {
     let documentData;
-
     /**
      * TODO
      * this data design is shit,
@@ -217,7 +219,6 @@ export function categorizeBulkWriteRows<RxDocType>(
         events: []
     };
 
-
     const attachmentsAdd: {
         documentId: string;
         attachmentId: string;
@@ -323,7 +324,6 @@ export function categorizeBulkWriteRows<RxDocType>(
                 return;
             }
 
-
             // handle attachments data
             if (writeRow.document._deleted) {
                 /**
@@ -340,7 +340,6 @@ export function categorizeBulkWriteRows<RxDocType>(
                         });
                 }
             } else {
-
                 // first check for errors
                 Object
                     .entries(writeRow.document._attachments)
@@ -391,8 +390,6 @@ export function categorizeBulkWriteRows<RxDocType>(
                 }
             }
 
-
-
             let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
             const writeDoc = writeRow.document;
             if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
@@ -438,7 +435,6 @@ export function categorizeBulkWriteRows<RxDocType>(
             }
         }
     });
-
 
     return {
         bulkInsertDocs,
@@ -507,7 +503,6 @@ export function getUniqueDeterministicEventKey(
     return eventKey;
 }
 
-
 export function hashAttachmentData(
     attachmentBase64String: string,
     storageStatics: RxStorageStatics
@@ -520,14 +515,12 @@ export function getAttachmentSize(
     return atob(attachmentBase64String).length;
 }
 
-
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
  * and other data transformations and also ensure that database.lockedRun()
  * is used properly.
  */
-
 export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions>(
     database: RxDatabase<{}, Internals, InstanceCreationOptions>,
     storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>,
@@ -598,7 +591,6 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                     });
             }
         }
-
         data._meta.lwt = now();
 
         const hookParams = {
@@ -607,7 +599,6 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             schema: rxJsonSchema,
             doc: data
         };
-
 
         /**
          * Run the hooks once for the previous doc,
@@ -623,7 +614,6 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         hookParams.doc = data;
         runPluginHooks('preWriteToStorageInstance', hookParams);
         data = hookParams.doc;
-
 
         /**
          * Do not update the revision here.
@@ -782,6 +772,56 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                     return ret;
                 })
             )
+        },
+        conflictResultionTasks() {
+            return storageInstance.conflictResultionTasks().pipe(
+                map(task => {
+                    const assumedMasterState = task.input.assumedMasterState ? transformDocumentDataFromRxStorageToRxDB(task.input.assumedMasterState) : undefined;
+                    const newDocumentState = transformDocumentDataFromRxStorageToRxDB(task.input.newDocumentState);
+                    const realMasterState = transformDocumentDataFromRxStorageToRxDB(task.input.realMasterState);
+                    return {
+                        id: task.id,
+                        context: task.context,
+                        input: {
+                            assumedMasterState,
+                            realMasterState,
+                            newDocumentState
+                        }
+                    };
+                })
+            );
+        },
+        resolveConflictResultionTask(taskSolution) {
+            const hookParams = {
+                database,
+                primaryPath,
+                schema: rxJsonSchema,
+                doc: Object.assign(
+                    {},
+                    taskSolution.output.documentData,
+                    {
+                        _meta: getDefaultRxDocumentMeta(),
+                        _rev: getDefaultRevision(),
+                        _attachments: {}
+                    }
+                )
+            };
+            hookParams.doc._rev = createRevision(hookParams.doc);
+
+            runPluginHooks('preWriteToStorageInstance', hookParams);
+            const postHookDocData = hookParams.doc;
+
+            const documentData = flatClone(postHookDocData);
+            delete (documentData as any)._meta;
+            delete (documentData as any)._rev;
+            delete (documentData as any)._attachments;
+
+            return storageInstance.resolveConflictResultionTask({
+                id: taskSolution.id,
+                output: {
+                    documentData
+                }
+            });
         }
     };
     return ret;

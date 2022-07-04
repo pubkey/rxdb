@@ -28,7 +28,6 @@ export type RxQueryObject<T = any> = keyof T & { [P in keyof T]?: T[P] | RxQuery
     $and: RxQueryObject<T>[];
 };
 
-
 // TODO this should be typed
 export type MangoQuerySelector<RxDocType = any> = {
     [k: string]: MangoQuerySelector<RxDocType> | any;
