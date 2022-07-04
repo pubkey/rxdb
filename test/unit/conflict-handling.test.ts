@@ -1,5 +1,4 @@
-import assert from 'assert';
-import { wait, waitUntil } from 'async-test-util';
+import { waitUntil } from 'async-test-util';
 
 import config from './config';
 import * as schemas from '../helper/schemas';
