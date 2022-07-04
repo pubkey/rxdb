@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
-  import { selectedNote, name, body } from '$lib/stores';
-  import { getDb } from '$lib/db';
-	// let todosFilter = '';
+	import { selectedNote, name, body } from '$lib/stores';
+	import { getDb } from '$lib/db';
+
 	let db$;
 	let noteList = [];
 	onMount(async () => {
@@ -12,8 +12,6 @@
 			.sort({ updatedAt: 'desc' })
 			.$.subscribe((notes) => (noteList = notes));
 	});
-
-	
 
 	const handleEditNote = (note) => {
 		selectedNote.set(note);
@@ -33,7 +31,9 @@
 			{#each results as note}
 				<li>
 					<span class="elipsis">
-						<button on:click={() => handleEditNote(note)} class="nostyle link">{note.name}</button>
+						<button on:click={() => handleEditNote(note)} class="nostyle link"
+							>{note.name}</button
+						>
 						{#if note.body !== ''}<span style="color: #757575">—</span>{/if}
 						<span class="mute">
 							{note.body ?? ''}
@@ -42,7 +42,9 @@
 
 					<span class="meta">
 						{new Date(note.updatedAt).toLocaleDateString('en-US')}
-						<button on:click={() => deleteNote(note)} class="btn btn-delete">delete</button>
+						<button on:click={() => deleteNote(note)} class="btn btn-delete"
+							>delete</button
+						>
 					</span>
 				</li>
 			{/each}

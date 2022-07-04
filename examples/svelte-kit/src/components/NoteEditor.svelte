@@ -1,3 +1,4 @@
+
 <script>
 	import { onMount } from 'svelte';
 	import { selectedNote, name, body } from '$lib/stores';
@@ -35,13 +36,13 @@
 				}
 			});
 	};
-</script>
+</script> 
 
 <div>
 	<h2>Note Editor</h2>
 	<input bind:value={$name} placeholder="Note Title" />
 	<textarea bind:value={$body} placeholder="Note Content..." />
-	<button on:click={saveNote}>Save Note</button>
+	<button class="btn-edit" on:click={saveNote}>Save Note</button>
 </div>
 
 <style>
