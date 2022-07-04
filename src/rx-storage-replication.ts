@@ -33,6 +33,8 @@ import type {
     BulkWriteRow,
     BulkWriteRowById,
     RxConflictHandler,
+    RxConflictHandlerInput,
+    RxConflictHandlerOutput,
     RxDocumentData,
     RxDocumentDataById,
     RxJsonSchema,
@@ -630,13 +632,12 @@ export async function resolveConflictError<RxDocType>(
             assumedMasterState: error.writeRow.previous,
             newDocumentState: error.writeRow.document,
             realMasterState: documentInDb
-        });
+        }, 'rx-storage-replication');
 
         const resolvedDoc: RxDocumentData<RxDocType> = Object.assign(
             {},
             conflictHandlerOutput.documentData,
             {
-                _deleted: conflictHandlerOutput.deleted,
                 /**
                  * Because the resolved conflict is written to the fork,
                  * we have to keep/update the forks _meta data, not the masters.
@@ -820,3 +821,15 @@ export function getMetaWriteRow<RxDocType>(
     };
 }
 
+export const defaultConflictHandler: RxConflictHandler<any> = async function (
+    i: RxConflictHandlerInput<any>,
+    _context: string
+): Promise<RxConflictHandlerOutput<any>> {
+    /**
+     * The default conflict handler will always
+     * drop the fork state and use the master state instead.
+     */
+    return {
+        documentData: i.assumedMasterState
+    };
+}

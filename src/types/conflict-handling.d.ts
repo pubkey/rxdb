@@ -12,12 +12,12 @@ export type RxConflictHandlerInput<RxDocType> = {
     newDocumentState: WithDeleted<RxDocType>;
 };
 export type RxConflictHandlerOutput<RxDocType> = {
-    documentData: RxDocType;
-    deleted: boolean;
+    documentData: WithDeleted<RxDocType>;
 };
 
 export type RxConflictHandler<RxDocType> = (
-    i: RxConflictHandlerInput<RxDocType>
+    i: RxConflictHandlerInput<RxDocType>,
+    context: string
 ) => Promise<RxConflictHandlerOutput<RxDocType>>;
 
 export type RxConflictResultionTask<RxDocType> = {

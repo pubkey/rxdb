@@ -187,15 +187,10 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
 
         const queryPlanFields: string[] = queryPlan.index;
-
         const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
-
-
         const index: string[] | undefined = ['_deleted'].concat(queryPlanFields);
-
         let lowerBound: any[] = queryPlan.startKeys;
         lowerBound = [false].concat(lowerBound);
-
         const lowerBoundString = getStartIndexStringFromLowerBound(
             this.schema,
             index,
@@ -252,7 +247,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         // apply skip and limit boundaries.
         rows = rows.slice(skip, skipPlusLimit);
 
-
         return {
             documents: rows
         };
@@ -281,9 +275,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
 
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-
-
-
         let indexOfLower = boundGT(
             docsWithIndex,
             {
@@ -348,10 +339,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 indexOfLower++;
             }
         }
-
         return true;
     }
-
 
     getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
         ensureNotRemoved(this);
@@ -395,30 +384,20 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         }
     }
 
-    /**
-     * In the memory RxStorage we make the conflictResultionTasks$ public
-     * so that we can emit custom conflict tasks for the unit tests.
-     */
-    public conflictResultionTasks$: Subject<RxConflictResultionTask<RxDocType>> = new Subject();
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return this.conflictResultionTasks$.asObservable();
+        return this.internals.conflictResultionTasks$.asObservable();
     }
     resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
         return PROMISE_RESOLVE_VOID;
     }
-
 }
-
-
 
 export async function createMemoryStorageInstance<RxDocType>(
     storage: RxStorageMemory,
     params: RxStorageInstanceCreationParams<RxDocType, RxStorageMemoryInstanceCreationOptions>,
     settings: RxStorageMemorySettings
 ): Promise<RxStorageInstanceMemory<RxDocType>> {
-
     const collectionKey = getMemoryCollectionKey(params.databaseName, params.collectionName);
-
 
     let internals = storage.collectionStates.get(collectionKey);
     if (!internals) {
@@ -427,7 +406,8 @@ export async function createMemoryStorageInstance<RxDocType>(
             refCount: 1,
             documents: new Map(),
             attachments: params.schema.attachments ? new Map() : undefined as any,
-            byIndex: {}
+            byIndex: {},
+            conflictResultionTasks$: new Subject()
         };
         addIndexesToInternalsState(internals, params.schema);
         storage.collectionStates.set(collectionKey, internals);

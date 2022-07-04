@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- Add conflict handling to RxCollection.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

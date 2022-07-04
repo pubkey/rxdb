@@ -40,6 +40,7 @@ import './unit/cache-replacement-policy.test';
 import './unit/query-builder.test.js';
 import './unit/key-compression.test.js';
 import './unit/idle-queue.test.js';
+import './unit/conflict-handling.test';
 import './unit/event-reduce.test.js';
 import './unit/reactive-collection.test.js';
 import './unit/attachments.test.js';
