@@ -30,7 +30,9 @@ import type {
     LokiChangesCheckpoint,
     StringKeys,
     RxDocumentDataById,
-    DeepReadonly
+    DeepReadonly,
+    RxConflictResultionTask,
+    RxConflictResultionTaskSolution
 } from '../../types';
 import {
     closeLokiCollections,
@@ -312,6 +314,12 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         await localState.databaseState.saveQueue.run();
         return this.close();
     }
+
+    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
+        return new Subject();
+    }
+    async resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> { }
+
 }
 
 export async function createLokiLocalState<RxDocType>(

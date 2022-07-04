@@ -14,6 +14,8 @@ import type {
     PouchSettings,
     PouchWriteError,
     PreparedQuery,
+    RxConflictResultionTask,
+    RxConflictResultionTaskSolution,
     RxDocumentData,
     RxDocumentDataById,
     RxJsonSchema,
@@ -416,4 +418,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             };
         });
     }
+
+    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
+        return new Subject();
+    }
+    async resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> { }
 }

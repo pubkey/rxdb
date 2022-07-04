@@ -26,7 +26,9 @@ import type {
     EventBulk,
     DexieChangesCheckpoint,
     StringKeys,
-    RxDocumentDataById
+    RxDocumentDataById,
+    RxConflictResultionTask,
+    RxConflictResultionTaskSolution
 } from '../../types';
 import {
     DexiePreparedQuery,
@@ -395,6 +397,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         this.changes$.complete();
         closeDexieDb(this.internals);
     }
+
+    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
+        return new Subject();
+    }
+    async resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> { }
+
 }
 
 

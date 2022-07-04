@@ -32,6 +32,8 @@ import type {
 import {
     firstPropertyValueOfObject,
     flatClone,
+    getDefaultRevision,
+    getDefaultRxDocumentMeta,
     now,
     parseRevision,
     randomCouchString
@@ -782,6 +784,60 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                     return ret;
                 })
             )
+        },
+        conflictResultionTasks() {
+            return storageInstance.conflictResultionTasks().pipe(
+                map(task => {
+                    const assumedMasterState = task.input.assumedMasterState ? transformDocumentDataFromRxStorageToRxDB(task.input.assumedMasterState) : undefined;
+                    const newDocumentState = transformDocumentDataFromRxStorageToRxDB(task.input.newDocumentState);
+                    const realMasterState = transformDocumentDataFromRxStorageToRxDB(task.input.realMasterState);
+                    return {
+                        id: task.id,
+                        context: task.context,
+                        input: {
+                            assumedMasterState,
+                            realMasterState,
+                            newDocumentState
+                        }
+                    };
+                })
+            );
+        },
+        resolveConflictResultionTask(taskSolution) {
+            const hookParams = {
+                database,
+                primaryPath,
+                schema: rxJsonSchema,
+                doc: Object.assign(
+                    {},
+                    taskSolution.output.documentData,
+                    {
+                        _deleted: taskSolution.output.deleted,
+                        _meta: getDefaultRxDocumentMeta(),
+                        _rev: getDefaultRevision(),
+                        _attachments: {}
+                    }
+                )
+            };
+            runPluginHooks('preWriteToStorageInstance', hookParams);
+            const postHookDocData = hookParams.doc;
+            const resolvedDocState = transformDocumentDataFromRxDBToRxStorage({
+                document: postHookDocData
+            }).document;
+
+            const documentData = flatClone(resolvedDocState);
+            delete (documentData as any)._meta;
+            delete (documentData as any)._rev;
+            delete (documentData as any)._attachments;
+            delete (documentData as any)._deleted;
+
+            return storageInstance.resolveConflictResultionTask({
+                id: taskSolution.id,
+                output: {
+                    deleted: resolvedDocState._deleted,
+                    documentData
+                }
+            });
         }
     };
     return ret;

@@ -46,6 +46,7 @@ import {
     createRevision,
     ensureNotFalsy,
     fastUnsecureHash,
+    flatClone,
     getDefaultRevision,
     lastOfArray,
     now,
@@ -625,13 +626,26 @@ export async function resolveConflictError<RxDocType>(
         /**
          * We have a conflict, resolve it!
          */
-        const resolved = await conflictHandler({
+        const conflictHandlerOutput = await conflictHandler({
             assumedMasterState: error.writeRow.previous,
             newDocumentState: error.writeRow.document,
             realMasterState: documentInDb
         });
 
-        const resolvedDoc = flatCloneDocWithMeta(resolved.resolvedDocumentState);
+        const resolvedDoc: RxDocumentData<RxDocType> = Object.assign(
+            {},
+            conflictHandlerOutput.documentData,
+            {
+                _deleted: conflictHandlerOutput.deleted,
+                /**
+                 * Because the resolved conflict is written to the fork,
+                 * we have to keep/update the forks _meta data, not the masters.
+                 */
+                _meta: flatClone(error.writeRow.document._meta),
+                _rev: getDefaultRevision(),
+                _attachments: flatClone(error.writeRow.document._attachments)
+            }
+        );
         resolvedDoc._meta.lwt = now();
         resolvedDoc._rev = createRevision(resolvedDoc, error.writeRow.document);
         return resolvedDoc;

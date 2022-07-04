@@ -16,7 +16,9 @@ import type {
     RxStorageQueryResult,
     EventBulk,
     RxStorageStatics,
-    RxDocumentDataById
+    RxDocumentDataById,
+    RxConflictResultionTask,
+    RxConflictResultionTaskSolution
 } from '../../types';
 import { getFromMapOrThrow } from '../../util';
 import { InWorkerStorage } from './in-worker';
@@ -24,7 +26,7 @@ import { InWorkerStorage } from './in-worker';
 declare type WorkerStorageInternals = {
     rxStorage: RxStorageWorker;
     instanceId: number;
-    worker: InWorkerStorage;
+    worker: InWorkerStorage<any>;
 }
 declare type RxStorageWorkerSettings = {
     statics: RxStorageStatics;
@@ -38,7 +40,7 @@ declare type RxStorageWorkerSettings = {
  * and have to close it again of no more RxStorageInstances are non-closed.
  */
 const WORKER_BY_INSTANCE: Map<RxStorageWorker, {
-    workerPromise: Promise<InWorkerStorage>;
+    workerPromise: Promise<InWorkerStorage<any>>;
     refs: Set<RxStorageInstanceWorker<any>>;
 }> = new Map();
 export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
@@ -57,7 +59,7 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
         let workerState = WORKER_BY_INSTANCE.get(this);
         if (!workerState) {
             workerState = {
-                workerPromise: spawn<InWorkerStorage>(new Worker(this.settings.workerInput)) as any,
+                workerPromise: spawn<InWorkerStorage<RxDocType>>(new Worker(this.settings.workerInput)) as any,
                 refs: new Set()
             };
             WORKER_BY_INSTANCE.set(this, workerState);
@@ -92,6 +94,7 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
      * so we have to transform it.
      */
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
+    private conflicts$: Subject<RxConflictResultionTask<RxDocType>> = new Subject();
     private subs: Subscription[] = [];
 
     private closed: boolean = false;
@@ -109,7 +112,11 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
                 this.internals.instanceId
             ).subscribe(ev => this.changes$.next(ev as any))
         );
-
+        this.subs.push(
+            this.internals.worker.conflictResultionTasks(
+                this.internals.instanceId
+            ).subscribe(ev => this.conflicts$.next(ev as any))
+        );
     }
 
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
@@ -178,6 +185,12 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
         this.closed = true;
         await removeWorkerRef(this);
     }
+
+    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
+        return new Subject();
+    }
+    async resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> { }
+
 }
 
 export function getRxStorageWorker(

@@ -12,6 +12,8 @@ import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import type {
     BulkWriteRow,
     EventBulk,
+    RxConflictResultionTask,
+    RxConflictResultionTaskSolution,
     RxDocumentData,
     RxDocumentDataById,
     RxJsonSchema,
@@ -25,6 +27,7 @@ import type {
 import {
     getFromMapOrThrow,
     now,
+    PROMISE_RESOLVE_VOID,
     RX_META_LWT_MINIMUM
 } from '../../util';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
@@ -391,6 +394,19 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             );
         }
     }
+
+    /**
+     * In the memory RxStorage we make the conflictResultionTasks$ public
+     * so that we can emit custom conflict tasks for the unit tests.
+     */
+    public conflictResultionTasks$: Subject<RxConflictResultionTask<RxDocType>> = new Subject();
+    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
+        return this.conflictResultionTasks$.asObservable();
+    }
+    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
+        return PROMISE_RESOLVE_VOID;
+    }
+
 }
 
 
