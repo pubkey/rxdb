@@ -699,6 +699,47 @@ rxJsonSchema) {
         };
         return ret;
       }));
+    },
+    conflictResultionTasks: function conflictResultionTasks() {
+      return storageInstance.conflictResultionTasks().pipe((0, _operators.map)(function (task) {
+        var assumedMasterState = task.input.assumedMasterState ? transformDocumentDataFromRxStorageToRxDB(task.input.assumedMasterState) : undefined;
+        var newDocumentState = transformDocumentDataFromRxStorageToRxDB(task.input.newDocumentState);
+        var realMasterState = transformDocumentDataFromRxStorageToRxDB(task.input.realMasterState);
+        return {
+          id: task.id,
+          context: task.context,
+          input: {
+            assumedMasterState: assumedMasterState,
+            realMasterState: realMasterState,
+            newDocumentState: newDocumentState
+          }
+        };
+      }));
+    },
+    resolveConflictResultionTask: function resolveConflictResultionTask(taskSolution) {
+      var hookParams = {
+        database: database,
+        primaryPath: primaryPath,
+        schema: rxJsonSchema,
+        doc: Object.assign({}, taskSolution.output.documentData, {
+          _meta: (0, _util.getDefaultRxDocumentMeta)(),
+          _rev: (0, _util.getDefaultRevision)(),
+          _attachments: {}
+        })
+      };
+      hookParams.doc._rev = (0, _util.createRevision)(hookParams.doc);
+      (0, _hooks.runPluginHooks)('preWriteToStorageInstance', hookParams);
+      var postHookDocData = hookParams.doc;
+      var documentData = (0, _util.flatClone)(postHookDocData);
+      delete documentData._meta;
+      delete documentData._rev;
+      delete documentData._attachments;
+      return storageInstance.resolveConflictResultionTask({
+        id: taskSolution.id,
+        output: {
+          documentData: documentData
+        }
+      });
     }
   };
   return ret;

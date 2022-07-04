@@ -19,7 +19,7 @@
 import { BehaviorSubject, combineLatest, filter, firstValueFrom } from 'rxjs';
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import { flatCloneDocWithMeta } from './rx-storage-helper';
-import { createRevision, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, lastOfArray, now, parseRevision, PROMISE_RESOLVE_VOID } from './util';
+import { createRevision, ensureNotFalsy, fastUnsecureHash, flatClone, getDefaultRevision, lastOfArray, now, parseRevision, PROMISE_RESOLVE_VOID } from './util';
 /**
  * Flags that a document state was written to the master
  * by the upstream from the fork.
@@ -357,8 +357,16 @@ export var resolveConflictError = function resolveConflictError(conflictHandler,
         assumedMasterState: error.writeRow.previous,
         newDocumentState: error.writeRow.document,
         realMasterState: documentInDb
-      })).then(function (resolved) {
-        var resolvedDoc = flatCloneDocWithMeta(resolved.resolvedDocumentState);
+      }, 'rx-storage-replication')).then(function (conflictHandlerOutput) {
+        var resolvedDoc = Object.assign({}, conflictHandlerOutput.documentData, {
+          /**
+           * Because the resolved conflict is written to the fork,
+           * we have to keep/update the forks _meta data, not the masters.
+           */
+          _meta: flatClone(error.writeRow.document._meta),
+          _rev: getDefaultRevision(),
+          _attachments: flatClone(error.writeRow.document._attachments)
+        });
         resolvedDoc._meta.lwt = now();
         resolvedDoc._rev = createRevision(resolvedDoc, error.writeRow.document);
         return resolvedDoc;
@@ -892,4 +900,17 @@ export function getMetaWriteRow(state, newMasterDocState, previous) {
     document: newMeta
   };
 }
+export var defaultConflictHandler = function defaultConflictHandler(i, _context) {
+  try {
+    /**
+     * The default conflict handler will always
+     * drop the fork state and use the master state instead.
+     */
+    return Promise.resolve({
+      documentData: i.assumedMasterState
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 //# sourceMappingURL=rx-storage-replication.js.map

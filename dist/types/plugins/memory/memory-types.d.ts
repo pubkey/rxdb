@@ -1,4 +1,5 @@
-import type { DexiePreparedQuery, RxAttachmentWriteData, RxDocumentData, RxStorage } from '../../types';
+import { Subject } from 'rxjs';
+import type { DexiePreparedQuery, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxStorage } from '../../types';
 export declare type RxStorageMemorySettings = {};
 export declare type RxStorageMemoryInstanceCreationOptions = {};
 export declare type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
@@ -47,6 +48,12 @@ export declare type MemoryStorageInternals<RxDocType> = {
          */
         [indexName: string]: MemoryStorageInternalsByIndex<RxDocType>;
     };
+    /**
+     * To easier test the conflict resolution,
+     * the memory storage exposes the conflict resolution task subject
+     * so that we can inject own tasks during tests.
+     */
+    conflictResultionTasks$: Subject<RxConflictResultionTask<RxDocType>>;
 };
 export declare type DocWithIndexString<RxDocType> = {
     id: string;

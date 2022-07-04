@@ -1,4 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
+import { RxConflictHandler } from './conflict-handling';
 import { RxDocumentData } from './rx-storage';
 import type {
     RxStorageInstance
@@ -117,7 +118,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      * to ensure we do not mix up meta data of
      * different replications.
      */
-     checkpointKey: string;
+    checkpointKey: string;
 
     /**
      * Tracks if the streams are in sync
@@ -145,17 +146,5 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
         [direction in RxStorageReplicationDirection]: Promise<any>;
     }
 }
-
-export type RxConflictHandlerInput<RxDocType> = {
-    assumedMasterState?: RxDocumentData<RxDocType>;
-    realMasterState: RxDocumentData<RxDocType>;
-    newDocumentState: RxDocumentData<RxDocType>;
-};
-export type RxConflictHandler<RxDocType> = (
-    i: RxConflictHandlerInput<RxDocType>
-) => Promise<{
-    resolvedDocumentState: RxDocumentData<RxDocType>
-}>
-
 
 export type RxStorageReplicationDirection = 'up' | 'down';

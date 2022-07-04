@@ -52,33 +52,29 @@ var RxStorageWorker = /*#__PURE__*/function () {
   var _proto = RxStorageWorker.prototype;
 
   _proto.createStorageInstance = function createStorageInstance(params) {
-    try {
-      var _this2 = this;
+    var _this = this;
 
-      var workerState = WORKER_BY_INSTANCE.get(_this2);
+    var workerState = WORKER_BY_INSTANCE.get(this);
 
-      if (!workerState) {
-        workerState = {
-          workerPromise: (0, _threads.spawn)(new _threads.Worker(_this2.settings.workerInput)),
-          refs: new Set()
-        };
-        WORKER_BY_INSTANCE.set(_this2, workerState);
-      }
-
-      return Promise.resolve(workerState.workerPromise).then(function (worker) {
-        return Promise.resolve(worker.createStorageInstance(params)).then(function (instanceId) {
-          var instance = new RxStorageInstanceWorker(_this2, params.databaseName, params.collectionName, params.schema, {
-            rxStorage: _this2,
-            instanceId: instanceId,
-            worker: worker
-          }, params.options);
-          workerState.refs.add(instance);
-          return instance;
-        });
-      });
-    } catch (e) {
-      return Promise.reject(e);
+    if (!workerState) {
+      workerState = {
+        workerPromise: (0, _threads.spawn)(new _threads.Worker(this.settings.workerInput)),
+        refs: new Set()
+      };
+      WORKER_BY_INSTANCE.set(this, workerState);
     }
+
+    return workerState.workerPromise.then(function (worker) {
+      return worker.createStorageInstance(params).then(function (instanceId) {
+        var instance = new RxStorageInstanceWorker(_this, params.databaseName, params.collectionName, params.schema, {
+          rxStorage: _this,
+          instanceId: instanceId,
+          worker: worker
+        }, params.options);
+        (0, _util.ensureNotFalsy)(workerState).refs.add(instance);
+        return instance;
+      });
+    });
   };
 
   return RxStorageWorker;
@@ -92,9 +88,10 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
    * so we have to transform it.
    */
   function RxStorageInstanceWorker(storage, databaseName, collectionName, schema, internals, options) {
-    var _this3 = this;
+    var _this2 = this;
 
     this.changes$ = new _rxjs.Subject();
+    this.conflicts$ = new _rxjs.Subject();
     this.subs = [];
     this.closed = false;
     this.storage = storage;
@@ -104,7 +101,10 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     this.subs.push(this.internals.worker.changeStream(this.internals.instanceId).subscribe(function (ev) {
-      return _this3.changes$.next(ev);
+      return _this2.changes$.next(ev);
+    }));
+    this.subs.push(this.internals.worker.conflictResultionTasks(this.internals.instanceId).subscribe(function (ev) {
+      return _this2.conflicts$.next(ev);
     }));
   }
 
@@ -128,9 +128,9 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
 
   _proto2.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
-      var _this5 = this;
+      var _this4 = this;
 
-      return Promise.resolve(_this5.internals.worker.getChangedDocumentsSince(_this5.internals.instanceId, limit, checkpoint));
+      return Promise.resolve(_this4.internals.worker.getChangedDocumentsSince(_this4.internals.instanceId, limit, checkpoint));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -146,20 +146,20 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
 
   _proto2.close = function close() {
     try {
-      var _this7 = this;
+      var _this6 = this;
 
-      if (_this7.closed) {
+      if (_this6.closed) {
         return Promise.resolve();
       }
 
-      _this7.closed = true;
+      _this6.closed = true;
 
-      _this7.subs.forEach(function (sub) {
+      _this6.subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
 
-      return Promise.resolve(_this7.internals.worker.close(_this7.internals.instanceId)).then(function () {
-        return Promise.resolve(removeWorkerRef(_this7)).then(function () {});
+      return Promise.resolve(_this6.internals.worker.close(_this6.internals.instanceId)).then(function () {
+        return Promise.resolve(removeWorkerRef(_this6)).then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);
@@ -168,15 +168,23 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
 
   _proto2.remove = function remove() {
     try {
-      var _this9 = this;
+      var _this8 = this;
 
-      return Promise.resolve(_this9.internals.worker.remove(_this9.internals.instanceId)).then(function () {
-        _this9.closed = true;
-        return Promise.resolve(removeWorkerRef(_this9)).then(function () {});
+      return Promise.resolve(_this8.internals.worker.remove(_this8.internals.instanceId)).then(function () {
+        _this8.closed = true;
+        return Promise.resolve(removeWorkerRef(_this8)).then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);
     }
+  };
+
+  _proto2.conflictResultionTasks = function conflictResultionTasks() {
+    return new _rxjs.Subject();
+  };
+
+  _proto2.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
+    return Promise.resolve();
   };
 
   return RxStorageInstanceWorker;

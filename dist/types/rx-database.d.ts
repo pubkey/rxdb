@@ -95,7 +95,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * So it must be as fast as possible.
      */
     addCollections<CreatedCollections = Partial<Collections>>(collectionCreators: {
-        [key in keyof CreatedCollections]: RxCollectionCreator;
+        [key in keyof CreatedCollections]: RxCollectionCreator<any>;
     }): Promise<{
         [key in keyof CreatedCollections]: RxCollection;
     }>;

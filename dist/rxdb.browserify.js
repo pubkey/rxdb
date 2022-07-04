@@ -3359,6 +3359,14 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     }
   };
 
+  _proto.conflictResultionTasks = function conflictResultionTasks() {
+    return new _rxjs.Subject();
+  };
+
+  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
+    return Promise.resolve();
+  };
+
   return RxStorageInstancePouch;
 }();
 
@@ -4116,6 +4124,8 @@ var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
 
 var _rxStorageHelper = require("./rx-storage-helper");
 
+var _rxStorageReplication = require("./rx-storage-replication");
+
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
@@ -4132,6 +4142,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     var options = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
     var cacheReplacementPolicy = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : _queryCache.defaultCacheReplacementPolicy;
     var statics = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : {};
+    var conflictHandler = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : _rxStorageReplication.defaultConflictHandler;
     this.storageInstance = {};
     this.timeouts = new Set();
     this.destroyed = false;
@@ -4154,6 +4165,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this.options = options;
     this.cacheReplacementPolicy = cacheReplacementPolicy;
     this.statics = statics;
+    this.conflictHandler = conflictHandler;
 
     _applyHookFunctions(this.asRxCollection);
   }
@@ -4210,6 +4222,20 @@ var RxCollectionBase = /*#__PURE__*/function () {
           if (doc) {
             doc._handleChangeEvent(cE);
           }
+        }));
+        /**
+         * Resolve the conflict tasks
+         * of the RxStorageInstance
+         */
+
+
+        _this2._subs.push(_this2.storageInstance.conflictResultionTasks().subscribe(function (task) {
+          _this2.conflictHandler(task.input, task.context).then(function (output) {
+            _this2.storageInstance.resolveConflictResultionTask({
+              id: task.id,
+              output: output
+            });
+          });
         }));
 
         return _util.PROMISE_RESOLVE_VOID;
@@ -5068,7 +5094,9 @@ function createRxCollection(_ref2) {
       _ref2$localDocuments = _ref2.localDocuments,
       localDocuments = _ref2$localDocuments === void 0 ? false : _ref2$localDocuments,
       _ref2$cacheReplacemen = _ref2.cacheReplacementPolicy,
-      cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref2$cacheReplacemen;
+      cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref2$cacheReplacemen,
+      _ref2$conflictHandler = _ref2.conflictHandler,
+      conflictHandler = _ref2$conflictHandler === void 0 ? _rxStorageReplication.defaultConflictHandler : _ref2$conflictHandler;
   var storageInstanceCreationParams = {
     databaseInstanceToken: database.token,
     databaseName: database.name,
@@ -5079,7 +5107,7 @@ function createRxCollection(_ref2) {
   };
   (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
   return (0, _rxCollectionHelper.createRxCollectionStorageInstance)(database, storageInstanceCreationParams).then(function (storageInstance) {
-    var collection = new RxCollectionBase(database, name, schema, storageInstance, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
+    var collection = new RxCollectionBase(database, name, schema, storageInstance, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics, conflictHandler);
     return collection.prepare().then(function () {
       // ORM add statics
       Object.entries(statics).forEach(function (_ref3) {
@@ -5133,7 +5161,7 @@ function isRxCollection(obj) {
   return obj instanceof RxCollectionBase;
 }
 
-},{"./change-event-buffer":2,"./doc-cache":4,"./hooks":6,"./query-cache":18,"./rx-collection-helper":21,"./rx-document":26,"./rx-document-prototype-merge":25,"./rx-error":27,"./rx-query":29,"./rx-storage-helper":32,"./util":38,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45,"rxjs/operators":674}],23:[function(require,module,exports){
+},{"./change-event-buffer":2,"./doc-cache":4,"./hooks":6,"./query-cache":18,"./rx-collection-helper":21,"./rx-document":26,"./rx-document-prototype-merge":25,"./rx-error":27,"./rx-query":29,"./rx-storage-helper":32,"./rx-storage-replication":34,"./util":38,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45,"rxjs/operators":674}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9092,6 +9120,47 @@ rxJsonSchema) {
         };
         return ret;
       }));
+    },
+    conflictResultionTasks: function conflictResultionTasks() {
+      return storageInstance.conflictResultionTasks().pipe((0, _operators.map)(function (task) {
+        var assumedMasterState = task.input.assumedMasterState ? transformDocumentDataFromRxStorageToRxDB(task.input.assumedMasterState) : undefined;
+        var newDocumentState = transformDocumentDataFromRxStorageToRxDB(task.input.newDocumentState);
+        var realMasterState = transformDocumentDataFromRxStorageToRxDB(task.input.realMasterState);
+        return {
+          id: task.id,
+          context: task.context,
+          input: {
+            assumedMasterState: assumedMasterState,
+            realMasterState: realMasterState,
+            newDocumentState: newDocumentState
+          }
+        };
+      }));
+    },
+    resolveConflictResultionTask: function resolveConflictResultionTask(taskSolution) {
+      var hookParams = {
+        database: database,
+        primaryPath: primaryPath,
+        schema: rxJsonSchema,
+        doc: Object.assign({}, taskSolution.output.documentData, {
+          _meta: (0, _util.getDefaultRxDocumentMeta)(),
+          _rev: (0, _util.getDefaultRevision)(),
+          _attachments: {}
+        })
+      };
+      hookParams.doc._rev = (0, _util.createRevision)(hookParams.doc);
+      (0, _hooks.runPluginHooks)('preWriteToStorageInstance', hookParams);
+      var postHookDocData = hookParams.doc;
+      var documentData = (0, _util.flatClone)(postHookDocData);
+      delete documentData._meta;
+      delete documentData._rev;
+      delete documentData._attachments;
+      return storageInstance.resolveConflictResultionTask({
+        id: taskSolution.id,
+        output: {
+          documentData: documentData
+        }
+      });
     }
   };
   return ret;
@@ -9279,7 +9348,7 @@ providedBroadcastChannel) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAssumedMasterState = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = exports.RX_REPLICATION_META_INSTANCE_SCHEMA = void 0;
+exports.getAssumedMasterState = exports.defaultConflictHandler = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = exports.RX_REPLICATION_META_INSTANCE_SCHEMA = void 0;
 exports.getCheckpointKey = getCheckpointKey;
 exports.getLastCheckpointDoc = void 0;
 exports.getMetaWriteRow = getMetaWriteRow;
@@ -9651,8 +9720,16 @@ var resolveConflictError = function resolveConflictError(conflictHandler, error)
         assumedMasterState: error.writeRow.previous,
         newDocumentState: error.writeRow.document,
         realMasterState: documentInDb
-      })).then(function (resolved) {
-        var resolvedDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(resolved.resolvedDocumentState);
+      }, 'rx-storage-replication')).then(function (conflictHandlerOutput) {
+        var resolvedDoc = Object.assign({}, conflictHandlerOutput.documentData, {
+          /**
+           * Because the resolved conflict is written to the fork,
+           * we have to keep/update the forks _meta data, not the masters.
+           */
+          _meta: (0, _util.flatClone)(error.writeRow.document._meta),
+          _rev: (0, _util.getDefaultRevision)(),
+          _attachments: (0, _util.flatClone)(error.writeRow.document._attachments)
+        });
         resolvedDoc._meta.lwt = (0, _util.now)();
         resolvedDoc._rev = (0, _util.createRevision)(resolvedDoc, error.writeRow.document);
         return resolvedDoc;
@@ -10208,6 +10285,22 @@ function getMetaWriteRow(state, newMasterDocState, previous) {
     document: newMeta
   };
 }
+
+var defaultConflictHandler = function defaultConflictHandler(i, _context) {
+  try {
+    /**
+     * The default conflict handler will always
+     * drop the fork state and use the master state instead.
+     */
+    return Promise.resolve({
+      documentData: i.assumedMasterState
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.defaultConflictHandler = defaultConflictHandler;
 
 },{"./rx-schema-helper":30,"./rx-storage-helper":32,"./util":38,"rxjs":449}],35:[function(require,module,exports){
 "use strict";

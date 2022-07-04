@@ -58,6 +58,14 @@ export function wrappedWorkerRxStorage(args) {
     remove: function remove(instanceId) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
       return instance.remove();
+    },
+    conflictResultionTasks: function conflictResultionTasks(instanceId) {
+      var instance = getFromMapOrThrow(instanceById, instanceId);
+      return instance.conflictResultionTasks();
+    },
+    resolveConflictResultionTask: function resolveConflictResultionTask(instanceId, taskSolution) {
+      var instance = getFromMapOrThrow(instanceById, instanceId);
+      return instance.resolveConflictResultionTask(taskSolution);
     }
   };
   expose(exposeMe);

@@ -51,3 +51,4 @@ export declare function getAssumedMasterState<RxDocType>(state: RxStorageInstanc
     };
 }>;
 export declare function getMetaWriteRow<RxDocType>(state: RxStorageInstanceReplicationState<RxDocType>, newMasterDocState: RxDocumentData<RxDocType>, previous?: RxDocumentData<RxStorageReplicationMeta>): BulkWriteRow<RxStorageReplicationMeta>;
+export declare const defaultConflictHandler: RxConflictHandler<any>;

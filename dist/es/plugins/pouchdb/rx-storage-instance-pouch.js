@@ -594,6 +594,14 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
     }
   };
 
+  _proto.conflictResultionTasks = function conflictResultionTasks() {
+    return new Subject();
+  };
+
+  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
+    return Promise.resolve();
+  };
+
   return RxStorageInstancePouch;
 }();
 //# sourceMappingURL=rx-storage-instance-pouch.js.map

@@ -6,7 +6,7 @@ import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { firstPropertyValueOfObject, flatClone, now, parseRevision, randomCouchString } from './util';
+import { createRevision, firstPropertyValueOfObject, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, parseRevision, randomCouchString } from './util';
 
 /**
  * Writes a single document,
@@ -653,6 +653,47 @@ rxJsonSchema) {
         };
         return ret;
       }));
+    },
+    conflictResultionTasks: function conflictResultionTasks() {
+      return storageInstance.conflictResultionTasks().pipe(map(function (task) {
+        var assumedMasterState = task.input.assumedMasterState ? transformDocumentDataFromRxStorageToRxDB(task.input.assumedMasterState) : undefined;
+        var newDocumentState = transformDocumentDataFromRxStorageToRxDB(task.input.newDocumentState);
+        var realMasterState = transformDocumentDataFromRxStorageToRxDB(task.input.realMasterState);
+        return {
+          id: task.id,
+          context: task.context,
+          input: {
+            assumedMasterState: assumedMasterState,
+            realMasterState: realMasterState,
+            newDocumentState: newDocumentState
+          }
+        };
+      }));
+    },
+    resolveConflictResultionTask: function resolveConflictResultionTask(taskSolution) {
+      var hookParams = {
+        database: database,
+        primaryPath: primaryPath,
+        schema: rxJsonSchema,
+        doc: Object.assign({}, taskSolution.output.documentData, {
+          _meta: getDefaultRxDocumentMeta(),
+          _rev: getDefaultRevision(),
+          _attachments: {}
+        })
+      };
+      hookParams.doc._rev = createRevision(hookParams.doc);
+      runPluginHooks('preWriteToStorageInstance', hookParams);
+      var postHookDocData = hookParams.doc;
+      var documentData = flatClone(postHookDocData);
+      delete documentData._meta;
+      delete documentData._rev;
+      delete documentData._attachments;
+      return storageInstance.resolveConflictResultionTask({
+        id: taskSolution.id,
+        output: {
+          documentData: documentData
+        }
+      });
     }
   };
   return ret;

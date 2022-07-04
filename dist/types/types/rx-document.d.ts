@@ -23,9 +23,6 @@ declare type AtomicUpdateFunction<RxDocumentType> = (
 
 /**
  * Meta data that is attached to each document by RxDB.
- * TODO in the next major release,
- * we should move the other meta fields
- * _rev, _deleted, _attachments into this property.
  */
 export type RxDocumentMeta = {
     /**

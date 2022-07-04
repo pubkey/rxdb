@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAssumedMasterState = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = exports.RX_REPLICATION_META_INSTANCE_SCHEMA = void 0;
+exports.getAssumedMasterState = exports.defaultConflictHandler = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = exports.RX_REPLICATION_META_INSTANCE_SCHEMA = void 0;
 exports.getCheckpointKey = getCheckpointKey;
 exports.getLastCheckpointDoc = void 0;
 exports.getMetaWriteRow = getMetaWriteRow;
@@ -375,8 +375,16 @@ var resolveConflictError = function resolveConflictError(conflictHandler, error)
         assumedMasterState: error.writeRow.previous,
         newDocumentState: error.writeRow.document,
         realMasterState: documentInDb
-      })).then(function (resolved) {
-        var resolvedDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(resolved.resolvedDocumentState);
+      }, 'rx-storage-replication')).then(function (conflictHandlerOutput) {
+        var resolvedDoc = Object.assign({}, conflictHandlerOutput.documentData, {
+          /**
+           * Because the resolved conflict is written to the fork,
+           * we have to keep/update the forks _meta data, not the masters.
+           */
+          _meta: (0, _util.flatClone)(error.writeRow.document._meta),
+          _rev: (0, _util.getDefaultRevision)(),
+          _attachments: (0, _util.flatClone)(error.writeRow.document._attachments)
+        });
         resolvedDoc._meta.lwt = (0, _util.now)();
         resolvedDoc._rev = (0, _util.createRevision)(resolvedDoc, error.writeRow.document);
         return resolvedDoc;
@@ -932,4 +940,20 @@ function getMetaWriteRow(state, newMasterDocState, previous) {
     document: newMeta
   };
 }
+
+var defaultConflictHandler = function defaultConflictHandler(i, _context) {
+  try {
+    /**
+     * The default conflict handler will always
+     * drop the fork state and use the master state instead.
+     */
+    return Promise.resolve({
+      documentData: i.assumedMasterState
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.defaultConflictHandler = defaultConflictHandler;
 //# sourceMappingURL=rx-storage-replication.js.map
