@@ -66,13 +66,11 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
         const ageB = docB.age ? docB.age : 0;
         if (ageA > ageB) {
             return {
-                documentData: docA,
-                deleted: docA._deleted
+                documentData: docA
             };
         } else if (ageB > ageA) {
             return {
-                documentData: docB,
-                deleted: docB._deleted
+                documentData: docB
             };
         } else {
             console.error('EQUAL AGE (' + ageA + ') !!!');
