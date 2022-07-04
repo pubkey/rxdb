@@ -20,7 +20,7 @@ import type {
     RxConflictResultionTask,
     RxConflictResultionTaskSolution
 } from '../../types';
-import { getFromMapOrThrow } from '../../util';
+import { ensureNotFalsy, getFromMapOrThrow } from '../../util';
 import { InWorkerStorage } from './in-worker';
 
 declare type WorkerStorageInternals = {
@@ -43,6 +43,10 @@ const WORKER_BY_INSTANCE: Map<RxStorageWorker, {
     workerPromise: Promise<InWorkerStorage<any>>;
     refs: Set<RxStorageInstanceWorker<any>>;
 }> = new Map();
+
+
+let x = 0;
+
 export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
     public name = 'worker';
 
@@ -51,11 +55,9 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
         public readonly statics: RxStorageStatics
     ) { }
 
-    async createStorageInstance<RxDocType>(
+    createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, any>
     ): Promise<RxStorageInstanceWorker<RxDocType>> {
-
-
         let workerState = WORKER_BY_INSTANCE.get(this);
         if (!workerState) {
             workerState = {
@@ -65,24 +67,25 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
             WORKER_BY_INSTANCE.set(this, workerState);
         }
 
-
-        const worker = await workerState.workerPromise;
-        const instanceId = await worker.createStorageInstance(params);
-        const instance = new RxStorageInstanceWorker(
-            this,
-            params.databaseName,
-            params.collectionName,
-            params.schema,
-            {
-                rxStorage: this,
-                instanceId,
-                worker
-            },
-            params.options
-        );
-        workerState.refs.add(instance);
-
-        return instance;
+        return workerState.workerPromise.then(worker => {
+            return worker.createStorageInstance(params)
+                .then(instanceId => {
+                    const instance = new RxStorageInstanceWorker(
+                        this,
+                        params.databaseName,
+                        params.collectionName,
+                        params.schema,
+                        {
+                            rxStorage: this,
+                            instanceId,
+                            worker
+                        },
+                        params.options
+                    );
+                    ensureNotFalsy(workerState).refs.add(instance);
+                    return instance;
+                });
+        });
     }
 }
 
