@@ -45,6 +45,7 @@
     "// test:fast:loop": "runs tests in the fast-mode in a loop. Use this to debug tests that only fail sometimes",
     "test:fast:loop": "npm run test:fast && npm run test:fast:loop",
     "test:fast:loop:lokijs": "npm run test:fast:lokijs && npm run test:fast:loop:lokijs",
+    "test:fast:loop:dexie-worker": "npm run test:fast:dexie-worker && npm run test:fast:loop:dexie-worker",
     "test:node": "npm run test:node:pouchdb && npm run test:node:lokijs && npm run test:node:dexie",
     "test:node:pouchdb": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
