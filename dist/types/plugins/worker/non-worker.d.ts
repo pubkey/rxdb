@@ -1,10 +1,10 @@
 import { Observable } from 'rxjs';
-import type { RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageInstance, BulkWriteRow, RxDocumentData, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageQueryResult, EventBulk, RxStorageStatics, RxDocumentDataById } from '../../types';
+import type { RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageInstance, BulkWriteRow, RxDocumentData, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageQueryResult, EventBulk, RxStorageStatics, RxDocumentDataById, RxConflictResultionTask, RxConflictResultionTaskSolution } from '../../types';
 import { InWorkerStorage } from './in-worker';
 declare type WorkerStorageInternals = {
     rxStorage: RxStorageWorker;
     instanceId: number;
-    worker: InWorkerStorage;
+    worker: InWorkerStorage<any>;
 };
 declare type RxStorageWorkerSettings = {
     statics: RxStorageStatics;
@@ -29,6 +29,7 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
      * so we have to transform it.
      */
     private changes$;
+    private conflicts$;
     private subs;
     private closed;
     constructor(storage: RxStorageWorker, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: WorkerStorageInternals, options: Readonly<any>);
@@ -44,6 +45,8 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
     cleanup(minDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;
     remove(): Promise<void>;
+    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
+    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
 export declare function getRxStorageWorker(settings: RxStorageWorkerSettings): RxStorageWorker;
 export declare function removeWorkerRef(instance: RxStorageInstanceWorker<any>): Promise<void>;

@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, PouchChangedDocumentsSinceCheckpoint, PouchSettings, PreparedQuery, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
+import type { BulkWriteRow, EventBulk, PouchChangedDocumentsSinceCheckpoint, PouchSettings, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
 import { PouchStorageInternals } from './pouchdb-helper';
 export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<RxDocType, PouchStorageInternals, PouchSettings> {
     readonly storage: RxStorage<PouchStorageInternals, PouchSettings>;
@@ -30,4 +30,6 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
         document: RxDocumentData<RxDocType>;
         checkpoint: PouchChangedDocumentsSinceCheckpoint;
     }[]>;
+    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
+    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }

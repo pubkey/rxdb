@@ -415,6 +415,14 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     }
   };
 
+  _proto.conflictResultionTasks = function conflictResultionTasks() {
+    return new _rxjs.Subject();
+  };
+
+  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
+    return Promise.resolve();
+  };
+
   return RxStorageInstanceLoki;
 }();
 

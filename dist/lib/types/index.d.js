@@ -173,6 +173,19 @@ Object.keys(_rxStorageReplication).forEach(function (key) {
   });
 });
 
+var _conflictHandling = require("./conflict-handling");
+
+Object.keys(_conflictHandling).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _conflictHandling[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _conflictHandling[key];
+    }
+  });
+});
+
 var _rxChangeEvent = require("./rx-change-event");
 
 Object.keys(_rxChangeEvent).forEach(function (key) {

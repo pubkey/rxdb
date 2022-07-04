@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk, LokiChangesCheckpoint, StringKeys, RxDocumentDataById } from '../../types';
+import type { RxStorageInstance, LokiSettings, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, MangoQuery, LokiStorageInternals, RxStorageInstanceCreationParams, LokiDatabaseSettings, LokiLocalDatabaseState, EventBulk, LokiChangesCheckpoint, StringKeys, RxDocumentDataById, RxConflictResultionTask, RxConflictResultionTaskSolution } from '../../types';
 import type { RxStorageLoki } from './rx-storage-lokijs';
 export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<RxDocType, LokiStorageInternals, LokiSettings> {
     readonly databaseInstanceToken: string;
@@ -28,6 +28,8 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;
     remove(): Promise<void>;
+    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
+    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
 export declare function createLokiLocalState<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>, databaseSettings: LokiDatabaseSettings): Promise<LokiLocalDatabaseState>;
 export declare function createLokiStorageInstance<RxDocType>(storage: RxStorageLoki, params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>, databaseSettings: LokiDatabaseSettings): Promise<RxStorageInstanceLoki<RxDocType>>;

@@ -37,7 +37,8 @@ var createMemoryStorageInstance = function createMemoryStorageInstance(storage, 
         refCount: 1,
         documents: new Map(),
         attachments: params.schema.attachments ? new Map() : undefined,
-        byIndex: {}
+        byIndex: {},
+        conflictResultionTasks$: new _rxjs.Subject()
       };
       (0, _memoryIndexes.addIndexesToInternalsState)(_internals, params.schema);
       storage.collectionStates.set(collectionKey, _internals);
@@ -318,6 +319,14 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
+  };
+
+  _proto.conflictResultionTasks = function conflictResultionTasks() {
+    return this.internals.conflictResultionTasks$.asObservable();
+  };
+
+  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
+    return _util.PROMISE_RESOLVE_VOID;
   };
 
   return RxStorageInstanceMemory;

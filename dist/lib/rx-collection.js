@@ -35,6 +35,8 @@ var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
 
 var _rxStorageHelper = require("./rx-storage-helper");
 
+var _rxStorageReplication = require("./rx-storage-replication");
+
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
@@ -51,6 +53,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     var options = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
     var cacheReplacementPolicy = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : _queryCache.defaultCacheReplacementPolicy;
     var statics = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : {};
+    var conflictHandler = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : _rxStorageReplication.defaultConflictHandler;
     this.storageInstance = {};
     this.timeouts = new Set();
     this.destroyed = false;
@@ -73,6 +76,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this.options = options;
     this.cacheReplacementPolicy = cacheReplacementPolicy;
     this.statics = statics;
+    this.conflictHandler = conflictHandler;
 
     _applyHookFunctions(this.asRxCollection);
   }
@@ -129,6 +133,20 @@ var RxCollectionBase = /*#__PURE__*/function () {
           if (doc) {
             doc._handleChangeEvent(cE);
           }
+        }));
+        /**
+         * Resolve the conflict tasks
+         * of the RxStorageInstance
+         */
+
+
+        _this2._subs.push(_this2.storageInstance.conflictResultionTasks().subscribe(function (task) {
+          _this2.conflictHandler(task.input, task.context).then(function (output) {
+            _this2.storageInstance.resolveConflictResultionTask({
+              id: task.id,
+              output: output
+            });
+          });
         }));
 
         return _util.PROMISE_RESOLVE_VOID;
@@ -987,7 +1005,9 @@ function createRxCollection(_ref2) {
       _ref2$localDocuments = _ref2.localDocuments,
       localDocuments = _ref2$localDocuments === void 0 ? false : _ref2$localDocuments,
       _ref2$cacheReplacemen = _ref2.cacheReplacementPolicy,
-      cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref2$cacheReplacemen;
+      cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref2$cacheReplacemen,
+      _ref2$conflictHandler = _ref2.conflictHandler,
+      conflictHandler = _ref2$conflictHandler === void 0 ? _rxStorageReplication.defaultConflictHandler : _ref2$conflictHandler;
   var storageInstanceCreationParams = {
     databaseInstanceToken: database.token,
     databaseName: database.name,
@@ -998,7 +1018,7 @@ function createRxCollection(_ref2) {
   };
   (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
   return (0, _rxCollectionHelper.createRxCollectionStorageInstance)(database, storageInstanceCreationParams).then(function (storageInstance) {
-    var collection = new RxCollectionBase(database, name, schema, storageInstance, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics);
+    var collection = new RxCollectionBase(database, name, schema, storageInstance, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics, conflictHandler);
     return collection.prepare().then(function () {
       // ORM add statics
       Object.entries(statics).forEach(function (_ref3) {

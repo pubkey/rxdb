@@ -3,7 +3,7 @@ import { DocCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
 import { Subscription, Observable } from 'rxjs';
-import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase } from './types';
+import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler } from './types';
 import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
 export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = {
@@ -22,12 +22,13 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     options: any;
     cacheReplacementPolicy: RxCacheReplacementPolicy;
     statics: KeyFunctionMap;
+    conflictHandler: RxConflictHandler<RxDocumentType>;
     /**
      * Stores all 'normal' documents
      */
     storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
     readonly timeouts: Set<ReturnType<typeof setTimeout>>;
-    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap);
+    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap, conflictHandler?: RxConflictHandler<RxDocumentType>);
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
     get remove$(): Observable<RxChangeEventDelete<RxDocumentType>>;
@@ -136,5 +137,5 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
 /**
  * creates and prepares a new collection
  */
-export declare function createRxCollection({ database, name, schema, instanceCreationOptions, migrationStrategies, autoMigrate, statics, methods, attachments, options, localDocuments, cacheReplacementPolicy }: any): Promise<RxCollection>;
+export declare function createRxCollection({ database, name, schema, instanceCreationOptions, migrationStrategies, autoMigrate, statics, methods, attachments, options, localDocuments, cacheReplacementPolicy, conflictHandler }: any): Promise<RxCollection>;
 export declare function isRxCollection(obj: any): boolean;

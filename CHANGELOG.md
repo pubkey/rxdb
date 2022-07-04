@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Add conflict handling to RxCollection.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.6.9 (4 July 2022)
+
+- Add conflict handling to RxCollection.
 
 ### 12.6.8 (2 July 2022)
 

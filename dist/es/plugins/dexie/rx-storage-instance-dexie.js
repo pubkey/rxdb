@@ -392,6 +392,14 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
     }
   };
 
+  _proto.conflictResultionTasks = function conflictResultionTasks() {
+    return new Subject();
+  };
+
+  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
+    return Promise.resolve();
+  };
+
   return RxStorageInstanceDexie;
 }();
 //# sourceMappingURL=rx-storage-instance-dexie.js.map

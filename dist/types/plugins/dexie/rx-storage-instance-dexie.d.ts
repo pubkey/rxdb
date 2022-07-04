@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, RxStorageInstanceCreationParams, EventBulk, DexieChangesCheckpoint, StringKeys, RxDocumentDataById } from '../../types';
+import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, RxStorageInstanceCreationParams, EventBulk, DexieChangesCheckpoint, StringKeys, RxDocumentDataById, RxConflictResultionTask, RxConflictResultionTaskSolution } from '../../types';
 import { DexiePreparedQuery, DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageDexie } from './rx-storage-dexie';
 export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<RxDocType, DexieStorageInternals, DexieSettings> {
@@ -27,5 +27,7 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
     close(): Promise<void>;
+    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
+    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
 export declare function createDexieStorageInstance<RxDocType>(storage: RxStorageDexie, params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>, settings: DexieSettings): Promise<RxStorageInstanceDexie<RxDocType>>;

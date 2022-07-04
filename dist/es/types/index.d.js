@@ -11,6 +11,7 @@ export * from './rx-schema';
 export * from './rx-storage';
 export * from './rx-storage.interface';
 export * from './rx-storage-replication';
+export * from './conflict-handling';
 export * from './rx-change-event';
 export * from './query-planner';
 export * from './util'; // plugins

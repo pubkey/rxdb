@@ -394,6 +394,14 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     }
   };
 
+  _proto.conflictResultionTasks = function conflictResultionTasks() {
+    return new Subject();
+  };
+
+  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
+    return Promise.resolve();
+  };
+
   return RxStorageInstanceLoki;
 }();
 //# sourceMappingURL=rx-storage-instance-loki.js.map
