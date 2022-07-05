@@ -128,6 +128,8 @@
 
 * [RxStorage Worker](./rx-storage-worker.md)
 
+* [RxStorage Memory Synced](./rx-storage-memory-synced.md)
+
 * [RxStorage Sharding](./rx-storage-sharding.md)
 
 * [Replication CouchDB](./replication-couchdb.md)

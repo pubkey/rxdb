@@ -20,7 +20,7 @@ It stores the data inside of a browsers IndexedDB database and has a very small 
 
 ### Memory
 
-A plain in-memory storage. Really fast and can be used in all environments. [Read more](./rx-storage-memory.md)
+A storage that stores the data in as plain data in the memory of the JavaScript process. Really fast and can be used in all environments. [Read more](./rx-storage-memory.md)
 
 ### IndexedDB
 
@@ -38,7 +38,10 @@ The worker RxStorage is a wrapper around any other RxStorage which allows to run
 
 On some `RxStorage` implementations (like IndexedDB), a huge performance improvement can be done by sharding the documents into multiple database instances. With the sharding plugin you can wrap any other `RxStorage` into a sharded storage. [Read more](./rx-storage-sharding.md)
 
+### Memory Synced
 
+The memory synced [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlaying storage for persistence.
+The main reason to use this is to improve initial page load and query/write times. This is mostly usefull in browser based applications. [Read more](./rx-storage-memory-synced.md)
 
 
 
@@ -48,7 +51,7 @@ A big difference in the RxStorage implementations is the performance. In differe
 
 **LokiJS** stores all data in memory and only saves to disc occasionally (or on exit). Therefore it has a very fast read/write performance, but loading all data into memory on the first page load can take longer for big amounts of documents. Also this storage can only be used when all data fits into the memory at least once.
 
-The Premium **sharding** RxStorage is only usefull when bug amounts of documents have to be stored or queries. In the CI performance test, we only insert 300 documents so that the performance actually decreases when sharding is used.
+The Premium **sharding** RxStorage is only usefull when big amounts of documents have to be stored or queries. In the CI performance test, we only insert 300 documents so that the performance actually decreases when sharding is used.
 
 The **PouchDB** RxStorage is slow because it has to handle all revisions of a document on writes and queries. This makes PouchDB the only storage where it is possible to replicate with a CouchDB compatible endpoint.
 

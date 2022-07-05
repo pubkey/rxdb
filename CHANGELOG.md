@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- Add the [Memory Synced RxStorage](https://rxdb.info/rx-storage-memory-synced.html) to the premium plugins.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
