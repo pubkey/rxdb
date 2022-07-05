@@ -10293,7 +10293,7 @@ var defaultConflictHandler = function defaultConflictHandler(i, _context) {
      * drop the fork state and use the master state instead.
      */
     return Promise.resolve({
-      documentData: i.assumedMasterState
+      documentData: i.realMasterState
     });
   } catch (e) {
     return Promise.reject(e);

@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 12.6.10 (5 July 2022)
+
 ### 12.6.9 (4 July 2022)
 
 - Add conflict handling to RxCollection.
