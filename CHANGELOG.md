@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Add the [Memory Synced RxStorage](https://rxdb.info/rx-storage-memory-synced.html) to the premium plugins.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.6.11 (5 July 2022)
+
+- Add the [Memory Synced RxStorage](https://rxdb.info/rx-storage-memory-synced.html) to the premium plugins.
 
 ### 12.6.10 (5 July 2022)
 

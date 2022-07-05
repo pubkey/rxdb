@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>LeaderElection · RxDB - Documentation</title>
+        <title>RxStorage Memory Synced · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-storage.html" />
+    <link rel="next" href="rx-storage-sharding.html" />
     
     
-    <link rel="prev" href="data-migration.html" />
+    <link rel="prev" href="rx-storage-worker.html" />
     
 
     </head>
@@ -1438,7 +1438,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.16" data-path="leader-election.html">
+        <li class="chapter " data-level="1.16" data-path="leader-election.html">
             
                 <a href="leader-election.html">
             
@@ -1568,7 +1568,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="rx-storage-memory-synced.html">
+        <li class="chapter active" data-level="1.26" data-path="rx-storage-memory-synced.html">
             
                 <a href="rx-storage-memory-synced.html">
             
@@ -1942,7 +1942,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >LeaderElection</a>
+        <a href="." >RxStorage Memory Synced</a>
     </h1>
 </div>
 
@@ -1957,72 +1957,84 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="leader-election">Leader-Election</h1>
-<p>RxDB comes with a leader-election which elects a leading instance between different instances in the same javascript runtime.
-Before you read this, please check out on how many of your open browser-tabs you have opened the same website more than once. Count them, I will wait..</p>
-<p>So if you would now inspect the traffic that theses open tabs produce, you can see that many of them send exact the same data over wire for every tab. No matter if the data is sent with an open websocket or by polling.</p>
-<h2 id="use-case-example">Use-case-example</h2>
-<p>Imagine we have a website which displays the current temperature of the visitors location in various charts, numbers or heatmaps. To always display the live-data, the website opens a websocket to our API-Server which sends the current temperature every 10 seconds. Using the way most sites are currently build, we can now open it in 5 browser-tabs and it will open 5 websockets which send data 6*5=30 times per minute. This will not only waste the power of your clients device, but also wastes your api-servers resources by opening redundant connections.</p>
-<h2 id="solution">Solution</h2>
-<p>The solution to this redundancy is the usage of a <a href="https://en.wikipedia.org/wiki/Leader_election" target="_blank">leader-election</a>-algorithm which makes sure that always exactly one tab is managing the remote-data-access. The managing tab is the elected leader and stays leader until it is closed. No matter how many tabs are opened or closed, there must be always exactly <strong>one</strong> leader.
-You could now start implementing a messaging-system between your browser-tabs, hand out which one is leader, solve conflicts and reassign a new leader when the old one &apos;dies&apos;.
-Or just use RxDB which does all these things for you.</p>
-<h2 id="add-the-leader-election-plugin">Add the leader election plugin</h2>
-<p>To enable the leader election, you have to add the <code>leader-election</code> plugin.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { addRxPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { RxDBLeaderElectionPlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/leader-election&apos;</span>;
-addRxPlugin(RxDBLeaderElectionPlugin);
-</code></pre>
-<h2 id="code-example">Code-example</h2>
-<p>To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab becomes the leader.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> createRxDatabase({
-  name: <span class="hljs-string">&apos;weatherDB&apos;</span>,
-  storage: getRxStoragePouch(<span class="hljs-string">&apos;idb&apos;</span>),
-  password: <span class="hljs-string">&apos;myPassword&apos;</span>,
-  multiInstance: <span class="hljs-literal">true</span>
-});
-<span class="hljs-keyword">await</span> db.addCollections({
-  temperature: {
-    schema: mySchema
-  }
+                                <h1 id="memory-synced-rxstorage">Memory Synced RxStorage</h1>
+<p>The memory synced <a href="rx-storage.html">RxStorage</a> is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlaying storage for persistence.
+The main reason to use this is to improve initial page load and query/write times. This is mostly usefull in browser based applications.</p>
+<h2 id="pros">Pros</h2>
+<ul>
+<li>Improves read/write performance because these operations run against the in-memory storage.</li>
+<li>Decreases initial page load because it load all data in a single bulk request. It even detects if the datbase is used for the first time and then it does not have to await the creation of the persistend storage.</li>
+</ul>
+<h2 id="cons">Cons</h2>
+<ul>
+<li>It does not support attachments.</li>
+<li>When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage.</li>
+<li>This can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.</li>
+<li>Because it has to await an initial replication from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less then <code>10k</code> documents.</li>
+</ul>
+<p><strong>NOTICE:</strong> The sharding plugin is part of <a href="premium.html">RxDB premium</a>. It is not part of the default RxDB module.</p>
+<h2 id="usage">Usage</h2>
+<pre><code class="lang-ts">import {
+    getRxStorageIndexedDB
+} from &apos;rxdb-premium/plugins/indexeddb&apos;;
+import {
+    getMemorySyncedRxStorage
+} from &apos;rxdb-premium/plugins/memory-synced&apos;;
+
+/**
+ * Here we use the IndexedDB RxStorage as persistence storage.
+ * Any other RxStorage can also be used.
+ */
+const parentStorage = getRxStorageIndexedDB();
+
+// wrap the persistend storage with the memory synced one.
+const storage = getMemorySyncedRxStorage({
+    storage: parentStorage
 });
 
-db.waitForLeadership()
-  .then(() =&gt; {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;Long lives the king!&apos;</span>); <span class="hljs-comment">// &lt;- runs when db becomes leader</span>
-    setInterval(<span class="hljs-keyword">async</span> () =&gt; {
-      <span class="hljs-keyword">const</span> temp = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">&apos;https://example.com/api/temp/&apos;</span>);
-      db.temperature.insert({
-          degrees: temp,
-          time: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime()
-      });
-    }, <span class="hljs-number">1000</span> * <span class="hljs-number">10</span>);
-  });
+// create the RxDatabase like you would do with any other RxStorage
+const db = await createRxDatabase({
+    name: &apos;myDatabase,
+    storage,
+});
+/** ... **/
 </code></pre>
-<h2 id="handle-duplicate-leaders">Handle Duplicate Leaders</h2>
-<p>On rare occassions, it can happen that <a href="https://github.com/pubkey/broadcast-channel/blob/master/.github/README.md#handle-duplicate-leaders" target="_blank">more then one leader</a> is elected. This can happen when the CPU is on 100% or for any other reason the JavaScript process is fully blocked for a long time.
-For most cases this is not really problem because on duplicate leaders, both browser tabs replicate with the same backend anyways.
-To handle the duplicate leader event, you can access the leader elector and set a handler:</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
-    getLeaderElectorByBroadcastChannel
-} from <span class="hljs-string">&apos;rxdb/plugins/leader-election&apos;</span>;
+<h2 id="options">Options</h2>
+<p>Some options can be provided to fine tune the performance.</p>
+<pre><code class="lang-ts">
+<span class="hljs-keyword">import</span> {
+    requestIdlePromise
+} from <span class="hljs-string">&apos;rxdb&apos;</span>;
 
-<span class="hljs-keyword">const</span> leaderElector = getLeaderElectorByBroadcastChannel(broadcastChannel);
-leaderElector.onduplicate = async () =&gt; {
-    <span class="hljs-comment">// Duplicate leader detected -&gt; reload the page.</span>
-    location.reload();
-}
+<span class="hljs-keyword">const</span> storage = getMemorySyncedRxStorage({
+    storage: parentStorage,
+    <span class="hljs-comment">/**
+     * By default, the parent storage will be created without indexes for a faster page load.
+     * Indexes are not needed because the queries will anyway run on the memory storage.
+     * You can disable this behavior by setting keepIndexesOnParent to true.
+     * 
+     * (optional)
+     */</span>
+    keepIndexesOnParent: <span class="hljs-literal">true</span>,
+
+    <span class="hljs-comment">/**
+     * After a write, await until the return value of this method resolves
+     * before replicating with the master storage.
+     * 
+     * By returning requestIdlePromise() we can ensure that the CPU is idle
+     * and no other, more important operation is running. By doing so we can be sure
+     * that the replication does not slow down any rendering of the browser process.
+     * 
+     * (optional)
+     */</span>
+    waitBeforePersist: () =&gt; requestIdlePromise();
+});
 </code></pre>
-<h2 id="live-example">Live-Example</h2>
-<p>In this example the leader is marked with the crown &#x265B;</p>
-<p><img src="files/leader-election.gif" alt="reactive.gif"></p>
-<h2 id="try-it-out">Try it out</h2>
-<p>Run the <a href="../examples/vanilla">vanillaJS-example</a> where the leading tab is marked with a crown on the top-right-corner.</p>
-<h2 id="notice">Notice</h2>
-<p>The leader election is implemented via the  <a href="https://github.com/pubkey/broadcast-channel#using-the-leaderelection" target="_blank">broadcast-channel module</a>.
-The leader is elected between different processes on the same javascript-runtime. Like multiple tabs in the same browser or mupltiple NodeJs-processes on the same machine. It will not run between different replicated instances.</p>
+<h2 id="comparison-with-the-lokijs-rxstorage">Comparison with the LokiJS RxStorage</h2>
+<p>The <a href="rx-storage-lokijs.html">LokiJS RxStorage</a> also loads the whole database state into the memory to improve operation time.
+In comparison to LokiJS, the <code>Memory Synced</code> RxStorage has many improvements and performance optimizations to reduce initial load time. Also it uses replication instead of the leader election to handle multi-tab usage. This alone decreases the inital page load by about 200 milliseconds.</p>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="rx-storage.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="rx-storage-sharding.html">here</a></p>
 
                                 
                                 </section>
@@ -2050,12 +2062,12 @@ The leader is elected between different processes on the same javascript-runtime
 
             
                 
-                <a href="data-migration.html" class="navigation navigation-prev " aria-label="Previous page: DataMigration">
+                <a href="rx-storage-worker.html" class="navigation navigation-prev " aria-label="Previous page: RxStorage Worker">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="rx-storage.html" class="navigation navigation-next " aria-label="Next page: RxStorage">
+                <a href="rx-storage-sharding.html" class="navigation navigation-next " aria-label="Next page: RxStorage Sharding">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2066,7 +2078,7 @@ The leader is elected between different processes on the same javascript-runtime
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"LeaderElection","level":"1.16","depth":1,"next":{"title":"RxStorage","level":"1.17","depth":1,"path":"rx-storage.md","ref":"./rx-storage.md","articles":[]},"previous":{"title":"DataMigration","level":"1.15","depth":1,"path":"data-migration.md","ref":"./data-migration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"leader-election.md","mtime":"2022-07-05T23:22:09.570Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-05T23:23:40.155Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage Memory Synced","level":"1.26","depth":1,"next":{"title":"RxStorage Sharding","level":"1.27","depth":1,"path":"rx-storage-sharding.md","ref":"./rx-storage-sharding.md","articles":[]},"previous":{"title":"RxStorage Worker","level":"1.25","depth":1,"path":"rx-storage-worker.md","ref":"./rx-storage-worker.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-memory-synced.md","mtime":"2022-07-05T23:22:09.570Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-05T23:23:40.155Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

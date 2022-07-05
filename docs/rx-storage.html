@@ -1568,7 +1568,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="rx-storage-sharding.html">
+        <li class="chapter " data-level="1.26" data-path="rx-storage-memory-synced.html">
+            
+                <a href="rx-storage-memory-synced.html">
+            
+                    
+                    RxStorage Memory Synced
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.27" data-path="rx-storage-sharding.html">
             
                 <a href="rx-storage-sharding.html">
             
@@ -1581,7 +1594,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="replication-couchdb.html">
+        <li class="chapter " data-level="1.28" data-path="replication-couchdb.html">
             
                 <a href="replication-couchdb.html">
             
@@ -1594,7 +1607,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="replication-graphql.html">
+        <li class="chapter " data-level="1.29" data-path="replication-graphql.html">
             
                 <a href="replication-graphql.html">
             
@@ -1607,7 +1620,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="replication.html">
+        <li class="chapter " data-level="1.30" data-path="replication.html">
             
                 <a href="replication.html">
             
@@ -1620,7 +1633,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="cleanup.html">
+        <li class="chapter " data-level="1.31" data-path="cleanup.html">
             
                 <a href="cleanup.html">
             
@@ -1633,7 +1646,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.31" data-path="backup.html">
+        <li class="chapter " data-level="1.32" data-path="backup.html">
             
                 <a href="backup.html">
             
@@ -1646,7 +1659,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.32" data-path="query-cache.html">
+        <li class="chapter " data-level="1.33" data-path="query-cache.html">
             
                 <a href="query-cache.html">
             
@@ -1659,7 +1672,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.33" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.34" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1672,7 +1685,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.34" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.35" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1685,7 +1698,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.35" data-path="plugins.html">
+        <li class="chapter " data-level="1.36" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1698,7 +1711,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.37" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1711,7 +1724,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.37" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.38" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1724,7 +1737,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.38" data-path="premium.html">
+        <li class="chapter " data-level="1.39" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -1956,7 +1969,7 @@ It has the special behavior of loading all data into memory at app start and the
 <p>The LokiJS based storage is based on the <a href="https://github.com/dexie/Dexie.js" target="_blank">Dexie.js</a> IndexedDB wrapper.
 It stores the data inside of a browsers IndexedDB database and has a very small bundle size. Compared to the LokiJS storage, it has a better initial load time even on big datasets. <a href="rx-storage-dexie.html">Read more</a></p>
 <h3 id="memory">Memory</h3>
-<p>A plain in-memory storage. Really fast and can be used in all environments. <a href="rx-storage-memory.html">Read more</a></p>
+<p>A storage that stores the data in as plain data in the memory of the JavaScript process. Really fast and can be used in all environments. <a href="rx-storage-memory.html">Read more</a></p>
 <h3 id="indexeddb">IndexedDB</h3>
 <p>The IndexedDB <code>RxStorage</code> is based on plain IndexedDB. This has the best performance of all other non-in-memory storage, when RxDB is used inside of a browser. <a href="rx-storage-indexeddb.html">Read more</a></p>
 <h3 id="sqlite">SQLite</h3>
@@ -1965,10 +1978,13 @@ It stores the data inside of a browsers IndexedDB database and has a very small 
 <p>The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker&apos;s process which can improve the percieved performance of your application. <a href="rx-storage-worker.html">Read more</a></p>
 <h3 id="sharding">Sharding</h3>
 <p>On some <code>RxStorage</code> implementations (like IndexedDB), a huge performance improvement can be done by sharding the documents into multiple database instances. With the sharding plugin you can wrap any other <code>RxStorage</code> into a sharded storage. <a href="rx-storage-sharding.html">Read more</a></p>
+<h3 id="memory-synced">Memory Synced</h3>
+<p>The memory synced <a href="rx-storage.html">RxStorage</a> is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlaying storage for persistence.
+The main reason to use this is to improve initial page load and query/write times. This is mostly usefull in browser based applications. <a href="rx-storage-memory-synced.html">Read more</a></p>
 <h2 id="performance-comparison">Performance comparison</h2>
 <p>A big difference in the RxStorage implementations is the performance. In difference to a server side database, RxDB is bound to the limits of the JavaScript runtime. For example in the browser it is only possible to store data in a <a href="slow-indexeddb.html">slow IndexedDB</a> instead of a filesystem.</p>
 <p><strong>LokiJS</strong> stores all data in memory and only saves to disc occasionally (or on exit). Therefore it has a very fast read/write performance, but loading all data into memory on the first page load can take longer for big amounts of documents. Also this storage can only be used when all data fits into the memory at least once.</p>
-<p>The Premium <strong>sharding</strong> RxStorage is only usefull when bug amounts of documents have to be stored or queries. In the CI performance test, we only insert 300 documents so that the performance actually decreases when sharding is used.</p>
+<p>The Premium <strong>sharding</strong> RxStorage is only usefull when big amounts of documents have to be stored or queries. In the CI performance test, we only insert 300 documents so that the performance actually decreases when sharding is used.</p>
 <p>The <strong>PouchDB</strong> RxStorage is slow because it has to handle all revisions of a document on writes and queries. This makes PouchDB the only storage where it is possible to replicate with a CouchDB compatible endpoint.</p>
 <p>Many storages run lazy, so it makes no sense to compare the time which is required to create a database with collections. Instead we measure the <strong>time-to-first-insert</strong> which is the whole timespan from database creation until the first single document write is done.</p>
 <p align="center">
@@ -2026,7 +2042,7 @@ It stores the data inside of a browsers IndexedDB database and has a very small 
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxStorage","level":"1.17","depth":1,"next":{"title":"RxStorage PouchDB","level":"1.18","depth":1,"path":"rx-storage-pouchdb.md","ref":"./rx-storage-pouchdb.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.16","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage.md","mtime":"2022-07-04T23:56:24.450Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-04T23:58:52.443Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage","level":"1.17","depth":1,"next":{"title":"RxStorage PouchDB","level":"1.18","depth":1,"path":"rx-storage-pouchdb.md","ref":"./rx-storage-pouchdb.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.16","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage.md","mtime":"2022-07-05T23:22:09.570Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-05T23:23:40.155Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
