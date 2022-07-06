@@ -1,8 +1,8 @@
-import { adapterObject, isMaybeReadonlyArray } from '../../util';
+import { adapterObject, getFromMapOrThrow, isMaybeReadonlyArray } from '../../util';
 import { addPouchPlugin, isLevelDown, PouchDB } from './pouch-db';
 import { newRxError } from '../../rx-error';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
-import { getPouchIndexDesignDocNameByIndex } from './pouchdb-helper';
+import { getPouchIndexDesignDocNameByIndex, openPouchId, OPEN_POUCH_INSTANCES } from './pouchdb-helper';
 import PouchDBFind from 'pouchdb-find';
 import { RxStoragePouchStatics } from './pouch-statics';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
@@ -115,9 +115,12 @@ export var RxStoragePouch = /*#__PURE__*/function () {
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this4.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
+          var pouchInstanceId = openPouchId(params.databaseInstanceToken, params.databaseName, params.collectionName, params.schema.version);
           var instance = new RxStorageInstancePouch(_this4, params.databaseName, params.collectionName, params.schema, {
-            pouch: pouch
+            pouch: pouch,
+            pouchInstanceId: pouchInstanceId
           }, params.options);
+          OPEN_POUCH_INSTANCES.set(pouchInstanceId, pouch);
           addRxStorageMultiInstanceSupport(params, instance);
           return instance;
         });
@@ -164,6 +167,11 @@ export function getPouchLocation(dbName, collectionName, schemaVersion) {
     ret += '/' + prefix + last;
     return ret;
   }
+}
+export function getPouchDBOfRxCollection(collection) {
+  var id = openPouchId(collection.database.token, collection.database.name, collection.name, collection.schema.version);
+  var pouch = getFromMapOrThrow(OPEN_POUCH_INSTANCES, id);
+  return pouch;
 }
 var addedRxDBPouchPlugins = false;
 export function getRxStoragePouch(adapter, pouchSettings) {

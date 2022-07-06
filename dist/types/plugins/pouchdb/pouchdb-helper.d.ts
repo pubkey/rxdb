@@ -4,12 +4,19 @@ import type { ChangeStreamEvent, MaybeReadonly, PouchChangeRow, PouchDBInstance,
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import type { ChangeEvent } from 'event-reduce-js';
 export declare type PouchStorageInternals = {
+    pouchInstanceId: string;
     pouch: PouchDBInstance;
 };
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
 export declare const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageInstancePouch<any>>;
+/**
+ * All open PouchDB instances are stored here
+ * so that we can find them again when needed in the internals.
+ */
+export declare const OPEN_POUCH_INSTANCES: Map<string, PouchDBInstance>;
+export declare function openPouchId(databaseInstanceToken: string, databaseName: string, collectionName: string, schemaVersion: number): string;
 /**
  * prefix of local pouchdb documents
  */

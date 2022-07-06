@@ -3,9 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
+exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCH_INSTANCES = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
 exports.getPouchIndexDesignDocNameByIndex = getPouchIndexDesignDocNameByIndex;
+exports.openPouchId = openPouchId;
 exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
 exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
 exports.pouchDocumentDataToRxDocumentData = pouchDocumentDataToRxDocumentData;
@@ -96,10 +97,22 @@ exports.writeAttachmentsToAttachments = writeAttachmentsToAttachments;
  */
 var OPEN_POUCHDB_STORAGE_INSTANCES = new Set();
 /**
- * prefix of local pouchdb documents
+ * All open PouchDB instances are stored here
+ * so that we can find them again when needed in the internals.
  */
 
 exports.OPEN_POUCHDB_STORAGE_INSTANCES = OPEN_POUCHDB_STORAGE_INSTANCES;
+var OPEN_POUCH_INSTANCES = new Map();
+exports.OPEN_POUCH_INSTANCES = OPEN_POUCH_INSTANCES;
+
+function openPouchId(databaseInstanceToken, databaseName, collectionName, schemaVersion) {
+  return [databaseInstanceToken, databaseName, collectionName, schemaVersion + ''].join('||');
+}
+/**
+ * prefix of local pouchdb documents
+ */
+
+
 var POUCHDB_LOCAL_PREFIX = '_local/';
 exports.POUCHDB_LOCAL_PREFIX = POUCHDB_LOCAL_PREFIX;
 var POUCHDB_LOCAL_PREFIX_LENGTH = POUCHDB_LOCAL_PREFIX.length;

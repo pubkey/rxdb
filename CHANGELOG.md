@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD `getPouchDBOfRxCollection()` to easy access the PouchDB instance of a RxCollection.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.6.13 (6 July 2022)
+
+- ADD `getPouchDBOfRxCollection()` to easy access the PouchDB instance of a RxCollection.
 
 ### 12.6.11 (5 July 2022)
 

@@ -1,6 +1,6 @@
 /// <reference types="pouchdb-core" />
 /// <reference types="node" />
-import type { PouchDBInstance, PouchSettings, RxJsonSchema, RxStorageInstanceCreationParams, RxStorage } from '../../types';
+import type { PouchDBInstance, PouchSettings, RxJsonSchema, RxStorageInstanceCreationParams, RxStorage, RxCollection } from '../../types';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { PouchStorageInternals } from './pouchdb-helper';
 export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
@@ -32,4 +32,5 @@ export declare function createIndexesOnPouch(pouch: PouchDBInstance, schema: RxJ
  * returns the pouchdb-database-name
  */
 export declare function getPouchLocation(dbName: string, collectionName: string, schemaVersion: number): string;
+export declare function getPouchDBOfRxCollection(collection: RxCollection<any>): PouchDBInstance;
 export declare function getRxStoragePouch(adapter: any, pouchSettings?: PouchSettings): RxStoragePouch;

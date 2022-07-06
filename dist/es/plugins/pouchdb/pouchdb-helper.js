@@ -69,6 +69,15 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
  */
 export var OPEN_POUCHDB_STORAGE_INSTANCES = new Set();
 /**
+ * All open PouchDB instances are stored here
+ * so that we can find them again when needed in the internals.
+ */
+
+export var OPEN_POUCH_INSTANCES = new Map();
+export function openPouchId(databaseInstanceToken, databaseName, collectionName, schemaVersion) {
+  return [databaseInstanceToken, databaseName, collectionName, schemaVersion + ''].join('||');
+}
+/**
  * prefix of local pouchdb documents
  */
 

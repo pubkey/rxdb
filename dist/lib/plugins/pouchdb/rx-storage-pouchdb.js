@@ -8,6 +8,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.RxStoragePouch = void 0;
 exports.checkPouchAdapter = checkPouchAdapter;
 exports.createIndexesOnPouch = void 0;
+exports.getPouchDBOfRxCollection = getPouchDBOfRxCollection;
 exports.getPouchLocation = getPouchLocation;
 exports.getRxStoragePouch = getRxStoragePouch;
 
@@ -140,9 +141,14 @@ var RxStoragePouch = /*#__PURE__*/function () {
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this4.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
+          var pouchInstanceId = (0, _pouchdbHelper.openPouchId)(params.databaseInstanceToken, params.databaseName, params.collectionName, params.schema.version);
           var instance = new _rxStorageInstancePouch.RxStorageInstancePouch(_this4, params.databaseName, params.collectionName, params.schema, {
-            pouch: pouch
+            pouch: pouch,
+            pouchInstanceId: pouchInstanceId
           }, params.options);
+
+          _pouchdbHelper.OPEN_POUCH_INSTANCES.set(pouchInstanceId, pouch);
+
           (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(params, instance);
           return instance;
         });
@@ -193,6 +199,12 @@ function getPouchLocation(dbName, collectionName, schemaVersion) {
     ret += '/' + prefix + last;
     return ret;
   }
+}
+
+function getPouchDBOfRxCollection(collection) {
+  var id = (0, _pouchdbHelper.openPouchId)(collection.database.token, collection.database.name, collection.name, collection.schema.version);
+  var pouch = (0, _util.getFromMapOrThrow)(_pouchdbHelper.OPEN_POUCH_INSTANCES, id);
+  return pouch;
 }
 
 var addedRxDBPouchPlugins = false;

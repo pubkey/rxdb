@@ -7,7 +7,7 @@ import { BehaviorSubject, Subject, fromEvent, firstValueFrom } from 'rxjs';
 import { skipUntil, filter, first, mergeMap } from 'rxjs/operators';
 import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } from '../util';
 import { newRxError } from '../rx-error';
-import { isInstanceOf as isInstanceOfPouchDB, addPouchPlugin } from '../plugins/pouchdb';
+import { isInstanceOf as isInstanceOfPouchDB, addPouchPlugin, getPouchDBOfRxCollection } from '../plugins/pouchdb';
 import { isRxCollection } from '../rx-collection';
 import { runPluginHooks } from '../hooks';
 /**
@@ -268,7 +268,8 @@ export function syncCouchDB(_ref2) {
     });
   }
 
-  var syncFun = pouchReplicationFunction(this.storageInstance.internals.pouch, direction);
+  var pouch = getPouchDBOfRxCollection(this);
+  var syncFun = pouchReplicationFunction(pouch, direction);
 
   if (query) {
     useOptions.selector = query.getPreparedQuery().selector;

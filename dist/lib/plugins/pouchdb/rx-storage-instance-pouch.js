@@ -282,7 +282,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       return sub.unsubscribe();
     });
 
-    _pouchdbHelper.OPEN_POUCHDB_STORAGE_INSTANCES["delete"](this); // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
+    _pouchdbHelper.OPEN_POUCHDB_STORAGE_INSTANCES["delete"](this);
+
+    _pouchdbHelper.OPEN_POUCH_INSTANCES["delete"](this.internals.pouchInstanceId); // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
     // await this.internals.pouch.close();
 
 
@@ -298,6 +300,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       });
 
       _pouchdbHelper.OPEN_POUCHDB_STORAGE_INSTANCES["delete"](_this3);
+
+      _pouchdbHelper.OPEN_POUCH_INSTANCES["delete"](_this3.internals.pouchInstanceId);
 
       return Promise.resolve(_this3.internals.pouch.destroy()).then(function () {});
     } catch (e) {

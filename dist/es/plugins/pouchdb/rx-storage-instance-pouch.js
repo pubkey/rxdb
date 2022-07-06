@@ -1,7 +1,7 @@
 import { ObliviousSet } from 'oblivious-set';
 import { Subject } from 'rxjs';
 import { newRxError } from '../../rx-error';
-import { OPEN_POUCHDB_STORAGE_INSTANCES, POUCHDB_DESIGN_PREFIX, pouchDocumentDataToRxDocumentData, pouchSwapIdToPrimary, rxDocumentDataToPouchDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
+import { OPEN_POUCHDB_STORAGE_INSTANCES, OPEN_POUCH_INSTANCES, POUCHDB_DESIGN_PREFIX, pouchDocumentDataToRxDocumentData, pouchSwapIdToPrimary, rxDocumentDataToPouchDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
 import { blobBufferUtil, flatClone, getFromMapOrThrow, getFromObjectOrThrow, PROMISE_RESOLVE_VOID } from '../../util';
 import { getCustomEventEmitterByPouch } from './custom-events-plugin';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
@@ -266,7 +266,8 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
-    OPEN_POUCHDB_STORAGE_INSTANCES["delete"](this); // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
+    OPEN_POUCHDB_STORAGE_INSTANCES["delete"](this);
+    OPEN_POUCH_INSTANCES["delete"](this.internals.pouchInstanceId); // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
     // await this.internals.pouch.close();
 
     return PROMISE_RESOLVE_VOID;
@@ -281,6 +282,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
       });
 
       OPEN_POUCHDB_STORAGE_INSTANCES["delete"](_this3);
+      OPEN_POUCH_INSTANCES["delete"](_this3.internals.pouchInstanceId);
       return Promise.resolve(_this3.internals.pouch.destroy()).then(function () {});
     } catch (e) {
       return Promise.reject(e);

@@ -296,7 +296,8 @@ function syncCouchDB(_ref2) {
     });
   }
 
-  var syncFun = pouchReplicationFunction(this.storageInstance.internals.pouch, direction);
+  var pouch = (0, _pouchdb.getPouchDBOfRxCollection)(this);
+  var syncFun = pouchReplicationFunction(pouch, direction);
 
   if (query) {
     useOptions.selector = query.getPreparedQuery().selector;
