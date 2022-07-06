@@ -30,7 +30,8 @@ import {
 } from '../rx-error';
 import {
     isInstanceOf as isInstanceOfPouchDB,
-    addPouchPlugin
+    addPouchPlugin,
+    getPouchDBOfRxCollection
 } from '../plugins/pouchdb';
 
 import {
@@ -338,7 +339,8 @@ export function syncCouchDB(
         });
     }
 
-    const syncFun = pouchReplicationFunction(this.storageInstance.internals.pouch, direction);
+    const pouch = getPouchDBOfRxCollection(this);
+    const syncFun = pouchReplicationFunction(pouch, direction);
     if (query) {
         useOptions.selector = query.getPreparedQuery().selector;
     }

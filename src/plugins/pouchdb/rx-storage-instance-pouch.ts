@@ -29,6 +29,7 @@ import type {
 } from '../../types';
 import {
     OPEN_POUCHDB_STORAGE_INSTANCES,
+    OPEN_POUCH_INSTANCES,
     POUCHDB_DESIGN_PREFIX,
     pouchDocumentDataToRxDocumentData,
     PouchStorageInternals,
@@ -128,6 +129,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     close() {
         this.subs.forEach(sub => sub.unsubscribe());
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
+        OPEN_POUCH_INSTANCES.delete(this.internals.pouchInstanceId);
 
         // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
         // await this.internals.pouch.close();
@@ -138,6 +140,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         this.subs.forEach(sub => sub.unsubscribe());
 
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
+        OPEN_POUCH_INSTANCES.delete(this.internals.pouchInstanceId);
+
         await this.internals.pouch.destroy();
     }
     public async bulkWrite(

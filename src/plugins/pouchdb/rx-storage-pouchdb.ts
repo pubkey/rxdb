@@ -5,11 +5,13 @@ import type {
     RxJsonSchema,
     RxStorageInstanceCreationParams,
     RxStorage,
-    MaybeReadonly
+    MaybeReadonly,
+    RxCollection
 } from '../../types';
 
 import {
     adapterObject,
+    getFromMapOrThrow,
     isMaybeReadonlyArray
 } from '../../util';
 import {
@@ -22,6 +24,8 @@ import { newRxError } from '../../rx-error';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import {
     getPouchIndexDesignDocNameByIndex,
+    openPouchId,
+    OPEN_POUCH_INSTANCES,
     PouchStorageInternals
 } from './pouchdb-helper';
 import PouchDBFind from 'pouchdb-find';
@@ -29,6 +33,9 @@ import { RxStoragePouchStatics } from './pouch-statics';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { addCustomEventsPluginToPouch } from './custom-events-plugin';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
+
+
+
 export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
     public name: string = 'pouchdb';
     public statics = RxStoragePouchStatics;
@@ -90,9 +97,22 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             params.collectionName,
             params.schema,
             {
-                pouch
+                pouch,
+                pouchInstanceId: openPouchId(
+                    params.databaseInstanceToken,
+                    params.databaseName,
+                    params.collectionName
+                )
             },
             params.options
+        );
+        OPEN_POUCH_INSTANCES.set(
+            openPouchId(
+                params.databaseInstanceToken,
+                params.databaseName,
+                params.collectionName
+            ),
+            pouch
         );
 
         addRxStorageMultiInstanceSupport(
@@ -199,6 +219,19 @@ export function getPouchLocation(
         ret += '/' + prefix + last;
         return ret;
     }
+}
+
+
+export function getPouchDBOfRxCollection(
+    collection: RxCollection<any>
+): PouchDBInstance {
+    const id = openPouchId(
+        collection.database.token,
+        collection.database.name,
+        collection.name
+    );
+    const pouch = getFromMapOrThrow(OPEN_POUCH_INSTANCES, id);
+    return pouch;
 }
 
 

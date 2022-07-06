@@ -53,6 +53,21 @@ You have to add them by your own, like we do [here](https://github.com/pubkey/rx
 [PouchDB has many adapters for all JavaScript runtimes](./adapters.md).
 
 
+## Using the internal PouchDB Database
+
+For custom operations, you can access the internal PouchDB database.
+This is dangerous because you might do changes that are not compatible with RxDB.
+Only use this when there is no way to achieve your goals via the RxDB API.
+
+
+```javascript
+import {
+    getPouchDBOfRxCollection
+} from 'rxdb/plugins/pouchdb';
+
+const pouch = getPouchDBOfRxCollection(myRxCollection);
+```
+
 --------------------------------------------------------------------------------
 
 If you are new to RxDB, you should continue [here](./rx-storage-dexie.md)

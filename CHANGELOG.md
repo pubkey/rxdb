@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD `getPouchDBOfRxCollection()` to easy access the PouchDB instance of a RxCollection.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

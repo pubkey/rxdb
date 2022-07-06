@@ -24,6 +24,7 @@ import { getAttachmentSize, hashAttachmentData } from '../../rx-storage-helper';
 import { RxStoragePouchStatics } from './pouch-statics';
 
 export type PouchStorageInternals = {
+    pouchInstanceId: string;
     pouch: PouchDBInstance;
 };
 
@@ -31,6 +32,24 @@ export type PouchStorageInternals = {
  * Used to check in tests if all instances have been cleaned up.
  */
 export const OPEN_POUCHDB_STORAGE_INSTANCES: Set<RxStorageInstancePouch<any>> = new Set();
+
+/**
+ * All open PouchDB instances are stored here
+ * so that we can find them again when needed in the internals.
+ */
+export const OPEN_POUCH_INSTANCES: Map<string, PouchDBInstance> = new Map();
+export function openPouchId(
+    databaseInstanceToken: string,
+    databaseName: string,
+    collectionName: string
+): string {
+    return [
+        databaseInstanceToken,
+        databaseName,
+        collectionName
+    ].join('||');
+}
+
 
 /**
  * prefix of local pouchdb documents
