@@ -91,6 +91,12 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             params.options
         );
         await createIndexesOnPouch(pouch, params.schema);
+        const pouchInstanceId = openPouchId(
+            params.databaseInstanceToken,
+            params.databaseName,
+            params.collectionName,
+            params.schema.version
+        );
         const instance = new RxStorageInstancePouch(
             this,
             params.databaseName,
@@ -98,20 +104,12 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
             params.schema,
             {
                 pouch,
-                pouchInstanceId: openPouchId(
-                    params.databaseInstanceToken,
-                    params.databaseName,
-                    params.collectionName
-                )
+                pouchInstanceId
             },
             params.options
         );
         OPEN_POUCH_INSTANCES.set(
-            openPouchId(
-                params.databaseInstanceToken,
-                params.databaseName,
-                params.collectionName
-            ),
+            pouchInstanceId,
             pouch
         );
 
@@ -228,7 +226,8 @@ export function getPouchDBOfRxCollection(
     const id = openPouchId(
         collection.database.token,
         collection.database.name,
-        collection.name
+        collection.name,
+        collection.schema.version
     );
     const pouch = getFromMapOrThrow(OPEN_POUCH_INSTANCES, id);
     return pouch;

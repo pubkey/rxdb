@@ -41,12 +41,14 @@ export const OPEN_POUCH_INSTANCES: Map<string, PouchDBInstance> = new Map();
 export function openPouchId(
     databaseInstanceToken: string,
     databaseName: string,
-    collectionName: string
+    collectionName: string,
+    schemaVersion: number
 ): string {
     return [
         databaseInstanceToken,
         databaseName,
-        collectionName
+        collectionName,
+        schemaVersion + ''
     ].join('||');
 }
 
