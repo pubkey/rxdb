@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD `bulkSize` option to [Memory Synced RxStorage](https://rxdb.info/rx-storage-memory-synced.html)
 
 <!-- ADD new changes here! -->
 

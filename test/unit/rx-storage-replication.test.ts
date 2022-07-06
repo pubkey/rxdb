@@ -871,5 +871,33 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
 
             await cleanUp(replicationState);
         });
+        it('should not stuck when replicating many document in the initial replication', async () => {
+            const writeAmount = config.isFastMode() ? 40 : 200;
+
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(0);
+            const metaInstance = await createMetaInstance();
+
+            await masterInstance.bulkWrite(
+                new Array(writeAmount)
+                    .fill(0)
+                    .map(() => ({ document: getDocData() }))
+            );
+
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                masterInstance,
+                forkInstance,
+                metaInstance,
+                /**
+                 * Must be smaller then the amount of document
+                 */
+                bulkSize: 20,
+                conflictHandler: THROWING_CONFLICT_HANDLER
+            });
+
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+            await cleanUp(replicationState);
+        });
     });
 });

@@ -23,6 +23,7 @@ The main reason to use this is to improve initial page load and query/write time
 
 
 ```ts
+
 import {
     getRxStorageIndexedDB
 } from 'rxdb-premium/plugins/indexeddb';
@@ -47,6 +48,7 @@ const db = await createRxDatabase({
     storage,
 });
 /** ... **/
+
 ```
 
 
@@ -62,6 +64,16 @@ import {
 
 const storage = getMemorySyncedRxStorage({
     storage: parentStorage,
+
+    /**
+     * Defines how many document
+     * get replicated in a single bulk.
+     * [default=50]
+     * 
+     * (optional)
+     */
+    bulkSize: 50,
+
     /**
      * By default, the parent storage will be created without indexes for a faster page load.
      * Indexes are not needed because the queries will anyway run on the memory storage.
@@ -83,6 +95,7 @@ const storage = getMemorySyncedRxStorage({
      */
     waitBeforePersist: () => requestIdlePromise();
 });
+
 ```
 
 
