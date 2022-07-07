@@ -32,7 +32,6 @@
         "expandable-chapters": {},
         "scripts": {
             "files": [
-                "./gitter.js",
                 "./analytics.js"
             ]
         }
