@@ -47,7 +47,7 @@
 </div>
 
 <p align="center">
-  <a href="https://discord.gg/YcNq8v7J">
+  <a href="https://discord.gg/tqt9ZttJfD">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/discord.svg" />
   </a>
   <a href="https://twitter.com/intent/follow?screen_name=rxdbjs">
@@ -518,7 +518,7 @@ Before you decide to use RxDB, or even before you decide to create an offline fi
 ## Follow up
 
 -   Follow RxDB on [twitter](https://twitter.com/intent/follow?screen_name=rxdbjs) to not miss the latest enhancements.
--   Join the chat on [discord](https://discord.gg/YcNq8v7J) for discussion.
+-   Join the chat on [discord](https://discord.gg/tqt9ZttJfD) for discussion.
 -   Subscribe to the [newsletter](https://www.getrevue.co/profile/rxdbjs/)
 
 

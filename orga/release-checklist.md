@@ -14,4 +14,4 @@ Things that have to be done before, while and after a release.
 ## post-release
 
 - [ ] Tweet about the new release at [twitter](https://twitter.com/compose/tweet)
-- [ ] Message about the new release at [discord](https://discord.gg/YcNq8v7J)
+- [ ] Message about the new release at [discord](https://discord.gg/tqt9ZttJfD)
