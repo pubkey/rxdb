@@ -13,7 +13,7 @@
 
   ## You have a common question which cannot be solved with a PR
   -> Ask it at one of these places:
-    - Chat: https://discord.gg/gNAuePsN
+    - Chat: https://discord.gg/YcNq8v7J
     - Github discussions: https://github.com/pubkey/rxdb/discussions
     - Stackoverflow: https://stackoverflow.com/questions/tagged/rxdb
 

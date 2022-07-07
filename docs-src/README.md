@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/gNAuePsN">
+  <a href="https://discord.gg/YcNq8v7J">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/discord.svg" />
   </a>
   <a href="https://twitter.com/rxdbjs">

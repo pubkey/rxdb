@@ -33,7 +33,7 @@ If you make a pull-request, ensure the following:
 
 ## Getting help
 
-If you need help with your contribution, ask at [discord](https://discord.gg/gNAuePsN).
+If you need help with your contribution, ask at [discord](https://discord.gg/YcNq8v7J).
 
 
 # Docs
