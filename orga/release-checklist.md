@@ -14,4 +14,4 @@ Things that have to be done before, while and after a release.
 ## post-release
 
 - [ ] Tweet about the new release at [twitter](https://twitter.com/compose/tweet)
-- [ ] Message about the new release at [gitter](https://gitter.im/pubkey/rxdb)
+- [ ] Message about the new release at [discord](https://discord.gg/gNAuePsN)

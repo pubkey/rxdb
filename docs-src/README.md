@@ -14,8 +14,8 @@
 </p>
 
 <p align="center">
-  <a href="https://gitter.im/pubkey/rxdb">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/gitter.svg" />
+  <a href="https://discord.gg/gNAuePsN">
+    <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/discord.svg" />
   </a>
   <a href="https://twitter.com/rxdbjs">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/twitter_follow.png" width="111px" />

@@ -48,8 +48,8 @@
 </div>
 
 <p align="center">
-  <a href="https://gitter.im/pubkey/rxdb">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/gitter.svg" />
+  <a href="https://discord.gg/gNAuePsN">
+    <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/discord.svg" />
   </a>
   <a href="https://twitter.com/intent/follow?screen_name=rxdbjs">
       <img src="https://img.shields.io/twitter/follow/rxdbjs.svg?style=social&logo=twitter"
@@ -519,7 +519,7 @@ Before you decide to use RxDB, or even before you decide to create an offline fi
 ## Follow up
 
 -   Follow RxDB on [twitter](https://twitter.com/intent/follow?screen_name=rxdbjs) to not miss the latest enhancements.
--   Join the chat on [gitter](https://gitter.im/pubkey/rxdb) for discussion.
+-   Join the chat on [discord](https://discord.gg/gNAuePsN) for discussion.
 -   Subscribe to the [newsletter](https://www.getrevue.co/profile/rxdbjs/)
 
 
