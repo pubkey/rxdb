@@ -2,14 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Moved from gitter to [discord](https://discord.gg/gNAuePsN)
-- ADD `bulkSize` option to [Memory Synced RxStorage](https://rxdb.info/rx-storage-memory-synced.html)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.6.14 (7 July 2022)
+
+- Moved from gitter to [discord](https://discord.gg/gNAuePsN)
+- ADD `bulkSize` option to [Memory Synced RxStorage](https://rxdb.info/rx-storage-memory-synced.html)
 
 ### 12.6.13 (6 July 2022)
 
