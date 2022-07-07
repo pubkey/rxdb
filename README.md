@@ -48,7 +48,7 @@
 
 <p align="center">
   <a href="https://discord.gg/tqt9ZttJfD">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/discord.svg" />
+    <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/discord.svg" width="80" />
   </a>
   <a href="https://twitter.com/intent/follow?screen_name=rxdbjs">
       <img src="https://img.shields.io/twitter/follow/rxdbjs.svg?style=social&logo=twitter"
