@@ -5,16 +5,15 @@
 -->
 
 
-
 <br />
 <br />
 <br />
 
-
+<!--
 | Announcement                                                        |
 | :--: |
 | Please take part in the [RxDB user survey 2022](https://forms.gle/oxVToPJb6yGHkkMi7). This will help me to better plan the steps for the next major release. (takes about 2 minutes)
-
+-->
 
 
 <p align="center">
