@@ -1,5 +1,20 @@
 window.onload = function () {
 
+
+    /**
+     * In the past we had this beating effect.
+     * But it turned out that many people do not like that,
+     * and in the 2022 user survey, most people opted for removing it.
+     * So now it is disabled but can be turned on by passing the correct url parameter '?beating=true'
+     * @link https://github.com/pubkey/rxdb/pull/3800
+     */
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const urlParams = Object.fromEntries(urlSearchParams.entries());
+    if (!urlParams.beating) {
+        return;
+    }
+
+
     /**
      * Pointers to html elements are prefixed with $
      * Lists of pointers have $$

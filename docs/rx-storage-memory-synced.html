@@ -101,7 +101,7 @@
     
         
         <li>
-            <a href="https://gitter.im/pubkey/rxdb" target="_blank" class="custom-link">Chat @gitter </a>
+            <a href="https://discord.gg/gNAuePsN" target="_blank" class="custom-link">Chat @discord </a>
         </li>
     
         
@@ -1974,7 +1974,8 @@ The main reason to use this is to improve initial page load and query/write time
 </ul>
 <p><strong>NOTICE:</strong> The sharding plugin is part of <a href="premium.html">RxDB premium</a>. It is not part of the default RxDB module.</p>
 <h2 id="usage">Usage</h2>
-<pre><code class="lang-ts">import {
+<pre><code class="lang-ts">
+import {
     getRxStorageIndexedDB
 } from &apos;rxdb-premium/plugins/indexeddb&apos;;
 import {
@@ -2008,6 +2009,16 @@ const db = await createRxDatabase({
 
 <span class="hljs-keyword">const</span> storage = getMemorySyncedRxStorage({
     storage: parentStorage,
+
+    <span class="hljs-comment">/**
+     * Defines how many document
+     * get replicated in a single bulk.
+     * [default=50]
+     * 
+     * (optional)
+     */</span>
+    bulkSize: <span class="hljs-number">50</span>,
+
     <span class="hljs-comment">/**
      * By default, the parent storage will be created without indexes for a faster page load.
      * Indexes are not needed because the queries will anyway run on the memory storage.
@@ -2078,7 +2089,7 @@ In comparison to LokiJS, the <code>Memory Synced</code> RxStorage has many impro
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxStorage Memory Synced","level":"1.26","depth":1,"next":{"title":"RxStorage Sharding","level":"1.27","depth":1,"path":"rx-storage-sharding.md","ref":"./rx-storage-sharding.md","articles":[]},"previous":{"title":"RxStorage Worker","level":"1.25","depth":1,"path":"rx-storage-worker.md","ref":"./rx-storage-worker.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js","./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-memory-synced.md","mtime":"2022-07-06T14:45:22.640Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-06T14:47:13.267Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage Memory Synced","level":"1.26","depth":1,"next":{"title":"RxStorage Sharding","level":"1.27","depth":1,"path":"rx-storage-sharding.md","ref":"./rx-storage-sharding.md","articles":[]},"previous":{"title":"RxStorage Worker","level":"1.25","depth":1,"path":"rx-storage-worker.md","ref":"./rx-storage-worker.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/gNAuePsN","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-memory-synced.md","mtime":"2022-07-07T00:56:07.540Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-07T00:57:35.113Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -2097,10 +2108,6 @@ In comparison to LokiJS, the <code>Memory Synced</code> RxStorage has many impro
     
         
         <script src="gitbook/gitbook-plugin-expandable-chapters/expandable-chapters.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-scripts/5fba4a97b13c90ad3a5e9179941e5a9a-gitter.js"></script>
         
     
         
