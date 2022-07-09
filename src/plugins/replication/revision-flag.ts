@@ -11,13 +11,11 @@ import {
     parseRevision
 } from '../../util';
 
-
 export function getPullReplicationFlag(
     replicationIdentifierHash: string
 ) {
     return 'rep-' + replicationIdentifierHash;
 }
-
 
 /**
  * Sets the pull replication flag to the _meta

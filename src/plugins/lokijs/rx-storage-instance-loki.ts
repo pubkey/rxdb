@@ -65,11 +65,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
-    private lastChangefeedSequence: number = 0;
     public readonly instanceId = instanceId++;
 
     public closed = false;
-
 
     constructor(
         public readonly databaseInstanceToken: string,

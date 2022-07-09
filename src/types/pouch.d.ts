@@ -228,7 +228,7 @@ export type PouchBulkDocResultRow = {
     rev: string;
 }
 
-export type PouchChangedDocumentsSinceCheckpoint = {
+export type PouchCheckpoint = {
     sequence: number;
 }
 
