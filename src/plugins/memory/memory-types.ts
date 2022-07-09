@@ -73,8 +73,3 @@ export type DocWithIndexString<RxDocType> = {
 };
 
 export type MemoryPreparedQuery<DocType> = DexiePreparedQuery<DocType>;
-
-export type MemoryChangesCheckpoint = {
-    id: string;
-    lwt: number;
-};

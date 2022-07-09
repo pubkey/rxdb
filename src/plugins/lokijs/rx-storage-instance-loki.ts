@@ -27,12 +27,12 @@ import type {
     LokiDatabaseSettings,
     LokiLocalDatabaseState,
     EventBulk,
-    LokiChangesCheckpoint,
     StringKeys,
     RxDocumentDataById,
     DeepReadonly,
     RxConflictResultionTask,
-    RxConflictResultionTaskSolution
+    RxConflictResultionTaskSolution,
+    RxStorageDefaultCheckpoint
 } from '../../types';
 import {
     closeLokiCollections,
@@ -51,7 +51,7 @@ import type {
 } from 'lokijs';
 import type { RxStorageLoki } from './rx-storage-lokijs';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
 
 let instanceId = now();
@@ -59,11 +59,12 @@ let instanceId = now();
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     RxDocType,
     LokiStorageInternals,
-    LokiSettings
+    LokiSettings,
+    RxStorageDefaultCheckpoint
 > {
 
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
-    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     private lastChangefeedSequence: number = 0;
     public readonly instanceId = instanceId++;
 
@@ -154,6 +155,14 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         localState.databaseState.saveQueue.addWrite();
 
         if (categorized.eventBulk.events.length > 0) {
+            const lastState = getNewestOfDocumentStates(
+                this.primaryPath as any,
+                Object.values(ret.success)
+            );
+            categorized.eventBulk.checkpoint = {
+                id: lastState[this.primaryPath],
+                lwt: lastState._meta.lwt
+            };
             this.changes$.next(categorized.eventBulk);
         }
 
@@ -215,10 +224,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
     async getChangedDocumentsSince(
         limit: number,
-        checkpoint?: LokiChangesCheckpoint
+        checkpoint?: RxStorageDefaultCheckpoint
     ): Promise<{
         document: RxDocumentData<RxDocType>;
-        checkpoint: LokiChangesCheckpoint;
+        checkpoint: RxStorageDefaultCheckpoint;
     }[]> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
@@ -256,7 +265,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }));
     }
 
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
         return this.changes$.asObservable();
     }
 

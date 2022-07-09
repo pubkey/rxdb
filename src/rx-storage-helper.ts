@@ -31,6 +31,7 @@ import type {
 } from './types';
 import {
     createRevision,
+    ensureNotFalsy,
     firstPropertyValueOfObject,
     flatClone,
     getDefaultRevision,
@@ -154,6 +155,28 @@ export function throwIfIsStorageWriteError<RxDocType>(
     }
 }
 
+
+export function getNewestOfDocumentStates<RxDocType>(
+    primaryPath: string,
+    docs: RxDocumentData<RxDocType>[]
+): RxDocumentData<RxDocType> {
+    let ret: RxDocumentData<RxDocType> | null = null;
+    docs.forEach(doc => {
+        if (
+            !ret ||
+            doc._meta.lwt > ret._meta.lwt ||
+            (
+                doc._meta.lwt === ret._meta.lwt &&
+                (doc as any)[primaryPath] > (ret as any)[primaryPath]
+            )
+        ) {
+            ret = doc;
+        }
+
+    });
+    return ensureNotFalsy(ret as any);
+}
+
 /**
  * Analyzes a list of BulkWriteRows and determines
  * which documents must be inserted, updated or deleted
@@ -193,7 +216,7 @@ export function categorizeBulkWriteRows<RxDocType>(
      * over the error array again.
      */
     errors: RxStorageBulkWriteError<RxDocType>[];
-    eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
+    eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {
         documentId: string;
         attachmentId: string;
@@ -214,9 +237,10 @@ export function categorizeBulkWriteRows<RxDocType>(
     const bulkUpdateDocs: BulkWriteRow<RxDocType>[] = [];
     const errors: RxStorageBulkWriteError<RxDocType>[] = [];
     const changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][] = [];
-    const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
+    const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
         id: randomCouchString(10),
-        events: []
+        events: [],
+        checkpoint: null
     };
 
     const attachmentsAdd: {
@@ -521,9 +545,14 @@ export function getAttachmentSize(
  * and other data transformations and also ensure that database.lockedRun()
  * is used properly.
  */
-export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions>(
+export function getWrappedStorageInstance<
+    RxDocType,
+    Internals,
+    InstanceCreationOptions,
+    CheckpointType
+>(
     database: RxDatabase<{}, Internals, InstanceCreationOptions>,
-    storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>,
+    storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions, CheckpointType>,
     /**
      * The original RxJsonSchema
      * before it was mutated by hooks.
@@ -682,9 +711,10 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                     toStorageWriteRows
                 )
             ).then(writeResult => {
-                const ret: RxStorageBulkWriteResponse<RxDocType> = {
+                const ret: RxStorageBulkWriteResponse<RxDocType, CheckpointType> = {
                     success: {},
-                    error: {}
+                    error: {},
+                    checkpoint: writeResult.checkpoint
                 };
                 Object.entries(writeResult.success).forEach(([k, v]) => {
                     ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
@@ -751,7 +781,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         changeStream() {
             return storageInstance.changeStream().pipe(
                 map(eventBulk => {
-                    const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
+                    const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, CheckpointType> = {
                         id: eventBulk.id,
                         events: eventBulk.events.map(event => {
                             return {

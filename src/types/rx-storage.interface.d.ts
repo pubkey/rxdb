@@ -186,7 +186,8 @@ export interface RxStorageInstance<
      */
     RxDocType,
     Internals,
-    InstanceCreationOptions
+    InstanceCreationOptions,
+    CheckpointType = any
     > {
 
     /**
@@ -286,7 +287,7 @@ export interface RxStorageInstance<
      */
     getChangedDocumentsSince(
         limit: number,
-        checkpoint?: any
+        checkpoint?: CheckpointType
     ): Promise<{
         document: RxDocumentData<RxDocType>;
         /**
@@ -310,7 +311,7 @@ export interface RxStorageInstance<
      * must be also emitted to other instances with the same databaseName+collectionName.
      * See ./rx-storage-multiinstance.ts
      */
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocType>, CheckpointType>>;
 
     /**
      * Runs a cleanup that removes all tompstones

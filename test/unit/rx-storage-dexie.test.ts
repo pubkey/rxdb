@@ -8,7 +8,9 @@ import {
     fillWithDefaultSettings,
     MangoQuery,
     normalizeMangoQuery,
-    randomCouchString
+    randomCouchString,
+    now,
+    createRevision
 } from '../../';
 
 import {
@@ -173,6 +175,10 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     data._attachments = {};
                     data._deleted = false;
                     data.age = 18;
+                    data._meta = {
+                        lwt: now()
+                    };
+                    data._rev = createRevision(data);
                     return {
                         document: data
                     }

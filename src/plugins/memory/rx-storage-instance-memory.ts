@@ -8,7 +8,7 @@ import {
 } from '../../custom-index';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import type {
     BulkWriteRow,
     EventBulk,
@@ -19,6 +19,7 @@ import type {
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
+    RxStorageDefaultCheckpoint,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
@@ -48,7 +49,6 @@ import {
     getMemoryIndexName
 } from './memory-indexes';
 import type {
-    MemoryChangesCheckpoint,
     MemoryPreparedQuery,
     MemoryStorageInternals,
     RxStorageMemory,
@@ -59,11 +59,12 @@ import type {
 export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     RxDocType,
     MemoryStorageInternals<RxDocType>,
-    RxStorageMemoryInstanceCreationOptions
+    RxStorageMemoryInstanceCreationOptions,
+    RxStorageDefaultCheckpoint
 > {
 
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
-    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public closed = false;
 
     constructor(
@@ -148,6 +149,14 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         });
 
         if (categorized.eventBulk.events.length > 0) {
+            const lastState = getNewestOfDocumentStates(
+                this.primaryPath as any,
+                Object.values(ret.success)
+            );
+            categorized.eventBulk.checkpoint = {
+                id: lastState[this.primaryPath],
+                lwt: lastState._meta.lwt
+            };
             this.changes$.next(categorized.eventBulk);
         }
         return Promise.resolve(ret);
@@ -254,10 +263,10 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
     async getChangedDocumentsSince(
         limit: number,
-        checkpoint?: MemoryChangesCheckpoint
+        checkpoint?: RxStorageDefaultCheckpoint
     ): Promise<{
         document: RxDocumentData<RxDocType>;
-        checkpoint: MemoryChangesCheckpoint;
+        checkpoint: RxStorageDefaultCheckpoint;
     }[]> {
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const sinceId = checkpoint ? checkpoint.id : '';
@@ -351,7 +360,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         return Promise.resolve(data.data);
     }
 
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
         ensureNotRemoved(this);
         return this.changes$.asObservable();
     }

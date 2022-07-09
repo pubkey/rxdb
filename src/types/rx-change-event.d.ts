@@ -46,7 +46,7 @@ export type RxChangeEvent<DocType> = RxChangeEventInsert<DocType> | RxChangeEven
  * to save performance when sending them over a transport layer
  * or de-duplicating them.
  */
-export type RxChangeEventBulk<DocType> = EventBulk<RxChangeEvent<DocType>> & {
+export type RxChangeEventBulk<DocType> = EventBulk<RxChangeEvent<DocType>, any> & {
     // optional, not given for changes to local documents of a RxDatabase.
     collectionName?: string;
     /**

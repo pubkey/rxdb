@@ -34,8 +34,3 @@ export type DexieStorageInternals = Promise<{
      */
     dexieDeletedTable: DexieTable;
 }>;
-
-export type DexieChangesCheckpoint = {
-    id: string;
-    lwt: number;
-};

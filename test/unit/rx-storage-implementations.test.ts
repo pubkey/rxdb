@@ -1754,7 +1754,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream()
                     .pipe(
                         /**
@@ -1796,6 +1796,27 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 // should contain the _meta data
                 assert.ok((emitted as any)[0].events[0].change.doc._meta.lwt);
+
+                /**
+                 * Using the checkpoint from the event must not return any newer documents.
+                 * This ensures that during replication, we can continue from the given checkpoint
+                 * without missing out any document writes.
+                 */
+                await storageInstance.bulkWrite(
+                    new Array(10).fill(0).map(() => ({ document: getWriteData() }))
+                );
+                console.log('AAA');
+                console.dir(emitted);
+                const lastEvent = lastOfArray(emitted);
+                const emptyResult = await storageInstance.getChangedDocumentsSince(
+                    100,
+                    lastEvent.checkpoint
+                );
+                assert.strictEqual(
+                    emptyResult.length,
+                    0
+                );
+
 
                 sub.unsubscribe();
                 storageInstance.close();
