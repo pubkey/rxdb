@@ -1826,8 +1826,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 await storageInstance.bulkWrite(
                     new Array(10).fill(0).map(() => ({ document: getWriteData() }))
                 );
-                console.log('AAA');
-                console.dir(emitted);
                 const lastEvent = lastOfArray(emitted);
                 const emptyResult = await storageInstance.getChangedDocumentsSince(
                     100,

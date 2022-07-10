@@ -56,7 +56,6 @@ import {
     PROMISE_RESOLVE_VOID
 } from './util';
 
-
 /**
  * Flags that a document state was written to the master
  * by the upstream from the fork.
@@ -68,7 +67,6 @@ import {
  * calls so that the emitted events can be detected as being from the upstream.
  */
 const FROM_FORK_FLAG_SUFFIX = '-fork';
-
 
 export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> = fillWithDefaultSettings({
     primaryKey: {
@@ -141,7 +139,6 @@ export function replicateRxStorageInstance<RxDocType>(
     return state;
 }
 
-
 /**
  * Writes all documents from the master to the fork.
  */
@@ -180,7 +177,6 @@ export function startReplicationDownstream<RxDocType>(
      * and then await all writes at the end.
      */
     let writeToChildQueue: Promise<any> = PROMISE_RESOLVE_VOID;
-
 
     async function downstreamSyncOnce() {
         if (state.canceled.getValue()) {

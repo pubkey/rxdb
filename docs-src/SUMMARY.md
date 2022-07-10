@@ -112,30 +112,19 @@
 * [LeaderElection](./leader-election.md)
 
 * [RxStorage](./rx-storage.md)
-
-* [RxStorage PouchDB](./rx-storage-pouchdb.md)
-* [PouchDB Adapters](./adapters.md)
-
-* [RxStorage Dexie.js](./rx-storage-dexie.md)
-
-* [RxStorage LokiJS](./rx-storage-lokijs.md)
-
-* [RxStorage Memory](./rx-storage-memory.md)
-
-* [RxStorage IndexedDB](./rx-storage-indexeddb.md)
-
-* [RxStorage SQLite](./rx-storage-sqlite.md)
-
-* [RxStorage Worker](./rx-storage-worker.md)
-
-* [RxStorage Memory Synced](./rx-storage-memory-synced.md)
-
-* [RxStorage Sharding](./rx-storage-sharding.md)
+    * [RxStorage PouchDB](./rx-storage-pouchdb.md)
+    * [PouchDB Adapters](./adapters.md)
+    * [RxStorage Dexie.js](./rx-storage-dexie.md)
+    * [RxStorage LokiJS](./rx-storage-lokijs.md)
+    * [RxStorage Memory](./rx-storage-memory.md)
+    * [RxStorage IndexedDB](./rx-storage-indexeddb.md)
+    * [RxStorage SQLite](./rx-storage-sqlite.md)
+    * [RxStorage Worker](./rx-storage-worker.md)
+    * [RxStorage Memory Synced](./rx-storage-memory-synced.md)
+    * [RxStorage Sharding](./rx-storage-sharding.md)
 
 * [Replication CouchDB](./replication-couchdb.md)
-
 * [Replication GraphQL](./replication-graphql.md)
-
 * [Replication Primitives](./replication.md)
 
 * [Cleanup](./cleanup.md)

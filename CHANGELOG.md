@@ -4,8 +4,8 @@
 <!-- CHANGELOG NEWEST -->
 - Moved from gitter to [discord](https://discord.gg/tqt9ZttJfD)
 - ADD `bulkSize` option to [Memory Synced RxStorage](https://rxdb.info/rx-storage-memory-synced.html)
-
 - FIX [#3839](https://github.com/pubkey/rxdb/pull/3839) executing insert -> remove -> insert -> remove does not work. Thanks [@nisarpeitang](https://github.com/nisarpeitang)
+- ADD `checkpoint` to the internal used events that are emitted in the `RxStorageInstance.changestream()`.
 
 <!-- ADD new changes here! -->
 

@@ -332,7 +332,12 @@ export function addCustomEventsPluginToPouch() {
         let callReturn: any;
         const callPromise = new Promise((res, rej) => {
 
-
+            /**
+             * The emitted EventBulk from the write to the pouchdb, needs to contain a checkpoint field.
+             * Because PouchDB works on sequence number to sort changes,
+             * we have to fetch the latest sequence number out of the events because it
+             * is not possible to that that from pouch.bulkDocs().
+             */
             const docIds: Set<string> = new Set(docs.map(d => d._id));
             let heighestSequence = 0;
             let changesSub: PouchChangesOnChangeEvent;
@@ -356,8 +361,6 @@ export function addCustomEventsPluginToPouch() {
                     }
                 }) as any;
             });
-
-
 
             callReturn = oldBulkDocs.call(
                 this,
