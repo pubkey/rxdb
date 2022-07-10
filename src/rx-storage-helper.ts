@@ -676,8 +676,15 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                     toStorageWriteRows
                 )
             )
+                /**
+                 * The RxStorageInstance MUST NOT allow to insert already _deleted documents,
+                 * without sending the previous document version.
+                 * But for better developer experience, RxDB does allow to re-insert deleted documents.
+                 * We do this by automatically fixing the conflict errors for that case
+                 * by running another bulkWrite() and merging the results.
+                 * @link https://github.com/pubkey/rxdb/pull/3839
+                 */
                 .then(writeResult => {
-
                     const reInsertErrors: RxStorageBulkWriteError<RxDocType>[] = Object
                         .values(writeResult.error)
                         .filter((error) => {
