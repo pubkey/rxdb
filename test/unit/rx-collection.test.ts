@@ -1233,7 +1233,7 @@ describe('rx-collection.test.js', () => {
                     await db1.destroy();
 
                     const db2 = await createDb();
-                    
+
                     /**
                      * Getting the changes in the other database should have an empty result.
                      */
@@ -1528,6 +1528,15 @@ describe('rx-collection.test.js', () => {
 
                     const docAfter = await collection.findOne(objData.passportId).exec(true);
                     assert.strictEqual(docAfter.firstName, 'foobar');
+
+                    /**
+                     * The storage must have auto-resolved the conflict
+                     * because it was an insert to overwrite a previously deleted document.
+                     * Therefore the revision height must be 4 and do not start with 1 again.
+                     * @link https://github.com/pubkey/rxdb/pull/3839
+                     */
+                    const parsedRev = parseRevision(docAfter.toJSON(true)._rev);
+                    assert.strictEqual(parsedRev.height, 4);
 
                     db.destroy();
                 });

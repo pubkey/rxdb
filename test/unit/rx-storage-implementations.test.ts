@@ -401,7 +401,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
 
                 storageInstance.close();
             });
-            it('should be able to overwrite a deleted the document', async () => {
+            it('should NOT be able to overwrite a deleted the document', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -426,7 +426,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }]
                 );
-                assert.strictEqual(Object.keys(insertResponse.error).length, 0);
+
+                assert.deepStrictEqual(insertResponse.error, {});
                 let previous = getFromObjectOrThrow(insertResponse.success, docId);
 
                 const updateResponse = await storageInstance.bulkWrite(
@@ -458,14 +459,18 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }]
                 );
                 assert.deepStrictEqual(deleteResponse.error, {});
-                const second = getFromObjectOrThrow(deleteResponse.success, docId);
+                previous = getFromObjectOrThrow(deleteResponse.success, docId);
 
-
-                const undeleteResponse = await storageInstance.bulkWrite(
+                /**
+                 * Doing an un-delete without sending the previous state,
+                 * must cause a conflict error.
+                 * 
+                 * This is the behavior at the RxStorage level.
+                 * In contrast, RxDB itself will allow to re-insert an already deleted RxDocument.
+                 */
+                const undeleteConflictResponse = await storageInstance.bulkWrite(
                     [{
-                        // No previous doc data is send here. Because we 'undelete' the document
-                        // which can be done via .insert()
-                        document: Object.assign({}, second, {
+                        document: Object.assign({}, previous, {
                             _deleted: false,
                             value: 'aaa',
                             _rev: EXAMPLE_REVISION_4,
@@ -475,11 +480,27 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         })
                     }]
                 );
+                assert.deepStrictEqual(undeleteConflictResponse.success, {});
 
-                assert.deepStrictEqual(undeleteResponse.error, {});
+                /**
+                 * Doing the un-delete with sending the previous,
+                 * should work.
+                 */
+                const undeleteResponse = await storageInstance.bulkWrite(
+                    [{
+                        previous,
+                        document: Object.assign({}, previous, {
+                            _deleted: false,
+                            value: 'aaa',
+                            _rev: EXAMPLE_REVISION_4,
+                            _meta: {
+                                lwt: now()
+                            }
+                        })
+                    }]
+                );
                 const third = getFromObjectOrThrow(undeleteResponse.success, docId);
                 assert.strictEqual(third.value, 'aaa');
-
 
                 const foundDoc = await storageInstance.findDocumentsById([docId], false);
                 assert.ok(foundDoc[docId]);
