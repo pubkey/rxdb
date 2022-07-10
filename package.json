@@ -143,7 +143,7 @@
     "mingo": "5.1.0",
     "modifyjs": "0.3.1",
     "object-path": "0.11.8",
-    "oblivious-set": "1.0.0",
+    "oblivious-set": "1.1.1",
     "pouchdb-adapter-http": "7.3.0",
     "pouchdb-all-dbs": "1.1.1",
     "pouchdb-core": "7.3.0",
