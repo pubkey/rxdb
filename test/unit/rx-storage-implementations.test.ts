@@ -2563,9 +2563,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         it('should be able to write and read documents', async () => {
             const instances = await getMultiInstanceRxStorageInstance();
 
-            const emittedB: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
+            const emittedB: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
             instances.b.changeStream().subscribe(ev => emittedB.push(ev));
-            const emittedA: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
+            const emittedA: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
             instances.a.changeStream().subscribe(ev => emittedA.push(ev));
 
             // insert a document on A
