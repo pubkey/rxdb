@@ -14,6 +14,7 @@ import type {
     EventBulk,
     PouchBulkDocOptions,
     PouchBulkDocResultRow,
+    PouchChangesOnChangeEvent,
     PouchCheckpoint,
     PouchDBInstance,
     PouchWriteError,
@@ -334,21 +335,15 @@ export function addCustomEventsPluginToPouch() {
 
             const docIds: Set<string> = new Set(docs.map(d => d._id));
             let heighestSequence = 0;
-
+            let changesSub: PouchChangesOnChangeEvent;
             const heighestSequencePromise = new Promise<number>(res => {
-
-                const changesSub = this.changes({
+                changesSub = this.changes({
                     since: 'now',
                     live: true,
                     include_docs: true
                 }).on('change', (change: any) => {
                     const docId: string = change.id;
                     if (docIds.has(docId)) {
-
-                        console.log('---------- change');
-                        console.dir(docIds);
-                        console.dir(change);
-
                         docIds.delete(docId);
                         if (heighestSequence < change.seq) {
                             heighestSequence = change.seq;
@@ -359,7 +354,7 @@ export function addCustomEventsPluginToPouch() {
                             res(heighestSequence);
                         }
                     }
-                });
+                }) as any;
             });
 
 
@@ -373,16 +368,13 @@ export function addCustomEventsPluginToPouch() {
                         callback ? callback(err) : rej(err);
                     } else {
                         return (async () => {
-
-
-                            console.log('OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
-                            console.dir(docs);
-                            console.dir(result);
-                            console.dir(usePouchResult);
-
-                            const heighestSequence = await heighestSequencePromise;
-                            console.log('heighestSequencePromise awaited');
-                            console.log('heighestSequence: ' + heighestSequence);
+                            const hasError = result.find(row => (row as PouchWriteError).error);
+                            let heighestSequence = -1;
+                            if (!hasError) {
+                                heighestSequence = await heighestSequencePromise;
+                            } else {
+                                changesSub.cancel();
+                            }
 
                             result.forEach(row => {
                                 usePouchResult.push(row);
