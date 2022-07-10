@@ -20,7 +20,7 @@ import { getFromMapOrThrow } from '../../util';
 import { Observable } from 'rxjs';
 
 
-export type InWorkerStorage<RxDocType> = {
+export type InWorkerStorage<RxDocType, CheckpointType> = {
     createStorageInstance(
         params: RxStorageInstanceCreationParams<RxDocType, any>
     ): Promise<number>;
@@ -44,14 +44,14 @@ export type InWorkerStorage<RxDocType> = {
     getChangedDocumentsSince(
         instanceId: number,
         limit: number,
-        checkpoint: any
+        checkpoint?: CheckpointType
     ): Promise<{
         document: RxDocumentData<RxDocType>;
         checkpoint: any;
     }[]>;
     changeStream(
         instanceById: number
-    ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, CheckpointType>>;
     cleanup(instanceId: number, minDeletedTime: number): Promise<boolean>;
     close(instanceId: number): Promise<void>;
     remove(instanceId: number): Promise<void>;
@@ -65,7 +65,7 @@ export type InWorkerStorage<RxDocType> = {
     ): Promise<void>;
 }
 
-export function wrappedWorkerRxStorage<T, D>(
+export function wrappedWorkerRxStorage<T, D, CheckpointType = any>(
     args: {
         storage: RxStorage<T, D>
     }
@@ -73,7 +73,7 @@ export function wrappedWorkerRxStorage<T, D>(
     let nextId = 0;
     const instanceById: Map<number, any> = new Map();
 
-    const exposeMe: InWorkerStorage<any> = {
+    const exposeMe: InWorkerStorage<any, CheckpointType> = {
         /**
          * RxStorageInstance
          */
@@ -132,7 +132,7 @@ export function wrappedWorkerRxStorage<T, D>(
         },
         changeStream<DocumentData>(
             instanceId: number
-        ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>>> {
+        ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<DocumentData>>, CheckpointType>> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.changeStream();
         },

@@ -849,8 +849,8 @@ export function getWrappedStorageInstance<
                                     previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(event.change.previous) : undefined
                                 }
                             }
-
-                        })
+                        }),
+                        checkpoint: eventBulk.checkpoint
                     };
                     return ret;
                 })

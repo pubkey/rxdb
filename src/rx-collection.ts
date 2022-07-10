@@ -221,7 +221,8 @@ export class RxCollectionBase<
                     ev,
                     this as any
                 )),
-                databaseToken: this.database.token
+                databaseToken: this.database.token,
+                checkpoint: eventBulk.checkpoint
             };
             this.database.$emit(changeEventBulk);
         });
