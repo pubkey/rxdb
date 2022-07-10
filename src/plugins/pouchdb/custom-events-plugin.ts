@@ -277,17 +277,7 @@ export function addCustomEventsPluginToPouch() {
                 const docInDbRev: string | null = docInDb ? docInDb._rev : null;
 
                 if (
-                    docInDbRev !== previousRev &&
-                    /**
-                     * If doc in db is deleted
-                     * and no previous docs was send,
-                     * We have a re-insert which must not cause a conflict.
-                     */
-                    !(
-                        docInDb &&
-                        docInDb._deleted &&
-                        !writeRow.previous
-                    )
+                    docInDbRev !== previousRev
                 ) {
                     // we have a conflict
                     usePouchResult.push({
