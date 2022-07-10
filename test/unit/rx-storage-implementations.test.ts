@@ -1852,7 +1852,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1940,7 +1940,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -2055,7 +2055,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
                 const statics = config.storage.getStorage().statics;
 
-                const emitted: EventBulk<RxStorageChangeEvent<any>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<any>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -2563,9 +2563,9 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         it('should be able to write and read documents', async () => {
             const instances = await getMultiInstanceRxStorageInstance();
 
-            const emittedB: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+            const emittedB: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
             instances.b.changeStream().subscribe(ev => emittedB.push(ev));
-            const emittedA: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+            const emittedA: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
             instances.a.changeStream().subscribe(ev => emittedA.push(ev));
 
             // insert a document on A
