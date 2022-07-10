@@ -1125,5 +1125,87 @@ describe('rx-document.test.js', () => {
 
             collection.database.destroy();
         });
+        /**
+         * @link https://github.com/pubkey/rxdb/pull/3839
+         */
+        it('#3839 executing insert -> remove -> insert -> remove fails', async () => {
+            // create a schema
+            const mySchema = {
+                title: 'example schema',
+                version: 0,
+                description: 'describes an example collection schema',
+                primaryKey: 'name',
+                type: 'object',
+                properties: {
+                    name: {
+                        $comment: 'primary key MUST have a maximum length!',
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    gender: {
+                        type: 'string',
+                    },
+                    birthyear: {
+                        type: 'integer',
+                        final: true,
+                        minimum: 1900,
+                        maximum: 2099,
+                    },
+                },
+                required: ['name', 'gender'],
+            };
+
+            // generate a random database-name
+            const name = randomCouchString(10);
+
+            // create a database
+            const db = await createRxDatabase({
+                name,
+                /**
+                 * By calling config.storage.getStorage(),
+                 * we can ensure that all variations of RxStorage are tested in the CI.
+                 */
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+
+            // insert a document
+            await collections.mycollection.insert({
+                name: 'test1',
+                gender: 'male',
+                birthyear: 2000
+            });
+
+            // remove a document
+            await collections.mycollection.findOne({
+                selector: {
+                    name: 'test1'
+                }
+            }).remove();
+
+            // insert document again
+            await collections.mycollection.insert({
+                name: 'test1',
+                gender: 'male',
+                birthyear: 2000
+            });
+
+            // remove document again
+            await collections.mycollection.findOne({
+                selector: {
+                    name: 'test1'
+                }
+            }).remove();
+
+            // clean up afterwards
+            db.destroy();
+        });
     });
 });
