@@ -1210,13 +1210,6 @@ describe('rx-collection.test.js', () => {
                         return;
                     }
 
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
-
                     const dbName = randomCouchString();
 
                     const createDb = async () => {
@@ -1233,20 +1226,11 @@ describe('rx-collection.test.js', () => {
 
                     const db1 = await createDb();
 
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
-                    console.log('db1 token: ' + db1.token);
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
-
                     await db1.collections['human-2'].insert(schemaObjects.simpleHuman());
 
                     // remove the collection on one database
                     await db1['human-2'].remove();
                     await db1.destroy();
-
-
-                    console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx DESTROYED DB1');
 
                     const db2 = await createDb();
 
@@ -1255,8 +1239,6 @@ describe('rx-collection.test.js', () => {
                      */
                     const changesResult = await db2['human-2'].storageInstance.getChangedDocumentsSince(10);
                     assert.strictEqual(changesResult.length, 0);
-
-                    process.exit();
 
                     db2.destroy();
                 });
