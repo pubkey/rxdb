@@ -461,7 +461,6 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 assert.deepStrictEqual(deleteResponse.error, {});
                 previous = getFromObjectOrThrow(deleteResponse.success, docId);
 
-
                 /**
                  * Doing an un-delete without sending the previous state,
                  * must cause a conflict error.

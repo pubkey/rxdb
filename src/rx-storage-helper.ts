@@ -294,19 +294,12 @@ export function categorizeBulkWriteRows<RxDocType>(
             // update existing document
             const revInDb: string = documentInDb._rev;
 
-            // inserting a deleted document is possible
-            // without sending the previous data.
-            if (!writeRow.previous && documentInDb._deleted) {
-                writeRow.previous = documentInDb;
-            }
-
             /**
              * Check for conflict
              */
             if (
                 (
-                    !writeRow.previous &&
-                    !documentInDb._deleted
+                    !writeRow.previous
                 ) ||
                 (
                     !!writeRow.previous &&
