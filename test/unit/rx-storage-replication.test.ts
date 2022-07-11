@@ -49,10 +49,25 @@ import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 const useParallel = config.storage.name === 'dexie-worker' ? describe : config.parallel;
 useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.name + ')', () => {
-    const THROWING_CONFLICT_HANDLER: RxConflictHandler<any> = () => {
+    const THROWING_CONFLICT_HANDLER: RxConflictHandler<any> = (input) => {
+
+        if (input.newDocumentState._rev === input.realMasterState._rev) {
+            return Promise.resolve({
+                isEqual: true
+            });
+        }
+
+        console.log(JSON.stringify(input, null, 4));
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called.');
     }
-    const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = async (i: RxConflictHandlerInput<HumanDocumentType>) => {
+    const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<RxDocumentData<any>> = async (i: RxConflictHandlerInput<RxDocumentData<HumanDocumentType>>) => {
+
+        if (i.newDocumentState._rev === i.realMasterState._rev) {
+            return {
+                isEqual: true
+            };
+        }
+
         const docA = i.newDocumentState;
         const docB = i.realMasterState;
 
@@ -66,10 +81,12 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
         const ageB = docB.age ? docB.age : 0;
         if (ageA > ageB) {
             return {
+                isEqual: false,
                 documentData: docA
             };
         } else if (ageB > ageA) {
             return {
+                isEqual: false,
                 documentData: docB
             };
         } else {

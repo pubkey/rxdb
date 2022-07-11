@@ -12,9 +12,15 @@ import {
     lastOfArray,
     ensureNotFalsy
 } from '../util';
-import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
+import {
+    getLastCheckpointDoc,
+    setCheckpoint
+} from './checkpoint';
 import { resolveConflictError } from './conflicts';
-import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
+import {
+    getAssumedMasterState,
+    getMetaWriteRow
+} from './meta-instance';
 
 /**
  * Writes all document changes from the client to the master.
@@ -107,35 +113,40 @@ export function startReplicationUpstream<RxDocType>(
                 const writeRowsToMaster: BulkWriteRow<RxDocType>[] = [];
                 const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
 
-                useUpDocs.forEach(doc => {
-                    const docId: string = (doc as any)[state.primaryPath];
-                    const useDoc = flatCloneDocWithMeta(doc);
-                    useDoc._meta.lwt = now();
+                await Promise.all(
+                    useUpDocs.map(async (doc) => {
+                        const docId: string = (doc as any)[state.primaryPath];
+                        const useDoc = flatCloneDocWithMeta(doc);
+                        useDoc._meta.lwt = now();
 
-                    const assumedMasterDoc = assumedMasterState[docId];
+                        const assumedMasterDoc = assumedMasterState[docId];
 
-                    /**
-                     * If the master state is equal to the
-                     * fork state, we can assume that the document state is already
-                     * replicated.
-                     */
-                    if (
-                        assumedMasterDoc &&
-                        assumedMasterDoc.docData._rev === useDoc._rev
-                    ) {
-                        return;
-                    }
+                        /**
+                         * If the master state is equal to the
+                         * fork state, we can assume that the document state is already
+                         * replicated.
+                         */
+                        if (
+                            assumedMasterDoc &&
+                            (await state.input.conflictHandler({
+                                realMasterState: assumedMasterDoc.docData,
+                                newDocumentState: useDoc
+                            }, 'upstream-check-if-equal')).isEqual
+                        ) {
+                            return;
+                        }
 
-                    writeRowsToMaster.push({
-                        previous: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
-                        document: useDoc
-                    });
-                    writeRowsToMeta[docId] = getMetaWriteRow(
-                        state,
-                        useDoc,
-                        assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined
-                    );
-                });
+                        writeRowsToMaster.push({
+                            previous: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
+                            document: useDoc
+                        });
+                        writeRowsToMeta[docId] = getMetaWriteRow(
+                            state,
+                            useDoc,
+                            assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined
+                        );
+                    })
+                );
 
                 if (writeRowsToMaster.length === 0) {
                     return;

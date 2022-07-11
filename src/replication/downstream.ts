@@ -95,70 +95,85 @@ export function startReplicationDownstream<RxDocType>(
                 const writeRowsToFork: BulkWriteRow<RxDocType>[] = [];
                 const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
                 const useMetaWriteRows: BulkWriteRow<RxStorageReplicationMeta>[] = [];
-                docIds.forEach(docId => {
-                    const forkState: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
-                    const masterState = downDocsById[docId];
-                    const assumedMaster = assumedMasterState[docId];
 
-                    if (
-                        (
-                            forkState && assumedMaster &&
-                            assumedMaster.docData._rev !== forkState._rev
-                        ) ||
-                        (
-                            forkState && !assumedMaster
-                        )
-                    ) {
-                        /**
-                         * We have a non-upstream-replicated
-                         * local write to the fork.
-                         * This means we ignore the downstream of this document
-                         * because anyway the upstream will first resolve the conflict.
-                         */
-                        return;
-                    }
 
-                    if (
-                        forkState &&
-                        forkState._rev === masterState._rev
-                    ) {
-                        /**
-                         * Document states are exactly equal.
-                         * This can happen when the replication is shut down
-                         * unexpected like when the user goes offline.
-                         * 
-                         * Only when the assumedMaster is differnt from the forkState,
-                         * we have to patch the document in the meta instance.
-                         */
+                await Promise.all(
+                    docIds.map(async (docId) => {
+                        const forkState: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
+                        const masterState = downDocsById[docId];
+                        const assumedMaster = assumedMasterState[docId];
+
+
+                        const isAssumedMasterEqualToForkState = assumedMaster && forkState ? (await state.input.conflictHandler({
+                            realMasterState: assumedMaster.docData,
+                            newDocumentState: forkState
+                        }, 'downstream-check-if-equal')).isEqual === true : false;
+
                         if (
-                            !assumedMaster ||
-                            assumedMaster.docData._rev !== forkState._rev
+                            (
+                                forkState &&
+                                assumedMaster &&
+                                isAssumedMasterEqualToForkState === false
+                            ) ||
+                            (
+                                forkState && !assumedMaster
+                            )
                         ) {
-                            useMetaWriteRows.push(
-                                getMetaWriteRow(
-                                    state,
-                                    forkState,
-                                    assumedMaster ? assumedMaster.metaDocument : undefined
-                                )
-                            );
+                            /**
+                             * We have a non-upstream-replicated
+                             * local write to the fork.
+                             * This means we ignore the downstream of this document
+                             * because anyway the upstream will first resolve the conflict.
+                             */
+                            return;
                         }
-                        return;
-                    }
 
-                    /**
-                     * All other master states need to be written to the forkInstance
-                     * and metaInstance.
-                     */
-                    writeRowsToFork.push({
-                        previous: forkState,
-                        document: masterState
-                    });
-                    writeRowsToMeta[docId] = getMetaWriteRow(
-                        state,
-                        masterState,
-                        assumedMaster ? assumedMaster.metaDocument : undefined
-                    );
-                });
+                        if (
+                            forkState &&
+                            (await state.input.conflictHandler({
+                                realMasterState: masterState,
+                                newDocumentState: forkState
+                            }, 'downstream-check-if-equal')).isEqual
+                        ) {
+                            /**
+                             * Document states are exactly equal.
+                             * This can happen when the replication is shut down
+                             * unexpected like when the user goes offline.
+                             * 
+                             * Only when the assumedMaster is different from the forkState,
+                             * we have to patch the document in the meta instance.
+                             */
+                            if (
+                                !assumedMaster ||
+                                isAssumedMasterEqualToForkState === false
+                            ) {
+                                useMetaWriteRows.push(
+                                    getMetaWriteRow(
+                                        state,
+                                        forkState,
+                                        assumedMaster ? assumedMaster.metaDocument : undefined
+                                    )
+                                );
+                            }
+                            return;
+                        }
+
+                        /**
+                         * All other master states need to be written to the forkInstance
+                         * and metaInstance.
+                         */
+                        writeRowsToFork.push({
+                            previous: forkState,
+                            document: masterState
+                        });
+                        writeRowsToMeta[docId] = getMetaWriteRow(
+                            state,
+                            masterState,
+                            assumedMaster ? assumedMaster.metaDocument : undefined
+                        );
+                    })
+                );
+
 
                 if (writeRowsToFork.length > 0) {
                     const forkWriteResult = await state.input.forkInstance.bulkWrite(writeRowsToFork);

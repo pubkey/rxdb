@@ -1,3 +1,4 @@
+import deepEqual from 'fast-deep-equal';
 import type {
     RxConflictHandler,
     RxConflictHandlerInput,
@@ -11,18 +12,28 @@ export const defaultConflictHandler: RxConflictHandler<any> = async function (
     i: RxConflictHandlerInput<any>,
     _context: string
 ): Promise<RxConflictHandlerOutput<any>> {
+    if (deepEqual(
+        i.newDocumentState,
+        i.realMasterState
+    )) {
+        return {
+            isEqual: true
+        }
+    }
+
     /**
      * The default conflict handler will always
      * drop the fork state and use the master state instead.
      */
     return {
+        isEqual: false,
         documentData: i.realMasterState
     };
 }
 
 
 /**
- * Resolves a conflict error.
+ * Resolves a conflict error or determines that the given document states are equal.
  * Returns the resolved document that must be written to the fork.
  * Then the new document state can be pushed upstream.
  * If document is not in conflict, returns undefined.
@@ -41,7 +52,14 @@ export async function resolveConflictError<RxDocType>(
         throw new Error('Non conflict error');
     }
     const documentInDb = ensureNotFalsy(error.documentInDb);
-    if (documentInDb._rev === error.writeRow.document._rev) {
+
+    const conflictHandlerOutput = await conflictHandler({
+        assumedMasterState: error.writeRow.previous,
+        newDocumentState: error.writeRow.document,
+        realMasterState: documentInDb
+    }, 'rx-storage-replication');
+
+    if (conflictHandlerOutput.isEqual) {
         /**
          * Documents are equal,
          * so this is not a conflict -> do nothing.
@@ -49,14 +67,9 @@ export async function resolveConflictError<RxDocType>(
         return undefined;
     } else {
         /**
-         * We have a conflict, resolve it!
+         * We have a resolved conflict,
+         * use the resolved document data.
          */
-        const conflictHandlerOutput = await conflictHandler({
-            assumedMasterState: error.writeRow.previous,
-            newDocumentState: error.writeRow.document,
-            realMasterState: documentInDb
-        }, 'rx-storage-replication');
-
         const resolvedDoc: RxDocumentData<RxDocType> = Object.assign(
             {},
             conflictHandlerOutput.documentData,

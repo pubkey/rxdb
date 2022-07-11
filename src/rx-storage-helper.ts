@@ -875,6 +875,11 @@ export function getWrappedStorageInstance<
             );
         },
         resolveConflictResultionTask(taskSolution) {
+
+            if (taskSolution.output.isEqual) {
+                return storageInstance.resolveConflictResultionTask(taskSolution);
+            }
+
             const hookParams = {
                 database,
                 primaryPath,
@@ -902,6 +907,7 @@ export function getWrappedStorageInstance<
             return storageInstance.resolveConflictResultionTask({
                 id: taskSolution.id,
                 output: {
+                    isEqual: false,
                     documentData
                 }
             });
