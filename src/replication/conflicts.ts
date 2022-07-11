@@ -1,5 +1,3 @@
-import { ensureNotFalsy, flatClone } from 'event-reduce-js';
-import { now } from 'oblivious-set';
 import type {
     RxConflictHandler,
     RxConflictHandlerInput,
@@ -7,7 +5,7 @@ import type {
     RxDocumentData,
     RxStorageBulkWriteError
 } from '../types';
-import { getDefaultRevision, createRevision } from '../util';
+import { getDefaultRevision, createRevision, now, ensureNotFalsy, flatClone } from '../util';
 
 export const defaultConflictHandler: RxConflictHandler<any> = async function (
     i: RxConflictHandlerInput<any>,

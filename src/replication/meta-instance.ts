@@ -1,5 +1,7 @@
-import { now } from 'oblivious-set';
-import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper';
+import {
+    fillWithDefaultSettings,
+    getComposedPrimaryKeyOfDocumentData
+} from '../rx-schema-helper';
 import { flatCloneDocWithMeta } from '../rx-storage-helper';
 import type {
     BulkWriteRow,
@@ -8,7 +10,7 @@ import type {
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta
 } from '../types';
-import { getDefaultRevision, createRevision } from '../util';
+import { getDefaultRevision, createRevision, now } from '../util';
 
 export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> = fillWithDefaultSettings({
     primaryKey: {

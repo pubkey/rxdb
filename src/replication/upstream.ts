@@ -1,5 +1,3 @@
-import { lastOfArray, ensureNotFalsy } from 'event-reduce-js';
-import { now } from 'oblivious-set';
 import { firstValueFrom, filter } from 'rxjs';
 import { flatCloneDocWithMeta } from '../rx-storage-helper';
 import type {
@@ -8,7 +6,7 @@ import type {
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta
 } from '../types';
-import { PROMISE_RESOLVE_VOID, parseRevision } from '../util';
+import { PROMISE_RESOLVE_VOID, parseRevision, now, lastOfArray, ensureNotFalsy } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { resolveConflictError } from './conflicts';
 import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';

@@ -1,4 +1,3 @@
-import { lastOfArray } from 'event-reduce-js';
 import { firstValueFrom, filter } from 'rxjs';
 import type {
     RxStorageInstanceReplicationState,
@@ -9,7 +8,7 @@ import type {
     RxDocumentData
 
 } from '../types';
-import { PROMISE_RESOLVE_VOID } from '../util';
+import { lastOfArray, PROMISE_RESOLVE_VOID } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
 
