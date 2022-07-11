@@ -231,7 +231,7 @@
     "memdown": "6.1.1",
     "mocha": "9.0.2",
     "mocha.parallel": "0.15.6",
-    "nconf": "0.11.4",
+    "nconf": "0.12.0",
     "pouchdb": "7.3.0",
     "pouchdb-adapter-idb": "7.3.0",
     "pouchdb-adapter-leveldb": "7.3.0",
