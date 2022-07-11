@@ -504,7 +504,6 @@ export class RxReplicationStateBase<RxDocType> {
         return Promise.resolve('ok');
     }
 
-
     /**
      * Pushes unreplicated local changes to the remote.
      * @return true if successfull, false if not

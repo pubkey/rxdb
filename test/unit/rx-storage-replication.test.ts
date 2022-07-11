@@ -532,8 +532,8 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
              * Ensure it only contains the _meta fields that we really need.
              */
             const masterDoc = (await runQuery(masterInstance))[0];
-            // should only have the 'lwt' and the revision from the upstream.
-            assert.strictEqual(Object.keys(masterDoc._meta).length, 2)
+            // should only have the 'lwt'
+            assert.strictEqual(Object.keys(masterDoc._meta).length, 1);
 
             // const forkDoc = (await runQuery(forkInstance))[0];
             // should only have the 'lwt' AND the current state of the master.

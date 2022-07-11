@@ -6,11 +6,15 @@ import type {
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta
 } from '../types';
-import { PROMISE_RESOLVE_VOID, parseRevision, now, lastOfArray, ensureNotFalsy } from '../util';
+import {
+    PROMISE_RESOLVE_VOID,
+    now,
+    lastOfArray,
+    ensureNotFalsy
+} from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { resolveConflictError } from './conflicts';
 import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
-import { FROM_FORK_FLAG_SUFFIX } from './replication-helper';
 
 /**
  * Writes all document changes from the client to the master.
@@ -106,7 +110,6 @@ export function startReplicationUpstream<RxDocType>(
                 useUpDocs.forEach(doc => {
                     const docId: string = (doc as any)[state.primaryPath];
                     const useDoc = flatCloneDocWithMeta(doc);
-                    useDoc._meta[state.checkpointKey + FROM_FORK_FLAG_SUFFIX] = useDoc._rev;
                     useDoc._meta.lwt = now();
 
                     const assumedMasterDoc = assumedMasterState[docId];
@@ -119,23 +122,6 @@ export function startReplicationUpstream<RxDocType>(
                     if (
                         assumedMasterDoc &&
                         assumedMasterDoc.docData._rev === useDoc._rev
-                    ) {
-                        return;
-                    }
-
-                    /**
-                     * If the assumed master state has a heigher revision height
-                     * then the current document state,
-                     * we can assume that a downstream replication has happend in between
-                     * and we can drop this upstream replication.
-                     * 
-                     * TODO there is no real reason why this should ever happen,
-                     * however the replication did not work on the PouchDB RxStorage
-                     * without this fix.
-                     */
-                    if (
-                        assumedMasterDoc &&
-                        parseRevision(assumedMasterDoc.docData._rev).height >= parseRevision(useDoc._rev).height
                     ) {
                         return;
                     }
