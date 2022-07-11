@@ -351,37 +351,57 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                 conflictHandler: THROWING_CONFLICT_HANDLER
             });
 
-
             // insert a document on A
             const writeData = getDocData();
             await forkInstanceA.bulkWrite([{ document: writeData }]);
 
-            // find the document on master
-            await waitUntil(async () => {
-                try {
-                    const foundAgain = await forkInstanceB.findDocumentsById([writeData.passportId], false);
-                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
-                    assert.strictEqual(foundDoc.passportId, writeData.passportId);
-                    return true;
-                } catch (err) {
-                    return false;
-                }
-            }, 10 * 1000, 100);
+            async function waitUntilADocExists(
+                instance: typeof forkInstanceA
+            ) {
+                await waitUntil(async () => {
+                    try {
+                        const foundAgain = await instance.findDocumentsById([writeData.passportId], false);
+                        const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                        assert.strictEqual(foundDoc.passportId, writeData.passportId);
+                        return true;
+                    } catch (err) {
+                        return false;
+                    }
+                }, 10 * 1000, 50);
+            }
+
+            await Promise.all([
+                waitUntilADocExists(forkInstanceA),
+                waitUntilADocExists(forkInstanceB),
+                waitUntilADocExists(forkInstanceC),
+                waitUntilADocExists(masterInstance)
+            ]);
 
             // insert a document on Master
             const writeDataMaster = getDocData();
             await masterInstance.bulkWrite([{ document: writeDataMaster }]);
+
+            async function waitUntilMasterDocExists(
+                instance: typeof forkInstanceA
+            ) {
+                await waitUntil(async () => {
+                    try {
+                        const foundAgain = await instance.findDocumentsById([writeDataMaster.passportId], false);
+                        const foundDoc = getFromObjectOrThrow(foundAgain, writeDataMaster.passportId);
+                        assert.strictEqual(foundDoc.passportId, writeDataMaster.passportId);
+                        return true;
+                    } catch (err) {
+                        return false;
+                    }
+                }, 10 * 1000, 50);
+            }
+
+            // find the document on C
+            await waitUntilMasterDocExists(forkInstanceC);
+            // find the document on B
+            await waitUntilMasterDocExists(forkInstanceB);
             // find the document on A
-            await waitUntil(async () => {
-                try {
-                    const foundAgain = await forkInstanceB.findDocumentsById([writeDataMaster.passportId], false);
-                    const foundDoc = getFromObjectOrThrow(foundAgain, writeDataMaster.passportId);
-                    assert.strictEqual(foundDoc.passportId, writeDataMaster.passportId);
-                    return true;
-                } catch (err) {
-                    return false;
-                }
-            }, 10 * 1000, 100);
+            await waitUntilMasterDocExists(forkInstanceA);
 
             await cleanUp(replicationStateAtoB);
             await cleanUp(replicationStateBtoC);
