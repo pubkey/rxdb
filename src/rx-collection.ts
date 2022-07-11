@@ -110,7 +110,7 @@ import {
     storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError
 } from './rx-storage-helper';
-import { defaultConflictHandler } from './rx-storage-replication';
+import { defaultConflictHandler } from './replication';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
