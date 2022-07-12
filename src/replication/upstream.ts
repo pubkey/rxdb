@@ -3,8 +3,12 @@ import { flatCloneDocWithMeta } from '../rx-storage-helper';
 import type {
     BulkWriteRow,
     BulkWriteRowById,
+    ById,
+    RxDocumentData,
+    RxReplicationWriteToMasterRow,
     RxStorageInstanceReplicationState,
-    RxStorageReplicationMeta
+    RxStorageReplicationMeta,
+    WithDeleted
 } from '../types';
 import {
     PROMISE_RESOLVE_VOID,
@@ -28,6 +32,7 @@ import {
 export function startReplicationUpstream<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
+    const replicationHandler = state.input.replicationHandler;
     let writeToMasterQueue: Promise<any> = PROMISE_RESOLVE_VOID;
 
     let inQueueCount = 0;
@@ -110,12 +115,15 @@ export function startReplicationUpstream<RxDocType>(
                     state,
                     useUpDocs.map(d => (d as any)[state.primaryPath])
                 );
-                const writeRowsToMaster: BulkWriteRow<RxDocType>[] = [];
+                const writeRowsToMaster: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
+                const writeRowsToMasterIds: string[] = [];
                 const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
 
+                const forkStateById: ById<RxDocumentData<RxDocType>> = {};
                 await Promise.all(
                     useUpDocs.map(async (doc) => {
                         const docId: string = (doc as any)[state.primaryPath];
+                        forkStateById[docId] = doc;
                         const useDoc = flatCloneDocWithMeta(doc);
                         useDoc._meta.lwt = now();
 
@@ -127,7 +135,10 @@ export function startReplicationUpstream<RxDocType>(
                          * replicated.
                          */
                         if (
+
                             assumedMasterDoc &&
+                            // if the isResolvedConflict is correct, we do not have to compare the documents.
+                            assumedMasterDoc.metaDocument.isResolvedConflict !== useDoc._rev &&
                             (await state.input.conflictHandler({
                                 realMasterState: assumedMasterDoc.docData,
                                 newDocumentState: useDoc
@@ -136,10 +147,11 @@ export function startReplicationUpstream<RxDocType>(
                             return;
                         }
 
-                        writeRowsToMaster.push({
-                            previous: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
-                            document: useDoc
-                        });
+                        writeRowsToMasterIds.push(docId);
+                        writeRowsToMaster[docId] = {
+                            assumedMasterState: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
+                            newDocumentState: useDoc
+                        };
                         writeRowsToMeta[docId] = getMetaWriteRow(
                             state,
                             useDoc,
@@ -148,15 +160,28 @@ export function startReplicationUpstream<RxDocType>(
                     })
                 );
 
-                if (writeRowsToMaster.length === 0) {
+                if (writeRowsToMasterIds.length === 0) {
                     return;
                 }
-                const masterWriteResult = await state.input.masterInstance.bulkWrite(writeRowsToMaster);
+
+                const masterWriteResult = await replicationHandler.masterWrite(Object.values(writeRowsToMaster));
+                const conflictIds: Set<string> = new Set();
+                const conflictsById: ById<WithDeleted<RxDocType>> = {};
+                masterWriteResult.forEach(conflictDoc => {
+                    const id = (conflictDoc as any)[state.primaryPath];
+                    conflictIds.add(id);
+                    conflictsById[id] = conflictDoc;
+                });
 
                 const useWriteRowsToMeta: BulkWriteRow<RxStorageReplicationMeta>[] = [];
-                Object.keys(masterWriteResult.success).forEach(docId => {
-                    useWriteRowsToMeta.push(writeRowsToMeta[docId]);
+
+
+                writeRowsToMasterIds.forEach(docId => {
+                    if (!conflictIds.has(docId)) {
+                        useWriteRowsToMeta.push(writeRowsToMeta[docId]);
+                    }
                 });
+
                 if (useWriteRowsToMeta.length > 0) {
                     await state.input.metaInstance.bulkWrite(useWriteRowsToMeta);
                     // TODO what happens when we have conflicts here?
@@ -168,29 +193,37 @@ export function startReplicationUpstream<RxDocType>(
                  * to the meta instance.
                  * Non-409 errors will be detected by resolveConflictError()
                  */
-                if (Object.keys(masterWriteResult.error).length > 0) {
+                if (conflictIds.size > 0) {
                     const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
                     const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
                     await Promise.all(
                         Object
-                            .entries(masterWriteResult.error)
-                            .map(async ([docId, error]) => {
+                            .entries(conflictsById)
+                            .map(async ([docId, realMasterState]) => {
+                                const writeToMasterRow = writeRowsToMaster[docId];
+
                                 const resolved = await resolveConflictError(
                                     state.input.conflictHandler,
-                                    error
+                                    {
+                                        newDocumentState: writeToMasterRow.newDocumentState,
+                                        assumedMasterState: writeToMasterRow.assumedMasterState,
+                                        realMasterState
+                                    },
+                                    forkStateById[docId]
                                 );
                                 if (resolved) {
                                     conflictWriteFork.push({
-                                        previous: error.writeRow.document,
+                                        previous: forkStateById[docId],
                                         document: resolved
                                     });
+                                    const assumedMasterDoc = assumedMasterState[docId];
+                                    conflictWriteMeta[docId] = getMetaWriteRow(
+                                        state,
+                                        ensureNotFalsy(realMasterState),
+                                        assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined,
+                                        resolved._rev
+                                    );
                                 }
-                                const assumedMasterDoc = assumedMasterState[docId];
-                                conflictWriteMeta[docId] = getMetaWriteRow(
-                                    state,
-                                    ensureNotFalsy(error.documentInDb),
-                                    assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined
-                                );
                             })
                     );
 

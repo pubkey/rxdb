@@ -21,19 +21,28 @@ import {
     BehaviorSubject,
     combineLatest,
     filter,
-    firstValueFrom
+    firstValueFrom,
+    map
 } from 'rxjs';
 import {
     getPrimaryFieldOfPrimaryKey
 } from '../rx-schema-helper';
 import type {
+    EventBulk,
+    RxDocumentData,
+    RxReplicationHandler,
+    RxStorageInstance,
     RxStorageInstanceReplicationInput,
-    RxStorageInstanceReplicationState} from '../types';
+    RxStorageInstanceReplicationState
+} from '../types';
 import {
+    ensureNotFalsy,
+    lastOfArray,
     PROMISE_RESOLVE_VOID
 } from '../util';
 import {
-    getCheckpointKey} from './checkpoint';
+    getCheckpointKey
+} from './checkpoint';
 import { startReplicationDownstream } from './downstream';
 import { startReplicationUpstream } from './upstream';
 
@@ -42,7 +51,7 @@ export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
 ): RxStorageInstanceReplicationState<RxDocType> {
     const state: RxStorageInstanceReplicationState<RxDocType> = {
-        primaryPath: getPrimaryFieldOfPrimaryKey(input.masterInstance.schema.primaryKey),
+        primaryPath: getPrimaryFieldOfPrimaryKey(input.forkInstance.schema.primaryKey),
         input,
         checkpointKey: getCheckpointKey(input),
         canceled: new BehaviorSubject<boolean>(false),
@@ -99,4 +108,64 @@ export async function awaitRxStorageReplicationIdle(
             return;
         }
     }
+}
+
+
+export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpointType>(
+    instance: RxStorageInstance<RxDocType, any, any, MasterCheckpointType>,
+): RxReplicationHandler<RxDocumentData<RxDocType>, MasterCheckpointType> {
+    return {
+        masterChangeStream$: instance.changeStream().pipe(
+            map(eventBulk => {
+                const ret: EventBulk<RxDocumentData<RxDocType>, MasterCheckpointType> = {
+                    id: eventBulk.id,
+                    checkpoint: eventBulk.checkpoint,
+                    events: eventBulk.events.map(event => {
+                        if (event.change.doc) {
+                            return event.change.doc as any;
+                        } else {
+                            return event.change.previous as any;
+                        }
+                    })
+                };
+                return ret;
+            })
+        ),
+        masterChangesSince(
+            checkpoint,
+            bulkSize
+        ) {
+            return instance.getChangedDocumentsSince(
+                bulkSize,
+                checkpoint
+            ).then(result => {
+                return {
+                    checkpoint: result.length > 0 ? lastOfArray(result).checkpoint : checkpoint,
+                    documentsData: result.map(r => r.document)
+                }
+            })
+        },
+        async masterWrite(
+            rows
+        ) {
+            const result = await instance.bulkWrite(
+                rows.map(r => ({
+                    previous: r.assumedMasterState,
+                    document: r.newDocumentState
+                }))
+            );
+
+            const conflicts: RxDocumentData<RxDocType>[] = [];
+            Object
+                .values(result.error)
+                .forEach(err => {
+                    if (err.status !== 409) {
+                        throw new Error('non conflict error');
+                    } else {
+                        conflicts.push(ensureNotFalsy(err.documentInDb));
+                    }
+                });
+            return conflicts;
+        }
+    };
 }

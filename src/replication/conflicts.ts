@@ -3,10 +3,14 @@ import type {
     RxConflictHandler,
     RxConflictHandlerInput,
     RxConflictHandlerOutput,
-    RxDocumentData,
-    RxStorageBulkWriteError
+    RxDocumentData
 } from '../types';
-import { getDefaultRevision, createRevision, now, ensureNotFalsy, flatClone } from '../util';
+import {
+    getDefaultRevision,
+    createRevision,
+    now,
+    flatClone
+} from '../util';
 
 export const defaultConflictHandler: RxConflictHandler<any> = async function (
     i: RxConflictHandlerInput<any>,
@@ -42,22 +46,10 @@ export const defaultConflictHandler: RxConflictHandler<any> = async function (
  */
 export async function resolveConflictError<RxDocType>(
     conflictHandler: RxConflictHandler<RxDocType>,
-    error: RxStorageBulkWriteError<RxDocType>
+    input: RxConflictHandlerInput<RxDocType>,
+    forkState: RxDocumentData<RxDocType>
 ): Promise<RxDocumentData<RxDocType> | undefined> {
-    if (error.status !== 409) {
-        /**
-         * If this ever happens,
-         * make a PR with a unit test to reproduce it.
-         */
-        throw new Error('Non conflict error');
-    }
-    const documentInDb = ensureNotFalsy(error.documentInDb);
-
-    const conflictHandlerOutput = await conflictHandler({
-        assumedMasterState: error.writeRow.previous,
-        newDocumentState: error.writeRow.document,
-        realMasterState: documentInDb
-    }, 'rx-storage-replication');
+    const conflictHandlerOutput = await conflictHandler(input, 'rx-storage-replication');
 
     if (conflictHandlerOutput.isEqual) {
         /**
@@ -78,13 +70,13 @@ export async function resolveConflictError<RxDocType>(
                  * Because the resolved conflict is written to the fork,
                  * we have to keep/update the forks _meta data, not the masters.
                  */
-                _meta: flatClone(error.writeRow.document._meta),
+                _meta: flatClone(forkState._meta),
                 _rev: getDefaultRevision(),
-                _attachments: flatClone(error.writeRow.document._attachments)
+                _attachments: flatClone(forkState._attachments)
             }
         );
         resolvedDoc._meta.lwt = now();
-        resolvedDoc._rev = createRevision(resolvedDoc, error.writeRow.document);
+        resolvedDoc._rev = createRevision(resolvedDoc, forkState);
         return resolvedDoc;
     }
 }

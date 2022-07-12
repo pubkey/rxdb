@@ -98,9 +98,6 @@ export function getCheckpointKey<RxDocType>(
 ): string {
     const hash = fastUnsecureHash([
         input.identifier,
-        input.masterInstance.storage.name,
-        input.masterInstance.databaseName,
-        input.masterInstance.collectionName,
         input.forkInstance.storage.name,
         input.forkInstance.databaseName,
         input.forkInstance.collectionName

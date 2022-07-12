@@ -1,14 +1,15 @@
 import { firstValueFrom, filter } from 'rxjs';
 import type {
     RxStorageInstanceReplicationState,
-    RxDocumentDataById,
     BulkWriteRow,
     BulkWriteRowById,
     RxStorageReplicationMeta,
-    RxDocumentData
+    RxDocumentData,
+    ById,
+    WithDeleted
 
 } from '../types';
-import { lastOfArray, PROMISE_RESOLVE_VOID } from '../util';
+import { createRevision, getDefaultRevision, getDefaultRxDocumentMeta, now, PROMISE_RESOLVE_VOID } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
 
@@ -18,6 +19,7 @@ import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
 export function startReplicationDownstream<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
+    const replicationHandler = state.input.replicationHandler;
     let inQueueCount = 0;
     state.streamQueue.down = state.streamQueue.down.then(() => downstreamSyncOnce());
 
@@ -35,7 +37,7 @@ export function startReplicationDownstream<RxDocType>(
     /**
      * If a write on the master happens, we have to trigger the downstream.
      */
-    const sub = state.input.masterInstance.changeStream().subscribe(() => {
+    const sub = replicationHandler.masterChangeStream$.subscribe(() => {
         addRunAgain();
     });
     firstValueFrom(
@@ -61,19 +63,21 @@ export function startReplicationDownstream<RxDocType>(
 
         let done = false;
         while (!done && !state.canceled.getValue()) {
-            const downResult = await state.input.masterInstance.getChangedDocumentsSince(
-                state.input.bulkSize,
-                state.lastCheckpoint.down
+
+            const downResult = await replicationHandler.masterChangesSince(
+                state.lastCheckpoint.down,
+                state.input.bulkSize
             );
-            if (downResult.length === 0) {
+
+            if (downResult.documentsData.length === 0) {
                 done = true;
                 continue;
             }
 
-            const useDownDocs = downResult.map(r => r.document);
-            state.lastCheckpoint.down = lastOfArray(downResult).checkpoint;
+            const useDownDocs = downResult.documentsData;
+            state.lastCheckpoint.down = downResult.checkpoint;
             writeToChildQueue = writeToChildQueue.then((async () => {
-                const downDocsById: RxDocumentDataById<RxDocType> = {};
+                const downDocsById: ById<WithDeleted<RxDocType>> = {};
                 const docIds = useDownDocs
                     .map(d => {
                         const id = (d as any)[state.primaryPath];
@@ -104,10 +108,23 @@ export function startReplicationDownstream<RxDocType>(
                         const assumedMaster = assumedMasterState[docId];
 
 
+                        if (
+                            assumedMaster &&
+                            assumedMaster.metaDocument.isResolvedConflict === forkState._rev
+                        ) {
+                            /**
+                             * The current fork state represents a resolved conflict
+                             * that first must be send to the master in the upstream.
+                             * All conflicts are resolved by the upstream.
+                             */
+                            return;
+                        }
+
+
                         const isAssumedMasterEqualToForkState = assumedMaster && forkState ? (await state.input.conflictHandler({
                             realMasterState: assumedMaster.docData,
                             newDocumentState: forkState
-                        }, 'downstream-check-if-equal')).isEqual === true : false;
+                        }, 'downstream-check-if-equal-0')).isEqual === true : false;
 
                         if (
                             (
@@ -133,7 +150,7 @@ export function startReplicationDownstream<RxDocType>(
                             (await state.input.conflictHandler({
                                 realMasterState: masterState,
                                 newDocumentState: forkState
-                            }, 'downstream-check-if-equal')).isEqual
+                            }, 'downstream-check-if-equal-1')).isEqual
                         ) {
                             /**
                              * Document states are exactly equal.
@@ -162,9 +179,26 @@ export function startReplicationDownstream<RxDocType>(
                          * All other master states need to be written to the forkInstance
                          * and metaInstance.
                          */
+                        const newForkState = Object.assign(
+                            {},
+                            masterState,
+                            forkState ? {
+                                _meta: forkState._meta,
+                                _attachments: {},
+                                _rev: getDefaultRevision()
+                            } : {
+                                _meta: getDefaultRxDocumentMeta(),
+                                _rev: getDefaultRevision(),
+                                _attachments: {}
+                            });
+                        newForkState._meta.lwt = now();
+                        newForkState._rev = (masterState as any)._rev ? (masterState as any)._rev : createRevision(
+                            newForkState,
+                            forkState
+                        );
                         writeRowsToFork.push({
                             previous: forkState,
-                            document: masterState
+                            document: newForkState
                         });
                         writeRowsToMeta[docId] = getMetaWriteRow(
                             state,
@@ -173,7 +207,6 @@ export function startReplicationDownstream<RxDocType>(
                         );
                     })
                 );
-
 
                 if (writeRowsToFork.length > 0) {
                     const forkWriteResult = await state.input.forkInstance.bulkWrite(writeRowsToFork);

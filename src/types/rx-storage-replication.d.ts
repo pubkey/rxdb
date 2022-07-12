@@ -1,6 +1,6 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { RxConflictHandler } from './conflict-handling';
-import { RxDocumentData } from './rx-storage';
+import { EventBulk, RxDocumentData, WithDeleted } from './rx-storage';
 import type {
     RxStorageInstance
 } from './rx-storage.interface';
@@ -41,6 +41,54 @@ export type RxStorageReplicationMeta = {
      * or the checkpoint data.
      */
     data: RxDocumentData<any> | any;
+    /**
+     * If the current assumed master was written while
+     * resolving a conflict, this field contains
+     * the revision of the conflict-solution that
+     * is stored in the forkInstance.
+     */
+    isResolvedConflict?: string;
+};
+
+export type RxReplicationWriteToMasterRow<RxDocType> = {
+    assumedMasterState?: WithDeleted<RxDocType>;
+    newDocumentState: WithDeleted<RxDocType>;
+};
+
+/**
+ * The replication handler contains all logic
+ * that is required by the replication protocol
+ * to interact with the master instance.
+ * This is an abstraction so that we can use different
+ * handlers for GraphQL, REST or any other transportation layer.
+ * Even a RxStorageInstance can be wrapped in a way to represend a replication handler.
+ * 
+ * The RxStorage instance of the master branch that is
+ * replicated with the fork branch.
+ * The replication algorithm is made to make
+ * as less writes on the master as possible.
+ * The master instance is always 'the truth' which
+ * does never contain conflicting document states.
+ * All conflicts are handled on the fork branch
+ * before being replicated to the master.
+ */
+export type RxReplicationHandler<RxDocType, MasterCheckpointType> = {
+    masterChangeStream$: Observable<EventBulk<WithDeleted<RxDocType>, MasterCheckpointType>>;
+    masterChangesSince(
+        checkpoint: MasterCheckpointType,
+        bulkSize: number
+    ): Promise<{
+        checkpoint: MasterCheckpointType;
+        documentsData: WithDeleted<RxDocType>[];
+    }>;
+    /**
+     * Writes the fork changes to the master.
+     * Only returns the conflicts if there are any.
+     * (otherwise returns an empty array.)
+     */
+    masterWrite(
+        rows: RxReplicationWriteToMasterRow<RxDocType>[]
+    ): Promise<WithDeleted<RxDocType>[]>;
 };
 
 export type RxStorageInstanceReplicationInput<RxDocType> = {
@@ -52,19 +100,8 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      */
     identifier: string;
     bulkSize: number;
+    replicationHandler: RxReplicationHandler<RxDocType, any>;
     conflictHandler: RxConflictHandler<RxDocType>;
-
-    /**
-     * The RxStorage instance of the master branch that is
-     * replicated with the fork branch.
-     * The replication algorithm is made to make
-     * as less writes on the master as possible.
-     * The master instance is always 'the truth' which
-     * does never contain conflicting document states.
-     * All conflicts are handled on the fork branch
-     * before being replicated to the master.
-     */
-    masterInstance: RxStorageInstance<RxDocType, any, any>;
 
     /**
      * The fork is the one that contains the forked chain of document writes.

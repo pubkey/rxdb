@@ -5,6 +5,7 @@ import {
 import { flatCloneDocWithMeta } from '../rx-storage-helper';
 import type {
     BulkWriteRow,
+    ById,
     RxDocumentData,
     RxJsonSchema,
     RxStorageInstanceReplicationState,
@@ -48,6 +49,9 @@ export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<Rx
         data: {
             type: 'object',
             additionalProperties: true
+        },
+        isResolvedConflict: {
+            type: 'string'
         }
     },
     required: [
@@ -67,12 +71,10 @@ export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<Rx
 export async function getAssumedMasterState<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     docIds: string[]
-): Promise<{
-    [docId: string]: {
-        docData: RxDocumentData<RxDocType>;
-        metaDocument: RxDocumentData<RxStorageReplicationMeta>
-    }
-}> {
+): Promise<ById<{
+    docData: RxDocumentData<RxDocType>;
+    metaDocument: RxDocumentData<RxStorageReplicationMeta>
+}>> {
     const metaDocs = await state.input.metaInstance.findDocumentsById(
         docIds.map(docId => {
             const useId = getComposedPrimaryKeyOfDocumentData(
@@ -109,8 +111,9 @@ export async function getAssumedMasterState<RxDocType>(
 
 export function getMetaWriteRow<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
-    newMasterDocState: RxDocumentData<RxDocType>,
-    previous?: RxDocumentData<RxStorageReplicationMeta>
+    newMasterDocState: RxDocType,
+    previous?: RxDocumentData<RxStorageReplicationMeta>,
+    isResolvedConflict?: string
 ): BulkWriteRow<RxStorageReplicationMeta> {
     const docId: string = (newMasterDocState as any)[state.primaryPath];
     const newMeta: RxDocumentData<RxStorageReplicationMeta> = previous ? flatCloneDocWithMeta(
@@ -129,12 +132,13 @@ export function getMetaWriteRow<RxDocType>(
         }
     };
     newMeta.data = newMasterDocState;
-    newMeta._rev = createRevision(newMeta, previous);
+    newMeta.isResolvedConflict = isResolvedConflict;
     newMeta._meta.lwt = now();
     newMeta.id = getComposedPrimaryKeyOfDocumentData(
         RX_REPLICATION_META_INSTANCE_SCHEMA,
         newMeta
     );
+    newMeta._rev = createRevision(newMeta, previous);
     return {
         previous,
         document: newMeta
