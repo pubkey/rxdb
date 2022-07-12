@@ -182,7 +182,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     return {
                         document: data
                     }
-                })
+                }),
+                'dexie-test'
             );
 
             // const hasIndexes = await pouch.getIndexes();

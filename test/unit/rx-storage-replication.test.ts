@@ -47,9 +47,10 @@ import {
 import { HumanDocumentType } from '../helper/schemas';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
+const testContext = 'rx-storage-replication.test.ts';
 
 const useParallel = config.storage.name === 'dexie-worker' ? describe : config.parallel;
-useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.name + ')', () => {
+useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.name + ')', () => {
     const THROWING_CONFLICT_HANDLER: RxConflictHandler<any> = (input) => {
 
         if (input.newDocumentState._rev === input.realMasterState._rev) {
@@ -140,7 +141,8 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
             await storageInstance.bulkWrite(
                 new Array(documentAmount)
                     .fill(0)
-                    .map(() => ({ document: getDocData() }))
+                    .map(() => ({ document: getDocData() })),
+                testContext
             )
         }
 
@@ -244,7 +246,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
             // check ongoing doc
             await masterInstance.bulkWrite([{
                 document: getDocData()
-            }]);
+            }], testContext);
 
             await waitUntil(async () => {
                 const docsOnFork2 = await runQuery(forkInstance);
@@ -280,7 +282,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
             // check ongoing doc
             await forkInstance.bulkWrite([{
                 document: getDocData()
-            }]);
+            }], testContext);
 
             await waitUntil(async () => {
                 const docsOnMaster2 = await runQuery(masterInstance);
@@ -318,7 +320,10 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
 
             // insert a document on A
             const writeData = getDocData();
-            await forkInstanceA.bulkWrite([{ document: writeData }]);
+            await forkInstanceA.bulkWrite(
+                [{ document: writeData }],
+                testContext
+            );
 
             // find the document on B
             await waitUntil(async () => {
@@ -371,7 +376,10 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
 
             // insert a document on A
             const writeData = getDocData();
-            await forkInstanceA.bulkWrite([{ document: writeData }]);
+            await forkInstanceA.bulkWrite(
+                [{ document: writeData }],
+                testContext
+            );
 
             async function waitUntilADocExists(
                 instance: typeof forkInstanceA
@@ -397,7 +405,10 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
 
             // insert a document on Master
             const writeDataMaster = getDocData();
-            await masterInstance.bulkWrite([{ document: writeDataMaster }]);
+            await masterInstance.bulkWrite(
+                [{ document: writeDataMaster }],
+                testContext
+            );
 
             async function waitUntilMasterDocExists(
                 instance: typeof forkInstanceA
@@ -462,7 +473,10 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
 
             // insert a document on A
             const writeData = getDocData();
-            await forkInstanceA.bulkWrite([{ document: writeData }]);
+            await forkInstanceA.bulkWrite(
+                [{ document: writeData }],
+                testContext
+            );
 
 
             // find the document on B
@@ -492,7 +506,10 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
 
             await Promise.all(
                 instances
-                    .map(instance => instance.bulkWrite([{ document }]))
+                    .map(instance => instance.bulkWrite(
+                        [{ document }],
+                        testContext
+                    ))
             );
 
             const replicationState = replicateRxStorageInstance({
@@ -533,7 +550,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                         docData._meta.lwt = now();
                         await instance.bulkWrite([{
                             document: docData
-                        }])
+                        }], testContext)
                     })
             );
 
@@ -588,7 +605,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                         docData._meta.lwt = now();
                         await instance.bulkWrite([{
                             document: docData
-                        }]);
+                        }], testContext);
 
                         // update
                         const newDocData = clone(docData);
@@ -598,7 +615,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                         const updateResult = await instance.bulkWrite([{
                             previous: docData,
                             document: newDocData
-                        }]);
+                        }], testContext);
                         assert.deepStrictEqual(updateResult.error, {});
                     })
             );
@@ -633,12 +650,12 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
             const masterBulkWriteBefore = masterInstance.bulkWrite.bind(masterInstance);
             masterInstance.bulkWrite = (i) => {
                 writesOnMaster++;
-                return masterBulkWriteBefore(i);
+                return masterBulkWriteBefore(i, testContext);
             };
             const forkBulkWriteBefore = forkInstance.bulkWrite.bind(forkInstance);
             forkInstance.bulkWrite = (i) => {
                 writesOnFork++;
-                return forkBulkWriteBefore(i);
+                return forkBulkWriteBefore(i, testContext);
             };
 
 
@@ -668,7 +685,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
             docData._meta.lwt = now();
             const insertResult = await forkInstance.bulkWrite([{
                 document: docData
-            }]);
+            }], testContext);
             assert.deepStrictEqual(insertResult.error, {});
 
 
@@ -691,7 +708,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                         previous: currentDocState,
                         document: newDocState
                     };
-                    const writeResult = await forkInstance.bulkWrite([writeRow]);
+                    const writeResult = await forkInstance.bulkWrite([writeRow], testContext);
                     if (Object.keys(writeResult.success).length > 0) {
                         done = true;
                     }
@@ -770,7 +787,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                         docData._meta.lwt = now();
                         const insertResult = await instance.bulkWrite([{
                             document: docData
-                        }]);
+                        }], testContext);
                         assert.deepStrictEqual(insertResult.error, {});
                     })
             );
@@ -800,7 +817,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                     const writeResult = await instance.bulkWrite([{
                         previous: currentDocState,
                         document: newDocState
-                    }]);
+                    }], testContext);
                     if (Object.keys(writeResult.success).length > 0) {
                         done = true;
                     }
@@ -869,7 +886,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                     },
                     _rev: EXAMPLE_REVISION_1
                 }
-            }]);
+            }], testContext);
 
 
             const replicationState = replicateRxStorageInstance<RxLocalDocumentData>({
@@ -899,7 +916,7 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
                     },
                     _rev: EXAMPLE_REVISION_1
                 }
-            }]);
+            }], testContext);
 
             await waitUntil(async () => {
                 const docsOnMaster2 = await runQuery(masterInstance);
@@ -918,7 +935,8 @@ useParallel('rx-storage-replication.test.js (implementation: ' + config.storage.
             await masterInstance.bulkWrite(
                 new Array(writeAmount)
                     .fill(0)
-                    .map(() => ({ document: getDocData() }))
+                    .map(() => ({ document: getDocData() })),
+                testContext
             );
 
             const replicationState = replicateRxStorageInstance({

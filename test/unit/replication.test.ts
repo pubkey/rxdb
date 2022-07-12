@@ -350,7 +350,7 @@ describe('replication.test.js', () => {
 
                 await c.storageInstance.bulkWrite([{
                     document: toStorageInstance
-                }]);
+                }], 'replication-test');
 
                 const allDocs = await c.find().exec();
 

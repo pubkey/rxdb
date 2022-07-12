@@ -169,7 +169,8 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     return {
                         document: data
                     }
-                })
+                }),
+                'pouchdb-test'
             );
 
             const pouch = storageInstance.internals.pouch;

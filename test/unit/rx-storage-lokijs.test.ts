@@ -252,7 +252,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     },
                     _attachments: {}
                 }
-            }]);
+            }], 'loki-test');
             assert.deepStrictEqual(writeResponse.error, {});
 
             /**
@@ -300,7 +300,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     },
                     _attachments: {}
                 }
-            }]);
+            }], 'loki-test');
 
             await waitUntil(() => callbackCalledCount === 1);
             await storageInstance.close();
@@ -365,7 +365,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     {
                         document: firstDocData
                     }
-                ]);
+                ], 'loki-test');
 
                 await storageInstance.bulkWrite([
                     {
@@ -378,7 +378,7 @@ describe('rx-storage-lokijs.test.js', () => {
                             _rev: '1-51b2fae5721cc4d3cf7392f19e6cc118'
                         })
                     }
-                ]);
+                ], 'loki-test');
                 const preparedQuery = storage.statics.prepareQuery(
                     fillWithDefaultSettings(schemas.human),
                     {
