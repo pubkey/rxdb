@@ -79,7 +79,10 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     }
 
-    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+    bulkWrite(
+        documentWrites: BulkWriteRow<RxDocType>[],
+        context: string
+    ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         ensureNotRemoved(this);
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
@@ -91,7 +94,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             this,
             this.primaryPath as any,
             this.internals.documents,
-            documentWrites
+            documentWrites,
+            context
         );
         categorized.errors.forEach(err => {
             ret.error[err.documentId] = err;

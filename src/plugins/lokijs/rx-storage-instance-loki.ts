@@ -90,7 +90,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
     }
 
-    async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+    async bulkWrite(
+        documentWrites: BulkWriteRow<RxDocType>[],
+        context: string
+    ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         if (documentWrites.length === 0) {
             throw newRxError('P2', {
                 args: {
@@ -126,7 +129,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             this,
             this.primaryPath as any,
             docsInDb,
-            documentWrites
+            documentWrites,
+            context
         );
 
         categorized.bulkInsertDocs.forEach(writeRow => {

@@ -24,6 +24,7 @@ import type {
 import PouchDBCore from 'pouchdb-core';
 import { Subject } from 'rxjs';
 import {
+    ensureNotFalsy,
     flatClone,
     getFromMapOrThrow,
     now,
@@ -410,7 +411,8 @@ export function addCustomEventsPluginToPouch() {
                                         events,
                                         checkpoint: {
                                             sequence: heighestSequence
-                                        }
+                                        },
+                                        context: options.custom ? options.custom.context : 'pouchdb-internal'
                                     };
 
                                     const emitter = getCustomEventEmitterByPouch(this);
@@ -661,7 +663,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                 } else {
                     const changeEvent = changeEventToNormal(
                         pouchDBInstance,
-                        emitData.writeOptions.custom.primaryPath,
+                        ensureNotFalsy(emitData.writeOptions.custom).primaryPath,
                         event,
                         emitData.startTime,
                         emitData.endTime

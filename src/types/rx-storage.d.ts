@@ -279,6 +279,12 @@ export type EventBulk<EventType, CheckpointType> = {
      * must return all items that have been modied AFTER this write event.
      */
     checkpoint: CheckpointType;
+
+    /**
+     * The context that was given at the call to bulkWrite()
+     * that caused this EventBulk.
+     */
+    context: string;
 }
 
 export type ChangeStreamEvent<DocType> = ChangeEvent<RxDocumentData<DocType>> & {

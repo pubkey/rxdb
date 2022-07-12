@@ -73,7 +73,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     }
 
-    async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+    async bulkWrite(
+        documentWrites: BulkWriteRow<RxDocType>[],
+        context: string
+        ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
@@ -82,7 +85,8 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint> = {
             id: randomCouchString(10),
             events: [],
-            checkpoint: null
+            checkpoint: null,
+            context
         };
 
         const documentKeys: string[] = documentWrites.map(writeRow => writeRow.document[this.primaryPath] as any);

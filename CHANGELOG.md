@@ -7,6 +7,7 @@
 - FIX [#3839](https://github.com/pubkey/rxdb/pull/3839) executing insert -> remove -> insert -> remove does not work. Thanks [@nisarpeitang](https://github.com/nisarpeitang)
 - ADD `checkpoint` to the internal used events that are emitted in the `RxStorageInstance.changestream()`.
 - FIX randomly failingy test with dexie.js RxStorage.
+- ADD `custom` parameter to `RxStorageInstance.bulkWrite()`
 
 <!-- ADD new changes here! -->
 

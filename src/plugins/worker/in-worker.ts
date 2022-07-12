@@ -26,7 +26,8 @@ export type InWorkerStorage<RxDocType, CheckpointType> = {
     ): Promise<number>;
     bulkWrite(
         instanceId: number,
-        documentWrites: BulkWriteRow<RxDocType>[]
+        documentWrites: BulkWriteRow<RxDocType>[],
+        context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(
         instanceId: number,
@@ -85,10 +86,11 @@ export function wrappedWorkerRxStorage<T, D, CheckpointType = any>(
         },
         bulkWrite<DocumentData>(
             instanceId: number,
-            documentWrites: BulkWriteRow<DocumentData>[]
+            documentWrites: BulkWriteRow<DocumentData>[],
+            context: string
         ) {
             const instance = getFromMapOrThrow(instanceById, instanceId);
-            return instance.bulkWrite(documentWrites);
+            return instance.bulkWrite(documentWrites, context);
         },
         findDocumentsById<DocumentData>(
             instanceId: number,

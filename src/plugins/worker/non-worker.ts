@@ -130,10 +130,14 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<
         );
     }
 
-    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+    bulkWrite(
+        documentWrites: BulkWriteRow<RxDocType>[],
+        context: string
+    ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         return this.internals.worker.bulkWrite(
             this.internals.instanceId,
-            documentWrites
+            documentWrites,
+            context
         );
     }
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {

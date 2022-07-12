@@ -197,7 +197,8 @@ export function categorizeBulkWriteRows<RxDocType>(
      * The write rows that are passed to
      * RxStorageInstance().bulkWrite().
      */
-    bulkWriteRows: BulkWriteRow<RxDocType>[]
+    bulkWriteRows: BulkWriteRow<RxDocType>[],
+    context: string
 ): {
     bulkInsertDocs: BulkWriteRow<RxDocType>[];
     bulkUpdateDocs: BulkWriteRow<RxDocType>[];
@@ -240,7 +241,8 @@ export function categorizeBulkWriteRows<RxDocType>(
     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
         id: randomCouchString(10),
         events: [],
-        checkpoint: null
+        checkpoint: null,
+        context
     };
 
     const attachmentsAdd: {

@@ -1800,10 +1800,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 };
 
+                const context = randomCouchString();
+
                 // insert
                 await storageInstance.bulkWrite([{
                     document: writeData
-                }]);
+                }], context);
 
                 /**
                  * Do not await any time after the insert.
@@ -1824,9 +1826,16 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                  * without missing out any document writes.
                  */
                 await storageInstance.bulkWrite(
-                    new Array(10).fill(0).map(() => ({ document: getWriteData() }))
+                    new Array(10).fill(0).map(() => ({ document: getWriteData() })),
+                    context
                 );
                 const lastEvent = lastOfArray(emitted);
+
+                assert.strictEqual(
+                    lastEvent.context,
+                    context
+                );
+
                 const emptyResult = await storageInstance.getChangedDocumentsSince(
                     100,
                     lastEvent.checkpoint

@@ -146,7 +146,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         await this.internals.pouch.destroy();
     }
     public async bulkWrite(
-        documentWrites: BulkWriteRow<RxDocType>[]
+        documentWrites: BulkWriteRow<RxDocType>[],
+        context: string
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
@@ -199,7 +200,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     primaryPath: this.primaryPath,
                     writeRowById,
                     insertDocsById,
-                    previousDocsInDb
+                    previousDocsInDb,
+                    context
                 }
             } as any);
             return Promise.all(

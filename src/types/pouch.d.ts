@@ -1,4 +1,5 @@
 import { MangoQuery, MangoQuerySelector, MangoQuerySortPart } from './rx-query';
+import { BulkWriteRow } from './rx-storage';
 
 /**
  * this file contains types that are pouchdb-specific
@@ -237,7 +238,13 @@ export type PouchBulkDocOptions = {
 
     // custom options for RxDB
     isDeeper?: boolean;
-    custom?: any;
+    custom?: {
+        primaryPath: string;
+        writeRowById: Map<string, BulkWriteRow<any>>;
+        insertDocsById: Map<string, any>;
+        previousDocsInDb: Map<string, any>;
+        context: string;
+    };
 }
 
 export type PouchMangoQuery<DocType> = MangoQuery<DocType> & {
