@@ -73,7 +73,15 @@ export type RxReplicationWriteToMasterRow<RxDocType> = {
  * before being replicated to the master.
  */
 export type RxReplicationHandler<RxDocType, MasterCheckpointType> = {
-    masterChangeStream$: Observable<EventBulk<WithDeleted<RxDocType>, MasterCheckpointType>>;
+    masterChangeStream$: Observable<
+        EventBulk<WithDeleted<RxDocType>, MasterCheckpointType> |
+        /**
+         * Emit this when the masterChangeStream$ might have missed out
+         * some events because the fork lost the connection to the master.
+         * Like when the user went offline and reconnects.
+         */
+        'RESYNC'
+    >;
     masterChangesSince(
         checkpoint: MasterCheckpointType,
         bulkSize: number
