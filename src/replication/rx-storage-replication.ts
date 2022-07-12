@@ -126,7 +126,8 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                         } else {
                             return event.change.previous as any;
                         }
-                    })
+                    }),
+                    context: eventBulk.context
                 };
                 return ret;
             })
@@ -152,7 +153,8 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                 rows.map(r => ({
                     previous: r.assumedMasterState,
                     document: r.newDocumentState
-                }))
+                })),
+                'replication-master-write'
             );
 
             const conflicts: RxDocumentData<RxDocType>[] = [];

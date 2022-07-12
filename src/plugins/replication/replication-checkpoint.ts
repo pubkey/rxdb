@@ -84,7 +84,8 @@ export async function setLastPushCheckpoint(
             collection.database.internalStore,
             {
                 document: insertData
-            }
+            },
+            'replication-set-push-checkpoint'
         );
         return res;
     } else {
@@ -106,7 +107,8 @@ export async function setLastPushCheckpoint(
             {
                 previous: doc,
                 document: docData
-            }
+            },
+            'replication-set-push-checkpoint'
         );
         return res;
     }
@@ -275,7 +277,8 @@ export async function setLastPullDocument<RxDocType>(
             collection.database.internalStore,
             {
                 document: insertData
-            }
+            },
+            'replication-checkpoint'
         );
     } else {
         const newDoc = flatCloneDocWithMeta(lastPullCheckpointDoc);
@@ -286,7 +289,8 @@ export async function setLastPullDocument<RxDocType>(
             {
                 previous: lastPullCheckpointDoc,
                 document: newDoc
-            }
+            },
+            'replication-checkpoint'
         );
     }
 }

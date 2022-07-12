@@ -188,7 +188,10 @@ export function startReplicationUpstream<RxDocType>(
                 });
 
                 if (useWriteRowsToMeta.length > 0) {
-                    await state.input.metaInstance.bulkWrite(useWriteRowsToMeta);
+                    await state.input.metaInstance.bulkWrite(
+                        useWriteRowsToMeta,
+                        'replication-up-write-meta'
+                    );
                     // TODO what happens when we have conflicts here?
                 }
 
@@ -235,7 +238,10 @@ export function startReplicationUpstream<RxDocType>(
                     if (conflictWriteFork.length > 0) {
                         hadConflictWrites = true;
 
-                        const forkWriteResult = await state.input.forkInstance.bulkWrite(conflictWriteFork);
+                        const forkWriteResult = await state.input.forkInstance.bulkWrite(
+                            conflictWriteFork,
+                            'replication-up-write-conflict'
+                        );
                         /**
                          * Errors in the forkWriteResult must not be handled
                          * because they have been caused by a write to the forkInstance
@@ -251,7 +257,10 @@ export function startReplicationUpstream<RxDocType>(
                                 );
                             });
                         if (useMetaWrites.length > 0) {
-                            await state.input.metaInstance.bulkWrite(useMetaWrites);
+                            await state.input.metaInstance.bulkWrite(
+                                useMetaWrites,
+                                'replication-up-write-conflict-meta'
+                            );
                         }
                         // TODO what to do with conflicts while writing to the metaInstance?
                     }

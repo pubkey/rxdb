@@ -88,7 +88,7 @@ export async function setCheckpoint<RxDocType>(
         await state.input.metaInstance.bulkWrite([{
             previous: checkpointDoc,
             document: newDoc
-        }]);
+        }], 'replication-set-checkpoint');
     }
 }
 

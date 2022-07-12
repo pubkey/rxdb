@@ -529,7 +529,8 @@ export async function _migrateDocuments(
      */
     if (bulkWriteToStorageInput.length) {
         await oldCollection.newestCollection.storageInstance.bulkWrite(
-            bulkWriteToStorageInput.map(document => ({ document }))
+            bulkWriteToStorageInput.map(document => ({ document })),
+            'data-migrator-import'
         );
     }
 
@@ -554,7 +555,10 @@ export async function _migrateDocuments(
     });
 
     if (bulkDeleteInputData.length) {
-        await oldCollection.storageInstance.bulkWrite(bulkDeleteInputData);
+        await oldCollection.storageInstance.bulkWrite(
+            bulkDeleteInputData,
+            'data-migrator-delete'
+        );
     }
 
     return actions;

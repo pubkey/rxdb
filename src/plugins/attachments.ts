@@ -84,7 +84,8 @@ export class RxAttachment {
                     {
                         previous: flatClone(this.doc._data), // TODO do we need a flatClone here?
                         document: docWriteData
-                    }
+                    },
+                    'attachment-remove'
                 );
 
                 const newData = flatClone(this.doc._data);
@@ -204,7 +205,8 @@ export async function putAttachment(
 
             const writeResult = await writeSingle(
                 this.collection.storageInstance,
-                writeRow
+                writeRow,
+                'attachment-put'
             );
 
             const attachmentData = writeResult._attachments[id];

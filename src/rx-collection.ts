@@ -222,7 +222,8 @@ export class RxCollectionBase<
                     this as any
                 )),
                 databaseToken: this.database.token,
-                checkpoint: eventBulk.checkpoint
+                checkpoint: eventBulk.checkpoint,
+                context: eventBulk.context
             };
             this.database.$emit(changeEventBulk);
         });
@@ -358,7 +359,10 @@ export class RxCollectionBase<
             return row;
         });
 
-        const results = await this.storageInstance.bulkWrite(insertRows);
+        const results = await this.storageInstance.bulkWrite(
+            insertRows,
+            'rx-collection-bulk-insert'
+        );
 
         // create documents
         const successEntries: [string, RxDocumentData<RxDocumentType>][] = Object.entries(results.success);
@@ -431,7 +435,10 @@ export class RxCollectionBase<
                 document: writeDoc
             };
         });
-        const results = await this.storageInstance.bulkWrite(removeDocs);
+        const results = await this.storageInstance.bulkWrite(
+            removeDocs,
+            'rx-collection-bulk-remove'
+        );
 
         const successIds: string[] = Object.keys(results.success);
 

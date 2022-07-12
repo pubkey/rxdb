@@ -55,7 +55,8 @@ export async function insertLocal<DocData = any>(
         state.storageInstance,
         {
             document: docData
-        }
+        },
+        'local-document-insert'
     ).then(res => {
         docData = flatClone(docData);
         docData._rev = res._rev;

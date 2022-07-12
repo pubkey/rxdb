@@ -248,7 +248,7 @@ export class RxDatabaseBase<
         await this.internalStore.bulkWrite([{
             document: writeDoc,
             previous: doc
-        }]);
+        }], 'rx-database-remove-collection');
     }
 
     /**
@@ -333,7 +333,10 @@ export class RxDatabaseBase<
             useArgsByCollectionName[collectionName] = useArgs;
         });
 
-        const putDocsResult = await this.internalStore.bulkWrite(bulkPutDocs);
+        const putDocsResult = await this.internalStore.bulkWrite(
+            bulkPutDocs,
+            'rx-database-add-collection'
+        );
 
         Object.entries(putDocsResult.error).forEach(([_id, error]) => {
             const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
@@ -594,7 +597,10 @@ export async function _removeAllOfCollection(
         };
     });
     return rxDatabase.internalStore
-        .bulkWrite(writeRows)
+        .bulkWrite(
+            writeRows,
+            'rx-database-remove-collection-all'
+        )
         .then(() => relevantDocs);
 }
 

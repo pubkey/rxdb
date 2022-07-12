@@ -174,7 +174,7 @@ const RxLocalDocumentPrototype: any = {
         return state.storageInstance.bulkWrite([{
             previous: oldData,
             document: newData
-        }])
+        }], 'local-document-save-data')
             .then((res) => {
                 const docResult = res.success[newData.id];
                 if (!docResult) {
@@ -199,7 +199,7 @@ const RxLocalDocumentPrototype: any = {
         return writeSingle(state.storageInstance, {
             previous: this._data,
             document: writeData
-        })
+        }, 'local-document-remove')
             .then(() => {
                 this.state.docCache.delete(this.id);
             });

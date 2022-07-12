@@ -73,7 +73,8 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
                     parent.database ? parent as any : undefined
                 )),
                 databaseToken: database.token,
-                checkpoint: eventBulk.checkpoint
+                checkpoint: eventBulk.checkpoint,
+                context: eventBulk.context
             };
             database.$emit(changeEventBulk);
         });

@@ -459,7 +459,10 @@ export class RxReplicationStateBase<RxDocType> {
              * if the relevant data has been changed.
              * Otherwise we can ignore the pulled document data.
              */
-            const bulkWriteResponse = await this.collection.storageInstance.bulkWrite(bulkWriteData);
+            const bulkWriteResponse = await this.collection.storageInstance.bulkWrite(
+                bulkWriteData,
+                'replication-write-pulled'
+            );
             /**
              * If writing the pulled documents caused an conflict error,
              * it means that a local write happened while we tried to write data from remote.

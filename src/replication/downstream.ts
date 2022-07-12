@@ -299,13 +299,19 @@ export function startReplicationDownstream<RxDocType>(
             })
         );
         if (writeRowsToFork.length > 0) {
-            const forkWriteResult = await state.input.forkInstance.bulkWrite(writeRowsToFork);
+            const forkWriteResult = await state.input.forkInstance.bulkWrite(
+                writeRowsToFork,
+                'replication-down-write-fork'
+            );
             Object.keys(forkWriteResult.success).forEach((docId) => {
                 useMetaWriteRows.push(writeRowsToMeta[docId]);
             });
         }
         if (useMetaWriteRows.length > 0) {
-            await state.input.metaInstance.bulkWrite(useMetaWriteRows);
+            await state.input.metaInstance.bulkWrite(
+                useMetaWriteRows,
+                'replication-down-write-meta'
+            );
         }
     }
 }

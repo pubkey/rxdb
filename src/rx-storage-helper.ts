@@ -85,10 +85,12 @@ export async function getSingleDocument<RxDocType>(
  */
 export async function writeSingle<RxDocType>(
     instance: RxStorageInstance<RxDocType, any, any>,
-    writeRow: BulkWriteRow<RxDocType>
+    writeRow: BulkWriteRow<RxDocType>,
+    context: string
 ): Promise<RxDocumentData<RxDocType>> {
     const writeResult = await instance.bulkWrite(
-        [writeRow]
+        [writeRow],
+        context
     );
 
     if (Object.keys(writeResult.error).length > 0) {
@@ -697,13 +699,17 @@ export function getWrappedStorageInstance<
         collectionName: storageInstance.collectionName,
         databaseName: storageInstance.databaseName,
         options: storageInstance.options,
-        bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
+        bulkWrite(
+            rows: BulkWriteRow<RxDocType>[],
+            context: string
+        ) {
             const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows
                 .map(row => transformDocumentDataFromRxDBToRxStorage(row));
 
             return database.lockedRun(
                 () => storageInstance.bulkWrite(
-                    toStorageWriteRows
+                    toStorageWriteRows,
+                    context
                 )
             )
                 /**
@@ -750,7 +756,10 @@ export function getWrappedStorageInstance<
                             });
 
                         return database.lockedRun(
-                            () => storageInstance.bulkWrite(reInserts)
+                            () => storageInstance.bulkWrite(
+                                reInserts,
+                                context
+                            )
                         ).then(subResult => {
                             useWriteResult.error = Object.assign(
                                 useWriteResult.error,
@@ -852,7 +861,8 @@ export function getWrappedStorageInstance<
                                 }
                             }
                         }),
-                        checkpoint: eventBulk.checkpoint
+                        checkpoint: eventBulk.checkpoint,
+                        context: eventBulk.context
                     };
                     return ret;
                 })
