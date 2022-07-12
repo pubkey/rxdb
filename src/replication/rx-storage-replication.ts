@@ -50,10 +50,12 @@ import { startReplicationUpstream } from './upstream';
 export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
 ): RxStorageInstanceReplicationState<RxDocType> {
+    const checkpointKey = getCheckpointKey(input);
     const state: RxStorageInstanceReplicationState<RxDocType> = {
         primaryPath: getPrimaryFieldOfPrimaryKey(input.forkInstance.schema.primaryKey),
         input,
-        checkpointKey: getCheckpointKey(input),
+        checkpointKey,
+        downstreamBulkWriteFlag: 'replication-downstream-' + checkpointKey,
         canceled: new BehaviorSubject<boolean>(false),
         firstSyncDone: {
             down: new BehaviorSubject<boolean>(false),

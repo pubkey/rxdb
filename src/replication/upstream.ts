@@ -54,12 +54,15 @@ export function startReplicationUpstream<RxDocType>(
             .then(() => inQueueCount = inQueueCount - 1);
         return state.streamQueue.up;
     }
-    const sub = state.input.forkInstance.changeStream().subscribe(async () => {
-        if (state.input.waitBeforePersist) {
-            await state.input.waitBeforePersist();
-        }
-        addRunAgain();
-    });
+    const sub = state.input.forkInstance.changeStream()
+        .pipe(
+            filter(eventBulk => eventBulk.context !== state.downstreamBulkWriteFlag)
+        ).subscribe(async () => {
+            if (state.input.waitBeforePersist) {
+                await state.input.waitBeforePersist();
+            }
+            addRunAgain();
+        });
     firstValueFrom(
         state.canceled.pipe(
             filter(canceled => !!canceled)

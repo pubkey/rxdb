@@ -301,7 +301,7 @@ export function startReplicationDownstream<RxDocType>(
         if (writeRowsToFork.length > 0) {
             const forkWriteResult = await state.input.forkInstance.bulkWrite(
                 writeRowsToFork,
-                'replication-down-write-fork'
+                state.downstreamBulkWriteFlag
             );
             Object.keys(forkWriteResult.success).forEach((docId) => {
                 useMetaWriteRows.push(writeRowsToMeta[docId]);

@@ -165,6 +165,8 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      */
     checkpointKey: string;
 
+    downstreamBulkWriteFlag: string;
+
     /**
      * Tracks if the streams are in sync
      * or not.
