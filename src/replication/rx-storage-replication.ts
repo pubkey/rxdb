@@ -61,7 +61,6 @@ export function replicateRxStorageInstance<RxDocType>(
             down: new BehaviorSubject<boolean>(false),
             up: new BehaviorSubject<boolean>(false)
         },
-        lastCheckpoint: {},
         streamQueue: {
             down: PROMISE_RESOLVE_VOID,
             up: PROMISE_RESOLVE_VOID
