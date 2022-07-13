@@ -49,7 +49,7 @@ export async function resolveConflictError<RxDocType>(
     input: RxConflictHandlerInput<RxDocType>,
     forkState: RxDocumentData<RxDocType>
 ): Promise<RxDocumentData<RxDocType> | undefined> {
-    const conflictHandlerOutput = await conflictHandler(input, 'rx-storage-replication');
+    const conflictHandlerOutput = await conflictHandler(input, 'replication-resolve-conflict');
 
     if (conflictHandlerOutput.isEqual) {
         /**

@@ -1,5 +1,4 @@
 import { firstValueFrom, filter } from 'rxjs';
-import { flatCloneDocWithMeta } from '../rx-storage-helper';
 import type {
     BulkWriteRow,
     BulkWriteRowById,
@@ -13,7 +12,6 @@ import type {
     WithDeleted
 } from '../types';
 import {
-    now,
     lastOfArray,
     ensureNotFalsy,
     PROMISE_RESOLVE_FALSE
@@ -23,6 +21,7 @@ import {
     setCheckpoint
 } from './checkpoint';
 import { resolveConflictError } from './conflicts';
+import { writeDocToDocState } from './helper';
 import {
     getAssumedMasterState,
     getMetaWriteRow
@@ -209,10 +208,12 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
             await Promise.all(
                 docIds.map(async (docId) => {
-                    const doc = upDocsById[docId];
-                    forkStateById[docId] = doc;
-                    const useDoc = flatCloneDocWithMeta(doc);
-                    useDoc._meta.lwt = now();
+
+                    const fullDocData: RxDocumentData<RxDocType> = upDocsById[docId];
+                    forkStateById[docId] = fullDocData;
+                    const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData);
+
+
 
                     const assumedMasterDoc = assumedMasterState[docId];
 
@@ -225,23 +226,24 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
                         assumedMasterDoc &&
                         // if the isResolvedConflict is correct, we do not have to compare the documents.
-                        assumedMasterDoc.metaDocument.isResolvedConflict !== useDoc._rev &&
+                        assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev &&
                         (await state.input.conflictHandler({
                             realMasterState: assumedMasterDoc.docData,
-                            newDocumentState: useDoc
+                            newDocumentState: docData
                         }, 'upstream-check-if-equal')).isEqual
                     ) {
                         return;
                     }
 
                     writeRowsToMasterIds.push(docId);
+
                     writeRowsToMaster[docId] = {
                         assumedMasterState: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
-                        newDocumentState: useDoc
+                        newDocumentState: docData
                     };
                     writeRowsToMeta[docId] = getMetaWriteRow(
                         state,
-                        useDoc,
+                        docData,
                         assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined
                     );
                 })

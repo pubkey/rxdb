@@ -9,7 +9,8 @@ import type {
     RxDocumentData,
     RxJsonSchema,
     RxStorageInstanceReplicationState,
-    RxStorageReplicationMeta
+    RxStorageReplicationMeta,
+    WithDeleted
 } from '../types';
 import { getDefaultRevision, createRevision, now } from '../util';
 
@@ -72,7 +73,7 @@ export async function getAssumedMasterState<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     docIds: string[]
 ): Promise<ById<{
-    docData: RxDocumentData<RxDocType>;
+    docData: WithDeleted<RxDocType>;
     metaDocument: RxDocumentData<RxStorageReplicationMeta>
 }>> {
     const metaDocs = await state.input.metaInstance.findDocumentsById(
@@ -111,7 +112,7 @@ export async function getAssumedMasterState<RxDocType>(
 
 export function getMetaWriteRow<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
-    newMasterDocState: RxDocType,
+    newMasterDocState: WithDeleted<RxDocType>,
     previous?: RxDocumentData<RxStorageReplicationMeta>,
     isResolvedConflict?: string
 ): BulkWriteRow<RxStorageReplicationMeta> {

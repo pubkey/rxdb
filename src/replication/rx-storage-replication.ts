@@ -28,12 +28,17 @@ import {
     getPrimaryFieldOfPrimaryKey
 } from '../rx-schema-helper';
 import type {
+    BulkWriteRow,
+    ById,
     EventBulk,
+    RxConflictHandler,
     RxDocumentData,
     RxReplicationHandler,
+    RxReplicationWriteToMasterRow,
     RxStorageInstance,
     RxStorageInstanceReplicationInput,
-    RxStorageInstanceReplicationState
+    RxStorageInstanceReplicationState,
+    WithDeleted
 } from '../types';
 import {
     ensureNotFalsy,
@@ -44,6 +49,7 @@ import {
     getCheckpointKey
 } from './checkpoint';
 import { startReplicationDownstream } from './downstream';
+import { docStateToWriteDoc, writeDocToDocState } from './helper';
 import { startReplicationUpstream } from './upstream';
 
 
@@ -115,8 +121,13 @@ export async function awaitRxStorageReplicationIdle(
 
 export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpointType>(
     instance: RxStorageInstance<RxDocType, any, any, MasterCheckpointType>,
-): RxReplicationHandler<RxDocumentData<RxDocType>, MasterCheckpointType> {
-    return {
+    conflictHandler: RxConflictHandler<RxDocType>
+): RxReplicationHandler<RxDocType, MasterCheckpointType> {
+
+    const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
+
+
+    const replicationHandler: RxReplicationHandler<RxDocType, MasterCheckpointType> = {
         masterChangeStream$: instance.changeStream().pipe(
             map(eventBulk => {
                 const ret: EventBulk<RxDocumentData<RxDocType>, MasterCheckpointType> = {
@@ -124,9 +135,9 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                     checkpoint: eventBulk.checkpoint,
                     events: eventBulk.events.map(event => {
                         if (event.change.doc) {
-                            return event.change.doc as any;
+                            return writeDocToDocState(event.change.doc as any);
                         } else {
-                            return event.change.previous as any;
+                            return writeDocToDocState(event.change.previous as any);
                         }
                     }),
                     context: eventBulk.context
@@ -144,32 +155,76 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             ).then(result => {
                 return {
                     checkpoint: result.length > 0 ? lastOfArray(result).checkpoint : checkpoint,
-                    documentsData: result.map(r => r.document)
+                    documentsData: result.map(r => writeDocToDocState(r.document))
                 }
             })
         },
         async masterWrite(
             rows
         ) {
-            const result = await instance.bulkWrite(
-                rows.map(r => ({
-                    previous: r.assumedMasterState,
-                    document: r.newDocumentState
-                })),
-                'replication-master-write'
+            const rowById: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
+            rows.forEach(row => {
+                const docId: string = (row.newDocumentState as any)[primaryPath];
+                rowById[docId] = row;
+            });
+            const ids = Object.keys(rowById);
+
+            const masterDocsState = await instance.findDocumentsById(
+                ids,
+                true
+            );
+            const conflicts: WithDeleted<RxDocType>[] = [];
+            const writeRows: BulkWriteRow<RxDocType>[] = [];
+            await Promise.all(
+                Object.entries(rowById)
+                    .map(async ([id, row]) => {
+                        const masterState = masterDocsState[id];
+                        if (!masterState) {
+                            writeRows.push({
+                                document: docStateToWriteDoc(row.newDocumentState)
+                            });
+                        } else if (
+                            masterState &&
+                            !row.assumedMasterState
+                        ) {
+                            conflicts.push(writeDocToDocState(masterState));
+                        } else if (
+                            (await conflictHandler({
+                                realMasterState: writeDocToDocState(masterState),
+                                newDocumentState: ensureNotFalsy(row.assumedMasterState)
+                            }, 'rxStorageInstanceToReplicationHandler-masterWrite')).isEqual === true
+                        ) {
+                            writeRows.push({
+                                previous: masterState,
+                                document: docStateToWriteDoc(row.newDocumentState, masterState)
+                            });
+                        } else {
+                            conflicts.push(writeDocToDocState(masterState));
+                        }
+                    })
             );
 
-            const conflicts: RxDocumentData<RxDocType>[] = [];
-            Object
-                .values(result.error)
-                .forEach(err => {
-                    if (err.status !== 409) {
-                        throw new Error('non conflict error');
-                    } else {
-                        conflicts.push(ensureNotFalsy(err.documentInDb));
-                    }
-                });
+
+            if (writeRows.length > 0) {
+                const result = await instance.bulkWrite(
+                    writeRows,
+                    'replication-master-write'
+                );
+                Object
+                    .values(result.error)
+                    .forEach(err => {
+                        if (err.status !== 409) {
+                            throw new Error('non conflict error');
+                        } else {
+                            conflicts.push(
+                                writeDocToDocState(ensureNotFalsy(err.documentInDb))
+                            );
+                        }
+                    });
+            }
             return conflicts;
         }
     };
+
+    return replicationHandler;
 }

@@ -24,6 +24,7 @@ import {
     getLastCheckpointDoc,
     setCheckpoint
 } from './checkpoint';
+import { writeDocToDocState } from './helper';
 import {
     getAssumedMasterState,
     getMetaWriteRow
@@ -236,13 +237,14 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
 
             await Promise.all(
                 docIds.map(async (docId) => {
-                    const forkState: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
+                    const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
+                    const forkStateDocData: WithDeleted<RxDocType> | undefined = forkStateFullDoc ? writeDocToDocState(forkStateFullDoc) : undefined;
                     const masterState = downDocsById[docId];
                     const assumedMaster = assumedMasterState[docId];
 
                     if (
                         assumedMaster &&
-                        assumedMaster.metaDocument.isResolvedConflict === forkState._rev
+                        assumedMaster.metaDocument.isResolvedConflict === forkStateFullDoc._rev
                     ) {
                         /**
                          * The current fork state represents a resolved conflict
@@ -252,19 +254,19 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                         return;
                     }
 
-                    const isAssumedMasterEqualToForkState = assumedMaster && forkState ? (await state.input.conflictHandler({
+                    const isAssumedMasterEqualToForkState = assumedMaster && forkStateDocData ? (await state.input.conflictHandler({
                         realMasterState: assumedMaster.docData,
-                        newDocumentState: forkState
+                        newDocumentState: forkStateDocData
                     }, 'downstream-check-if-equal-0')).isEqual === true : false;
 
                     if (
                         (
-                            forkState &&
+                            forkStateFullDoc &&
                             assumedMaster &&
                             isAssumedMasterEqualToForkState === false
                         ) ||
                         (
-                            forkState && !assumedMaster
+                            forkStateFullDoc && !assumedMaster
                         )
                     ) {
                         /**
@@ -277,10 +279,10 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                     }
 
                     if (
-                        forkState &&
+                        forkStateDocData &&
                         (await state.input.conflictHandler({
                             realMasterState: masterState,
-                            newDocumentState: forkState
+                            newDocumentState: forkStateDocData
                         }, 'downstream-check-if-equal-1')).isEqual
                     ) {
                         /**
@@ -298,7 +300,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                             useMetaWriteRows.push(
                                 getMetaWriteRow(
                                     state,
-                                    forkState,
+                                    forkStateDocData,
                                     assumedMaster ? assumedMaster.metaDocument : undefined
                                 )
                             );
@@ -313,8 +315,8 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                     const newForkState = Object.assign(
                         {},
                         masterState,
-                        forkState ? {
-                            _meta: forkState._meta,
+                        forkStateFullDoc ? {
+                            _meta: forkStateFullDoc._meta,
                             _attachments: {},
                             _rev: getDefaultRevision()
                         } : {
@@ -325,10 +327,10 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                     newForkState._meta.lwt = now();
                     newForkState._rev = (masterState as any)._rev ? (masterState as any)._rev : createRevision(
                         newForkState,
-                        forkState
+                        forkStateFullDoc
                     );
                     writeRowsToFork.push({
-                        previous: forkState,
+                        previous: forkStateFullDoc,
                         document: newForkState
                     });
                     writeRowsToMeta[docId] = getMetaWriteRow(

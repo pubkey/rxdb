@@ -40,7 +40,7 @@ export type RxStorageReplicationMeta = {
      * Either the document state of the master
      * or the checkpoint data.
      */
-    data: RxDocumentData<any> | any;
+    data: any;
     /**
      * If the current assumed master was written while
      * resolving a conflict, this field contains
