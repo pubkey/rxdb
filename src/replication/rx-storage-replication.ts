@@ -64,7 +64,8 @@ export function replicateRxStorageInstance<RxDocType>(
         streamQueue: {
             down: PROMISE_RESOLVE_VOID,
             up: PROMISE_RESOLVE_VOID
-        }
+        },
+        lastCheckpointDoc: {}
     };
 
     startReplicationDownstream(state);

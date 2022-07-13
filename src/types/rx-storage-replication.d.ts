@@ -188,6 +188,16 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     streamQueue: {
         [direction in RxStorageReplicationDirection]: Promise<any>;
     }
+
+
+    /**
+     * For better performance we store the last known checkpoint
+     * document so that we can likely do checkpoint storing without
+     * conflicts.
+     */
+    lastCheckpointDoc: {
+        [direction in RxStorageReplicationDirection]?: RxDocumentData<RxStorageReplicationMeta>;
+    }
 }
 
 export type RxStorageReplicationDirection = 'up' | 'down';

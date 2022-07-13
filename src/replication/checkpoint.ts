@@ -6,16 +6,20 @@ import type {
     RxStorageReplicationDirection,
     RxStorageReplicationMeta
 } from '../types';
-import { createRevision, fastUnsecureHash, getDefaultRevision, now } from '../util';
+import {
+    createRevision,
+    ensureNotFalsy,
+    fastUnsecureHash,
+    getDefaultRevision,
+    getFromObjectOrThrow,
+    now
+} from '../util';
 import { RX_REPLICATION_META_INSTANCE_SCHEMA } from './meta-instance';
 
-export async function getLastCheckpointDoc<RxDocType>(
+export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     direction: RxStorageReplicationDirection
-): Promise<undefined | {
-    checkpoint: any;
-    checkpointDoc?: RxDocumentData<RxStorageReplicationMeta>;
-}> {
+): Promise<undefined | CheckpointType> {
     const checkpointDocId = getComposedPrimaryKeyOfDocumentData(
         RX_REPLICATION_META_INSTANCE_SCHEMA,
         {
@@ -32,22 +36,26 @@ export async function getLastCheckpointDoc<RxDocType>(
     );
 
     const checkpointDoc = checkpointResult[checkpointDocId];
+    state.lastCheckpointDoc[direction] = checkpointDoc;
     if (checkpointDoc) {
-        return {
-            checkpoint: checkpointDoc.data,
-            checkpointDoc
-        };
+        return checkpointDoc.data;
     } else {
         return undefined;
     }
 }
 
-export async function setCheckpoint<RxDocType>(
+
+/**
+ * Sets the checkpoint,
+ * automatically resolves conflicts that appear.
+ */
+export async function setCheckpoint<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     direction: RxStorageReplicationDirection,
-    checkpoint: any,
-    previousCheckpointDoc?: RxDocumentData<RxStorageReplicationMeta>
+    checkpoint: CheckpointType
 ) {
+    let previousCheckpointDoc = state.lastCheckpointDoc[direction];
+
     if (
         checkpoint &&
         /**
@@ -85,10 +93,31 @@ export async function setCheckpoint<RxDocType>(
             newDoc
         );
         newDoc._rev = createRevision(newDoc, previousCheckpointDoc);
-        await state.input.metaInstance.bulkWrite([{
-            previous: previousCheckpointDoc,
-            document: newDoc
-        }], 'replication-set-checkpoint');
+
+        while (true) {
+            const result = await state.input.metaInstance.bulkWrite([{
+                previous: previousCheckpointDoc,
+                document: newDoc
+            }], 'replication-set-checkpoint');
+            if (result.success[newDoc.id]) {
+                state.lastCheckpointDoc[direction] = getFromObjectOrThrow(
+                    result.success,
+                    newDoc.id
+                );
+                return;
+            } else {
+                const error = getFromObjectOrThrow(
+                    result.error,
+                    newDoc.id
+                );
+                if (error.status !== 409) {
+                    throw error;
+                } else {
+                    previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
+                    newDoc._rev = createRevision(newDoc, previousCheckpointDoc);
+                }
+            }
+        }
     }
 }
 
