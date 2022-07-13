@@ -127,8 +127,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
 
 
         const promises: Promise<any>[] = [];
-        let done = false;
-        while (!done && !state.canceled.getValue()) {
+        while (!state.canceled.getValue()) {
             lastTimeMasterChangesRequested = timer++;
             const downResult = await replicationHandler.masterChangesSince(
                 lastCheckpoint,
@@ -136,8 +135,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             );
 
             if (downResult.documentsData.length === 0) {
-                done = true;
-                continue;
+                break;
             }
 
             lastCheckpoint = downResult.checkpoint;
@@ -210,6 +208,10 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
          * with all open documents from nonPersistedFromMaster.
          */
         persistenceQueue = persistenceQueue.then(async () => {
+            if (state.canceled.getValue()) {
+                return;
+            }
+
             const downDocsById: ById<WithDeleted<RxDocType>> = nonPersistedFromMaster.docs;
             nonPersistedFromMaster.docs = {};
             const useCheckpoint = nonPersistedFromMaster.checkpoint;
