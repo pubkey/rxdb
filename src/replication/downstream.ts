@@ -36,7 +36,7 @@ import {
  * We need this to be able to do initial syncs
  * and still can have fast event based sync when the client is not offline.
  */
-export function startReplicationDownstream<RxDocType>(
+export function startReplicationDownstream<RxDocType, CheckpointType = any>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
     const replicationHandler = state.input.replicationHandler;
@@ -93,21 +93,35 @@ export function startReplicationDownstream<RxDocType>(
      * and then await all writes at the end.
      */
     let lastTimeMasterChangesRequested: number = -1;
-    let downstreamQueue: Promise<any> = PROMISE_RESOLVE_VOID;
     async function downstreamResyncOnce() {
         if (state.canceled.getValue()) {
             return;
         }
         const checkpointState = await getLastCheckpointDoc(state, 'down');
         const lastCheckpointDoc = checkpointState ? checkpointState.checkpointDoc : undefined;
-        let currentCheckpoint = checkpointState ? checkpointState.checkpoint : undefined;
 
+
+        /**
+         * It can happen that the calls to masterChangesSince()
+         * are way faster then how fast the documents can be persisted.
+         * Therefore we merge all incoming downResults into the nonPersistedFromMaster object
+         * and process them together if possible.
+         * This often bundles up single writes and improves performance
+         * by processing the documents in bulks.
+         */
+        let downstreamQueue = PROMISE_RESOLVE_VOID;
+        const nonPersistedFromMaster: {
+            lastCheckpoint?: CheckpointType;
+            docs: ById<WithDeleted<RxDocType>>;
+        } = {
+            lastCheckpoint: checkpointState ? checkpointState.checkpoint : undefined,
+            docs: {}
+        };
         let done = false;
-
         while (!done && !state.canceled.getValue()) {
             lastTimeMasterChangesRequested = timer++;
             const downResult = await replicationHandler.masterChangesSince(
-                currentCheckpoint,
+                nonPersistedFromMaster.lastCheckpoint,
                 state.input.bulkSize
             );
 
@@ -116,24 +130,29 @@ export function startReplicationDownstream<RxDocType>(
                 continue;
             }
 
-            const useDownDocs = downResult.documentsData;
-            currentCheckpoint = downResult.checkpoint;
+            downResult.documentsData.forEach(docData => {
+                const docId: string = (docData as any)[state.primaryPath];
+                nonPersistedFromMaster.docs[docId] = docData;
+            });
+            nonPersistedFromMaster.lastCheckpoint = downResult.checkpoint;
 
             downstreamQueue = downstreamQueue
-                .then(() => persistFromMaster(useDownDocs))
-                /**
-                 * Directly save the checkpoint after each block.
-                 * This ensures that when the application is closed
-                 * and the replication stops,
-                 * we can be sure that on the next replication
-                 * we do not start from zero but from the correct checkpoint.
-                 */
-                .then(() => setCheckpoint(
-                    state,
-                    'down',
-                    downResult.checkpoint,
-                    lastCheckpointDoc
-                ))
+                .then(async () => {
+                    const useDownDocs = nonPersistedFromMaster.docs;
+                    nonPersistedFromMaster.docs = {};
+                    const useCheckpoint = nonPersistedFromMaster.lastCheckpoint;
+                    if (Object.keys(useDownDocs).length === 0) {
+                        return;
+                    }
+
+                    await persistFromMaster(useDownDocs)
+                    await setCheckpoint(
+                        state,
+                        'down',
+                        useCheckpoint,
+                        lastCheckpointDoc
+                    );
+                });
         }
         await downstreamQueue;
         if (!state.firstSyncDone.down.getValue()) {
@@ -148,29 +167,29 @@ export function startReplicationDownstream<RxDocType>(
         }
         const checkpointState = await getLastCheckpointDoc(state, 'down');
         const lastCheckpointDoc = checkpointState ? checkpointState.checkpointDoc : undefined;
-        downstreamQueue = downstreamQueue
-            .then(() => persistFromMaster(task.events))
-            .then(() => setCheckpoint(
-                state,
-                'down',
-                task.checkpoint,
-                lastCheckpointDoc
-            ));
-        await downstreamQueue;
+
+        const downDocsById: ById<WithDeleted<RxDocType>> = {};
+        task.events.forEach(d => {
+            const id = (d as any)[state.primaryPath];
+            downDocsById[id] = d;
+            return id;
+        });
+
+        await persistFromMaster(downDocsById);
+        await setCheckpoint(
+            state,
+            'down',
+            task.checkpoint,
+            lastCheckpointDoc
+        );
     }
 
 
 
     async function persistFromMaster(
-        docs: WithDeleted<RxDocType>[]
+        downDocsById: ById<WithDeleted<RxDocType>>
     ) {
-        const downDocsById: ById<WithDeleted<RxDocType>> = {};
-        const docIds = docs
-            .map(d => {
-                const id = (d as any)[state.primaryPath];
-                downDocsById[id] = d;
-                return id;
-            });
+        const docIds = Object.keys(downDocsById);
         const [
             currentForkState,
             assumedMasterState
