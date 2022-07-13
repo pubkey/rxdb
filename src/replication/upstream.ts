@@ -14,7 +14,8 @@ import type {
 import {
     lastOfArray,
     ensureNotFalsy,
-    PROMISE_RESOLVE_FALSE
+    PROMISE_RESOLVE_FALSE,
+    PROMISE_RESOLVE_VOID
 } from '../util';
 import {
     getLastCheckpointDoc,
@@ -81,7 +82,10 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         if (state.canceled.getValue()) {
             return;
         }
-        let lastCheckpoint = await getLastCheckpointDoc<RxDocType, CheckpointType>(state, 'up');
+
+        checkpointQueue = checkpointQueue.then(() => getLastCheckpointDoc(state, 'up'));
+        let lastCheckpoint: CheckpointType = await checkpointQueue;
+
         const promises: Promise<any>[] = [];
         while (!state.canceled.getValue()) {
             initialSyncStartTime = timer++;
@@ -158,6 +162,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
     }
 
     let persistenceQueue: Promise<boolean> = PROMISE_RESOLVE_FALSE;
+    let checkpointQueue: Promise<any> = PROMISE_RESOLVE_VOID;
     const nonPersistedFromMaster: {
         checkpoint?: CheckpointType;
         docs: ById<RxDocumentData<RxDocType>>;
@@ -351,11 +356,16 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                 }
             }
 
-            await setCheckpoint(
+            /**
+             * For better performance we do not await checkpoint writes,
+             * but to ensure order on parrallel checkpoint writes,
+             * we have to use a queue.
+             */
+            checkpointQueue = checkpointQueue.then(() => setCheckpoint(
                 state,
                 'up',
                 useCheckpoint
-            );
+            ));
 
             return hadConflictWrites;
         });
