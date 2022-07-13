@@ -159,13 +159,11 @@ describe('backup.test.ts', () => {
             await waitUntil(async () => {
                 return fs.existsSync(path.join(directory, doc2.primary));
             });
-
-            assert.ok(fs.existsSync(path.join(directory, doc2.primary)));
-            assert.ok(
-                require(
+            await waitUntil(async () => {
+                return fs.existsSync(
                     path.join(directory, doc2.primary, 'document.json')
-                )
-            );
+                );
+            });
 
             await collection.database.destroy();
             // backupState should be stopped
