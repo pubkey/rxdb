@@ -63,6 +63,11 @@ export function startReplicationDownstream<RxDocType>(
                 if (taskWithTime.task === 'RESYNC') {
                     await downstreamResyncOnce();
                 } else {
+                    /**
+                     * TODO
+                     * if more then one eventBulk task has not been processed,
+                     * we should merge them instead of processing each on its own.
+                     */
                     await downstreamProcessChanges(taskWithTime.task);
                 }
             });
@@ -88,20 +93,21 @@ export function startReplicationDownstream<RxDocType>(
      * and then await all writes at the end.
      */
     let lastTimeMasterChangesRequested: number = -1;
-    let writeToChildQueue: Promise<any> = PROMISE_RESOLVE_VOID;
+    let downstreamQueue: Promise<any> = PROMISE_RESOLVE_VOID;
     async function downstreamResyncOnce() {
         if (state.canceled.getValue()) {
             return;
         }
         const checkpointState = await getLastCheckpointDoc(state, 'down');
         const lastCheckpointDoc = checkpointState ? checkpointState.checkpointDoc : undefined;
+        let currentCheckpoint = checkpointState ? checkpointState.checkpoint : undefined;
 
         let done = false;
 
         while (!done && !state.canceled.getValue()) {
             lastTimeMasterChangesRequested = timer++;
             const downResult = await replicationHandler.masterChangesSince(
-                state.lastCheckpoint.down,
+                currentCheckpoint,
                 state.input.bulkSize
             );
 
@@ -111,9 +117,9 @@ export function startReplicationDownstream<RxDocType>(
             }
 
             const useDownDocs = downResult.documentsData;
-            state.lastCheckpoint.down = downResult.checkpoint;
+            currentCheckpoint = downResult.checkpoint;
 
-            writeToChildQueue = writeToChildQueue
+            downstreamQueue = downstreamQueue
                 .then(() => persistFromMaster(useDownDocs))
                 /**
                  * Directly save the checkpoint after each block.
@@ -125,10 +131,11 @@ export function startReplicationDownstream<RxDocType>(
                 .then(() => setCheckpoint(
                     state,
                     'down',
+                    downResult.checkpoint,
                     lastCheckpointDoc
                 ))
         }
-        await writeToChildQueue;
+        await downstreamQueue;
         if (!state.firstSyncDone.down.getValue()) {
             state.firstSyncDone.down.next(true);
         }
@@ -141,16 +148,15 @@ export function startReplicationDownstream<RxDocType>(
         }
         const checkpointState = await getLastCheckpointDoc(state, 'down');
         const lastCheckpointDoc = checkpointState ? checkpointState.checkpointDoc : undefined;
-        state.lastCheckpoint.down = task.checkpoint;
-
-        writeToChildQueue = writeToChildQueue.then(() => persistFromMaster(task.events));
-        await writeToChildQueue;
-
-        await setCheckpoint(
-            state,
-            'down',
-            lastCheckpointDoc
-        );
+        downstreamQueue = downstreamQueue
+            .then(() => persistFromMaster(task.events))
+            .then(() => setCheckpoint(
+                state,
+                'down',
+                task.checkpoint,
+                lastCheckpointDoc
+            ));
+        await downstreamQueue;
     }
 
 

@@ -181,10 +181,6 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      */
     canceled: BehaviorSubject<boolean>;
 
-    lastCheckpoint: {
-        [direction in RxStorageReplicationDirection]?: any
-    };
-
     /**
      * Can be used to detect if the replication is doing something
      * or if it is in an idle state.

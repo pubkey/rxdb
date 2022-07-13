@@ -45,9 +45,9 @@ export async function getLastCheckpointDoc<RxDocType>(
 export async function setCheckpoint<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     direction: RxStorageReplicationDirection,
-    checkpointDoc?: RxDocumentData<RxStorageReplicationMeta>
+    checkpoint: any,
+    previousCheckpointDoc?: RxDocumentData<RxStorageReplicationMeta>
 ) {
-    const checkpoint = state.lastCheckpoint[direction];
     if (
         checkpoint &&
         /**
@@ -63,8 +63,8 @@ export async function setCheckpoint<RxDocType>(
          * to have less writes to the storage.
          */
         (
-            !checkpointDoc ||
-            JSON.stringify(checkpointDoc.data) !== JSON.stringify(checkpoint)
+            !previousCheckpointDoc ||
+            JSON.stringify(previousCheckpointDoc.data) !== JSON.stringify(checkpoint)
         )
     ) {
         const newDoc: RxDocumentData<RxStorageReplicationMeta> = {
@@ -84,9 +84,9 @@ export async function setCheckpoint<RxDocType>(
             RX_REPLICATION_META_INSTANCE_SCHEMA,
             newDoc
         );
-        newDoc._rev = createRevision(newDoc, checkpointDoc);
+        newDoc._rev = createRevision(newDoc, previousCheckpointDoc);
         await state.input.metaInstance.bulkWrite([{
-            previous: checkpointDoc,
+            previous: previousCheckpointDoc,
             document: newDoc
         }], 'replication-set-checkpoint');
     }
