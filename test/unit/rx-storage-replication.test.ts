@@ -894,11 +894,11 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationState = replicateRxStorageInstance<RxLocalDocumentData>({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER as any),
                 forkInstance,
                 metaInstance,
                 bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                conflictHandler: THROWING_CONFLICT_HANDLER as any
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
