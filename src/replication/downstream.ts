@@ -45,50 +45,29 @@ export function startReplicationDownstream<RxDocType>(
     let timer = 0;
 
     type Task = EventBulk<WithDeleted<RxDocType>, any> | 'RESYNC';
-    type TaskWithTime = (
-        {
-            time: number;
-            task: Task;
-        }
-    );
-
-    /**
-     * Contains all non-processed tasks.
-     * Contains either the event bulks from the changestream
-     * or a RESYNC flag that determines that a checkpoint based
-     * sync is required. Like when the user went offline
-     * and we might have missed out some events from the master.
-     */
-    const openTasks: TaskWithTime[] = [];
-    addNewTask('RESYNC');
-    function addNewTask(task: Task) {
-        openTasks.push({
+    async function addNewTask(task: Task) {
+        const taskWithTime = {
             time: timer++,
             task
-        });
+        };
         state.streamQueue.down = state.streamQueue.down
-            .then(() => processNextTask());
-    }
-    async function processNextTask() {
-        const taskWithTime = openTasks.pop();
-        if (!taskWithTime) {
-            return;
-        }
-        /**
-         * If the task came in before the last time we started the pull 
-         * from the master, then we can drop the task.
-         */
-        if (taskWithTime.time < lastTimeMasterChangesRequested) {
-            return;
-        }
+            .then(async () => {
+                /**
+                 * If the task came in before the last time we started the pull 
+                 * from the master, then we can drop the task.
+                 */
+                if (taskWithTime.time < lastTimeMasterChangesRequested) {
+                    return;
+                }
 
-        if (taskWithTime.task === 'RESYNC') {
-            await downstreamResyncOnce();
-        } else {
-            await downstreamProcessChanges(taskWithTime.task);
-        }
+                if (taskWithTime.task === 'RESYNC') {
+                    await downstreamResyncOnce();
+                } else {
+                    await downstreamProcessChanges(taskWithTime.task);
+                }
+            });
     }
-
+    addNewTask('RESYNC');
 
     /**
      * If a write on the master happens, we have to trigger the downstream.
@@ -118,6 +97,7 @@ export function startReplicationDownstream<RxDocType>(
         const lastCheckpointDoc = checkpointState ? checkpointState.checkpointDoc : undefined;
 
         let done = false;
+
         while (!done && !state.canceled.getValue()) {
             lastTimeMasterChangesRequested = timer++;
             const downResult = await replicationHandler.masterChangesSince(
@@ -133,19 +113,25 @@ export function startReplicationDownstream<RxDocType>(
             const useDownDocs = downResult.documentsData;
             state.lastCheckpoint.down = downResult.checkpoint;
 
-            writeToChildQueue = writeToChildQueue.then(() => persistFromMaster(useDownDocs));
+            writeToChildQueue = writeToChildQueue
+                .then(() => persistFromMaster(useDownDocs))
+                /**
+                 * Directly save the checkpoint after each block.
+                 * This ensures that when the application is closed
+                 * and the replication stops,
+                 * we can be sure that on the next replication
+                 * we do not start from zero but from the correct checkpoint.
+                 */
+                .then(() => setCheckpoint(
+                    state,
+                    'down',
+                    lastCheckpointDoc
+                ))
         }
         await writeToChildQueue;
-
         if (!state.firstSyncDone.down.getValue()) {
             state.firstSyncDone.down.next(true);
         }
-
-        await setCheckpoint(
-            state,
-            'down',
-            lastCheckpointDoc
-        );
     }
 
 
