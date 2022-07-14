@@ -13,6 +13,7 @@ import {
 } from './rx-schema-helper';
 import type {
     BulkWriteRow,
+    CategorizeBulkWriteRowsOutput,
     EventBulk,
     RxAttachmentWriteData,
     RxChangeEvent,
@@ -201,40 +202,7 @@ export function categorizeBulkWriteRows<RxDocType>(
      */
     bulkWriteRows: BulkWriteRow<RxDocType>[],
     context: string
-): {
-    bulkInsertDocs: BulkWriteRow<RxDocType>[];
-    bulkUpdateDocs: BulkWriteRow<RxDocType>[];
-    /**
-     * Ids of all documents that are changed
-     * and so their change must be written into the
-     * sequences table so that they can be fetched via
-     * RxStorageInstance().getChangedDocumentsSince().
-     */
-    changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][];
-
-    /**
-     * TODO directly return a docId->error object
-     * like in the return value of bulkWrite().
-     * This will improve performance because we do not have to iterate
-     * over the error array again.
-     */
-    errors: RxStorageBulkWriteError<RxDocType>[];
-    eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
-    attachmentsAdd: {
-        documentId: string;
-        attachmentId: string;
-        attachmentData: RxAttachmentWriteData;
-    }[];
-    attachmentsRemove: {
-        documentId: string;
-        attachmentId: string;
-    }[];
-    attachmentsUpdate: {
-        documentId: string;
-        attachmentId: string;
-        attachmentData: RxAttachmentWriteData;
-    }[];
-} {
+): CategorizeBulkWriteRowsOutput<RxDocType> {
     const hasAttachments = !!storageInstance.schema.attachments;
     const bulkInsertDocs: BulkWriteRow<RxDocType>[] = [];
     const bulkUpdateDocs: BulkWriteRow<RxDocType>[] = [];

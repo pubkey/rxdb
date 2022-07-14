@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD export type `CategorizeBulkWriteRowsOutput`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

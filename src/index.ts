@@ -160,6 +160,7 @@ export type {
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageDefaultCheckpoint,
+    CategorizeBulkWriteRowsOutput,
 
     // conflict handling
     RxConflictHandler,
