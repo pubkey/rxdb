@@ -3,13 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD export type `RxStorageDefaultCheckpoint`
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.7.3 (14 July 2022)
+
+- ADD export type `RxStorageDefaultCheckpoint`
 
 ### 12.7.2 (14 July 2022)
 
