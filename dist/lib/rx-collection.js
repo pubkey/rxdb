@@ -35,7 +35,7 @@ var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
 
 var _rxStorageHelper = require("./rx-storage-helper");
 
-var _rxStorageReplication = require("./rx-storage-replication");
+var _replication = require("./replication");
 
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -53,7 +53,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     var options = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
     var cacheReplacementPolicy = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : _queryCache.defaultCacheReplacementPolicy;
     var statics = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : {};
-    var conflictHandler = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : _rxStorageReplication.defaultConflictHandler;
+    var conflictHandler = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : _replication.defaultConflictHandler;
     this.storageInstance = {};
     this.timeouts = new Set();
     this.destroyed = false;
@@ -110,7 +110,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
             events: eventBulk.events.map(function (ev) {
               return (0, _rxStorageHelper.storageChangeEventToRxChangeEvent)(false, ev, _this2);
             }),
-            databaseToken: _this2.database.token
+            databaseToken: _this2.database.token,
+            checkpoint: eventBulk.checkpoint,
+            context: eventBulk.context
           };
 
           _this2.database.$emit(changeEventBulk);
@@ -254,7 +256,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
           };
           return row;
         });
-        return Promise.resolve(_this6.storageInstance.bulkWrite(insertRows)).then(function (results) {
+        return Promise.resolve(_this6.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert')).then(function (results) {
           // create documents
           var successEntries = Object.entries(results.success);
           var rxDocuments = successEntries.map(function (_ref) {
@@ -316,7 +318,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
               document: writeDoc
             };
           });
-          return Promise.resolve(_this8.storageInstance.bulkWrite(removeDocs)).then(function (results) {
+          return Promise.resolve(_this8.storageInstance.bulkWrite(removeDocs, 'rx-collection-bulk-remove')).then(function (results) {
             var successIds = Object.keys(results.success); // run hooks
 
             return Promise.resolve(Promise.all(successIds.map(function (id) {
@@ -1007,7 +1009,7 @@ function createRxCollection(_ref2) {
       _ref2$cacheReplacemen = _ref2.cacheReplacementPolicy,
       cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref2$cacheReplacemen,
       _ref2$conflictHandler = _ref2.conflictHandler,
-      conflictHandler = _ref2$conflictHandler === void 0 ? _rxStorageReplication.defaultConflictHandler : _ref2$conflictHandler;
+      conflictHandler = _ref2$conflictHandler === void 0 ? _replication.defaultConflictHandler : _ref2$conflictHandler;
   var storageInstanceCreationParams = {
     databaseInstanceToken: database.token,
     databaseName: database.name,

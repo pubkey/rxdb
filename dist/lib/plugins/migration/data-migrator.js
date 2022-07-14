@@ -83,7 +83,7 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
 
             var _temp = function () {
               if (bulkDeleteInputData.length) {
-                return Promise.resolve(oldCollection.storageInstance.bulkWrite(bulkDeleteInputData)).then(function () {});
+                return Promise.resolve(oldCollection.storageInstance.bulkWrite(bulkDeleteInputData, 'data-migrator-delete')).then(function () {});
               }
             }();
 
@@ -163,7 +163,7 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
               return {
                 document: document
               };
-            }))).then(function () {});
+            }), 'data-migrator-import')).then(function () {});
           }
         }();
 

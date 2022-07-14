@@ -415,7 +415,7 @@ var RxLocalDocumentPrototype = {
         return state.storageInstance.bulkWrite([{
           previous: oldData,
           document: newData
-        }]).then(function (res) {
+        }], 'local-document-save-data').then(function (res) {
           var docResult = res.success[newData.id];
 
           if (!docResult) {
@@ -447,7 +447,7 @@ var RxLocalDocumentPrototype = {
         return (0, _rxStorageHelper.writeSingle)(state.storageInstance, {
           previous: _this6._data,
           document: writeData
-        }).then(function () {
+        }, 'local-document-remove').then(function () {
           _this6.state.docCache["delete"](_this6.id);
         });
       });

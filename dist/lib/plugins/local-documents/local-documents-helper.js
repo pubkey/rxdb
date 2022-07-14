@@ -76,7 +76,9 @@ function createLocalDocStateByParent(parent) {
               events: eventBulk.events.map(function (ev) {
                 return (0, _rxStorageHelper.storageChangeEventToRxChangeEvent)(true, ev, parent.database ? parent : undefined);
               }),
-              databaseToken: database.token
+              databaseToken: database.token,
+              checkpoint: eventBulk.checkpoint,
+              context: eventBulk.context
             };
             database.$emit(changeEventBulk);
           });

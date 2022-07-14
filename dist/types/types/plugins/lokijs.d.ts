@@ -60,9 +60,4 @@ export type LokiDatabaseState = {
 export type LokiLocalDatabaseState = {
     databaseState: LokiDatabaseState;
     collection: Collection<any>;
-}
-
-export type LokiChangesCheckpoint = {
-    id: string;
-    lwt: number;
 };

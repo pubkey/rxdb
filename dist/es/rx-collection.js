@@ -11,7 +11,7 @@ import { runAsyncPluginHooks, runPluginHooks } from './hooks';
 import { createWithConstructor as createRxDocumentWithConstructor, isRxDocument } from './rx-document';
 import { createRxDocument, getRxDocumentConstructor } from './rx-document-prototype-merge';
 import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent, throwIfIsStorageWriteError } from './rx-storage-helper';
-import { defaultConflictHandler } from './rx-storage-replication';
+import { defaultConflictHandler } from './replication';
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
@@ -84,7 +84,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
             events: eventBulk.events.map(function (ev) {
               return storageChangeEventToRxChangeEvent(false, ev, _this2);
             }),
-            databaseToken: _this2.database.token
+            databaseToken: _this2.database.token,
+            checkpoint: eventBulk.checkpoint,
+            context: eventBulk.context
           };
 
           _this2.database.$emit(changeEventBulk);
@@ -228,7 +230,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           };
           return row;
         });
-        return Promise.resolve(_this6.storageInstance.bulkWrite(insertRows)).then(function (results) {
+        return Promise.resolve(_this6.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert')).then(function (results) {
           // create documents
           var successEntries = Object.entries(results.success);
           var rxDocuments = successEntries.map(function (_ref) {
@@ -290,7 +292,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
               document: writeDoc
             };
           });
-          return Promise.resolve(_this8.storageInstance.bulkWrite(removeDocs)).then(function (results) {
+          return Promise.resolve(_this8.storageInstance.bulkWrite(removeDocs, 'rx-collection-bulk-remove')).then(function (results) {
             var successIds = Object.keys(results.success); // run hooks
 
             return Promise.resolve(Promise.all(successIds.map(function (id) {

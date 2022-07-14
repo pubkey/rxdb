@@ -307,16 +307,16 @@ Object.keys(_rxStorageHelper).forEach(function (key) {
   });
 });
 
-var _rxStorageReplication = require("./rx-storage-replication");
+var _index = require("./replication/index");
 
-Object.keys(_rxStorageReplication).forEach(function (key) {
+Object.keys(_index).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-  if (key in exports && exports[key] === _rxStorageReplication[key]) return;
+  if (key in exports && exports[key] === _index[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
-      return _rxStorageReplication[key];
+      return _index[key];
     }
   });
 });

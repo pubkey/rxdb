@@ -89,7 +89,7 @@ function importDumpRxCollection(exportedJSON) {
     return {
       document: document
     };
-  }));
+  }), 'json-dump-import');
 }
 
 export var RxDBJsonDumpPlugin = {

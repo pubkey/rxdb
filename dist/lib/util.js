@@ -129,7 +129,7 @@ function hash(msg) {
  * This ensures that when now() is called often, we do not loose the information
  * about which call came first and which came after.
  * Caution: Do not call this too often in a short timespan
- * because it might return 'the future'
+ * because it might return 'the future'.
  */
 
 

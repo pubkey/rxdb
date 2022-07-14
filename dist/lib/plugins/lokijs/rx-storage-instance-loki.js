@@ -133,7 +133,6 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     var _this = this;
 
     this.changes$ = new _rxjs.Subject();
-    this.lastChangefeedSequence = 0;
     this.instanceId = instanceId++;
     this.closed = false;
     this.databaseInstanceToken = databaseInstanceToken;
@@ -164,7 +163,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   var _proto = RxStorageInstanceLoki.prototype;
 
-  _proto.bulkWrite = function bulkWrite(documentWrites) {
+  _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
       var _this3 = this;
 
@@ -196,7 +195,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
             docsInDb.set(id, (0, _lokijsHelper.stripLokiKey)(documentInDb));
           }
         });
-        var categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(_this3, _this3.primaryPath, docsInDb, documentWrites);
+        var categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(_this3, _this3.primaryPath, docsInDb, documentWrites, context);
         categorized.bulkInsertDocs.forEach(function (writeRow) {
           var docId = writeRow.document[_this3.primaryPath];
           localState.collection.insert((0, _util.flatClone)(writeRow.document));
@@ -217,6 +216,12 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
         localState.databaseState.saveQueue.addWrite();
 
         if (categorized.eventBulk.events.length > 0) {
+          var lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(_this3.primaryPath, Object.values(ret.success));
+          categorized.eventBulk.checkpoint = {
+            id: lastState[_this3.primaryPath],
+            lwt: lastState._meta.lwt
+          };
+
           _this3.changes$.next(categorized.eventBulk);
         }
 

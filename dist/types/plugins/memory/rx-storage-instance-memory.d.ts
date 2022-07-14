@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types';
-import type { MemoryChangesCheckpoint, MemoryPreparedQuery, MemoryStorageInternals, RxStorageMemory, RxStorageMemoryInstanceCreationOptions, RxStorageMemorySettings } from './memory-types';
-export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<RxDocType, MemoryStorageInternals<RxDocType>, RxStorageMemoryInstanceCreationOptions> {
+import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types';
+import type { MemoryPreparedQuery, MemoryStorageInternals, RxStorageMemory, RxStorageMemoryInstanceCreationOptions, RxStorageMemorySettings } from './memory-types';
+export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<RxDocType, MemoryStorageInternals<RxDocType>, RxStorageMemoryInstanceCreationOptions, RxStorageDefaultCheckpoint> {
     readonly storage: RxStorageMemory;
     readonly databaseName: string;
     readonly collectionName: string;
@@ -13,16 +13,16 @@ export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInst
     private changes$;
     closed: boolean;
     constructor(storage: RxStorageMemory, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: MemoryStorageInternals<RxDocType>, options: Readonly<RxStorageMemoryInstanceCreationOptions>, settings: RxStorageMemorySettings);
-    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
+    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(docIds: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     query(preparedQuery: MemoryPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
-    getChangedDocumentsSince(limit: number, checkpoint?: MemoryChangesCheckpoint): Promise<{
+    getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{
         document: RxDocumentData<RxDocType>;
-        checkpoint: MemoryChangesCheckpoint;
+        checkpoint: RxStorageDefaultCheckpoint;
     }[]>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
     remove(): Promise<void>;
     close(): Promise<void>;
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;

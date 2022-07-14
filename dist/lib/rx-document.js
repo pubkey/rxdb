@@ -659,7 +659,7 @@ var basePrototype = {
         return Promise.resolve(_this4.collection.storageInstance.bulkWrite([{
           previous: oldData,
           document: newData
-        }])).then(function (writeResult) {
+        }], 'rx-document-save-data')).then(function (writeResult) {
           var isError = writeResult.error[_this4.primary];
           (0, _rxStorageHelper.throwIfIsStorageWriteError)(_this4.collection, _this4.primary, newData, isError);
           return _this4.collection._runHooks('post', 'save', newData, _this4);
@@ -723,7 +723,7 @@ var basePrototype = {
         return Promise.resolve(collection.storageInstance.bulkWrite([{
           previous: _this6._data,
           document: deletedData
-        }])).then(function (writeResult) {
+        }], 'rx-document-remove')).then(function (writeResult) {
           var isError = writeResult.error[_this6.primary];
           (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, _this6.primary, deletedData, isError);
           return (0, _util.ensureNotFalsy)(writeResult.success[_this6.primary]);

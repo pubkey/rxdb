@@ -71,7 +71,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
 
   var _proto = RxStorageInstanceMemory.prototype;
 
-  _proto.bulkWrite = function bulkWrite(documentWrites) {
+  _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     var _this = this;
 
     (0, _memoryHelper.ensureNotRemoved)(this);
@@ -79,7 +79,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
       success: {},
       error: {}
     };
-    var categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(this, this.primaryPath, this.internals.documents, documentWrites);
+    var categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(this, this.primaryPath, this.internals.documents, documentWrites, context);
     categorized.errors.forEach(function (err) {
       ret.error[err.documentId] = err;
     });
@@ -114,6 +114,11 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     });
 
     if (categorized.eventBulk.events.length > 0) {
+      var lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(this.primaryPath, Object.values(ret.success));
+      categorized.eventBulk.checkpoint = {
+        id: lastState[this.primaryPath],
+        lwt: lastState._meta.lwt
+      };
       this.changes$.next(categorized.eventBulk);
     }
 

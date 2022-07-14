@@ -75,7 +75,7 @@ export var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabas
     var _temp4 = _catch(function () {
       return Promise.resolve(writeSingle(rxDatabase.internalStore, {
         document: docData
-      })).then(function (_writeSingle) {
+      }, 'encryption-password-hash')).then(function (_writeSingle) {
         pwHashDoc = _writeSingle;
       });
     }, function (err) {

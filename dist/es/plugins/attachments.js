@@ -117,7 +117,7 @@ export var putAttachment = function putAttachment(attachmentData) {
                 previous: flatClone(_this8._data),
                 document: flatClone(docWriteData)
               };
-              return Promise.resolve(writeSingle(_this8.collection.storageInstance, writeRow)).then(function (writeResult) {
+              return Promise.resolve(writeSingle(_this8.collection.storageInstance, writeRow, 'attachment-put')).then(function (writeResult) {
                 var attachmentData = writeResult._attachments[id];
                 var attachment = fromStorageInstanceResult(id, attachmentData, _this8);
                 var newData = flatClone(_this8._data);
@@ -193,7 +193,7 @@ export var RxAttachment = /*#__PURE__*/function () {
             previous: flatClone(_this2.doc._data),
             // TODO do we need a flatClone here?
             document: docWriteData
-          })).then(function (writeResult) {
+          }, 'attachment-remove')).then(function (writeResult) {
             var newData = flatClone(_this2.doc._data);
             newData._rev = writeResult._rev;
             newData._attachments = writeResult._attachments;

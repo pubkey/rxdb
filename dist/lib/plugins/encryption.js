@@ -98,7 +98,7 @@ var storePasswordHashIntoDatabase = function storePasswordHashIntoDatabase(rxDat
     var _temp4 = _catch(function () {
       return Promise.resolve((0, _rxStorageHelper.writeSingle)(rxDatabase.internalStore, {
         document: docData
-      })).then(function (_writeSingle) {
+      }, 'encryption-password-hash')).then(function (_writeSingle) {
         pwHashDoc = _writeSingle;
       });
     }, function (err) {

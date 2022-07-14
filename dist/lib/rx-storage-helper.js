@@ -8,6 +8,7 @@ exports.categorizeBulkWriteRows = categorizeBulkWriteRows;
 exports.flatCloneDocWithMeta = flatCloneDocWithMeta;
 exports.getAllDocuments = void 0;
 exports.getAttachmentSize = getAttachmentSize;
+exports.getNewestOfDocumentStates = getNewestOfDocumentStates;
 exports.getSingleDocument = void 0;
 exports.getUniqueDeterministicEventKey = getUniqueDeterministicEventKey;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
@@ -38,9 +39,9 @@ var _util = require("./util");
  * Writes a single document,
  * throws RxStorageBulkWriteError on failure
  */
-var writeSingle = function writeSingle(instance, writeRow) {
+var writeSingle = function writeSingle(instance, writeRow, context) {
   try {
-    return Promise.resolve(instance.bulkWrite([writeRow])).then(function (writeResult) {
+    return Promise.resolve(instance.bulkWrite([writeRow], context)).then(function (writeResult) {
       if (Object.keys(writeResult.error).length > 0) {
         var error = (0, _util.firstPropertyValueOfObject)(writeResult.error);
         throw error;
@@ -151,6 +152,16 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
     }
   }
 }
+
+function getNewestOfDocumentStates(primaryPath, docs) {
+  var ret = null;
+  docs.forEach(function (doc) {
+    if (!ret || doc._meta.lwt > ret._meta.lwt || doc._meta.lwt === ret._meta.lwt && doc[primaryPath] > ret[primaryPath]) {
+      ret = doc;
+    }
+  });
+  return (0, _util.ensureNotFalsy)(ret);
+}
 /**
  * Analyzes a list of BulkWriteRows and determines
  * which documents must be inserted, updated or deleted
@@ -171,7 +182,7 @@ docsInDb,
  * The write rows that are passed to
  * RxStorageInstance().bulkWrite().
  */
-bulkWriteRows) {
+bulkWriteRows, context) {
   var hasAttachments = !!storageInstance.schema.attachments;
   var bulkInsertDocs = [];
   var bulkUpdateDocs = [];
@@ -179,7 +190,9 @@ bulkWriteRows) {
   var changedDocumentIds = [];
   var eventBulk = {
     id: (0, _util.randomCouchString)(10),
-    events: []
+    events: [],
+    checkpoint: null,
+    context: context
   };
   var attachmentsAdd = [];
   var attachmentsRemove = [];
@@ -242,18 +255,12 @@ bulkWriteRows) {
       }
     } else {
       // update existing document
-      var revInDb = documentInDb._rev; // inserting a deleted document is possible
-      // without sending the previous data.
-
-      if (!writeRow.previous && documentInDb._deleted) {
-        writeRow.previous = documentInDb;
-      }
+      var revInDb = documentInDb._rev;
       /**
        * Check for conflict
        */
 
-
-      if (!writeRow.previous && !documentInDb._deleted || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
+      if (!writeRow.previous || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
         // is conflict error
         var err = {
           isError: true,
@@ -598,12 +605,54 @@ rxJsonSchema) {
     collectionName: storageInstance.collectionName,
     databaseName: storageInstance.databaseName,
     options: storageInstance.options,
-    bulkWrite: function bulkWrite(rows) {
+    bulkWrite: function bulkWrite(rows, context) {
       var toStorageWriteRows = rows.map(function (row) {
         return transformDocumentDataFromRxDBToRxStorage(row);
       });
       return database.lockedRun(function () {
-        return storageInstance.bulkWrite(toStorageWriteRows);
+        return storageInstance.bulkWrite(toStorageWriteRows, context);
+      })
+      /**
+       * The RxStorageInstance MUST NOT allow to insert already _deleted documents,
+       * without sending the previous document version.
+       * But for better developer experience, RxDB does allow to re-insert deleted documents.
+       * We do this by automatically fixing the conflict errors for that case
+       * by running another bulkWrite() and merging the results.
+       * @link https://github.com/pubkey/rxdb/pull/3839
+       */
+      .then(function (writeResult) {
+        var reInsertErrors = Object.values(writeResult.error).filter(function (error) {
+          if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && (0, _util.ensureNotFalsy)(error.documentInDb)._deleted) {
+            return true;
+          }
+
+          return false;
+        });
+
+        if (reInsertErrors.length > 0) {
+          var useWriteResult = {
+            error: (0, _util.flatClone)(writeResult.error),
+            success: (0, _util.flatClone)(writeResult.success)
+          };
+          var reInserts = reInsertErrors.map(function (error) {
+            delete useWriteResult.error[error.documentId];
+            return {
+              previous: error.documentInDb,
+              document: Object.assign({}, error.writeRow.document, {
+                _rev: (0, _util.createRevision)(error.writeRow.document, error.documentInDb)
+              })
+            };
+          });
+          return database.lockedRun(function () {
+            return storageInstance.bulkWrite(reInserts, context);
+          }).then(function (subResult) {
+            useWriteResult.error = Object.assign(useWriteResult.error, subResult.error);
+            useWriteResult.success = Object.assign(useWriteResult.success, subResult.success);
+            return useWriteResult;
+          });
+        }
+
+        return writeResult;
       }).then(function (writeResult) {
         var ret = {
           success: {},
@@ -695,7 +744,9 @@ rxJsonSchema) {
                 previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(event.change.previous) : undefined
               }
             };
-          })
+          }),
+          checkpoint: eventBulk.checkpoint,
+          context: eventBulk.context
         };
         return ret;
       }));
@@ -717,6 +768,10 @@ rxJsonSchema) {
       }));
     },
     resolveConflictResultionTask: function resolveConflictResultionTask(taskSolution) {
+      if (taskSolution.output.isEqual) {
+        return storageInstance.resolveConflictResultionTask(taskSolution);
+      }
+
       var hookParams = {
         database: database,
         primaryPath: primaryPath,
@@ -737,6 +792,7 @@ rxJsonSchema) {
       return storageInstance.resolveConflictResultionTask({
         id: taskSolution.id,
         output: {
+          isEqual: false,
           documentData: documentData
         }
       });

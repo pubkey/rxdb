@@ -56,7 +56,7 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
 
             var _temp = function () {
               if (bulkDeleteInputData.length) {
-                return Promise.resolve(oldCollection.storageInstance.bulkWrite(bulkDeleteInputData)).then(function () {});
+                return Promise.resolve(oldCollection.storageInstance.bulkWrite(bulkDeleteInputData, 'data-migrator-delete')).then(function () {});
               }
             }();
 
@@ -136,7 +136,7 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
               return {
                 document: document
               };
-            }))).then(function () {});
+            }), 'data-migrator-import')).then(function () {});
           }
         }();
 

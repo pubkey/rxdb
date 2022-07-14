@@ -4,7 +4,7 @@ import { InWorkerStorage } from './in-worker';
 declare type WorkerStorageInternals = {
     rxStorage: RxStorageWorker;
     instanceId: number;
-    worker: InWorkerStorage<any>;
+    worker: InWorkerStorage<any, any>;
 };
 declare type RxStorageWorkerSettings = {
     statics: RxStorageStatics;
@@ -17,7 +17,7 @@ export declare class RxStorageWorker implements RxStorage<WorkerStorageInternals
     constructor(settings: RxStorageWorkerSettings, statics: RxStorageStatics);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<RxStorageInstanceWorker<RxDocType>>;
 }
-export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxDocType, WorkerStorageInternals, any> {
+export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxDocType, WorkerStorageInternals, any, any> {
     readonly storage: RxStorageWorker;
     readonly databaseName: string;
     readonly collectionName: string;
@@ -33,7 +33,7 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
     private subs;
     private closed;
     constructor(storage: RxStorageWorker, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: WorkerStorageInternals, options: Readonly<any>);
-    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
+    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>>;
     getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
@@ -41,7 +41,7 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
         document: RxDocumentData<RxDocType>;
         checkpoint: any;
     }[]>;
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>>;
     cleanup(minDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;
     remove(): Promise<void>;

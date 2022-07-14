@@ -289,7 +289,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
     }
   };
 
-  _proto.bulkWrite = function bulkWrite(documentWrites) {
+  _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
       var _this5 = this;
 
@@ -332,7 +332,8 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
               primaryPath: _this5.primaryPath,
               writeRowById: writeRowById,
               insertDocsById: insertDocsById,
-              previousDocsInDb: previousDocsInDb
+              previousDocsInDb: previousDocsInDb,
+              context: context
             }
           })).then(function (pouchResult) {
             return Promise.all(pouchResult.map(function (resultRow) {

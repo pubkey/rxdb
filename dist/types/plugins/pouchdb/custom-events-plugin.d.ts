@@ -1,4 +1,4 @@
-import type { EventBulk, PouchBulkDocOptions, PouchBulkDocResultRow, PouchDBInstance, PouchWriteError, RxDocumentData, RxStorageChangeEvent } from '../../types';
+import type { EventBulk, PouchBulkDocOptions, PouchBulkDocResultRow, PouchCheckpoint, PouchDBInstance, PouchWriteError, RxDocumentData, RxStorageChangeEvent } from '../../types';
 import { Subject } from 'rxjs';
 import type { ChangeEvent } from 'event-reduce-js';
 declare type EmitData = {
@@ -11,7 +11,7 @@ declare type EmitData = {
     endTime: number;
 };
 declare type Emitter<RxDocType> = {
-    subject: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    subject: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, PouchCheckpoint>>;
 };
 export declare const EVENT_EMITTER_BY_POUCH_INSTANCE: Map<string, Emitter<any>>;
 export declare function getCustomEventEmitterByPouch<RxDocType>(pouch: PouchDBInstance): Emitter<RxDocType>;

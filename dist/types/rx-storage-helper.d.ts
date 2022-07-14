@@ -14,9 +14,10 @@ export declare function getSingleDocument<RxDocType>(storageInstance: RxStorageI
  * Writes a single document,
  * throws RxStorageBulkWriteError on failure
  */
-export declare function writeSingle<RxDocType>(instance: RxStorageInstance<RxDocType, any, any>, writeRow: BulkWriteRow<RxDocType>): Promise<RxDocumentData<RxDocType>>;
+export declare function writeSingle<RxDocType>(instance: RxStorageInstance<RxDocType, any, any>, writeRow: BulkWriteRow<RxDocType>, context: string): Promise<RxDocumentData<RxDocType>>;
 export declare function storageChangeEventToRxChangeEvent<DocType>(isLocal: boolean, rxStorageChangeEvent: RxStorageChangeEvent<DocType>, rxCollection?: RxCollection): RxChangeEvent<DocType>;
 export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxCollection<RxDocType>, documentId: string, writeData: RxDocumentWriteData<RxDocType> | RxDocType, error: RxStorageBulkWriteError<RxDocType> | undefined): void;
+export declare function getNewestOfDocumentStates<RxDocType>(primaryPath: string, docs: RxDocumentData<RxDocType>[]): RxDocumentData<RxDocType>;
 /**
  * Analyzes a list of BulkWriteRows and determines
  * which documents must be inserted, updated or deleted
@@ -35,7 +36,7 @@ docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocum
  * The write rows that are passed to
  * RxStorageInstance().bulkWrite().
  */
-bulkWriteRows: BulkWriteRow<RxDocType>[]): {
+bulkWriteRows: BulkWriteRow<RxDocType>[], context: string): {
     bulkInsertDocs: BulkWriteRow<RxDocType>[];
     bulkUpdateDocs: BulkWriteRow<RxDocType>[];
     /**
@@ -52,7 +53,7 @@ bulkWriteRows: BulkWriteRow<RxDocType>[]): {
      * over the error array again.
      */
     errors: RxStorageBulkWriteError<RxDocType>[];
-    eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
+    eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {
         documentId: string;
         attachmentId: string;
@@ -90,7 +91,7 @@ export declare function getAttachmentSize(attachmentBase64String: string): numbe
  * and other data transformations and also ensure that database.lockedRun()
  * is used properly.
  */
-export declare function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions>(database: RxDatabase<{}, Internals, InstanceCreationOptions>, storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>, 
+export declare function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions, CheckpointType>(database: RxDatabase<{}, Internals, InstanceCreationOptions>, storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions, CheckpointType>, 
 /**
  * The original RxJsonSchema
  * before it was mutated by hooks.

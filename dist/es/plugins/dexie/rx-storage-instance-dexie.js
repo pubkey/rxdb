@@ -4,7 +4,7 @@ import { newRxError } from '../../rx-error';
 import { closeDexieDb, fromDexieToStorage, fromStorageToDexie, getDexieDbWithTables, getDocsInDb } from './dexie-helper';
 import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
+import { getNewestOfDocumentStates, getUniqueDeterministicEventKey } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
 export var createDexieStorageInstance = function createDexieStorageInstance(storage, params, settings) {
   try {
@@ -35,7 +35,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
 
   var _proto = RxStorageInstanceDexie.prototype;
 
-  _proto.bulkWrite = function bulkWrite(documentWrites) {
+  _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
       var _this2 = this;
 
@@ -46,7 +46,9 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
         };
         var eventBulk = {
           id: randomCouchString(10),
-          events: []
+          events: [],
+          checkpoint: null,
+          context: context
         };
         var documentKeys = documentWrites.map(function (writeRow) {
           return writeRow.document[_this2.primaryPath];
@@ -107,14 +109,9 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                   ret.success[id] = writeDoc;
                 } else {
                   // update existing document
-                  var revInDb = documentInDb._rev; // inserting a deleted document is possible
-                  // without sending the previous data.
+                  var revInDb = documentInDb._rev;
 
-                  if (!writeRow.previous && documentInDb._deleted) {
-                    writeRow.previous = documentInDb;
-                  }
-
-                  if (!writeRow.previous && !documentInDb._deleted || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
+                  if (!writeRow.previous || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
                     // conflict error
                     var err = {
                       isError: true,
@@ -211,6 +208,11 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
           }
         })).then(function () {
           if (eventBulk.events.length > 0) {
+            var lastState = getNewestOfDocumentStates(_this2.primaryPath, Object.values(ret.success));
+            eventBulk.checkpoint = {
+              id: lastState[_this2.primaryPath],
+              lwt: lastState._meta.lwt
+            };
             var endTime = now();
             eventBulk.events.forEach(function (event) {
               return event.endTime = endTime;

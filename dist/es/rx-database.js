@@ -120,7 +120,7 @@ export var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, 
           document: writeDoc
         };
       });
-      return rxDatabase.internalStore.bulkWrite(writeRows).then(function () {
+      return rxDatabase.internalStore.bulkWrite(writeRows, 'rx-database-remove-collection-all').then(function () {
         return relevantDocs;
       });
     });
@@ -239,7 +239,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
         return Promise.resolve(_this2.internalStore.bulkWrite([{
           document: writeDoc,
           previous: doc
-        }])).then(function () {});
+        }], 'rx-database-remove-collection')).then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);
@@ -316,7 +316,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
         runPluginHooks('preCreateRxCollection', hookData);
         useArgsByCollectionName[collectionName] = useArgs;
       });
-      return Promise.resolve(_this4.internalStore.bulkWrite(bulkPutDocs)).then(function (putDocsResult) {
+      return Promise.resolve(_this4.internalStore.bulkWrite(bulkPutDocs, 'rx-database-add-collection')).then(function (putDocsResult) {
         Object.entries(putDocsResult.error).forEach(function (_ref2) {
           var _id = _ref2[0],
               error = _ref2[1];

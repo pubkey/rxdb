@@ -32,7 +32,7 @@ export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumen
     docData._rev = createRevision(docData);
     return Promise.resolve(rxDatabase.internalStore.bulkWrite([{
       document: docData
-    }])).then(function (writeResult) {
+    }], 'internal-add-storage-token')).then(function (writeResult) {
       if (writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
         return writeResult.success[STORAGE_TOKEN_DOCUMENT_ID];
       }

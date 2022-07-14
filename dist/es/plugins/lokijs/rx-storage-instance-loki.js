@@ -3,7 +3,7 @@ import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow
 import { newRxError } from '../../rx-error';
 import { closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, requestRemoteInstance, mustUseLocalState, handleRemoteRequest } from './lokijs-helper';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
 export var createLokiStorageInstance = function createLokiStorageInstance(storage, params, databaseSettings) {
   try {
@@ -113,7 +113,6 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     var _this = this;
 
     this.changes$ = new Subject();
-    this.lastChangefeedSequence = 0;
     this.instanceId = instanceId++;
     this.closed = false;
     this.databaseInstanceToken = databaseInstanceToken;
@@ -143,7 +142,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
 
   var _proto = RxStorageInstanceLoki.prototype;
 
-  _proto.bulkWrite = function bulkWrite(documentWrites) {
+  _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
       var _this3 = this;
 
@@ -175,7 +174,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
             docsInDb.set(id, stripLokiKey(documentInDb));
           }
         });
-        var categorized = categorizeBulkWriteRows(_this3, _this3.primaryPath, docsInDb, documentWrites);
+        var categorized = categorizeBulkWriteRows(_this3, _this3.primaryPath, docsInDb, documentWrites, context);
         categorized.bulkInsertDocs.forEach(function (writeRow) {
           var docId = writeRow.document[_this3.primaryPath];
           localState.collection.insert(flatClone(writeRow.document));
@@ -196,6 +195,12 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         localState.databaseState.saveQueue.addWrite();
 
         if (categorized.eventBulk.events.length > 0) {
+          var lastState = getNewestOfDocumentStates(_this3.primaryPath, Object.values(ret.success));
+          categorized.eventBulk.checkpoint = {
+            id: lastState[_this3.primaryPath],
+            lwt: lastState._meta.lwt
+          };
+
           _this3.changes$.next(categorized.eventBulk);
         }
 

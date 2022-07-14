@@ -2,7 +2,7 @@ import { Subject } from 'rxjs';
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { getFromMapOrThrow, now, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM } from '../../util';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
 import { boundGE, boundGT } from './binary-search-bounds';
@@ -51,7 +51,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
 
   var _proto = RxStorageInstanceMemory.prototype;
 
-  _proto.bulkWrite = function bulkWrite(documentWrites) {
+  _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     var _this = this;
 
     ensureNotRemoved(this);
@@ -59,7 +59,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       success: {},
       error: {}
     };
-    var categorized = categorizeBulkWriteRows(this, this.primaryPath, this.internals.documents, documentWrites);
+    var categorized = categorizeBulkWriteRows(this, this.primaryPath, this.internals.documents, documentWrites, context);
     categorized.errors.forEach(function (err) {
       ret.error[err.documentId] = err;
     });
@@ -94,6 +94,11 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     });
 
     if (categorized.eventBulk.events.length > 0) {
+      var lastState = getNewestOfDocumentStates(this.primaryPath, Object.values(ret.success));
+      categorized.eventBulk.checkpoint = {
+        id: lastState[this.primaryPath],
+        lwt: lastState._meta.lwt
+      };
       this.changes$.next(categorized.eventBulk);
     }
 

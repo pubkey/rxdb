@@ -57,6 +57,10 @@ export type Override<T1, T2> = Omit<T1, keyof T2> & T2;
 
 
 
+export type ById<T> = {
+    [id: string]: T;
+};
+
 /**
  * To test a storage, we need these
  * configuration values.

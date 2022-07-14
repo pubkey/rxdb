@@ -48,7 +48,7 @@ export var insertLocal = function insertLocal(id, data) {
       docData._rev = createRevision(docData);
       return writeSingle(state.storageInstance, {
         document: docData
-      }).then(function (res) {
+      }, 'local-document-insert').then(function (res) {
         docData = flatClone(docData);
         docData._rev = res._rev;
         var newDoc = createRxLocalDocument(id, docData, _this2, state);

@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, PouchChangedDocumentsSinceCheckpoint, PouchSettings, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
+import type { BulkWriteRow, EventBulk, PouchCheckpoint, PouchSettings, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
 import { PouchStorageInternals } from './pouchdb-helper';
-export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<RxDocType, PouchStorageInternals, PouchSettings> {
+export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<RxDocType, PouchStorageInternals, PouchSettings, PouchCheckpoint> {
     readonly storage: RxStorage<PouchStorageInternals, PouchSettings>;
     readonly databaseName: string;
     readonly collectionName: string;
@@ -20,15 +20,15 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     constructor(storage: RxStorage<PouchStorageInternals, PouchSettings>, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: Readonly<PouchStorageInternals>, options: Readonly<PouchSettings>);
     close(): Promise<void>;
     remove(): Promise<void>;
-    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
+    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, PouchCheckpoint>>;
     cleanup(_minimumDeletedTime: number): Promise<boolean>;
-    getChangedDocumentsSince(limit: number, checkpoint?: PouchChangedDocumentsSinceCheckpoint): Promise<{
+    getChangedDocumentsSince(limit: number, checkpoint?: PouchCheckpoint): Promise<{
         document: RxDocumentData<RxDocType>;
-        checkpoint: PouchChangedDocumentsSinceCheckpoint;
+        checkpoint: PouchCheckpoint;
     }[]>;
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
     resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;

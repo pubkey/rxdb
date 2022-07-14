@@ -225,7 +225,7 @@ var setLastPullDocument = function setLastPullDocument(collection, replicationId
         insertData._rev = (0, _util.createRevision)(insertData);
         return (0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
           document: insertData
-        });
+        }, 'replication-checkpoint');
       } else {
         var newDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(lastPullCheckpointDoc);
         newDoc.data = {
@@ -235,7 +235,7 @@ var setLastPullDocument = function setLastPullDocument(collection, replicationId
         return (0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
           previous: lastPullCheckpointDoc,
           document: newDoc
-        });
+        }, 'replication-checkpoint');
       }
     });
   } catch (e) {
@@ -363,7 +363,7 @@ var setLastPushCheckpoint = function setLastPushCheckpoint(collection, replicati
         insertData._rev = (0, _util.createRevision)(insertData);
         return Promise.resolve((0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
           document: insertData
-        }));
+        }, 'replication-set-push-checkpoint'));
       } else {
         var docData = {
           id: docId,
@@ -381,7 +381,7 @@ var setLastPushCheckpoint = function setLastPushCheckpoint(collection, replicati
         return Promise.resolve((0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
           previous: doc,
           document: docData
-        }));
+        }, 'replication-set-push-checkpoint'));
       }
     });
   } catch (e) {

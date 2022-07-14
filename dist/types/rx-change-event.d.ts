@@ -10,4 +10,4 @@ export declare function rxChangeEventToEventReduceChangeEvent<DocType>(rxChangeE
  * Flattens the given events into a single array of events.
  * Used mostly in tests.
  */
-export declare function flattenEvents<EventType>(input: EventBulk<EventType> | EventBulk<EventType>[] | EventType | EventType[]): EventType[];
+export declare function flattenEvents<EventType>(input: EventBulk<EventType, any> | EventBulk<EventType, any>[] | EventType | EventType[]): EventType[];

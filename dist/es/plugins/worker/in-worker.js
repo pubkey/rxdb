@@ -23,9 +23,9 @@ export function wrappedWorkerRxStorage(args) {
         return Promise.reject(e);
       }
     },
-    bulkWrite: function bulkWrite(instanceId, documentWrites) {
+    bulkWrite: function bulkWrite(instanceId, documentWrites, context) {
       var instance = getFromMapOrThrow(instanceById, instanceId);
-      return instance.bulkWrite(documentWrites);
+      return instance.bulkWrite(documentWrites, context);
     },
     findDocumentsById: function findDocumentsById(instanceId, ids, deleted) {
       var instance = getFromMapOrThrow(instanceById, instanceId);

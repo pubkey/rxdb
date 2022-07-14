@@ -214,7 +214,7 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
         insertData._rev = createRevision(insertData);
         return writeSingle(collection.database.internalStore, {
           document: insertData
-        });
+        }, 'replication-checkpoint');
       } else {
         var newDoc = flatCloneDocWithMeta(lastPullCheckpointDoc);
         newDoc.data = {
@@ -224,7 +224,7 @@ export var setLastPullDocument = function setLastPullDocument(collection, replic
         return writeSingle(collection.database.internalStore, {
           previous: lastPullCheckpointDoc,
           document: newDoc
-        });
+        }, 'replication-checkpoint');
       }
     });
   } catch (e) {
@@ -346,7 +346,7 @@ export var setLastPushCheckpoint = function setLastPushCheckpoint(collection, re
         insertData._rev = createRevision(insertData);
         return Promise.resolve(writeSingle(collection.database.internalStore, {
           document: insertData
-        }));
+        }, 'replication-set-push-checkpoint'));
       } else {
         var docData = {
           id: docId,
@@ -364,7 +364,7 @@ export var setLastPushCheckpoint = function setLastPushCheckpoint(collection, re
         return Promise.resolve(writeSingle(collection.database.internalStore, {
           previous: doc,
           document: docData
-        }));
+        }, 'replication-set-push-checkpoint'));
       }
     });
   } catch (e) {

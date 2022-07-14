@@ -65,7 +65,7 @@ var insertLocal = function insertLocal(id, data) {
       docData._rev = (0, _util.createRevision)(docData);
       return (0, _rxStorageHelper.writeSingle)(state.storageInstance, {
         document: docData
-      }).then(function (res) {
+      }, 'local-document-insert').then(function (res) {
         docData = (0, _util.flatClone)(docData);
         docData._rev = res._rev;
         var newDoc = (0, _rxLocalDocument.createRxLocalDocument)(id, docData, _this2, state);

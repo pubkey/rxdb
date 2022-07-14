@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, RxStorageInstanceCreationParams, EventBulk, DexieChangesCheckpoint, StringKeys, RxDocumentDataById, RxConflictResultionTask, RxConflictResultionTaskSolution } from '../../types';
+import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, RxStorageInstanceCreationParams, EventBulk, StringKeys, RxDocumentDataById, RxConflictResultionTask, RxConflictResultionTaskSolution, RxStorageDefaultCheckpoint } from '../../types';
 import { DexiePreparedQuery, DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageDexie } from './rx-storage-dexie';
-export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<RxDocType, DexieStorageInternals, DexieSettings> {
+export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<RxDocType, DexieStorageInternals, DexieSettings, RxStorageDefaultCheckpoint> {
     readonly storage: RxStorageDexie;
     readonly databaseName: string;
     readonly collectionName: string;
@@ -15,15 +15,15 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     readonly instanceId: number;
     closed: boolean;
     constructor(storage: RxStorageDexie, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: DexieStorageInternals, options: Readonly<DexieSettings>, settings: DexieSettings);
-    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>>;
+    bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     query(preparedQuery: DexiePreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
-    getChangedDocumentsSince(limit: number, checkpoint?: DexieChangesCheckpoint): Promise<{
+    getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{
         document: RxDocumentData<RxDocType>;
-        checkpoint: DexieChangesCheckpoint;
+        checkpoint: RxStorageDefaultCheckpoint;
     }[]>;
     remove(): Promise<void>;
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
     close(): Promise<void>;

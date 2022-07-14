@@ -92,8 +92,8 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
 
   var _proto2 = RxStorageInstanceWorker.prototype;
 
-  _proto2.bulkWrite = function bulkWrite(documentWrites) {
-    return this.internals.worker.bulkWrite(this.internals.instanceId, documentWrites);
+  _proto2.bulkWrite = function bulkWrite(documentWrites, context) {
+    return this.internals.worker.bulkWrite(this.internals.instanceId, documentWrites, context);
   };
 
   _proto2.findDocumentsById = function findDocumentsById(ids, deleted) {
