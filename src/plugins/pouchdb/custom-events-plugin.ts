@@ -14,6 +14,8 @@ import type {
     EventBulk,
     PouchBulkDocOptions,
     PouchBulkDocResultRow,
+    PouchChangesOnChangeEvent,
+    PouchCheckpoint,
     PouchDBInstance,
     PouchWriteError,
     RxDocumentData,
@@ -22,6 +24,7 @@ import type {
 import PouchDBCore from 'pouchdb-core';
 import { Subject } from 'rxjs';
 import {
+    ensureNotFalsy,
     flatClone,
     getFromMapOrThrow,
     now,
@@ -56,7 +59,7 @@ declare type EmitData = {
 
 
 declare type Emitter<RxDocType> = {
-    subject: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    subject: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, PouchCheckpoint>>;
 };
 export const EVENT_EMITTER_BY_POUCH_INSTANCE: Map<string, Emitter<any>> = new Map();
 
@@ -329,6 +332,37 @@ export function addCustomEventsPluginToPouch() {
         deeperOptions.isDeeper = true;
         let callReturn: any;
         const callPromise = new Promise((res, rej) => {
+
+            /**
+             * The emitted EventBulk from the write to the pouchdb, needs to contain a checkpoint field.
+             * Because PouchDB works on sequence number to sort changes,
+             * we have to fetch the latest sequence number out of the events because it
+             * is not possible to that that from pouch.bulkDocs().
+             */
+            const docIds: Set<string> = new Set(docs.map(d => d._id));
+            let heighestSequence = 0;
+            let changesSub: PouchChangesOnChangeEvent;
+            const heighestSequencePromise = new Promise<number>(res => {
+                changesSub = this.changes({
+                    since: 'now',
+                    live: true,
+                    include_docs: true
+                }).on('change', (change: any) => {
+                    const docId: string = change.id;
+                    if (docIds.has(docId)) {
+                        docIds.delete(docId);
+                        if (heighestSequence < change.seq) {
+                            heighestSequence = change.seq;
+                        }
+
+                        if (docIds.size === 0) {
+                            (changesSub as any).cancel();
+                            res(heighestSequence);
+                        }
+                    }
+                }) as any;
+            });
+
             callReturn = oldBulkDocs.call(
                 this,
                 docs,
@@ -338,6 +372,13 @@ export function addCustomEventsPluginToPouch() {
                         callback ? callback(err) : rej(err);
                     } else {
                         return (async () => {
+                            const hasError = result.find(row => (row as PouchWriteError).error);
+                            let heighestSequence = -1;
+                            if (!hasError) {
+                                heighestSequence = await heighestSequencePromise;
+                            } else {
+                                changesSub.cancel();
+                            }
 
                             result.forEach(row => {
                                 usePouchResult.push(row);
@@ -365,9 +406,13 @@ export function addCustomEventsPluginToPouch() {
                                     '_id',
                                     emitData
                                 ).then(events => {
-                                    const eventBulk: EventBulk<any> = {
+                                    const eventBulk: EventBulk<any, PouchCheckpoint> = {
                                         id: randomCouchString(10),
-                                        events
+                                        events,
+                                        checkpoint: {
+                                            sequence: heighestSequence
+                                        },
+                                        context: options.custom ? options.custom.context : 'pouchdb-internal'
                                     };
 
                                     const emitter = getCustomEventEmitterByPouch(this);
@@ -618,7 +663,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                 } else {
                     const changeEvent = changeEventToNormal(
                         pouchDBInstance,
-                        emitData.writeOptions.custom.primaryPath,
+                        ensureNotFalsy(emitData.writeOptions.custom).primaryPath,
                         event,
                         emitData.startTime,
                         emitData.endTime

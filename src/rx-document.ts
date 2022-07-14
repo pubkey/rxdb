@@ -434,7 +434,7 @@ export const basePrototype = {
         const writeResult = await this.collection.storageInstance.bulkWrite([{
             previous: oldData,
             document: newData
-        }]);
+        }], 'rx-document-save-data');
 
         const isError = writeResult.error[this.primary];
         throwIfIsStorageWriteError(this.collection, this.primary, newData, isError);
@@ -491,7 +491,7 @@ export const basePrototype = {
                 const writeResult = await collection.storageInstance.bulkWrite([{
                     previous: this._data,
                     document: deletedData
-                }]);
+                }], 'rx-document-remove');
                 const isError = writeResult.error[this.primary];
                 throwIfIsStorageWriteError(collection, this.primary, deletedData, isError);
                 return ensureNotFalsy(writeResult.success[this.primary]);

@@ -1,6 +1,6 @@
-import { BehaviorSubject } from 'rxjs';
-import { RxConflictHandler } from './conflict-handling';
-import { RxDocumentData } from './rx-storage';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput } from './conflict-handling';
+import { EventBulk, RxDocumentData, WithDeleted } from './rx-storage';
 import type {
     RxStorageInstance
 } from './rx-storage.interface';
@@ -40,7 +40,63 @@ export type RxStorageReplicationMeta = {
      * Either the document state of the master
      * or the checkpoint data.
      */
-    data: RxDocumentData<any> | any;
+    data: any;
+    /**
+     * If the current assumed master was written while
+     * resolving a conflict, this field contains
+     * the revision of the conflict-solution that
+     * is stored in the forkInstance.
+     */
+    isResolvedConflict?: string;
+};
+
+export type RxReplicationWriteToMasterRow<RxDocType> = {
+    assumedMasterState?: WithDeleted<RxDocType>;
+    newDocumentState: WithDeleted<RxDocType>;
+};
+
+/**
+ * The replication handler contains all logic
+ * that is required by the replication protocol
+ * to interact with the master instance.
+ * This is an abstraction so that we can use different
+ * handlers for GraphQL, REST or any other transportation layer.
+ * Even a RxStorageInstance can be wrapped in a way to represend a replication handler.
+ * 
+ * The RxStorage instance of the master branch that is
+ * replicated with the fork branch.
+ * The replication algorithm is made to make
+ * as less writes on the master as possible.
+ * The master instance is always 'the truth' which
+ * does never contain conflicting document states.
+ * All conflicts are handled on the fork branch
+ * before being replicated to the master.
+ */
+export type RxReplicationHandler<RxDocType, MasterCheckpointType> = {
+    masterChangeStream$: Observable<
+        EventBulk<WithDeleted<RxDocType>, MasterCheckpointType> |
+        /**
+         * Emit this when the masterChangeStream$ might have missed out
+         * some events because the fork lost the connection to the master.
+         * Like when the user went offline and reconnects.
+         */
+        'RESYNC'
+    >;
+    masterChangesSince(
+        checkpoint: MasterCheckpointType,
+        bulkSize: number
+    ): Promise<{
+        checkpoint: MasterCheckpointType;
+        documentsData: WithDeleted<RxDocType>[];
+    }>;
+    /**
+     * Writes the fork changes to the master.
+     * Only returns the conflicts if there are any.
+     * (otherwise returns an empty array.)
+     */
+    masterWrite(
+        rows: RxReplicationWriteToMasterRow<RxDocType>[]
+    ): Promise<WithDeleted<RxDocType>[]>;
 };
 
 export type RxStorageInstanceReplicationInput<RxDocType> = {
@@ -52,19 +108,8 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      */
     identifier: string;
     bulkSize: number;
+    replicationHandler: RxReplicationHandler<RxDocType, any>;
     conflictHandler: RxConflictHandler<RxDocType>;
-
-    /**
-     * The RxStorage instance of the master branch that is
-     * replicated with the fork branch.
-     * The replication algorithm is made to make
-     * as less writes on the master as possible.
-     * The master instance is always 'the truth' which
-     * does never contain conflicting document states.
-     * All conflicts are handled on the fork branch
-     * before being replicated to the master.
-     */
-    masterInstance: RxStorageInstance<RxDocType, any, any>;
 
     /**
      * The fork is the one that contains the forked chain of document writes.
@@ -113,6 +158,60 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     primaryPath: string;
     input: RxStorageInstanceReplicationInput<RxDocType>;
 
+    events: {
+        /**
+         * Streams all document writes that have SUCCESSFULLY
+         * been written in one direction.
+         */
+        processed: {
+            up: Subject<RxReplicationWriteToMasterRow<RxDocType>>;
+            down: Subject<{
+
+            }>;
+        }
+        resolvedConflicts: Subject<{
+            input: RxConflictHandlerInput<RxDocType>;
+            output: RxConflictHandlerOutput<RxDocType>;
+        }>;
+        /**
+         * Contains the cancel state.
+         * Emit true here to cancel the replication.
+         */
+        canceled: BehaviorSubject<boolean>;
+        /**
+         * Contains true if the replication is duing something
+         * at this point in time.
+         * If this is false, it means that the replication
+         * is idle AND in sync.
+         */
+        active: {
+            [direction in RxStorageReplicationDirection]: BehaviorSubject<boolean>;
+        }
+    };
+
+
+    /**
+     * Contains counters that can be used in tests
+     * or to debug problems.
+     */
+    stats: {
+        down: {
+            addNewTask: number;
+            downstreamResyncOnce: number;
+            downstreamProcessChanges: number;
+            masterChangeStreamEmit: number;
+            persistFromMaster: number;
+        };
+        up: {
+            upstreamInitialSync: number;
+            forkChangeStreamEmit: number;
+            processTasks: number;
+            persistToMaster: number;
+            persistToMasterHadConflicts: number;
+            persistToMasterConflictWrites: number;
+        };
+    };
+
     /**
      * Used in checkpoints and ._meta fields
      * to ensure we do not mix up meta data of
@@ -120,22 +219,14 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      */
     checkpointKey: string;
 
+    downstreamBulkWriteFlag: string;
+
     /**
-     * Tracks if the streams are in sync
-     * or not.
+     * Tracks if the streams have been in sync
+     * for at least one time.
      */
     firstSyncDone: {
         [direction in RxStorageReplicationDirection]: BehaviorSubject<boolean>;
-    };
-
-    /**
-     * Contains the cancel state.
-     * Emit true here to cancel the replication.
-     */
-    canceled: BehaviorSubject<boolean>;
-
-    lastCheckpoint: {
-        [direction in RxStorageReplicationDirection]?: any
     };
 
     /**
@@ -144,6 +235,16 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      */
     streamQueue: {
         [direction in RxStorageReplicationDirection]: Promise<any>;
+    }
+
+
+    /**
+     * For better performance we store the last known checkpoint
+     * document so that we can likely do checkpoint storing without
+     * conflicts.
+     */
+    lastCheckpointDoc: {
+        [direction in RxStorageReplicationDirection]?: RxDocumentData<RxStorageReplicationMeta>;
     }
 }
 

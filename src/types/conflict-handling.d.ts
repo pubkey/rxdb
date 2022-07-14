@@ -11,8 +11,18 @@ export type RxConflictHandlerInput<RxDocType> = {
     realMasterState: WithDeleted<RxDocType>;
     newDocumentState: WithDeleted<RxDocType>;
 };
+
+/**
+ * The conflict handler either returns:
+ * - The resolved new document state
+ * - A flag to identify the given 'realMasterState' and 'newDocumentState'
+ *   as being exactly equal, so no conflict has to be resolved.
+ */
 export type RxConflictHandlerOutput<RxDocType> = {
+    isEqual: false;
     documentData: WithDeleted<RxDocType>;
+} | {
+    isEqual: true;
 };
 
 export type RxConflictHandler<RxDocType> = (

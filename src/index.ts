@@ -75,7 +75,7 @@ export {
 
 export * from './rx-storage-helper';
 
-export * from './rx-storage-replication';
+export * from './replication/index';
 export * from './rx-storage-multiinstance';
 
 export * from './custom-index';

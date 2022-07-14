@@ -18,7 +18,6 @@ import { Observable, Subject } from 'rxjs';
 import { mergeWith } from 'rxjs/operators';
 import type {
     EventBulk,
-    RxDocumentData,
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageInstanceCreationParams
@@ -58,7 +57,7 @@ export type RxStorageMultiInstanceBroadcastType = {
      */
     version: number;
     databaseName: string;
-    eventBulk: EventBulk<any>;
+    eventBulk: EventBulk<any, any>;
 }
 
 export function getBroadcastChannelReference(
@@ -114,8 +113,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
 
     const storage = instance.storage;
 
-    type Emit = EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
-
+    type Emit = EventBulk<RxStorageChangeEvent<RxDocType>, any>;
 
     const broadcastChannel = providedBroadcastChannel ?
         providedBroadcastChannel :

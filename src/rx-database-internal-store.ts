@@ -172,7 +172,8 @@ export async function ensureStorageTokenDocumentExists<Collections = any>(
     docData._rev = createRevision(docData);
 
     const writeResult = await rxDatabase.internalStore.bulkWrite(
-        [{ document: docData }]
+        [{ document: docData }],
+        'internal-add-storage-token'
     );
     if (writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
         return writeResult.success[STORAGE_TOKEN_DOCUMENT_ID];

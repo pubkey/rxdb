@@ -58,7 +58,7 @@ export function rxChangeEventToEventReduceChangeEvent<DocType>(
  * Used mostly in tests.
  */
 export function flattenEvents<EventType>(
-    input: EventBulk<EventType> | EventBulk<EventType>[] | EventType | EventType[]
+    input: EventBulk<EventType, any> | EventBulk<EventType, any>[] | EventType | EventType[]
 ): EventType[] {
     let output: EventType[] = [];
 
@@ -70,7 +70,7 @@ export function flattenEvents<EventType>(
     } else {
         if ((input as any).id && (input as any).events) {
             // is bulk
-            (input as EventBulk<EventType>)
+            (input as EventBulk<EventType, any>)
                 .events
                 .forEach(ev => output.push(ev));
         } else {

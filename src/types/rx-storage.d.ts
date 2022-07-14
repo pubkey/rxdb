@@ -195,7 +195,7 @@ export type RxStorageBulkWriteResponse<DocData> = {
      */
     error: {
         [documentId: string]: RxStorageBulkWriteError<DocData>;
-    }
+    };
 }
 
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
@@ -264,7 +264,7 @@ export type ChangeStreamOptions = {
  * like with WebWorkers or the BroadcastChannel.
  * So we now process events as bulks internally.
  */
-export type EventBulk<EventType> = {
+export type EventBulk<EventType, CheckpointType> = {
     /**
      * Unique id of the bulk,
      * used to detect duplicate bulks
@@ -272,6 +272,19 @@ export type EventBulk<EventType> = {
      */
     id: string;
     events: EventType[];
+
+    /**
+     * Required for replication.
+     * Passing this checkpoint into getChangedDocumentsSince()
+     * must return all items that have been modied AFTER this write event.
+     */
+    checkpoint: CheckpointType;
+
+    /**
+     * The context that was given at the call to bulkWrite()
+     * that caused this EventBulk.
+     */
+    context: string;
 }
 
 export type ChangeStreamEvent<DocType> = ChangeEvent<RxDocumentData<DocType>> & {
@@ -296,7 +309,7 @@ export type RxStorageChangeEvent<DocType> = {
      */
     eventId: string;
     documentId: string;
-    change: ChangeEvent<DocType>;
+    change: ChangeEvent<RxDocumentData<DocType>>;
 
     /**
      * Unix time in milliseconds of when the operation was triggered
@@ -309,3 +322,14 @@ export type RxStorageChangeEvent<DocType> = {
     startTime?: number;
     endTime?: number;
 }
+
+
+
+/**
+ * An example for how a RxStorage checkpoint can look like.
+ * NOTICE: Not all implementations use this type.
+ */
+export type RxStorageDefaultCheckpoint = {
+    id: string;
+    lwt: number;
+} | null;

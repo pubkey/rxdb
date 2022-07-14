@@ -186,7 +186,8 @@ export interface RxStorageInstance<
      */
     RxDocType,
     Internals,
-    InstanceCreationOptions
+    InstanceCreationOptions,
+    CheckpointType = any
     > {
 
     /**
@@ -222,7 +223,15 @@ export interface RxStorageInstance<
      * and others error. We need this to have a similar behavior as most NoSQL databases.
      */
     bulkWrite(
-        documentWrites: BulkWriteRow<RxDocType>[]
+        documentWrites: BulkWriteRow<RxDocType>[],
+        /**
+         * Context will be used in all
+         * changeStream()-events that are emitted as a result
+         * of that bulkWrite() operation.
+         * Used in plugins so that we can detect that event X
+         * comes from operation Y.
+         */
+        context: string
     ): Promise<
         /**
          * returns the response, splitted into success and error lists.
@@ -286,7 +295,7 @@ export interface RxStorageInstance<
      */
     getChangedDocumentsSince(
         limit: number,
-        checkpoint?: any
+        checkpoint?: CheckpointType
     ): Promise<{
         document: RxDocumentData<RxDocType>;
         /**
@@ -310,7 +319,7 @@ export interface RxStorageInstance<
      * must be also emitted to other instances with the same databaseName+collectionName.
      * See ./rx-storage-multiinstance.ts
      */
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>>;
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocType>, CheckpointType>>;
 
     /**
      * Runs a cleanup that removes all tompstones

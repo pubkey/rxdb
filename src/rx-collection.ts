@@ -110,7 +110,7 @@ import {
     storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError
 } from './rx-storage-helper';
-import { defaultConflictHandler } from './rx-storage-replication';
+import { defaultConflictHandler } from './replication';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -221,7 +221,9 @@ export class RxCollectionBase<
                     ev,
                     this as any
                 )),
-                databaseToken: this.database.token
+                databaseToken: this.database.token,
+                checkpoint: eventBulk.checkpoint,
+                context: eventBulk.context
             };
             this.database.$emit(changeEventBulk);
         });
@@ -357,7 +359,10 @@ export class RxCollectionBase<
             return row;
         });
 
-        const results = await this.storageInstance.bulkWrite(insertRows);
+        const results = await this.storageInstance.bulkWrite(
+            insertRows,
+            'rx-collection-bulk-insert'
+        );
 
         // create documents
         const successEntries: [string, RxDocumentData<RxDocumentType>][] = Object.entries(results.success);
@@ -430,7 +435,10 @@ export class RxCollectionBase<
                 document: writeDoc
             };
         });
-        const results = await this.storageInstance.bulkWrite(removeDocs);
+        const results = await this.storageInstance.bulkWrite(
+            removeDocs,
+            'rx-collection-bulk-remove'
+        );
 
         const successIds: string[] = Object.keys(results.success);
 

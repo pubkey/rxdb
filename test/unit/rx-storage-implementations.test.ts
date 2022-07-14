@@ -160,7 +160,9 @@ declare type NestedDoc = {
     }
 };
 
-config.parallel('rx-storage-implementations.test.js (implementation: ' + config.storage.name + ')', () => {
+const testContext = 'rx-storage-implementations.test.ts'
+
+config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.storage.name + ')', () => {
     describe('statics', () => {
         it('.hashKey', () => {
             const statics = config.storage.getStorage().statics;
@@ -222,7 +224,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const writeResponse = await storageInstance.bulkWrite(
                     [{
                         document: clone(docData)
-                    }]
+                    }],
+                    testContext
                 );
 
                 assert.deepStrictEqual(writeResponse.error, {});
@@ -254,12 +257,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 await storageInstance.bulkWrite(
                     [{
                         document: writeData
-                    }]
+                    }],
+                    testContext
                 );
                 const writeResponse = await storageInstance.bulkWrite(
                     [{
                         document: writeData
-                    }]
+                    }],
+                    testContext
                 );
 
                 assert.deepStrictEqual(writeResponse.success, {});
@@ -318,14 +323,16 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             document: Object.assign({}, writeData, {
                                 value: 'first'
                             })
-                        }]
+                        }],
+                        testContext
                     ),
                     storageInstance.bulkWrite(
                         [{
                             document: Object.assign({}, writeData, {
                                 value: 'second'
                             })
-                        }]
+                        }],
+                        testContext
                     )
                 ]);
 
@@ -359,7 +366,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const insertResponse = await storageInstance.bulkWrite(
                     [{
                         document: insertData
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(insertResponse.error, {});
                 const first = getFromObjectOrThrow(insertResponse.success, 'foobar');
@@ -377,7 +385,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     [{
                         previous: insertData,
                         document: updateData
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(updateResponse.error, {});
 
@@ -392,7 +401,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         })
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(deleteResponse.error, {});
 
@@ -424,7 +434,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         }
-                    }]
+                    }],
+                    testContext
                 );
 
                 assert.deepStrictEqual(insertResponse.error, {});
@@ -440,7 +451,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         })
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(updateResponse.error, {});
                 previous = getFromObjectOrThrow(updateResponse.success, docId);
@@ -456,7 +468,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         })
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(deleteResponse.error, {});
                 previous = getFromObjectOrThrow(deleteResponse.success, docId);
@@ -478,7 +491,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         })
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(undeleteConflictResponse.success, {});
 
@@ -497,7 +511,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         })
-                    }]
+                    }],
+                    testContext
                 );
                 const third = getFromObjectOrThrow(undeleteResponse.success, docId);
                 assert.strictEqual(third.value, 'aaa');
@@ -538,7 +553,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 };
                 const insertResponse = await storageInstance.bulkWrite([{
                     document: docData
-                }]);
+                }], testContext);
                 assert.deepStrictEqual(insertResponse.error, {});
                 let previous = insertResponse.success[docId];
 
@@ -550,7 +565,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         _rev: EXAMPLE_REVISION_2,
                         _meta: { lwt: now() }
                     })
-                }]);
+                }], testContext);
                 assert.deepStrictEqual(deleteResponse.error, {});
                 previous = deleteResponse.success[docId];
 
@@ -563,7 +578,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         _rev: EXAMPLE_REVISION_3,
                         _meta: { lwt: now() }
                     })
-                }]);
+                }], testContext);
                 assert.deepStrictEqual(modifyResponse.error, {});
                 previous = modifyResponse.success[docId];
                 assert.strictEqual(previous.value, 'barfoo2');
@@ -602,7 +617,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const writeResponse = await storageInstance.bulkWrite(
                     [{
                         document: insertData
-                    }]
+                    }],
+                    testContext
                 );
                 const insertResponse = getFromObjectOrThrow(writeResponse.success, docId);
                 const insertDataAfterWrite: RxDocumentData<OptionalValueTestDoc> = Object.assign(
@@ -625,7 +641,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         }
-                    }]
+                    }],
+                    testContext
                 );
                 const updateResponseDoc = getFromObjectOrThrow(updateResponse.success, docId);
                 delete (updateResponseDoc as any)._deleted;
@@ -674,7 +691,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     {
                         document: compressedDocData
                     }
-                ]);
+                ], testContext);
                 assert.deepStrictEqual(writeResponse.error, {});
 
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.id], false);
@@ -712,7 +729,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const res1 = await storageInstance.bulkWrite(
                     [{
                         document: clone(docData)
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(res1.error, {});
 
@@ -726,7 +744,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     [{
                         previous: docData,
                         document: clone(newDocData)
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(res2.error, {});
                 docData = newDocData;
@@ -742,7 +761,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     [{
                         previous: docData,
                         document: clone(newDocData)
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(res3.error, {});
                 docData = newDocData;
@@ -777,7 +797,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 await storageInstance.bulkWrite(
                     [{
                         document: clone(docData)
-                    }]
+                    }],
+                    testContext
                 );
                 const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
@@ -795,7 +816,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 _rev: EXAMPLE_REVISION_2,
                             }
                         )
-                    }]
+                    }],
+                    testContext
                 );
                 await Promise.all([
                     storageInstance.close(),
@@ -826,7 +848,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const insertResponse = await storageInstance.bulkWrite(
                     [{
                         document: clone(docData)
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(insertResponse.error, {});
 
@@ -839,7 +862,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     [{
                         previous: docData,
                         document: updated
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(updateResponse.error, {});
 
@@ -1194,7 +1218,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 await storageInstance.bulkWrite(
                     [{
                         document: writeData
-                    }]
+                    }],
+                    testContext
                 );
 
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
@@ -1234,7 +1259,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     {
                         document: getWriteData({ value: 'c' })
                     },
-                ]);
+                ], testContext);
 
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
@@ -1333,7 +1358,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }));
                 const writeResponse: RxStorageBulkWriteResponse<RandomDoc> = await storageInstance.bulkWrite(
-                    docData.map(d => ({ document: d }))
+                    docData.map(d => ({ document: d })),
+                    testContext
                 );
                 if (Object.keys(writeResponse.error).length > 0) {
                     throw new Error('could not save');
@@ -1424,7 +1450,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             }
                         }
                     }
-                ]);
+                ], testContext);
                 assert.deepStrictEqual(insertResult.error, {});
 
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery<NestedDoc>(
@@ -1473,7 +1499,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 await storageInstance.bulkWrite(
                     [{
                         document: docData
-                    }]
+                    }],
+                    testContext
                 );
 
                 const found = await storageInstance.findDocumentsById(['foobar'], false);
@@ -1504,7 +1531,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         }
-                    }]
+                    }],
+                    testContext
                 );
                 const previous = getFromObjectOrThrow(insertResult.success, 'foobar');
 
@@ -1521,7 +1549,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         }
-                    }]
+                    }],
+                    testContext
                 );
 
                 const found = await storageInstance.findDocumentsById(['foobar'], true);
@@ -1569,7 +1598,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 }
                             }
                         }
-                    ]
+                    ],
+                    testContext
                 );
                 const previous = getFromObjectOrThrow(insertResult.success, 'del');
                 const deleteWriteResult = await storageInstance.bulkWrite(
@@ -1585,7 +1615,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         }
-                    }]
+                    }],
+                    testContext
                 );
                 assert.deepStrictEqual(deleteWriteResult.error, {});
 
@@ -1638,7 +1669,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             }
                         }
                     }
-                ]);
+                ], testContext);
                 const docsAfterInsert = await getChanges();
                 assert.strictEqual(docsAfterInsert.length, 1);
                 assert.strictEqual(docsAfterInsert[0].key, 'foobar');
@@ -1657,7 +1688,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             }
                         }
                     }
-                ]);
+                ], testContext);
                 const docsAfterDelete = await getChanges();
                 assert.strictEqual(docsAfterDelete.length, 1);
                 assert.strictEqual(docsAfterDelete[0].key, 'foobar');
@@ -1690,7 +1721,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     {
                         document: getWriteData()
                     }
-                ]);
+                ], testContext);
                 assert.deepStrictEqual(insertResult.error, {});
                 previous = getFromObjectOrThrow(insertResult.success, 'foobar');
 
@@ -1708,7 +1739,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             previous,
                             document: newDoc
                         }
-                    ]);
+                    ], testContext);
                     assert.deepStrictEqual(updateResult.error, {});
                     previous = getFromObjectOrThrow(updateResult.success, 'foobar');
                 }
@@ -1724,7 +1755,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const insertManyResult = await storageInstance.bulkWrite(
                     new Array(10)
                         .fill(0)
-                        .map(() => ({ document: getWriteData() }))
+                        .map(() => ({ document: getWriteData() })),
+                    testContext
                 );
                 assert.deepStrictEqual(insertManyResult.error, {});
 
@@ -1754,7 +1786,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         previous,
                         document: newDoc
                     }
-                ]);
+                ], testContext);
                 assert.deepStrictEqual(deleteResult.error, {});
 
                 const resultAfterDelete = await storageInstance.getChangedDocumentsSince(5, lastOfArray(resultThirdFive).checkpoint);
@@ -1775,7 +1807,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream()
                     .pipe(
                         /**
@@ -1800,10 +1832,12 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     }
                 };
 
+                const context = randomCouchString();
+
                 // insert
                 await storageInstance.bulkWrite([{
                     document: writeData
-                }]);
+                }], context);
 
                 /**
                  * Do not await any time after the insert.
@@ -1818,6 +1852,32 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 // should contain the _meta data
                 assert.ok((emitted as any)[0].events[0].change.doc._meta.lwt);
 
+                /**
+                 * Using the checkpoint from the event must not return any newer documents.
+                 * This ensures that during replication, we can continue from the given checkpoint
+                 * without missing out any document writes.
+                 */
+                await storageInstance.bulkWrite(
+                    new Array(10).fill(0).map(() => ({ document: getWriteData() })),
+                    context
+                );
+                const lastEvent = lastOfArray(emitted);
+
+                assert.strictEqual(
+                    lastEvent.context,
+                    context
+                );
+
+                const emptyResult = await storageInstance.getChangedDocumentsSince(
+                    100,
+                    lastEvent.checkpoint
+                );
+                assert.strictEqual(
+                    emptyResult.length,
+                    0
+                );
+
+
                 sub.unsubscribe();
                 storageInstance.close();
             });
@@ -1831,7 +1891,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1852,7 +1912,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 const firstWriteResult = await storageInstance.bulkWrite([{
                     previous,
                     document: writeData
-                }]);
+                }], testContext);
                 previous = getFromObjectOrThrow(firstWriteResult.success, writeData.key);
 
                 // update
@@ -1865,7 +1925,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             lwt: now()
                         }
                     })
-                }]);
+                }], testContext);
                 previous = getFromObjectOrThrow(updateResult.success, writeData.key);
 
                 // should not mutate the input or add additional properties to output
@@ -1883,7 +1943,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             lwt: now()
                         }
                     })
-                }]);
+                }], testContext);
                 assert.deepStrictEqual(deleteBulkWriteResponse.error, {});
 
                 await waitUntil(() => {
@@ -1919,7 +1979,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -1938,13 +1998,13 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 // insert
                 const firstWriteResult = await storageInstance.bulkWrite([{
                     document: writeData
-                }]);
+                }], testContext);
                 assert.deepStrictEqual(firstWriteResult.error, {});
 
                 // insert again to cause conflict error
                 const secondWriteResult = await storageInstance.bulkWrite([{
                     document: writeData
-                }]);
+                }], testContext);
                 assert.deepStrictEqual(secondWriteResult.success, {});
 
                 assert.strictEqual(emitted.length, 1);
@@ -2009,7 +2069,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     storageInstance,
                     {
                         document: writeData
-                    }
+                    },
+                    testContext
                 );
 
                 const attachmentDataAfter = await storageInstance.getAttachmentData('foobar', 'foo');
@@ -2034,7 +2095,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 });
                 const statics = config.storage.getStorage().statics;
 
-                const emitted: EventBulk<RxStorageChangeEvent<any>>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<any>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -2075,7 +2136,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                     storageInstance,
                     {
                         document: writeData
-                    }
+                    },
+                    testContext
                 );
                 await waitUntil(() => flattenEvents(emitted).length === 1);
 
@@ -2185,7 +2247,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         })
-                    }
+                    },
+                    testContext
                 );
 
                 if (!previous) {
@@ -2214,7 +2277,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                                 lwt: now()
                             }
                         })
-                    }
+                    },
+                    testContext
                 );
                 if (!previous) {
                     throw new Error('previous missing');
@@ -2258,7 +2322,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         }
                     }
                 };
-                await storageInstance.bulkWrite([{ document: writeData }]);
+                await storageInstance.bulkWrite([{ document: writeData }], testContext);
                 await storageInstance.getAttachmentData('foobar', 'foo');
 
                 const deleteData = clone(writeData);
@@ -2267,8 +2331,10 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 deleteData._attachments = {};
                 deleteData._rev = EXAMPLE_REVISION_2;
 
-                await storageInstance.bulkWrite([{ previous: writeData, document: deleteData }]);
-
+                await storageInstance.bulkWrite(
+                    [{ previous: writeData, document: deleteData }],
+                    testContext
+                );
 
                 let hasThrown = false;
                 try {
@@ -2310,7 +2376,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         },
                         _attachments: {}
                     }
-                }]);
+                }], testContext);
 
 
                 /**
@@ -2327,7 +2393,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         },
                         _deleted: false
                     }
-                }]);
+                }], testContext);
                 const previous = getFromObjectOrThrow(insertResult.success, id);
 
                 /**
@@ -2345,7 +2411,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         },
                         _attachments: {}
                     }
-                }]);
+                }], testContext);
                 getFromObjectOrThrow(deleteResult.success, id);
 
                 /**
@@ -2422,7 +2488,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         },
                         _deleted: false
                     }
-                }]);
+                }], testContext);
                 const previous = getFromObjectOrThrow(insertResult.success, id);
 
                 /**
@@ -2440,7 +2506,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         },
                         _attachments: {}
                     }
-                }]);
+                }], testContext);
                 getFromObjectOrThrow(deleteResult.success, id);
 
                 done = false;
@@ -2477,7 +2543,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                             _attachments: {}
                         }
                     }
-                ]);
+                ], testContext);
 
 
                 await storageInstance.remove();
@@ -2542,14 +2608,14 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
         it('should be able to write and read documents', async () => {
             const instances = await getMultiInstanceRxStorageInstance();
 
-            const emittedB: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+            const emittedB: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
             instances.b.changeStream().subscribe(ev => emittedB.push(ev));
-            const emittedA: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>>[] = [];
+            const emittedA: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
             instances.a.changeStream().subscribe(ev => emittedA.push(ev));
 
             // insert a document on A
             const writeData = getWriteData();
-            await instances.a.bulkWrite([{ document: writeData }]);
+            await instances.a.bulkWrite([{ document: writeData }], testContext);
 
             // find the document on B
             await waitUntil(async () => {
@@ -2592,7 +2658,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             const instances = await getMultiInstanceRxStorageInstance();
 
             // insert a document on A
-            await instances.a.bulkWrite([{ document: getWriteData() }]);
+            await instances.a.bulkWrite([{ document: getWriteData() }], testContext);
 
             const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage()
                 .statics
@@ -2648,7 +2714,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         _rev: EXAMPLE_REVISION_1,
                         _attachments: {}
                     }
-                }]
+                }],
+                testContext
             );
             const writeResponseV1 = await storageInstanceV1.bulkWrite(
                 [{
@@ -2662,7 +2729,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         _rev: EXAMPLE_REVISION_1,
                         _attachments: {}
                     }
-                }]
+                }],
+                testContext
             );
             assert.deepStrictEqual(writeResponseV0.error, {});
             assert.deepStrictEqual(writeResponseV1.error, {});
@@ -2717,7 +2785,8 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                         _rev: EXAMPLE_REVISION_1,
                         _attachments: {}
                     }
-                }]
+                }],
+                testContext
             );
             assert.deepStrictEqual(writeResponse.error, {});
             await storageInstance1.close();
@@ -2754,7 +2823,7 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
             const writeData = getWriteData();
             await instances.a.bulkWrite([{
                 document: writeData
-            }]);
+            }], testContext);
 
 
             await waitUntil(() => emittedB.length > 0);
@@ -2786,10 +2855,16 @@ config.parallel('rx-storage-implementations.test.js (implementation: ' + config.
                 multiInstance: false
             });
 
-            const writeResultZero = await storageInstanceZero.bulkWrite([{ document: getWriteData({ value: 'zero' }) }]);
+            const writeResultZero = await storageInstanceZero.bulkWrite(
+                [{ document: getWriteData({ value: 'zero' }) }],
+                testContext
+            );
             assert.deepStrictEqual(writeResultZero.error, {});
 
-            const writeResultOne = await storageInstanceOne.bulkWrite([{ document: getWriteData({ value: 'one' }) }]);
+            const writeResultOne = await storageInstanceOne.bulkWrite(
+                [{ document: getWriteData({ value: 'one' }) }],
+                testContext
+            );
             assert.deepStrictEqual(writeResultOne.error, {});
 
             const docsZero = await storageInstanceZero.query(

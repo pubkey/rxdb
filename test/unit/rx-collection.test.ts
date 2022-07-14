@@ -1225,7 +1225,7 @@ describe('rx-collection.test.js', () => {
                     }
 
                     const db1 = await createDb();
-                    console.log('db1 token: ' + db1.token);
+
                     await db1.collections['human-2'].insert(schemaObjects.simpleHuman());
 
                     // remove the collection on one database
@@ -2300,7 +2300,8 @@ describe('rx-collection.test.js', () => {
                         return {
                             document: saveMe
                         };
-                    })
+                    }),
+                'collection-test'
             );
 
             // Now we should have more updates and at some point all documents
@@ -2354,7 +2355,8 @@ describe('rx-collection.test.js', () => {
                     createObject('f'),
                     createObject('g'),
                     createObject('h')
-                ].map(document => ({ document }))
+                ].map(document => ({ document })),
+                'collection-test'
             );
 
             //  Wait a bit to see if we catch anything

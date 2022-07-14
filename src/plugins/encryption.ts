@@ -107,7 +107,8 @@ export async function storePasswordHashIntoDatabase(
             rxDatabase.internalStore,
             {
                 document: docData
-            }
+            },
+            'encryption-password-hash'
         );
     } catch (err) {
         if (

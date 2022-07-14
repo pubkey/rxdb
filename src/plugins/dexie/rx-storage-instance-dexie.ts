@@ -24,11 +24,11 @@ import type {
     RxJsonSchema,
     RxStorageInstanceCreationParams,
     EventBulk,
-    DexieChangesCheckpoint,
     StringKeys,
     RxDocumentDataById,
     RxConflictResultionTask,
-    RxConflictResultionTaskSolution
+    RxConflictResultionTaskSolution,
+    RxStorageDefaultCheckpoint
 } from '../../types';
 import {
     DexiePreparedQuery,
@@ -45,7 +45,7 @@ import {
 } from './dexie-helper';
 import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { getUniqueDeterministicEventKey } from '../../rx-storage-helper';
+import { getNewestOfDocumentStates, getUniqueDeterministicEventKey } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
 
 let instanceId = now();
@@ -53,10 +53,11 @@ let instanceId = now();
 export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     RxDocType,
     DexieStorageInternals,
-    DexieSettings
+    DexieSettings,
+    RxStorageDefaultCheckpoint
 > {
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
-    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public readonly instanceId = instanceId++;
     public closed = false;
 
@@ -72,15 +73,20 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     }
 
-    async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[]): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+    async bulkWrite(
+        documentWrites: BulkWriteRow<RxDocType>[],
+        context: string
+        ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
             error: {}
         };
-        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
+        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint> = {
             id: randomCouchString(10),
-            events: []
+            events: [],
+            checkpoint: null,
+            context
         };
 
         const documentKeys: string[] = documentWrites.map(writeRow => writeRow.document[this.primaryPath] as any);
@@ -253,6 +259,15 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             });
 
         if (eventBulk.events.length > 0) {
+            const lastState = getNewestOfDocumentStates(
+                this.primaryPath as any,
+                Object.values(ret.success)
+            );
+            eventBulk.checkpoint = {
+                id: (lastState as any)[this.primaryPath],
+                lwt: lastState._meta.lwt
+            };
+
             const endTime = now();
             eventBulk.events.forEach(event => event.endTime = endTime);
             this.changes$.next(eventBulk);
@@ -301,10 +316,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
     async getChangedDocumentsSince(
         limit: number,
-        checkpoint?: DexieChangesCheckpoint
+        checkpoint?: RxStorageDefaultCheckpoint
     ): Promise<{
         document: RxDocumentData<RxDocType>;
-        checkpoint: DexieChangesCheckpoint;
+        checkpoint: RxStorageDefaultCheckpoint;
     }[]> {
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const sinceId = checkpoint ? checkpoint.id : '';
@@ -346,7 +361,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return this.close();
     }
 
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
         return this.changes$.asObservable();
     }
 

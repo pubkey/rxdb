@@ -85,10 +85,12 @@ export async function getSingleDocument<RxDocType>(
  */
 export async function writeSingle<RxDocType>(
     instance: RxStorageInstance<RxDocType, any, any>,
-    writeRow: BulkWriteRow<RxDocType>
+    writeRow: BulkWriteRow<RxDocType>,
+    context: string
 ): Promise<RxDocumentData<RxDocType>> {
     const writeResult = await instance.bulkWrite(
-        [writeRow]
+        [writeRow],
+        context
     );
 
     if (Object.keys(writeResult.error).length > 0) {
@@ -155,6 +157,28 @@ export function throwIfIsStorageWriteError<RxDocType>(
     }
 }
 
+
+export function getNewestOfDocumentStates<RxDocType>(
+    primaryPath: string,
+    docs: RxDocumentData<RxDocType>[]
+): RxDocumentData<RxDocType> {
+    let ret: RxDocumentData<RxDocType> | null = null;
+    docs.forEach(doc => {
+        if (
+            !ret ||
+            doc._meta.lwt > ret._meta.lwt ||
+            (
+                doc._meta.lwt === ret._meta.lwt &&
+                (doc as any)[primaryPath] > (ret as any)[primaryPath]
+            )
+        ) {
+            ret = doc;
+        }
+
+    });
+    return ensureNotFalsy(ret as any);
+}
+
 /**
  * Analyzes a list of BulkWriteRows and determines
  * which documents must be inserted, updated or deleted
@@ -175,7 +199,8 @@ export function categorizeBulkWriteRows<RxDocType>(
      * The write rows that are passed to
      * RxStorageInstance().bulkWrite().
      */
-    bulkWriteRows: BulkWriteRow<RxDocType>[]
+    bulkWriteRows: BulkWriteRow<RxDocType>[],
+    context: string
 ): {
     bulkInsertDocs: BulkWriteRow<RxDocType>[];
     bulkUpdateDocs: BulkWriteRow<RxDocType>[];
@@ -194,7 +219,7 @@ export function categorizeBulkWriteRows<RxDocType>(
      * over the error array again.
      */
     errors: RxStorageBulkWriteError<RxDocType>[];
-    eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
+    eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {
         documentId: string;
         attachmentId: string;
@@ -215,9 +240,11 @@ export function categorizeBulkWriteRows<RxDocType>(
     const bulkUpdateDocs: BulkWriteRow<RxDocType>[] = [];
     const errors: RxStorageBulkWriteError<RxDocType>[] = [];
     const changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][] = [];
-    const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
+    const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
         id: randomCouchString(10),
-        events: []
+        events: [],
+        checkpoint: null,
+        context
     };
 
     const attachmentsAdd: {
@@ -515,9 +542,14 @@ export function getAttachmentSize(
  * and other data transformations and also ensure that database.lockedRun()
  * is used properly.
  */
-export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions>(
+export function getWrappedStorageInstance<
+    RxDocType,
+    Internals,
+    InstanceCreationOptions,
+    CheckpointType
+>(
     database: RxDatabase<{}, Internals, InstanceCreationOptions>,
-    storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>,
+    storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions, CheckpointType>,
     /**
      * The original RxJsonSchema
      * before it was mutated by hooks.
@@ -667,13 +699,17 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         collectionName: storageInstance.collectionName,
         databaseName: storageInstance.databaseName,
         options: storageInstance.options,
-        bulkWrite(rows: BulkWriteRow<RxDocType>[]) {
+        bulkWrite(
+            rows: BulkWriteRow<RxDocType>[],
+            context: string
+        ) {
             const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows
                 .map(row => transformDocumentDataFromRxDBToRxStorage(row));
 
             return database.lockedRun(
                 () => storageInstance.bulkWrite(
-                    toStorageWriteRows
+                    toStorageWriteRows,
+                    context
                 )
             )
                 /**
@@ -720,7 +756,10 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                             });
 
                         return database.lockedRun(
-                            () => storageInstance.bulkWrite(reInserts)
+                            () => storageInstance.bulkWrite(
+                                reInserts,
+                                context
+                            )
                         ).then(subResult => {
                             useWriteResult.error = Object.assign(
                                 useWriteResult.error,
@@ -806,7 +845,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
         changeStream() {
             return storageInstance.changeStream().pipe(
                 map(eventBulk => {
-                    const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>> = {
+                    const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, CheckpointType> = {
                         id: eventBulk.id,
                         events: eventBulk.events.map(event => {
                             return {
@@ -821,8 +860,9 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
                                     previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(event.change.previous) : undefined
                                 }
                             }
-
-                        })
+                        }),
+                        checkpoint: eventBulk.checkpoint,
+                        context: eventBulk.context
                     };
                     return ret;
                 })
@@ -847,6 +887,11 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             );
         },
         resolveConflictResultionTask(taskSolution) {
+
+            if (taskSolution.output.isEqual) {
+                return storageInstance.resolveConflictResultionTask(taskSolution);
+            }
+
             const hookParams = {
                 database,
                 primaryPath,
@@ -874,6 +919,7 @@ export function getWrappedStorageInstance<RxDocType, Internals, InstanceCreation
             return storageInstance.resolveConflictResultionTask({
                 id: taskSolution.id,
                 output: {
+                    isEqual: false,
                     documentData
                 }
             });

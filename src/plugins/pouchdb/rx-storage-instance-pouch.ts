@@ -9,8 +9,8 @@ import type {
     BulkWriteRow,
     EventBulk,
     PouchBulkDocResultRow,
-    PouchChangedDocumentsSinceCheckpoint,
     PouchChangesOptionsNonLive,
+    PouchCheckpoint,
     PouchSettings,
     PouchWriteError,
     PreparedQuery,
@@ -55,11 +55,12 @@ let lastId = 0;
 export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     RxDocType,
     PouchStorageInternals,
-    PouchSettings
+    PouchSettings,
+    PouchCheckpoint
 > {
     public readonly id: number = lastId++;
 
-    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> = new Subject();
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, PouchCheckpoint>> = new Subject();
     private subs: Subscription[] = [];
     private primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
@@ -145,7 +146,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         await this.internals.pouch.destroy();
     }
     public async bulkWrite(
-        documentWrites: BulkWriteRow<RxDocType>[]
+        documentWrites: BulkWriteRow<RxDocType>[],
+        context: string
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
@@ -198,7 +200,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     primaryPath: this.primaryPath,
                     writeRowById,
                     insertDocsById,
-                    previousDocsInDb
+                    previousDocsInDb,
+                    context
                 }
             } as any);
             return Promise.all(
@@ -328,7 +331,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         }
     }
 
-    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>>> {
+    changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, PouchCheckpoint>> {
         return this.changes$.asObservable();
     }
 
@@ -346,10 +349,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     async getChangedDocumentsSince(
         limit: number,
-        checkpoint?: PouchChangedDocumentsSinceCheckpoint
+        checkpoint?: PouchCheckpoint
     ): Promise<{
         document: RxDocumentData<RxDocType>;
-        checkpoint: PouchChangedDocumentsSinceCheckpoint;
+        checkpoint: PouchCheckpoint;
     }[]> {
         if (!limit || typeof limit !== 'number') {
             throw new Error('wrong limit');

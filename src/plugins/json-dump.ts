@@ -106,7 +106,10 @@ function importDumpRxCollection<RxDocType>(
         // validate schema
         .map((doc: any) => this.schema.validate(doc));
 
-    return this.storageInstance.bulkWrite(docs.map(document => ({ document })));
+    return this.storageInstance.bulkWrite(
+        docs.map(document => ({ document })),
+        'json-dump-import'
+    );
 }
 
 export const RxDBJsonDumpPlugin: RxPlugin = {

@@ -974,7 +974,7 @@ config.parallel('data-migration.test.js', () => {
                 insertDocData._rev = createRevision(insertDocData);
                 await collection.storageInstance.bulkWrite([{
                     document: insertDocData
-                }]);
+                }], 'data-migration-test');
                 await db.destroy();
 
                 const db2 = await createRxDatabase({
