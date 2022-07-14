@@ -159,6 +159,7 @@ export type {
     ChangeStreamEvent,
     RxStorageChangeEvent,
     RxStorageInstance,
+    RxStorageDefaultCheckpoint,
 
     // conflict handling
     RxConflictHandler,

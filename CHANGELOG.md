@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD export type `RxStorageDefaultCheckpoint`
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
