@@ -136,4 +136,4 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: 'A new RxDB version has been released: https://github.com/pubkey/rxdb/releases/tag/{{github.event.inputs.version}}'
+          args: '@everyone A new RxDB version has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}'
