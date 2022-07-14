@@ -47,9 +47,9 @@ export type InWorkerStorage<RxDocType, CheckpointType> = {
         limit: number,
         checkpoint?: CheckpointType
     ): Promise<{
-        document: RxDocumentData<RxDocType>;
+        documents: RxDocumentData<RxDocType>[];
         checkpoint: any;
-    }[]>;
+    }>;
     changeStream(
         instanceById: number
     ): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, CheckpointType>>;
@@ -123,9 +123,9 @@ export function wrappedWorkerRxStorage<T, D, CheckpointType = any>(
             limit: number,
             checkpoint: any
         ): Promise<{
-            document: RxDocumentData<RxDocType>;
+            documents: RxDocumentData<RxDocType>[];
             checkpoint: any;
-        }[]> {
+        }> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.getChangedDocumentsSince(
                 limit,

@@ -27,6 +27,7 @@ import type {
 } from '../../types';
 import {
     getFromMapOrThrow,
+    lastOfArray,
     now,
     PROMISE_RESOLVE_VOID,
     RX_META_LWT_MINIMUM
@@ -269,9 +270,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: RxStorageDefaultCheckpoint
     ): Promise<{
-        document: RxDocumentData<RxDocType>;
+        documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;
-    }[]> {
+    }> {
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const sinceId = checkpoint ? checkpoint.id : '';
 
@@ -304,13 +305,17 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             indexOfLower++;
         }
 
-        return rows.map(docData => ({
-            document: docData,
-            checkpoint: {
-                id: docData[this.primaryPath] as any,
-                lwt: docData._meta.lwt
+        const lastDoc = lastOfArray(rows);
+        return {
+            documents: rows,
+            checkpoint: lastDoc ? {
+                id: lastDoc[this.primaryPath] as any,
+                lwt: lastDoc._meta.lwt
+            } : {
+                id: '',
+                lwt: 0
             }
-        }));
+        };
     }
 
     async cleanup(minimumDeletedTime: number): Promise<boolean> {

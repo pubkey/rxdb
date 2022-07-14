@@ -43,7 +43,6 @@ import type {
 } from '../types';
 import {
     ensureNotFalsy,
-    lastOfArray,
     PROMISE_RESOLVE_VOID
 } from '../util';
 import {
@@ -183,8 +182,8 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                 checkpoint
             ).then(result => {
                 return {
-                    checkpoint: result.length > 0 ? lastOfArray(result).checkpoint : checkpoint,
-                    documentsData: result.map(r => writeDocToDocState(r.document))
+                    checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
+                    documentsData: result.documents.map(d => writeDocToDocState(d))
                 }
             })
         },

@@ -333,7 +333,7 @@ export type RxStorageChangeEvent<DocType> = {
 export type RxStorageDefaultCheckpoint = {
     id: string;
     lwt: number;
-} | null;
+};
 
 
 

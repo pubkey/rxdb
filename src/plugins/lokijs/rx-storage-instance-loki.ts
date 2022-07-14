@@ -9,7 +9,8 @@ import {
     isMaybeReadonlyArray,
     getFromMapOrThrow,
     getSortDocumentsByLastWriteTimeComparator,
-    RX_META_LWT_MINIMUM
+    RX_META_LWT_MINIMUM,
+    lastOfArray
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type {
@@ -226,11 +227,11 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
     async getChangedDocumentsSince(
         limit: number,
-        checkpoint?: RxStorageDefaultCheckpoint
+        checkpoint?: RxStorageDefaultCheckpoint | null
     ): Promise<{
-        document: RxDocumentData<RxDocType>;
+        documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;
-    }[]> {
+    }> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'getChangedDocumentsSince', [limit, checkpoint]);
@@ -258,13 +259,17 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
 
         changedDocs = changedDocs.slice(0, limit);
-        return changedDocs.map(docData => ({
-            document: stripLokiKey(docData),
-            checkpoint: {
-                id: docData[this.primaryPath] as any,
-                lwt: docData._meta.lwt
+        const lastDoc = lastOfArray(changedDocs);
+        return {
+            documents: changedDocs.map(docData => stripLokiKey(docData)),
+            checkpoint: lastDoc ? {
+                id: lastDoc[this.primaryPath],
+                lwt: lastDoc._meta.lwt
+            } : {
+                id: '',
+                lwt: 0
             }
-        }));
+        };
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {

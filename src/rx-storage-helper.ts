@@ -104,6 +104,21 @@ export async function writeSingle<RxDocType>(
 }
 
 
+/**
+ * Checkpoints must be stackable over another.
+ * This is required form some RxStorage implementations
+ * like the sharding plugin, where a checkpoint only represents
+ * the document state from some, but not all shards.
+ */
+export function stackCheckpoints<CheckpointType>(
+    checkpoints: CheckpointType[]
+): CheckpointType {
+    return Object.assign(
+        {},
+        ...checkpoints
+    );
+}
+
 export function storageChangeEventToRxChangeEvent<DocType>(
     isLocal: boolean,
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
@@ -789,10 +804,11 @@ export function getWrappedStorageInstance<
             return database.lockedRun(
                 () => storageInstance.getChangedDocumentsSince(limit, checkpoint)
             ).then(result => {
-                return result.map(row => ({
-                    checkpoint: row.checkpoint,
-                    document: transformDocumentDataFromRxStorageToRxDB(row.document)
-                }));
+                return {
+                    checkpoint: result.checkpoint,
+                    documents: result.documents
+                        .map(d => transformDocumentDataFromRxStorageToRxDB(d))
+                };
             });
         },
         cleanup(minDeletedTime: number) {

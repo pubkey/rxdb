@@ -12,7 +12,6 @@ import type {
     WithDeleted
 } from '../types';
 import {
-    lastOfArray,
     ensureNotFalsy,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID
@@ -94,15 +93,15 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                 state.input.bulkSize,
                 lastCheckpoint
             );
-            if (upResult.length === 0) {
+            if (upResult.documents.length === 0) {
                 break;
             }
 
-            lastCheckpoint = lastOfArray(upResult).checkpoint;
+            lastCheckpoint = upResult.checkpoint;
 
             promises.push(
                 persistToMaster(
-                    upResult.map(r => r.document),
+                    upResult.documents,
                     ensureNotFalsy(lastCheckpoint)
                 )
             );

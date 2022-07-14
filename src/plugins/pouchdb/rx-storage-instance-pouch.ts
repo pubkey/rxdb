@@ -42,6 +42,7 @@ import {
     flatClone,
     getFromMapOrThrow,
     getFromObjectOrThrow,
+    lastOfArray,
     PROMISE_RESOLVE_VOID
 } from '../../util';
 import {
@@ -351,9 +352,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: PouchCheckpoint
     ): Promise<{
-        document: RxDocumentData<RxDocType>;
+        documents: RxDocumentData<RxDocType>[];
         checkpoint: PouchCheckpoint;
-    }[]> {
+    }> {
         if (!limit || typeof limit !== 'number') {
             throw new Error('wrong limit');
         }
@@ -416,14 +417,15 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             throw new Error('same sequence');
         }
 
-        return changedDocuments.map(changeRow => {
-            return {
-                checkpoint: {
-                    sequence: changeRow.sequence
-                },
-                document: getFromObjectOrThrow(documentsData, changeRow.id)
-            };
-        });
+        const lastRow = lastOfArray(changedDocuments);
+        return {
+            documents: changedDocuments.map(changeRow => getFromObjectOrThrow(documentsData, changeRow.id)),
+            checkpoint: lastRow ? {
+                sequence: lastRow.sequence
+            } : {
+                sequence: -1
+            }
+        }
     }
 
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {

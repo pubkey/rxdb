@@ -19,7 +19,12 @@ import type {
     RxDocument,
     RxPlugin
 } from '../../types';
-import { getFromMapOrThrow, lastOfArray, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
+import {
+    getFromMapOrThrow,
+    PROMISE_RESOLVE_FALSE,
+    PROMISE_RESOLVE_TRUE,
+    PROMISE_RESOLVE_VOID
+} from '../../util';
 import {
     clearFolder,
     deleteFolder,
@@ -145,11 +150,11 @@ export class RxBackupState {
                             this.options.batchSize ? this.options.batchSize : 0,
                             lastCheckpoint
                         );
-                        lastCheckpoint = changesResult.length > 0 ? lastOfArray(changesResult).checkpoint : lastCheckpoint;
+                        lastCheckpoint = changesResult.documents.length > 0 ? changesResult.checkpoint : lastCheckpoint;
                         meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
 
-                        const docIds: string[] = changesResult
-                            .map(row => row.document[primaryKey])
+                        const docIds: string[] = changesResult.documents
+                            .map(doc => doc[primaryKey])
                             .filter(id => {
                                 if (
                                     processedDocuments.has(id)

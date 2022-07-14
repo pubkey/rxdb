@@ -1238,7 +1238,7 @@ describe('rx-collection.test.js', () => {
                      * Getting the changes in the other database should have an empty result.
                      */
                     const changesResult = await db2['human-2'].storageInstance.getChangedDocumentsSince(10);
-                    assert.strictEqual(changesResult.length, 0);
+                    assert.strictEqual(changesResult.documents.length, 0);
 
                     db2.destroy();
                 });

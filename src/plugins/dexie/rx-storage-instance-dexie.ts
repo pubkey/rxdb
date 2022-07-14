@@ -10,7 +10,8 @@ import {
     randomCouchString,
     PROMISE_RESOLVE_VOID,
     RX_META_LWT_MINIMUM,
-    sortDocumentsByLastWriteTime
+    sortDocumentsByLastWriteTime,
+    lastOfArray
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type {
@@ -76,7 +77,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     async bulkWrite(
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
-        ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+    ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
@@ -85,7 +86,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint> = {
             id: randomCouchString(10),
             events: [],
-            checkpoint: null,
+            checkpoint: null as any,
             context
         };
 
@@ -318,9 +319,9 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: RxStorageDefaultCheckpoint
     ): Promise<{
-        document: RxDocumentData<RxDocType>;
+        documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;
-    }[]> {
+    }> {
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const sinceId = checkpoint ? checkpoint.id : '';
         const state = await this.internals;
@@ -343,13 +344,18 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
         changedDocs = sortDocumentsByLastWriteTime(this.primaryPath as any, changedDocs);
         changedDocs = changedDocs.slice(0, limit);
-        return changedDocs.map(docData => ({
-            document: docData,
-            checkpoint: {
-                id: docData[this.primaryPath] as any,
-                lwt: docData._meta.lwt
+
+        const lastDoc = lastOfArray(changedDocs);
+        return {
+            documents: changedDocs,
+            checkpoint: lastDoc ? {
+                id: lastDoc[this.primaryPath] as any,
+                lwt: lastDoc._meta.lwt
+            } : {
+                id: '',
+                lwt: 0
             }
-        }));
+        };
     }
 
     async remove(): Promise<void> {

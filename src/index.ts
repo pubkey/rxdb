@@ -202,6 +202,7 @@ export type {
     OldRxCollection,
     WithAttachmentsData,
     RxTestStorage,
+    ById,
 
     RxQueryPlan
 } from './types';

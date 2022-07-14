@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD export type `CategorizeBulkWriteRowsOutput`
+- CHANGE `RxStorageInstance.getChangedDocumentsSince()` only returns the last checkpoint, not one for each document.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
