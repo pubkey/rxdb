@@ -164,10 +164,10 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
          * been written in one direction.
          */
         processed: {
-            [direction in RxStorageReplicationDirection]: Subject<{
-                docData: WithDeleted<RxDocType>;
-                withMeta: RxDocumentData<RxDocType>;
-            }[]>;
+            up: Subject<RxReplicationWriteToMasterRow<RxDocType>>;
+            down: Subject<{
+
+            }>;
         }
         resolvedConflicts: Subject<{
             input: RxConflictHandlerInput<RxDocType>;

@@ -48,7 +48,10 @@ export async function resolveConflictError<RxDocType>(
     conflictHandler: RxConflictHandler<RxDocType>,
     input: RxConflictHandlerInput<RxDocType>,
     forkState: RxDocumentData<RxDocType>
-): Promise<RxDocumentData<RxDocType> | undefined> {
+): Promise<{
+    resolvedDoc: RxDocumentData<RxDocType>;
+    output: RxConflictHandlerOutput<RxDocType>;
+} | undefined> {
     const conflictHandlerOutput = await conflictHandler(input, 'replication-resolve-conflict');
 
     if (conflictHandlerOutput.isEqual) {
@@ -77,6 +80,9 @@ export async function resolveConflictError<RxDocType>(
         );
         resolvedDoc._meta.lwt = now();
         resolvedDoc._rev = createRevision(resolvedDoc, forkState);
-        return resolvedDoc;
+        return {
+            resolvedDoc,
+            output: conflictHandlerOutput
+        };
     }
 }

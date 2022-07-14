@@ -849,6 +849,12 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             await ensureEqualState(masterInstance, forkInstance);
 
+
+            assert.strictEqual(
+                replicationState.stats.down.downstreamResyncOnce,
+                1
+            );
+
             cleanUp(replicationState, masterInstance);
 
             // process.exit();

@@ -42,8 +42,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
     const replicationHandler = state.input.replicationHandler;
     state.streamQueue.up = state.streamQueue.up.then(async () => {
         await upstreamInitialSync();
-
-
+        processTasks();
     });
 
     // used to detect which tasks etc can in it at which order.
@@ -62,6 +61,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         .pipe(
             filter(eventBulk => eventBulk.context !== state.downstreamBulkWriteFlag)
         ).subscribe(async (eventBulk) => {
+            state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
             openTasks.push({
                 task: eventBulk,
                 time: timer++
@@ -79,6 +79,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
 
     async function upstreamInitialSync() {
+        state.stats.up.upstreamInitialSync = state.stats.up.upstreamInitialSync + 1;
         if (state.events.canceled.getValue()) {
             return;
         }
@@ -127,7 +128,8 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         ) {
             return;
         }
-
+        state.stats.up.processTasks = state.stats.up.processTasks + 1;
+        state.events.active.up.next(true);
         state.streamQueue.up = state.streamQueue.up.then(async () => {
             let docs: RxDocumentData<RxDocType>[] = [];
             let checkpoint: CheckpointType;
@@ -158,6 +160,10 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                     checkpoint
                 );
             }
+
+            if (openTasks.length === 0) {
+                state.events.active.up.next(false);
+            }
         });
     }
 
@@ -178,6 +184,8 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         docs: RxDocumentData<RxDocType>[],
         checkpoint: CheckpointType
     ): Promise<boolean> {
+        state.stats.up.persistToMaster = state.stats.up.persistToMaster + 1;
+
         /**
          * Add the new docs to the non-persistend list
          */
@@ -272,6 +280,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
             writeRowsToMasterIds.forEach(docId => {
                 if (!conflictIds.has(docId)) {
+                    state.events.processed.up.next(writeRowsToMaster[docId]);
                     useWriteRowsToMeta.push(writeRowsToMeta[docId]);
                 }
             });
@@ -292,6 +301,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
              */
             let hadConflictWrites = false;
             if (conflictIds.size > 0) {
+                state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
                 const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
                 const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
                 await Promise.all(
@@ -300,26 +310,31 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                         .map(async ([docId, realMasterState]) => {
                             const writeToMasterRow = writeRowsToMaster[docId];
 
+                            const input = {
+                                newDocumentState: writeToMasterRow.newDocumentState,
+                                assumedMasterState: writeToMasterRow.assumedMasterState,
+                                realMasterState
+                            };
                             const resolved = await resolveConflictError(
                                 state.input.conflictHandler,
-                                {
-                                    newDocumentState: writeToMasterRow.newDocumentState,
-                                    assumedMasterState: writeToMasterRow.assumedMasterState,
-                                    realMasterState
-                                },
+                                input,
                                 forkStateById[docId]
                             );
                             if (resolved) {
+                                state.events.resolvedConflicts.next({
+                                    input,
+                                    output: resolved.output
+                                });
                                 conflictWriteFork.push({
                                     previous: forkStateById[docId],
-                                    document: resolved
+                                    document: resolved.resolvedDoc
                                 });
                                 const assumedMasterDoc = assumedMasterState[docId];
                                 conflictWriteMeta[docId] = getMetaWriteRow(
                                     state,
                                     ensureNotFalsy(realMasterState),
                                     assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined,
-                                    resolved._rev
+                                    resolved.resolvedDoc._rev
                                 );
                             }
                         })
@@ -328,6 +343,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                 if (conflictWriteFork.length > 0) {
                     hadConflictWrites = true;
 
+                    state.stats.up.persistToMasterConflictWrites = state.stats.up.persistToMasterConflictWrites + 1;
                     const forkWriteResult = await state.input.forkInstance.bulkWrite(
                         conflictWriteFork,
                         'replication-up-write-conflict'

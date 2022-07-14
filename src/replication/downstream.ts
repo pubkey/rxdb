@@ -56,6 +56,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
 
 
     function addNewTask(task: Task) {
+        state.stats.down.addNewTask = state.stats.down.addNewTask + 1;
         const taskWithTime = {
             time: timer++,
             task
@@ -65,6 +66,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             .then(() => {
                 const useTasks: Task[] = [];
                 while (openTasks.length > 0) {
+                    state.events.active.down.next(true);
                     const taskWithTime = ensureNotFalsy(openTasks.shift());
 
                     /**
@@ -88,6 +90,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                 }
 
                 if (useTasks.length === 0) {
+                    state.events.active.down.next(false);
                     return;
                 }
 
@@ -106,6 +109,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
     const sub = replicationHandler
         .masterChangeStream$
         .subscribe((task: Task) => {
+            state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
             addNewTask(task);
         });
     firstValueFrom(
@@ -121,6 +125,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
      */
     let lastTimeMasterChangesRequested: number = -1;
     async function downstreamResyncOnce() {
+        state.stats.down.downstreamResyncOnce = state.stats.down.downstreamResyncOnce + 1;
         if (state.events.canceled.getValue()) {
             return;
         }
@@ -156,6 +161,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
 
 
     function downstreamProcessChanges(tasks: Task[]) {
+        state.stats.down.downstreamProcessChanges = state.stats.down.downstreamProcessChanges + 1;
         let docsOfAllTasks: WithDeleted<RxDocType>[] = [];
         let lastCheckpoint: CheckpointType | undefined = null as any;
 
@@ -195,6 +201,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
         docs: WithDeleted<RxDocType>[],
         checkpoint: CheckpointType
     ) {
+        state.stats.down.persistFromMaster = state.stats.down.persistFromMaster + 1;
 
         /**
          * Add the new docs to the non-persistend list
@@ -234,6 +241,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             ]);
 
             const writeRowsToFork: BulkWriteRow<RxDocType>[] = [];
+            const writeRowsToForkById: ById<BulkWriteRow<RxDocType>> = {};
             const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
             const useMetaWriteRows: BulkWriteRow<RxStorageReplicationMeta>[] = [];
 
@@ -331,10 +339,12 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                         newForkState,
                         forkStateFullDoc
                     );
-                    writeRowsToFork.push({
+                    const forkWriteRow = {
                         previous: forkStateFullDoc,
                         document: newForkState
-                    });
+                    };
+                    writeRowsToFork.push(forkWriteRow);
+                    writeRowsToForkById[docId] = forkWriteRow;
                     writeRowsToMeta[docId] = getMetaWriteRow(
                         state,
                         masterState,
@@ -348,6 +358,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                     state.downstreamBulkWriteFlag
                 );
                 Object.keys(forkWriteResult.success).forEach((docId) => {
+                    state.events.processed.down.next(writeRowsToForkById[docId]);
                     useMetaWriteRows.push(writeRowsToMeta[docId]);
                 });
             }
