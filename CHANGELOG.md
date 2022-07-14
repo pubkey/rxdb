@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 12.7.1 (14 July 2022)
+
 ### 12.7.0 (14 July 2022)
 
 - Moved from gitter to [discord](https://discord.gg/tqt9ZttJfD)
