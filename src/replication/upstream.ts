@@ -72,14 +72,14 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
             processTasks();
         });
     firstValueFrom(
-        state.canceled.pipe(
+        state.events.canceled.pipe(
             filter(canceled => !!canceled)
         )
     ).then(() => sub.unsubscribe());
 
 
     async function upstreamInitialSync() {
-        if (state.canceled.getValue()) {
+        if (state.events.canceled.getValue()) {
             return;
         }
 
@@ -87,7 +87,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         let lastCheckpoint: CheckpointType = await checkpointQueue;
 
         const promises: Promise<any>[] = [];
-        while (!state.canceled.getValue()) {
+        while (!state.events.canceled.getValue()) {
             initialSyncStartTime = timer++;
             const upResult = await state.input.forkInstance.getChangedDocumentsSince(
                 state.input.bulkSize,
@@ -100,7 +100,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
             lastCheckpoint = lastOfArray(upResult).checkpoint;
 
             promises.push(
-                persistFromMaster(
+                persistToMaster(
                     upResult.map(r => r.document),
                     ensureNotFalsy(lastCheckpoint)
                 )
@@ -122,7 +122,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
     function processTasks() {
         if (
-            state.canceled.getValue() ||
+            state.events.canceled.getValue() ||
             openTasks.length === 0
         ) {
             return;
@@ -153,7 +153,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                 );
                 checkpoint = taskWithTime.task.checkpoint;
 
-                return persistFromMaster(
+                return persistToMaster(
                     docs,
                     checkpoint
                 );
@@ -174,7 +174,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
      * Returns true if had conflicts,
      * false if not.
      */
-    async function persistFromMaster(
+    async function persistToMaster(
         docs: RxDocumentData<RxDocType>[],
         checkpoint: CheckpointType
     ): Promise<boolean> {
@@ -189,7 +189,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
 
         persistenceQueue = persistenceQueue.then(async () => {
-            if (state.canceled.getValue()) {
+            if (state.events.canceled.getValue()) {
                 return false;
             }
 

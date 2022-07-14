@@ -1,5 +1,5 @@
-import { BehaviorSubject, Observable } from 'rxjs';
-import { RxConflictHandler } from './conflict-handling';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput } from './conflict-handling';
 import { EventBulk, RxDocumentData, WithDeleted } from './rx-storage';
 import type {
     RxStorageInstance
@@ -158,6 +158,60 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     primaryPath: string;
     input: RxStorageInstanceReplicationInput<RxDocType>;
 
+    events: {
+        /**
+         * Streams all document writes that have SUCCESSFULLY
+         * been written in one direction.
+         */
+        processed: {
+            [direction in RxStorageReplicationDirection]: Subject<{
+                docData: WithDeleted<RxDocType>;
+                withMeta: RxDocumentData<RxDocType>;
+            }[]>;
+        }
+        resolvedConflicts: Subject<{
+            input: RxConflictHandlerInput<RxDocType>;
+            output: RxConflictHandlerOutput<RxDocType>;
+        }>;
+        /**
+         * Contains the cancel state.
+         * Emit true here to cancel the replication.
+         */
+        canceled: BehaviorSubject<boolean>;
+        /**
+         * Contains true if the replication is duing something
+         * at this point in time.
+         * If this is false, it means that the replication
+         * is idle AND in sync.
+         */
+        active: {
+            [direction in RxStorageReplicationDirection]: BehaviorSubject<boolean>;
+        }
+    };
+
+
+    /**
+     * Contains counters that can be used in tests
+     * or to debug problems.
+     */
+    stats: {
+        down: {
+            addNewTask: number;
+            downstreamResyncOnce: number;
+            downstreamProcessChanges: number;
+            masterChangeStreamEmit: number;
+            persistFromMaster: number;
+        };
+        up: {
+            upstreamInitialSync: number;
+            forkChangeStreamEmit: number;
+            processTasks: number;
+            persistToMaster: number;
+            persistToMasterHadConflicts: number;
+            persistToMasterConflictWrites: number;
+        };
+    };
+
     /**
      * Used in checkpoints and ._meta fields
      * to ensure we do not mix up meta data of
@@ -168,18 +222,12 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     downstreamBulkWriteFlag: string;
 
     /**
-     * Tracks if the streams are in sync
-     * or not.
+     * Tracks if the streams have been in sync
+     * for at least one time.
      */
     firstSyncDone: {
         [direction in RxStorageReplicationDirection]: BehaviorSubject<boolean>;
     };
-
-    /**
-     * Contains the cancel state.
-     * Emit true here to cancel the replication.
-     */
-    canceled: BehaviorSubject<boolean>;
 
     /**
      * Can be used to detect if the replication is doing something

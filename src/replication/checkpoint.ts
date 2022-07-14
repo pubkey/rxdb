@@ -65,7 +65,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
          * for data that has been fetched from the master
          * but not been written to the child.
          */
-        !state.canceled.getValue() &&
+        !state.events.canceled.getValue() &&
         /**
          * Only write checkpoint if it is different from before
          * to have less writes to the storage.

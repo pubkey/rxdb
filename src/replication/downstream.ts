@@ -109,7 +109,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             addNewTask(task);
         });
     firstValueFrom(
-        state.canceled.pipe(
+        state.events.canceled.pipe(
             filter(canceled => !!canceled)
         )
     ).then(() => sub.unsubscribe());
@@ -121,7 +121,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
      */
     let lastTimeMasterChangesRequested: number = -1;
     async function downstreamResyncOnce() {
-        if (state.canceled.getValue()) {
+        if (state.events.canceled.getValue()) {
             return;
         }
 
@@ -129,7 +129,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
         let lastCheckpoint: CheckpointType = await checkpointQueue;
 
         const promises: Promise<any>[] = [];
-        while (!state.canceled.getValue()) {
+        while (!state.events.canceled.getValue()) {
             lastTimeMasterChangesRequested = timer++;
             const downResult = await replicationHandler.masterChangesSince(
                 lastCheckpoint,
@@ -211,7 +211,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
          * with all open documents from nonPersistedFromMaster.
          */
         persistenceQueue = persistenceQueue.then(async () => {
-            if (state.canceled.getValue()) {
+            if (state.events.canceled.getValue()) {
                 return;
             }
 

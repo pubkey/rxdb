@@ -179,7 +179,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
         replicationState: RxStorageInstanceReplicationState<any>,
         masterInstance: RxStorageInstance<any, any, any, any>
     ) {
-        replicationState.canceled.next(true);
+        replicationState.events.canceled.next(true);
 
         await Promise.all([
             masterInstance.close(),

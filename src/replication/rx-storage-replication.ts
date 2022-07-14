@@ -22,7 +22,8 @@ import {
     combineLatest,
     filter,
     firstValueFrom,
-    map
+    map,
+    Subject
 } from 'rxjs';
 import {
     getPrimaryFieldOfPrimaryKey
@@ -62,7 +63,35 @@ export function replicateRxStorageInstance<RxDocType>(
         input,
         checkpointKey,
         downstreamBulkWriteFlag: 'replication-downstream-' + checkpointKey,
-        canceled: new BehaviorSubject<boolean>(false),
+        events: {
+            canceled: new BehaviorSubject<boolean>(false),
+            active: {
+                down: new BehaviorSubject<boolean>(true),
+                up: new BehaviorSubject<boolean>(true)
+            },
+            processed: {
+                down: new Subject(),
+                up: new Subject()
+            },
+            resolvedConflicts: new Subject()
+        },
+        stats: {
+            down: {
+                addNewTask: 0,
+                downstreamProcessChanges: 0,
+                downstreamResyncOnce: 0,
+                masterChangeStreamEmit: 0,
+                persistFromMaster: 0
+            },
+            up: {
+                forkChangeStreamEmit: 0,
+                persistToMaster: 0,
+                persistToMasterConflictWrites: 0,
+                persistToMasterHadConflicts: 0,
+                processTasks: 0,
+                upstreamInitialSync: 0
+            }
+        },
         firstSyncDone: {
             down: new BehaviorSubject<boolean>(false),
             up: new BehaviorSubject<boolean>(false)
