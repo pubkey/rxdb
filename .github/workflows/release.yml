@@ -127,3 +127,13 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+
+      # Notifiy discord about new release
+      # @link https://github.com/marketplace/actions/actions-for-discord
+      - name: Discord notification
+        if: steps.vars.outputs.prerelease == 'false'
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: 'A new RxDB version has been released: https://github.com/pubkey/rxdb/releases/tag/{{github.event.inputs.version}}'
