@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD export type `CategorizeBulkWriteRowsOutput`
-- CHANGE `RxStorageInstance.getChangedDocumentsSince()` only returns the last checkpoint, not one for each document.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.7.4 (15 July 2022)
+
+- ADD export type `CategorizeBulkWriteRowsOutput`
+- CHANGE `RxStorageInstance.getChangedDocumentsSince()` only returns the last checkpoint, not one for each document.
 
 ### 12.7.3 (14 July 2022)
 

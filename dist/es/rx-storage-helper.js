@@ -27,6 +27,13 @@ export var writeSingle = function writeSingle(instance, writeRow, context) {
     return Promise.reject(e);
   }
 };
+/**
+ * Checkpoints must be stackable over another.
+ * This is required form some RxStorage implementations
+ * like the sharding plugin, where a checkpoint only represents
+ * the document state from some, but not all shards.
+ */
+
 export var getSingleDocument = function getSingleDocument(storageInstance, documentId) {
   try {
     return Promise.resolve(storageInstance.findDocumentsById([documentId], false)).then(function (results) {
@@ -67,6 +74,9 @@ export var getAllDocuments = function getAllDocuments(primaryKey, storageInstanc
 };
 export var INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
+export function stackCheckpoints(checkpoints) {
+  return Object.assign.apply(Object, [{}].concat(checkpoints));
+}
 export function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
   var documentData;
   /**
@@ -656,12 +666,12 @@ rxJsonSchema) {
       return database.lockedRun(function () {
         return storageInstance.getChangedDocumentsSince(limit, checkpoint);
       }).then(function (result) {
-        return result.map(function (row) {
-          return {
-            checkpoint: row.checkpoint,
-            document: transformDocumentDataFromRxStorageToRxDB(row.document)
-          };
-        });
+        return {
+          checkpoint: result.checkpoint,
+          documents: result.documents.map(function (d) {
+            return transformDocumentDataFromRxStorageToRxDB(d);
+          })
+        };
       });
     },
     cleanup: function cleanup(minDeletedTime) {

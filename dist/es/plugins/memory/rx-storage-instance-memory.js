@@ -3,7 +3,7 @@ import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } 
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
-import { getFromMapOrThrow, now, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM } from '../../util';
+import { getFromMapOrThrow, lastOfArray, now, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM } from '../../util';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
 import { boundGE, boundGT } from './binary-search-bounds';
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
@@ -205,15 +205,17 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
         indexOfLower++;
       }
 
-      return Promise.resolve(rows.map(function (docData) {
-        return {
-          document: docData,
-          checkpoint: {
-            id: docData[_this7.primaryPath],
-            lwt: docData._meta.lwt
-          }
-        };
-      }));
+      var lastDoc = lastOfArray(rows);
+      return Promise.resolve({
+        documents: rows,
+        checkpoint: lastDoc ? {
+          id: lastDoc[_this7.primaryPath],
+          lwt: lastDoc._meta.lwt
+        } : {
+          id: '',
+          lwt: 0
+        }
+      });
     } catch (e) {
       return Promise.reject(e);
     }

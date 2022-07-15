@@ -1,7 +1,7 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, EventBulk, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageStatics, StringKeys } from './types';
+import type { BulkWriteRow, CategorizeBulkWriteRowsOutput, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageStatics, StringKeys } from './types';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
 /**
@@ -15,6 +15,13 @@ export declare function getSingleDocument<RxDocType>(storageInstance: RxStorageI
  * throws RxStorageBulkWriteError on failure
  */
 export declare function writeSingle<RxDocType>(instance: RxStorageInstance<RxDocType, any, any>, writeRow: BulkWriteRow<RxDocType>, context: string): Promise<RxDocumentData<RxDocType>>;
+/**
+ * Checkpoints must be stackable over another.
+ * This is required form some RxStorage implementations
+ * like the sharding plugin, where a checkpoint only represents
+ * the document state from some, but not all shards.
+ */
+export declare function stackCheckpoints<CheckpointType>(checkpoints: CheckpointType[]): CheckpointType;
 export declare function storageChangeEventToRxChangeEvent<DocType>(isLocal: boolean, rxStorageChangeEvent: RxStorageChangeEvent<DocType>, rxCollection?: RxCollection): RxChangeEvent<DocType>;
 export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxCollection<RxDocType>, documentId: string, writeData: RxDocumentWriteData<RxDocType> | RxDocType, error: RxStorageBulkWriteError<RxDocType> | undefined): void;
 export declare function getNewestOfDocumentStates<RxDocType>(primaryPath: string, docs: RxDocumentData<RxDocType>[]): RxDocumentData<RxDocType>;
@@ -36,39 +43,7 @@ docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocum
  * The write rows that are passed to
  * RxStorageInstance().bulkWrite().
  */
-bulkWriteRows: BulkWriteRow<RxDocType>[], context: string): {
-    bulkInsertDocs: BulkWriteRow<RxDocType>[];
-    bulkUpdateDocs: BulkWriteRow<RxDocType>[];
-    /**
-     * Ids of all documents that are changed
-     * and so their change must be written into the
-     * sequences table so that they can be fetched via
-     * RxStorageInstance().getChangedDocumentsSince().
-     */
-    changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][];
-    /**
-     * TODO directly return a docId->error object
-     * like in the return value of bulkWrite().
-     * This will improve performance because we do not have to iterate
-     * over the error array again.
-     */
-    errors: RxStorageBulkWriteError<RxDocType>[];
-    eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
-    attachmentsAdd: {
-        documentId: string;
-        attachmentId: string;
-        attachmentData: RxAttachmentWriteData;
-    }[];
-    attachmentsRemove: {
-        documentId: string;
-        attachmentId: string;
-    }[];
-    attachmentsUpdate: {
-        documentId: string;
-        attachmentId: string;
-        attachmentData: RxAttachmentWriteData;
-    }[];
-};
+bulkWriteRows: BulkWriteRow<RxDocType>[], context: string): CategorizeBulkWriteRowsOutput<RxDocType>;
 export declare function stripAttachmentsDataFromRow<RxDocType>(writeRow: BulkWriteRow<RxDocType>): BulkWriteRow<RxDocType>;
 export declare function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWriteData<RxDocType>): RxDocumentData<RxDocType>;
 /**

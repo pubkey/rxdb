@@ -18,7 +18,7 @@
  */
 import { BehaviorSubject, combineLatest, filter, firstValueFrom, map, Subject } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from '../rx-schema-helper';
-import { ensureNotFalsy, lastOfArray, PROMISE_RESOLVE_VOID } from '../util';
+import { ensureNotFalsy, PROMISE_RESOLVE_VOID } from '../util';
 import { getCheckpointKey } from './checkpoint';
 import { startReplicationDownstream } from './downstream';
 import { docStateToWriteDoc, writeDocToDocState } from './helper';
@@ -317,9 +317,9 @@ export function rxStorageInstanceToReplicationHandler(instance, conflictHandler)
     masterChangesSince: function masterChangesSince(checkpoint, bulkSize) {
       return instance.getChangedDocumentsSince(bulkSize, checkpoint).then(function (result) {
         return {
-          checkpoint: result.length > 0 ? lastOfArray(result).checkpoint : checkpoint,
-          documentsData: result.map(function (r) {
-            return writeDocToDocState(r.document);
+          checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
+          documentsData: result.documents.map(function (d) {
+            return writeDocToDocState(d);
           })
         };
       });

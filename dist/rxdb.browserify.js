@@ -3358,14 +3358,17 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             throw new Error('same sequence');
           }
 
-          return changedDocuments.map(function (changeRow) {
-            return {
-              checkpoint: {
-                sequence: changeRow.sequence
-              },
-              document: (0, _util.getFromObjectOrThrow)(documentsData, changeRow.id)
-            };
-          });
+          var lastRow = (0, _util.lastOfArray)(changedDocuments);
+          return {
+            documents: changedDocuments.map(function (changeRow) {
+              return (0, _util.getFromObjectOrThrow)(documentsData, changeRow.id);
+            }),
+            checkpoint: lastRow ? {
+              sequence: lastRow.sequence
+            } : {
+              sequence: -1
+            }
+          };
         });
       };
 
@@ -4038,6 +4041,8 @@ exports.setCheckpoint = exports.getLastCheckpointDoc = void 0;
 
 var _rxSchemaHelper = require("../rx-schema-helper");
 
+var _rxStorageHelper = require("../rx-storage-helper");
+
 var _util = require("../util");
 
 var _metaInstance = require("./meta-instance");
@@ -4262,16 +4267,26 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
           _deleted: false,
           _attachments: {},
           data: checkpoint,
-          _meta: {
-            lwt: (0, _util.now)()
-          },
+          _meta: (0, _util.getDefaultRxDocumentMeta)(),
           _rev: (0, _util.getDefaultRevision)()
         };
         newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
-        newDoc._rev = (0, _util.createRevision)(newDoc, previousCheckpointDoc);
         return _for(function () {
           return !_exit2;
         }, void 0, function () {
+          /**
+           * Instead of just storign the new checkpoint,
+           * we have to stack up the checkpoint with the previous one.
+           * This is required for plugins like the sharding RxStorage
+           * where the changeStream events only contain a Partial of the
+           * checkpoint.
+           */
+          if (previousCheckpointDoc) {
+            newDoc.data = (0, _rxStorageHelper.stackCheckpoints)([previousCheckpointDoc.data, newDoc.data]);
+          }
+
+          newDoc._meta.lwt = (0, _util.now)();
+          newDoc._rev = (0, _util.createRevision)(newDoc, previousCheckpointDoc);
           return Promise.resolve(state.input.metaInstance.bulkWrite([{
             previous: previousCheckpointDoc,
             document: newDoc
@@ -4329,7 +4344,7 @@ function getCheckpointKey(input) {
   return 'rx-storage-replication-' + hash;
 }
 
-},{"../rx-schema-helper":38,"../util":45,"./meta-instance":25}],21:[function(require,module,exports){
+},{"../rx-schema-helper":38,"../rx-storage-helper":40,"../util":45,"./meta-instance":25}],21:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -5530,9 +5545,9 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler) {
     masterChangesSince: function masterChangesSince(checkpoint, bulkSize) {
       return instance.getChangedDocumentsSince(bulkSize, checkpoint).then(function (result) {
         return {
-          checkpoint: result.length > 0 ? (0, _util.lastOfArray)(result).checkpoint : checkpoint,
-          documentsData: result.map(function (r) {
-            return (0, _helper.writeDocToDocState)(r.document);
+          checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
+          documentsData: result.documents.map(function (d) {
+            return (0, _helper.writeDocToDocState)(d);
           })
         };
       });
@@ -6075,15 +6090,13 @@ function startReplicationUpstream(state) {
         }, void 0, function () {
           initialSyncStartTime = timer++;
           return Promise.resolve(state.input.forkInstance.getChangedDocumentsSince(state.input.bulkSize, lastCheckpoint)).then(function (upResult) {
-            if (upResult.length === 0) {
+            if (upResult.documents.length === 0) {
               _interrupt = true;
               return;
             }
 
-            lastCheckpoint = (0, _util.lastOfArray)(upResult).checkpoint;
-            promises.push(persistToMaster(upResult.map(function (r) {
-              return r.document;
-            }), (0, _util.ensureNotFalsy)(lastCheckpoint)));
+            lastCheckpoint = upResult.checkpoint;
+            promises.push(persistToMaster(upResult.documents, (0, _util.ensureNotFalsy)(lastCheckpoint)));
           });
         });
 
@@ -10676,6 +10689,7 @@ exports.getSingleDocument = void 0;
 exports.getUniqueDeterministicEventKey = getUniqueDeterministicEventKey;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
 exports.hashAttachmentData = hashAttachmentData;
+exports.stackCheckpoints = stackCheckpoints;
 exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
 exports.stripAttachmentsDataFromDocument = stripAttachmentsDataFromDocument;
 exports.stripAttachmentsDataFromRow = stripAttachmentsDataFromRow;
@@ -10717,6 +10731,13 @@ var writeSingle = function writeSingle(instance, writeRow, context) {
     return Promise.reject(e);
   }
 };
+/**
+ * Checkpoints must be stackable over another.
+ * This is required form some RxStorage implementations
+ * like the sharding plugin, where a checkpoint only represents
+ * the document state from some, but not all shards.
+ */
+
 
 exports.writeSingle = writeSingle;
 
@@ -10766,6 +10787,10 @@ var INTERNAL_STORAGE_NAME = '_rxdb_internal';
 exports.INTERNAL_STORAGE_NAME = INTERNAL_STORAGE_NAME;
 var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = RX_DATABASE_LOCAL_DOCS_STORAGE_NAME;
+
+function stackCheckpoints(checkpoints) {
+  return Object.assign.apply(Object, [{}].concat(checkpoints));
+}
 
 function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
   var documentData;
@@ -11367,12 +11392,12 @@ rxJsonSchema) {
       return database.lockedRun(function () {
         return storageInstance.getChangedDocumentsSince(limit, checkpoint);
       }).then(function (result) {
-        return result.map(function (row) {
-          return {
-            checkpoint: row.checkpoint,
-            document: transformDocumentDataFromRxStorageToRxDB(row.document)
-          };
-        });
+        return {
+          checkpoint: result.checkpoint,
+          documents: result.documents.map(function (d) {
+            return transformDocumentDataFromRxStorageToRxDB(d);
+          })
+        };
       });
     },
     cleanup: function cleanup(minDeletedTime) {

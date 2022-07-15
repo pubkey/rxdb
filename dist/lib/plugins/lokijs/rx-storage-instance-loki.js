@@ -323,15 +323,19 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
         }
 
         changedDocs = changedDocs.slice(0, limit);
-        return changedDocs.map(function (docData) {
-          return {
-            document: (0, _lokijsHelper.stripLokiKey)(docData),
-            checkpoint: {
-              id: docData[_this9.primaryPath],
-              lwt: docData._meta.lwt
-            }
-          };
-        });
+        var lastDoc = (0, _util.lastOfArray)(changedDocs);
+        return {
+          documents: changedDocs.map(function (docData) {
+            return (0, _lokijsHelper.stripLokiKey)(docData);
+          }),
+          checkpoint: lastDoc ? {
+            id: lastDoc[_this9.primaryPath],
+            lwt: lastDoc._meta.lwt
+          } : {
+            id: '',
+            lwt: 0
+          }
+        };
       });
     } catch (e) {
       return Promise.reject(e);
