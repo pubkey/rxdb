@@ -23,7 +23,8 @@ import {
     fillWithDefaultSettings,
     createRevision,
     flatCloneDocWithMeta,
-    ById
+    ById,
+    stackCheckpoints
 } from '../../';
 
 import {
@@ -1932,9 +1933,17 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     context
                 );
 
+                /**
+                 * We cannot jsut use the checkpoint of the last event,
+                 * because by definition, the checkpoints must be stacked up
+                 * so that they are compatible with the sharding RxStorage.
+                 */
+                const lastCheckpoint = stackCheckpoints(
+                    emitted.map(ev => ev.checkpoint)
+                );
                 const emptyResult = await storageInstance.getChangedDocumentsSince(
                     100,
-                    lastEvent.checkpoint
+                    lastCheckpoint
                 );
                 assert.strictEqual(
                     emptyResult.documents.length,

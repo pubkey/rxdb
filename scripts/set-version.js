@@ -73,7 +73,7 @@ async function run() {
     ]);
     await fs.promises.writeFile(
         path.join(rootPath, 'release-body.md'),
-        newRows.join('\n'),
+        releaseBodyRows.join('\n'),
         'utf-8'
     );
 
