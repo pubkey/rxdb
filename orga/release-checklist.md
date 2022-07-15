@@ -10,8 +10,3 @@ Things that have to be done before, while and after a release.
 ## release
 
 - [ ] Run the [release action](https://github.com/pubkey/rxdb/actions/workflows/release.yml) and wait until it is finished
-
-## post-release
-
-- [ ] Tweet about the new release at [twitter](https://twitter.com/compose/tweet)
-- [ ] Message about the new release at [discord](https://discord.gg/tqt9ZttJfD)

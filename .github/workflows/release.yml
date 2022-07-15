@@ -127,7 +127,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
-      # Notifiy discord about new release
       # @link https://github.com/marketplace/actions/actions-for-discord
       - name: Discord notification
         # To not spam users too much, we only do this on major and minor releases
@@ -138,11 +137,10 @@ jobs:
         with:
           args: "@everyone A new RxDB version has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}"
 
-      # Notifiy twitter about new release
       # @link https://github.com/marketplace/actions/send-tweet-action
       - name: Twitter notification
         # To not spam users too much, we only do this on major and minor releases
-        if: steps.vars.outputs.prerelease == 'false'
+        if: steps.vars.outputs.prerelease == 'false' && steps.vars.outputs.nonPatchRelease == 'true'
         uses: ethomson/send-tweet-action@v1
         with:
           status: "A new #RxDB version ${{github.event.inputs.version}} has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}"
