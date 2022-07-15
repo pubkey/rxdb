@@ -3365,7 +3365,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             }),
             checkpoint: lastRow ? {
               sequence: lastRow.sequence
-            } : {
+            } : checkpoint ? checkpoint : {
               sequence: -1
             }
           };
@@ -4438,6 +4438,8 @@ exports.startReplicationDownstream = startReplicationDownstream;
 
 var _rxjs = require("rxjs");
 
+var _rxStorageHelper = require("../rx-storage-helper");
+
 var _util = require("../util");
 
 var _checkpoint = require("./checkpoint");
@@ -4678,8 +4680,8 @@ function startReplicationDownstream(state) {
               return;
             }
 
-            lastCheckpoint = downResult.checkpoint;
-            promises.push(persistFromMaster(downResult.documentsData, downResult.checkpoint));
+            lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, downResult.checkpoint]);
+            promises.push(persistFromMaster(downResult.documentsData, lastCheckpoint));
           });
         });
 
@@ -4775,7 +4777,7 @@ function startReplicationDownstream(state) {
       }
 
       docsOfAllTasks = docsOfAllTasks.concat(task.events);
-      lastCheckpoint = task.checkpoint;
+      lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, task.checkpoint]);
     });
     return persistFromMaster(docsOfAllTasks, (0, _util.ensureNotFalsy)(lastCheckpoint));
   }
@@ -4966,7 +4968,7 @@ function startReplicationDownstream(state) {
   }
 }
 
-},{"../util":45,"./checkpoint":20,"./helper":23,"./meta-instance":25,"rxjs":457}],23:[function(require,module,exports){
+},{"../rx-storage-helper":40,"../util":45,"./checkpoint":20,"./helper":23,"./meta-instance":25,"rxjs":457}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5639,6 +5641,8 @@ exports.startReplicationUpstream = startReplicationUpstream;
 
 var _rxjs = require("rxjs");
 
+var _rxStorageHelper = require("../rx-storage-helper");
+
 var _util = require("../util");
 
 var _checkpoint = require("./checkpoint");
@@ -6095,7 +6099,7 @@ function startReplicationUpstream(state) {
               return;
             }
 
-            lastCheckpoint = upResult.checkpoint;
+            lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, upResult.checkpoint]);
             promises.push(persistToMaster(upResult.documents, (0, _util.ensureNotFalsy)(lastCheckpoint)));
           });
         });
@@ -6158,7 +6162,7 @@ function startReplicationUpstream(state) {
     state.streamQueue.up = state.streamQueue.up.then(function () {
       try {
         var docs = [];
-        var checkpoint;
+        var checkpoint = {};
 
         while (openTasks.length > 0) {
           var taskWithTime = (0, _util.ensureNotFalsy)(openTasks.shift());
@@ -6179,7 +6183,7 @@ function startReplicationUpstream(state) {
               return r.change.previous;
             }
           }));
-          checkpoint = taskWithTime.task.checkpoint;
+          checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);
           return persistToMaster(docs, checkpoint);
         }
 
@@ -6201,7 +6205,7 @@ function startReplicationUpstream(state) {
   };
 }
 
-},{"../util":45,"./checkpoint":20,"./conflicts":21,"./helper":23,"./meta-instance":25,"rxjs":457}],28:[function(require,module,exports){
+},{"../rx-storage-helper":40,"../util":45,"./checkpoint":20,"./conflicts":21,"./helper":23,"./meta-instance":25,"rxjs":457}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

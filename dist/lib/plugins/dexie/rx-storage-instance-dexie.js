@@ -326,7 +326,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
             checkpoint: lastDoc ? {
               id: lastDoc[_this6.primaryPath],
               lwt: lastDoc._meta.lwt
-            } : {
+            } : checkpoint ? checkpoint : {
               id: '',
               lwt: 0
             }

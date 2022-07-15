@@ -556,7 +556,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             }),
             checkpoint: lastRow ? {
               sequence: lastRow.sequence
-            } : {
+            } : checkpoint ? checkpoint : {
               sequence: -1
             }
           };

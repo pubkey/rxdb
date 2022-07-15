@@ -211,7 +211,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
         checkpoint: lastDoc ? {
           id: lastDoc[_this7.primaryPath],
           lwt: lastDoc._meta.lwt
-        } : {
+        } : checkpoint ? checkpoint : {
           id: '',
           lwt: 0
         }

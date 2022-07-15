@@ -1,4 +1,5 @@
 import { firstValueFrom, filter } from 'rxjs';
+import { stackCheckpoints } from '../rx-storage-helper';
 import { createRevision, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, now, PROMISE_RESOLVE_VOID } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { writeDocToDocState } from './helper';
@@ -236,8 +237,8 @@ export function startReplicationDownstream(state) {
               return;
             }
 
-            lastCheckpoint = downResult.checkpoint;
-            promises.push(persistFromMaster(downResult.documentsData, downResult.checkpoint));
+            lastCheckpoint = stackCheckpoints([lastCheckpoint, downResult.checkpoint]);
+            promises.push(persistFromMaster(downResult.documentsData, lastCheckpoint));
           });
         });
 
@@ -333,7 +334,7 @@ export function startReplicationDownstream(state) {
       }
 
       docsOfAllTasks = docsOfAllTasks.concat(task.events);
-      lastCheckpoint = task.checkpoint;
+      lastCheckpoint = stackCheckpoints([lastCheckpoint, task.checkpoint]);
     });
     return persistFromMaster(docsOfAllTasks, ensureNotFalsy(lastCheckpoint));
   }

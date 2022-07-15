@@ -1,4 +1,5 @@
 import { firstValueFrom, filter } from 'rxjs';
+import { stackCheckpoints } from '../rx-storage-helper';
 import { ensureNotFalsy, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { resolveConflictError } from './conflicts';
@@ -451,7 +452,7 @@ export function startReplicationUpstream(state) {
               return;
             }
 
-            lastCheckpoint = upResult.checkpoint;
+            lastCheckpoint = stackCheckpoints([lastCheckpoint, upResult.checkpoint]);
             promises.push(persistToMaster(upResult.documents, ensureNotFalsy(lastCheckpoint)));
           });
         });
@@ -514,7 +515,7 @@ export function startReplicationUpstream(state) {
     state.streamQueue.up = state.streamQueue.up.then(function () {
       try {
         var docs = [];
-        var checkpoint;
+        var checkpoint = {};
 
         while (openTasks.length > 0) {
           var taskWithTime = ensureNotFalsy(openTasks.shift());
@@ -535,7 +536,7 @@ export function startReplicationUpstream(state) {
               return r.change.previous;
             }
           }));
-          checkpoint = taskWithTime.task.checkpoint;
+          checkpoint = stackCheckpoints([checkpoint, taskWithTime.task.checkpoint]);
           return persistToMaster(docs, checkpoint);
         }
 

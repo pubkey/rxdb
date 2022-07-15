@@ -331,7 +331,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
           checkpoint: lastDoc ? {
             id: lastDoc[_this9.primaryPath],
             lwt: lastDoc._meta.lwt
-          } : {
+          } : checkpoint ? checkpoint : {
             id: '',
             lwt: 0
           }

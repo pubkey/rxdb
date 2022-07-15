@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX unify checkpoint behavior across all RxStorage implementations.
-- FIX github release bot to only post non-patch releases to discord.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.7.5 (15 July 2022)
+
+- FIX unify checkpoint behavior across all RxStorage implementations.
+- FIX github release bot to only post non-patch releases to discord.
 
 ### 12.7.4 (15 July 2022)
 

@@ -7,6 +7,8 @@ exports.startReplicationUpstream = startReplicationUpstream;
 
 var _rxjs = require("rxjs");
 
+var _rxStorageHelper = require("../rx-storage-helper");
+
 var _util = require("../util");
 
 var _checkpoint = require("./checkpoint");
@@ -463,7 +465,7 @@ function startReplicationUpstream(state) {
               return;
             }
 
-            lastCheckpoint = upResult.checkpoint;
+            lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, upResult.checkpoint]);
             promises.push(persistToMaster(upResult.documents, (0, _util.ensureNotFalsy)(lastCheckpoint)));
           });
         });
@@ -526,7 +528,7 @@ function startReplicationUpstream(state) {
     state.streamQueue.up = state.streamQueue.up.then(function () {
       try {
         var docs = [];
-        var checkpoint;
+        var checkpoint = {};
 
         while (openTasks.length > 0) {
           var taskWithTime = (0, _util.ensureNotFalsy)(openTasks.shift());
@@ -547,7 +549,7 @@ function startReplicationUpstream(state) {
               return r.change.previous;
             }
           }));
-          checkpoint = taskWithTime.task.checkpoint;
+          checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);
           return persistToMaster(docs, checkpoint);
         }
 
