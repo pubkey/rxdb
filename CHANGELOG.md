@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX unify checkpoint behavior across all RxStorage implementations.
+- FIX github release bot to only post non-patch releases to discord.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

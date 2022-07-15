@@ -30,6 +30,7 @@ jobs:
         id: vars
         run: |
           echo ::set-output name=prerelease::${{ contains(github.event.inputs.version, 'beta') }}
+          echo ::set-output name=nonPatchRelease::${{ endsWith(github.event.inputs.version, '.0') }}
 
       - name: Log parsed version
         run: |
@@ -131,7 +132,8 @@ jobs:
       # Notifiy discord about new release
       # @link https://github.com/marketplace/actions/actions-for-discord
       - name: Discord notification
-        if: steps.vars.outputs.prerelease == 'false'
+        # To not spam discord users too much, we only do this on major and minor releases 
+        if: steps.vars.outputs.prerelease == 'false' && steps.vars.outputs.nonPatchRelease == 'true'
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
