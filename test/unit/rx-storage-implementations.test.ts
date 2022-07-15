@@ -22,7 +22,8 @@ import {
     getAttachmentSize,
     fillWithDefaultSettings,
     createRevision,
-    flatCloneDocWithMeta
+    flatCloneDocWithMeta,
+    ById
 } from '../../';
 
 import {
@@ -1795,30 +1796,56 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
-            // TODO
-            // it('should be possible to stack up the checkpoints', async () => {
-            //     const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-            //         databaseInstanceToken: randomCouchString(10),
-            //         databaseName: randomCouchString(12),
-            //         collectionName: randomCouchString(12),
-            //         schema: getTestDataSchema(),
-            //         options: {},
-            //         multiInstance: false
-            //     });
+            it('should be able to correctly itterate over the checkpoints', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getTestDataSchema(),
+                    options: {},
+                    multiInstance: false
+                });
 
-            //     const checkpoints: any[] = [];
-            //     while (checkpoints.length < 10) {
-            //         const insertResult = await storageInstance.bulkWrite([
-            //             {
-            //                 document: getWriteData({ key: 'foobar', value: '0' })
-            //             }
-            //         ], testContext);
-            //         const changesSince = await storageInstance.getChangedDocumentsSince(1, lastOfArray(checkpoints));
-            //         checkpoints.push(changesSince.checkpoint);
-            //     }
+                const writeAmount = config.isFastMode() ? 40 : 100;
+                await storageInstance.bulkWrite(
+                    new Array(writeAmount / 5)
+                        .fill(0)
+                        .map(() => ({ document: getWriteData() })),
+                    testContext
+                );
+                let writesDone = writeAmount / 5;
+                let lastCheckpoint: any;
+                const docs: ById<RxDocumentData<TestDocType>> = {};
 
-            //     storageInstance.close();
-            // });
+                let fetchRuns = 0;
+                while (Object.keys(docs).length < 100) {
+                    fetchRuns++;
+                    const result = await storageInstance.getChangedDocumentsSince(
+                        writeAmount / 10,
+                        lastCheckpoint
+                    );
+                    result.documents.forEach(doc => {
+                        const id = doc.key;
+                        docs[id] = doc;
+                    });
+                    lastCheckpoint = result.checkpoint;
+                    if (writesDone < writeAmount) {
+                        await storageInstance.bulkWrite(
+                            new Array(writeAmount / 5)
+                                .fill(0)
+                                .map(() => ({ document: getWriteData() })),
+                            testContext
+                        );
+                        writesDone = writesDone + (writeAmount / 5);
+                    }
+                }
+
+                assert.strictEqual(fetchRuns, 10);
+                assert.strictEqual(Object.keys(docs).length, writeAmount);
+                assert.strictEqual(writesDone, writeAmount);
+
+                storageInstance.close();
+            });
         });
         describe('.changeStream()', () => {
             it('should emit exactly one event on write', async () => {
