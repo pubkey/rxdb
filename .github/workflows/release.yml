@@ -145,7 +145,7 @@ jobs:
         if: steps.vars.outputs.prerelease == 'false'
         uses: ethomson/send-tweet-action@v1
         with:
-          status: "A new #RxDB version has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}"
+          status: "A new #RxDB version ${{github.event.inputs.version}} has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}"
           consumer-key: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
           consumer-secret: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
           access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
