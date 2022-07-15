@@ -62,14 +62,15 @@ async function run() {
     newRows.push('');
 
 
-    newRows.push('');
-    newRows.push('');
-    newRows.push('**NOTICE:** An overview about all releases can be found [at the changelog](https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md)');
-
     /**
      * Write to release-body.md so the github action
      * knows what to use as release body
      */
+    const releaseBodyRows = newRows.slice(0).concat([
+        '',
+        '',
+        '**NOTICE:** An overview about all releases can be found [at the changelog](https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md)'
+    ]);
     await fs.promises.writeFile(
         path.join(rootPath, 'release-body.md'),
         newRows.join('\n'),
