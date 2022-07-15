@@ -1818,7 +1818,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const docs: ById<RxDocumentData<TestDocType>> = {};
 
                 let fetchRuns = 0;
-                while (Object.keys(docs).length < 100) {
+                while (Object.keys(docs).length < writeAmount) {
                     fetchRuns++;
                     const result = await storageInstance.getChangedDocumentsSince(
                         writeAmount / 10,

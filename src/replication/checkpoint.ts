@@ -1,4 +1,5 @@
 import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper';
+import { stackCheckpoints } from '../rx-storage-helper';
 import type {
     RxDocumentData,
     RxStorageInstanceReplicationInput,
@@ -11,6 +12,7 @@ import {
     ensureNotFalsy,
     fastUnsecureHash,
     getDefaultRevision,
+    getDefaultRxDocumentMeta,
     getFromObjectOrThrow,
     now
 } from '../util';
@@ -83,18 +85,29 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
             _deleted: false,
             _attachments: {},
             data: checkpoint,
-            _meta: {
-                lwt: now()
-            },
+            _meta: getDefaultRxDocumentMeta(),
             _rev: getDefaultRevision()
         };
         newDoc.id = getComposedPrimaryKeyOfDocumentData(
             RX_REPLICATION_META_INSTANCE_SCHEMA,
             newDoc
         );
-        newDoc._rev = createRevision(newDoc, previousCheckpointDoc);
-
         while (true) {
+            /**
+             * Instead of just storign the new checkpoint,
+             * we have to stack up the checkpoint with the previous one.
+             * This is required for plugins like the sharding RxStorage
+             * where the changeStream events only contain a Partial of the
+             * checkpoint.
+             */
+            if (previousCheckpointDoc) {
+                newDoc.data = stackCheckpoints([
+                    previousCheckpointDoc.data,
+                    newDoc.data
+                ]);
+            }
+            newDoc._meta.lwt = now();
+            newDoc._rev = createRevision(newDoc, previousCheckpointDoc);
             const result = await state.input.metaInstance.bulkWrite([{
                 previous: previousCheckpointDoc,
                 document: newDoc
