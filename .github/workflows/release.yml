@@ -2,16 +2,16 @@
 
 name: Release
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
       version:
         # Friendly description to be shown in the UI instead of 'name'
-        description: 'Version to release (if the version contains the beta keyword, we assume it is a pre-release)'
+        description: "Version to release (if the version contains the beta keyword, we assume it is a pre-release)"
         # Default value if no value is explicitly provided
-        default: ''
+        default: ""
         # Input has to be provided for the workflow to run
         required: true
 
@@ -75,24 +75,23 @@ jobs:
         run: |
           npm run docs:build
 
-
       # update node
       - name: Setup Node.js environment
         uses: actions/setup-node@v3.4.0
         with:
-          node-version-file: '.nvmrc'
-          registry-url: 'https://registry.npmjs.org'
+          node-version-file: ".nvmrc"
+          registry-url: "https://registry.npmjs.org"
 
       - name: install npm dependencies
         run: |
           node -v
           rm -rf node_modules/
           npm install
-      
+
       - run: npm run build
 
-      - name: 'update version and changelog'
-        working-directory: 'scripts'
+      - name: "update version and changelog"
+        working-directory: "scripts"
         run: |
           node set-version.js ${{github.event.inputs.version}}
 
@@ -101,7 +100,6 @@ jobs:
           git add .
           git commit -m ${{github.event.inputs.version}}
           git tag ${{github.event.inputs.version}}
-
 
       - run: npm publish --tag next
         if: steps.vars.outputs.prerelease == 'true'
@@ -132,10 +130,23 @@ jobs:
       # Notifiy discord about new release
       # @link https://github.com/marketplace/actions/actions-for-discord
       - name: Discord notification
-        # To not spam discord users too much, we only do this on major and minor releases 
+        # To not spam users too much, we only do this on major and minor releases
         if: steps.vars.outputs.prerelease == 'false' && steps.vars.outputs.nonPatchRelease == 'true'
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: '@everyone A new RxDB version has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}'
+          args: "@everyone A new RxDB version has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}"
+
+      # Notifiy twitter about new release
+      # @link https://github.com/marketplace/actions/send-tweet-action
+      - name: Twitter notification
+        # To not spam users too much, we only do this on major and minor releases
+        if: steps.vars.outputs.prerelease == 'false'
+        uses: ethomson/send-tweet-action@v1
+        with:
+          status: "A new #RxDB version has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}"
+          consumer-key: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
+          consumer-secret: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
+          access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          access-token-secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
