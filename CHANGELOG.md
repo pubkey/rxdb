@@ -9,6 +9,10 @@
 
 <!-- RELEASE BELOW -->
 
+### 12.7.7 (15 July 2022)
+
+**NOTICE:** An overview about all releases can be found [at the changelog](https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md)
+
 ### 12.7.6 (15 July 2022)
 
 ### 12.7.5 (15 July 2022)
