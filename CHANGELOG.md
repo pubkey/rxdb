@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 12.7.6 (15 July 2022)
+
 ### 12.7.5 (15 July 2022)
 
 - FIX unify checkpoint behavior across all RxStorage implementations.
