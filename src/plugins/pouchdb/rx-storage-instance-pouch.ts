@@ -422,7 +422,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             documents: changedDocuments.map(changeRow => getFromObjectOrThrow(documentsData, changeRow.id)),
             checkpoint: lastRow ? {
                 sequence: lastRow.sequence
-            } : {
+            } : checkpoint ? checkpoint : {
                 sequence: -1
             }
         }

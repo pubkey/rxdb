@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - ADD export type `CategorizeBulkWriteRowsOutput`
 - CHANGE `RxStorageInstance.getChangedDocumentsSince()` only returns the last checkpoint, not one for each document.
+- FIX unify checkpoint behavior across all RxStorage implementations.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

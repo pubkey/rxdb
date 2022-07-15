@@ -1,4 +1,5 @@
 import { firstValueFrom, filter } from 'rxjs';
+import { stackCheckpoints } from '../rx-storage-helper';
 import type {
     BulkWriteRow,
     BulkWriteRowById,
@@ -97,7 +98,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                 break;
             }
 
-            lastCheckpoint = upResult.checkpoint;
+            lastCheckpoint = stackCheckpoints([lastCheckpoint, upResult.checkpoint]);
 
             promises.push(
                 persistToMaster(
@@ -131,7 +132,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         state.events.active.up.next(true);
         state.streamQueue.up = state.streamQueue.up.then(async () => {
             let docs: RxDocumentData<RxDocType>[] = [];
-            let checkpoint: CheckpointType;
+            let checkpoint: CheckpointType = {} as any;
             while (openTasks.length > 0) {
                 const taskWithTime = ensureNotFalsy(openTasks.shift());
                 /**
@@ -152,7 +153,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                         }
                     })
                 );
-                checkpoint = taskWithTime.task.checkpoint;
+                checkpoint = stackCheckpoints([checkpoint, taskWithTime.task.checkpoint]);
 
                 return persistToMaster(
                     docs,

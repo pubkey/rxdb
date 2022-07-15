@@ -351,7 +351,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             checkpoint: lastDoc ? {
                 id: lastDoc[this.primaryPath] as any,
                 lwt: lastDoc._meta.lwt
-            } : {
+            } : checkpoint ? checkpoint : {
                 id: '',
                 lwt: 0
             }

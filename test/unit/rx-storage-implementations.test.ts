@@ -1675,6 +1675,19 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(docsAfterInsert.length, 1);
                 assert.strictEqual(docsAfterInsert[0].key, 'foobar');
 
+
+                /**
+                 * When there are no resulting documents on
+                 * a call to getChangedDocumentsSince(),
+                 * the exact same given checkpoint must be returned.
+                 * By doing this, we can remove much complexity everywhere else
+                 * when we work with checkpoints.
+                 */
+                const checkpointTest = checkpoint;
+                const emptyResult = await storageInstance.getChangedDocumentsSince(10, checkpointTest);
+                assert.strictEqual(emptyResult.documents.length, 0);
+                assert.deepStrictEqual(emptyResult.checkpoint, checkpointTest);
+
                 // delete one
                 await storageInstance.bulkWrite([
                     {

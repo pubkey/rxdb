@@ -2,6 +2,7 @@ import {
     firstValueFrom,
     filter
 } from 'rxjs';
+import { stackCheckpoints } from '../rx-storage-helper';
 import type {
     RxStorageInstanceReplicationState,
     BulkWriteRow,
@@ -145,11 +146,11 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                 break;
             }
 
-            lastCheckpoint = downResult.checkpoint;
+            lastCheckpoint = stackCheckpoints([lastCheckpoint, downResult.checkpoint]);
             promises.push(
                 persistFromMaster(
                     downResult.documentsData,
-                    downResult.checkpoint
+                    lastCheckpoint
                 )
             );
         }
@@ -170,7 +171,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                 throw new Error('SNH');
             }
             docsOfAllTasks = docsOfAllTasks.concat(task.events);
-            lastCheckpoint = task.checkpoint;
+            lastCheckpoint = stackCheckpoints([lastCheckpoint, task.checkpoint]);
         });
 
         return persistFromMaster(

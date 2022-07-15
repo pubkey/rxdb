@@ -265,7 +265,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             checkpoint: lastDoc ? {
                 id: lastDoc[this.primaryPath],
                 lwt: lastDoc._meta.lwt
-            } : {
+            } : checkpoint ? checkpoint : {
                 id: '',
                 lwt: 0
             }
