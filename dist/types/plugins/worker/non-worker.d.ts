@@ -38,9 +38,9 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>>;
     getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
     getChangedDocumentsSince(limit: number, checkpoint?: any): Promise<{
-        document: RxDocumentData<RxDocType>;
+        documents: RxDocumentData<RxDocType>[];
         checkpoint: any;
-    }[]>;
+    }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>>;
     cleanup(minDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;

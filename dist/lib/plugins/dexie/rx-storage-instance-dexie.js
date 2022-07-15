@@ -320,15 +320,17 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
           var changedDocs = changedDocsNormal.concat(changedDocsDeleted);
           changedDocs = (0, _util.sortDocumentsByLastWriteTime)(_this6.primaryPath, changedDocs);
           changedDocs = changedDocs.slice(0, limit);
-          return changedDocs.map(function (docData) {
-            return {
-              document: docData,
-              checkpoint: {
-                id: docData[_this6.primaryPath],
-                lwt: docData._meta.lwt
-              }
-            };
-          });
+          var lastDoc = (0, _util.lastOfArray)(changedDocs);
+          return {
+            documents: changedDocs,
+            checkpoint: lastDoc ? {
+              id: lastDoc[_this6.primaryPath],
+              lwt: lastDoc._meta.lwt
+            } : {
+              id: '',
+              lwt: 0
+            }
+          };
         });
       });
     } catch (e) {

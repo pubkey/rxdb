@@ -17,9 +17,9 @@ export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInst
     findDocumentsById(docIds: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     query(preparedQuery: MemoryPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{
-        document: RxDocumentData<RxDocType>;
+        documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;
-    }[]>;
+    }>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;

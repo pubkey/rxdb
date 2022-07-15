@@ -19,9 +19,9 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     query(preparedQuery: DexiePreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{
-        document: RxDocumentData<RxDocType>;
+        documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;
-    }[]>;
+    }>;
     remove(): Promise<void>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;

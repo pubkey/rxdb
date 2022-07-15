@@ -458,15 +458,13 @@ function startReplicationUpstream(state) {
         }, void 0, function () {
           initialSyncStartTime = timer++;
           return Promise.resolve(state.input.forkInstance.getChangedDocumentsSince(state.input.bulkSize, lastCheckpoint)).then(function (upResult) {
-            if (upResult.length === 0) {
+            if (upResult.documents.length === 0) {
               _interrupt = true;
               return;
             }
 
-            lastCheckpoint = (0, _util.lastOfArray)(upResult).checkpoint;
-            promises.push(persistToMaster(upResult.map(function (r) {
-              return r.document;
-            }), (0, _util.ensureNotFalsy)(lastCheckpoint)));
+            lastCheckpoint = upResult.checkpoint;
+            promises.push(persistToMaster(upResult.documents, (0, _util.ensureNotFalsy)(lastCheckpoint)));
           });
         });
 

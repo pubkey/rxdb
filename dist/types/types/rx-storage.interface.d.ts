@@ -295,17 +295,22 @@ export interface RxStorageInstance<
      */
     getChangedDocumentsSince(
         limit: number,
+        /**
+         * The checkpoint from with to start
+         * when the events are sorted in time.
+         * If we want to start from the beginning,
+         * undefined is used as a checkpoint.
+         */
         checkpoint?: CheckpointType
     ): Promise<{
-        document: RxDocumentData<RxDocType>;
+        documents: RxDocumentData<RxDocType>[];
         /**
-         * For each document, an own checkpoint is returned.
-         * This is usefull when RxDB does only need a part of the returned changes
-         * but still wants to be able to continue the pagination
-         * from the correct document on.
+         * The checkpoint contains data so that another
+         * call to getChangedDocumentsSince() will continue
+         * from exactly the last document that was returned before.
          */
-        checkpoint: any;
-    }[]>;
+        checkpoint: CheckpointType;
+    }>;
 
     /**
      * Returns an ongoing stream

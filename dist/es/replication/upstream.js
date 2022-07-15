@@ -1,5 +1,5 @@
 import { firstValueFrom, filter } from 'rxjs';
-import { lastOfArray, ensureNotFalsy, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../util';
+import { ensureNotFalsy, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { resolveConflictError } from './conflicts';
 import { writeDocToDocState } from './helper';
@@ -446,15 +446,13 @@ export function startReplicationUpstream(state) {
         }, void 0, function () {
           initialSyncStartTime = timer++;
           return Promise.resolve(state.input.forkInstance.getChangedDocumentsSince(state.input.bulkSize, lastCheckpoint)).then(function (upResult) {
-            if (upResult.length === 0) {
+            if (upResult.documents.length === 0) {
               _interrupt = true;
               return;
             }
 
-            lastCheckpoint = lastOfArray(upResult).checkpoint;
-            promises.push(persistToMaster(upResult.map(function (r) {
-              return r.document;
-            }), ensureNotFalsy(lastCheckpoint)));
+            lastCheckpoint = upResult.checkpoint;
+            promises.push(persistToMaster(upResult.documents, ensureNotFalsy(lastCheckpoint)));
           });
         });
 

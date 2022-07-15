@@ -228,15 +228,17 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
         indexOfLower++;
       }
 
-      return Promise.resolve(rows.map(function (docData) {
-        return {
-          document: docData,
-          checkpoint: {
-            id: docData[_this7.primaryPath],
-            lwt: docData._meta.lwt
-          }
-        };
-      }));
+      var lastDoc = (0, _util.lastOfArray)(rows);
+      return Promise.resolve({
+        documents: rows,
+        checkpoint: lastDoc ? {
+          id: lastDoc[_this7.primaryPath],
+          lwt: lastDoc._meta.lwt
+        } : {
+          id: '',
+          lwt: 0
+        }
+      });
     } catch (e) {
       return Promise.reject(e);
     }

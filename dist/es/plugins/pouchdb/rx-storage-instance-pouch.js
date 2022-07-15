@@ -2,7 +2,7 @@ import { ObliviousSet } from 'oblivious-set';
 import { Subject } from 'rxjs';
 import { newRxError } from '../../rx-error';
 import { OPEN_POUCHDB_STORAGE_INSTANCES, OPEN_POUCH_INSTANCES, POUCHDB_DESIGN_PREFIX, pouchDocumentDataToRxDocumentData, pouchSwapIdToPrimary, rxDocumentDataToPouchDocumentData, writeAttachmentsToAttachments } from './pouchdb-helper';
-import { blobBufferUtil, flatClone, getFromMapOrThrow, getFromObjectOrThrow, PROMISE_RESOLVE_VOID } from '../../util';
+import { blobBufferUtil, flatClone, getFromMapOrThrow, getFromObjectOrThrow, lastOfArray, PROMISE_RESOLVE_VOID } from '../../util';
 import { getCustomEventEmitterByPouch } from './custom-events-plugin';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 
@@ -529,14 +529,17 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
             throw new Error('same sequence');
           }
 
-          return changedDocuments.map(function (changeRow) {
-            return {
-              checkpoint: {
-                sequence: changeRow.sequence
-              },
-              document: getFromObjectOrThrow(documentsData, changeRow.id)
-            };
-          });
+          var lastRow = lastOfArray(changedDocuments);
+          return {
+            documents: changedDocuments.map(function (changeRow) {
+              return getFromObjectOrThrow(documentsData, changeRow.id);
+            }),
+            checkpoint: lastRow ? {
+              sequence: lastRow.sequence
+            } : {
+              sequence: -1
+            }
+          };
         });
       };
 

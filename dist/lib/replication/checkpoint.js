@@ -8,6 +8,8 @@ exports.setCheckpoint = exports.getLastCheckpointDoc = void 0;
 
 var _rxSchemaHelper = require("../rx-schema-helper");
 
+var _rxStorageHelper = require("../rx-storage-helper");
+
 var _util = require("../util");
 
 var _metaInstance = require("./meta-instance");
@@ -232,16 +234,26 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
           _deleted: false,
           _attachments: {},
           data: checkpoint,
-          _meta: {
-            lwt: (0, _util.now)()
-          },
+          _meta: (0, _util.getDefaultRxDocumentMeta)(),
           _rev: (0, _util.getDefaultRevision)()
         };
         newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
-        newDoc._rev = (0, _util.createRevision)(newDoc, previousCheckpointDoc);
         return _for(function () {
           return !_exit2;
         }, void 0, function () {
+          /**
+           * Instead of just storign the new checkpoint,
+           * we have to stack up the checkpoint with the previous one.
+           * This is required for plugins like the sharding RxStorage
+           * where the changeStream events only contain a Partial of the
+           * checkpoint.
+           */
+          if (previousCheckpointDoc) {
+            newDoc.data = (0, _rxStorageHelper.stackCheckpoints)([previousCheckpointDoc.data, newDoc.data]);
+          }
+
+          newDoc._meta.lwt = (0, _util.now)();
+          newDoc._rev = (0, _util.createRevision)(newDoc, previousCheckpointDoc);
           return Promise.resolve(state.input.metaInstance.bulkWrite([{
             previous: previousCheckpointDoc,
             document: newDoc

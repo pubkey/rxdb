@@ -339,9 +339,9 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler) {
     masterChangesSince: function masterChangesSince(checkpoint, bulkSize) {
       return instance.getChangedDocumentsSince(bulkSize, checkpoint).then(function (result) {
         return {
-          checkpoint: result.length > 0 ? (0, _util.lastOfArray)(result).checkpoint : checkpoint,
-          documentsData: result.map(function (r) {
-            return (0, _helper.writeDocToDocState)(r.document);
+          checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
+          documentsData: result.documents.map(function (d) {
+            return (0, _helper.writeDocToDocState)(d);
           })
         };
       });

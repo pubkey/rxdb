@@ -11,9 +11,9 @@ export declare type InWorkerStorage<RxDocType, CheckpointType> = {
     query(instanceId: number, preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>>;
     getAttachmentData(instanceId: number, documentId: string, attachmentId: string): Promise<string>;
     getChangedDocumentsSince(instanceId: number, limit: number, checkpoint?: CheckpointType): Promise<{
-        document: RxDocumentData<RxDocType>;
+        documents: RxDocumentData<RxDocType>[];
         checkpoint: any;
-    }[]>;
+    }>;
     changeStream(instanceById: number): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, CheckpointType>>;
     cleanup(instanceId: number, minDeletedTime: number): Promise<boolean>;
     close(instanceId: number): Promise<void>;

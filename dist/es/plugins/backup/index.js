@@ -2,7 +2,7 @@ import * as path from 'path';
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { newRxError } from '../../rx-error';
-import { getFromMapOrThrow, lastOfArray, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
+import { getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
 import { clearFolder, deleteFolder, documentFolder, ensureFolderExists, getMeta, prepareFolders, setMeta, writeJsonToFile, writeToFile } from './file-util';
 /**
  * Backups a single documents,
@@ -323,10 +323,10 @@ export var RxBackupState = /*#__PURE__*/function () {
               }, void 0, function () {
                 return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
                   return Promise.resolve(collection.storageInstance.getChangedDocumentsSince(_this4.options.batchSize ? _this4.options.batchSize : 0, lastCheckpoint)).then(function (changesResult) {
-                    lastCheckpoint = changesResult.length > 0 ? lastOfArray(changesResult).checkpoint : lastCheckpoint;
+                    lastCheckpoint = changesResult.documents.length > 0 ? changesResult.checkpoint : lastCheckpoint;
                     meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
-                    var docIds = changesResult.map(function (row) {
-                      return row.document[primaryKey];
+                    var docIds = changesResult.documents.map(function (doc) {
+                      return doc[primaryKey];
                     }).filter(function (id) {
                       if (processedDocuments.has(id)) {
                         return false;

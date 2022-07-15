@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { now, randomCouchString, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWriteTime } from '../../util';
+import { now, randomCouchString, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWriteTime, lastOfArray } from '../../util';
 import { newRxError } from '../../rx-error';
 import { closeDexieDb, fromDexieToStorage, fromStorageToDexie, getDexieDbWithTables, getDocsInDb } from './dexie-helper';
 import { dexieQuery } from './dexie-query';
@@ -302,15 +302,17 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
           var changedDocs = changedDocsNormal.concat(changedDocsDeleted);
           changedDocs = sortDocumentsByLastWriteTime(_this6.primaryPath, changedDocs);
           changedDocs = changedDocs.slice(0, limit);
-          return changedDocs.map(function (docData) {
-            return {
-              document: docData,
-              checkpoint: {
-                id: docData[_this6.primaryPath],
-                lwt: docData._meta.lwt
-              }
-            };
-          });
+          var lastDoc = lastOfArray(changedDocs);
+          return {
+            documents: changedDocs,
+            checkpoint: lastDoc ? {
+              id: lastDoc[_this6.primaryPath],
+              lwt: lastDoc._meta.lwt
+            } : {
+              id: '',
+              lwt: 0
+            }
+          };
         });
       });
     } catch (e) {
