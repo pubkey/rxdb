@@ -1934,7 +1934,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 /**
-                 * We cannot jsut use the checkpoint of the last event,
+                 * We cannot just use the checkpoint of the last event,
                  * because by definition, the checkpoints must be stacked up
                  * so that they are compatible with the sharding RxStorage.
                  */

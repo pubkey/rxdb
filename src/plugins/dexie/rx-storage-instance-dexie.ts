@@ -78,6 +78,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+        ensureNotClosed(this);
         const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
@@ -281,6 +282,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         ids: string[],
         deleted: boolean
     ): Promise<RxDocumentDataById<RxDocType>> {
+        ensureNotClosed(this);
         const state = await this.internals;
         const ret: RxDocumentDataById<RxDocType> = {};
 
@@ -309,6 +311,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     }
 
     query(preparedQuery: DexiePreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+        ensureNotClosed(this);
         return dexieQuery(
             this,
             preparedQuery
@@ -322,6 +325,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;
     }> {
+        ensureNotClosed(this);
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const sinceId = checkpoint ? checkpoint.id : '';
         const state = await this.internals;
@@ -359,6 +363,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     }
 
     async remove(): Promise<void> {
+        ensureNotClosed(this);
         const state = await this.internals;
         await Promise.all([
             state.dexieDeletedTable.clear(),
@@ -368,10 +373,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
+        ensureNotClosed(this);
         return this.changes$.asObservable();
     }
 
     async cleanup(minimumDeletedTime: number): Promise<boolean> {
+        ensureNotClosed(this);
         const state = await this.internals;
         await state.dexieDb.transaction(
             'rw',
@@ -397,16 +404,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     }
 
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
+        ensureNotClosed(this);
         throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
     }
 
     async close(): Promise<void> {
-        if (this.closed) {
-            throw newRxError('SNH', {
-                database: this.databaseName,
-                collection: this.collectionName
-            });
-        }
+        ensureNotClosed(this);
         this.closed = true;
         this.changes$.complete();
         closeDexieDb(this.internals);
@@ -448,4 +451,14 @@ export async function createDexieStorageInstance<RxDocType>(
     );
 
     return instance;
+}
+
+
+
+function ensureNotClosed(
+    instance: RxStorageInstanceDexie<any>
+) {
+    if (instance.closed) {
+        throw new Error('RxStorageInstanceDexie is closed ' + instance.databaseName + '-' + instance.collectionName);
+    }
 }

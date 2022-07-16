@@ -65,6 +65,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     private subs: Subscription[] = [];
     private primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
+    public closed: boolean = false;
+
 
     /**
      * Some PouchDB operations give wrong results when they run in parallel.
@@ -129,6 +131,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     }
 
     close() {
+        ensureNotClosed(this);
+        this.closed = true;
         this.subs.forEach(sub => sub.unsubscribe());
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
         OPEN_POUCH_INSTANCES.delete(this.internals.pouchInstanceId);
@@ -139,6 +143,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     }
 
     async remove() {
+        ensureNotClosed(this);
+        this.closed = true;
         this.subs.forEach(sub => sub.unsubscribe());
 
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
@@ -152,6 +158,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
+        ensureNotClosed(this);
         if (documentWrites.length === 0) {
             throw newRxError('P2', {
                 args: {
@@ -245,6 +252,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     public async query(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
+        ensureNotClosed(this);
         const findResult = await this.internals.pouch.find<RxDocType>(preparedQuery);
         const ret: RxStorageQueryResult<RxDocType> = {
             documents: findResult.docs.map(pouchDoc => {
@@ -262,6 +270,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         documentId: string,
         attachmentId: string
     ): Promise<string> {
+        ensureNotClosed(this);
         const attachmentData = await this.internals.pouch.getAttachment(
             documentId,
             attachmentId
@@ -270,7 +279,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return ret;
     }
 
-    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    async findDocumentsById(
+        ids: string[],
+        deleted: boolean
+    ): Promise<RxDocumentDataById<RxDocType>> {
+        ensureNotClosed(this);
+
         /**
          * On deleted documents, PouchDB will only return the tombstone.
          * So we have to get the properties directly for each document
@@ -333,10 +347,12 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, PouchCheckpoint>> {
+        ensureNotClosed(this);
         return this.changes$.asObservable();
     }
 
     cleanup(_minimumDeletedTime: number): Promise<boolean> {
+        ensureNotClosed(this);
         /**
          * PouchDB does not support purging documents.
          * So instead we run a compaction that might at least help a bit
@@ -355,6 +371,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         documents: RxDocumentData<RxDocType>[];
         checkpoint: PouchCheckpoint;
     }> {
+        ensureNotClosed(this);
         if (!limit || typeof limit !== 'number') {
             throw new Error('wrong limit');
         }
@@ -432,4 +449,14 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         return new Subject();
     }
     async resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> { }
+}
+
+
+
+function ensureNotClosed(
+    instance: RxStorageInstancePouch<any>
+) {
+    if (instance.closed) {
+        throw new Error('RxStorageInstancePouch is closed ' + instance.databaseName + '-' + instance.collectionName);
+    }
 }
