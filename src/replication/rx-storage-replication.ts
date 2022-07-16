@@ -256,3 +256,19 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
 
     return replicationHandler;
 }
+
+
+export async function cancelRxStorageReplication(
+    replicationState: RxStorageInstanceReplicationState<any>
+): Promise<void> {
+    replicationState.events.canceled.next(true);
+
+    await replicationState.streamQueue.down;
+    await replicationState.streamQueue.up;
+
+    replicationState.events.active.up.complete();
+    replicationState.events.active.down.complete();
+    replicationState.events.processed.up.complete();
+    replicationState.events.processed.down.complete();
+    replicationState.events.resolvedConflicts.complete();
+}

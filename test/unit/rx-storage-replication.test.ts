@@ -22,7 +22,8 @@ import {
     promiseWait,
     RX_REPLICATION_META_INSTANCE_SCHEMA,
     RxStorageReplicationMeta,
-    rxStorageInstanceToReplicationHandler
+    rxStorageInstanceToReplicationHandler,
+    cancelRxStorageReplication
 } from '../../';
 
 
@@ -179,7 +180,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
         replicationState: RxStorageInstanceReplicationState<any>,
         masterInstance: RxStorageInstance<any, any, any, any>
     ) {
-        replicationState.events.canceled.next(true);
+        await cancelRxStorageReplication(replicationState);
 
         await Promise.all([
             masterInstance.close(),
