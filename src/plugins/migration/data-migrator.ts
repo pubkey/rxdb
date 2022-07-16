@@ -147,8 +147,8 @@ export class DataMigrator {
                         );
                         currentPromise = currentPromise.then(() => {
                             return new Promise(res => {
-                                const sub = migrationState$.subscribe(
-                                    (subState: any) => {
+                                const sub = migrationState$.subscribe({
+                                    next: (subState: any) => {
                                         state.handled++;
                                         (state as any)[subState.type] = (state as any)[subState.type] + 1;
                                         state.percent = Math.round(state.handled / state.total * 100);
@@ -157,17 +157,21 @@ export class DataMigrator {
                                             state: flatClone(state)
                                         });
                                     },
-                                    (e: any) => {
+                                    error: (e: any) => {
                                         sub.unsubscribe();
-                                        this.allOldCollections.forEach(c => c.storageInstance.close());
+                                        // TODO we should not have to catch here.
+                                        this.allOldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
                                         stateSubject.error(e);
-                                    }, () => {
+                                    },
+                                    complete: () => {
                                         if (currentCol) {
-                                            currentCol.storageInstance.close();
+                                            // TODO we should not have to catch here.
+                                            currentCol.storageInstance.close().catch(() => { });
                                         }
                                         sub.unsubscribe();
                                         res();
-                                    });
+                                    }
+                                });
                             });
                         });
                         currentCol = this.nonMigratedOldCollections.shift();
@@ -201,10 +205,10 @@ export class DataMigrator {
                         return new Promise((res, rej) => {
                             const state$ = this.migrate(batchSize);
                             (state$ as any).subscribe(null, rej, res);
-                            this.allOldCollections.forEach(c => c.storageInstance.close());
+                            this.allOldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
                         })
                             .catch(err => {
-                                this.allOldCollections.forEach(c => c.storageInstance.close());
+                                this.allOldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
                                 throw err;
                             });
                     }

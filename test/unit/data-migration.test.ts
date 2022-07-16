@@ -271,7 +271,7 @@ config.parallel('data-migration.test.js', () => {
                 // ensure it is an OldCollection
                 assert.ok(oldCollections[0].newestCollection);
 
-                oldCollections.forEach(c => c.storageInstance.close());
+                oldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
                 db.destroy();
                 db2.destroy();
             });
@@ -286,7 +286,7 @@ config.parallel('data-migration.test.js', () => {
 
                     assert.strictEqual(oldCol.schema.constructor.name, 'RxSchema');
                     assert.strictEqual(oldCol.version, 0);
-                    oldCollections.forEach(c => c.storageInstance.close());
+                    oldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
                     col.database.destroy();
                 });
             });
@@ -305,7 +305,7 @@ config.parallel('data-migration.test.js', () => {
                     const oldDocs = await getBatchOfOldCollection(oldCol, 10);
                     const newDoc = await migrateDocumentData(oldCol, oldDocs[0]);
                     assert.deepStrictEqual(newDoc.age, parseInt(oldDocs[0].age, 10));
-                    oldCollections.forEach(c => c.storageInstance.close());
+                    oldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
                     col.database.destroy();
                 });
                 it('get a valid migrated document from async strategy', async () => {
@@ -323,7 +323,7 @@ config.parallel('data-migration.test.js', () => {
                     const oldDocs = await getBatchOfOldCollection(oldCol, 10);
                     const newDoc = await migrateDocumentData(oldCol, oldDocs[0]);
                     assert.deepStrictEqual(newDoc.age, parseInt(oldDocs[0].age, 10));
-                    oldCollections.forEach(c => c.storageInstance.close());
+                    oldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
                     col.database.destroy();
                 });
             });
@@ -392,7 +392,7 @@ config.parallel('data-migration.test.js', () => {
                         has = false;
                     }
                     assert.strictEqual(has, false);
-                    oldCollections.forEach(c => c.storageInstance.close());
+                    oldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
                     col.database.destroy();
                 });
             });
@@ -425,7 +425,7 @@ config.parallel('data-migration.test.js', () => {
                     await _migrateDocuments(oldCol as any, [tryDoc]);
 
                     await Promise.all(
-                        oldCollections.map(c => c.storageInstance.close())
+                        oldCollections.map(c => c.storageInstance.close().catch(() => { }))
                     );
                     await col.database.destroy();
                 });
@@ -438,7 +438,7 @@ config.parallel('data-migration.test.js', () => {
 
                     await migratePromise(oldCol as any);
                     await Promise.all(
-                        oldCollections.map(c => c.storageInstance.close())
+                        oldCollections.map(c => c.storageInstance.close().catch(() => { }))
                     );
                     await col.database.destroy();
                 });
@@ -468,7 +468,7 @@ config.parallel('data-migration.test.js', () => {
                     const docs = await col.find().exec();
                     assert.strictEqual(docs.length, 10);
                     await Promise.all(
-                        oldCollections.map(c => c.storageInstance.close())
+                        oldCollections.map(c => c.storageInstance.close().catch(() => { }))
                     );
                     await col.database.destroy();
                 });
@@ -499,7 +499,7 @@ config.parallel('data-migration.test.js', () => {
                     await pw8.promise;
                     assert.strictEqual(states.length, 10);
                     await Promise.all(
-                        oldCollections.map(c => c.storageInstance.close())
+                        oldCollections.map(c => c.storageInstance.close().catch(() => { }))
                     );
                     await col.database.destroy();
                 });
@@ -537,7 +537,7 @@ config.parallel('data-migration.test.js', () => {
                         Error
                     );
                     await Promise.all(
-                        oldCollections.map(c => c.storageInstance.close())
+                        oldCollections.map(c => c.storageInstance.close().catch(() => { }))
                     );
                     await col.database.destroy();
                 });
@@ -563,7 +563,7 @@ config.parallel('data-migration.test.js', () => {
                     assert.strictEqual(states[1].done, true);
                     assert.strictEqual(states[1].percent, 100);
                     assert.strictEqual(states[1].total, 0);
-                    col.database.destroy();
+                    await col.database.destroy();
                 });
 
                 it('should not crash when migrating data', async () => {
@@ -599,7 +599,7 @@ config.parallel('data-migration.test.js', () => {
                     assert.strictEqual(lastState.percent, 100);
                     assert.strictEqual(lastState.total, 5);
                     assert.strictEqual(lastState.success, 5);
-                    col.database.destroy();
+                    await col.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -614,7 +614,7 @@ config.parallel('data-migration.test.js', () => {
                     state$.subscribe(undefined, pw8.resolve as any, undefined);
 
                     await pw8.promise;
-                    col.database.destroy();
+                    await col.database.destroy();
                 });
             });
         });
@@ -623,7 +623,7 @@ config.parallel('data-migration.test.js', () => {
                 it('should resolve when nothing to migrate', async () => {
                     const col = await humansCollection.createMigrationCollection(0, {});
                     await col.migratePromise();
-                    col.database.destroy();
+                    await col.database.destroy();
                 });
 
                 it('should resolve when migrating data', async () => {
@@ -634,7 +634,7 @@ config.parallel('data-migration.test.js', () => {
                         }
                     });
                     await col.migratePromise();
-                    col.database.destroy();
+                    await col.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -647,7 +647,7 @@ config.parallel('data-migration.test.js', () => {
                     let failed = false;
                     await col.migratePromise().catch(() => failed = true);
                     assert.ok(failed);
-                    col.database.destroy();
+                    await col.database.destroy();
                 });
                 it('should contain the schema validation error in the thrown object', async () => {
                     const col = await humansCollection.createMigrationCollection(5, {
@@ -672,8 +672,7 @@ config.parallel('data-migration.test.js', () => {
                         assert.ok(JSON.stringify((err as RxError).parameters.errors).includes('data.age'));
                     }
                     assert.ok(hasThrown);
-
-                    col.database.destroy();
+                    await col.database.destroy();
                 });
             });
         });
@@ -695,7 +694,7 @@ config.parallel('data-migration.test.js', () => {
                 const docs = await col.find().exec();
                 assert.strictEqual(docs.length, 10);
                 assert.strictEqual(typeof (docs.pop() as any).age, 'number');
-                col.database.destroy();
+                await col.database.destroy();
             });
             it('should be able to change the primary key during migration', async () => {
                 const dbName = randomCouchString(10);
@@ -1125,7 +1124,7 @@ config.parallel('data-migration.test.js', () => {
             assert.strictEqual(attachment.digest, statics.hashKey + '-' + attachmentHash);
             assert.strictEqual(attachment.length, attachmentData.length);
 
-            olds.forEach(oldCol => oldCol.storageInstance.close());
+            olds.forEach(oldCol => oldCol.storageInstance.close().catch(() => { }));
             col.database.destroy();
         });
     });
