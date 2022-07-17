@@ -251,6 +251,13 @@ export var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdl
     });
   });
 };
+export var awaitRxStorageReplicationInSync = function awaitRxStorageReplicationInSync(replicationState) {
+  try {
+    return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 export var awaitRxStorageReplicationFirstInSync = function awaitRxStorageReplicationFirstInSync(state) {
   try {
     return Promise.resolve(firstValueFrom(combineLatest([state.firstSyncDone.down.pipe(filter(function (v) {

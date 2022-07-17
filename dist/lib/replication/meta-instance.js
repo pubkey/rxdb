@@ -3,7 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAssumedMasterState = exports.RX_REPLICATION_META_INSTANCE_SCHEMA = void 0;
+exports.RX_REPLICATION_META_INSTANCE_SCHEMA = void 0;
+exports.getAssumedMasterState = getAssumedMasterState;
 exports.getMetaWriteRow = getMetaWriteRow;
 
 var _rxSchemaHelper = require("../rx-schema-helper");
@@ -12,35 +13,6 @@ var _rxStorageHelper = require("../rx-storage-helper");
 
 var _util = require("../util");
 
-/**
- * Returns the document states of what the fork instance
- * assumes to be the latest state on the master instance.
- */
-var getAssumedMasterState = function getAssumedMasterState(state, docIds) {
-  try {
-    return Promise.resolve(state.input.metaInstance.findDocumentsById(docIds.map(function (docId) {
-      var useId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, {
-        itemId: docId,
-        replicationIdentifier: state.checkpointKey,
-        isCheckpoint: '0'
-      });
-      return useId;
-    }), true)).then(function (metaDocs) {
-      var ret = {};
-      Object.values(metaDocs).forEach(function (metaDoc) {
-        ret[metaDoc.itemId] = {
-          docData: metaDoc.data,
-          metaDocument: metaDoc
-        };
-      });
-      return ret;
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports.getAssumedMasterState = getAssumedMasterState;
 var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   primaryKey: {
     key: 'id',
@@ -77,7 +49,32 @@ var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSet
   },
   required: ['id', 'replicationIdentifier', 'isCheckpoint', 'itemId', 'data']
 });
+/**
+ * Returns the document states of what the fork instance
+ * assumes to be the latest state on the master instance.
+ */
+
 exports.RX_REPLICATION_META_INSTANCE_SCHEMA = RX_REPLICATION_META_INSTANCE_SCHEMA;
+
+function getAssumedMasterState(state, docIds) {
+  return state.input.metaInstance.findDocumentsById(docIds.map(function (docId) {
+    var useId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, {
+      itemId: docId,
+      replicationIdentifier: state.checkpointKey,
+      isCheckpoint: '0'
+    });
+    return useId;
+  }), true).then(function (metaDocs) {
+    var ret = {};
+    Object.values(metaDocs).forEach(function (metaDoc) {
+      ret[metaDoc.itemId] = {
+        docData: metaDoc.data,
+        metaDocument: metaDoc
+      };
+    });
+    return ret;
+  });
+}
 
 function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict) {
   var docId = newMasterDocState[state.primaryPath];

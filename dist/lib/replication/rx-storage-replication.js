@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.cancelRxStorageReplication = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = void 0;
+exports.cancelRxStorageReplication = exports.awaitRxStorageReplicationInSync = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = void 0;
 exports.replicateRxStorageInstance = replicateRxStorageInstance;
 exports.rxStorageInstanceToReplicationHandler = rxStorageInstanceToReplicationHandler;
 
@@ -271,6 +271,16 @@ var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state
 };
 
 exports.awaitRxStorageReplicationIdle = awaitRxStorageReplicationIdle;
+
+var awaitRxStorageReplicationInSync = function awaitRxStorageReplicationInSync(replicationState) {
+  try {
+    return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.awaitRxStorageReplicationInSync = awaitRxStorageReplicationInSync;
 
 var awaitRxStorageReplicationFirstInSync = function awaitRxStorageReplicationFirstInSync(state) {
   try {

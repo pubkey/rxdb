@@ -1,34 +1,6 @@
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper';
 import { flatCloneDocWithMeta } from '../rx-storage-helper';
 import { getDefaultRevision, createRevision, now } from '../util';
-
-/**
- * Returns the document states of what the fork instance
- * assumes to be the latest state on the master instance.
- */
-export var getAssumedMasterState = function getAssumedMasterState(state, docIds) {
-  try {
-    return Promise.resolve(state.input.metaInstance.findDocumentsById(docIds.map(function (docId) {
-      var useId = getComposedPrimaryKeyOfDocumentData(RX_REPLICATION_META_INSTANCE_SCHEMA, {
-        itemId: docId,
-        replicationIdentifier: state.checkpointKey,
-        isCheckpoint: '0'
-      });
-      return useId;
-    }), true)).then(function (metaDocs) {
-      var ret = {};
-      Object.values(metaDocs).forEach(function (metaDoc) {
-        ret[metaDoc.itemId] = {
-          docData: metaDoc.data,
-          metaDocument: metaDoc
-        };
-      });
-      return ret;
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
 export var RX_REPLICATION_META_INSTANCE_SCHEMA = fillWithDefaultSettings({
   primaryKey: {
     key: 'id',
@@ -65,6 +37,30 @@ export var RX_REPLICATION_META_INSTANCE_SCHEMA = fillWithDefaultSettings({
   },
   required: ['id', 'replicationIdentifier', 'isCheckpoint', 'itemId', 'data']
 });
+/**
+ * Returns the document states of what the fork instance
+ * assumes to be the latest state on the master instance.
+ */
+
+export function getAssumedMasterState(state, docIds) {
+  return state.input.metaInstance.findDocumentsById(docIds.map(function (docId) {
+    var useId = getComposedPrimaryKeyOfDocumentData(RX_REPLICATION_META_INSTANCE_SCHEMA, {
+      itemId: docId,
+      replicationIdentifier: state.checkpointKey,
+      isCheckpoint: '0'
+    });
+    return useId;
+  }), true).then(function (metaDocs) {
+    var ret = {};
+    Object.values(metaDocs).forEach(function (metaDoc) {
+      ret[metaDoc.itemId] = {
+        docData: metaDoc.data,
+        metaDocument: metaDoc
+      };
+    });
+    return ret;
+  });
+}
 export function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict) {
   var docId = newMasterDocState[state.primaryPath];
   var newMeta = previous ? flatCloneDocWithMeta(previous) : {
