@@ -255,8 +255,8 @@ function startReplicationUpstream(state) {
             var forkStateById = {};
             return Promise.resolve(Promise.all(docIds.map(function (docId) {
               try {
-                var _temp16 = function _temp16(_state$input$conflict) {
-                  if (_temp17 && _state$input$conflict.isEqual) {
+                var _temp20 = function _temp20(_state$input$conflict) {
+                  if (_temp21 && _state$input$conflict.isEqual) {
                     _exit2 = true;
                     return;
                   }
@@ -280,20 +280,20 @@ function startReplicationUpstream(state) {
                  * replicated.
                  */
 
-                var _temp17 = assumedMasterDoc && // if the isResolvedConflict is correct, we do not have to compare the documents.
+                var _temp21 = assumedMasterDoc && // if the isResolvedConflict is correct, we do not have to compare the documents.
                 assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev;
 
-                return Promise.resolve(_temp17 ? Promise.resolve(state.input.conflictHandler({
+                return Promise.resolve(_temp21 ? Promise.resolve(state.input.conflictHandler({
                   realMasterState: assumedMasterDoc.docData,
                   newDocumentState: docData
-                }, 'upstream-check-if-equal')).then(_temp16) : _temp16(_temp17));
+                }, 'upstream-check-if-equal')).then(_temp20) : _temp20(_temp21));
               } catch (e) {
                 return Promise.reject(e);
               }
             }))).then(function () {
               return writeRowsToMasterIds.length === 0 ? false : Promise.resolve(replicationHandler.masterWrite(Object.values(writeRowsToMaster))).then(function (masterWriteResult) {
-                function _temp13() {
-                  function _temp11() {
+                function _temp17() {
+                  function _temp15() {
                     /**
                      * For better performance we do not await checkpoint writes,
                      * but to ensure order on parrallel checkpoint writes,
@@ -313,7 +313,7 @@ function startReplicationUpstream(state) {
                    */
                   var hadConflictWrites = false;
 
-                  var _temp10 = function () {
+                  var _temp14 = function () {
                     if (conflictIds.size > 0) {
                       state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
                       var conflictWriteFork = [];
@@ -346,7 +346,7 @@ function startReplicationUpstream(state) {
                           return Promise.reject(e);
                         }
                       }))).then(function () {
-                        var _temp9 = function () {
+                        var _temp13 = function () {
                           if (conflictWriteFork.length > 0) {
                             hadConflictWrites = true;
                             state.stats.up.persistToMasterConflictWrites = state.stats.up.persistToMasterConflictWrites + 1;
@@ -362,23 +362,23 @@ function startReplicationUpstream(state) {
                                 useMetaWrites.push(conflictWriteMeta[docId]);
                               });
 
-                              var _temp8 = function () {
+                              var _temp12 = function () {
                                 if (useMetaWrites.length > 0) {
                                   return Promise.resolve(state.input.metaInstance.bulkWrite(useMetaWrites, 'replication-up-write-conflict-meta')).then(function () {});
                                 }
                               }();
 
-                              if (_temp8 && _temp8.then) return _temp8.then(function () {});
+                              if (_temp12 && _temp12.then) return _temp12.then(function () {});
                             }); // TODO what to do with conflicts while writing to the metaInstance?
                           }
                         }();
 
-                        if (_temp9 && _temp9.then) return _temp9.then(function () {});
+                        if (_temp13 && _temp13.then) return _temp13.then(function () {});
                       });
                     }
                   }();
 
-                  return _temp10 && _temp10.then ? _temp10.then(_temp11) : _temp11(_temp10);
+                  return _temp14 && _temp14.then ? _temp14.then(_temp15) : _temp15(_temp14);
                 }
 
                 var conflictIds = new Set();
@@ -396,13 +396,13 @@ function startReplicationUpstream(state) {
                   }
                 });
 
-                var _temp12 = function () {
+                var _temp16 = function () {
                   if (useWriteRowsToMeta.length > 0) {
                     return Promise.resolve(state.input.metaInstance.bulkWrite(useWriteRowsToMeta, 'replication-up-write-meta')).then(function () {}); // TODO what happens when we have conflicts here?
                   }
                 }();
 
-                return _temp12 && _temp12.then ? _temp12.then(_temp13) : _temp13(_temp12);
+                return _temp16 && _temp16.then ? _temp16.then(_temp17) : _temp17(_temp16);
               });
             });
           });
@@ -430,7 +430,7 @@ function startReplicationUpstream(state) {
       return Promise.resolve(checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
 
-        function _temp7() {
+        function _temp11() {
           /**
            * If we had conflicts during the inital sync,
            * it means that we likely have new writes to the fork
@@ -441,7 +441,7 @@ function startReplicationUpstream(state) {
               return !!r;
             });
 
-            var _temp5 = function () {
+            var _temp9 = function () {
               if (hadConflicts) {
                 return Promise.resolve(upstreamInitialSync()).then(function () {});
               } else if (!state.firstSyncDone.up.getValue()) {
@@ -449,13 +449,13 @@ function startReplicationUpstream(state) {
               }
             }();
 
-            if (_temp5 && _temp5.then) return _temp5.then(function () {});
+            if (_temp9 && _temp9.then) return _temp9.then(function () {});
           });
         }
 
         var promises = [];
 
-        var _temp6 = _for(function () {
+        var _temp10 = _for(function () {
           return !_interrupt && !state.events.canceled.getValue();
         }, void 0, function () {
           initialSyncStartTime = timer++;
@@ -470,12 +470,16 @@ function startReplicationUpstream(state) {
           });
         });
 
-        return _temp6 && _temp6.then ? _temp6.then(_temp7) : _temp7(_temp6);
+        return _temp10 && _temp10.then ? _temp10.then(_temp11) : _temp11(_temp10);
       });
     } catch (e) {
       return Promise.reject(e);
     }
   };
+  /**
+   * Takes all open tasks an processes them at once.
+   */
+
 
   var replicationHandler = state.input.replicationHandler;
   state.streamQueue.up = state.streamQueue.up.then(function () {
@@ -520,6 +524,7 @@ function startReplicationUpstream(state) {
 
   function processTasks() {
     if (state.events.canceled.getValue() || openTasks.length === 0) {
+      state.events.active.up.next(false);
       return;
     }
 
@@ -527,6 +532,17 @@ function startReplicationUpstream(state) {
     state.events.active.up.next(true);
     state.streamQueue.up = state.streamQueue.up.then(function () {
       try {
+        var _temp7 = function _temp7() {
+          if (openTasks.length === 0) {
+            state.events.active.up.next(false);
+          } else {
+            processTasks();
+          }
+        };
+
+        /**
+         * Merge/filter all open tasks
+         */
         var docs = [];
         var checkpoint = {};
 
@@ -550,14 +566,15 @@ function startReplicationUpstream(state) {
             }
           }));
           checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);
-          return persistToMaster(docs, checkpoint);
         }
 
-        if (openTasks.length === 0) {
-          state.events.active.up.next(false);
-        }
+        var _temp8 = function () {
+          if (docs.length > 0) {
+            return Promise.resolve(persistToMaster(docs, checkpoint)).then(function () {});
+          }
+        }();
 
-        return Promise.resolve();
+        return Promise.resolve(_temp8 && _temp8.then ? _temp8.then(_temp7) : _temp7(_temp8));
       } catch (e) {
         return Promise.reject(e);
       }
