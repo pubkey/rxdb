@@ -65,7 +65,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
         console.log(JSON.stringify(input, null, 4));
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called. (context: ' + context + ')');
     }
-    const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = async (
+    const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (
         input: RxConflictHandlerInput<HumanDocumentType>,
         context: string
     ) => {
@@ -88,18 +88,18 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
         const ageA = docA.age ? docA.age : 0;
         const ageB = docB.age ? docB.age : 0;
         if (ageA > ageB) {
-            return {
+            return Promise.resolve({
                 isEqual: false,
                 documentData: clone(docA)
-            };
+            });
         } else if (ageB > ageA) {
             const documentData: typeof docB = clone(docB);
             // flag the conflict solution  document state the for easier debugging
             documentData.lastName = 'resolved-conflict-' + randomCouchString(5);
-            return {
+            return Promise.resolve({
                 isEqual: false,
                 documentData
-            };
+            });
         } else {
             console.error('EQUAL AGE (' + ageA + ') !!! ' + context);
             console.log(JSON.stringify(input, null, 4));

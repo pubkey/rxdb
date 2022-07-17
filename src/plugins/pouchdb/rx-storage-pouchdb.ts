@@ -47,7 +47,7 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         checkPouchAdapter(adapter);
     }
 
-    private async createPouch(
+    private createPouch(
         location: string,
         options: PouchSettings
     ): Promise<PouchDBInstance> {
@@ -75,7 +75,7 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
          */
         // await pouch.info();
 
-        return pouch;
+        return Promise.resolve(pouch);
     }
 
     public async createStorageInstance<RxDocType>(
@@ -161,7 +161,7 @@ export async function createIndexesOnPouch(
     );
 
     await Promise.all(
-        schema.indexes.map(async (indexMaybeArray) => {
+        schema.indexes.map((indexMaybeArray) => {
             let indexArray: MaybeReadonly<string[]> = isMaybeReadonlyArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
 
             /**

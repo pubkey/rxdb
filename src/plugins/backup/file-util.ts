@@ -59,7 +59,7 @@ export function prepareFolders(
     });
 }
 
-export async function writeToFile(
+export function writeToFile(
     location: string,
     data: string | Buffer
 ): Promise<void> {
@@ -79,7 +79,7 @@ export async function writeToFile(
     });
 }
 
-export async function writeJsonToFile(
+export function writeJsonToFile(
     location: string,
     data: any
 ): Promise<void> {
@@ -96,7 +96,7 @@ export function metaFileLocation(options: BackupOptions): string {
     );
 }
 
-export async function getMeta(options: BackupOptions): Promise<BackupMetaFileContent> {
+export function getMeta(options: BackupOptions): Promise<BackupMetaFileContent> {
     const loc = metaFileLocation(options);
     return new Promise((res, rej) => {
         fs.readFile(loc, 'utf-8', (err, data) => {
@@ -110,7 +110,7 @@ export async function getMeta(options: BackupOptions): Promise<BackupMetaFileCon
     });
 }
 
-export async function setMeta(
+export function setMeta(
     options: BackupOptions,
     meta: BackupMetaFileContent
 ): Promise<void> {

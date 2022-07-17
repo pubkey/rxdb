@@ -506,7 +506,7 @@ config.parallel('data-migration.test.js', () => {
 
                 it('should emit "deleted" when migration-strategy returns null', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
-                        3: async () => {
+                        3: () => {
                             return null;
                         }
                     });
@@ -768,7 +768,7 @@ config.parallel('data-migration.test.js', () => {
             it('should auto-run on creation (async)', async () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
-                    3: async (doc: any) => {
+                    3: (doc: any) => {
                         promiseWait(10);
                         doc.age = parseInt(doc.age, 10);
                         return doc;

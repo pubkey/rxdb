@@ -2,7 +2,7 @@
 
 // while the karma tests run, we need some things which we start here
 const GraphQLServer = require('../test_tmp/helper/graphql-server');
-async function thingsWeNeed() {
+function thingsWeNeed() {
     // we need one graphql server so the browser can sync to it
     GraphQLServer.spawn([], 18000);
 }

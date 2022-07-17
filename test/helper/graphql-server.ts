@@ -71,7 +71,7 @@ declare type Human = {
     deleted: boolean;
 };
 
-export async function spawn(
+export function spawn(
     documents: Human[] = [],
     port = getPort()
 ): Promise<GraphqlServer<Human>> {

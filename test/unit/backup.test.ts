@@ -156,10 +156,10 @@ describe('backup.test.ts', () => {
 
             const doc2 = await collection.insert(schemaObjects.human());
 
-            await waitUntil(async () => {
+            await waitUntil(() => {
                 return fs.existsSync(path.join(directory, doc2.primary));
             });
-            await waitUntil(async () => {
+            await waitUntil(() => {
                 return fs.existsSync(
                     path.join(directory, doc2.primary, 'document.json')
                 );

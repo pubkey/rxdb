@@ -122,7 +122,7 @@ export class RxBackupState {
      * Do not call this while it is already running.
      * Returns true if there are more documents to process
      */
-    public async persistOnce() {
+    public persistOnce() {
         return this.persistRunning = this.persistRunning.then(() => this._persistOnce());
     }
 

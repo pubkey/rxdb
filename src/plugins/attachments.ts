@@ -5,7 +5,8 @@ import {
 import {
     blobBufferUtil,
     createRevision,
-    flatClone
+    flatClone,
+    PROMISE_RESOLVE_VOID
 } from './../util';
 import {
     newRxError
@@ -69,7 +70,7 @@ export class RxAttachment {
         _assignMethodsToAttachment(this);
     }
 
-    async remove(): Promise<void> {
+    remove(): Promise<void> {
         this.doc._atomicQueue = this.doc._atomicQueue
             .then(async () => {
                 const docWriteData: RxDocumentWriteData<{}> = flatCloneDocWithMeta(this.doc._data);
@@ -312,12 +313,12 @@ export async function preMigrateDocument<RxDocType>(
     }
 }
 
-export async function postMigrateDocument(_action: any): Promise<void> {
+export function postMigrateDocument(_action: any): Promise<void> {
     /**
      * No longer needed because
      * we store the attachemnts data buffers directly in the document.
      */
-    return;
+    return PROMISE_RESOLVE_VOID;
 }
 
 export const RxDBAttachmentsPlugin: RxPlugin = {

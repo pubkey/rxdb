@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- CHANGE use eslint rule `require-await` to reduce build size.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

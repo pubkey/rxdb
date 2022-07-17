@@ -126,7 +126,7 @@ describe('leader-election.test.js', () => {
             }
             dbs.forEach(db => db.waitForLeadership());
 
-            await AsyncTestUtil.waitUntil(async () => {
+            await AsyncTestUtil.waitUntil(() => {
                 const count = dbs
                     .filter(db => db.leaderElector().isLeader === true)
                     .length;
@@ -145,7 +145,7 @@ describe('leader-election.test.js', () => {
             await leader.destroy();
             const nonDeadDbs = dbs.filter(db => db !== leader);
 
-            await AsyncTestUtil.waitUntil(async () => {
+            await AsyncTestUtil.waitUntil(() => {
                 const count = nonDeadDbs
                     .filter(db => db.leaderElector().isLeader === true)
                     .length;

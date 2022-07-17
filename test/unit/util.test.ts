@@ -50,7 +50,7 @@ describe('util.test.js', () => {
         });
     });
     describe('.createRevision()', () => {
-        it('should return the same values for the same document data', async () => {
+        it('should return the same values for the same document data', () => {
             const hash1 = createRevision({
                 foo: 'bar',
                 bar: 'foo',

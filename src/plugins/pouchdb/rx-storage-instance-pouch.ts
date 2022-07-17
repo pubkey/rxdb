@@ -100,7 +100,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
          */
         const emittedEventBulkIds: ObliviousSet<string> = new ObliviousSet(60 * 1000);
 
-        const eventSub = emitter.subject.subscribe(async (eventBulk) => {
+        const eventSub = emitter.subject.subscribe((eventBulk) => {
             if (
                 eventBulk.events.length === 0 ||
                 emittedEventBulkIds.has(eventBulk.id)

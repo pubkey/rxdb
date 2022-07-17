@@ -17,7 +17,9 @@
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "extraFileExtensions": [".json"],
+    "extraFileExtensions": [
+      ".json"
+    ],
     "ecmaVersion": 2018,
     "sourceType": "module",
     "project": "./tsconfig.lint.json"
@@ -142,6 +144,10 @@
         ]
       }
     ],
+    // transpiling async-await produces a really big build size,
+    // so we try to not use async if we do not have an await.
+    "@typescript-eslint/require-await": "error",
+    "require-await": "error",
     // overrides
     // TODO: remove these rules one by one
     // to be better aligned with the recommended settings
@@ -156,14 +162,22 @@
     "@typescript-eslint/restrict-plus-operands": "off",
     "@typescript-eslint/await-thenable": "off",
     "@typescript-eslint/no-unnecessary-type-assertion": "off",
-    "@typescript-eslint/require-await": "off",
-    "require-await": "off",
     "@typescript-eslint/no-misused-promises": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
     "no-prototype-builtins": "off",
     "@typescript-eslint/ban-types": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
     "@typescript-eslint/triple-slash-reference": "off",
     "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",

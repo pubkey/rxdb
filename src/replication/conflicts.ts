@@ -12,7 +12,7 @@ import {
     flatClone
 } from '../util';
 
-export const defaultConflictHandler: RxConflictHandler<any> = async function (
+export const defaultConflictHandler: RxConflictHandler<any> = function (
     i: RxConflictHandlerInput<any>,
     _context: string
 ): Promise<RxConflictHandlerOutput<any>> {
@@ -20,19 +20,19 @@ export const defaultConflictHandler: RxConflictHandler<any> = async function (
         i.newDocumentState,
         i.realMasterState
     )) {
-        return {
+        return Promise.resolve({
             isEqual: true
-        }
+        });
     }
 
     /**
      * The default conflict handler will always
      * drop the fork state and use the master state instead.
      */
-    return {
+    return Promise.resolve({
         isEqual: false,
         documentData: i.realMasterState
-    };
+    });
 }
 
 

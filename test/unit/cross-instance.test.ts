@@ -74,7 +74,7 @@ config.parallel('cross-instance.test.js', () => {
                     assert.ok(cEvent.operation);
                 });
                 await c1.insert(schemaObjects.human());
-                await AsyncTestUtil.waitUntil(async () => {
+                await AsyncTestUtil.waitUntil(() => {
                     return received > 0;
                 });
 
@@ -99,7 +99,7 @@ config.parallel('cross-instance.test.js', () => {
                 await c1.insert(schemaObjects.human());
                 await wait(100);
 
-                await AsyncTestUtil.waitUntil(async () => {
+                await AsyncTestUtil.waitUntil(() => {
                     if (emitted.length > 1) {
                         throw new Error('got too many events ' + emitted.length);
                     }
@@ -123,7 +123,7 @@ config.parallel('cross-instance.test.js', () => {
             });
             await c1.insert(schemaObjects.human());
 
-            await AsyncTestUtil.waitUntil(async () => {
+            await AsyncTestUtil.waitUntil(() => {
                 return received > 0;
             });
 

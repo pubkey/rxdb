@@ -88,10 +88,10 @@ describe('replication-graphql.test.ts', () => {
             }
         }`;
         const variables = {};
-        return {
+        return Promise.resolve({
             query,
             variables
-        };
+        });
     };
     const pushQueryBuilder = (docs: RxDocumentData<HumanWithTimestampDocumentType>[]) => {
         if (!docs || docs.length === 0) {
@@ -112,10 +112,10 @@ describe('replication-graphql.test.ts', () => {
             }))
         };
 
-        return {
+        return Promise.resolve({
             query,
             variables
-        };
+        });
     };
     describe('node', () => {
         if (!config.platform.isNode()) return;
@@ -793,14 +793,14 @@ describe('replication-graphql.test.ts', () => {
 
                 // check for inserts
                 await c.insert(schemaObjects.humanWithTimestamp());
-                await AsyncTestUtil.waitUntil(async () => {
+                await AsyncTestUtil.waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     return docsOnServer2.length === amount + 1;
                 });
 
                 // check for deletes
                 await c.findOne().remove();
-                await AsyncTestUtil.waitUntil(async () => {
+                await AsyncTestUtil.waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     const oneShouldBeDeleted = docsOnServer2.find((d: any) => d.deleted === true);
                     return !!oneShouldBeDeleted;
@@ -893,10 +893,10 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(testData)
                 ]);
 
-                const asyncPushQueryBuilder = async (doc: any): Promise<any> => {
+                const asyncPushQueryBuilder = (doc: any): Promise<any> => {
                     return pushQueryBuilder(doc);
                 };
-                const asyncQueryBuilder = async (doc: any): Promise<any> => {
+                const asyncQueryBuilder = (doc: any): Promise<any> => {
                     return queryBuilder(doc);
                 };
 
@@ -1019,7 +1019,7 @@ describe('replication-graphql.test.ts', () => {
                     const shouldBe = (amount * 2) + 2;
                     return docsOnServer2.length === shouldBe;
                 });
-                await AsyncTestUtil.waitUntil(async () => {
+                await AsyncTestUtil.waitUntil(() => {
                     const docsOnDb2 = server.getDocuments();
                     return docsOnDb2.length === (amount * 2) + 2;
                 });
@@ -1078,7 +1078,7 @@ describe('replication-graphql.test.ts', () => {
                     const shouldBe = (amount * 2) + 2;
                     return docsOnServer2.length === shouldBe;
                 });
-                await AsyncTestUtil.waitUntil(async () => {
+                await AsyncTestUtil.waitUntil(() => {
                     const docsOnDb2 = server.getDocuments();
                     return docsOnDb2.length === (amount * 2) + 2;
                 });

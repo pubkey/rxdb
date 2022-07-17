@@ -408,11 +408,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
     }
 
-    async close(): Promise<void> {
+    close(): Promise<void> {
         ensureNotClosed(this);
         this.closed = true;
         this.changes$.complete();
         closeDexieDb(this.internals);
+        return PROMISE_RESOLVE_VOID;
     }
 
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
@@ -423,7 +424,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 }
 
 
-export async function createDexieStorageInstance<RxDocType>(
+export function createDexieStorageInstance<RxDocType>(
     storage: RxStorageDexie,
     params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>,
     settings: DexieSettings
@@ -450,7 +451,7 @@ export async function createDexieStorageInstance<RxDocType>(
         instance
     );
 
-    return instance;
+    return Promise.resolve(instance);
 }
 
 

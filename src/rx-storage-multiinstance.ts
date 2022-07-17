@@ -82,7 +82,7 @@ export function getBroadcastChannelReference(
     return state.bc;
 }
 
-export async function removeBroadcastChannelReference(
+export function removeBroadcastChannelReference(
     databaseInstanceToken: string,
     refObject: any
 ) {

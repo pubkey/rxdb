@@ -221,7 +221,7 @@ export const RxDBEncryptionPlugin: RxPlugin = {
             }
         },
         preWriteAttachment: {
-            after: async (args) => {
+            after: (args) => {
                 const password = args.database.password;
                 const schema = args.schema
                 if (
@@ -236,7 +236,7 @@ export const RxDBEncryptionPlugin: RxPlugin = {
             }
         },
         postReadAttachment: {
-            after: async (args) => {
+            after: (args) => {
                 const password = args.database.password;
                 const schema = args.schema
                 if (

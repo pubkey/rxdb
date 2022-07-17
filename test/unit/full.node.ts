@@ -91,7 +91,7 @@ const run = async function () {
         liveInterval: 50000,
         retryTime: 50000,
         pull: {
-            async handler() {
+            handler() {
                 return {
                     documents: [],
                     hasMoreDocuments: false

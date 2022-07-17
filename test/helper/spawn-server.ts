@@ -17,7 +17,7 @@ const expressPouch = require('express-pouchdb')(InMemPouchDB);
 
 let lastPort = 12121;
 
-export async function spawn(): Promise<{
+export function spawn(): Promise<{
     url: string,
     close: () => Promise<void>
 }> {

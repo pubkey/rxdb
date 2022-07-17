@@ -29,6 +29,7 @@ import {
     getFromMapOrThrow,
     lastOfArray,
     now,
+    PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
     RX_META_LWT_MINIMUM
 } from '../../util';
@@ -65,8 +66,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 > {
 
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
-    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public closed = false;
+    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
 
     constructor(
         public readonly storage: RxStorageMemory,
@@ -167,7 +168,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         return Promise.resolve(ret);
     }
 
-    async findDocumentsById(
+    findDocumentsById(
         docIds: string[],
         withDeleted: boolean
     ): Promise<RxDocumentDataById<RxDocType>> {
@@ -187,7 +188,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         return Promise.resolve(ret);
     }
 
-    async query(preparedQuery: MemoryPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    query(preparedQuery: MemoryPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
         const queryPlan = preparedQuery.queryPlan;
         const query = preparedQuery.query;
         const skip = query.skip ? query.skip : 0;
@@ -261,12 +262,12 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         // apply skip and limit boundaries.
         rows = rows.slice(skip, skipPlusLimit);
 
-        return {
+        return Promise.resolve({
             documents: rows
-        };
+        });
     }
 
-    async getChangedDocumentsSince(
+    getChangedDocumentsSince(
         limit: number,
         checkpoint?: RxStorageDefaultCheckpoint
     ): Promise<{
@@ -306,7 +307,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         }
 
         const lastDoc = lastOfArray(rows);
-        return {
+        return Promise.resolve({
             documents: rows,
             checkpoint: lastDoc ? {
                 id: lastDoc[this.primaryPath] as any,
@@ -315,10 +316,10 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 id: '',
                 lwt: 0
             }
-        };
+        });
     }
 
-    async cleanup(minimumDeletedTime: number): Promise<boolean> {
+    cleanup(minimumDeletedTime: number): Promise<boolean> {
         const maxDeletionTime = now() - minimumDeletedTime;
         const index = ['_deleted', '_meta.lwt', this.primaryPath as any];
         const indexName = getMemoryIndexName(index);
@@ -357,7 +358,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 indexOfLower++;
             }
         }
-        return true;
+        return PROMISE_RESOLVE_TRUE;
     }
 
     getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
@@ -384,12 +385,12 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         await this.close();
     }
 
-    async close(): Promise<void> {
+    close(): Promise<void> {
         if (this.closed) {
-            throw newRxError('SNH', {
+            return Promise.reject(newRxError('SNH', {
                 database: this.databaseName,
                 collection: this.collectionName
-            });
+            }));
         }
         this.closed = true;
         this.changes$.complete();
@@ -400,6 +401,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 getMemoryCollectionKey(this.databaseName, this.collectionName)
             );
         }
+
+        return PROMISE_RESOLVE_VOID;
     }
 
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
@@ -410,7 +413,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 }
 
-export async function createMemoryStorageInstance<RxDocType>(
+export function createMemoryStorageInstance<RxDocType>(
     storage: RxStorageMemory,
     params: RxStorageInstanceCreationParams<RxDocType, RxStorageMemoryInstanceCreationOptions>,
     settings: RxStorageMemorySettings
@@ -442,5 +445,5 @@ export async function createMemoryStorageInstance<RxDocType>(
         params.options,
         settings
     );
-    return instance;
+    return Promise.resolve(instance);
 }

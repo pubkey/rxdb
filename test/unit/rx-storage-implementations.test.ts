@@ -1136,7 +1136,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
-            it('should match the nested document', async () => {
+            it('should match the nested document', () => {
                 const schema = getNestedDocSchema();
                 const query: FilledMangoQuery<NestedDoc> = {
                     selector: {

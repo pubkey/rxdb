@@ -33,7 +33,7 @@ describe('rx-document.test.js', () => {
     config.parallel('statics', () => { });
     config.parallel('prototype-merge', () => {
         describe('RxSchema.getDocumentPrototype()', () => {
-            it('should get an object with all main-fields', async () => {
+            it('should get an object with all main-fields', () => {
                 const schema = createRxSchema(schemas.human);
                 assert.ok(schema);
                 const proto = schema.getDocumentPrototype();

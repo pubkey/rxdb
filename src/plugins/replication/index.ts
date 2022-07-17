@@ -191,9 +191,9 @@ export class RxReplicationStateBase<RxDocType> {
     /**
      * Ensures that this._run() does not run in parallel
      */
-    async run(retryOnFail = true): Promise<void> {
+    run(retryOnFail = true): Promise<void> {
         if (this.isStopped()) {
-            return;
+            return PROMISE_RESOLVE_VOID;
         }
 
         if (this.runQueueCount > 2) {
@@ -231,7 +231,7 @@ export class RxReplicationStateBase<RxDocType> {
      * depending on when it is called and if another run() cycle is already
      * running.
      */
-    async notifyAboutRemoteChange() {
+    notifyAboutRemoteChange() {
         const callTime = now();
         return new Promise<void>(res => {
             this.runningPromise = this.runningPromise.then(() => {

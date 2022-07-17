@@ -160,7 +160,7 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<
             attachmentId
         );
     }
-    async getChangedDocumentsSince(
+    getChangedDocumentsSince(
         limit: number,
         checkpoint?: any
     ): Promise<{

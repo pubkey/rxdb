@@ -804,7 +804,7 @@ describe('replication.test.js', () => {
                     }
                 },
                 push: {
-                    async handler(docs: RxDocumentData<TestDocType>[]) {
+                    handler(docs: RxDocumentData<TestDocType>[]) {
                         if (initalReplicationDone) {
                             const randomValue = ensureNotFalsy(docs[0]).name;
                             pushedRandomValues.push(randomValue);
@@ -838,12 +838,12 @@ describe('replication.test.js', () => {
                 live: false,
                 retryTime: 50,
                 pull: {
-                    async handler() {
+                    handler() {
                         throw new Error('throw on pull');
                     }
                 },
                 push: {
-                    async handler() {
+                    handler() {
                         throw new Error('throw on push');
                     }
                 }
@@ -885,7 +885,7 @@ describe('replication.test.js', () => {
                 live: false,
                 retryTime: 50,
                 pull: {
-                    async handler(latestPulledDocument: RxDocumentData<TestDocType> | null) {
+                    handler(latestPulledDocument: RxDocumentData<TestDocType> | null) {
                         if (throwOnPull) {
                             throw new Error('throwOnPull is true');
                         }

@@ -115,7 +115,7 @@ export function addCustomEventsPluginToPouch() {
     /**
      * Ensure we do not run bulkDocs() in parallel on the same PouchDB instance.
      */
-    const newBulkDocs = async function (
+    const newBulkDocs = function (
         this: PouchDBInstance,
         body: any[] | { docs: any[], new_edits?: boolean },
         options: PouchBulkDocOptions,

@@ -106,8 +106,8 @@ config.parallel('cache-replacement-policy.test.js', () => {
             const root$ = new BehaviorSubject(1);
             let query: RxQuery | null = null;
             const nested = root$.pipe(
-                mergeMap(async (id: number) => {
-                    return id;
+                mergeMap((id: number) => {
+                    return Promise.resolve(id);
                 }),
                 switchMap(() => {
                     query = col.findOne('foobar');

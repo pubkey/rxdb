@@ -106,7 +106,7 @@ export function replicateRxStorageInstance<RxDocType>(
     return state;
 }
 
-export async function awaitRxStorageReplicationFirstInSync(
+export function awaitRxStorageReplicationFirstInSync(
     state: RxStorageInstanceReplicationState<any>
 ) {
     return firstValueFrom(
@@ -121,7 +121,7 @@ export async function awaitRxStorageReplicationFirstInSync(
     );
 }
 
-export async function awaitRxStorageReplicationInSync(
+export function awaitRxStorageReplicationInSync(
     replicationState: RxStorageInstanceReplicationState<any>
 ) {
     return Promise.all([
