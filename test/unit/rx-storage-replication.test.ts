@@ -23,7 +23,8 @@ import {
     RX_REPLICATION_META_INSTANCE_SCHEMA,
     RxStorageReplicationMeta,
     rxStorageInstanceToReplicationHandler,
-    cancelRxStorageReplication
+    cancelRxStorageReplication,
+    awaitRxStorageReplicationInSync
 } from '../../';
 
 
@@ -180,6 +181,13 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
         replicationState: RxStorageInstanceReplicationState<any>,
         masterInstance: RxStorageInstance<any, any, any, any>
     ) {
+
+        /**
+         * For the tests we first await the replication to be in sync
+         * which failed some times.
+         */
+        await awaitRxStorageReplicationInSync(replicationState);
+
         await cancelRxStorageReplication(replicationState);
 
         await Promise.all([

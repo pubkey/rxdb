@@ -40,9 +40,10 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
     const replicationHandler = state.input.replicationHandler;
-    state.streamQueue.up = state.streamQueue.up.then(async () => {
-        await upstreamInitialSync();
-        processTasks();
+    state.streamQueue.up = state.streamQueue.up.then(() => {
+        return upstreamInitialSync().then(() => {
+            processTasks();
+        });
     });
 
     // used to detect which tasks etc can in it at which order.
@@ -60,16 +61,18 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
     const sub = state.input.forkInstance.changeStream()
         .pipe(
             filter(eventBulk => eventBulk.context !== state.downstreamBulkWriteFlag)
-        ).subscribe(async (eventBulk) => {
+        ).subscribe(eventBulk => {
             state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
             openTasks.push({
                 task: eventBulk,
                 time: timer++
             });
             if (state.input.waitBeforePersist) {
-                await state.input.waitBeforePersist();
+                return state.input.waitBeforePersist()
+                    .then(() => processTasks());
+            } else {
+                return processTasks();
             }
-            processTasks();
         });
     firstValueFrom(
         state.events.canceled.pipe(
@@ -113,7 +116,8 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
          * it means that we likely have new writes to the fork
          * and so we have to run the initial sync again to upastream these new writes.
          */
-        const hadConflicts = (await Promise.all(promises)).find(r => !!r);
+        const resolvedPromises = await Promise.all(promises);
+        const hadConflicts = resolvedPromises.find(r => !!r);
         if (hadConflicts) {
             await upstreamInitialSync();
         } else if (!state.firstSyncDone.up.getValue()) {
@@ -135,7 +139,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         }
         state.stats.up.processTasks = state.stats.up.processTasks + 1;
         state.events.active.up.next(true);
-        state.streamQueue.up = state.streamQueue.up.then(async () => {
+        state.streamQueue.up = state.streamQueue.up.then(() => {
             /**
              * Merge/filter all open tasks
              */
@@ -164,19 +168,17 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                 checkpoint = stackCheckpoints([checkpoint, taskWithTime.task.checkpoint]);
             }
 
-            if (docs.length > 0) {
-                await persistToMaster(
-                    docs,
-                    checkpoint
-                );
-            }
-
-            if (openTasks.length === 0) {
-                state.events.active.up.next(false);
-            }else {
-                processTasks();
-            }
-
+            const promise = docs.length === 0 ? PROMISE_RESOLVE_FALSE : persistToMaster(
+                docs,
+                checkpoint
+            );
+            return promise.then(() => {
+                if (openTasks.length === 0) {
+                    state.events.active.up.next(false);
+                } else {
+                    processTasks();
+                }
+            });
         });
     }
 
@@ -249,7 +251,6 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                      * replicated.
                      */
                     if (
-
                         assumedMasterDoc &&
                         // if the isResolvedConflict is correct, we do not have to compare the documents.
                         assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev &&

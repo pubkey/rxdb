@@ -52,7 +52,6 @@ import { startReplicationDownstream } from './downstream';
 import { docStateToWriteDoc, writeDocToDocState } from './helper';
 import { startReplicationUpstream } from './upstream';
 
-
 export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
 ): RxStorageInstanceReplicationState<RxDocType> {
@@ -121,6 +120,16 @@ export async function awaitRxStorageReplicationFirstInSync(
         ])
     );
 }
+
+export async function awaitRxStorageReplicationInSync(
+    replicationState: RxStorageInstanceReplicationState<any>
+) {
+    return Promise.all([
+        replicationState.streamQueue.up,
+        replicationState.streamQueue.down
+    ]);
+}
+
 
 export async function awaitRxStorageReplicationIdle(
     state: RxStorageInstanceReplicationState<any>
