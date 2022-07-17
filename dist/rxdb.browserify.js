@@ -3030,6 +3030,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     this.id = lastId++;
     this.changes$ = new _rxjs.Subject();
     this.subs = [];
+    this.closed = false;
     this.nonParallelQueue = _util.PROMISE_RESOLVE_VOID;
     this.storage = storage;
     this.databaseName = databaseName;
@@ -3087,6 +3088,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   var _proto = RxStorageInstancePouch.prototype;
 
   _proto.close = function close() {
+    ensureNotClosed(this);
+    this.closed = true;
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
@@ -3103,6 +3106,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   _proto.remove = function remove() {
     try {
       var _this3 = this;
+
+      ensureNotClosed(_this3);
+      _this3.closed = true;
 
       _this3.subs.forEach(function (sub) {
         return sub.unsubscribe();
@@ -3121,6 +3127,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
       var _this5 = this;
+
+      ensureNotClosed(_this5);
 
       if (documentWrites.length === 0) {
         throw (0, _rxError.newRxError)('P2', {
@@ -3228,6 +3236,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     try {
       var _this7 = this;
 
+      ensureNotClosed(_this7);
       return Promise.resolve(_this7.internals.pouch.find(preparedQuery)).then(function (findResult) {
         var ret = {
           documents: findResult.docs.map(function (pouchDoc) {
@@ -3246,6 +3255,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     try {
       var _this9 = this;
 
+      ensureNotClosed(_this9);
       return Promise.resolve(_this9.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
         return Promise.resolve(_util.blobBufferUtil.toBase64String(attachmentData));
       });
@@ -3258,6 +3268,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     try {
       var _this11 = this;
 
+      ensureNotClosed(_this11);
       /**
        * On deleted documents, PouchDB will only return the tombstone.
        * So we have to get the properties directly for each document
@@ -3267,6 +3278,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
        * when one past revision was written via new_edits=false
        * @link https://stackoverflow.com/a/63516761/3443137
        */
+
       if (deleted) {
         var retDocs = {};
         _this11.nonParallelQueue = _this11.nonParallelQueue.then(function () {
@@ -3329,16 +3341,19 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   };
 
   _proto.changeStream = function changeStream() {
+    ensureNotClosed(this);
     return this.changes$.asObservable();
   };
 
   _proto.cleanup = function cleanup(_minimumDeletedTime) {
+    ensureNotClosed(this);
     /**
      * PouchDB does not support purging documents.
      * So instead we run a compaction that might at least help a bit
      * in freeing up disc space.
      * @link https://github.com/pouchdb/pouchdb/issues/802
      */
+
     return this.internals.pouch.compact().then(function () {
       return true;
     });
@@ -3373,6 +3388,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       };
 
       var _this13 = this;
+
+      ensureNotClosed(_this13);
 
       if (!limit || typeof limit !== 'number') {
         throw new Error('wrong limit');
@@ -3441,6 +3458,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 }();
 
 exports.RxStorageInstancePouch = RxStorageInstancePouch;
+
+function ensureNotClosed(instance) {
+  if (instance.closed) {
+    throw new Error('RxStorageInstancePouch is closed ' + instance.databaseName + '-' + instance.collectionName);
+  }
+}
 
 },{"../../rx-error":35,"../../rx-schema-helper":38,"../../util":45,"./custom-events-plugin":11,"./pouchdb-helper":15,"oblivious-set":421,"rxjs":457}],17:[function(require,module,exports){
 "use strict";
@@ -5211,7 +5234,7 @@ function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict)
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = void 0;
+exports.cancelRxStorageReplication = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = void 0;
 exports.replicateRxStorageInstance = replicateRxStorageInstance;
 exports.rxStorageInstanceToReplicationHandler = rxStorageInstanceToReplicationHandler;
 
@@ -5436,6 +5459,25 @@ function _for(test, update, body) {
  * The replication works like git, where the fork contains all new writes
  * and must be merged with the master before it can push it's new state to the master.
  */
+var cancelRxStorageReplication = function cancelRxStorageReplication(replicationState) {
+  try {
+    replicationState.events.canceled.next(true);
+    return Promise.resolve(replicationState.streamQueue.down).then(function () {
+      return Promise.resolve(replicationState.streamQueue.up).then(function () {
+        replicationState.events.active.up.complete();
+        replicationState.events.active.down.complete();
+        replicationState.events.processed.up.complete();
+        replicationState.events.processed.down.complete();
+        replicationState.events.resolvedConflicts.complete();
+      });
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.cancelRxStorageReplication = cancelRxStorageReplication;
+
 var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state) {
   return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
     var _exit = false;

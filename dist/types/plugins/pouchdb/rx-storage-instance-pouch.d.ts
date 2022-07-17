@@ -12,6 +12,7 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     private changes$;
     private subs;
     private primaryPath;
+    closed: boolean;
     /**
      * Some PouchDB operations give wrong results when they run in parallel.
      * So we have to ensure they are queued up.

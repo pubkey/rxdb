@@ -21,3 +21,4 @@ export declare function replicateRxStorageInstance<RxDocType>(input: RxStorageIn
 export declare function awaitRxStorageReplicationFirstInSync(state: RxStorageInstanceReplicationState<any>): Promise<[boolean, boolean]>;
 export declare function awaitRxStorageReplicationIdle(state: RxStorageInstanceReplicationState<any>): Promise<void>;
 export declare function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpointType>(instance: RxStorageInstance<RxDocType, any, any, MasterCheckpointType>, conflictHandler: RxConflictHandler<RxDocType>): RxReplicationHandler<RxDocType, MasterCheckpointType>;
+export declare function cancelRxStorageReplication(replicationState: RxStorageInstanceReplicationState<any>): Promise<void>;

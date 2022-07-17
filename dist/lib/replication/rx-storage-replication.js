@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = void 0;
+exports.cancelRxStorageReplication = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = void 0;
 exports.replicateRxStorageInstance = replicateRxStorageInstance;
 exports.rxStorageInstanceToReplicationHandler = rxStorageInstanceToReplicationHandler;
 
@@ -228,6 +228,25 @@ function _for(test, update, body) {
  * The replication works like git, where the fork contains all new writes
  * and must be merged with the master before it can push it's new state to the master.
  */
+var cancelRxStorageReplication = function cancelRxStorageReplication(replicationState) {
+  try {
+    replicationState.events.canceled.next(true);
+    return Promise.resolve(replicationState.streamQueue.down).then(function () {
+      return Promise.resolve(replicationState.streamQueue.up).then(function () {
+        replicationState.events.active.up.complete();
+        replicationState.events.active.down.complete();
+        replicationState.events.processed.up.complete();
+        replicationState.events.processed.down.complete();
+        replicationState.events.resolvedConflicts.complete();
+      });
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.cancelRxStorageReplication = cancelRxStorageReplication;
+
 var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state) {
   return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
     var _exit = false;

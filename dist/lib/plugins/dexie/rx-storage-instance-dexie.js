@@ -57,6 +57,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     try {
       var _this2 = this;
 
+      ensureNotClosed(_this2);
       return Promise.resolve(_this2.internals).then(function (state) {
         var ret = {
           success: {},
@@ -251,6 +252,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     try {
       var _this4 = this;
 
+      ensureNotClosed(_this4);
       return Promise.resolve(_this4.internals).then(function (state) {
         var ret = {};
         return Promise.resolve(state.dexieDb.transaction('r', state.dexieTable, state.dexieDeletedTable, function () {
@@ -293,6 +295,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
   };
 
   _proto.query = function query(preparedQuery) {
+    ensureNotClosed(this);
     return (0, _dexieQuery.dexieQuery)(this, preparedQuery);
   };
 
@@ -300,6 +303,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     try {
       var _this6 = this;
 
+      ensureNotClosed(_this6);
       var sinceLwt = checkpoint ? checkpoint.lwt : _util.RX_META_LWT_MINIMUM;
       var sinceId = checkpoint ? checkpoint.id : '';
       return Promise.resolve(_this6.internals).then(function (state) {
@@ -342,6 +346,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     try {
       var _this8 = this;
 
+      ensureNotClosed(_this8);
       return Promise.resolve(_this8.internals).then(function (state) {
         return Promise.resolve(Promise.all([state.dexieDeletedTable.clear(), state.dexieTable.clear()])).then(function () {
           return _this8.close();
@@ -353,6 +358,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
   };
 
   _proto.changeStream = function changeStream() {
+    ensureNotClosed(this);
     return this.changes$.asObservable();
   };
 
@@ -360,6 +366,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     try {
       var _this10 = this;
 
+      ensureNotClosed(_this10);
       return Promise.resolve(_this10.internals).then(function (state) {
         return Promise.resolve(state.dexieDb.transaction('rw', state.dexieDeletedTable, function () {
           try {
@@ -389,6 +396,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
   };
 
   _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
+    ensureNotClosed(this);
     throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
   };
 
@@ -396,13 +404,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     try {
       var _this12 = this;
 
-      if (_this12.closed) {
-        throw (0, _rxError.newRxError)('SNH', {
-          database: _this12.databaseName,
-          collection: _this12.collectionName
-        });
-      }
-
+      ensureNotClosed(_this12);
       _this12.closed = true;
 
       _this12.changes$.complete();
@@ -426,4 +428,10 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
 }();
 
 exports.RxStorageInstanceDexie = RxStorageInstanceDexie;
+
+function ensureNotClosed(instance) {
+  if (instance.closed) {
+    throw new Error('RxStorageInstanceDexie is closed ' + instance.databaseName + '-' + instance.collectionName);
+  }
+}
 //# sourceMappingURL=rx-storage-instance-dexie.js.map
