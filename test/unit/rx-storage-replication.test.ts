@@ -48,7 +48,7 @@ import {
     randomBoolean
 } from 'async-test-util';
 import { HumanDocumentType } from '../helper/schemas';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+import { EXAMPLE_REVISION_1, EXAMPLE_REVISION_2 } from '../helper/revisions';
 
 const testContext = 'rx-storage-replication.test.ts';
 
@@ -298,6 +298,54 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
                 const docsOnMaster2 = await runQuery(masterInstance);
                 return docsOnMaster2.length === 2;
             });
+
+            await cleanUp(replicationState, masterInstance);
+        });
+        it('should replication the insert and the update', async () => {
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(1);
+            const metaInstance = await createMetaInstance();
+
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER),
+                forkInstance,
+                metaInstance,
+                bulkSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER
+            });
+
+            const passportId = 'foobar';
+            const docData = getDocData({
+                passportId
+            });
+
+            const writeResult = await forkInstance.bulkWrite([{
+                document: docData
+            }], testContext);
+            assert.deepStrictEqual(writeResult.error, {});
+            const previous = getFromObjectOrThrow(writeResult.success, passportId);
+
+            const updateData: typeof docData = clone(docData);
+            updateData.firstName = 'xxx';
+            updateData._rev = EXAMPLE_REVISION_2;
+            updateData._meta.lwt = now();
+
+            const updateResult = await forkInstance.bulkWrite([{
+                previous,
+                document: updateData
+            }], testContext);
+            assert.deepStrictEqual(updateResult.error, {});
+
+            await waitUntil(async () => {
+                const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
+                return docsAfterUpdate[passportId];
+            });
+            const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
+            const docAfter = getFromObjectOrThrow(docsAfterUpdate, passportId);
+            assert.strictEqual(docAfter.firstName, 'xxx');
+
+            await awaitRxStorageReplicationInSync(replicationState);
 
             await cleanUp(replicationState, masterInstance);
         });
