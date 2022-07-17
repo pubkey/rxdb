@@ -884,7 +884,7 @@ export class RxCollectionBase<
         return ret;
     }
 
-    async destroy(): Promise<boolean> {
+    destroy(): Promise<boolean> {
         if (this.destroyed) {
             return PROMISE_RESOLVE_FALSE;
         }
@@ -916,6 +916,14 @@ export class RxCollectionBase<
         return this.database.requestIdlePromise()
             .then(() => this.storageInstance.close())
             .then(() => {
+                /**
+                 * Unsubscribing must be done AFTER the storageInstance.close()
+                 * Because the conflict handling is part of the subscriptions and
+                 * otherwise there might be open conflicts to be resolved which
+                 * will then stuck and never resolve.
+                 */
+                this._subs.forEach(sub => sub.unsubscribe());
+
                 delete this.database.collections[this.name];
                 return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
             });
