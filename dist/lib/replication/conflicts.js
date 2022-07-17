@@ -58,25 +58,21 @@ var resolveConflictError = function resolveConflictError(conflictHandler, input,
 exports.resolveConflictError = resolveConflictError;
 
 var defaultConflictHandler = function defaultConflictHandler(i, _context) {
-  try {
-    if ((0, _fastDeepEqual["default"])(i.newDocumentState, i.realMasterState)) {
-      return Promise.resolve({
-        isEqual: true
-      });
-    }
-    /**
-     * The default conflict handler will always
-     * drop the fork state and use the master state instead.
-     */
-
-
+  if ((0, _fastDeepEqual["default"])(i.newDocumentState, i.realMasterState)) {
     return Promise.resolve({
-      isEqual: false,
-      documentData: i.realMasterState
+      isEqual: true
     });
-  } catch (e) {
-    return Promise.reject(e);
   }
+  /**
+   * The default conflict handler will always
+   * drop the fork state and use the master state instead.
+   */
+
+
+  return Promise.resolve({
+    isEqual: false,
+    documentData: i.realMasterState
+  });
 };
 
 exports.defaultConflictHandler = defaultConflictHandler;

@@ -283,32 +283,28 @@ export var RxBackupState = /*#__PURE__*/function () {
   var _proto = RxBackupState.prototype;
 
   _proto.persistOnce = function persistOnce() {
-    try {
-      var _this2 = this;
+    var _this = this;
 
-      return Promise.resolve(_this2.persistRunning = _this2.persistRunning.then(function () {
-        return _this2._persistOnce();
-      }));
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    return this.persistRunning = this.persistRunning.then(function () {
+      return _this._persistOnce();
+    });
   };
 
   _proto._persistOnce = function _persistOnce() {
     try {
-      var _this4 = this;
+      var _this3 = this;
 
-      return Promise.resolve(getMeta(_this4.options)).then(function (meta) {
-        return Promise.resolve(Promise.all(Object.entries(_this4.database.collections).map(function (_ref) {
+      return Promise.resolve(getMeta(_this3.options)).then(function (meta) {
+        return Promise.resolve(Promise.all(Object.entries(_this3.database.collections).map(function (_ref) {
           try {
             var collectionName = _ref[0],
                 collection = _ref[1];
             var primaryKey = collection.schema.primaryPath;
             var processedDocuments = new Set();
-            return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
+            return Promise.resolve(_this3.database.requestIdlePromise()).then(function () {
               function _temp3() {
                 meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
-                return Promise.resolve(setMeta(_this4.options, meta)).then(function () {});
+                return Promise.resolve(setMeta(_this3.options, meta)).then(function () {});
               }
 
               if (!meta.collectionStates[collectionName]) {
@@ -319,10 +315,10 @@ export var RxBackupState = /*#__PURE__*/function () {
               var hasMore = true;
 
               var _temp2 = _for(function () {
-                return !!hasMore && !_this4.isStopped;
+                return !!hasMore && !_this3.isStopped;
               }, void 0, function () {
-                return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
-                  return Promise.resolve(collection.storageInstance.getChangedDocumentsSince(_this4.options.batchSize ? _this4.options.batchSize : 0, lastCheckpoint)).then(function (changesResult) {
+                return Promise.resolve(_this3.database.requestIdlePromise()).then(function () {
+                  return Promise.resolve(collection.storageInstance.getChangedDocumentsSince(_this3.options.batchSize ? _this3.options.batchSize : 0, lastCheckpoint)).then(function (changesResult) {
                     lastCheckpoint = changesResult.documents.length > 0 ? changesResult.checkpoint : lastCheckpoint;
                     meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
                     var docIds = changesResult.documents.map(function (doc) {
@@ -338,7 +334,7 @@ export var RxBackupState = /*#__PURE__*/function () {
                       return arr.indexOf(elem) === pos;
                     }); // unique
 
-                    return Promise.resolve(_this4.database.requestIdlePromise()).then(function () {
+                    return Promise.resolve(_this3.database.requestIdlePromise()).then(function () {
                       return Promise.resolve(collection.findByIds(docIds)).then(function (docs) {
                         if (docs.size === 0) {
                           hasMore = false;
@@ -347,8 +343,8 @@ export var RxBackupState = /*#__PURE__*/function () {
 
                         return Promise.resolve(Promise.all(Array.from(docs.values()).map(function (doc) {
                           try {
-                            return Promise.resolve(backupSingleDocument(doc, _this4.options)).then(function (writtenFiles) {
-                              _this4.internalWriteEvents$.next({
+                            return Promise.resolve(backupSingleDocument(doc, _this3.options)).then(function (writtenFiles) {
+                              _this3.internalWriteEvents$.next({
                                 collectionName: collection.name,
                                 documentId: doc.primary,
                                 files: writtenFiles,
@@ -364,8 +360,8 @@ export var RxBackupState = /*#__PURE__*/function () {
                             return !docs.has(docId);
                           }).map(function (docId) {
                             try {
-                              return Promise.resolve(deleteFolder(documentFolder(_this4.options, docId))).then(function () {
-                                _this4.internalWriteEvents$.next({
+                              return Promise.resolve(deleteFolder(documentFolder(_this3.options, docId))).then(function () {
+                                _this3.internalWriteEvents$.next({
                                   collectionName: collection.name,
                                   documentId: docId,
                                   files: [],
@@ -389,8 +385,8 @@ export var RxBackupState = /*#__PURE__*/function () {
             return Promise.reject(e);
           }
         }))).then(function () {
-          if (!_this4.initialReplicationDone$.getValue()) {
-            _this4.initialReplicationDone$.next(true);
+          if (!_this3.initialReplicationDone$.getValue()) {
+            _this3.initialReplicationDone$.next(true);
           }
         });
       });
@@ -400,16 +396,16 @@ export var RxBackupState = /*#__PURE__*/function () {
   };
 
   _proto.watchForChanges = function watchForChanges() {
-    var _this5 = this;
+    var _this4 = this;
 
     var collections = Object.values(this.database.collections);
     collections.forEach(function (collection) {
       var changes$ = collection.storageInstance.changeStream();
       var sub = changes$.subscribe(function () {
-        _this5.persistOnce();
+        _this4.persistOnce();
       });
 
-      _this5.subs.push(sub);
+      _this4.subs.push(sub);
     });
   }
   /**

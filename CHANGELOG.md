@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- CHANGE use eslint rule `require-await` to reduce build size.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 12.7.12 (17 July 2022)
+
+- CHANGE use eslint rule `require-await` to reduce build size.
 
 ### 12.7.11 (17 July 2022)
 

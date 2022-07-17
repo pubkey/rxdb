@@ -151,11 +151,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
       this.internals.leaderElector.awaitLeadership().then(function () {
         // this instance is leader now, so it has to reply to queries from other instances
         (0, _util.ensureNotFalsy)(_this.internals.leaderElector).broadcastChannel.addEventListener('message', function (msg) {
-          try {
-            return Promise.resolve((0, _lokijsHelper.handleRemoteRequest)(_this, msg));
-          } catch (e) {
-            return Promise.reject(e);
-          }
+          return (0, _lokijsHelper.handleRemoteRequest)(_this, msg);
         });
       });
     }

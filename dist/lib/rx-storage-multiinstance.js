@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.BROADCAST_CHANNEL_BY_TOKEN = void 0;
 exports.addRxStorageMultiInstanceSupport = addRxStorageMultiInstanceSupport;
 exports.getBroadcastChannelReference = getBroadcastChannelReference;
-exports.removeBroadcastChannelReference = void 0;
+exports.removeBroadcastChannelReference = removeBroadcastChannelReference;
 
 var _rxjs = require("rxjs");
 
@@ -29,28 +29,6 @@ var _broadcastChannel = require("broadcast-channel");
  * Do not use this if the storage anyway broadcasts the events like when using MongoDB
  * or in the future W3C might introduce a way to listen to IndexedDB changes.
  */
-var removeBroadcastChannelReference = function removeBroadcastChannelReference(databaseInstanceToken, refObject) {
-  try {
-    var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
-
-    if (!state) {
-      return Promise.resolve();
-    }
-
-    state.refs["delete"](refObject);
-
-    if (state.refs.size === 0) {
-      BROADCAST_CHANNEL_BY_TOKEN["delete"](databaseInstanceToken);
-      return Promise.resolve(state.bc.close());
-    }
-
-    return Promise.resolve();
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports.removeBroadcastChannelReference = removeBroadcastChannelReference;
 
 /**
  * The broadcast-channel is reused by the databaseInstanceToken.
@@ -85,6 +63,21 @@ function getBroadcastChannelReference(databaseInstanceToken, databaseName, refOb
 
   state.refs.add(refObject);
   return state.bc;
+}
+
+function removeBroadcastChannelReference(databaseInstanceToken, refObject) {
+  var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
+
+  if (!state) {
+    return;
+  }
+
+  state.refs["delete"](refObject);
+
+  if (state.refs.size === 0) {
+    BROADCAST_CHANNEL_BY_TOKEN["delete"](databaseInstanceToken);
+    return state.bc.close();
+  }
 }
 
 function addRxStorageMultiInstanceSupport(instanceCreationParams, instance,

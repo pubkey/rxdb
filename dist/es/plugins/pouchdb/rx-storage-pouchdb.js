@@ -25,42 +25,38 @@ export var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
         return idx.name;
       }));
       return Promise.resolve(Promise.all(schema.indexes.map(function (indexMaybeArray) {
-        try {
-          var indexArray = isMaybeReadonlyArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
-          /**
-           * replace primary key with _id
-           * because that is the enforced primary key on pouchdb.
-           */
+        var indexArray = isMaybeReadonlyArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+        /**
+         * replace primary key with _id
+         * because that is the enforced primary key on pouchdb.
+         */
 
-          indexArray = indexArray.map(function (key) {
-            if (key === primaryKey) {
-              return '_id';
-            } else {
-              return key;
-            }
-          });
-          var indexName = getPouchIndexDesignDocNameByIndex(indexArray);
-
-          if (existingIndexes.has(indexName)) {
-            // index already exists
-            return Promise.resolve();
+        indexArray = indexArray.map(function (key) {
+          if (key === primaryKey) {
+            return '_id';
+          } else {
+            return key;
           }
-          /**
-           * TODO we might have even better performance by doing a pouch.bulkDocs()
-           * on index creation
-           */
+        });
+        var indexName = getPouchIndexDesignDocNameByIndex(indexArray);
 
-
-          return Promise.resolve(pouch.createIndex({
-            name: indexName,
-            ddoc: indexName,
-            index: {
-              fields: indexArray
-            }
-          }));
-        } catch (e) {
-          return Promise.reject(e);
+        if (existingIndexes.has(indexName)) {
+          // index already exists
+          return;
         }
+        /**
+         * TODO we might have even better performance by doing a pouch.bulkDocs()
+         * on index creation
+         */
+
+
+        return pouch.createIndex({
+          name: indexName,
+          ddoc: indexName,
+          index: {
+            fields: indexArray
+          }
+        });
       }))).then(function () {});
     });
   } catch (e) {
@@ -84,39 +80,33 @@ export var RxStoragePouch = /*#__PURE__*/function () {
   var _proto = RxStoragePouch.prototype;
 
   _proto.createPouch = function createPouch(location, options) {
-    try {
-      var _this2 = this;
+    var pouchDbParameters = {
+      location: location,
+      adapter: adapterObject(this.adapter),
+      settings: options
+    };
+    var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, this.pouchSettings, pouchDbParameters.settings);
+    var pouch = new PouchDB(pouchDbParameters.location, pouchDBOptions);
+    /**
+     * In the past we found some errors where the PouchDB is not directly useable
+     * so we we had to call .info() first to ensure it can be used.
+     * I commented this out for now to get faster database/collection creation.
+     * We might have to add this again if something fails.
+     */
+    // await pouch.info();
 
-      var pouchDbParameters = {
-        location: location,
-        adapter: adapterObject(_this2.adapter),
-        settings: options
-      };
-      var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, _this2.pouchSettings, pouchDbParameters.settings);
-      var pouch = new PouchDB(pouchDbParameters.location, pouchDBOptions);
-      /**
-       * In the past we found some errors where the PouchDB is not directly useable
-       * so we we had to call .info() first to ensure it can be used.
-       * I commented this out for now to get faster database/collection creation.
-       * We might have to add this again if something fails.
-       */
-      // await pouch.info();
-
-      return Promise.resolve(pouch);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    return Promise.resolve(pouch);
   };
 
   _proto.createStorageInstance = function createStorageInstance(params) {
     try {
-      var _this4 = this;
+      var _this2 = this;
 
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
-      return Promise.resolve(_this4.createPouch(pouchLocation, params.options)).then(function (pouch) {
+      return Promise.resolve(_this2.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
           var pouchInstanceId = openPouchId(params.databaseInstanceToken, params.databaseName, params.collectionName, params.schema.version);
-          var instance = new RxStorageInstancePouch(_this4, params.databaseName, params.collectionName, params.schema, {
+          var instance = new RxStorageInstancePouch(_this2, params.databaseName, params.collectionName, params.schema, {
             pouch: pouch,
             pouchInstanceId: pouchInstanceId
           }, params.options);

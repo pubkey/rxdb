@@ -29,26 +29,6 @@ import { BroadcastChannel } from 'broadcast-channel';
  * Otherwise we have forgot something.
  */
 
-export var removeBroadcastChannelReference = function removeBroadcastChannelReference(databaseInstanceToken, refObject) {
-  try {
-    var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
-
-    if (!state) {
-      return Promise.resolve();
-    }
-
-    state.refs["delete"](refObject);
-
-    if (state.refs.size === 0) {
-      BROADCAST_CHANNEL_BY_TOKEN["delete"](databaseInstanceToken);
-      return Promise.resolve(state.bc.close());
-    }
-
-    return Promise.resolve();
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
 export var BROADCAST_CHANNEL_BY_TOKEN = new Map();
 export function getBroadcastChannelReference(databaseInstanceToken, databaseName, refObject) {
   var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
@@ -68,6 +48,20 @@ export function getBroadcastChannelReference(databaseInstanceToken, databaseName
 
   state.refs.add(refObject);
   return state.bc;
+}
+export function removeBroadcastChannelReference(databaseInstanceToken, refObject) {
+  var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
+
+  if (!state) {
+    return;
+  }
+
+  state.refs["delete"](refObject);
+
+  if (state.refs.size === 0) {
+    BROADCAST_CHANNEL_BY_TOKEN["delete"](databaseInstanceToken);
+    return state.bc.close();
+  }
 }
 export function addRxStorageMultiInstanceSupport(instanceCreationParams, instance,
 /**

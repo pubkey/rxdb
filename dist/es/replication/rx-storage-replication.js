@@ -230,41 +230,27 @@ export var cancelRxStorageReplication = function cancelRxStorageReplication(repl
   }
 };
 export var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state) {
-  return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
-    var _exit = false;
-    return _for(function () {
-      return !_exit;
-    }, void 0, function () {
-      var _state$streamQueue = state.streamQueue,
-          down = _state$streamQueue.down,
-          up = _state$streamQueue.up;
-      return Promise.resolve(Promise.all([up, down])).then(function () {
-        if (down === state.streamQueue.down && up === state.streamQueue.up) {
-          _exit = true;
-        }
+  try {
+    return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
+      var _exit = false;
+      return _for(function () {
+        return !_exit;
+      }, void 0, function () {
+        var _state$streamQueue = state.streamQueue,
+            down = _state$streamQueue.down,
+            up = _state$streamQueue.up;
+        return Promise.resolve(Promise.all([up, down])).then(function () {
+          if (down === state.streamQueue.down && up === state.streamQueue.up) {
+            _exit = true;
+          }
+        });
+        /**
+         * If the Promises have not been reasigned
+         * after awaiting them, we know that the replication
+         * is in idle state at this point in time.
+         */
       });
-      /**
-       * If the Promises have not been reasigned
-       * after awaiting them, we know that the replication
-       * is in idle state at this point in time.
-       */
     });
-  });
-};
-export var awaitRxStorageReplicationInSync = function awaitRxStorageReplicationInSync(replicationState) {
-  try {
-    return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-export var awaitRxStorageReplicationFirstInSync = function awaitRxStorageReplicationFirstInSync(state) {
-  try {
-    return Promise.resolve(firstValueFrom(combineLatest([state.firstSyncDone.down.pipe(filter(function (v) {
-      return !!v;
-    })), state.firstSyncDone.up.pipe(filter(function (v) {
-      return !!v;
-    }))])));
   } catch (e) {
     return Promise.reject(e);
   }
@@ -318,6 +304,16 @@ export function replicateRxStorageInstance(input) {
   startReplicationDownstream(state);
   startReplicationUpstream(state);
   return state;
+}
+export function awaitRxStorageReplicationFirstInSync(state) {
+  return firstValueFrom(combineLatest([state.firstSyncDone.down.pipe(filter(function (v) {
+    return !!v;
+  })), state.firstSyncDone.up.pipe(filter(function (v) {
+    return !!v;
+  }))]));
+}
+export function awaitRxStorageReplicationInSync(replicationState) {
+  return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
 }
 export function rxStorageInstanceToReplicationHandler(instance, conflictHandler) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);

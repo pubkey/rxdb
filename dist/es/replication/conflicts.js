@@ -45,24 +45,20 @@ export var resolveConflictError = function resolveConflictError(conflictHandler,
   }
 };
 export var defaultConflictHandler = function defaultConflictHandler(i, _context) {
-  try {
-    if (deepEqual(i.newDocumentState, i.realMasterState)) {
-      return Promise.resolve({
-        isEqual: true
-      });
-    }
-    /**
-     * The default conflict handler will always
-     * drop the fork state and use the master state instead.
-     */
-
-
+  if (deepEqual(i.newDocumentState, i.realMasterState)) {
     return Promise.resolve({
-      isEqual: false,
-      documentData: i.realMasterState
+      isEqual: true
     });
-  } catch (e) {
-    return Promise.reject(e);
   }
+  /**
+   * The default conflict handler will always
+   * drop the fork state and use the master state instead.
+   */
+
+
+  return Promise.resolve({
+    isEqual: false,
+    documentData: i.realMasterState
+  });
 };
 //# sourceMappingURL=conflicts.js.map

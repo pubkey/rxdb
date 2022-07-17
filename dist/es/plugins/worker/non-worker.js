@@ -109,13 +109,7 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
   };
 
   _proto2.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
-    try {
-      var _this4 = this;
-
-      return Promise.resolve(_this4.internals.worker.getChangedDocumentsSince(_this4.internals.instanceId, limit, checkpoint));
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    return this.internals.worker.getChangedDocumentsSince(this.internals.instanceId, limit, checkpoint);
   };
 
   _proto2.changeStream = function changeStream() {
@@ -128,20 +122,20 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
 
   _proto2.close = function close() {
     try {
-      var _this6 = this;
+      var _this4 = this;
 
-      if (_this6.closed) {
+      if (_this4.closed) {
         return Promise.resolve();
       }
 
-      _this6.closed = true;
+      _this4.closed = true;
 
-      _this6.subs.forEach(function (sub) {
+      _this4.subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
 
-      return Promise.resolve(_this6.internals.worker.close(_this6.internals.instanceId)).then(function () {
-        return Promise.resolve(removeWorkerRef(_this6)).then(function () {});
+      return Promise.resolve(_this4.internals.worker.close(_this4.internals.instanceId)).then(function () {
+        return Promise.resolve(removeWorkerRef(_this4)).then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);
@@ -150,11 +144,11 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
 
   _proto2.remove = function remove() {
     try {
-      var _this8 = this;
+      var _this6 = this;
 
-      return Promise.resolve(_this8.internals.worker.remove(_this8.internals.instanceId)).then(function () {
-        _this8.closed = true;
-        return Promise.resolve(removeWorkerRef(_this8)).then(function () {});
+      return Promise.resolve(_this6.internals.worker.remove(_this6.internals.instanceId)).then(function () {
+        _this6.closed = true;
+        return Promise.resolve(removeWorkerRef(_this6)).then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);

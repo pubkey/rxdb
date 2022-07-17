@@ -10,8 +10,8 @@ export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInst
     readonly options: Readonly<RxStorageMemoryInstanceCreationOptions>;
     readonly settings: RxStorageMemorySettings;
     readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
-    private changes$;
     closed: boolean;
+    private changes$;
     constructor(storage: RxStorageMemory, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: MemoryStorageInternals<RxDocType>, options: Readonly<RxStorageMemoryInstanceCreationOptions>, settings: RxStorageMemorySettings);
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(docIds: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>>;

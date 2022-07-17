@@ -6,17 +6,6 @@ import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { getNewestOfDocumentStates, getUniqueDeterministicEventKey } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
-export var createDexieStorageInstance = function createDexieStorageInstance(storage, params, settings) {
-  try {
-    var _internals = getDexieDbWithTables(params.databaseName, params.collectionName, settings, params.schema);
-
-    var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, _internals, params.options, settings);
-    addRxStorageMultiInstanceSupport(params, instance);
-    return Promise.resolve(instance);
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
 var instanceId = now();
 export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   function RxStorageInstanceDexie(storage, databaseName, collectionName, schema, internals, options, settings) {
@@ -383,19 +372,11 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   };
 
   _proto.close = function close() {
-    try {
-      var _this12 = this;
-
-      ensureNotClosed(_this12);
-      _this12.closed = true;
-
-      _this12.changes$.complete();
-
-      closeDexieDb(_this12.internals);
-      return Promise.resolve();
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    ensureNotClosed(this);
+    this.closed = true;
+    this.changes$.complete();
+    closeDexieDb(this.internals);
+    return PROMISE_RESOLVE_VOID;
   };
 
   _proto.conflictResultionTasks = function conflictResultionTasks() {
@@ -408,6 +389,12 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
 
   return RxStorageInstanceDexie;
 }();
+export function createDexieStorageInstance(storage, params, settings) {
+  var internals = getDexieDbWithTables(params.databaseName, params.collectionName, settings, params.schema);
+  var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
+  addRxStorageMultiInstanceSupport(params, instance);
+  return Promise.resolve(instance);
+}
 
 function ensureNotClosed(instance) {
   if (instance.closed) {

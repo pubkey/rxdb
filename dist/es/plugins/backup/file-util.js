@@ -5,53 +5,6 @@ import { now } from '../../util';
  * ensure that the given folder exists
  */
 
-export var setMeta = function setMeta(options, meta) {
-  try {
-    var loc = metaFileLocation(options);
-    return writeJsonToFile(loc, meta);
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-export var getMeta = function getMeta(options) {
-  try {
-    var loc = metaFileLocation(options);
-    return Promise.resolve(new Promise(function (res, rej) {
-      fs.readFile(loc, 'utf-8', function (err, data) {
-        if (err) {
-          rej(err);
-        } else {
-          var metaContent = JSON.parse(data);
-          res(metaContent);
-        }
-      });
-    }));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-export var writeJsonToFile = function writeJsonToFile(location, data) {
-  try {
-    return writeToFile(location, JSON.stringify(data));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-export var writeToFile = function writeToFile(location, data) {
-  try {
-    return Promise.resolve(new Promise(function (res, rej) {
-      fs.writeFile(location, data, 'utf-8', function (err) {
-        if (err) {
-          rej(err);
-        } else {
-          res();
-        }
-      });
-    }));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
 export function ensureFolderExists(folderPath) {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, {
@@ -93,8 +46,39 @@ export function prepareFolders(database, options) {
     ensureFolderExists(path.join(options.directory, collectionName));
   });
 }
+export function writeToFile(location, data) {
+  return new Promise(function (res, rej) {
+    fs.writeFile(location, data, 'utf-8', function (err) {
+      if (err) {
+        rej(err);
+      } else {
+        res();
+      }
+    });
+  });
+}
+export function writeJsonToFile(location, data) {
+  return writeToFile(location, JSON.stringify(data));
+}
 export function metaFileLocation(options) {
   return path.join(options.directory, 'backup_meta.json');
+}
+export function getMeta(options) {
+  var loc = metaFileLocation(options);
+  return new Promise(function (res, rej) {
+    fs.readFile(loc, 'utf-8', function (err, data) {
+      if (err) {
+        rej(err);
+      } else {
+        var metaContent = JSON.parse(data);
+        res(metaContent);
+      }
+    });
+  });
+}
+export function setMeta(options, meta) {
+  var loc = metaFileLocation(options);
+  return writeJsonToFile(loc, meta);
 }
 export function documentFolder(options, docId) {
   return path.join(options.directory, docId);

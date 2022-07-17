@@ -3,7 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createMemoryStorageInstance = exports.RxStorageInstanceMemory = void 0;
+exports.RxStorageInstanceMemory = void 0;
+exports.createMemoryStorageInstance = createMemoryStorageInstance;
 
 var _rxjs = require("rxjs");
 
@@ -25,40 +26,10 @@ var _memoryHelper = require("./memory-helper");
 
 var _memoryIndexes = require("./memory-indexes");
 
-var createMemoryStorageInstance = function createMemoryStorageInstance(storage, params, settings) {
-  try {
-    var collectionKey = (0, _memoryHelper.getMemoryCollectionKey)(params.databaseName, params.collectionName);
-
-    var _internals = storage.collectionStates.get(collectionKey);
-
-    if (!_internals) {
-      _internals = {
-        removed: false,
-        refCount: 1,
-        documents: new Map(),
-        attachments: params.schema.attachments ? new Map() : undefined,
-        byIndex: {},
-        conflictResultionTasks$: new _rxjs.Subject()
-      };
-      (0, _memoryIndexes.addIndexesToInternalsState)(_internals, params.schema);
-      storage.collectionStates.set(collectionKey, _internals);
-    } else {
-      _internals.refCount = _internals.refCount + 1;
-    }
-
-    var instance = new RxStorageInstanceMemory(storage, params.databaseName, params.collectionName, params.schema, _internals, params.options, settings);
-    return Promise.resolve(instance);
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports.createMemoryStorageInstance = createMemoryStorageInstance;
-
 var RxStorageInstanceMemory = /*#__PURE__*/function () {
   function RxStorageInstanceMemory(storage, databaseName, collectionName, schema, internals, options, settings) {
-    this.changes$ = new _rxjs.Subject();
     this.closed = false;
+    this.changes$ = new _rxjs.Subject();
     this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
@@ -126,153 +97,131 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
   };
 
   _proto.findDocumentsById = function findDocumentsById(docIds, withDeleted) {
-    try {
-      var _this3 = this;
+    var _this2 = this;
 
-      var ret = {};
-      docIds.forEach(function (docId) {
-        var docInDb = _this3.internals.documents.get(docId);
+    var ret = {};
+    docIds.forEach(function (docId) {
+      var docInDb = _this2.internals.documents.get(docId);
 
-        if (docInDb && (!docInDb._deleted || withDeleted)) {
-          ret[docId] = docInDb;
-        }
-      });
-      return Promise.resolve(ret);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+      if (docInDb && (!docInDb._deleted || withDeleted)) {
+        ret[docId] = docInDb;
+      }
+    });
+    return Promise.resolve(ret);
   };
 
   _proto.query = function query(preparedQuery) {
-    try {
-      var _this5 = this;
+    var queryPlan = preparedQuery.queryPlan;
+    var query = preparedQuery.query;
+    var skip = query.skip ? query.skip : 0;
+    var limit = query.limit ? query.limit : Infinity;
+    var skipPlusLimit = skip + limit;
 
-      var queryPlan = preparedQuery.queryPlan;
-      var query = preparedQuery.query;
-      var skip = query.skip ? query.skip : 0;
-      var limit = query.limit ? query.limit : Infinity;
-      var skipPlusLimit = skip + limit;
+    var queryMatcher = _rxStorageDexie.RxStorageDexieStatics.getQueryMatcher(this.schema, preparedQuery);
 
-      var queryMatcher = _rxStorageDexie.RxStorageDexieStatics.getQueryMatcher(_this5.schema, preparedQuery);
+    var sortComparator = _rxStorageDexie.RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
 
-      var sortComparator = _rxStorageDexie.RxStorageDexieStatics.getSortComparator(_this5.schema, preparedQuery);
+    var queryPlanFields = queryPlan.index;
+    var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
+    var index = ['_deleted'].concat(queryPlanFields);
+    var lowerBound = queryPlan.startKeys;
+    lowerBound = [false].concat(lowerBound);
+    var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, index, lowerBound);
+    var upperBound = queryPlan.endKeys;
+    upperBound = [false].concat(upperBound);
+    var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(this.schema, index, upperBound);
+    var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
+    var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+    var indexOfLower = (0, _binarySearchBounds.boundGE)(docsWithIndex, {
+      indexString: lowerBoundString
+    }, _memoryHelper.compareDocsWithIndex);
+    var rows = [];
+    var done = false;
 
-      var queryPlanFields = queryPlan.index;
-      var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
-      var index = ['_deleted'].concat(queryPlanFields);
-      var lowerBound = queryPlan.startKeys;
-      lowerBound = [false].concat(lowerBound);
-      var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(_this5.schema, index, lowerBound);
-      var upperBound = queryPlan.endKeys;
-      upperBound = [false].concat(upperBound);
-      var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(_this5.schema, index, upperBound);
-      var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
-      var docsWithIndex = _this5.internals.byIndex[indexName].docsWithIndex;
-      var indexOfLower = (0, _binarySearchBounds.boundGE)(docsWithIndex, {
-        indexString: lowerBoundString
-      }, _memoryHelper.compareDocsWithIndex);
-      var rows = [];
-      var done = false;
+    while (!done) {
+      var currentDoc = docsWithIndex[indexOfLower];
 
-      while (!done) {
-        var currentDoc = docsWithIndex[indexOfLower];
-
-        if (!currentDoc || currentDoc.indexString > upperBoundString) {
-          break;
-        }
-
-        if (queryMatcher(currentDoc.doc)) {
-          rows.push(currentDoc.doc);
-        }
-
-        if (rows.length >= skipPlusLimit && !mustManuallyResort || indexOfLower >= docsWithIndex.length) {
-          done = true;
-        }
-
-        indexOfLower++;
+      if (!currentDoc || currentDoc.indexString > upperBoundString) {
+        break;
       }
 
-      if (mustManuallyResort) {
-        rows = rows.sort(sortComparator);
-      } // apply skip and limit boundaries.
+      if (queryMatcher(currentDoc.doc)) {
+        rows.push(currentDoc.doc);
+      }
 
+      if (rows.length >= skipPlusLimit && !mustManuallyResort || indexOfLower >= docsWithIndex.length) {
+        done = true;
+      }
 
-      rows = rows.slice(skip, skipPlusLimit);
-      return Promise.resolve({
-        documents: rows
-      });
-    } catch (e) {
-      return Promise.reject(e);
+      indexOfLower++;
     }
+
+    if (mustManuallyResort) {
+      rows = rows.sort(sortComparator);
+    } // apply skip and limit boundaries.
+
+
+    rows = rows.slice(skip, skipPlusLimit);
+    return Promise.resolve({
+      documents: rows
+    });
   };
 
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
-    try {
-      var _this7 = this;
+    var sinceLwt = checkpoint ? checkpoint.lwt : _util.RX_META_LWT_MINIMUM;
+    var sinceId = checkpoint ? checkpoint.id : '';
+    var index = ['_meta.lwt', this.primaryPath];
+    var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
+    var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, ['_meta.lwt', this.primaryPath], [sinceLwt, sinceId]);
+    var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+    var indexOfLower = (0, _binarySearchBounds.boundGT)(docsWithIndex, {
+      indexString: lowerBoundString
+    }, _memoryHelper.compareDocsWithIndex); // TODO use array.slice() so we do not have to iterate here
 
-      var sinceLwt = checkpoint ? checkpoint.lwt : _util.RX_META_LWT_MINIMUM;
-      var sinceId = checkpoint ? checkpoint.id : '';
-      var index = ['_meta.lwt', _this7.primaryPath];
-      var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
-      var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(_this7.schema, ['_meta.lwt', _this7.primaryPath], [sinceLwt, sinceId]);
-      var docsWithIndex = _this7.internals.byIndex[indexName].docsWithIndex;
-      var indexOfLower = (0, _binarySearchBounds.boundGT)(docsWithIndex, {
-        indexString: lowerBoundString
-      }, _memoryHelper.compareDocsWithIndex); // TODO use array.slice() so we do not have to iterate here
+    var rows = [];
 
-      var rows = [];
-
-      while (rows.length < limit && indexOfLower < docsWithIndex.length) {
-        var currentDoc = docsWithIndex[indexOfLower];
-        rows.push(currentDoc.doc);
-        indexOfLower++;
-      }
-
-      var lastDoc = (0, _util.lastOfArray)(rows);
-      return Promise.resolve({
-        documents: rows,
-        checkpoint: lastDoc ? {
-          id: lastDoc[_this7.primaryPath],
-          lwt: lastDoc._meta.lwt
-        } : checkpoint ? checkpoint : {
-          id: '',
-          lwt: 0
-        }
-      });
-    } catch (e) {
-      return Promise.reject(e);
+    while (rows.length < limit && indexOfLower < docsWithIndex.length) {
+      var currentDoc = docsWithIndex[indexOfLower];
+      rows.push(currentDoc.doc);
+      indexOfLower++;
     }
+
+    var lastDoc = (0, _util.lastOfArray)(rows);
+    return Promise.resolve({
+      documents: rows,
+      checkpoint: lastDoc ? {
+        id: lastDoc[this.primaryPath],
+        lwt: lastDoc._meta.lwt
+      } : checkpoint ? checkpoint : {
+        id: '',
+        lwt: 0
+      }
+    });
   };
 
   _proto.cleanup = function cleanup(minimumDeletedTime) {
-    try {
-      var _this9 = this;
+    var maxDeletionTime = (0, _util.now)() - minimumDeletedTime;
+    var index = ['_deleted', '_meta.lwt', this.primaryPath];
+    var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
+    var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+    var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, index, [true, 0, '']);
+    var indexOfLower = (0, _binarySearchBounds.boundGT)(docsWithIndex, {
+      indexString: lowerBoundString
+    }, _memoryHelper.compareDocsWithIndex);
+    var done = false;
 
-      var maxDeletionTime = (0, _util.now)() - minimumDeletedTime;
-      var index = ['_deleted', '_meta.lwt', _this9.primaryPath];
-      var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
-      var docsWithIndex = _this9.internals.byIndex[indexName].docsWithIndex;
-      var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(_this9.schema, index, [true, 0, '']);
-      var indexOfLower = (0, _binarySearchBounds.boundGT)(docsWithIndex, {
-        indexString: lowerBoundString
-      }, _memoryHelper.compareDocsWithIndex);
-      var done = false;
+    while (!done) {
+      var currentDoc = docsWithIndex[indexOfLower];
 
-      while (!done) {
-        var currentDoc = docsWithIndex[indexOfLower];
-
-        if (!currentDoc || currentDoc.doc._meta.lwt > maxDeletionTime) {
-          done = true;
-        } else {
-          (0, _memoryHelper.removeDocFromState)(_this9.primaryPath, _this9.schema, _this9.internals, currentDoc.doc);
-          indexOfLower++;
-        }
+      if (!currentDoc || currentDoc.doc._meta.lwt > maxDeletionTime) {
+        done = true;
+      } else {
+        (0, _memoryHelper.removeDocFromState)(this.primaryPath, this.schema, this.internals, currentDoc.doc);
+        indexOfLower++;
       }
-
-      return Promise.resolve(true);
-    } catch (e) {
-      return Promise.reject(e);
     }
+
+    return _util.PROMISE_RESOLVE_TRUE;
   };
 
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
@@ -288,44 +237,36 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
 
   _proto.remove = function remove() {
     try {
-      var _this11 = this;
+      var _this4 = this;
 
-      (0, _memoryHelper.ensureNotRemoved)(_this11);
-      _this11.internals.removed = true;
+      (0, _memoryHelper.ensureNotRemoved)(_this4);
+      _this4.internals.removed = true;
 
-      _this11.storage.collectionStates["delete"]((0, _memoryHelper.getMemoryCollectionKey)(_this11.databaseName, _this11.collectionName));
+      _this4.storage.collectionStates["delete"]((0, _memoryHelper.getMemoryCollectionKey)(_this4.databaseName, _this4.collectionName));
 
-      return Promise.resolve(_this11.close()).then(function () {});
+      return Promise.resolve(_this4.close()).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }
   };
 
   _proto.close = function close() {
-    try {
-      var _this13 = this;
-
-      if (_this13.closed) {
-        throw (0, _rxError.newRxError)('SNH', {
-          database: _this13.databaseName,
-          collection: _this13.collectionName
-        });
-      }
-
-      _this13.closed = true;
-
-      _this13.changes$.complete();
-
-      _this13.internals.refCount = _this13.internals.refCount - 1;
-
-      if (_this13.internals.refCount === 0) {
-        _this13.storage.collectionStates["delete"]((0, _memoryHelper.getMemoryCollectionKey)(_this13.databaseName, _this13.collectionName));
-      }
-
-      return Promise.resolve();
-    } catch (e) {
-      return Promise.reject(e);
+    if (this.closed) {
+      return Promise.reject((0, _rxError.newRxError)('SNH', {
+        database: this.databaseName,
+        collection: this.collectionName
+      }));
     }
+
+    this.closed = true;
+    this.changes$.complete();
+    this.internals.refCount = this.internals.refCount - 1;
+
+    if (this.internals.refCount === 0) {
+      this.storage.collectionStates["delete"]((0, _memoryHelper.getMemoryCollectionKey)(this.databaseName, this.collectionName));
+    }
+
+    return _util.PROMISE_RESOLVE_VOID;
   };
 
   _proto.conflictResultionTasks = function conflictResultionTasks() {
@@ -340,4 +281,27 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
 }();
 
 exports.RxStorageInstanceMemory = RxStorageInstanceMemory;
+
+function createMemoryStorageInstance(storage, params, settings) {
+  var collectionKey = (0, _memoryHelper.getMemoryCollectionKey)(params.databaseName, params.collectionName);
+  var internals = storage.collectionStates.get(collectionKey);
+
+  if (!internals) {
+    internals = {
+      removed: false,
+      refCount: 1,
+      documents: new Map(),
+      attachments: params.schema.attachments ? new Map() : undefined,
+      byIndex: {},
+      conflictResultionTasks$: new _rxjs.Subject()
+    };
+    (0, _memoryIndexes.addIndexesToInternalsState)(internals, params.schema);
+    storage.collectionStates.set(collectionKey, internals);
+  } else {
+    internals.refCount = internals.refCount + 1;
+  }
+
+  var instance = new RxStorageInstanceMemory(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
+  return Promise.resolve(instance);
+}
 //# sourceMappingURL=rx-storage-instance-memory.js.map

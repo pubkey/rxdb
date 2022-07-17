@@ -3,7 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.cancelRxStorageReplication = exports.awaitRxStorageReplicationInSync = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = void 0;
+exports.awaitRxStorageReplicationFirstInSync = awaitRxStorageReplicationFirstInSync;
+exports.awaitRxStorageReplicationIdle = void 0;
+exports.awaitRxStorageReplicationInSync = awaitRxStorageReplicationInSync;
+exports.cancelRxStorageReplication = void 0;
 exports.replicateRxStorageInstance = replicateRxStorageInstance;
 exports.rxStorageInstanceToReplicationHandler = rxStorageInstanceToReplicationHandler;
 
@@ -248,53 +251,33 @@ var cancelRxStorageReplication = function cancelRxStorageReplication(replication
 exports.cancelRxStorageReplication = cancelRxStorageReplication;
 
 var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state) {
-  return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
-    var _exit = false;
-    return _for(function () {
-      return !_exit;
-    }, void 0, function () {
-      var _state$streamQueue = state.streamQueue,
-          down = _state$streamQueue.down,
-          up = _state$streamQueue.up;
-      return Promise.resolve(Promise.all([up, down])).then(function () {
-        if (down === state.streamQueue.down && up === state.streamQueue.up) {
-          _exit = true;
-        }
+  try {
+    return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
+      var _exit = false;
+      return _for(function () {
+        return !_exit;
+      }, void 0, function () {
+        var _state$streamQueue = state.streamQueue,
+            down = _state$streamQueue.down,
+            up = _state$streamQueue.up;
+        return Promise.resolve(Promise.all([up, down])).then(function () {
+          if (down === state.streamQueue.down && up === state.streamQueue.up) {
+            _exit = true;
+          }
+        });
+        /**
+         * If the Promises have not been reasigned
+         * after awaiting them, we know that the replication
+         * is in idle state at this point in time.
+         */
       });
-      /**
-       * If the Promises have not been reasigned
-       * after awaiting them, we know that the replication
-       * is in idle state at this point in time.
-       */
     });
-  });
+  } catch (e) {
+    return Promise.reject(e);
+  }
 };
 
 exports.awaitRxStorageReplicationIdle = awaitRxStorageReplicationIdle;
-
-var awaitRxStorageReplicationInSync = function awaitRxStorageReplicationInSync(replicationState) {
-  try {
-    return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports.awaitRxStorageReplicationInSync = awaitRxStorageReplicationInSync;
-
-var awaitRxStorageReplicationFirstInSync = function awaitRxStorageReplicationFirstInSync(state) {
-  try {
-    return Promise.resolve((0, _rxjs.firstValueFrom)((0, _rxjs.combineLatest)([state.firstSyncDone.down.pipe((0, _rxjs.filter)(function (v) {
-      return !!v;
-    })), state.firstSyncDone.up.pipe((0, _rxjs.filter)(function (v) {
-      return !!v;
-    }))])));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports.awaitRxStorageReplicationFirstInSync = awaitRxStorageReplicationFirstInSync;
 
 function replicateRxStorageInstance(input) {
   var checkpointKey = (0, _checkpoint.getCheckpointKey)(input);
@@ -345,6 +328,18 @@ function replicateRxStorageInstance(input) {
   (0, _downstream.startReplicationDownstream)(state);
   (0, _upstream.startReplicationUpstream)(state);
   return state;
+}
+
+function awaitRxStorageReplicationFirstInSync(state) {
+  return (0, _rxjs.firstValueFrom)((0, _rxjs.combineLatest)([state.firstSyncDone.down.pipe((0, _rxjs.filter)(function (v) {
+    return !!v;
+  })), state.firstSyncDone.up.pipe((0, _rxjs.filter)(function (v) {
+    return !!v;
+  }))]));
+}
+
+function awaitRxStorageReplicationInSync(replicationState) {
+  return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
 }
 
 function rxStorageInstanceToReplicationHandler(instance, conflictHandler) {

@@ -1621,27 +1621,23 @@ function addCustomEventsPluginToPouch() {
    */
 
   var newBulkDocs = function newBulkDocs(body, options, callback) {
-    try {
-      var _this2 = this;
+    var _this = this;
 
-      var queue = BULK_DOC_RUN_QUEUE.get(_this2);
+    var queue = BULK_DOC_RUN_QUEUE.get(this);
 
-      if (!queue) {
-        queue = _util.PROMISE_RESOLVE_VOID;
-      }
-
-      queue = queue.then(function () {
-        try {
-          return Promise.resolve(newBulkDocsInner.bind(_this2)(body, options, callback));
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      });
-      BULK_DOC_RUN_QUEUE.set(_this2, queue);
-      return Promise.resolve(queue);
-    } catch (e) {
-      return Promise.reject(e);
+    if (!queue) {
+      queue = _util.PROMISE_RESOLVE_VOID;
     }
+
+    queue = queue.then(function () {
+      try {
+        return Promise.resolve(newBulkDocsInner.bind(_this)(body, options, callback));
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    });
+    BULK_DOC_RUN_QUEUE.set(this, queue);
+    return queue;
   };
 
   var newBulkDocsInner = function newBulkDocsInner(body, options, callback) {
@@ -1729,7 +1725,7 @@ function addCustomEventsPluginToPouch() {
           var heighestSequence = 0;
           var changesSub;
           var heighestSequencePromise = new Promise(function (res) {
-            changesSub = _this4.changes({
+            changesSub = _this3.changes({
               since: 'now',
               live: true,
               include_docs: true
@@ -1750,7 +1746,7 @@ function addCustomEventsPluginToPouch() {
               }
             });
           });
-          callReturn = oldBulkDocs.call(_this4, docs, deeperOptions, function (err, result) {
+          callReturn = oldBulkDocs.call(_this3, docs, deeperOptions, function (err, result) {
             if (err) {
               callback ? callback(err) : rej(err);
             } else {
@@ -1779,7 +1775,7 @@ function addCustomEventsPluginToPouch() {
                         startTime: startTime,
                         endTime: endTime
                       };
-                      eventsPromise = eventEmitDataToStorageEvents(_this4, '_id', emitData).then(function (events) {
+                      eventsPromise = eventEmitDataToStorageEvents(_this3, '_id', emitData).then(function (events) {
                         var eventBulk = {
                           id: (0, _util.randomCouchString)(10),
                           events: events,
@@ -1788,7 +1784,7 @@ function addCustomEventsPluginToPouch() {
                           },
                           context: options.custom ? options.custom.context : 'pouchdb-internal'
                         };
-                        var emitter = getCustomEventEmitterByPouch(_this4);
+                        var emitter = getCustomEventEmitterByPouch(_this3);
                         emitter.subject.next(eventBulk);
                       });
                     }
@@ -1830,7 +1826,7 @@ function addCustomEventsPluginToPouch() {
         return options.custom ? callPromise : callReturn;
       };
 
-      var _this4 = this;
+      var _this3 = this;
 
       var startTime = (0, _util.now)();
       var runId = i++;
@@ -1882,7 +1878,7 @@ function addCustomEventsPluginToPouch() {
 
       var _temp9 = function () {
         if (options.hasOwnProperty('new_edits') && options.new_edits === false) {
-          return Promise.resolve(_this4.bulkGet({
+          return Promise.resolve(_this3.bulkGet({
             docs: docs.map(function (doc) {
               return {
                 id: doc._id
@@ -1910,7 +1906,7 @@ function addCustomEventsPluginToPouch() {
 
             var _temp = function () {
               if (mustRefetchBecauseDeleted.length > 0) {
-                return Promise.resolve(_this4.allDocs({
+                return Promise.resolve(_this3.allDocs({
                   keys: mustRefetchBecauseDeleted,
                   include_docs: true,
                   conflicts: true
@@ -1922,7 +1918,7 @@ function addCustomEventsPluginToPouch() {
                       rev: row.value.rev
                     });
                   });
-                  return Promise.resolve(_this4.bulkGet({
+                  return Promise.resolve(_this3.bulkGet({
                     docs: idsWithRevs,
                     revs: true,
                     latest: true
@@ -3058,29 +3054,23 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
 
     var emittedEventBulkIds = new _obliviousSet.ObliviousSet(60 * 1000);
     var eventSub = emitter.subject.subscribe(function (eventBulk) {
-      try {
-        if (eventBulk.events.length === 0 || emittedEventBulkIds.has(eventBulk.id)) {
-          return Promise.resolve();
+      if (eventBulk.events.length === 0 || emittedEventBulkIds.has(eventBulk.id)) {
+        return;
+      }
+
+      emittedEventBulkIds.add(eventBulk.id); // rewrite primaryPath of all events
+
+      eventBulk.events.forEach(function (event) {
+        if (event.change.doc) {
+          event.change.doc = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this.primaryPath, event.change.doc);
         }
 
-        emittedEventBulkIds.add(eventBulk.id); // rewrite primaryPath of all events
+        if (event.change.previous) {
+          event.change.previous = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this.primaryPath, event.change.previous);
+        }
+      });
 
-        eventBulk.events.forEach(function (event) {
-          if (event.change.doc) {
-            event.change.doc = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this.primaryPath, event.change.doc);
-          }
-
-          if (event.change.previous) {
-            event.change.previous = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this.primaryPath, event.change.previous);
-          }
-        });
-
-        _this.changes$.next(eventBulk);
-
-        return Promise.resolve();
-      } catch (e) {
-        return Promise.reject(e);
-      }
+      _this.changes$.next(eventBulk);
     });
     this.subs.push(eventSub);
   }
@@ -3516,42 +3506,38 @@ var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
         return idx.name;
       }));
       return Promise.resolve(Promise.all(schema.indexes.map(function (indexMaybeArray) {
-        try {
-          var indexArray = (0, _util.isMaybeReadonlyArray)(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
-          /**
-           * replace primary key with _id
-           * because that is the enforced primary key on pouchdb.
-           */
+        var indexArray = (0, _util.isMaybeReadonlyArray)(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+        /**
+         * replace primary key with _id
+         * because that is the enforced primary key on pouchdb.
+         */
 
-          indexArray = indexArray.map(function (key) {
-            if (key === primaryKey) {
-              return '_id';
-            } else {
-              return key;
-            }
-          });
-          var indexName = (0, _pouchdbHelper.getPouchIndexDesignDocNameByIndex)(indexArray);
-
-          if (existingIndexes.has(indexName)) {
-            // index already exists
-            return Promise.resolve();
+        indexArray = indexArray.map(function (key) {
+          if (key === primaryKey) {
+            return '_id';
+          } else {
+            return key;
           }
-          /**
-           * TODO we might have even better performance by doing a pouch.bulkDocs()
-           * on index creation
-           */
+        });
+        var indexName = (0, _pouchdbHelper.getPouchIndexDesignDocNameByIndex)(indexArray);
 
-
-          return Promise.resolve(pouch.createIndex({
-            name: indexName,
-            ddoc: indexName,
-            index: {
-              fields: indexArray
-            }
-          }));
-        } catch (e) {
-          return Promise.reject(e);
+        if (existingIndexes.has(indexName)) {
+          // index already exists
+          return;
         }
+        /**
+         * TODO we might have even better performance by doing a pouch.bulkDocs()
+         * on index creation
+         */
+
+
+        return pouch.createIndex({
+          name: indexName,
+          ddoc: indexName,
+          index: {
+            fields: indexArray
+          }
+        });
       }))).then(function () {});
     });
   } catch (e) {
@@ -3578,39 +3564,33 @@ var RxStoragePouch = /*#__PURE__*/function () {
   var _proto = RxStoragePouch.prototype;
 
   _proto.createPouch = function createPouch(location, options) {
-    try {
-      var _this2 = this;
+    var pouchDbParameters = {
+      location: location,
+      adapter: (0, _util.adapterObject)(this.adapter),
+      settings: options
+    };
+    var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, this.pouchSettings, pouchDbParameters.settings);
+    var pouch = new _pouchDb.PouchDB(pouchDbParameters.location, pouchDBOptions);
+    /**
+     * In the past we found some errors where the PouchDB is not directly useable
+     * so we we had to call .info() first to ensure it can be used.
+     * I commented this out for now to get faster database/collection creation.
+     * We might have to add this again if something fails.
+     */
+    // await pouch.info();
 
-      var pouchDbParameters = {
-        location: location,
-        adapter: (0, _util.adapterObject)(_this2.adapter),
-        settings: options
-      };
-      var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, _this2.pouchSettings, pouchDbParameters.settings);
-      var pouch = new _pouchDb.PouchDB(pouchDbParameters.location, pouchDBOptions);
-      /**
-       * In the past we found some errors where the PouchDB is not directly useable
-       * so we we had to call .info() first to ensure it can be used.
-       * I commented this out for now to get faster database/collection creation.
-       * We might have to add this again if something fails.
-       */
-      // await pouch.info();
-
-      return Promise.resolve(pouch);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    return Promise.resolve(pouch);
   };
 
   _proto.createStorageInstance = function createStorageInstance(params) {
     try {
-      var _this4 = this;
+      var _this2 = this;
 
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
-      return Promise.resolve(_this4.createPouch(pouchLocation, params.options)).then(function (pouch) {
+      return Promise.resolve(_this2.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
           var pouchInstanceId = (0, _pouchdbHelper.openPouchId)(params.databaseInstanceToken, params.databaseName, params.collectionName, params.schema.version);
-          var instance = new _rxStorageInstancePouch.RxStorageInstancePouch(_this4, params.databaseName, params.collectionName, params.schema, {
+          var instance = new _rxStorageInstancePouch.RxStorageInstancePouch(_this2, params.databaseName, params.collectionName, params.schema, {
             pouch: pouch,
             pouchInstanceId: pouchInstanceId
           }, params.options);
@@ -4428,25 +4408,21 @@ var resolveConflictError = function resolveConflictError(conflictHandler, input,
 exports.resolveConflictError = resolveConflictError;
 
 var defaultConflictHandler = function defaultConflictHandler(i, _context) {
-  try {
-    if ((0, _fastDeepEqual["default"])(i.newDocumentState, i.realMasterState)) {
-      return Promise.resolve({
-        isEqual: true
-      });
-    }
-    /**
-     * The default conflict handler will always
-     * drop the fork state and use the master state instead.
-     */
-
-
+  if ((0, _fastDeepEqual["default"])(i.newDocumentState, i.realMasterState)) {
     return Promise.resolve({
-      isEqual: false,
-      documentData: i.realMasterState
+      isEqual: true
     });
-  } catch (e) {
-    return Promise.reject(e);
   }
+  /**
+   * The default conflict handler will always
+   * drop the fork state and use the master state instead.
+   */
+
+
+  return Promise.resolve({
+    isEqual: false,
+    documentData: i.realMasterState
+  });
 };
 
 exports.defaultConflictHandler = defaultConflictHandler;
@@ -5231,7 +5207,10 @@ function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict)
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.cancelRxStorageReplication = exports.awaitRxStorageReplicationInSync = exports.awaitRxStorageReplicationIdle = exports.awaitRxStorageReplicationFirstInSync = void 0;
+exports.awaitRxStorageReplicationFirstInSync = awaitRxStorageReplicationFirstInSync;
+exports.awaitRxStorageReplicationIdle = void 0;
+exports.awaitRxStorageReplicationInSync = awaitRxStorageReplicationInSync;
+exports.cancelRxStorageReplication = void 0;
 exports.replicateRxStorageInstance = replicateRxStorageInstance;
 exports.rxStorageInstanceToReplicationHandler = rxStorageInstanceToReplicationHandler;
 
@@ -5476,53 +5455,33 @@ var cancelRxStorageReplication = function cancelRxStorageReplication(replication
 exports.cancelRxStorageReplication = cancelRxStorageReplication;
 
 var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state) {
-  return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
-    var _exit = false;
-    return _for(function () {
-      return !_exit;
-    }, void 0, function () {
-      var _state$streamQueue = state.streamQueue,
-          down = _state$streamQueue.down,
-          up = _state$streamQueue.up;
-      return Promise.resolve(Promise.all([up, down])).then(function () {
-        if (down === state.streamQueue.down && up === state.streamQueue.up) {
-          _exit = true;
-        }
+  try {
+    return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
+      var _exit = false;
+      return _for(function () {
+        return !_exit;
+      }, void 0, function () {
+        var _state$streamQueue = state.streamQueue,
+            down = _state$streamQueue.down,
+            up = _state$streamQueue.up;
+        return Promise.resolve(Promise.all([up, down])).then(function () {
+          if (down === state.streamQueue.down && up === state.streamQueue.up) {
+            _exit = true;
+          }
+        });
+        /**
+         * If the Promises have not been reasigned
+         * after awaiting them, we know that the replication
+         * is in idle state at this point in time.
+         */
       });
-      /**
-       * If the Promises have not been reasigned
-       * after awaiting them, we know that the replication
-       * is in idle state at this point in time.
-       */
     });
-  });
+  } catch (e) {
+    return Promise.reject(e);
+  }
 };
 
 exports.awaitRxStorageReplicationIdle = awaitRxStorageReplicationIdle;
-
-var awaitRxStorageReplicationInSync = function awaitRxStorageReplicationInSync(replicationState) {
-  try {
-    return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports.awaitRxStorageReplicationInSync = awaitRxStorageReplicationInSync;
-
-var awaitRxStorageReplicationFirstInSync = function awaitRxStorageReplicationFirstInSync(state) {
-  try {
-    return Promise.resolve((0, _rxjs.firstValueFrom)((0, _rxjs.combineLatest)([state.firstSyncDone.down.pipe((0, _rxjs.filter)(function (v) {
-      return !!v;
-    })), state.firstSyncDone.up.pipe((0, _rxjs.filter)(function (v) {
-      return !!v;
-    }))])));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports.awaitRxStorageReplicationFirstInSync = awaitRxStorageReplicationFirstInSync;
 
 function replicateRxStorageInstance(input) {
   var checkpointKey = (0, _checkpoint.getCheckpointKey)(input);
@@ -5573,6 +5532,18 @@ function replicateRxStorageInstance(input) {
   (0, _downstream.startReplicationDownstream)(state);
   (0, _upstream.startReplicationUpstream)(state);
   return state;
+}
+
+function awaitRxStorageReplicationFirstInSync(state) {
+  return (0, _rxjs.firstValueFrom)((0, _rxjs.combineLatest)([state.firstSyncDone.down.pipe((0, _rxjs.filter)(function (v) {
+    return !!v;
+  })), state.firstSyncDone.up.pipe((0, _rxjs.filter)(function (v) {
+    return !!v;
+  }))]));
+}
+
+function awaitRxStorageReplicationInSync(replicationState) {
+  return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
 }
 
 function rxStorageInstanceToReplicationHandler(instance, conflictHandler) {
@@ -7193,58 +7164,64 @@ var RxCollectionBase = /*#__PURE__*/function () {
   };
 
   _proto.destroy = function destroy() {
-    try {
-      var _this17 = this;
+    var _this16 = this;
 
-      if (_this17.destroyed) {
-        return Promise.resolve(_util.PROMISE_RESOLVE_FALSE);
-      }
+    if (this.destroyed) {
+      return _util.PROMISE_RESOLVE_FALSE;
+    }
+    /**
+     * Settings destroyed = true
+     * must be the first thing to do,
+     * so for example the replication can directly stop
+     * instead of sending requests to a closed storage.
+     */
+
+
+    this.destroyed = true;
+
+    if (this._onDestroyCall) {
+      this._onDestroyCall();
+    }
+
+    Array.from(this.timeouts).forEach(function (timeout) {
+      return clearTimeout(timeout);
+    });
+
+    this._subs.forEach(function (sub) {
+      return sub.unsubscribe();
+    });
+
+    if (this._changeEventBuffer) {
+      this._changeEventBuffer.destroy();
+    }
+    /**
+     * First wait until the whole database is idle.
+     * This ensures that the storage does not get closed
+     * while some operation is running.
+     * It is important that we do not intercept a running call
+     * because it might lead to undefined behavior like when a doc is written
+     * but the change is not added to the changes collection.
+     */
+
+
+    return this.database.requestIdlePromise().then(function () {
+      return _this16.storageInstance.close();
+    }).then(function () {
       /**
-       * Settings destroyed = true
-       * must be the first thing to do,
-       * so for example the replication can directly stop
-       * instead of sending requests to a closed storage.
+       * Unsubscribing must be done AFTER the storageInstance.close()
+       * Because the conflict handling is part of the subscriptions and
+       * otherwise there might be open conflicts to be resolved which
+       * will then stuck and never resolve.
        */
-
-
-      _this17.destroyed = true;
-
-      if (_this17._onDestroyCall) {
-        _this17._onDestroyCall();
-      }
-
-      Array.from(_this17.timeouts).forEach(function (timeout) {
-        return clearTimeout(timeout);
-      });
-
-      _this17._subs.forEach(function (sub) {
+      _this16._subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
 
-      if (_this17._changeEventBuffer) {
-        _this17._changeEventBuffer.destroy();
-      }
-      /**
-       * First wait until the whole database is idle.
-       * This ensures that the storage does not get closed
-       * while some operation is running.
-       * It is important that we do not intercept a running call
-       * because it might lead to undefined behavior like when a doc is written
-       * but the change is not added to the changes collection.
-       */
-
-
-      return Promise.resolve(_this17.database.requestIdlePromise().then(function () {
-        return _this17.storageInstance.close();
-      }).then(function () {
-        delete _this17.database.collections[_this17.name];
-        return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', _this17).then(function () {
-          return true;
-        });
-      }));
-    } catch (e) {
-      return Promise.reject(e);
-    }
+      delete _this16.database.collections[_this16.name];
+      return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', _this16).then(function () {
+        return true;
+      });
+    });
   }
   /**
    * remove all data of the collection
@@ -7279,11 +7256,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this18 = this;
+      var _this17 = this;
 
       if (!this._onDestroy) {
         this._onDestroy = new Promise(function (res) {
-          return _this18._onDestroyCall = res;
+          return _this17._onDestroyCall = res;
         });
       }
 
@@ -11541,7 +11518,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.BROADCAST_CHANNEL_BY_TOKEN = void 0;
 exports.addRxStorageMultiInstanceSupport = addRxStorageMultiInstanceSupport;
 exports.getBroadcastChannelReference = getBroadcastChannelReference;
-exports.removeBroadcastChannelReference = void 0;
+exports.removeBroadcastChannelReference = removeBroadcastChannelReference;
 
 var _rxjs = require("rxjs");
 
@@ -11564,28 +11541,6 @@ var _broadcastChannel = require("broadcast-channel");
  * Do not use this if the storage anyway broadcasts the events like when using MongoDB
  * or in the future W3C might introduce a way to listen to IndexedDB changes.
  */
-var removeBroadcastChannelReference = function removeBroadcastChannelReference(databaseInstanceToken, refObject) {
-  try {
-    var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
-
-    if (!state) {
-      return Promise.resolve();
-    }
-
-    state.refs["delete"](refObject);
-
-    if (state.refs.size === 0) {
-      BROADCAST_CHANNEL_BY_TOKEN["delete"](databaseInstanceToken);
-      return Promise.resolve(state.bc.close());
-    }
-
-    return Promise.resolve();
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports.removeBroadcastChannelReference = removeBroadcastChannelReference;
 
 /**
  * The broadcast-channel is reused by the databaseInstanceToken.
@@ -11620,6 +11575,21 @@ function getBroadcastChannelReference(databaseInstanceToken, databaseName, refOb
 
   state.refs.add(refObject);
   return state.bc;
+}
+
+function removeBroadcastChannelReference(databaseInstanceToken, refObject) {
+  var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
+
+  if (!state) {
+    return;
+  }
+
+  state.refs["delete"](refObject);
+
+  if (state.refs.size === 0) {
+    BROADCAST_CHANNEL_BY_TOKEN["delete"](databaseInstanceToken);
+    return state.bc.close();
+  }
 }
 
 function addRxStorageMultiInstanceSupport(instanceCreationParams, instance,

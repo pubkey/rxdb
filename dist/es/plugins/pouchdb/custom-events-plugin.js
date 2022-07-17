@@ -269,27 +269,23 @@ export function addCustomEventsPluginToPouch() {
    */
 
   var newBulkDocs = function newBulkDocs(body, options, callback) {
-    try {
-      var _this2 = this;
+    var _this = this;
 
-      var queue = BULK_DOC_RUN_QUEUE.get(_this2);
+    var queue = BULK_DOC_RUN_QUEUE.get(this);
 
-      if (!queue) {
-        queue = PROMISE_RESOLVE_VOID;
-      }
-
-      queue = queue.then(function () {
-        try {
-          return Promise.resolve(newBulkDocsInner.bind(_this2)(body, options, callback));
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      });
-      BULK_DOC_RUN_QUEUE.set(_this2, queue);
-      return Promise.resolve(queue);
-    } catch (e) {
-      return Promise.reject(e);
+    if (!queue) {
+      queue = PROMISE_RESOLVE_VOID;
     }
+
+    queue = queue.then(function () {
+      try {
+        return Promise.resolve(newBulkDocsInner.bind(_this)(body, options, callback));
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    });
+    BULK_DOC_RUN_QUEUE.set(this, queue);
+    return queue;
   };
 
   var newBulkDocsInner = function newBulkDocsInner(body, options, callback) {
@@ -377,7 +373,7 @@ export function addCustomEventsPluginToPouch() {
           var heighestSequence = 0;
           var changesSub;
           var heighestSequencePromise = new Promise(function (res) {
-            changesSub = _this4.changes({
+            changesSub = _this3.changes({
               since: 'now',
               live: true,
               include_docs: true
@@ -398,7 +394,7 @@ export function addCustomEventsPluginToPouch() {
               }
             });
           });
-          callReturn = oldBulkDocs.call(_this4, docs, deeperOptions, function (err, result) {
+          callReturn = oldBulkDocs.call(_this3, docs, deeperOptions, function (err, result) {
             if (err) {
               callback ? callback(err) : rej(err);
             } else {
@@ -427,7 +423,7 @@ export function addCustomEventsPluginToPouch() {
                         startTime: startTime,
                         endTime: endTime
                       };
-                      eventsPromise = eventEmitDataToStorageEvents(_this4, '_id', emitData).then(function (events) {
+                      eventsPromise = eventEmitDataToStorageEvents(_this3, '_id', emitData).then(function (events) {
                         var eventBulk = {
                           id: randomCouchString(10),
                           events: events,
@@ -436,7 +432,7 @@ export function addCustomEventsPluginToPouch() {
                           },
                           context: options.custom ? options.custom.context : 'pouchdb-internal'
                         };
-                        var emitter = getCustomEventEmitterByPouch(_this4);
+                        var emitter = getCustomEventEmitterByPouch(_this3);
                         emitter.subject.next(eventBulk);
                       });
                     }
@@ -478,7 +474,7 @@ export function addCustomEventsPluginToPouch() {
         return options.custom ? callPromise : callReturn;
       };
 
-      var _this4 = this;
+      var _this3 = this;
 
       var startTime = now();
       var runId = i++;
@@ -530,7 +526,7 @@ export function addCustomEventsPluginToPouch() {
 
       var _temp9 = function () {
         if (options.hasOwnProperty('new_edits') && options.new_edits === false) {
-          return Promise.resolve(_this4.bulkGet({
+          return Promise.resolve(_this3.bulkGet({
             docs: docs.map(function (doc) {
               return {
                 id: doc._id
@@ -558,7 +554,7 @@ export function addCustomEventsPluginToPouch() {
 
             var _temp = function () {
               if (mustRefetchBecauseDeleted.length > 0) {
-                return Promise.resolve(_this4.allDocs({
+                return Promise.resolve(_this3.allDocs({
                   keys: mustRefetchBecauseDeleted,
                   include_docs: true,
                   conflicts: true
@@ -570,7 +566,7 @@ export function addCustomEventsPluginToPouch() {
                       rev: row.value.rev
                     });
                   });
-                  return Promise.resolve(_this4.bulkGet({
+                  return Promise.resolve(_this3.bulkGet({
                     docs: idsWithRevs,
                     revs: true,
                     latest: true

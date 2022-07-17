@@ -234,29 +234,23 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
     var emittedEventBulkIds = new ObliviousSet(60 * 1000);
     var eventSub = emitter.subject.subscribe(function (eventBulk) {
-      try {
-        if (eventBulk.events.length === 0 || emittedEventBulkIds.has(eventBulk.id)) {
-          return Promise.resolve();
+      if (eventBulk.events.length === 0 || emittedEventBulkIds.has(eventBulk.id)) {
+        return;
+      }
+
+      emittedEventBulkIds.add(eventBulk.id); // rewrite primaryPath of all events
+
+      eventBulk.events.forEach(function (event) {
+        if (event.change.doc) {
+          event.change.doc = pouchSwapIdToPrimary(_this.primaryPath, event.change.doc);
         }
 
-        emittedEventBulkIds.add(eventBulk.id); // rewrite primaryPath of all events
+        if (event.change.previous) {
+          event.change.previous = pouchSwapIdToPrimary(_this.primaryPath, event.change.previous);
+        }
+      });
 
-        eventBulk.events.forEach(function (event) {
-          if (event.change.doc) {
-            event.change.doc = pouchSwapIdToPrimary(_this.primaryPath, event.change.doc);
-          }
-
-          if (event.change.previous) {
-            event.change.previous = pouchSwapIdToPrimary(_this.primaryPath, event.change.previous);
-          }
-        });
-
-        _this.changes$.next(eventBulk);
-
-        return Promise.resolve();
-      } catch (e) {
-        return Promise.reject(e);
-      }
+      _this.changes$.next(eventBulk);
     });
     this.subs.push(eventSub);
   }

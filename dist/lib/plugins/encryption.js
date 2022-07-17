@@ -231,38 +231,26 @@ var RxDBEncryptionPlugin = {
       }
     },
     preWriteAttachment: {
-      after: function (args) {
-        try {
-          var password = args.database.password;
-          var schema = args.schema;
+      after: function after(args) {
+        var password = args.database.password;
+        var schema = args.schema;
 
-          if (password && schema.attachments && schema.attachments.encrypted) {
-            var dataString = args.attachmentData.data;
-            var encrypted = encryptString(dataString, password);
-            args.attachmentData.data = encrypted;
-          }
-
-          return Promise.resolve();
-        } catch (e) {
-          return Promise.reject(e);
+        if (password && schema.attachments && schema.attachments.encrypted) {
+          var dataString = args.attachmentData.data;
+          var encrypted = encryptString(dataString, password);
+          args.attachmentData.data = encrypted;
         }
       }
     },
     postReadAttachment: {
-      after: function (args) {
-        try {
-          var password = args.database.password;
-          var schema = args.schema;
+      after: function after(args) {
+        var password = args.database.password;
+        var schema = args.schema;
 
-          if (password && schema.attachments && schema.attachments.encrypted) {
-            var dataString = args.plainData;
-            var decrypted = decryptString(dataString, password);
-            args.plainData = decrypted;
-          }
-
-          return Promise.resolve();
-        } catch (e) {
-          return Promise.reject(e);
+        if (password && schema.attachments && schema.attachments.encrypted) {
+          var dataString = args.plainData;
+          var decrypted = decryptString(dataString, password);
+          args.plainData = decrypted;
         }
       }
     }

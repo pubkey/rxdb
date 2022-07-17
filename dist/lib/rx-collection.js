@@ -808,58 +808,64 @@ var RxCollectionBase = /*#__PURE__*/function () {
   };
 
   _proto.destroy = function destroy() {
-    try {
-      var _this17 = this;
+    var _this16 = this;
 
-      if (_this17.destroyed) {
-        return Promise.resolve(_util.PROMISE_RESOLVE_FALSE);
-      }
+    if (this.destroyed) {
+      return _util.PROMISE_RESOLVE_FALSE;
+    }
+    /**
+     * Settings destroyed = true
+     * must be the first thing to do,
+     * so for example the replication can directly stop
+     * instead of sending requests to a closed storage.
+     */
+
+
+    this.destroyed = true;
+
+    if (this._onDestroyCall) {
+      this._onDestroyCall();
+    }
+
+    Array.from(this.timeouts).forEach(function (timeout) {
+      return clearTimeout(timeout);
+    });
+
+    this._subs.forEach(function (sub) {
+      return sub.unsubscribe();
+    });
+
+    if (this._changeEventBuffer) {
+      this._changeEventBuffer.destroy();
+    }
+    /**
+     * First wait until the whole database is idle.
+     * This ensures that the storage does not get closed
+     * while some operation is running.
+     * It is important that we do not intercept a running call
+     * because it might lead to undefined behavior like when a doc is written
+     * but the change is not added to the changes collection.
+     */
+
+
+    return this.database.requestIdlePromise().then(function () {
+      return _this16.storageInstance.close();
+    }).then(function () {
       /**
-       * Settings destroyed = true
-       * must be the first thing to do,
-       * so for example the replication can directly stop
-       * instead of sending requests to a closed storage.
+       * Unsubscribing must be done AFTER the storageInstance.close()
+       * Because the conflict handling is part of the subscriptions and
+       * otherwise there might be open conflicts to be resolved which
+       * will then stuck and never resolve.
        */
-
-
-      _this17.destroyed = true;
-
-      if (_this17._onDestroyCall) {
-        _this17._onDestroyCall();
-      }
-
-      Array.from(_this17.timeouts).forEach(function (timeout) {
-        return clearTimeout(timeout);
-      });
-
-      _this17._subs.forEach(function (sub) {
+      _this16._subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
 
-      if (_this17._changeEventBuffer) {
-        _this17._changeEventBuffer.destroy();
-      }
-      /**
-       * First wait until the whole database is idle.
-       * This ensures that the storage does not get closed
-       * while some operation is running.
-       * It is important that we do not intercept a running call
-       * because it might lead to undefined behavior like when a doc is written
-       * but the change is not added to the changes collection.
-       */
-
-
-      return Promise.resolve(_this17.database.requestIdlePromise().then(function () {
-        return _this17.storageInstance.close();
-      }).then(function () {
-        delete _this17.database.collections[_this17.name];
-        return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', _this17).then(function () {
-          return true;
-        });
-      }));
-    } catch (e) {
-      return Promise.reject(e);
-    }
+      delete _this16.database.collections[_this16.name];
+      return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', _this16).then(function () {
+        return true;
+      });
+    });
   }
   /**
    * remove all data of the collection
@@ -894,11 +900,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this18 = this;
+      var _this17 = this;
 
       if (!this._onDestroy) {
         this._onDestroy = new Promise(function (res) {
-          return _this18._onDestroyCall = res;
+          return _this17._onDestroyCall = res;
         });
       }
 

@@ -1,5 +1,5 @@
 import { map } from 'rxjs/operators';
-import { blobBufferUtil, createRevision, flatClone } from './../util';
+import { blobBufferUtil, createRevision, flatClone, PROMISE_RESOLVE_VOID } from './../util';
 import { newRxError } from '../rx-error';
 import { flatCloneDocWithMeta, hashAttachmentData, writeSingle } from '../rx-storage-helper';
 import { runAsyncPluginHooks } from '../hooks';
@@ -14,13 +14,6 @@ function ensureSchemaSupportsAttachments(doc) {
   }
 }
 
-export var postMigrateDocument = function postMigrateDocument(_action) {
-  /**
-   * No longer needed because
-   * we store the attachemnts data buffers directly in the document.
-   */
-  return Promise.resolve();
-};
 export var preMigrateDocument = function preMigrateDocument(data) {
   try {
     var attachments = data.docData._attachments;
@@ -70,12 +63,12 @@ export var preMigrateDocument = function preMigrateDocument(data) {
 export var putAttachment = function putAttachment(attachmentData) {
   try {
     var _arguments2 = arguments,
-        _this8 = this;
+        _this7 = this;
 
     var skipIfSame = _arguments2.length > 1 && _arguments2[1] !== undefined ? _arguments2[1] : true;
-    ensureSchemaSupportsAttachments(_this8);
+    ensureSchemaSupportsAttachments(_this7);
     var dataSize = blobBufferUtil.size(attachmentData.data);
-    var storageStatics = _this8.collection.database.storage.statics;
+    var storageStatics = _this7.collection.database.storage.statics;
     return Promise.resolve(blobBufferUtil.toBase64String(attachmentData.data)).then(function (dataString) {
       var hookAttachmentData = {
         id: attachmentData.id,
@@ -83,8 +76,8 @@ export var putAttachment = function putAttachment(attachmentData) {
         data: dataString
       };
       return Promise.resolve(runAsyncPluginHooks('preWriteAttachment', {
-        database: _this8.collection.database,
-        schema: _this8.collection.schema.jsonSchema,
+        database: _this7.collection.database,
+        schema: _this7.collection.schema.jsonSchema,
         attachmentData: hookAttachmentData
       })).then(function () {
         var id = hookAttachmentData.id,
@@ -93,18 +86,18 @@ export var putAttachment = function putAttachment(attachmentData) {
         return Promise.resolve(hashAttachmentData(dataString, storageStatics).then(function (hash) {
           return storageStatics.hashKey + '-' + hash;
         })).then(function (newDigest) {
-          _this8._atomicQueue = _this8._atomicQueue.then(function () {
+          _this7._atomicQueue = _this7._atomicQueue.then(function () {
             try {
-              if (skipIfSame && _this8._data._attachments && _this8._data._attachments[id]) {
-                var currentMeta = _this8._data._attachments[id];
+              if (skipIfSame && _this7._data._attachments && _this7._data._attachments[id]) {
+                var currentMeta = _this7._data._attachments[id];
 
                 if (currentMeta.type === type && currentMeta.digest === newDigest) {
                   // skip because same data and same type
-                  return Promise.resolve(_this8.getAttachment(id));
+                  return Promise.resolve(_this7.getAttachment(id));
                 }
               }
 
-              var docWriteData = flatCloneDocWithMeta(_this8._data);
+              var docWriteData = flatCloneDocWithMeta(_this7._data);
               docWriteData._attachments = flatClone(docWriteData._attachments);
               docWriteData._attachments[id] = {
                 digest: newDigest,
@@ -112,19 +105,19 @@ export var putAttachment = function putAttachment(attachmentData) {
                 type: type,
                 data: data
               };
-              docWriteData._rev = createRevision(docWriteData, _this8._data);
+              docWriteData._rev = createRevision(docWriteData, _this7._data);
               var writeRow = {
-                previous: flatClone(_this8._data),
+                previous: flatClone(_this7._data),
                 document: flatClone(docWriteData)
               };
-              return Promise.resolve(writeSingle(_this8.collection.storageInstance, writeRow, 'attachment-put')).then(function (writeResult) {
+              return Promise.resolve(writeSingle(_this7.collection.storageInstance, writeRow, 'attachment-put')).then(function (writeResult) {
                 var attachmentData = writeResult._attachments[id];
-                var attachment = fromStorageInstanceResult(id, attachmentData, _this8);
-                var newData = flatClone(_this8._data);
+                var attachment = fromStorageInstanceResult(id, attachmentData, _this7);
+                var newData = flatClone(_this7._data);
                 newData._rev = writeResult._rev;
                 newData._attachments = writeResult._attachments;
 
-                _this8._dataSync$.next(newData);
+                _this7._dataSync$.next(newData);
 
                 return attachment;
               });
@@ -132,7 +125,7 @@ export var putAttachment = function putAttachment(attachmentData) {
               return Promise.reject(e);
             }
           });
-          return _this8._atomicQueue;
+          return _this7._atomicQueue;
         });
       });
     });
@@ -180,34 +173,30 @@ export var RxAttachment = /*#__PURE__*/function () {
   var _proto = RxAttachment.prototype;
 
   _proto.remove = function remove() {
-    try {
-      var _this2 = this;
+    var _this = this;
 
-      _this2.doc._atomicQueue = _this2.doc._atomicQueue.then(function () {
-        try {
-          var docWriteData = flatCloneDocWithMeta(_this2.doc._data);
-          docWriteData._attachments = flatClone(docWriteData._attachments);
-          delete docWriteData._attachments[_this2.id];
-          docWriteData._rev = createRevision(docWriteData, _this2.doc._data);
-          return Promise.resolve(writeSingle(_this2.doc.collection.storageInstance, {
-            previous: flatClone(_this2.doc._data),
-            // TODO do we need a flatClone here?
-            document: docWriteData
-          }, 'attachment-remove')).then(function (writeResult) {
-            var newData = flatClone(_this2.doc._data);
-            newData._rev = writeResult._rev;
-            newData._attachments = writeResult._attachments;
+    this.doc._atomicQueue = this.doc._atomicQueue.then(function () {
+      try {
+        var docWriteData = flatCloneDocWithMeta(_this.doc._data);
+        docWriteData._attachments = flatClone(docWriteData._attachments);
+        delete docWriteData._attachments[_this.id];
+        docWriteData._rev = createRevision(docWriteData, _this.doc._data);
+        return Promise.resolve(writeSingle(_this.doc.collection.storageInstance, {
+          previous: flatClone(_this.doc._data),
+          // TODO do we need a flatClone here?
+          document: docWriteData
+        }, 'attachment-remove')).then(function (writeResult) {
+          var newData = flatClone(_this.doc._data);
+          newData._rev = writeResult._rev;
+          newData._attachments = writeResult._attachments;
 
-            _this2.doc._dataSync$.next(newData);
-          });
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      });
-      return Promise.resolve(_this2.doc._atomicQueue);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+          _this.doc._dataSync$.next(newData);
+        });
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    });
+    return this.doc._atomicQueue;
   }
   /**
    * returns the data for the attachment
@@ -216,17 +205,17 @@ export var RxAttachment = /*#__PURE__*/function () {
 
   _proto.getData = function getData() {
     try {
-      var _this4 = this;
+      var _this3 = this;
 
-      return Promise.resolve(_this4.doc.collection.storageInstance.getAttachmentData(_this4.doc.primary, _this4.id)).then(function (plainDataBase64) {
+      return Promise.resolve(_this3.doc.collection.storageInstance.getAttachmentData(_this3.doc.primary, _this3.id)).then(function (plainDataBase64) {
         var hookInput = {
-          database: _this4.doc.collection.database,
-          schema: _this4.doc.collection.schema.jsonSchema,
-          type: _this4.type,
+          database: _this3.doc.collection.database,
+          schema: _this3.doc.collection.schema.jsonSchema,
+          type: _this3.type,
           plainData: plainDataBase64
         };
         return Promise.resolve(runAsyncPluginHooks('postReadAttachment', hookInput)).then(function () {
-          return Promise.resolve(blobBufferUtil.createBlobBufferFromBase64(hookInput.plainData, _this4.type));
+          return Promise.resolve(blobBufferUtil.createBlobBufferFromBase64(hookInput.plainData, _this3.type));
         });
       });
     } catch (e) {
@@ -236,9 +225,9 @@ export var RxAttachment = /*#__PURE__*/function () {
 
   _proto.getStringData = function getStringData() {
     try {
-      var _this6 = this;
+      var _this5 = this;
 
-      return Promise.resolve(_this6.getData()).then(function (data) {
+      return Promise.resolve(_this5.getData()).then(function (data) {
         return Promise.resolve(blobBufferUtil.toString(data));
       });
     } catch (e) {
@@ -272,7 +261,7 @@ export function getAttachment(id) {
  */
 
 export function allAttachments() {
-  var _this9 = this;
+  var _this8 = this;
 
   ensureSchemaSupportsAttachments(this);
 
@@ -284,8 +273,15 @@ export function allAttachments() {
   }
 
   return Object.keys(docData._attachments).map(function (id) {
-    return fromStorageInstanceResult(id, docData._attachments[id], _this9);
+    return fromStorageInstanceResult(id, docData._attachments[id], _this8);
   });
+}
+export function postMigrateDocument(_action) {
+  /**
+   * No longer needed because
+   * we store the attachemnts data buffers directly in the document.
+   */
+  return PROMISE_RESOLVE_VOID;
 }
 export var RxDBAttachmentsPlugin = {
   name: 'attachments',
@@ -297,7 +293,7 @@ export var RxDBAttachmentsPlugin = {
       proto.allAttachments = allAttachments;
       Object.defineProperty(proto, 'allAttachments$', {
         get: function allAttachments$() {
-          var _this10 = this;
+          var _this9 = this;
 
           return this._dataSync$.pipe(map(function (data) {
             if (!data['_attachments']) {
@@ -311,7 +307,7 @@ export var RxDBAttachmentsPlugin = {
             return entries.map(function (_ref3) {
               var id = _ref3[0],
                   attachmentData = _ref3[1];
-              return fromStorageInstanceResult(id, attachmentData, _this10);
+              return fromStorageInstanceResult(id, attachmentData, _this9);
             });
           }));
         }
