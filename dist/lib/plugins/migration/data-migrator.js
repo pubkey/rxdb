@@ -322,29 +322,34 @@ var DataMigrator = /*#__PURE__*/function () {
           var migrationState$ = migrateOldCollection(currentCol, batchSize);
           currentPromise = currentPromise.then(function () {
             return new Promise(function (res) {
-              var sub = migrationState$.subscribe(function (subState) {
-                state.handled++;
-                state[subState.type] = state[subState.type] + 1;
-                state.percent = Math.round(state.handled / state.total * 100);
-                stateSubject.next({
-                  collection: _this.newestCollection,
-                  state: (0, _util.flatClone)(state)
-                });
-              }, function (e) {
-                sub.unsubscribe();
+              var sub = migrationState$.subscribe({
+                next: function next(subState) {
+                  state.handled++;
+                  state[subState.type] = state[subState.type] + 1;
+                  state.percent = Math.round(state.handled / state.total * 100);
+                  stateSubject.next({
+                    collection: _this.newestCollection,
+                    state: (0, _util.flatClone)(state)
+                  });
+                },
+                error: function error(e) {
+                  sub.unsubscribe(); // TODO we should not have to catch here.
 
-                _this.allOldCollections.forEach(function (c) {
-                  return c.storageInstance.close();
-                });
+                  _this.allOldCollections.forEach(function (c) {
+                    return c.storageInstance.close()["catch"](function () {});
+                  });
 
-                stateSubject.error(e);
-              }, function () {
-                if (currentCol) {
-                  currentCol.storageInstance.close();
+                  stateSubject.error(e);
+                },
+                complete: function complete() {
+                  if (currentCol) {
+                    // TODO we should not have to catch here.
+                    currentCol.storageInstance.close()["catch"](function () {});
+                  }
+
+                  sub.unsubscribe();
+                  res();
                 }
-
-                sub.unsubscribe();
-                res();
               });
             });
           });
@@ -386,11 +391,11 @@ var DataMigrator = /*#__PURE__*/function () {
             state$.subscribe(null, rej, res);
 
             _this2.allOldCollections.forEach(function (c) {
-              return c.storageInstance.close();
+              return c.storageInstance.close()["catch"](function () {});
             });
           })["catch"](function (err) {
             _this2.allOldCollections.forEach(function (c) {
-              return c.storageInstance.close();
+              return c.storageInstance.close()["catch"](function () {});
             });
 
             throw err;
