@@ -121,16 +121,24 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         }
     }
 
+
+    /**
+     * Takes all open tasks an processes them at once.
+     */
     function processTasks() {
         if (
             state.events.canceled.getValue() ||
             openTasks.length === 0
         ) {
+            state.events.active.up.next(false);
             return;
         }
         state.stats.up.processTasks = state.stats.up.processTasks + 1;
         state.events.active.up.next(true);
         state.streamQueue.up = state.streamQueue.up.then(async () => {
+            /**
+             * Merge/filter all open tasks
+             */
             let docs: RxDocumentData<RxDocType>[] = [];
             let checkpoint: CheckpointType = {} as any;
             while (openTasks.length > 0) {
@@ -154,8 +162,10 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                     })
                 );
                 checkpoint = stackCheckpoints([checkpoint, taskWithTime.task.checkpoint]);
+            }
 
-                return persistToMaster(
+            if (docs.length > 0) {
+                await persistToMaster(
                     docs,
                     checkpoint
                 );
@@ -163,7 +173,10 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
             if (openTasks.length === 0) {
                 state.events.active.up.next(false);
+            }else {
+                processTasks();
             }
+
         });
     }
 
