@@ -69,14 +69,14 @@ export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<Rx
  * Returns the document states of what the fork instance
  * assumes to be the latest state on the master instance.
  */
-export async function getAssumedMasterState<RxDocType>(
+export function getAssumedMasterState<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     docIds: string[]
 ): Promise<ById<{
     docData: WithDeleted<RxDocType>;
     metaDocument: RxDocumentData<RxStorageReplicationMeta>
 }>> {
-    const metaDocs = await state.input.metaInstance.findDocumentsById(
+    return state.input.metaInstance.findDocumentsById(
         docIds.map(docId => {
             const useId = getComposedPrimaryKeyOfDocumentData(
                 RX_REPLICATION_META_INSTANCE_SCHEMA,
@@ -89,24 +89,24 @@ export async function getAssumedMasterState<RxDocType>(
             return useId;
         }),
         true
-    );
+    ).then(metaDocs => {
+        const ret: {
+            [docId: string]: {
+                docData: RxDocumentData<RxDocType>;
+                metaDocument: RxDocumentData<RxStorageReplicationMeta>
+            }
+        } = {};
+        Object
+            .values(metaDocs)
+            .forEach((metaDoc) => {
+                ret[metaDoc.itemId] = {
+                    docData: metaDoc.data,
+                    metaDocument: metaDoc
+                };
+            });
 
-    const ret: {
-        [docId: string]: {
-            docData: RxDocumentData<RxDocType>;
-            metaDocument: RxDocumentData<RxStorageReplicationMeta>
-        }
-    } = {};
-    Object
-        .values(metaDocs)
-        .forEach((metaDoc) => {
-            ret[metaDoc.itemId] = {
-                docData: metaDoc.data,
-                metaDocument: metaDoc
-            };
-        });
-
-    return ret;
+        return ret;
+    });
 }
 
 

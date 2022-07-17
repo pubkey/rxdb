@@ -195,7 +195,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
      * Returns true if had conflicts,
      * false if not.
      */
-    async function persistToMaster(
+    function persistToMaster(
         docs: RxDocumentData<RxDocType>[],
         checkpoint: CheckpointType
     ): Promise<boolean> {
@@ -236,13 +236,9 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
             await Promise.all(
                 docIds.map(async (docId) => {
-
                     const fullDocData: RxDocumentData<RxDocType> = upDocsById[docId];
                     forkStateById[docId] = fullDocData;
                     const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData);
-
-
-
                     const assumedMasterDoc = assumedMasterState[docId];
 
                     /**
@@ -321,36 +317,36 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                 await Promise.all(
                     Object
                         .entries(conflictsById)
-                        .map(async ([docId, realMasterState]) => {
+                        .map(([docId, realMasterState]) => {
                             const writeToMasterRow = writeRowsToMaster[docId];
-
                             const input = {
                                 newDocumentState: writeToMasterRow.newDocumentState,
                                 assumedMasterState: writeToMasterRow.assumedMasterState,
                                 realMasterState
                             };
-                            const resolved = await resolveConflictError(
+                            return resolveConflictError(
                                 state.input.conflictHandler,
                                 input,
                                 forkStateById[docId]
-                            );
-                            if (resolved) {
-                                state.events.resolvedConflicts.next({
-                                    input,
-                                    output: resolved.output
-                                });
-                                conflictWriteFork.push({
-                                    previous: forkStateById[docId],
-                                    document: resolved.resolvedDoc
-                                });
-                                const assumedMasterDoc = assumedMasterState[docId];
-                                conflictWriteMeta[docId] = getMetaWriteRow(
-                                    state,
-                                    ensureNotFalsy(realMasterState),
-                                    assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined,
-                                    resolved.resolvedDoc._rev
-                                );
-                            }
+                            ).then(resolved => {
+                                if (resolved) {
+                                    state.events.resolvedConflicts.next({
+                                        input,
+                                        output: resolved.output
+                                    });
+                                    conflictWriteFork.push({
+                                        previous: forkStateById[docId],
+                                        document: resolved.resolvedDoc
+                                    });
+                                    const assumedMasterDoc = assumedMasterState[docId];
+                                    conflictWriteMeta[docId] = getMetaWriteRow(
+                                        state,
+                                        ensureNotFalsy(realMasterState),
+                                        assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined,
+                                        resolved.resolvedDoc._rev
+                                    );
+                                }
+                            });
                         })
                 );
 
