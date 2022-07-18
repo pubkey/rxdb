@@ -214,20 +214,24 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
         resA.forEach((docA, idx) => {
             const docB = resB[idx];
-            const withoutMetaA = Object.assign({}, docA, {
-                _meta: undefined
-            });
-            const withoutMetaB = Object.assign({}, docB, {
-                _meta: undefined
-            });
+            const cleanDocToCompare = (doc: RxDocumentData<RxDocType>) => {
+                return Object.assign({}, doc, {
+                    _meta: undefined,
+                    _rev: undefined
+                });
+            }
             try {
-                assert.deepStrictEqual(withoutMetaA, withoutMetaB);
+                assert.deepStrictEqual(
+                    cleanDocToCompare(docA),
+                    cleanDocToCompare(docB)
+                );
             } catch (err) {
                 console.log('## ERROR: State not equal');
                 console.log(JSON.stringify(docA, null, 4));
                 console.log(JSON.stringify(docB, null, 4));
+                throw new Error('STATE not equal');
             }
-        })
+        });
     }
 
     describe('helpers', () => {
@@ -345,15 +349,13 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
             }], testContext);
             assert.deepStrictEqual(updateResult.error, {});
 
+            // wait until the change is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-                return docsAfterUpdate[passportId];
+                return docsAfterUpdate[passportId].firstName === 'xxx';
             });
-            const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-            const docAfter = getFromObjectOrThrow(docsAfterUpdate, passportId);
-            assert.strictEqual(docAfter.firstName, 'xxx');
+            await ensureEqualState(masterInstance, forkInstance);
 
-            await awaitRxStorageReplicationInSync(replicationState);
 
             await cleanUp(replicationState, masterInstance);
         });
