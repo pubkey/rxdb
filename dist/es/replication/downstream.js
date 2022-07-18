@@ -1,6 +1,6 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { createRevision, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, now, PROMISE_RESOLVE_VOID } from '../util';
+import { createRevision, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, now, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { writeDocToDocState } from './helper';
 import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
@@ -217,8 +217,8 @@ export function startReplicationDownstream(state) {
       return Promise.resolve(checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
 
-        function _temp9() {
-          return Promise.resolve(Promise.all(promises)).then(function () {
+        function _temp2() {
+          return Promise.all(promises).then(function () {
             if (!state.firstSyncDone.down.getValue()) {
               state.firstSyncDone.down.next(true);
             }
@@ -227,7 +227,7 @@ export function startReplicationDownstream(state) {
 
         var promises = [];
 
-        var _temp8 = _for(function () {
+        var _temp = _for(function () {
           return !_interrupt && !state.events.canceled.getValue();
         }, void 0, function () {
           lastTimeMasterChangesRequested = timer++;
@@ -242,7 +242,7 @@ export function startReplicationDownstream(state) {
           });
         });
 
-        return _temp8 && _temp8.then ? _temp8.then(_temp9) : _temp9(_temp8);
+        return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
       });
     } catch (e) {
       return Promise.reject(e);
@@ -371,155 +371,130 @@ export function startReplicationDownstream(state) {
      */
 
     persistenceQueue = persistenceQueue.then(function () {
-      try {
-        if (state.events.canceled.getValue()) {
-          return Promise.resolve();
-        }
+      var downDocsById = nonPersistedFromMaster.docs;
+      nonPersistedFromMaster.docs = {};
+      var useCheckpoint = nonPersistedFromMaster.checkpoint;
+      var docIds = Object.keys(downDocsById);
 
-        var downDocsById = nonPersistedFromMaster.docs;
-        nonPersistedFromMaster.docs = {};
-        var useCheckpoint = nonPersistedFromMaster.checkpoint;
-        var docIds = Object.keys(downDocsById);
+      if (state.events.canceled.getValue() || docIds.length === 0) {
+        return PROMISE_RESOLVE_VOID;
+      }
 
-        if (docIds.length === 0) {
-          return Promise.resolve();
-        }
+      var writeRowsToFork = [];
+      var writeRowsToForkById = {};
+      var writeRowsToMeta = {};
+      var useMetaWriteRows = [];
+      return Promise.all([state.input.forkInstance.findDocumentsById(docIds, true), getAssumedMasterState(state, docIds)]).then(function (_ref) {
+        var currentForkState = _ref[0],
+            assumedMasterState = _ref[1];
+        return Promise.all(docIds.map(function (docId) {
+          try {
+            var forkStateFullDoc = currentForkState[docId];
+            var forkStateDocData = forkStateFullDoc ? writeDocToDocState(forkStateFullDoc) : undefined;
+            var masterState = downDocsById[docId];
+            var assumedMaster = assumedMasterState[docId];
 
-        return Promise.resolve(Promise.all([state.input.forkInstance.findDocumentsById(docIds, true), getAssumedMasterState(state, docIds)])).then(function (_ref) {
-          var currentForkState = _ref[0],
-              assumedMasterState = _ref[1];
-          var writeRowsToFork = [];
-          var writeRowsToForkById = {};
-          var writeRowsToMeta = {};
-          var useMetaWriteRows = [];
-          return Promise.resolve(Promise.all(docIds.map(function (docId) {
-            try {
-              var _temp7 = function _temp7(_state$input$conflict) {
-                var _exit = false;
+            if (assumedMaster && assumedMaster.metaDocument.isResolvedConflict === forkStateFullDoc._rev) {
+              /**
+               * The current fork state represents a resolved conflict
+               * that first must be send to the master in the upstream.
+               * All conflicts are resolved by the upstream.
+               */
+              return Promise.resolve(PROMISE_RESOLVE_VOID);
+            }
 
-                function _temp5(_state$input$conflict2) {
-                  if (forkStateDocData && _state$input$conflict2.isEqual) {
-                    /**
-                     * Document states are exactly equal.
-                     * This can happen when the replication is shut down
-                     * unexpected like when the user goes offline.
-                     * 
-                     * Only when the assumedMaster is different from the forkState,
-                     * we have to patch the document in the meta instance.
-                     */
-                    if (!assumedMaster || isAssumedMasterEqualToForkState === false) {
-                      useMetaWriteRows.push(getMetaWriteRow(state, forkStateDocData, assumedMaster ? assumedMaster.metaDocument : undefined));
-                    }
+            var isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ? PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
+              realMasterState: assumedMaster.docData,
+              newDocumentState: forkStateDocData
+            }, 'downstream-check-if-equal-0').then(function (r) {
+              return r.isEqual;
+            });
+            return Promise.resolve(isAssumedMasterEqualToForkStatePromise).then(function (isAssumedMasterEqualToForkState) {
+              if (forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster) {
+                /**
+                 * We have a non-upstream-replicated
+                 * local write to the fork.
+                 * This means we ignore the downstream of this document
+                 * because anyway the upstream will first resolve the conflict.
+                 */
+                return PROMISE_RESOLVE_VOID;
+              }
 
-                    _exit = true;
-                    return;
+              var areStatesExactlyEqualPromise = !forkStateDocData ? PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
+                realMasterState: masterState,
+                newDocumentState: forkStateDocData
+              }, 'downstream-check-if-equal-1').then(function (r) {
+                return r.isEqual;
+              });
+              return Promise.resolve(areStatesExactlyEqualPromise).then(function (areStatesExactlyEqual) {
+                if (forkStateDocData && areStatesExactlyEqual) {
+                  /**
+                   * Document states are exactly equal.
+                   * This can happen when the replication is shut down
+                   * unexpected like when the user goes offline.
+                   * 
+                   * Only when the assumedMaster is different from the forkState,
+                   * we have to patch the document in the meta instance.
+                   */
+                  if (!assumedMaster || isAssumedMasterEqualToForkState === false) {
+                    useMetaWriteRows.push(getMetaWriteRow(state, forkStateDocData, assumedMaster ? assumedMaster.metaDocument : undefined));
                   }
 
-                  /**
-                   * All other master states need to be written to the forkInstance
-                   * and metaInstance.
-                   */
-                  var newForkState = Object.assign({}, masterState, forkStateFullDoc ? {
-                    _meta: forkStateFullDoc._meta,
-                    _attachments: {},
-                    _rev: getDefaultRevision()
-                  } : {
-                    _meta: getDefaultRxDocumentMeta(),
-                    _rev: getDefaultRevision(),
-                    _attachments: {}
-                  });
-                  newForkState._meta.lwt = now();
-                  newForkState._rev = masterState._rev ? masterState._rev : createRevision(newForkState, forkStateFullDoc);
-                  var forkWriteRow = {
-                    previous: forkStateFullDoc,
-                    document: newForkState
-                  };
-                  writeRowsToFork.push(forkWriteRow);
-                  writeRowsToForkById[docId] = forkWriteRow;
-                  writeRowsToMeta[docId] = getMetaWriteRow(state, masterState, assumedMaster ? assumedMaster.metaDocument : undefined);
+                  return PROMISE_RESOLVE_VOID;
                 }
-
-                var isAssumedMasterEqualToForkState = assumedMaster && forkStateDocData ? _state$input$conflict.isEqual === true : _state$input$conflict;
-
-                if (forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster) {
-                  /**
-                   * We have a non-upstream-replicated
-                   * local write to the fork.
-                   * This means we ignore the downstream of this document
-                   * because anyway the upstream will first resolve the conflict.
-                   */
-                  return;
-                }
-
-                return forkStateDocData ? Promise.resolve(state.input.conflictHandler({
-                  realMasterState: masterState,
-                  newDocumentState: forkStateDocData
-                }, 'downstream-check-if-equal-1')).then(_temp5) : _temp5(forkStateDocData);
-              };
-
-              var forkStateFullDoc = currentForkState[docId];
-              var forkStateDocData = forkStateFullDoc ? writeDocToDocState(forkStateFullDoc) : undefined;
-              var masterState = downDocsById[docId];
-              var assumedMaster = assumedMasterState[docId];
-
-              if (assumedMaster && assumedMaster.metaDocument.isResolvedConflict === forkStateFullDoc._rev) {
                 /**
-                 * The current fork state represents a resolved conflict
-                 * that first must be send to the master in the upstream.
-                 * All conflicts are resolved by the upstream.
+                 * All other master states need to be written to the forkInstance
+                 * and metaInstance.
                  */
-                return Promise.resolve();
-              }
 
-              return Promise.resolve(assumedMaster && forkStateDocData ? Promise.resolve(assumedMaster && forkStateDocData ? state.input.conflictHandler({
-                realMasterState: assumedMaster.docData,
-                newDocumentState: forkStateDocData
-              }, 'downstream-check-if-equal-0') : false).then(_temp7) : _temp7(assumedMaster && forkStateDocData ? state.input.conflictHandler({
-                realMasterState: assumedMaster.docData,
-                newDocumentState: forkStateDocData
-              }, 'downstream-check-if-equal-0') : false));
-            } catch (e) {
-              return Promise.reject(e);
-            }
-          }))).then(function () {
-            function _temp4() {
-              function _temp2() {
-                /**
-                 * For better performance we do not await checkpoint writes,
-                 * but to ensure order on parrallel checkpoint writes,
-                 * we have to use a queue.
-                 */
-                checkpointQueue = checkpointQueue.then(function () {
-                  return setCheckpoint(state, 'down', useCheckpoint);
+
+                var newForkState = Object.assign({}, masterState, forkStateFullDoc ? {
+                  _meta: forkStateFullDoc._meta,
+                  _attachments: {},
+                  _rev: getDefaultRevision()
+                } : {
+                  _meta: getDefaultRxDocumentMeta(),
+                  _rev: getDefaultRevision(),
+                  _attachments: {}
                 });
-              }
-
-              var _temp = function () {
-                if (useMetaWriteRows.length > 0) {
-                  return Promise.resolve(state.input.metaInstance.bulkWrite(useMetaWriteRows, 'replication-down-write-meta')).then(function () {});
-                }
-              }();
-
-              return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
-            }
-
-            var _temp3 = function () {
-              if (writeRowsToFork.length > 0) {
-                return Promise.resolve(state.input.forkInstance.bulkWrite(writeRowsToFork, state.downstreamBulkWriteFlag)).then(function (forkWriteResult) {
-                  Object.keys(forkWriteResult.success).forEach(function (docId) {
-                    state.events.processed.down.next(writeRowsToForkById[docId]);
-                    useMetaWriteRows.push(writeRowsToMeta[docId]);
-                  });
-                });
-              }
-            }();
-
-            return _temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3);
+                newForkState._meta.lwt = now();
+                newForkState._rev = masterState._rev ? masterState._rev : createRevision(newForkState, forkStateFullDoc);
+                var forkWriteRow = {
+                  previous: forkStateFullDoc,
+                  document: newForkState
+                };
+                writeRowsToFork.push(forkWriteRow);
+                writeRowsToForkById[docId] = forkWriteRow;
+                writeRowsToMeta[docId] = getMetaWriteRow(state, masterState, assumedMaster ? assumedMaster.metaDocument : undefined);
+              });
+            });
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        }));
+      }).then(function () {
+        if (writeRowsToFork.length > 0) {
+          return state.input.forkInstance.bulkWrite(writeRowsToFork, state.downstreamBulkWriteFlag).then(function (forkWriteResult) {
+            Object.keys(forkWriteResult.success).forEach(function (docId) {
+              state.events.processed.down.next(writeRowsToForkById[docId]);
+              useMetaWriteRows.push(writeRowsToMeta[docId]);
+            });
           });
+        }
+      }).then(function () {
+        if (useMetaWriteRows.length > 0) {
+          return state.input.metaInstance.bulkWrite(useMetaWriteRows, 'replication-down-write-meta');
+        }
+      }).then(function () {
+        /**
+         * For better performance we do not await checkpoint writes,
+         * but to ensure order on parrallel checkpoint writes,
+         * we have to use a queue.
+         */
+        checkpointQueue = checkpointQueue.then(function () {
+          return setCheckpoint(state, 'down', useCheckpoint);
         });
-      } catch (e) {
-        return Promise.reject(e);
-      }
+      });
     });
     return persistenceQueue;
   }

@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 12.7.13 (18 July 2022)
+
 ### 12.7.12 (17 July 2022)
 
 - CHANGE use eslint rule `require-await` to reduce build size.
