@@ -301,18 +301,18 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             await cleanUp(replicationState, masterInstance);
         });
-        it('should replication the insert and the update', async () => {
+        it('should replicate the insert and the update', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(1);
             const metaInstance = await createMetaInstance();
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER),
                 forkInstance,
                 metaInstance,
                 bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
             });
 
             const passportId = 'foobar';
