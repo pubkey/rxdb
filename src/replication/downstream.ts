@@ -16,6 +16,7 @@ import type {
 import {
     createRevision,
     ensureNotFalsy,
+    flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now,
@@ -339,7 +340,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                             {},
                             masterState,
                             forkStateFullDoc ? {
-                                _meta: forkStateFullDoc._meta,
+                                _meta: flatClone(forkStateFullDoc._meta),
                                 _attachments: {},
                                 _rev: getDefaultRevision()
                             } : {
