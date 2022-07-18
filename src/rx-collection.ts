@@ -901,7 +901,6 @@ export class RxCollectionBase<
             this._onDestroyCall();
         }
         Array.from(this.timeouts).forEach(timeout => clearTimeout(timeout));
-        this._subs.forEach(sub => sub.unsubscribe());
         if (this._changeEventBuffer) {
             this._changeEventBuffer.destroy();
         }
