@@ -7162,10 +7162,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return clearTimeout(timeout);
     });
 
-    this._subs.forEach(function (sub) {
-      return sub.unsubscribe();
-    });
-
     if (this._changeEventBuffer) {
       this._changeEventBuffer.destroy();
     }
