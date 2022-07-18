@@ -1,6 +1,6 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { createRevision, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, now, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../util';
+import { createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { writeDocToDocState } from './helper';
 import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
@@ -449,7 +449,7 @@ export function startReplicationDownstream(state) {
 
 
                 var newForkState = Object.assign({}, masterState, forkStateFullDoc ? {
-                  _meta: forkStateFullDoc._meta,
+                  _meta: flatClone(forkStateFullDoc._meta),
                   _attachments: {},
                   _rev: getDefaultRevision()
                 } : {

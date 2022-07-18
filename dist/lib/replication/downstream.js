@@ -461,7 +461,7 @@ function startReplicationDownstream(state) {
 
 
                 var newForkState = Object.assign({}, masterState, forkStateFullDoc ? {
-                  _meta: forkStateFullDoc._meta,
+                  _meta: (0, _util.flatClone)(forkStateFullDoc._meta),
                   _attachments: {},
                   _rev: (0, _util.getDefaultRevision)()
                 } : {
