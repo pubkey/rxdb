@@ -317,7 +317,8 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const passportId = 'foobar';
             const docData = getDocData({
-                passportId
+                passportId,
+                age: 1
             });
 
             const writeResult = await forkInstance.bulkWrite([{
@@ -326,8 +327,15 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
             assert.deepStrictEqual(writeResult.error, {});
             const previous = getFromObjectOrThrow(writeResult.success, passportId);
 
+            // wait until it is replicated to the master
+            await waitUntil(async () => {
+                const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
+                return docsAfterUpdate[passportId];
+            });
+
             const updateData: typeof docData = clone(docData);
             updateData.firstName = 'xxx';
+            updateData.age = 2;
             updateData._rev = EXAMPLE_REVISION_2;
             updateData._meta.lwt = now();
 
