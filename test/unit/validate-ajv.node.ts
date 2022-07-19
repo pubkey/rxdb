@@ -16,8 +16,8 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-import { RxDBAjvValidatePlugin } from '../../plugins/ajv-validate';
-addRxPlugin(RxDBAjvValidatePlugin);
+import { RxDBValidateAjvPlugin } from '../../plugins/validate-ajv';
+addRxPlugin(RxDBValidateAjvPlugin);
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);

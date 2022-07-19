@@ -65,8 +65,8 @@ const runAfterSchemaCreated = (rxSchema: RxSchema) => {
 
 
 
-export const RxDBAjvValidatePlugin: RxPlugin = {
-    name: 'ajv-validate',
+export const RxDBValidateAjvPlugin: RxPlugin = {
+    name: 'validate-ajv',
     rxdb: true,
     prototypes: {
         /**

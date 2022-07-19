@@ -20,19 +20,19 @@ addRxPlugin(RxDBValidatePlugin);
 ```
 
 
-### ajv-validate
+### validate-ajv
 
 Another validation-module that does the schema-validation. This one is using [ajv](https://github.com/epoberezkin/ajv) as validator which is a bit faster. Better compliant to the jsonschema-standart but also has a bigger build-size.
 
 ```javascript
 import { addRxPlugin } from 'rxdb';
-import { RxDBAjvValidatePlugin } from 'rxdb/plugins/ajv-validate';
-addRxPlugin(RxDBAjvValidatePlugin);
+import { RxDBValidateAjvPlugin } from 'rxdb/plugins/validate-ajv';
+addRxPlugin(RxDBValidateAjvPlugin);
 ```
 
 ### validate-z-schema
 
-Both `is-my-json-valid` and `ajv-validate` use `eval()` to perform validation which might not be wanted when `'unsafe-eval'` is not allowed in Content Security Policies. This one is using [z-schema](https://github.com/zaggino/z-schema) as validator which doesn't use `eval`.
+Both `is-my-json-valid` and `validate-ajv` use `eval()` to perform validation which might not be wanted when `'unsafe-eval'` is not allowed in Content Security Policies. This one is using [z-schema](https://github.com/zaggino/z-schema) as validator which doesn't use `eval`.
 
 ```javascript
 import { addRxPlugin } from 'rxdb';

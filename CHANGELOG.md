@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- RENAME the `ajv-validate` plugin to `validate-ajv` to be in equal with the other validation plugins.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
