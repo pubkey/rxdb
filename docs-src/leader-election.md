@@ -82,7 +82,7 @@ In this example the leader is marked with the crown ♛
 
 ## Try it out
 
-Run the [vanillaJS-example](../examples/vanilla/) where the leading tab is marked with a crown on the top-right-corner.
+Run the [vanillaJS-example](https://github.com/pubkey/rxdb/tree/master/examples/vanilla) where the leading tab is marked with a crown on the top-right-corner.
 
 ## Notice
 
