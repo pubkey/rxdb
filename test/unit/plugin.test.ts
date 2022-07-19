@@ -116,15 +116,15 @@ config.parallel('plugin.test.js', () => {
             }
         });
     });
-    describe('ajv-validate.node.ts', () => {
-        it('ajv-validate.node.ts: should allow everything', async () => {
+    describe('validate-ajv.node.ts', () => {
+        it('validate-ajv.node.ts: should allow everything', async () => {
             if (!config.platform.isNode())
                 return;
 
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout: any[] = [];
             const stderr: any[] = [];
-            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/ajv-validate.node.js']);
+            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/validate-ajv.node.js']);
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', (data: any) => {
                 // comment in to debug
@@ -137,7 +137,7 @@ config.parallel('plugin.test.js', () => {
             } catch (err) {
                 console.error('errrrr');
                 console.dir(stdout);
-                throw new Error(`could not run ajv-validate.node.js.
+                throw new Error(`could not run validate-ajv.node.js.
                             # Error: ${err}
                             # Output: ${stdout}
                             # ErrOut: ${stderr}

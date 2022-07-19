@@ -27,7 +27,7 @@ addRxPlugin(RxDBDevModePlugin);
 
 addPouchPlugin(require('pouchdb-adapter-memory'));
 
-config.parallel('ajv-validate.node.js', () => {
+config.parallel('validate-ajv.node.js', () => {
     describe('validation', () => {
         describe('positive', () => {
             it('should not throw', async () => {
