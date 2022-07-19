@@ -299,7 +299,7 @@ const schemaWithDefaultAge = {
           default: 20       // <- default will be used
       }
   },
-  required: ['object']
+  required: ['id']
 };
 ```
 
