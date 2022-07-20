@@ -176,6 +176,10 @@ jobs:
         with:
           run: npm run test:browser:ci:memory
 
+      - name: npm run test:fast:memory-validation
+        run: npm run test:fast:memory-validation
+
+
   # run the node tests for the LokiJS RxStorage in a different
   # task to run in parallel.
   node-dexie-worker:
