@@ -23,6 +23,7 @@ import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
+import { wrappedValidateIsMyJsonValidStorage } from 'rxdb/plugins/validate-is-my-json-valid';
 import {
     COUCHDB_PORT,
     HERO_COLLECTION_NAME,
@@ -117,7 +118,14 @@ async function _create(): Promise<RxHeroesDatabase> {
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase<RxHeroesCollections>({
         name: DATABASE_NAME,
-        storage: getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb'),
+        /**
+         * Because we directly store user input,
+         * we use the validation wrapper to ensure
+         * that the user can only input valid data.
+         */
+        storage: wrappedValidateIsMyJsonValidStorage({
+            storage: getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb')
+        }),
         multiInstance: !IS_SERVER_SIDE_RENDERING
         // password: 'myLongAndStupidPassword' // no password needed
     });

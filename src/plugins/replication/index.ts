@@ -400,21 +400,6 @@ export class RxReplicationStateBase<RxDocType> {
             }
         }
 
-        /**
-         * Run the schema validation for pulled documents
-         * in dev-mode.
-         */
-        if (overwritable.isDevMode()) {
-            try {
-                pulledDocuments.forEach((doc: any) => {
-                    this.collection.schema.validate(doc);
-                });
-            } catch (err: any) {
-                this.subjects.error.next(err);
-                return Promise.resolve('error');
-            }
-        }
-
         if (this.isStopped()) {
             return Promise.resolve('ok');
         }

@@ -26,15 +26,15 @@ describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
         it('should work with a string', () => {
             const hash = fastUnsecureHash('foobar');
-            assert.strictEqual(typeof hash, 'number');
-            assert.ok(hash > 0);
+            assert.strictEqual(typeof hash, 'string');
+            assert.ok(hash.length > 0);
         });
         it('should work on object', () => {
             const hash = fastUnsecureHash({
                 foo: 'bar'
             });
-            assert.strictEqual(typeof hash, 'number');
-            assert.ok(hash > 0);
+            assert.strictEqual(typeof hash, 'string');
+            assert.ok(hash.length > 0);
         });
         it('should get the same hash twice', () => {
             const str = randomCouchString(10);
@@ -45,8 +45,8 @@ describe('util.test.js', () => {
         it('should work with a very large string', () => {
             const str = randomCouchString(5000);
             const hash = fastUnsecureHash(str);
-            assert.strictEqual(typeof hash, 'number');
-            assert.ok(hash > 0);
+            assert.strictEqual(typeof hash, 'string');
+            assert.ok(hash.length > 0);
         });
     });
     describe('.createRevision()', () => {

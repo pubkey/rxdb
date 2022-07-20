@@ -33,25 +33,45 @@ export function pluginMissing(
 }
 
 /**
- * this is a very fast hashing but its unsecure
+ * This is a very fast hash method
+ * but it is not cryptographically secure.
+ * For each run it will append a number between 0 and 2147483647 (=biggest 32 bit int).
+ * Increase the run amount to decrease the likelyness of a colision.
+ * So the propability of a collision is a 1 out of 2147483647 * [the amount of runs].
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
  * @return a number as hash-result
  */
-export function fastUnsecureHash(obj: any): number {
-    if (typeof obj !== 'string') obj = JSON.stringify(obj);
-    let hashValue = 0,
-        i, chr, len;
-    if (obj.length === 0) return hashValue;
-    for (i = 0, len = obj.length; i < len; i++) {
-        chr = obj.charCodeAt(i);
-        // tslint:disable-next-line
-        hashValue = ((hashValue << 5) - hashValue) + chr;
-        // tslint:disable-next-line
-        hashValue |= 0; // Convert to 32bit integer
+export function fastUnsecureHash(
+    obj: any,
+    runs = 3
+): string {
+    if (typeof obj !== 'string') {
+        obj = JSON.stringify(obj);
     }
-    if (hashValue < 0) hashValue = hashValue * -1;
-    return hashValue;
+
+    let ret = '';
+    while (runs > 0) {
+        runs--;
+
+        let hashValue = 0,
+            i, chr, len;
+        if (obj.length === 0) {
+            ret += hashValue;
+            continue;
+        }
+        for (i = 0, len = obj.length; i < len; i++) {
+            chr = obj.charCodeAt(i);
+            hashValue = ((hashValue << 5) - hashValue) + chr;
+            hashValue |= 0; // Convert to 32bit integer
+        }
+        if (hashValue < 0) {
+            hashValue = hashValue * -1;
+        }
+        ret += '' + hashValue;
+    }
+    return ret;
 }
+
 
 /**
  * Does a RxDB-specific hashing of the given data.

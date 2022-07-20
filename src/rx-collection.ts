@@ -338,10 +338,10 @@ export class RxCollectionBase<
         });
         const docs = await Promise.all(
             useDocs.map(doc => {
-                return this._runHooks('pre', 'insert', doc).then(() => {
-                    this.schema.validate(doc);
-                    return doc;
-                });
+                return this._runHooks('pre', 'insert', doc)
+                    .then(() => {
+                        return doc;
+                    });
             })
         );
 

@@ -807,49 +807,6 @@ describe('rx-query.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('negative', () => {
-            it('should throw if schema does not match', async () => {
-                const schema: RxJsonSchema<{ id: string; childProperty: 'A' | 'B' | 'C' }> = {
-                    version: 0,
-                    primaryKey: 'id',
-                    type: 'object',
-                    properties: {
-                        id: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        childProperty: {
-                            type: 'string',
-                            enum: ['A', 'B', 'C']
-                        }
-                    }
-                };
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                });
-                const cols = await db.addCollections({
-                    humans: {
-                        schema
-                    }
-                });
-                const col = cols.humans;
-                await col.insert({
-                    id: randomCouchString(12),
-                    childProperty: 'A'
-                });
-                await AsyncTestUtil.assertThrows(
-                    () => col.find().update({
-                        $set: {
-                            childProperty: 'Z'
-                        }
-                    }),
-                    'RxError',
-                    'schema'
-                );
-                db.destroy();
-            });
-        });
     });
     config.parallel('issues', () => {
         describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {

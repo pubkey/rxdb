@@ -21,9 +21,7 @@ import * as schemas from '../helper/schemas';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
-import { RxDBValidatePlugin } from '../../plugins/validate';
 import { waitUntil } from 'async-test-util';
-addRxPlugin(RxDBValidatePlugin);
 import * as path from 'path';
 import * as fs from 'fs';
 import { LeaderElector } from 'broadcast-channel';

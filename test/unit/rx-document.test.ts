@@ -15,8 +15,7 @@ import {
     getDocumentOrmPrototype,
     getDocumentPrototype,
     addRxPlugin,
-    blobBufferUtil,
-    RxJsonSchema,
+    blobBufferUtil
 } from '../../';
 
 import {
@@ -298,49 +297,6 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should throw if schema does not match', async () => {
-                const schema: RxJsonSchema<{ id: string; childProperty: 'A' | 'B' | 'C' }> = {
-                    version: 0,
-                    type: 'object',
-                    primaryKey: 'id',
-                    required: ['id'],
-                    properties: {
-                        id: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        childProperty: {
-                            type: 'string',
-                            enum: ['A', 'B', 'C']
-                        }
-                    }
-                };
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                });
-                const cols = await db.addCollections({
-                    humans: {
-                        schema
-                    }
-                });
-
-                // on doc
-                const doc = await cols.humans.insert({
-                    id: randomCouchString(12),
-                    childProperty: 'A'
-                });
-                await AsyncTestUtil.assertThrows(
-                    () => doc.update({
-                        $set: {
-                            childProperty: 'Z'
-                        }
-                    }),
-                    'RxError',
-                    'schema'
-                );
-                db.destroy();
-            });
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
@@ -568,24 +524,6 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should throw when not matching schema', async () => {
-                const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
-                await doc.atomicUpdate((innerDoc: any) => {
-                    innerDoc.age = 50;
-                    return innerDoc;
-                });
-                assert.strictEqual(doc.age, 50);
-                await AsyncTestUtil.assertThrows(
-                    () => doc.atomicUpdate((innerDoc: any) => {
-                        innerDoc.age = 'foobar';
-                        return innerDoc;
-                    }),
-                    'RxError',
-                    'schema'
-                );
-                c.database.destroy();
-            });
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
@@ -670,19 +608,6 @@ describe('rx-document.test.js', () => {
                 });
 
                 assert.strictEqual(doc.mainSkill, undefined);
-                c.database.destroy();
-            });
-        });
-        describe('negative', () => {
-            it('should crash on non document field', async () => {
-                const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec(true);
-                await AsyncTestUtil.assertThrows(
-                    () => doc.atomicPatch({
-                        foobar: 'foobar'
-                    } as any),
-                    'RxError'
-                );
                 c.database.destroy();
             });
         });
@@ -999,93 +924,6 @@ describe('rx-document.test.js', () => {
             const value = doc.get('value.x');
             assert.strictEqual(value.foo, 'bar');
 
-            db.destroy();
-        });
-        it('#734 Invalid value persists in document after failed update', async () => {
-            // create a schema
-            const schemaEnum = ['A', 'B'];
-            const mySchema: RxJsonSchema<{ id: string, children: any[] }> = {
-                version: 0,
-                primaryKey: 'id',
-                required: ['id'],
-                type: 'object',
-                properties: {
-                    id: {
-                        type: 'string',
-                        maxLength: 100
-                    },
-                    children: {
-                        type: 'array',
-                        items: {
-                            type: 'object',
-                            properties: {
-                                name: {
-                                    type: 'string'
-                                },
-                                abLetter: {
-                                    type: 'string',
-                                    enum: schemaEnum,
-                                },
-                            }
-                        }
-                    }
-                }
-            };
-
-            // generate a random database-name
-            const name = randomCouchString(10);
-
-            // create a database
-            const db = await createRxDatabase({
-                name,
-                storage: getRxStoragePouch('memory'),
-                ignoreDuplicate: true
-            });
-            // create a collection
-            const colName = randomCouchString(10);
-            const collections = await db.addCollections({
-                [colName]: {
-                    schema: mySchema
-                }
-            });
-            const collection = collections[colName];
-
-            // insert a document
-            const child1 = {
-                name: 'foo',
-                abLetter: 'A'
-            };
-            const child2 = {
-                name: 'bar',
-                abLetter: 'B'
-            };
-            const doc = await collection.insert({
-                id: randomCouchString(12),
-                children: [
-                    child1,
-                    child2
-                ],
-            });
-
-            const colDoc = await collection.findOne({
-                selector: {
-                    id: doc.id
-                }
-            }).exec();
-
-
-            try {
-                await colDoc.update({
-                    $set: {
-                        'children.1.abLetter': 'invalidEnumValue',
-                    },
-                });
-            } catch (err) { }
-
-            assert.strictEqual(colDoc.children[1].abLetter, 'B');
-
-
-            // clean up afterwards
             db.destroy();
         });
         it('#830 should return a rejected promise when already deleted', async () => {

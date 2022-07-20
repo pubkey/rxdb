@@ -27,7 +27,6 @@ import {
     createRxSchema
 } from '../../rx-schema';
 import {
-    RxError,
     newRxError
 } from '../../rx-error';
 import {
@@ -403,25 +402,6 @@ export function migrateDocumentData(
          */
         if (!doc._meta) {
             doc._meta = getDefaultRxDocumentMeta();
-        }
-
-        // check final schema
-        try {
-            oldCollection.newestCollection.schema.validate(doc);
-        } catch (err) {
-            const asRxError: RxError = err as any;
-            throw newRxError('DM2', {
-                fromVersion: oldCollection.version,
-                toVersion: oldCollection.newestCollection.schema.version,
-                originalDoc: docData,
-                finalDoc: doc,
-                /**
-                 * pass down data from parent error,
-                 * to make it better understandable what did not work
-                 */
-                errors: asRxError.parameters.errors,
-                schema: asRxError.parameters.schema
-            });
         }
         return doc;
     });

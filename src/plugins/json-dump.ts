@@ -15,7 +15,7 @@ import type {
     RxPlugin,
     RxDocumentData
 } from '../types';
-import { flatClone } from '../util';
+import { createRevision, flatClone, getDefaultRevision, now } from '../util';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -102,12 +102,26 @@ function importDumpRxCollection<RxDocType>(
         });
     }
 
-    const docs: RxDocumentData<RxDocType>[] = exportedJSON.docs
-        // validate schema
-        .map((doc: any) => this.schema.validate(doc));
-
+    const docs: RxDocType[] = exportedJSON.docs;
     return this.storageInstance.bulkWrite(
-        docs.map(document => ({ document })),
+        docs.map(docData => {
+            const document: RxDocumentData<RxDocType> = Object.assign(
+                {},
+                docData,
+                {
+                    _meta: {
+                        lwt: now()
+                    },
+                    _rev: getDefaultRevision(),
+                    _attachments: {},
+                    _deleted: false
+                }
+            );
+            document._rev = createRevision(document);
+            return {
+                document
+            }
+        }),
         'json-dump-import'
     );
 }

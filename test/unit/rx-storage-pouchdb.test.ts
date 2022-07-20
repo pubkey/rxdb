@@ -27,8 +27,6 @@ import * as schemaObjects from '../helper/schema-objects';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
-import { RxDBValidatePlugin } from '../../plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import { clone, waitUntil } from 'async-test-util';

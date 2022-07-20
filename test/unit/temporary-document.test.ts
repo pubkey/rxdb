@@ -93,20 +93,6 @@ config.parallel('temporary-document.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('negative', () => {
-            it('throw if schema missmatch', async () => {
-                const c = await humansCollection.create(0);
-                const docData: any = schemaObjects.human();
-                docData['foo'] = 'bar';
-                const newDoc = c.newDocument(docData);
-                await AsyncTestUtil.assertThrows(
-                    () => newDoc.save(),
-                    'RxError',
-                    'does not match'
-                );
-                c.database.destroy();
-            });
-        });
     });
     describe('ORM', () => {
         it('should be able to use ORM-functions', async () => {

@@ -22,8 +22,6 @@ import * as schemaObjects from '../helper/schema-objects';
 
 import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
-import { RxDBValidatePlugin } from '../../plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
 import {
     HumanDocumentType,
     humanMinimal,

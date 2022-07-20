@@ -1,31 +1,30 @@
 /**
  * this plugin validates documents before they can be inserted into the RxCollection.
- * It's using ajv as jsonschema-validator
- * @link https://github.com/epoberezkin/ajv
+ * It's using is-my-json-valid as jsonschema-validator
+ * @link https://github.com/mafintosh/is-my-json-valid
  */
-import Ajv from 'ajv';
+import isMyJsonValid from 'is-my-json-valid';
 import {
     newRxError
 } from '../rx-error';
-import type { RxJsonSchema } from '../types';
+import type {
+    RxJsonSchema
+} from '../types';
 import { wrappedValidateStorageFactory } from '../validate';
 
-
-const ajv = new Ajv();
-
-export const wrappedValidateAjvStorage = wrappedValidateStorageFactory(
+export const wrappedValidateIsMyJsonValidStorage = wrappedValidateStorageFactory(
     (schema: RxJsonSchema<any>) => {
-        const validator = ajv.compile(schema);
+        const validator = isMyJsonValid(schema as any);
         return (docData) => {
             const isValid = validator(docData);
             if (!isValid) {
                 throw newRxError('VD2', {
-                    errors: validator.errors as any,
+                    errors: validator.errors,
                     document: docData,
                     schema
                 });
             }
         };
     },
-    'ajv'
+    'is-my-json-valid'
 );

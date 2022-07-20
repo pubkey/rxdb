@@ -80,6 +80,7 @@ export * from './rx-storage-multiinstance';
 
 export * from './custom-index';
 export * from './query-planner';
+export * from './validate';
 
 export {
     _clearHook // used in tests

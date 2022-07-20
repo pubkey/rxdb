@@ -111,36 +111,6 @@ export class RxSchema<RxDocType = any> {
     }
 
     /**
-     * validate if the given document data matches the schema
-     * @param schemaPath if given, validates against deep-path of schema
-     * @throws {Error} if not valid
-     * @param obj equal to input-obj
-     *
-     */
-    public validate(obj: Partial<RxDocType> | any, schemaPath?: string): void {
-        if (!this.validateFullDocumentData) {
-            return;
-        } else {
-            const fullDocData = fillObjectDataBeforeInsert(this, obj);
-            return this.validateFullDocumentData(fullDocData, schemaPath);
-        }
-    }
-
-    /**
-     * @overwritten by the given validation plugin
-     */
-    public validateFullDocumentData(
-        _docData: RxDocumentData<RxDocType>,
-        _schemaPath?: string
-    ) {
-        /**
-         * This method might be overwritten by a validation plugin,
-         * otherwise do nothing, because if not validation plugin
-         * was added to RxDB, we assume all given data is valid.
-         */
-    }
-
-    /**
      * fills all unset fields with default-values if set
      */
     fillObjectWithDefaults(obj: any): any {

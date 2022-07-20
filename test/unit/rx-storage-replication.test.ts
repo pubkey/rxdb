@@ -36,8 +36,6 @@ import {
     RxDBKeyCompressionPlugin
 } from '../../plugins/key-compression';
 addRxPlugin(RxDBKeyCompressionPlugin);
-import { RxDBValidatePlugin } from '../../plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
 import * as schemas from '../helper/schemas';
 import deepEqual from 'fast-deep-equal';
 

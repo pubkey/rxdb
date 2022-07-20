@@ -1,5 +1,4 @@
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
@@ -133,23 +132,6 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(schemaObjects.simpleHuman());
 
                     assert.ok(hasRun);
-                    c.database.destroy();
-                });
-            });
-            describe('negative', () => {
-                it('should throw if hook invalidates schema', async () => {
-                    const c = await humansCollection.create(0);
-                    const human = schemaObjects.human();
-
-                    c.preInsert(function (doc: any) {
-                        doc.lastName = 1337;
-                    }, false);
-
-                    await AsyncTestUtil.assertThrows(
-                        () => c.insert(human),
-                        'RxError',
-                        'not match'
-                    );
                     c.database.destroy();
                 });
             });

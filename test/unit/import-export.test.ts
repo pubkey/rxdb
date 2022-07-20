@@ -97,49 +97,6 @@ config.parallel('import-export.test.js', () => {
                     col.database.destroy();
                     differentSchemaCol.database.destroy();
                 });
-                it('should not import if schema not matching', async () => {
-                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage(),
-                        password: randomCouchString(10)
-                    });
-                    const cols = await db.addCollections({
-                        enchuman: {
-                            schema: schemas.encryptedObjectHuman
-                        }
-                    });
-                    const col = cols.enchuman;
-
-
-                    const fns = [];
-                    for (let i = 0; i < 5; i++)
-                        fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-                    await Promise.all(fns);
-
-                    // empty collection with same schema
-                    const cols2 = await db.addCollections({
-                        enchuman2: {
-                            schema: schemas.encryptedObjectHuman
-                        }
-                    });
-                    const col2 = cols2.enchuman2;
-
-                    const json = await col.exportJSON();
-                    // add one with broken schema
-                    json.docs.push({
-                        foo: 'bar',
-                        _id: '0fg89sm5ui:1478730736884'
-                    } as any); // Explicitly set to 'any' because TS will catch this error
-                    await AsyncTestUtil.assertThrows(
-                        () => col2.importJSON(json),
-                        'RxError',
-                        [
-                            'firstName',
-                            'required'
-                        ]
-                    );
-                    db.destroy();
-                });
             });
         });
     });
@@ -297,8 +254,9 @@ config.parallel('import-export.test.js', () => {
                     const col2 = cols2.human;
 
                     const fns = [];
-                    for (let i = 0; i < 5; i++)
+                    for (let i = 0; i < 5; i++) {
                         fns.push(col.insert(schemaObjects.human()));
+                    }
                     await Promise.all(fns);
 
                     const json = await db.exportJSON();
@@ -311,54 +269,6 @@ config.parallel('import-export.test.js', () => {
                     const docs = await col2.find().exec();
                     assert.strictEqual(docs.length, 0);
 
-                    db.destroy();
-                    db2.destroy();
-                });
-                it('should not import if schema not matching', async () => {
-                    const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage(),
-                        multiInstance: true
-                    });
-                    const cols = await db.addCollections({
-                        enchuman: {
-                            schema: schemas.nestedHuman
-                        }
-                    });
-                    const col = cols.enchuman;
-
-                    const db2 = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.NestedHumanDocumentType> }>({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage(),
-                        multiInstance: true
-                    });
-                    await db2.addCollections({
-                        enchuman: {
-                            schema: schemas.nestedHuman
-                        }
-                    });
-
-                    const fns = [];
-                    for (let i = 0; i < 5; i++)
-                        fns.push(col.insert(schemaObjects.nestedHuman()));
-                    await Promise.all(fns);
-
-                    const json = await db.exportJSON();
-
-                    // add one with broken schema
-                    json.collections[0].docs.push({
-                        foo: 'bar',
-                        _id: '0fg89sm5ui:1478730736884'
-                    } as any); // Explicitly set to 'any' because TS will catch this error
-
-                    await AsyncTestUtil.assertThrows(
-                        () => db2.importJSON(json),
-                        'RxError',
-                        [
-                            'firstName',
-                            'required'
-                        ]
-                    );
                     db.destroy();
                     db2.destroy();
                 });

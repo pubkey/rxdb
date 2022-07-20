@@ -3,6 +3,10 @@
 
 <!-- CHANGELOG NEWEST -->
 - RENAME the `ajv-validate` plugin to `validate-ajv` to be in equal with the other validation plugins.
+- REFACTORED the [schema validation plugins](https://rxdb.info/schema-validation.html), they are no longer plugins but now they get wrapped around any other RxStorage.
+  - It allows us to run the validation inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
+  - It allows us to configure which `RxDatabase` instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

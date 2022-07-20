@@ -7,92 +7,40 @@ import ZSchema from 'z-schema';
 import {
     newRxError
 } from '../rx-error';
-import {
-    requestIdleCallbackIfAvailable
-} from '../util';
-import {
-    RxSchema
-} from '../rx-schema';
-import type { RxPlugin } from '../types';
-
-/**
- * cache the validators by the schema-hash
- * so we can reuse them when multiple collections have the same schema
- */
-const VALIDATOR_CACHE: Map<string, any> = new Map();
+import type { RxJsonSchema } from '../types';
+import { wrappedValidateStorageFactory } from '../validate';
 
 
-/**
- * returns the parsed validator from z-schema
- * @param schemaPath if given, the schema for the sub-path is used
- * @
- */
-function _getValidator(
-    rxSchema: RxSchema
-) {
-    const hash = rxSchema.hash;
-    if (!VALIDATOR_CACHE.has(hash)) {
-        const validator = new (ZSchema as any)();
-        const validatorFun = (obj: any) => {
-            validator.validate(obj, rxSchema.jsonSchema);
-            return validator;
+export const wrappedValidateZSchemaStorage = wrappedValidateStorageFactory(
+    (schema: RxJsonSchema<any>) => {
+        const validatorInstance = new (ZSchema as any)();
+        const validator = (obj: any) => {
+            validatorInstance.validate(obj, schema);
+            return validatorInstance;
         };
-        VALIDATOR_CACHE.set(hash, validatorFun);
-    }
-    return VALIDATOR_CACHE.get(hash);
-}
-
-/**
- * validates the given object against the schema
- * @param  schemaPath if given, the sub-schema will be validated
- * @throws {RxError} if not valid
- */
-function validateFullDocumentData(
-    this: RxSchema,
-    obj: any
-): any {
-    const validator = _getValidator(this);
-    const useValidator = validator(obj);
-    const errors: ZSchema.SchemaErrorDetail[] = useValidator.getLastErrors();
-    if (!errors) return obj;
-    else {
-        const formattedZSchemaErrors = (errors as any).map(({
-            title,
-            description,
-            message
-        }: any) => ({
-            title,
-            description,
-            message
-        }));
-        throw newRxError('VD2', {
-            errors: formattedZSchemaErrors,
-            obj,
-            schema: this.jsonSchema
-        });
-    }
-}
-
-const runAfterSchemaCreated = (rxSchema: RxSchema) => {
-    // pre-generate the validator-z-schema from the schema
-    requestIdleCallbackIfAvailable(() => _getValidator.bind(rxSchema, rxSchema));
-};
-
-export const RxDBValidateZSchemaPlugin: RxPlugin = {
-    name: 'validate-z-schema',
-    rxdb: true,
-    prototypes: {
-        /**
-         * set validate-function for the RxSchema.prototype
-         */
-        RxSchema: (proto: any) => {
-            proto._getValidator = _getValidator;
-            proto.validateFullDocumentData = validateFullDocumentData;
-        }
+        return (docData) => {
+            const useValidator = validator(docData);
+            if (useValidator === true) {
+                return;
+            }
+            const errors: ZSchema.SchemaErrorDetail[] = (useValidator as any).getLastErrors();
+            if (errors) {
+                const formattedZSchemaErrors = (errors as any).map(({
+                    title,
+                    description,
+                    message
+                }: any) => ({
+                    title,
+                    description,
+                    message
+                }));
+                throw newRxError('VD2', {
+                    errors: formattedZSchemaErrors,
+                    document: docData,
+                    schema
+                });
+            }
+        };
     },
-    hooks: {
-        createRxSchema: {
-            after: runAfterSchemaCreated
-        }
-    }
-};
+    'z-schema'
+);
