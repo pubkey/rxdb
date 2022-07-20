@@ -41,12 +41,12 @@ const validationImplementations: {
     ];
 
 validationImplementations.forEach(
-    validationImplementation => config.parallel('validate.test.js (' + validationImplementation.key + ') ', () => {
+    validationImplementation => describe('validate.test.js (' + validationImplementation.key + ') ', () => {
         const testContext = 'validate' + validationImplementation.key;
         const storage = validationImplementation.implementation({
             storage: config.storage.getStorage()
         });
-        describe('RxStorageInstance', () => {
+        config.parallel('RxStorageInstance', () => {
             function getRxStorageInstance<RxDocType>(schema: RxJsonSchema<RxDocType>) {
                 return storage.createStorageInstance<RxDocType>({
                     collectionName: randomCouchString(10),
@@ -281,7 +281,7 @@ validationImplementations.forEach(
                 });
             });
         });
-        describe('RxDatabase', () => {
+        config.parallel('RxDatabase', () => {
             describe('RxCollection().insert()', () => {
                 it('should not insert broken human (required missing)', async () => {
                     const db = await createRxDatabase({
@@ -501,7 +501,7 @@ validationImplementations.forEach(
                 });
             });
         });
-        describe('issues', () => {
+        config.parallel('issues', () => {
             it('#734 Invalid value persists in document after failed update', async () => {
                 // create a schema
                 const schemaEnum = ['A', 'B'];

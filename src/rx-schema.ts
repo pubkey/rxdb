@@ -31,7 +31,6 @@ import {
     normalizeRxJsonSchema
 } from './rx-schema-helper';
 import { overwritable } from './overwritable';
-import { fillObjectDataBeforeInsert } from './rx-collection-helper';
 
 export class RxSchema<RxDocType = any> {
     public indexes: MaybeReadonly<string[]>[];

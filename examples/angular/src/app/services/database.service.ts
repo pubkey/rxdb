@@ -12,7 +12,8 @@ import {
 
 import {
     createRxDatabase,
-    addRxPlugin
+    addRxPlugin,
+    RxStorage
 } from 'rxdb';
 
 import {
@@ -108,7 +109,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     await loadRxDBPlugins();
 
 
-    let storage = getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb');
+    let storage: RxStorage<any, any> = getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb');
     if (isDevMode()) {
         // we use the schema-validation only in dev-mode
         // this validates each document if it is matching the jsonschema
