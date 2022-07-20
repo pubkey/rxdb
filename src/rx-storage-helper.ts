@@ -27,6 +27,7 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
+    RxStorageInstanceCreationParams,
     RxStorageStatics,
     StringKeys
 } from './types';
@@ -44,28 +45,6 @@ import {
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
-
-/**
- * Returns all non-deleted documents
- * of the storage.
- */
-export async function getAllDocuments<RxDocType>(
-    primaryKey: keyof RxDocType,
-    storageInstance: RxStorageInstance<RxDocType, any, any>
-): Promise<RxDocumentData<RxDocType>[]> {
-    const storage = storageInstance.storage;
-    const getAllQueryPrepared = storage.statics.prepareQuery(
-        storageInstance.schema,
-        {
-            selector: {},
-            sort: [{ [primaryKey]: 'asc' } as any],
-            skip: 0
-        }
-    );
-    const queryResult = await storageInstance.query(getAllQueryPrepared);
-    const allDocs = queryResult.documents;
-    return allDocs;
-}
 
 export async function getSingleDocument<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any>,
@@ -676,7 +655,6 @@ export function getWrappedStorageInstance<
     }
 
     const ret: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
-        storage: storageInstance.storage,
         schema: storageInstance.schema,
         internals: storageInstance.internals,
         collectionName: storageInstance.collectionName,
@@ -871,11 +849,9 @@ export function getWrappedStorageInstance<
             );
         },
         resolveConflictResultionTask(taskSolution) {
-
             if (taskSolution.output.isEqual) {
                 return storageInstance.resolveConflictResultionTask(taskSolution);
             }
-
             const hookParams = {
                 database,
                 primaryPath,
@@ -910,4 +886,17 @@ export function getWrappedStorageInstance<
         }
     };
     return ret;
+}
+
+/**
+ * Each RxStorage implementation should
+ * run this method at the first step of createStorageInstance()
+ * to ensure that the configuration is correct.
+ */
+export function ensureRxStorageInstanceParamsAreCorrect(
+    params: RxStorageInstanceCreationParams<any, any>
+) {
+    if (params.schema.keyCompression) {
+        throw newRxError('UT5', { args: { params } });
+    }
 }

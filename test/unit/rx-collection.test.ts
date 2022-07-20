@@ -39,6 +39,7 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
+import { wrappedKeyCompressionStorage } from '../../plugins/key-compression';
 
 import { RxDBUpdatePlugin } from '../../plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
@@ -46,7 +47,7 @@ import { RxDBMigrationPlugin } from '../../plugins/migration';
 addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
-import { HumanDocumentType } from '../helper/schemas';
+import { enableKeyCompression, HumanDocumentType } from '../helper/schemas';
 import { RxDocumentData } from '../../src/types';
 
 describe('rx-collection.test.js', () => {
@@ -122,11 +123,13 @@ describe('rx-collection.test.js', () => {
                 it('should create compound-indexes (keyCompression: true)', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: wrappedKeyCompressionStorage({
+                            storage: getRxStoragePouch('memory')
+                        })
                     });
                     await db.addCollections({
                         human: {
-                            schema: schemas.compoundIndex
+                            schema: enableKeyCompression(schemas.compoundIndex)
                         }
                     });
                     const collection = db.collections.human;

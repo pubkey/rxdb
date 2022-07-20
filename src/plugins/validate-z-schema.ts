@@ -8,7 +8,7 @@ import {
     newRxError
 } from '../rx-error';
 import type { RxJsonSchema } from '../types';
-import { wrappedValidateStorageFactory } from '../validate';
+import { wrappedValidateStorageFactory } from '../plugin-helpers';
 
 
 export const wrappedValidateZSchemaStorage = wrappedValidateStorageFactory(

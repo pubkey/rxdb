@@ -28,10 +28,8 @@ import {
 } from '../../';
 
 import {
-    getCompressionStateByRxJsonSchema,
-    RxDBKeyCompressionPlugin
+    getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
 import * as schemas from '../helper/schemas';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
@@ -198,6 +196,32 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }))
                 );
                 await Promise.all(instances.map(instance => instance.close()));
+            });
+            /**
+             * This test ensures that people do not accidentially set
+             * keyCompression: true in the schema but then forget to use
+             * the key-compression RxStorage wrapper.
+             */
+            it('must throw if keyCompression is set but no key-compression plugin is used', async () => {
+                const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
+                schema.keyCompression = true;
+
+                let hasThrown = false;
+                try {
+                    await config.storage.getStorage().createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
+                } catch (error: any) {
+                    const errorString = error.toString();
+                    assert.ok(errorString.includes('UT5'));
+                    hasThrown = true;
+                }
+                assert.ok(hasThrown);
             });
         });
         describe('.bulkWrite()', () => {

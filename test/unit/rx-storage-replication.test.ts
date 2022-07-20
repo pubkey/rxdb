@@ -3,7 +3,6 @@ import assert from 'assert';
 import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    addRxPlugin,
     randomCouchString,
     now,
     fillWithDefaultSettings,
@@ -32,10 +31,6 @@ import {
     RxLocalDocumentData,
     RX_LOCAL_DOCUMENT_SCHEMA
 } from '../../plugins/local-documents';
-import {
-    RxDBKeyCompressionPlugin
-} from '../../plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
 import * as schemas from '../helper/schemas';
 import deepEqual from 'fast-deep-equal';
 
@@ -164,7 +159,8 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
         storageInstance: RxStorageInstance<RxDocType, any, any>,
         mangoQuery: MangoQuery<RxDocType> = {}
     ): Promise<RxDocumentData<RxDocType>[]> {
-        const preparedQuery = storageInstance.storage.statics.prepareQuery(
+        const storage = config.storage.getStorage();
+        const preparedQuery = storage.statics.prepareQuery(
             storageInstance.schema,
             normalizeMangoQuery(
                 storageInstance.schema,

@@ -7,8 +7,11 @@ import Ajv from 'ajv';
 import {
     newRxError
 } from '../rx-error';
-import type { RxJsonSchema } from '../types';
-import { wrappedValidateStorageFactory } from '../validate';
+import type {
+    RxDocumentData,
+    RxJsonSchema
+} from '../types';
+import { wrappedValidateStorageFactory } from '../plugin-helpers';
 
 
 const ajv = new Ajv();
@@ -16,7 +19,7 @@ const ajv = new Ajv();
 export const wrappedValidateAjvStorage = wrappedValidateStorageFactory(
     (schema: RxJsonSchema<any>) => {
         const validator = ajv.compile(schema);
-        return (docData) => {
+        return (docData: RxDocumentData<any>) => {
             const isValid = validator(docData);
             if (!isValid) {
                 throw newRxError('VD2', {

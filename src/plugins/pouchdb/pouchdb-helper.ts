@@ -28,6 +28,9 @@ export type PouchStorageInternals = {
     pouch: PouchDBInstance;
 };
 
+
+export const RX_STORAGE_NAME_POUCHDB = 'pouchdb';
+
 /**
  * Used to check in tests if all instances have been cleaned up.
  */

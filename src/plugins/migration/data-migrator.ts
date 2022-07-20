@@ -43,7 +43,8 @@ import type {
     RxJsonSchema,
     RxDocumentData,
     RxStorageInstanceCreationParams,
-    InternalStoreCollectionDocType
+    InternalStoreCollectionDocType,
+    RxStorageInstance
 } from '../../types';
 import {
     RxSchema,
@@ -55,13 +56,13 @@ import {
 } from './migration-state';
 import { map } from 'rxjs/operators';
 import {
-    getAllDocuments,
     getWrappedStorageInstance
 } from '../../rx-storage-helper';
 import {
     getPrimaryKeyOfInternalDocument,
     INTERNAL_CONTEXT_COLLECTION
 } from '../../rx-database-internal-store';
+import { normalizeMangoQuery } from '../../rx-query-helper';
 
 export class DataMigrator {
 
@@ -120,11 +121,29 @@ export class DataMigrator {
                 .then(ret => {
                     this.nonMigratedOldCollections = ret;
                     this.allOldCollections = this.nonMigratedOldCollections.slice(0);
+
+                    const getAllDocuments = async (
+                        storageInstance: RxStorageInstance<any, any, any>,
+                        schema: RxJsonSchema<any>
+                    ): Promise<RxDocumentData<any>[]> => {
+                        const storage = this.database.storage;
+                        const getAllQueryPrepared = storage.statics.prepareQuery(
+                            storageInstance.schema,
+                            normalizeMangoQuery(
+                                schema,
+                                {}
+                            )
+                        );
+                        const queryResult = await storageInstance.query(getAllQueryPrepared);
+                        const allDocs = queryResult.documents;
+                        return allDocs;
+                    }
+
                     const countAll: Promise<number[]> = Promise.all(
                         this.nonMigratedOldCollections
                             .map(oldCol => getAllDocuments(
-                                oldCol.schema.primaryPath,
-                                oldCol.storageInstance
+                                oldCol.storageInstance,
+                                oldCol.schema.jsonSchema
                             ).then(allDocs => allDocs.length))
                     );
                     return countAll;

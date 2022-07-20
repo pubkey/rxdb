@@ -23,10 +23,11 @@ import {
     createLokiStorageInstance,
     RxStorageInstanceLoki
 } from './rx-storage-instance-loki';
-import { getLokiSortComparator } from './lokijs-helper';
+import { getLokiSortComparator, RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
 import type { LeaderElector } from 'broadcast-channel';
 
 import { binaryMd5 } from 'pouchdb-md5';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 
 export const RxStorageLokiStatics: RxStorageStatics = {
 
@@ -109,7 +110,7 @@ export const RxStorageLokiStatics: RxStorageStatics = {
 }
 
 export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
-    public name = 'lokijs';
+    public name = RX_STORAGE_NAME_LOKIJS;
     public statics = RxStorageLokiStatics;
 
     /**
@@ -133,6 +134,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
     public createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
     ): Promise<RxStorageInstanceLoki<RxDocType>> {
+        ensureRxStorageInstanceParamsAreCorrect(params);
         return createLokiStorageInstance(this, params, this.databaseSettings);
     }
 }

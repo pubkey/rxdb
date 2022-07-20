@@ -64,7 +64,7 @@ export function getQueryParams<RxDocType>(
          * we send for example compressed documents to be sorted by compressed queries.
          */
         const sortComparator = collection.database.storage.statics.getSortComparator(
-            collection.storageInstance.schema,
+            collection.schema.jsonSchema,
             preparedQuery
         );
 
@@ -84,7 +84,7 @@ export function getQueryParams<RxDocType>(
          * we send for example compressed documents to match compressed queries.
          */
         const queryMatcher = collection.database.storage.statics.getQueryMatcher(
-            collection.storageInstance.schema,
+            collection.schema.jsonSchema,
             preparedQuery
         );
         const useQueryMatcher: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {

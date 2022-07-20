@@ -134,13 +134,11 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
     }
 }
 
-
 export function getCheckpointKey<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
 ): string {
     const hash = fastUnsecureHash([
         input.identifier,
-        input.forkInstance.storage.name,
         input.forkInstance.databaseName,
         input.forkInstance.collectionName
     ].join('||'));

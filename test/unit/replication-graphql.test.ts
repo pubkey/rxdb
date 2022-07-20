@@ -37,6 +37,9 @@ import {
     RxGraphQLReplicationState
 } from '../../plugins/replication-graphql';
 import {
+    wrappedKeyCompressionStorage
+} from '../../plugins/key-compression';
+import {
     getLastPullDocument,
     getLastPushCheckpoint,
     RxReplicationError,
@@ -59,6 +62,7 @@ import {
     parse as parseQuery
 } from 'graphql';
 import { RxDocumentData } from '../../src/types';
+import { enableKeyCompression } from '../helper/schemas';
 
 declare type WithDeleted<T> = T & { deleted: boolean };
 
@@ -1728,7 +1732,9 @@ describe('replication-graphql.test.ts', () => {
                 }
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: config.storage.getStorage(),
+                    storage: wrappedKeyCompressionStorage({
+                        storage: config.storage.getStorage(),
+                    }),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
@@ -1774,17 +1780,17 @@ describe('replication-graphql.test.ts', () => {
             it('push should work with keyCompression', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: config.storage.getStorage(),
+                    storage: wrappedKeyCompressionStorage({
+                        storage: config.storage.getStorage()
+                    }),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
                     password: randomCouchString(10)
                 });
-                const schema = clone(schemas.humanWithTimestamp);
-                schema.keyCompression = true;
                 const collections = await db.addCollections({
                     humans: {
-                        schema
+                        schema: enableKeyCompression(schemas.humanWithTimestamp)
                     }
                 });
                 const collection = collections.humans;

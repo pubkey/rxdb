@@ -14,9 +14,9 @@ import {
     getHeightOfRevision,
     blobBufferUtil,
     lastOfArray,
-    getAllDocuments,
     RxCollection,
     createRevision,
+    normalizeMangoQuery,
 } from '../../';
 
 import {
@@ -353,10 +353,13 @@ config.parallel('data-migration.test.js', () => {
                             );
                     }
 
-                    const undeleted = await getAllDocuments(
-                        old.schema.primaryPath,
-                        old.storageInstance
+                    const undeletedResult = await old.storageInstance.query(
+                        col.database.storage.statics.prepareQuery(
+                            col.schema.jsonSchema,
+                            normalizeMangoQuery(col.schema.jsonSchema, {})
+                        )
                     );
+                    const undeleted = undeletedResult.documents;
                     const amount = undeleted.length;
                     assert.strictEqual(amount, 10);
 

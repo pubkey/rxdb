@@ -5,7 +5,11 @@ import type {
     RxStorage,
     RxStorageInstanceCreationParams
 } from './types';
-import { fastUnsecureHash, getFromMapOrThrow, requestIdleCallbackIfAvailable } from './util';
+import {
+    fastUnsecureHash,
+    getFromMapOrThrow,
+    requestIdleCallbackIfAvailable
+} from './util';
 
 
 type WrappedStorageFunction = <Internals, InstanceCreationOptions>(
@@ -95,3 +99,55 @@ export function wrappedValidateStorageFactory(
     };
 
 }
+
+
+
+// /**
+//  * This factory is used in any storage wrapper
+//  * that transforms data that goes in- and out of the RxStorageInstance.
+//  */
+// export function wrappedTransformStorageFactory(
+//     transformSchema: (schema: RxJsonSchema<any>) => RxJsonSchema<any>,
+//     transformToStorage: (docData: RxDocumentData<any>) => RxDocumentData<any>,
+//     transformFromStorage: (docData: RxDocumentData<any>) => RxDocumentData<any>
+// ): WrappedStorageFunction {
+
+
+//     return (args) => {
+//         return Object.assign(
+//             {},
+//             args.storage,
+//             {
+//                 async createStorageInstance<RxDocType>(
+//                     params: RxStorageInstanceCreationParams<RxDocType, any>
+//                 ) {
+//                     const instance = await args.storage.createStorageInstance(params);
+//                     /**
+//                      * Lazy initialize the validator
+//                      * to save initial page load performance.
+//                      * Some libraries take really long to initialize the validator
+//                      * from the schema.
+//                      */
+//                     let validatorCached: ValidatorFunction;
+//                     requestIdleCallbackIfAvailable(() => validatorCached = initValidator(params.schema));
+
+//                     const oldBulkWrite = instance.bulkWrite.bind(instance);
+//                     instance.bulkWrite = (
+//                         documentWrites: BulkWriteRow<RxDocType>[],
+//                         context: string
+//                     ) => {
+//                         if (!validatorCached) {
+//                             validatorCached = initValidator(params.schema);
+//                         }
+//                         documentWrites.forEach(row => {
+//                             validatorCached(row.document);
+//                         });
+//                         return oldBulkWrite(documentWrites, context);
+//                     }
+
+//                     return instance;
+//                 }
+//             }
+//         );
+//     };
+// }

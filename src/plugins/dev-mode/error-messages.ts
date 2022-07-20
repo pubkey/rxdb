@@ -6,13 +6,14 @@
 
 
 export const ERROR_MESSAGES = {
-    // util.js
+    // util.js / config
     UT1: 'given name is no string or empty',
     UT2: `collection- and database-names must match the regex to be compatible with couchdb databases.
     See https://neighbourhood.ie/blog/2020/10/13/everything-you-need-to-know-about-couchdb-database-names/
     info: if your database-name specifies a folder, the name must contain the slash-char '/' or '\\'`,
     UT3: 'replication-direction must either be push or pull or both. But not none',
     UT4: 'given leveldown is no valid adapter',
+    UT5: 'keyCompression is set to true in the schema but no key-compression handler is used in the storage',
 
     // plugins
     PL1: 'Given plugin is not RxDB plugin. Pouchdb plugins must be added via addPouchPlugin()',

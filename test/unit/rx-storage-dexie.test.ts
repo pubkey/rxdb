@@ -2,7 +2,6 @@ import assert from 'assert';
 
 import config from './config';
 import {
-    addRxPlugin,
     clone,
     ensureNotFalsy,
     fillWithDefaultSettings,
@@ -19,9 +18,6 @@ import {
 } from '../../plugins/dexie';
 
 import * as schemaObjects from '../helper/schema-objects';
-
-import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
 import {
     HumanDocumentType,
     humanMinimal,

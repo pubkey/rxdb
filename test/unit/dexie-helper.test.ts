@@ -1,17 +1,7 @@
 import assert from 'assert';
 
 import config from './config';
-import {
-    addRxPlugin,
-
-
-} from '../../';
-
-import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
-
-addRxPlugin(RxDBKeyCompressionPlugin);
 import { fromStorageToDexie, fromDexieToStorage } from '../../plugins/dexie';
-
 
 /**
  * Dexie Helper tests

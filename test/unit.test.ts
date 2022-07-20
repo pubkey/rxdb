@@ -24,6 +24,8 @@ import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 import './unit/rx-storage-replication.test';
 
+import './unit/key-compression.test';
+
 import './unit/instance-of-check.test';
 import './unit/rx-schema.test';
 import './unit/bug-report.test';
@@ -39,7 +41,6 @@ import './unit/temporary-document.test';
 import './unit/change-event-buffer.test';
 import './unit/cache-replacement-policy.test';
 import './unit/query-builder.test';
-import './unit/key-compression.test';
 import './unit/idle-queue.test';
 import './unit/conflict-handling.test';
 import './unit/event-reduce.test';

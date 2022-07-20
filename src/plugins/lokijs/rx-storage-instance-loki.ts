@@ -45,7 +45,8 @@ import {
     getLokiLeaderElector,
     requestRemoteInstance,
     mustUseLocalState,
-    handleRemoteRequest
+    handleRemoteRequest,
+    RX_STORAGE_NAME_LOKIJS
 } from './lokijs-helper';
 import type {
     Collection
@@ -430,6 +431,7 @@ export async function createLokiStorageInstance<RxDocType>(
     );
 
     addRxStorageMultiInstanceSupport(
+        RX_STORAGE_NAME_LOKIJS,
         params,
         instance,
         internals.leaderElector ? internals.leaderElector.broadcastChannel : undefined

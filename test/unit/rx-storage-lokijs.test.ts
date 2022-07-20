@@ -19,8 +19,6 @@ import * as humansCollections from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 
-import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
 import { waitUntil } from 'async-test-util';
 import * as path from 'path';
 import * as fs from 'fs';

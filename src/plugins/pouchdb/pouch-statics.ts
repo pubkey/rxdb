@@ -137,10 +137,10 @@ export const RxStoragePouchStatics: RxStorageStatics = {
 };
 
 /**
-     * pouchdb has many bugs and strange behaviors
-     * this functions takes a normal mango query
-     * and transforms it to one that fits for pouchdb
-     */
+ * pouchdb has many bugs and strange behaviors
+ * this functions takes a normal mango query
+ * and transforms it to one that fits for pouchdb
+ */
 export function preparePouchDbQuery<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     mutateableQuery: MangoQuery<RxDocType>

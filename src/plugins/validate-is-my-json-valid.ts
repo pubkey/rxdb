@@ -10,7 +10,7 @@ import {
 import type {
     RxJsonSchema
 } from '../types';
-import { wrappedValidateStorageFactory } from '../validate';
+import { wrappedValidateStorageFactory } from '../plugin-helpers';
 
 export const wrappedValidateIsMyJsonValidStorage = wrappedValidateStorageFactory(
     (schema: RxJsonSchema<any>) => {

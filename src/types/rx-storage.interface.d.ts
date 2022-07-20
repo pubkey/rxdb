@@ -143,7 +143,7 @@ export type RxStorageStatics = Readonly<{
      * when the query is used multiple times.
      *
      * @returns a format of the query that can be used with the storage
-     * when calling .query()
+     * when calling RxStorageInstance().query()
      */
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
@@ -189,14 +189,6 @@ export interface RxStorageInstance<
     InstanceCreationOptions,
     CheckpointType = any
     > {
-
-    /**
-     * The RxStorage which was used to create the given instance.
-     * We need this here to make it easy to get access static methods and stuff
-     * when working with the RxStorageInstance.
-     */
-    readonly storage: RxStorage<Internals, InstanceCreationOptions>;
-
     readonly databaseName: string;
     /**
      * Returns the internal data that is used by the storage engine.
