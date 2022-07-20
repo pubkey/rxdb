@@ -41,12 +41,12 @@ const validationImplementations: {
     ];
 
 validationImplementations.forEach(
-    validationImplementation => describe('validate.test.js (' + validationImplementation.key + ') ', () => {
+    validationImplementation => config.parallel('validate.test.js (' + validationImplementation.key + ') ', () => {
         const testContext = 'validate' + validationImplementation.key;
         const storage = validationImplementation.implementation({
             storage: config.storage.getStorage()
         });
-        config.parallel('RxStorageInstance', () => {
+        describe('RxStorageInstance', () => {
             function getRxStorageInstance<RxDocType>(schema: RxJsonSchema<RxDocType>) {
                 return storage.createStorageInstance<RxDocType>({
                     collectionName: randomCouchString(10),
@@ -77,7 +77,7 @@ validationImplementations.forEach(
                     await instance.bulkWrite([{
                         document: toRxDocumentData(schemaObjects.human())
                     }], testContext);
-                    instance.close();
+                    await instance.close();
                 });
 
                 it('validate one point', async () => {
@@ -85,7 +85,7 @@ validationImplementations.forEach(
                     await instance.bulkWrite([{
                         document: toRxDocumentData(schemaObjects.point())
                     }], testContext);
-                    instance.close();
+                    await instance.close();
                 });
                 it('validate without non-required', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
@@ -95,7 +95,7 @@ validationImplementations.forEach(
                     await instance.bulkWrite([{
                         document: toRxDocumentData(obj)
                     }], testContext);
-                    instance.close();
+                    await instance.close();
                 });
                 it('validate nested', async () => {
                     const instance = await getRxStorageInstance(schemas.nestedHuman);
@@ -103,7 +103,7 @@ validationImplementations.forEach(
                     await instance.bulkWrite([{
                         document: toRxDocumentData(obj)
                     }], testContext);
-                    instance.close();
+                    await instance.close();
                 });
             });
             describe('negative', () => {
@@ -118,7 +118,7 @@ validationImplementations.forEach(
                         'RxError',
                         'VD2'
                     );
-                    instance.close();
+                    await instance.close();
                 });
                 it('required field not given', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
@@ -132,7 +132,7 @@ validationImplementations.forEach(
                         'RxError',
                         'required'
                     );
-                    instance.close();
+                    await instance.close();
                 });
                 it('overflow maximum int', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
@@ -146,7 +146,7 @@ validationImplementations.forEach(
                         'RxError',
                         'maximum'
                     );
-                    instance.close();
+                    await instance.close();
                 });
                 it('additional property', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
@@ -160,7 +160,7 @@ validationImplementations.forEach(
                         'RxError',
                         'dditional properties'
                     );
-                    instance.close();
+                    await instance.close();
                 });
                 it('should respect nested additionalProperties: false', async () => {
                     const jsonSchema: any = clone(schemas.heroArray);
@@ -183,7 +183,7 @@ validationImplementations.forEach(
                         'RxError',
                         'dditional properties'
                     );
-                    instance.close();
+                    await instance.close();
                 });
                 it('do not allow primary==null', async () => {
                     const instance = await getRxStorageInstance(schemas.primaryHuman);
@@ -196,7 +196,7 @@ validationImplementations.forEach(
                         'RxError',
                         'not match'
                     );
-                    instance.close();
+                    await instance.close();
                 });
                 it('should throw if enum does not match', async () => {
                     const schema: RxJsonSchema<{ id: string; childProperty: 'A' | 'B' | 'C' }> = {
@@ -236,7 +236,7 @@ validationImplementations.forEach(
                         'enum'
                     );
 
-                    instance.close();
+                    await instance.close();
                 });
             });
             describe('error layout', () => {
@@ -255,7 +255,7 @@ validationImplementations.forEach(
                         hasThrown = true;
                     }
                     assert.ok(hasThrown);
-                    instance.close();
+                    await instance.close();
                 });
                 it('final fields should be required', async () => {
                     const instance = await getRxStorageInstance(schemas.humanFinal);
@@ -277,11 +277,11 @@ validationImplementations.forEach(
                         hasThrown = true;
                     }
                     assert.ok(hasThrown);
-                    instance.close();
+                    await instance.close();
                 });
             });
         });
-        config.parallel('RxDatabase', () => {
+        describe('RxDatabase', () => {
             describe('RxCollection().insert()', () => {
                 it('should not insert broken human (required missing)', async () => {
                     const db = await createRxDatabase({
@@ -390,7 +390,7 @@ validationImplementations.forEach(
                         'RxError',
                         'not match'
                     );
-                    db.destroy();
+                    await db.destroy();
                 });
             });
             describe('RxCollection().atomicUpsert()', () => {
@@ -501,7 +501,7 @@ validationImplementations.forEach(
                 });
             });
         });
-        config.parallel('issues', () => {
+        describe('issues', () => {
             it('#734 Invalid value persists in document after failed update', async () => {
                 // create a schema
                 const schemaEnum = ['A', 'B'];

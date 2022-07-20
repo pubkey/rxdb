@@ -215,6 +215,13 @@ export function getRxStorageWorker(
     return storage;
 }
 
+/**
+ * TODO we have a bug.
+ * When the exact same RxStorage opens and closes
+ * many RxStorage instances, then it might happen
+ * that some calls to createStorageInstance() time out,
+ * because the worker thread is in the closing state.
+ */
 export async function removeWorkerRef(
     instance: RxStorageInstanceWorker<any>
 ) {
