@@ -57,39 +57,41 @@ export function wrappedValidateStorageFactory(
     }
 
     return (args) => {
-        return {
-            name: args.storage.name,
-            statics: args.storage.statics,
-            async createStorageInstance<RxDocType>(
-                params: RxStorageInstanceCreationParams<RxDocType, any>
-            ) {
-                const instance = await args.storage.createStorageInstance(params);
-                /**
-                 * Lazy initialize the validator
-                 * to save initial page load performance.
-                 * Some libraries take really long to initialize the validator
-                 * from the schema.
-                 */
-                let validatorCached: ValidatorFunction;
-                requestIdleCallbackIfAvailable(() => validatorCached = initValidator(params.schema));
+        return Object.assign(
+            {},
+            args.storage,
+            {
+                async createStorageInstance<RxDocType>(
+                    params: RxStorageInstanceCreationParams<RxDocType, any>
+                ) {
+                    const instance = await args.storage.createStorageInstance(params);
+                    /**
+                     * Lazy initialize the validator
+                     * to save initial page load performance.
+                     * Some libraries take really long to initialize the validator
+                     * from the schema.
+                     */
+                    let validatorCached: ValidatorFunction;
+                    requestIdleCallbackIfAvailable(() => validatorCached = initValidator(params.schema));
 
-                const oldBulkWrite = instance.bulkWrite.bind(instance);
-                instance.bulkWrite = (
-                    documentWrites: BulkWriteRow<RxDocType>[],
-                    context: string
-                ) => {
-                    if (!validatorCached) {
-                        validatorCached = initValidator(params.schema);
+                    const oldBulkWrite = instance.bulkWrite.bind(instance);
+                    instance.bulkWrite = (
+                        documentWrites: BulkWriteRow<RxDocType>[],
+                        context: string
+                    ) => {
+                        if (!validatorCached) {
+                            validatorCached = initValidator(params.schema);
+                        }
+                        documentWrites.forEach(row => {
+                            validatorCached(row.document);
+                        });
+                        return oldBulkWrite(documentWrites, context);
                     }
-                    documentWrites.forEach(row => {
-                        validatorCached(row.document);
-                    });
-                    return oldBulkWrite(documentWrites, context);
-                }
 
-                return instance;
+                    return instance;
+                }
             }
-        }
+        );
     };
 
 }
