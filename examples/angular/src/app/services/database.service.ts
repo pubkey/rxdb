@@ -66,8 +66,6 @@ function doSync(): boolean {
  * Loads RxDB plugins
  */
 async function loadRxDBPlugins(): Promise<void> {
-
-
     addRxPlugin(RxDBReplicationCouchDBPlugin);
     // http-adapter is always needed for replication with the node-server
     addPouchPlugin(PouchdbAdapterHttp);
@@ -96,12 +94,6 @@ async function loadRxDBPlugins(): Promise<void> {
             // which does many checks and add full error-messages
             import('rxdb/plugins/dev-mode').then(
                 module => addRxPlugin(module as any)
-            ),
-
-            // we use the schema-validation only in dev-mode
-            // this validates each document if it is matching the jsonschema
-            import('rxdb/plugins/validate').then(
-                module => addRxPlugin(module as any)
             )
         ]);
     } else { }
@@ -115,17 +107,18 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     await loadRxDBPlugins();
 
+
+    let storage = getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb');
+    if (isDevMode()) {
+        // we use the schema-validation only in dev-mode
+        // this validates each document if it is matching the jsonschema
+        storage = wrappedValidateIsMyJsonValidStorage({ storage });
+    }
+
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase<RxHeroesCollections>({
         name: DATABASE_NAME,
-        /**
-         * Because we directly store user input,
-         * we use the validation wrapper to ensure
-         * that the user can only input valid data.
-         */
-        storage: wrappedValidateIsMyJsonValidStorage({
-            storage: getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb')
-        }),
+        storage,
         multiInstance: !IS_SERVER_SIDE_RENDERING
         // password: 'myLongAndStupidPassword' // no password needed
     });

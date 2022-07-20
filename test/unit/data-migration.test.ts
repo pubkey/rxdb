@@ -649,31 +649,6 @@ config.parallel('data-migration.test.js', () => {
                     assert.ok(failed);
                     await col.database.destroy();
                 });
-                it('should contain the schema validation error in the thrown object', async () => {
-                    const col = await humansCollection.createMigrationCollection(5, {
-                        3: (docData: SimpleHumanV3DocumentType) => {
-                            /**
-                             * Delete required age-field
-                             * to provoke schema validation error
-                             */
-                            delete (docData as any).age;
-                            return docData;
-                        }
-                    });
-
-                    let hasThrown = false;
-                    try {
-                        await col.migratePromise();
-                    } catch (err) {
-                        hasThrown = true;
-                        /**
-                         * Should contain the validation errors
-                         */
-                        assert.ok(JSON.stringify((err as RxError).parameters.errors).includes('data.age'));
-                    }
-                    assert.ok(hasThrown);
-                    await col.database.destroy();
-                });
             });
         });
     });
