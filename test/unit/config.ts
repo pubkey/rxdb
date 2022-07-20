@@ -119,7 +119,7 @@ export function setDefaultStorage(storageKey: string) {
              */
         case 'memory-validation':
             config.storage = {
-                name: 'memory',
+                name: 'memory-validation',
                 getStorage: () => getRxStorageMemory(),
                 getPerformanceStorage() {
                     return {
