@@ -96,14 +96,9 @@ import type {
 import {
     RxSchema
 } from './rx-schema';
-import {
-    createWithConstructor as createRxDocumentWithConstructor,
-    isRxDocument
-} from './rx-document';
 
 import {
-    createRxDocument,
-    getRxDocumentConstructor
+    createRxDocument
 } from './rx-document-prototype-merge';
 import {
     getWrappedStorageInstance,
@@ -288,31 +283,13 @@ export class RxCollectionBase<
     async insert(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        // inserting a temporary-document
-        let tempDoc: RxDocument | null = null;
-        if (isRxDocument(json)) {
-            tempDoc = json as RxDocument;
-            if (!tempDoc._isTemporary) {
-                throw newRxError('COL1', {
-                    data: json
-                });
-            }
-            json = tempDoc.toJSON() as any;
-        }
-
         const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this.schema, json);
         const writeResult = await this.bulkInsert([useJson]);
 
         const isError = writeResult.error[0];
         throwIfIsStorageWriteError(this as any, useJson[this.schema.primaryPath] as any, json, isError);
         const insertResult = ensureNotFalsy(writeResult.success[0]);
-
-        if (tempDoc) {
-            tempDoc._dataSync$.next(insertResult._data);
-            return tempDoc as any;
-        } else {
-            return insertResult;
-        }
+        return insertResult;
     }
 
     async bulkInsert(
@@ -846,22 +823,6 @@ export class RxCollectionBase<
         const hooks = this.getHooks(when, key);
         if (!hooks) return;
         hooks.series.forEach((hook: any) => hook(data, instance));
-    }
-
-    /**
-     * creates a temporaryDocument which can be saved later
-     */
-    newDocument(docData: Partial<RxDocumentType> = {}): RxDocument<RxDocumentType, OrmMethods> {
-        const filledDocData: RxDocumentData<RxDocumentType> = this.schema.fillObjectWithDefaults(docData);
-        const doc: any = createRxDocumentWithConstructor(
-            getRxDocumentConstructor(this as any),
-            this as any,
-            filledDocData
-        );
-        doc._isTemporary = true;
-
-        this._runHooksSync('post', 'create', docData, doc);
-        return doc as any;
     }
 
     /**

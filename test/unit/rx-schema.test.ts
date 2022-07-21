@@ -323,7 +323,7 @@ config.parallel('rx-schema.test.js', () => {
                         primaryKey: 'collection',
                         type: 'object',
                         properties: {
-                            'collection': {
+                            collection: {
                                 type: 'string',
                                 maxLength: 100
                             }
@@ -334,11 +334,11 @@ config.parallel('rx-schema.test.js', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',
                         version: 0,
-                        description: 'save as fieldname',
-                        primaryKey: 'save',
+                        description: 'populate as fieldname',
+                        primaryKey: 'populate',
                         type: 'object',
                         properties: {
-                            'save': {
+                            populate: {
                                 type: 'string',
                                 maxLength: 100
                             }
@@ -348,7 +348,7 @@ config.parallel('rx-schema.test.js', () => {
                 it('throw when no version', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',
-                        description: 'save as fieldname',
+                        description: 'schema without version',
                         type: 'object',
                         properties: {
                             'foobar': {
@@ -361,7 +361,7 @@ config.parallel('rx-schema.test.js', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',
                         version: -10,
-                        description: 'save as fieldname',
+                        description: 'schema with negative version',
                         primaryKey: 'foobar',
                         type: 'object',
                         properties: {

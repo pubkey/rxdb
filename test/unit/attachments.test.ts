@@ -766,10 +766,9 @@ config.parallel('attachments.test.ts', () => {
                 }
             });
             const myCollection = myCollections.mycollection;
-            const mydoc = myCollection.newDocument({
+            await myCollection.insert({
                 name: 'mydoc'
             });
-            await mydoc.save();
             const doc = await myCollection.findOne('mydoc').exec();
             await doc.putAttachment({
                 id: 'sampledata',

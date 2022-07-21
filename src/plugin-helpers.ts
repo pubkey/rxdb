@@ -189,8 +189,6 @@ export function wrapRxStorageInstance<RxDocType>(
     instance.query = (preparedQuery) => {
         return oldQuery(preparedQuery)
             .then(queryResult => {
-                console.log('oldQuery result:');
-                console.log(JSON.stringify(queryResult, null, 4));
                 return Promise.all(queryResult.documents.map(doc => fromStorage(doc)));
             })
             .then(documents => ({ documents: documents as any }));

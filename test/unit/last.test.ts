@@ -45,7 +45,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             }, 5 * 1000);
         } catch (err) {
             console.dir(BROADCAST_CHANNEL_BY_TOKEN);
-            throw new Error('no all broadcast channels have been closed');
+            throw new Error('not all broadcast channels have been closed');
         }
     });
 });

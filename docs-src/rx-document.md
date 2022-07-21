@@ -192,35 +192,7 @@ const json = myDocument.toMutableJSON();
 json.firstName = 'Alice'; // The returned document can be mutated
 ```
 
-### set()
-**Only temporary documents**
 
-To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() after to submit changes.
-
-```js
-myDocument.set('firstName', 'foobar');
-console.log(myDocument.get('firstName')); // <- is 'foobar'
-```
-
-### proxy-set
-**Only temporary documents**
-
-All properties of an `RxDocument` are assigned as setters to it so you can also directly set values instead of using the set()-function.
-
-
-```js
-myDocument.firstName = 'foobar';
-myDocument.whatever.nestedfield = 'foobar2';
-```
-
-### save()
-**Only temporary documents**
-
-This will update the document in the storage if it has been changed. Call this after modifying the document (via set() or proxy-set).
-```js
-myDocument.name = 'foobar';
-await myDocument.save(); // submit the changes to the storage
-```
 
 ## NOTICE: All methods of RxDocument are bound to the instance
 

@@ -36,7 +36,6 @@ import './unit/rx-query.test';
 import './unit/validate.test';
 import './unit/primary.test';
 import './unit/local-documents.test';
-import './unit/temporary-document.test';
 import './unit/encryption.test';
 import './unit/change-event-buffer.test';
 import './unit/cache-replacement-policy.test';

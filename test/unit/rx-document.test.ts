@@ -123,48 +123,28 @@ describe('rx-document.test.js', () => {
 
     });
     config.parallel('.get()', () => {
-        describe('positive', () => {
-            it('get a value', async () => {
-                const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec(true);
-                const value = doc.get('passportId');
-                assert.strictEqual(typeof value, 'string');
-                c.database.destroy();
-            });
-            it('get a nested value', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec(true);
-                const value = doc.get('mainSkill.name');
-                assert.strictEqual(typeof value, 'string');
-                const value2 = doc.get('mainSkill.level');
-                assert.strictEqual(typeof value2, 'number');
-                c.database.destroy();
-            });
-            it('get undefined on undefined value', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec(true);
-                const value = doc.get('foobar');
-                assert.strictEqual(value, undefined);
-                c.database.destroy();
-            });
+        it('get a value', async () => {
+            const c = await humansCollection.create(1);
+            const doc: any = await c.findOne().exec(true);
+            const value = doc.get('passportId');
+            assert.strictEqual(typeof value, 'string');
+            c.database.destroy();
         });
-        describe('negative', () => { });
-    });
-    config.parallel('.set()', () => {
-        describe('negative', () => {
-            it('should only not work on non-temporary document', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec(true);
-                const path = {
-                    foo: 'bar'
-                };
-                await AsyncTestUtil.assertThrows(
-                    () => doc.set(path as any, 'foo'),
-                    'RxTypeError',
-                    'temporary RxDocuments'
-                );
-                c.database.destroy();
-            });
+        it('get a nested value', async () => {
+            const c = await humansCollection.createNested(5);
+            const doc = await c.findOne().exec(true);
+            const value = doc.get('mainSkill.name');
+            assert.strictEqual(typeof value, 'string');
+            const value2 = doc.get('mainSkill.level');
+            assert.strictEqual(typeof value2, 'number');
+            c.database.destroy();
+        });
+        it('get undefined on undefined value', async () => {
+            const c = await humansCollection.createNested(5);
+            const doc = await c.findOne().exec(true);
+            const value = doc.get('foobar');
+            assert.strictEqual(value, undefined);
+            c.database.destroy();
         });
     });
     config.parallel('.remove()', () => {
@@ -792,16 +772,6 @@ describe('rx-document.test.js', () => {
                 });
                 await promiseWait(5);
                 assert.strictEqual(value, true);
-                c.database.destroy();
-            });
-        });
-        describe('set', () => {
-            it('should not work on non-temporary document', async () => {
-                const c = await humansCollection.createPrimary(1);
-                const doc = await c.findOne().exec(true);
-                assert.throws(
-                    () => doc.firstName = 'foobar'
-                );
                 c.database.destroy();
             });
         });

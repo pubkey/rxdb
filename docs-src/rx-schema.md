@@ -276,7 +276,7 @@ To use attachments in the collection, you have to add the `attachments`-attribut
 
 ## default
 Default values can only be defined for first-level fields.
-Whenever you insert a document or create a temporary-document, unset fields will be filled with default-values.
+Whenever you insert a document unset fields will be filled with default-values.
 
 ```javascript
 const schemaWithDefaultAge = {

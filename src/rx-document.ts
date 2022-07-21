@@ -256,45 +256,6 @@ export const basePrototype = {
     },
 
     /**
-     * set data by objectPath
-     * This can only be called on temporary documents
-     */
-    set(this: RxDocument, objPath: string, value: any) {
-
-        // setters can only be used on temporary documents
-        if (!this._isTemporary) {
-            throw newRxTypeError('DOC16', {
-                objPath,
-                value
-            });
-        }
-
-        if (typeof objPath !== 'string') {
-            throw newRxTypeError('DOC15', {
-                objPath,
-                value
-            });
-        }
-
-        // if equal, do nothing
-        if (Object.is(this.get(objPath), value)) return;
-
-        // throw if nested without root-object
-        const pathEls = objPath.split('.');
-        pathEls.pop();
-        const rootPath = pathEls.join('.');
-        if (typeof objectPath.get(this._data, rootPath) === 'undefined') {
-            throw newRxError('DOC10', {
-                childpath: objPath,
-                rootPath
-            });
-        }
-
-        objectPath.set(this._data, objPath, value);
-        return this;
-    },
-
-    /**
      * updates document
      * @overwritten by plugin (optinal)
      * @param updateObj mongodb-like syntax
@@ -442,32 +403,6 @@ export const basePrototype = {
     },
 
     /**
-     * saves the temporary document and makes a non-temporary out of it
-     * Saving a temporary doc is basically the same as RxCollection.insert()
-     * @return false if nothing to save
-     */
-    save(this: RxDocument): Promise<boolean> {
-        // .save() cannot be called on non-temporary-documents
-        if (!this._isTemporary) {
-            throw newRxError('DOC17', {
-                id: this.primary,
-                document: this
-            });
-        }
-
-        return this.collection.insert(this)
-            .then(() => {
-                this._isTemporary = false;
-                this.collection._docCache.set(this.primary, this);
-
-                // internal events
-                this._dataSync$.next(this._data);
-
-                return true;
-            });
-    },
-
-    /**
      * remove the document,
      * this not not equal to a pouchdb.remove(),
      * instead we keep the values and only set _deleted: true
@@ -512,9 +447,6 @@ export function createRxDocumentConstructor(proto = basePrototype) {
         jsonData: any
     ) {
         this.collection = collection;
-
-        // if true, this is a temporary document
-        this._isTemporary = false;
 
         // assume that this is always equal to the doc-data in the database
         this._dataSync$ = new BehaviorSubject(jsonData);
