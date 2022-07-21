@@ -423,8 +423,6 @@ export class RxDatabaseBase<
 
     /**
      * Export database to a JSON friendly format.
-     * @param _decrypted
-     * When true, all encrypted values will be decrypted.
      */
     exportJSON(_collections?: string[]): Promise<RxDumpDatabase<Collections>>;
     exportJSON(_collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;

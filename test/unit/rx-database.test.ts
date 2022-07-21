@@ -367,8 +367,7 @@ config.parallel('rx-database.test.js', () => {
                         human7: {
                             schema: schemas.encryptedHuman
                         }
-                    }),
-                    'RxError'
+                    })
                 );
                 db.destroy();
             });

@@ -160,6 +160,10 @@ export function wrapRxStorageInstance<RxDocType>(
                 useRows.push({ previous, document });
             })
         );
+
+        console.log('oldBulkWrite()');
+        console.log(JSON.stringify(useRows, null, 4));
+
         const writeResult = await oldBulkWrite(useRows, context);
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
@@ -184,7 +188,11 @@ export function wrapRxStorageInstance<RxDocType>(
     const oldQuery = instance.query.bind(instance);
     instance.query = (preparedQuery) => {
         return oldQuery(preparedQuery)
-            .then(queryResult => Promise.all(queryResult.documents.map(doc => fromStorage(doc))))
+            .then(queryResult => {
+                console.log('oldQuery result:');
+                console.log(JSON.stringify(queryResult, null, 4));
+                return Promise.all(queryResult.documents.map(doc => fromStorage(doc)));
+            })
             .then(documents => ({ documents: documents as any }));
     }
 
@@ -214,14 +222,17 @@ export function wrapRxStorageInstance<RxDocType>(
 
     const oldGetChangedDocumentsSince = instance.getChangedDocumentsSince.bind(instance);
     instance.getChangedDocumentsSince = (limit, checkpoint) => {
-        return oldGetChangedDocumentsSince(limit, checkpoint).then(async (result) => {
-            return {
-                checkpoint: result.checkpoint,
-                documents: await Promise.all(
-                    result.documents.map(d => fromStorage(d))
-                )
-            };
-        });
+        return oldGetChangedDocumentsSince(limit, checkpoint)
+            .then(async (result) => {
+                console.log('oldGetChangedDocumentsSince() result:');
+                console.log(JSON.stringify(result, null, 4));
+                return {
+                    checkpoint: result.checkpoint,
+                    documents: await Promise.all(
+                        result.documents.map(d => fromStorage(d))
+                    )
+                };
+            });
     };
 
     const oldChangeStream = instance.changeStream.bind(instance);

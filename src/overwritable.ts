@@ -6,9 +6,6 @@
  */
 
 import type { DeepReadonly } from './types/util';
-import {
-    pluginMissing
-} from './util';
 
 export const overwritable = {
     /**
@@ -28,15 +25,6 @@ export const overwritable = {
      */
     deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T> {
         return obj as any;
-    },
-
-    /**
-     * validates if a password can be used
-     * @overwritten by plugin (optional)
-     * @throws if password not valid
-     */
-    validatePassword(_password: string | any): void {
-        throw pluginMissing('encryption');
     },
 
     /**

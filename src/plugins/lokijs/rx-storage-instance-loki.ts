@@ -84,6 +84,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
         if (this.internals.leaderElector) {
+
+
+            //            const copiedSelf = flatClone(this);
+
             this.internals.leaderElector.awaitLeadership().then(() => {
                 // this instance is leader now, so it has to reply to queries from other instances
                 ensureNotFalsy(this.internals.leaderElector).broadcastChannel
@@ -217,6 +221,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
 
         const foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
+        console.log('loki query result:');
+        console.log(JSON.stringify(foundDocuments, null, 4));
         return {
             documents: foundDocuments
         };

@@ -79,7 +79,6 @@ export interface RxDatabaseGenerated<Collections> extends RxLocalDocumentMutatio
 type ExtractDTcol<P> = P extends RxCollection<infer T> ? T : { [prop: string]: any };
 
 interface RxDumpDatabaseBase {
-    encrypted: boolean;
     instanceToken: string;
     name: string;
     passwordHash: string | null;

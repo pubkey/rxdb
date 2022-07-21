@@ -4,12 +4,10 @@ const {
     addRxPlugin,
     blobBufferUtil,
 } = require('rxdb');
-const { RxDBEncryptionPlugin } = require('rxdb/plugins/encryption');
 const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
 const { RxDBAttachmentsPlugin } = require('rxdb/plugins/attachments');
 const { getRxStoragePouch, addPouchPlugin } = require('rxdb/plugins/pouchdb');
 
-addRxPlugin(RxDBEncryptionPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBAttachmentsPlugin);
 addPouchPlugin(require('pouchdb-adapter-idb'));

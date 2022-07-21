@@ -738,10 +738,6 @@ export class RxCollectionBase<
 
     /**
      * Export collection to a JSON friendly format.
-     * @param _decrypted
-     * When true, all encrypted values will be decrypted.
-     * When false or omitted and an interface or type is loaded in this collection,
-     * all base properties of the type are typed as `any` since data could be encrypted.
      */
     exportJSON(): Promise<RxDumpCollection<RxDocumentType>>;
     exportJSON(): Promise<RxDumpCollectionAny<RxDocumentType>>;
