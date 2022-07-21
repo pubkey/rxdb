@@ -161,11 +161,7 @@ export function wrapRxStorageInstance<RxDocType>(
             })
         );
 
-        console.log('oldBulkWrite()');
-        console.log(JSON.stringify(useRows, null, 4));
-
         const writeResult = await oldBulkWrite(useRows, context);
-
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
             error: {}

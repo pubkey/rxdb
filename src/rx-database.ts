@@ -1,7 +1,6 @@
 import { IdleQueue } from 'custom-idle-queue';
 import type {
-    LeaderElector,
-    BroadcastChannel
+    LeaderElector
 } from 'broadcast-channel';
 import type {
     CollectionsOfDatabase,
@@ -79,7 +78,6 @@ import {
     INTERNAL_CONTEXT_COLLECTION,
     INTERNAL_STORE_SCHEMA
 } from './rx-database-internal-store';
-import { BROADCAST_CHANNEL_BY_TOKEN } from './rx-storage-multiinstance';
 
 /**
  * stores the used database names
@@ -492,8 +490,6 @@ export class RxDatabaseBase<
             ))
             // destroy internal storage instances
             .then(() => this.internalStore.close())
-            // close broadcastChannel if exists
-            .then(() => this.broadcastChannel ? this.broadcastChannel.close() : null)
             // remove combination from USED_COMBINATIONS-map
             .then(() => USED_DATABASE_NAMES.delete(this.name))
             .then(() => true);
