@@ -63,7 +63,8 @@ const configuration = {
         'karma-firefox-launcher',
         'karma-ie-launcher',
         'karma-opera-launcher',
-        'karma-detect-browsers'
+        'karma-detect-browsers',
+        'karma-spec-reporter'
     ],
 
     // Source files that you wanna generate coverage for.
