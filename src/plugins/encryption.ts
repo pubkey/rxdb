@@ -169,10 +169,6 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
                                 return;
                             }
                             const decrypted = decryptString(value, password);
-                            console.log('modifyFromStorage() ' + docData.id);
-                            console.dir(value);
-                            console.log('decrypted: ' + decrypted);
-                            console.log('------------------');
                             const decryptedParsed = JSON.parse(decrypted);
                             objectPath.set(docData, path, decryptedParsed);
                         });
