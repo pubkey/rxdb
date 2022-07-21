@@ -38,11 +38,14 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             throw new Error('no all pouch instances have been closed');
         }
     });
-    it('ensure all BroadcastChannels are closed', () => {
-        console.log(JSON.stringify(Array.from(BROADCAST_CHANNEL_BY_TOKEN.keys())));
-        assert.strictEqual(
-            BROADCAST_CHANNEL_BY_TOKEN.size,
-            0
-        );
+    it('ensure all BroadcastChannels are closed', async () => {
+        try {
+            await waitUntil(() => {
+                return BROADCAST_CHANNEL_BY_TOKEN.size === 0;
+            }, 5 * 1000);
+        } catch (err) {
+            console.dir(BROADCAST_CHANNEL_BY_TOKEN);
+            throw new Error('no all broadcast channels have been closed');
+        }
     });
 });

@@ -67,7 +67,6 @@ export function getBroadcastChannelReference(
 ): BroadcastChannel<RxStorageMultiInstanceBroadcastType> {
     let state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
     if (!state) {
-        console.log('create new broadcast channel: ' + databaseInstanceToken);
         state = {
             /**
              * We have to use the databaseName instead of the databaseInstanceToken
