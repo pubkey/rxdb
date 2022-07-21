@@ -39,7 +39,9 @@ export class HeroInsertComponent {
             await this.dbService.db.hero.insert({
                 name: this.name,
                 color: this.color,
-                maxHP: getRandomArbitrary(100, 1000)
+                maxHP: getRandomArbitrary(100, 1000),
+                hp: 100,
+                skills: []
             });
             this.reset();
         } catch (err) {
