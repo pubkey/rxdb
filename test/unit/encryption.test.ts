@@ -103,7 +103,7 @@ config.parallel('encryption.test.ts', () => {
                     password: {}
                 }),
                 'RxTypeError',
-                'password'
+                'EN1'
             );
         });
         it('should crash with invalid password (too short)', async () => {
@@ -114,7 +114,7 @@ config.parallel('encryption.test.ts', () => {
                     password: randomCouchString(4)
                 }),
                 'RxError',
-                'min-length'
+                'EN2'
             );
         });
         it('BUG: should have a pwHash-doc after creating the database', async () => {

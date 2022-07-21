@@ -20,7 +20,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             // until everything is closed.
             await waitUntil(() => {
                 return OPEN_POUCHDB_STORAGE_INSTANCES.size === 0;
-            }, 5 * 1000, 500);
+            }, 5 * 1000);
         } catch (err) {
             console.dir(OPEN_POUCHDB_STORAGE_INSTANCES);
             throw new Error('no all storage instances have been closed');
@@ -32,7 +32,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             // until everything is closed.
             await waitUntil(() => {
                 return OPEN_POUCH_INSTANCES.size === 0;
-            }, 5 * 1000, 500);
+            }, 5 * 1000);
         } catch (err) {
             console.dir(OPEN_POUCH_INSTANCES);
             throw new Error('no all pouch instances have been closed');

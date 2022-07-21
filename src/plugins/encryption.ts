@@ -84,11 +84,20 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
                         params.schema.title === INTERNAL_STORE_SCHEMA_TITLE &&
                         params.password
                     ) {
-                        validatePassword(params.password);
-                        await storePasswordHashIntoInternalStore(
-                            retInstance as any,
-                            params.password
-                        );
+                        try {
+                            validatePassword(params.password);
+                            await storePasswordHashIntoInternalStore(
+                                retInstance as any,
+                                params.password
+                            );
+                        } catch (err) {
+                            /**
+                             * Even if the checks fail,
+                             * we have to clean up.
+                             */
+                            await retInstance.close();
+                            throw err;
+                        }
                     }
                     return retInstance;
                 }
@@ -249,7 +258,6 @@ export async function storePasswordHashIntoInternalStore(
 
     if (pwHash !== pwHashDoc.data.hash) {
         // different hash was already set by other instance
-        await internalStorageInstance.close();
         throw newRxError('DB1', {
             passwordHash: pwHash,
             existingPasswordHash: pwHashDoc.data.hash
