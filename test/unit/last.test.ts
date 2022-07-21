@@ -44,6 +44,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
                 return BROADCAST_CHANNEL_BY_TOKEN.size === 0;
             }, 5 * 1000);
         } catch (err) {
+            console.log('open broadcast channel tokens:');
             console.log(Array.from(BROADCAST_CHANNEL_BY_TOKEN.keys()));
             throw new Error('not all broadcast channels have been closed');
         }
