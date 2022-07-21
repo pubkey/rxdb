@@ -86,7 +86,15 @@ const configuration = {
     },
     browserDisconnectTimeout: 12000,
     processKillTimeout: 12000,
-    singleRun: true
+    singleRun: true,
+
+
+    /**
+     * Use this reported to fully log all test names
+     * which makes it easier to debug.
+     * @link https://github.com/tmcgee123/karma-spec-reporter
+     */
+    reporters: ['spec']
 };
 
 if (process.env.CI) {
