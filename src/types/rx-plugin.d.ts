@@ -8,7 +8,6 @@ import type {
     RxCollectionCreator
 } from './rx-collection';
 import {
-    RxAttachmentData,
     RxStorageInstanceCreationParams
 } from './rx-storage';
 import type {
@@ -16,7 +15,6 @@ import type {
     RxDatabase,
     RxDatabaseCreator,
     RxDocument,
-    RxJsonSchema,
     RxStorage
 } from '../types'
 import type { RxSchema } from '../rx-schema';
@@ -121,44 +119,6 @@ export interface RxPlugin {
         createRxSchema?: RxPluginHooks<any>,
         preCreateRxQuery?: RxPluginHooks<RxPluginPreCreateRxQueryArgs>,
         prePrepareQuery?: RxPluginHooks<RxPluginPrePrepareQueryArgs>,
-        preQueryMatcher?: RxPluginHooks<{ rxQuery: RxQuery<any>; doc: any }>;
-        preSortComparator?: RxPluginHooks<{ rxQuery: RxQuery<any>; docA: any; docB: any; }>;
-        preWriteToStorageInstance?: RxPluginHooks<{
-            database: RxDatabase;
-            primaryPath: string;
-            schema: RxJsonSchema<any>;
-            doc: any;
-        }>;
-        postReadFromInstance?: RxPluginHooks<{
-            database: RxDatabase;
-            primaryPath: string;
-            schema: RxJsonSchema<any>;
-            doc: any;
-        }>;
-        preWriteAttachment?: RxPluginHooks<{
-            database: RxDatabase;
-            schema: RxJsonSchema<any>;
-            /**
-             * By mutating the attachmentData,
-             * the hook can modify the output.
-             */
-            attachmentData: {
-                id: string;
-                type: string;
-                data: string;
-            }
-        }>;
-        postReadAttachment?: RxPluginHooks<{
-            database: RxDatabase;
-            schema: RxJsonSchema<any>;
-            attachmentData: RxAttachmentData;
-            type: string;
-            /**
-             * By mutating the plainData,
-             * the hook can modify the output.
-             */
-            plainData: string;
-        }>;
         createRxQuery?: RxPluginHooks<RxQuery>;
         createRxDocument?: RxPluginHooks<any>;
         postCreateRxDocument?: RxPluginHooks<any>;

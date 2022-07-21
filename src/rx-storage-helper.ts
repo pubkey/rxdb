@@ -3,8 +3,6 @@
  */
 
 import type { ChangeEvent } from 'event-reduce-js';
-import { map } from 'rxjs/operators';
-import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import {
@@ -20,11 +18,9 @@ import type {
     RxCollection,
     RxDatabase,
     RxDocumentData,
-    RxDocumentDataById,
     RxDocumentWriteData,
     RxJsonSchema,
     RxStorageBulkWriteError,
-    RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
@@ -581,27 +577,11 @@ export function getWrappedStorageInstance<
         }
         data._meta.lwt = now();
 
-        const hookParams = {
-            database,
-            primaryPath,
-            schema: rxJsonSchema,
-            doc: data
-        };
-
         /**
          * Run the hooks once for the previous doc,
          * once for the new write data
          */
-        let previous = writeRow.previous;
-        if (previous) {
-            hookParams.doc = previous;
-            runPluginHooks('preWriteToStorageInstance', hookParams);
-            previous = hookParams.doc;
-        }
-
-        hookParams.doc = data;
-        runPluginHooks('preWriteToStorageInstance', hookParams);
-        data = hookParams.doc;
+        const previous = writeRow.previous;
 
         /**
          * Do not update the revision here.
@@ -620,38 +600,6 @@ export function getWrappedStorageInstance<
             document: data,
             previous
         };
-    }
-
-    function transformDocumentDataFromRxStorageToRxDB(
-        data: any
-    ): any {
-        const hookParams = {
-            database,
-            primaryPath,
-            schema: rxJsonSchema,
-            doc: data
-        };
-
-        runPluginHooks('postReadFromInstance', hookParams);
-        return hookParams.doc;
-    }
-
-    function transformErrorDataFromRxStorageToRxDB<RxDocType>(
-        error: RxStorageBulkWriteError<RxDocType>
-    ): RxStorageBulkWriteError<RxDocType> {
-        const ret = flatClone(error);
-        ret.writeRow = flatClone(ret.writeRow);
-
-        if (ret.documentInDb) {
-            ret.documentInDb = transformDocumentDataFromRxStorageToRxDB(ret.documentInDb);
-        }
-
-        ret.writeRow.document = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.document);
-        if (ret.writeRow.previous) {
-            ret.writeRow.previous = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.previous);
-        }
-
-        return ret;
     }
 
     const ret: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
@@ -735,40 +683,17 @@ export function getWrappedStorageInstance<
                     }
 
                     return writeResult;
-                })
-                .then(writeResult => {
-                    const ret: RxStorageBulkWriteResponse<RxDocType> = {
-                        success: {},
-                        error: {}
-                    };
-                    Object.entries(writeResult.success).forEach(([k, v]) => {
-                        ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
-                    });
-                    Object.entries(writeResult.error).forEach(([k, error]) => {
-                        ret.error[k] = transformErrorDataFromRxStorageToRxDB(error);
-                    });
-                    return ret;
                 });
         },
         query(preparedQuery) {
             return database.lockedRun(
                 () => storageInstance.query(preparedQuery)
-            ).then(queryResult => {
-                return {
-                    documents: queryResult.documents.map(doc => transformDocumentDataFromRxStorageToRxDB(doc))
-                };
-            });
+            );
         },
         findDocumentsById(ids, deleted) {
             return database.lockedRun(
                 () => storageInstance.findDocumentsById(ids, deleted)
-            ).then(findResult => {
-                const ret: RxDocumentDataById<RxDocType> = {};
-                Object.entries(findResult).forEach(([key, doc]) => {
-                    ret[key] = transformDocumentDataFromRxStorageToRxDB(doc);
-                });
-                return ret;
-            });
+            );
         },
         getAttachmentData(
             documentId: string,
@@ -781,13 +706,7 @@ export function getWrappedStorageInstance<
         getChangedDocumentsSince(limit: number, checkpoint?: any) {
             return database.lockedRun(
                 () => storageInstance.getChangedDocumentsSince(limit, checkpoint)
-            ).then(result => {
-                return {
-                    checkpoint: result.checkpoint,
-                    documents: result.documents
-                        .map(d => transformDocumentDataFromRxStorageToRxDB(d))
-                };
-            });
+            );
         },
         cleanup(minDeletedTime: number) {
             return database.lockedRun(
@@ -805,73 +724,27 @@ export function getWrappedStorageInstance<
             );
         },
         changeStream() {
-            return storageInstance.changeStream().pipe(
-                map(eventBulk => {
-                    const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, CheckpointType> = {
-                        id: eventBulk.id,
-                        events: eventBulk.events.map(event => {
-                            return {
-                                eventId: event.eventId,
-                                documentId: event.documentId,
-                                endTime: event.endTime,
-                                startTime: event.startTime,
-                                change: {
-                                    id: event.change.id,
-                                    operation: event.change.operation,
-                                    doc: event.change.doc ? transformDocumentDataFromRxStorageToRxDB(event.change.doc) : undefined,
-                                    previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(event.change.previous) : undefined
-                                }
-                            }
-                        }),
-                        checkpoint: eventBulk.checkpoint,
-                        context: eventBulk.context
-                    };
-                    return ret;
-                })
-            )
+            return storageInstance.changeStream();
         },
         conflictResultionTasks() {
-            return storageInstance.conflictResultionTasks().pipe(
-                map(task => {
-                    const assumedMasterState = task.input.assumedMasterState ? transformDocumentDataFromRxStorageToRxDB(task.input.assumedMasterState) : undefined;
-                    const newDocumentState = transformDocumentDataFromRxStorageToRxDB(task.input.newDocumentState);
-                    const realMasterState = transformDocumentDataFromRxStorageToRxDB(task.input.realMasterState);
-                    return {
-                        id: task.id,
-                        context: task.context,
-                        input: {
-                            assumedMasterState,
-                            realMasterState,
-                            newDocumentState
-                        }
-                    };
-                })
-            );
+            return storageInstance.conflictResultionTasks();
         },
         resolveConflictResultionTask(taskSolution) {
             if (taskSolution.output.isEqual) {
                 return storageInstance.resolveConflictResultionTask(taskSolution);
             }
-            const hookParams = {
-                database,
-                primaryPath,
-                schema: rxJsonSchema,
-                doc: Object.assign(
-                    {},
-                    taskSolution.output.documentData,
-                    {
-                        _meta: getDefaultRxDocumentMeta(),
-                        _rev: getDefaultRevision(),
-                        _attachments: {}
-                    }
-                )
-            };
-            hookParams.doc._rev = createRevision(hookParams.doc);
 
-            runPluginHooks('preWriteToStorageInstance', hookParams);
-            const postHookDocData = hookParams.doc;
+            const doc = Object.assign(
+                {},
+                taskSolution.output.documentData,
+                {
+                    _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
+                    _attachments: {}
+                }
+            );
 
-            const documentData = flatClone(postHookDocData);
+            const documentData = flatClone(doc);
             delete (documentData as any)._meta;
             delete (documentData as any)._rev;
             delete (documentData as any)._attachments;

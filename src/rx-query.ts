@@ -455,9 +455,6 @@ export function createRxQuery(
 
     // ensure when created with same params, only one is created
     ret = tunnelQueryCache(ret);
-
-    runPluginHooks('createRxQuery', ret);
-
     triggerCacheReplacement(collection);
 
     return ret;

@@ -118,7 +118,6 @@ config.parallel('plugin.test.js', () => {
     });
     describe('hooks', () => {
         it('createRxDatabase', async () => {
-
             const createRxDatabase = (args: any) => {
                 args.database.foo = 'bar_createRxDatabase';
             };
@@ -175,26 +174,6 @@ config.parallel('plugin.test.js', () => {
             assert.strictEqual(col.schema['foo'], 'bar_createRxSchema');
             col.database.destroy();
             _clearHook('createRxSchema', createRxSchema);
-        });
-        it('createRxQuery', async () => {
-            const createRxQuery = (c: any) => {
-                c.foo = 'bar_createRxQuery';
-            };
-            const plugin: RxPlugin = {
-                rxdb: true,
-                name: randomCouchString(12),
-                hooks: {
-                    createRxQuery: {
-                        after: createRxQuery
-                    }
-                }
-            };
-            addRxPlugin(plugin);
-            const col = await humansCollection.create();
-            const query: any = col.find();
-            assert.strictEqual(query['foo'], 'bar_createRxQuery');
-            col.database.destroy();
-            _clearHook('createRxQuery', createRxQuery);
         });
         it('createRxDocument', async () => {
             const createRxDocument = (c: any) => {

@@ -24,7 +24,6 @@ import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 import './unit/rx-storage-replication.test';
 
-import './unit/encryption.test';
 
 import './unit/instance-of-check.test';
 import './unit/rx-schema.test';
@@ -37,6 +36,7 @@ import './unit/validate.test';
 import './unit/primary.test';
 import './unit/local-documents.test';
 import './unit/temporary-document.test';
+import './unit/encryption.test';
 import './unit/change-event-buffer.test';
 import './unit/cache-replacement-policy.test';
 import './unit/query-builder.test';
@@ -61,8 +61,8 @@ import './unit/replication-graphql.test';
 import './unit/cross-instance.test';
 import './unit/import-export.test';
 import './unit/server.test';
-import './unit/plugin.test';
 import './unit/dexie-helper.test';
+import './unit/plugin.test';
 import './unit/performance.test';
 import './unit/last.test';
 
