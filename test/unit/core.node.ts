@@ -4,8 +4,6 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
-
 import config from './config';
 import {
     createRxDatabase,
@@ -53,17 +51,6 @@ config.parallel('core.node.js', () => {
                 storage: getRxStoragePouch('memory'),
             });
             db.destroy();
-        });
-        it('should not be able to create a encrypted database', async () => {
-            await AsyncTestUtil.assertThrows(
-                () => createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                    password: 'myLongAndStupidPassword'
-                }),
-                Error,
-                'plugin'
-            );
         });
         it('create collection', async () => {
             const db = await createRxDatabase({

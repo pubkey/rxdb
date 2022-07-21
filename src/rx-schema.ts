@@ -66,20 +66,6 @@ export class RxSchema<RxDocType = any> {
     }
 
     /**
-        * true if schema contains at least one encrypted path
-        */
-    get crypt(): boolean {
-        if (
-            !!this.jsonSchema.encrypted && this.jsonSchema.encrypted.length > 0 ||
-            this.jsonSchema.attachments && this.jsonSchema.attachments.encrypted
-        ) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * @overrides itself on the first call
      */
     public get hash(): string {

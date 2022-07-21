@@ -7,10 +7,6 @@ import {
     createRxDatabase,
     createRxSchema,
     randomCouchString,
-    addRxPlugin,
-    getPrimaryKeyOfInternalDocument,
-    INTERNAL_CONTEXT_ENCRYPTION,
-    getSingleDocument,
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated
 } from '../../';
@@ -25,9 +21,6 @@ import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 
-import { RxDBEncryptionPlugin } from '../../plugins/encryption';
-import { InternalStorePasswordDocType } from '../../src/plugins/encryption';
-addRxPlugin(RxDBEncryptionPlugin);
 
 config.parallel('rx-database.test.js', () => {
     describe('.create()', () => {
@@ -166,84 +159,6 @@ config.parallel('rx-database.test.js', () => {
                     'ending'
                 );
             });
-            it('should crash with invalid password (no string)', async () => {
-                await AsyncTestUtil.assertThrows(
-                    () => createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage(),
-                        password: {}
-                    }),
-                    'RxTypeError',
-                    'password'
-                );
-            });
-            it('should crash with invalid password (too short)', async () => {
-                await AsyncTestUtil.assertThrows(
-                    () => createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage(),
-                        password: randomCouchString(4)
-                    }),
-                    'RxError',
-                    'min-length'
-                );
-            });
-            it('BUG: should have a pwHash-doc after creating the database', async () => {
-                const name = randomCouchString(10);
-                const password = randomCouchString(10);
-                const db = await createRxDatabase({
-                    name,
-                    storage: config.storage.getStorage(),
-                    password,
-                    ignoreDuplicate: true
-                });
-                const doc = await getSingleDocument<InternalStorePasswordDocType>(
-                    db.internalStore,
-                    getPrimaryKeyOfInternalDocument(
-                        'pwHash',
-                        INTERNAL_CONTEXT_ENCRYPTION
-                    )
-                );
-                if (!doc) {
-                    throw new Error('error in test this should never happen ' + doc);
-                }
-                assert.strictEqual(typeof doc.data.hash, 'string');
-                const db2 = await createRxDatabase({
-                    name,
-                    storage: config.storage.getStorage(),
-                    password,
-                    ignoreDuplicate: true
-                });
-                const doc2 = await getSingleDocument<InternalStorePasswordDocType>(
-                    db.internalStore,
-                    getPrimaryKeyOfInternalDocument(
-                        'pwHash',
-                        INTERNAL_CONTEXT_ENCRYPTION
-                    )
-                );
-                assert.ok(doc2);
-                assert.strictEqual(typeof doc2.data.hash, 'string');
-
-                db.destroy();
-                db2.destroy();
-            });
-            it('prevent 2 instances with different passwords on same adapter', async () => {
-                const name = randomCouchString(10);
-                const db = await createRxDatabase({
-                    name,
-                    storage: config.storage.getStorage(),
-                    password: randomCouchString(10)
-                });
-                await AsyncTestUtil.assertThrows(
-                    () => createRxDatabase({
-                        name,
-                        storage: config.storage.getStorage(),
-                        password: randomCouchString(10)
-                    }),
-                    'RxError'
-                );
-                db.destroy();
-            });
             it('do not allow 2 databases with same name and adapter', async () => {
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
@@ -299,21 +214,6 @@ config.parallel('rx-database.test.js', () => {
                 const colDoc = await (db.internalStore.internals.pouch as any).get('collection|human0-' + schemas.human.version);
                 const compareSchema = createRxSchema(schemas.human);
                 assert.deepStrictEqual(compareSchema.jsonSchema, colDoc.data.schema);
-                db.destroy();
-            });
-            it('use encrypted db', async () => {
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: config.storage.getStorage(),
-                    password: randomCouchString(12)
-                });
-                const collections = await db.addCollections({
-                    humanenc: {
-                        schema: schemas.encryptedHuman
-                    }
-                });
-                const collection = collections.humanenc;
-                assert.ok(isRxCollection(collection));
                 db.destroy();
             });
             it('collectionsCollection should contain schema.version', async () => {

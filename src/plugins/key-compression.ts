@@ -3,7 +3,10 @@
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 
-import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
+import type {
+    DeterministicSortComparator,
+    QueryMatcher
+} from 'event-reduce-js';
 import {
     createCompressionTable,
     CompressionTable,
@@ -15,10 +18,10 @@ import {
     createCompressedJsonSchema,
     compressQuery
 } from 'jsonschema-key-compression';
-import { map } from 'rxjs';
 import {
     overwritable
 } from '../overwritable';
+import { wrapRxStorageInstance } from '../plugin-helpers';
 import { getPrimaryFieldOfPrimaryKey } from '../rx-schema-helper';
 import { flatCloneDocWithMeta } from '../rx-storage-helper';
 
@@ -28,24 +31,20 @@ import type {
     RxStorage,
     RxStorageInstanceCreationParams,
     RxDocumentData,
-    BulkWriteRow,
-    RxStorageBulkWriteResponse,
-    RxStorageBulkWriteError,
-    RxDocumentDataById,
-    EventBulk,
-    RxStorageChangeEvent,
     RxStorageStatics,
     FilledMangoQuery,
     PreparedQuery
 } from '../types';
-import { flatClone, isMaybeReadonlyArray } from '../util';
+import {
+    flatClone,
+    isMaybeReadonlyArray
+} from '../util';
 
 declare type CompressionState = {
     table: CompressionTable;
     schema: RxJsonSchema<any>;
     compressedSchema: RxJsonSchema<any>;
 };
-
 
 /**
  * Cache the compression table and the compressed schema
@@ -132,15 +131,11 @@ export function getCompressionStateByRxJsonSchema(
     return compressionState;
 }
 
-
-
 export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>(
     args: {
         storage: RxStorage<Internals, InstanceCreationOptions>
     }
 ): RxStorage<Internals, InstanceCreationOptions> {
-
-
     const statics: RxStorageStatics = Object.assign(
         {},
         args.storage.statics,
@@ -149,18 +144,12 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                 schema: RxJsonSchema<RxDocumentData<RxDocType>>,
                 mutateableQuery: FilledMangoQuery<RxDocType>
             ): PreparedQuery<RxDocType> {
-                console.log('prepareQuery() inner!!');
-
                 if (schema.keyCompression) {
-                    console.log('11111111111111');
                     const compressionState = getCompressionStateByRxJsonSchema(schema);
                     mutateableQuery = compressQuery(
                         compressionState.table,
                         mutateableQuery as any
                     ) as any;
-
-                    console.log('AAAAAAAAAAAAA');
-                    console.log(JSON.stringify(mutateableQuery, null, 4));
                     return args.storage.statics.prepareQuery(
                         compressionState.compressedSchema,
                         mutateableQuery
@@ -196,7 +185,7 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
         }
     );
 
-    const returnStorage: RxStorage<Internals, InstanceCreationOptions> = Object.assign(
+    return Object.assign(
         {},
         args.storage,
         {
@@ -209,27 +198,11 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                 }
 
                 const compressionState = getCompressionStateByRxJsonSchema(params.schema);
-                function toStorage(docData?: RxDocumentData<RxDocType>) {
-                    if (!docData) {
-                        return docData;
-                    }
+                function modifyToStorage(docData: RxDocumentData<RxDocType>) {
                     return compressDocumentData(compressionState, docData);
                 }
-                function fromStorage(docData?: RxDocumentData<any>): RxDocumentData<RxDocType> {
-                    if (!docData) {
-                        return docData;
-                    }
+                function modifyFromStorage(docData: RxDocumentData<any>): Promise<RxDocumentData<RxDocType>> {
                     return decompressDocumentData(compressionState, docData);
-                }
-                function errorFromStorage<RxDocType>(
-                    error: RxStorageBulkWriteError<any>
-                ): RxStorageBulkWriteError<RxDocType> {
-                    const ret = flatClone(error);
-                    ret.writeRow = flatClone(ret.writeRow);
-                    ret.documentInDb = fromStorage(ret.documentInDb);
-                    ret.writeRow.document = fromStorage(ret.writeRow.document);
-                    ret.writeRow.previous = fromStorage(ret.writeRow.previous);
-                    return ret;
                 }
 
                 /**
@@ -250,138 +223,16 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                         }
                     )
                 );
-                const oldBulkWrite = instance.bulkWrite.bind(instance);
-                instance.bulkWrite = async (
-                    documentWrites: BulkWriteRow<RxDocType>[],
-                    context: string
-                ) => {
-                    const useRows: BulkWriteRow<any>[] = documentWrites
-                        .map(row => ({
-                            previous: toStorage(row.previous),
-                            document: toStorage(row.document)
-                        }));
 
-                    const writeResult = await oldBulkWrite(useRows, context);
-
-                    const ret: RxStorageBulkWriteResponse<RxDocType> = {
-                        success: {},
-                        error: {}
-                    };
-                    Object.entries(writeResult.success).forEach(([k, v]) => {
-                        ret.success[k] = fromStorage(v);
-                    });
-                    Object.entries(writeResult.error).forEach(([k, error]) => {
-                        ret.error[k] = errorFromStorage(error);
-                    });
-                    return ret;
-                }
-
-                const oldQuery = instance.query.bind(instance);
-                instance.query = (preparedQuery) => {
-                    return oldQuery(preparedQuery).then(queryResult => {
-                        return {
-                            documents: queryResult.documents.map(doc => fromStorage(doc))
-                        };
-                    })
-                }
-
-                const oldFindDocumentsById = instance.findDocumentsById.bind(instance);
-                instance.findDocumentsById = (ids, deleted) => {
-                    return oldFindDocumentsById(ids, deleted).then(findResult => {
-                        const ret: RxDocumentDataById<RxDocType> = {};
-                        Object.entries(findResult).forEach(([key, doc]) => {
-                            ret[key] = fromStorage(doc);
-                        });
-                        return ret;
-                    });
-                };
-
-                const oldGetChangedDocumentsSince = instance.getChangedDocumentsSince.bind(instance);
-                instance.getChangedDocumentsSince = (limit, checkpoint) => {
-                    return oldGetChangedDocumentsSince(limit, checkpoint).then(result => {
-                        return {
-                            checkpoint: result.checkpoint,
-                            documents: result.documents
-                                .map(d => fromStorage(d))
-                        };
-                    });
-                };
-
-                const oldChangeStream = instance.changeStream.bind(instance);
-                instance.changeStream = () => {
-                    return oldChangeStream().pipe(
-                        map(eventBulk => {
-                            const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
-                                id: eventBulk.id,
-                                events: eventBulk.events.map(event => {
-                                    return {
-                                        eventId: event.eventId,
-                                        documentId: event.documentId,
-                                        endTime: event.endTime,
-                                        startTime: event.startTime,
-                                        change: {
-                                            id: event.change.id,
-                                            operation: event.change.operation,
-                                            doc: fromStorage(event.change.doc) as any,
-                                            previous: fromStorage(event.change.previous) as any
-                                        }
-                                    }
-                                }),
-                                checkpoint: eventBulk.checkpoint,
-                                context: eventBulk.context
-                            };
-                            return ret;
-                        })
-                    )
-                };
-
-
-                const oldConflictResultionTasks = instance.conflictResultionTasks.bind(instance);
-                instance.conflictResultionTasks = () => {
-                    return oldConflictResultionTasks().pipe(
-                        map(task => {
-                            const assumedMasterState = fromStorage(task.input.assumedMasterState);
-                            const newDocumentState = fromStorage(task.input.newDocumentState);
-                            const realMasterState = fromStorage(task.input.realMasterState);
-                            return {
-                                id: task.id,
-                                context: task.context,
-                                input: {
-                                    assumedMasterState,
-                                    realMasterState,
-                                    newDocumentState
-                                }
-                            };
-                        })
-                    );
-                }
-
-                const oldResolveConflictResultionTask = instance.resolveConflictResultionTask.bind(instance);
-                instance.resolveConflictResultionTask = (taskSolution) => {
-                    if (taskSolution.output.isEqual) {
-                        return oldResolveConflictResultionTask(taskSolution);
-                    }
-
-                    const useSolution = {
-                        id: taskSolution.id,
-                        output: {
-                            isEqual: false,
-                            documentData: fromStorage(taskSolution.output.documentData)
-                        }
-                    };
-                    return oldResolveConflictResultionTask(useSolution);
-                }
-
-                return instance;
+                return wrapRxStorageInstance(
+                    instance,
+                    modifyToStorage,
+                    modifyFromStorage
+                );
             }
         }
     );
-
-    return returnStorage;
 }
-
-
-
 
 export function compressDocumentData(
     compressionState: CompressionState,
@@ -402,7 +253,6 @@ export function compressDocumentData(
     docData._attachments = attachments;
     return docData;
 }
-
 
 export function decompressDocumentData(
     compressionState: CompressionState,

@@ -46,7 +46,6 @@ import {
     createRxSchema,
     RxSchema
 } from './rx-schema';
-import { overwritable } from './overwritable';
 import {
     runPluginHooks,
     runAsyncPluginHooks
@@ -271,16 +270,6 @@ export class RxDatabaseBase<
             jsonSchemas[collectionName] = rxJsonSchema;
             const schema = createRxSchema(rxJsonSchema);
             schemas[collectionName] = schema;
-
-            // crypt=true but no password given
-            if (
-                schema.crypt &&
-                !this.password
-            ) {
-                throw newRxError('DB7', {
-                    name: name as string
-                });
-            }
 
             // collection already exists
             if ((this.collections as any)[name]) {
@@ -616,7 +605,8 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
     storage: RxStorage<Internals, InstanceCreationOptions>,
     databaseName: string,
     options: InstanceCreationOptions,
-    multiInstance: boolean
+    multiInstance: boolean,
+    password?: string
 ): Promise<RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>> {
     const internalStore = await storage.createStorageInstance<InternalStoreDocType>(
         {
@@ -625,7 +615,8 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
             collectionName: INTERNAL_STORAGE_NAME,
             schema: INTERNAL_STORE_SCHEMA,
             options,
-            multiInstance
+            multiInstance,
+            password
         }
     );
     return internalStore;
@@ -662,10 +653,6 @@ export function createRxDatabase<
         options,
         localDocuments
     });
-    if (password) {
-        overwritable.validatePassword(password);
-    }
-
     // check if combination already used
     if (!ignoreDuplicate) {
         throwIfDatabaseNameUsed(name);
@@ -682,35 +669,47 @@ export function createRxDatabase<
         storage,
         name,
         instanceCreationOptions as any,
-        multiInstance
-    ).then(storageInstance => {
-        const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
-            name,
-            databaseInstanceToken,
-            storage,
-            instanceCreationOptions,
-            password,
-            multiInstance,
-            eventReduce,
-            options,
-            storageInstance,
-            cleanupPolicy
-        ) as any;
-        return runAsyncPluginHooks('createRxDatabase', {
-            database: rxDatabase,
-            creator: {
+        multiInstance,
+        password
+    )
+        /**
+         * Creating the internal store might fail
+         * if some RxStorage wrapper is used that does some checks
+         * and then throw.
+         * In that case we have to properly clean up the database.
+         */
+        .catch(err => {
+            USED_DATABASE_NAMES.delete(name);
+            throw err;
+        })
+        .then(storageInstance => {
+            const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
+                name,
+                databaseInstanceToken,
                 storage,
                 instanceCreationOptions,
-                name,
                 password,
                 multiInstance,
                 eventReduce,
-                ignoreDuplicate,
                 options,
-                localDocuments
-            }
-        }).then(() => rxDatabase);
-    });
+                storageInstance,
+                cleanupPolicy
+            ) as any;
+            return runAsyncPluginHooks('createRxDatabase', {
+                database: rxDatabase,
+                creator: {
+                    storage,
+                    instanceCreationOptions,
+                    name,
+                    password,
+                    multiInstance,
+                    eventReduce,
+                    ignoreDuplicate,
+                    options,
+                    localDocuments
+                }
+            }).then(() => rxDatabase);
+        });
 }
 
 /**

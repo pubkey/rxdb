@@ -8,6 +8,11 @@
   - It allows us to configure which `RxDatabase` instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
 - REFACTORED the [key compression plugin](https://rxdb.info/key-compression.html), it is no longer a plugin but now a wrapper around any other RxStorage.
   - It allows to run the key-comresion inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
+
+- REFACTORED the encryption plugin, it is no longer a plugin but now a wrapper around any other RxStorage.
+  - It allows to run the encryption inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
+  - It allows do use asynchronous crypto function like [WebCrypto](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

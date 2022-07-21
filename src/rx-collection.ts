@@ -1040,7 +1040,8 @@ export function createRxCollection(
         collectionName: name,
         schema: schema.jsonSchema,
         options: instanceCreationOptions,
-        multiInstance: database.multiInstance
+        multiInstance: database.multiInstance,
+        password: database.password
     };
 
     runPluginHooks(

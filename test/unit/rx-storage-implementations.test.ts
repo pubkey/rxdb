@@ -205,7 +205,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             it('must throw if keyCompression is set but no key-compression plugin is used', async () => {
                 const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
                 schema.keyCompression = true;
-
                 let hasThrown = false;
                 try {
                     await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -219,6 +218,33 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 } catch (error: any) {
                     const errorString = error.toString();
                     assert.ok(errorString.includes('UT5'));
+                    hasThrown = true;
+                }
+                assert.ok(hasThrown);
+            });
+            /**
+             * This test ensures that people do not accidentially set
+             * encrypted stuff in the schema but then forget to use
+             * the encryption RxStorage wrapper.
+             */
+            it('must throw if encryption is defined in schema is set but no encryption plugin is used', async () => {
+                const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
+                schema.attachments = {
+                    encrypted: true
+                };
+                let hasThrown = false;
+                try {
+                    await config.storage.getStorage().createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
+                } catch (error: any) {
+                    const errorString = error.toString();
+                    assert.ok(errorString.includes('UT6'));
                     hasThrown = true;
                 }
                 assert.ok(hasThrown);

@@ -899,4 +899,18 @@ export function ensureRxStorageInstanceParamsAreCorrect(
     if (params.schema.keyCompression) {
         throw newRxError('UT5', { args: { params } });
     }
+    if (hasEncryption(params.schema)) {
+        throw newRxError('UT6', { args: { params } });
+    }
+}
+
+export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
+    if (
+        (!!jsonSchema.encrypted && jsonSchema.encrypted.length > 0) ||
+        (jsonSchema.attachments && jsonSchema.attachments.encrypted)
+    ) {
+        return true;
+    } else {
+        return false;
+    }
 }

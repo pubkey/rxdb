@@ -14,6 +14,7 @@ export const ERROR_MESSAGES = {
     UT3: 'replication-direction must either be push or pull or both. But not none',
     UT4: 'given leveldown is no valid adapter',
     UT5: 'keyCompression is set to true in the schema but no key-compression handler is used in the storage',
+    UT6: 'schema contains encrypted fields but no encryption handler is used in the storage',
 
     // plugins
     PL1: 'Given plugin is not RxDB plugin. Pouchdb plugins must be added via addPouchPlugin()',
@@ -56,7 +57,7 @@ export const ERROR_MESSAGES = {
     DB4: 'RxDatabase.addCollections(): schema is missing',
     DB5: 'RxDatabase.addCollections(): collection-name not allowed',
     DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://pubkey.github.io/rxdb/questions-answers.html#cant-change-the-schema',
-    DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
+    // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
     DB8: 'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' +
         'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
     DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
@@ -116,6 +117,7 @@ export const ERROR_MESSAGES = {
     // plugins/encryption.js
     EN1: 'password is no string',
     EN2: 'validatePassword: min-length of password not complied',
+    EN3: 'Schema contains encrypted properties but no password is given',
 
     // plugins/json-dump.js
     JD1: 'You must create the collections before you can import their data',

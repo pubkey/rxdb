@@ -113,45 +113,6 @@ export async function createAttachments(
     return collections[name];
 }
 
-export async function createEncryptedAttachments(
-    size = 20,
-    name = 'human',
-    multiInstance = true
-): Promise<RxCollection<HumanDocumentType, {}, {}>> {
-
-    if (!name) name = 'human';
-
-    const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType> }>({
-        name: randomCouchString(10),
-        password: 'foooooobaaaar',
-        storage: config.storage.getStorage(),
-        multiInstance,
-        eventReduce: true,
-        ignoreDuplicate: true
-    });
-
-    const schemaJson = clone(schemas.human);
-    schemaJson.attachments = {
-        encrypted: true
-    };
-
-    const collections = await db.addCollections({
-        [name]: {
-            schema: schemaJson
-        }
-    });
-
-    // insert data
-    if (size > 0) {
-        const docsData = new Array(size)
-            .fill(0)
-            .map(() => schemaObjects.human());
-        await collections[name].bulkInsert(docsData);
-    }
-
-    return collections[name];
-}
-
 export async function createNoCompression(
     size = 20,
     name = 'human'
@@ -309,34 +270,6 @@ export async function createDeepNested(
     }
 
     return collections.nestedhuman;
-}
-
-export async function createEncrypted(
-    amount: number = 10
-): Promise<RxCollection<schemaObjects.EncryptedHumanDocumentType>> {
-
-    const db = await createRxDatabase<{ encryptedhuman: RxCollection<schemaObjects.EncryptedHumanDocumentType> }>({
-        name: randomCouchString(10),
-        storage: config.storage.getStorage(),
-        eventReduce: true,
-        password: randomCouchString(10)
-    });
-    // setTimeout(() => db.destroy(), dbLifetime);
-    const collections = await db.addCollections({
-        encryptedhuman: {
-            schema: schemas.encryptedHuman
-        }
-    });
-
-    // insert data
-    if (amount > 0) {
-        const docsData = new Array(amount)
-            .fill(0)
-            .map(() => schemaObjects.encryptedHuman());
-        await collections.encryptedhuman.bulkInsert(docsData);
-    }
-
-    return collections.encryptedhuman;
 }
 
 export async function createMultiInstance(

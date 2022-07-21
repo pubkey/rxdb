@@ -45,6 +45,9 @@ import {
     RxReplicationError,
     setLastPullDocument
 } from '../../plugins/replication';
+import {
+    wrappedKeyEncryptionStorage
+} from '../../plugins/encryption';
 import * as schemas from '../helper/schemas';
 import {
     GRAPHQL_PATH,
@@ -1686,7 +1689,9 @@ describe('replication-graphql.test.ts', () => {
                 }
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: config.storage.getStorage(),
+                    storage: wrappedKeyEncryptionStorage({
+                        storage: config.storage.getStorage(),
+                    }),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
@@ -1748,7 +1753,6 @@ describe('replication-graphql.test.ts', () => {
                     }
                 });
                 const collection = collections.humans;
-
                 const testData = getTestData(1);
                 testData[0].name = 'Alice';
                 const server = await SpawnServer.spawn(testData);
@@ -1817,8 +1821,6 @@ describe('replication-graphql.test.ts', () => {
                     console.dir(err);
                 });
                 await replicationState.awaitInitialReplication();
-
-
 
                 const serverDocs = server.getDocuments();
                 assert.strictEqual(serverDocs.length, 1);
@@ -1923,7 +1925,6 @@ describe('replication-graphql.test.ts', () => {
                 await c.database.destroy();
             });
         });
-
         config.parallel('issues', () => {
             it('should not create push checkpoints unnecessarily [PR: #3627]', async () => {
                 if (config.storage.name !== 'pouchdb') {
@@ -1975,7 +1976,9 @@ describe('replication-graphql.test.ts', () => {
             it('push not working on slow db', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: config.storage.getStorage(),
+                    storage: wrappedKeyEncryptionStorage({
+                        storage: config.storage.getStorage(),
+                    }),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
@@ -1997,9 +2000,7 @@ describe('replication-graphql.test.ts', () => {
                         .map(() => schemaObjects.humanWithTimestamp())
                         .map(d => collection.insert(d))
                 );
-
                 const server = await SpawnServer.spawn(getTestData(0));
-
                 const replicationState = collection.syncGraphQL({
                     url: server.url,
                     push: {
@@ -2027,7 +2028,9 @@ describe('replication-graphql.test.ts', () => {
             it('push not working when big amount of docs was pulled before', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: config.storage.getStorage(),
+                    storage: wrappedKeyEncryptionStorage({
+                        storage: config.storage.getStorage(),
+                    }),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
@@ -2124,8 +2127,6 @@ describe('replication-graphql.test.ts', () => {
 
                 // sync
                 await replicationState.run();
-
-
                 assert.strictEqual(server.getDocuments().length, 1);
 
                 // update document

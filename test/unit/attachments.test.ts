@@ -18,12 +18,55 @@ import {
 } from '../../';
 import { HumanDocumentType } from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
-
+import {
+    wrappedKeyEncryptionStorage
+} from '../../plugins/encryption';
 
 config.parallel('attachments.test.ts', () => {
     if (!config.storage.hasAttachments) {
         return;
     }
+    async function createEncryptedAttachmentsCollection(
+        size = 20,
+        name = 'human',
+        multiInstance = true
+    ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
+        if (!name) {
+            name = 'human';
+        }
+        const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType> }>({
+            name: randomCouchString(10),
+            password: 'foooooobaaaar',
+            storage: wrappedKeyEncryptionStorage({
+                storage: config.storage.getStorage()
+            }),
+            multiInstance,
+            eventReduce: true,
+            ignoreDuplicate: true
+        });
+
+        const schemaJson = clone(schemas.human);
+        schemaJson.attachments = {
+            encrypted: true
+        };
+
+        const collections = await db.addCollections({
+            [name]: {
+                schema: schemaJson
+            }
+        });
+
+        // insert data
+        if (size > 0) {
+            const docsData = new Array(size)
+                .fill(0)
+                .map(() => schemaObjects.human());
+            await collections[name].bulkInsert(docsData);
+        }
+
+        return collections[name];
+    }
+
     describe('.putAttachment()', () => {
         it('should insert one attachment', async () => {
             const c = await humansCollection.createAttachments(1);
@@ -334,7 +377,7 @@ config.parallel('attachments.test.ts', () => {
     });
     describe('encryption', () => {
         it('should store the data encrypted', async () => {
-            const c = await humansCollection.createEncryptedAttachments(1);
+            const c = await createEncryptedAttachmentsCollection(1);
             const doc = await c.findOne().exec(true);
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
@@ -350,6 +393,7 @@ config.parallel('attachments.test.ts', () => {
             }
 
             // getting the data again must be decrypted
+            console.log('-------------');
             const data = await attachment.getStringData();
             assert.strictEqual(data, 'foo bar aaa');
             c.database.destroy();
@@ -357,7 +401,7 @@ config.parallel('attachments.test.ts', () => {
     });
     describe('.allAttachments$', () => {
         it('should emit on subscription', async () => {
-            const c = await humansCollection.createEncryptedAttachments(1);
+            const c = await createEncryptedAttachmentsCollection(1);
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
