@@ -136,15 +136,8 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
                                 return;
                             }
 
-
-                            console.log('modifyToStorage() ' + docData.id);
-                            console.log('value: ' + value);
-
                             const stringValue = JSON.stringify(value);
                             const encrypted = encryptString(stringValue, password);
-                            console.log('encrypted: ');
-                            console.dir(encrypted);
-                            console.log('------------------');
                             objectPath.set(docData, path, encrypted);
                         });
 

@@ -362,13 +362,17 @@ config.parallel('rx-database.test.js', () => {
                     name: randomCouchString(10),
                     storage: config.storage.getStorage()
                 });
-                await AsyncTestUtil.assertThrows(
-                    () => db.addCollections({
+                let hasThrown = false;
+                try {
+                    await db.addCollections({
                         human7: {
                             schema: schemas.encryptedHuman
                         }
-                    })
-                );
+                    });
+                } catch (err) {
+                    hasThrown = true;
+                }
+                assert.ok(hasThrown);
                 db.destroy();
             });
             it('2 different schemas on same collection', async () => {
