@@ -24,7 +24,6 @@ import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 import './unit/rx-storage-replication.test';
 
-import './unit/cross-instance.test';
 
 import './unit/instance-of-check.test';
 import './unit/rx-schema.test';
@@ -48,6 +47,7 @@ import './unit/reactive-collection.test';
 import './unit/attachments.test';
 import './unit/reactive-query.test';
 import './unit/data-migration.test';
+import './unit/cross-instance.test';
 import './unit/reactive-document.test';
 import './unit/cleanup.test';
 import './unit/hooks.test';
