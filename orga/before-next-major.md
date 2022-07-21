@@ -55,11 +55,6 @@ Ensure that it works with typescript. Check the rxjs repo and find out how they 
 
 Rename the paths in the `exports` field in the `package.json` so that users can do `import {} from 'rxdb/core'` instead of the current `import {} from 'rxdb/plugins/core'`.
 
-## Move _rev, _deleted and _attachments into _meta
-
-From version `12.0.0` on, all document data is stored with an `_meta` field that can contain various flags and other values. This makes it easier for plugins to remember stuff that belongs to the document.
-In the future, the other meta field like `_rev`, `_deleted` and `_attachments` will be moved from the root level to the `_meta` field. This is **not** done directly in release `12.0.0` to ensure that there is a migration path.
-
 
 ## Do not use md5 as default for revision creation
 
@@ -80,16 +75,6 @@ In the RxJsonSchema, a property of a document can have multiple types like
 This is bad and should not be used. Instead each field must have exactly one type.
 Having mixed types causes many confusion, for example when the type is `['string', 'number']`,
 you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
-
-
-
-## Remove RxDatabase.broadcastChannel
-The broadcast channel has been moved out of the RxDatabase and is part of the RxStorage. So we should not longer expose the getter.
-
-
-## Remove temporary documents
-
-https://github.com/pubkey/rxdb/pull/3777#issuecomment-1120669088
 
 
 

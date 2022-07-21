@@ -365,8 +365,6 @@ export async function handleRemoteRequest(
     instance: RxStorageInstanceLoki<any>,
     msg: any
 ) {
-    console.log('handleRemoteRequest()');
-    console.dir(msg);
     if (
         msg.type === LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE &&
         msg.requestId &&

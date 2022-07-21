@@ -222,8 +222,6 @@ export function wrapRxStorageInstance<RxDocType>(
     instance.getChangedDocumentsSince = (limit, checkpoint) => {
         return oldGetChangedDocumentsSince(limit, checkpoint)
             .then(async (result) => {
-                console.log('oldGetChangedDocumentsSince() result:');
-                console.log(JSON.stringify(result, null, 4));
                 return {
                     checkpoint: result.checkpoint,
                     documents: await Promise.all(

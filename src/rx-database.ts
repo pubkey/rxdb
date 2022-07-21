@@ -154,26 +154,6 @@ export class RxDatabaseBase<
         return this.observable$;
     }
 
-
-    /**
-     * Set if multiInstance: true
-     * This broadcast channel is used to send events to other instances like
-     * other browser tabs or nodejs processes.
-     * We transfer everything in EventBulks because sending many small events has been shown
-     * to be performance expensive.
-     * 
-     * @deprecated The broadcast channel has been moved out of the RxDatabase and is part of the
-     * RxStorage but only if it is needed there.
-     * @see ./rx-storage-multiinstance.ts
-     * 
-     */
-    get broadcastChannel(): BroadcastChannel<RxChangeEventBulk<any>> | undefined {
-        const bcState = BROADCAST_CHANNEL_BY_TOKEN.get(this.token);
-        if (bcState) {
-            return bcState.bc as any;
-        }
-    }
-
     public _subs: Subscription[] = [];
     public destroyed: boolean = false;
     public collections: Collections = {} as any;
