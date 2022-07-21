@@ -20,7 +20,6 @@ import {
 } from './util';
 import {
     newRxError,
-    newRxTypeError,
     isBulkWriteConflictError
 } from './rx-error';
 import {
