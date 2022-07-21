@@ -39,6 +39,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
         }
     });
     it('ensure all BroadcastChannels are closed', () => {
+        console.log(JSON.stringify(Array.from(BROADCAST_CHANNEL_BY_TOKEN.keys())));
         assert.strictEqual(
             BROADCAST_CHANNEL_BY_TOKEN.size,
             0
