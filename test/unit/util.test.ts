@@ -125,18 +125,31 @@ describe('util.test.js', () => {
     });
     describe('.now()', () => {
         it('should increase the returned value each time', () => {
-            const values: number[] = [];
-            new Array(100)
+            const values: Set<number> = new Set();
+            const runs = 500;
+
+            new Array(runs)
                 .fill(0)
                 .forEach(() => {
-                    values.push(now());
+                    values.add(now());
                 });
 
-            let last = 0;
-            values.forEach(value => {
-                assert.ok(value > last);
-                last = value;
+            // ensure we had no duplicates
+            console.dir(Array.from(values.values()));
+            assert.strictEqual(values.size, runs);
+
+            // ensure that all values have maximum two decimals
+            Array.from(values.values()).forEach(val => {
+                const asString = val.toString();
+                const afterDot = asString.split('.')[1];
+                if (
+                    afterDot &&
+                    afterDot.length > 2
+                ) {
+                    throw new Error('too many decmials on ' + asString);
+                }
             });
+
         });
     });
     describe('blobBufferUtil', () => {

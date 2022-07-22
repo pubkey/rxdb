@@ -17,6 +17,9 @@
 
 - REMOVED support for temporary documents [see here](https://github.com/pubkey/rxdb/pull/3777#issuecomment-1120669088)
 - REMOVED RxDatabase.broadcastChannel The broadcast channel has been moved out of the RxDatabase and is part of the RxStorage. So it is not longer exposed via `RxDatabase.broadcastChannel`.
+- The `is-my-json-valid` validation is no longer supported until [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) is fixed.
+
+- In RxDB `_meta.lwt` field, we now use 2 decimal number of the unix timestamp in milliseconds.
 
 <!-- ADD new changes here! -->
 

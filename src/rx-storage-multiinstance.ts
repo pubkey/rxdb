@@ -76,7 +76,6 @@ export function getBroadcastChannelReference(
             bc: new BroadcastChannel('RxDB:' + databaseName),
             refs: new Set<any>()
         };
-        console.log('add broadcast channel: ' + databaseInstanceToken);
         BROADCAST_CHANNEL_BY_TOKEN.set(databaseInstanceToken, state);
     }
     state.refs.add(refObject);

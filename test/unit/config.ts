@@ -14,8 +14,7 @@ import { getRxStorageDexie, RxStorageDexieStatics } from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
 import { getRxStorageMemory } from '../../plugins/memory';
 import { CUSTOM_STORAGE } from './custom-storage';
-import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
-
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 
 const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
 
@@ -111,12 +110,12 @@ export function setDefaultStorage(storageKey: string) {
                 hasRegexSupport: true
             };
             break;
-            /**
-             * We run the tests once together
-             * with a validation plugin
-             * to ensure we do not accidentially use non-valid data
-             * in the tests.
-             */
+        /**
+         * We run the tests once together
+         * with a validation plugin
+         * to ensure we do not accidentially use non-valid data
+         * in the tests.
+         */
         case 'memory-validation':
             config.storage = {
                 name: 'memory-validation',
@@ -124,7 +123,7 @@ export function setDefaultStorage(storageKey: string) {
                 getPerformanceStorage() {
                     return {
                         description: 'memory',
-                        storage: wrappedValidateIsMyJsonValidStorage({
+                        storage: wrappedValidateAjvStorage({
                             storage: getRxStorageMemory()
                         })
                     }

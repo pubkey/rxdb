@@ -19,24 +19,28 @@ import {
 
 import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
-import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
+// import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 const validationImplementations: {
     key: string,
     implementation: ReturnType<typeof wrappedValidateStorageFactory>
 }[] = [
+        /*
+         * TODO is-my-json-valid is no longer supported, until this is fixed:
+         * @link https://github.com/mafintosh/is-my-json-valid/pull/192
         {
             key: 'is-my-json-valid',
             implementation: wrappedValidateIsMyJsonValidStorage
         },
-        {
-            key: 'z-schema',
-            implementation: wrappedValidateZSchemaStorage
-        },
+        */
         {
             key: 'ajv',
             implementation: wrappedValidateAjvStorage
+        },
+        {
+            key: 'z-schema',
+            implementation: wrappedValidateZSchemaStorage
         }
     ];
 
@@ -105,6 +109,30 @@ validationImplementations.forEach(
                     }], testContext);
                     await instance.close();
                 });
+                it('validate with decimal _meta.lwt times', async () => {
+                    const instance = await getRxStorageInstance(schemas.nestedHuman);
+                    const amount = config.isFastMode() ? 10 : 155;
+                    const writeRows = new Array(amount)
+                        .fill(0)
+                        .map(() => schemaObjects.nestedHuman())
+                        .map(obj => toRxDocumentData(obj))
+                        .map(document => ({ document }));
+
+                    try {
+                        await instance.bulkWrite(writeRows, testContext);
+                    } catch (err) {
+                        console.dir('errored:');
+                        console.dir(err);
+                    }
+
+                    // writeRows.forEach(row => {
+                    //     console.log('ret:');
+                    //     console.dir(row.document._meta.lwt);
+                    // });
+
+                    await instance.close();
+                });
+
             });
             describe('negative', () => {
                 it('not validate other object', async () => {
