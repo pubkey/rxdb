@@ -232,6 +232,3 @@ Returns true if the given object is an instance of RxDocument. Returns false if 
 ```js
 const is = isRxDocument(myObj);
 ```
-
----------
-If you are new to RxDB, you should continue [here](./rx-query.md)

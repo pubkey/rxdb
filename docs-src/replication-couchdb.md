@@ -141,7 +141,3 @@ const replicationState = await myCollection.syncCouchDB({
 }); 
 ```
   - When you replicate attachments bigger then `1mb` you might cause the replication to stuck. This is an unsolved problem with pouchdb that requires further analysis. It is recommended to not store attachments bigger then `1mb` when using the replication.
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./replication-graphql.md)

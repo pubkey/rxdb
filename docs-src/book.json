@@ -32,7 +32,8 @@
         "expandable-chapters": {},
         "scripts": {
             "files": [
-                "./analytics.js"
+                "./analytics.js",
+                "./next-button.js"
             ]
         }
     }

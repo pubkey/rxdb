@@ -440,7 +440,3 @@ An `Observable` that emits `true` when the replication is doing something, `fals
 
 **NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
 
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./replication.md)

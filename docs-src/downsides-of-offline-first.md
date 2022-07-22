@@ -133,7 +133,3 @@ So creating replication for an SQL offline first database is way more work then 
   <img src="./files/no-relational-data.png" alt="no relational data" width="250" />
 </p>
 
-
-
----------
-If you are new to RxDB, you should continue with [Why it has to be NoSQL](./why-nosql.md)

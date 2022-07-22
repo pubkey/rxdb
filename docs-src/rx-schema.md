@@ -380,6 +380,3 @@ The schema is not only used to validate objects before they are written into the
 For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass a invalid schema into it.
 
 
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./schema-validation.md)

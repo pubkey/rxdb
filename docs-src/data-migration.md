@@ -194,8 +194,3 @@ const migrationStrategies = {
 
 ## Hint
 If your migration takes a long time, combine it with the leaderElection to make sure you don't waste your users' resources by running it in 2 open tabs.
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./leader-election.md)

@@ -230,7 +230,3 @@ console.log(amount);
 myDatabase.destroy();
 ```
 
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./server.md)

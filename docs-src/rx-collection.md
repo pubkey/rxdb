@@ -301,6 +301,3 @@ Returns true if the given object is an instance of RxCollection. Returns false i
 ```js
 const is = isRxCollection(myObj);
 ```
-
----------
-If you are new to RxDB, you should continue [here](./rx-document.md)

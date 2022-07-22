@@ -67,7 +67,3 @@ import {
 
 const pouch = getPouchDBOfRxCollection(myRxCollection);
 ```
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./rx-storage-dexie.md)

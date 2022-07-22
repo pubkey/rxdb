@@ -110,6 +110,3 @@ const attachment = await doc.putAttachment({
 console.log(attachment.scream());
 // 'AAAH!!'
 ```
-
----------
-If you are new to RxDB, you should continue [here](./population.md)

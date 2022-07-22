@@ -104,8 +104,3 @@ const storage = getMemorySyncedRxStorage({
 The [LokiJS RxStorage](./rx-storage-lokijs.md) also loads the whole database state into the memory to improve operation time.
 In comparison to LokiJS, the `Memory Synced` RxStorage has many improvements and performance optimizations to reduce initial load time. Also it uses replication instead of the leader election to handle multi-tab usage. This alone decreases the inital page load by about 200 milliseconds.
 
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./rx-storage-sharding.md)

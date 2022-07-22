@@ -66,7 +66,3 @@ Many storages run lazy, so it makes no sense to compare the time which is requir
 </p>
 
 
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./rx-storage-pouchdb.md)

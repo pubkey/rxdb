@@ -49,9 +49,3 @@ async function createDb() {
 }
 
 ```
-
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./rx-database.md)

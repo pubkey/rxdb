@@ -88,7 +88,3 @@ Run the [vanillaJS-example](https://github.com/pubkey/rxdb/tree/master/examples/
 
 The leader election is implemented via the  [broadcast-channel module](https://github.com/pubkey/broadcast-channel#using-the-leaderelection).
 The leader is elected between different processes on the same javascript-runtime. Like multiple tabs in the same browser or mupltiple NodeJs-processes on the same machine. It will not run between different replicated instances.
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./rx-storage.md)

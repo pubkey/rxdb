@@ -256,6 +256,3 @@ Returns true if the given object is an instance of RxQuery. Returns false if not
 ```js
 const is = isRxQuery(myObj);
 ```
-
----------
-If you are new to RxDB, you should continue [here](./rx-attachment.md)

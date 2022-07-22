@@ -100,7 +100,3 @@ const collection = myDatabase.addCollections({
 
 collection.options.foo(); // 'bar'
 ```
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./query-optimizer.md)

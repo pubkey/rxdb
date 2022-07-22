@@ -88,8 +88,3 @@ const subscription = backupState.writeEvents$.subscribe(writeEvent => console.di
 ## Import backup
 
 It is currently not possible to import from a written backup. If you need this funcitionality, please make a pull request.
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./query-cache.md)

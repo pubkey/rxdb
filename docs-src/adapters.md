@@ -270,7 +270,3 @@ async function getDatabase(){
     });
 }
 ```
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./tutorials/typescript.md)

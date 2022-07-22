@@ -27,8 +27,3 @@ const db = await createRxDatabase({
     storage: getRxStorageMemory()
 });
 ```
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./rx-storage-indexeddb.md)

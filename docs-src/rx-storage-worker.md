@@ -108,8 +108,3 @@ const databaseTwo = await createRxDatabase({
 
 
 
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./rx-storage-memory-synced.md)
