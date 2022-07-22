@@ -7,6 +7,7 @@ const heroSchema = {
     properties: {
         name: {
             type: 'string',
+            maxLength: '128',
         },
         color: {
             type: 'string',
