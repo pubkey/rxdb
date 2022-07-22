@@ -14,26 +14,6 @@ When no validation is used, any document data can be safed but there might be **
 
 RxDB has different implementations to validate data, each of them is based on a different [JSON Schema library](https://json-schema.org/implementations.html). In this exmaples we use the [Dexie.js RxStorage](./rx-storage-dexie.md), but you can wrap the validation around **any other** [RxStorage](./rx-storage.md).
 
-### validate-is-my-json-valid
-
-The `validate-is-my-json-valid` plugin uses [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid) for schema validation.
-
-```javascript
-import { wrappedValidateIsMyJsonValidStorage } from 'rxdb/plugins/validate-is-my-json-valid';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
-
-// wrap the validation around the main RxStorage
-const storage = wrappedValidateIsMyJsonValidStorage({
-    storage: getRxStorageDexie()
-});
-
-const db = await createRxDatabase({
-    name: randomCouchString(10),
-    storage
-});
-```
-
-
 ### validate-ajv
 
 Another validation-module that does the schema-validation. This one is using [ajv](https://github.com/epoberezkin/ajv) as validator which is a bit faster. Better compliant to the jsonschema-standart but also has a bigger build-size.
@@ -63,6 +43,28 @@ import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 // wrap the validation around the main RxStorage
 const storage = wrappedValidateZSchemaStorage({
+    storage: getRxStorageDexie()
+});
+
+const db = await createRxDatabase({
+    name: randomCouchString(10),
+    storage
+});
+```
+
+
+### validate-is-my-json-valid
+
+**WARNING**: The `is-my-json-valid` validation is no longer supported until [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) is fixed.
+
+The `validate-is-my-json-valid` plugin uses [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid) for schema validation.
+
+```javascript
+import { wrappedValidateIsMyJsonValidStorage } from 'rxdb/plugins/validate-is-my-json-valid';
+import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+
+// wrap the validation around the main RxStorage
+const storage = wrappedValidateIsMyJsonValidStorage({
     storage: getRxStorageDexie()
 });
 
