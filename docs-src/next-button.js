@@ -7,9 +7,10 @@ function runAddingNextButtons() {
 
         var alreadyThere = document.querySelector('#' + id);
         if (alreadyThere) {
-            console.log('custom next button already there.');
             return;
         }
+        console.log('custom next button NOT already there.');
+
 
         var block = document.querySelector('.normal.markdown-section');
         console.dir(block);
@@ -54,16 +55,12 @@ function runAddingNextButtons() {
 
     /**
      * Gitbook does a strange page change handling,
-     * so we have to re-run on history state changes.
+     * so we have to re-run the function
+     * because listening to history changes did not work.
      */
-    history.pushState = function () {
-        console.log('history.pushState()');
-        setTimeout(function () {
-            addNextButton();
-        }, 100);
-    };
-
-
+    setInterval(function () {
+        addNextButton();
+    }, 100);
 
 }
-//runAddingNextButtons();
+runAddingNextButtons();
