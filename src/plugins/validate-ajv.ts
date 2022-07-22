@@ -14,7 +14,9 @@ import type {
 import { wrappedValidateStorageFactory } from '../plugin-helpers';
 
 
-const ajv = new Ajv();
+const ajv = new Ajv({
+    strict: false
+});
 
 export const wrappedValidateAjvStorage = wrappedValidateStorageFactory(
     (schema: RxJsonSchema<any>) => {
