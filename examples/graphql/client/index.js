@@ -44,7 +44,7 @@ addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
-import { wrappedValidateIsMyJsonValidStorage } from 'rxdb/plugins/validate-is-my-json-valid';
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
@@ -158,7 +158,7 @@ async function run() {
     heroesList.innerHTML = 'Create database..';
     const db = await createRxDatabase({
         name: getDatabaseName(),
-        storage: wrappedValidateIsMyJsonValidStorage({
+        storage: wrappedValidateAjvStorage({
             storage: getStorage()
         })
     });

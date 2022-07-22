@@ -4,7 +4,7 @@ import { addPouchPlugin, getRxStoragePouch } from 'rxdb/plugins/pouchdb';
 import * as idb from 'pouchdb-adapter-idb';
 
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
-import { wrappedValidateIsMyJsonValidStorage } from 'rxdb/plugins/validate-is-my-json-valid';
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import noteSchema from './schema';
 
 /**
@@ -19,7 +19,7 @@ let dbPromise;
 const _create = async () => {
   const db = await createRxDatabase({
     name: 'rxdbdemo',
-    storage: wrappedValidateIsMyJsonValidStorage({
+    storage: wrappedValidateAjvStorage({
       storage: getRxStoragePouch('idb'),
     }),
     ignoreDuplicate: true

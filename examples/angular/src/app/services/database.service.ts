@@ -24,7 +24,7 @@ import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
-import { wrappedValidateIsMyJsonValidStorage } from 'rxdb/plugins/validate-is-my-json-valid';
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import {
     COUCHDB_PORT,
     HERO_COLLECTION_NAME,
@@ -113,7 +113,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     if (isDevMode()) {
         // we use the schema-validation only in dev-mode
         // this validates each document if it is matching the jsonschema
-        storage = wrappedValidateIsMyJsonValidStorage({ storage });
+        storage = wrappedValidateAjvStorage({ storage });
     }
 
     console.log('DatabaseService: creating database..');
