@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev:pack": "(cd ../../ && npx yarn pack ../../ --filename ./examples/react-native/rxdb-local.tgz)",
+    "preinstall": "(cd ../../ && npx yarn pack ../../ --filename ./examples/react-native/rxdb-local.tgz)",
     "start": "expo start",
     "eject": "expo eject",
     "android": "expo start --android",
@@ -32,7 +32,7 @@
     "random-token": "0.0.8",
     "react": "17.0.2",
     "react-native": "0.64.3",
-    "rxdb": "12.7.16",
+    "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.5.6"
   }
 }

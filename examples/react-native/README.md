@@ -17,6 +17,7 @@ For database replication and syncing you will need to input a public ip address 
 1. run `npm start`
    * to run on ios or android specific emulators use `npm run ios` and `npm run android` respectively
 
+* It use current version RxDB (see preinstall script). Tested with rxdb@12.7.16
 ## Screenshot
 
 ![Screenshot](docfiles/screenshot.png?raw=true)
