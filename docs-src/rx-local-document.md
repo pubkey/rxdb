@@ -144,8 +144,3 @@ const localDoc = await myCollection.upsertLocal<MyLocalDocumentType>(
 // typescript will know that foo is a string
 const foo: string = localDoc.toJSON().foo;
 ```
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./third-party-plugins.md)

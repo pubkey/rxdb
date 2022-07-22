@@ -96,7 +96,3 @@ You do not have to care whether this data came from the UI, another tab, the bac
    - sync can be done p2p webrtc https://hypercore-protocol.org/
 -->
 
-
----------
-If you are new to RxDB, you should continue with the [Downsides of Offline First](./downsides-of-offline-first.md)
-

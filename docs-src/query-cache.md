@@ -35,7 +35,3 @@ const collection = await myDatabase.addCollections({
     }
 });
 ```
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./rx-local-document.md)

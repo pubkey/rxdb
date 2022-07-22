@@ -313,8 +313,3 @@ await myRxReplicationState.run();
 
 Should be called when the remote tells the client that a new change has happened at the remote. Might or might not trigger a new `run()` cycle, depending on when it is called and if another cycle is already running. Use this inside of websocket handlers.
 
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./cleanup.md)

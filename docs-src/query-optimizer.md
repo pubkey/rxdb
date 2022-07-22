@@ -67,7 +67,3 @@ const bestIndexes = await findBestIndex({
 
 - The higher you set `runs`, the more test cycles will be performed and the more **significant** will be the time measurements which leads to a better index selection.
 
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./transactions-conflicts-revisions.md)

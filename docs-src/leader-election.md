@@ -82,13 +82,9 @@ In this example the leader is marked with the crown ♛
 
 ## Try it out
 
-Run the [vanillaJS-example](../examples/vanilla/) where the leading tab is marked with a crown on the top-right-corner.
+Run the [vanillaJS-example](https://github.com/pubkey/rxdb/tree/master/examples/vanilla) where the leading tab is marked with a crown on the top-right-corner.
 
 ## Notice
 
 The leader election is implemented via the  [broadcast-channel module](https://github.com/pubkey/broadcast-channel#using-the-leaderelection).
 The leader is elected between different processes on the same javascript-runtime. Like multiple tabs in the same browser or mupltiple NodeJs-processes on the same machine. It will not run between different replicated instances.
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./rx-storage.md)

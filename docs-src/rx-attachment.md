@@ -143,6 +143,3 @@ Returns a Promise which resolves the attachment's data as `string`.
 const attachment = await myDocument.getAttachment('cat.jpg');
 const data = await attachment.getStringData();
 ```
-
----------
-If you are new to RxDB, you should continue [here](./middleware.md)

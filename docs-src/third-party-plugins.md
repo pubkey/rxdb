@@ -5,8 +5,3 @@
 
 
 
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./plugins.md)

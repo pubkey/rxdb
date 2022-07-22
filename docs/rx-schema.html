@@ -2223,7 +2223,7 @@ Whenever you insert a document or create a temporary-document, unset fields will
           <span class="hljs-keyword">default</span>: <span class="hljs-number">20</span>       <span class="hljs-comment">// &lt;- default will be used</span>
       }
   },
-  required: [<span class="hljs-string">&apos;object&apos;</span>]
+  required: [<span class="hljs-string">&apos;id&apos;</span>]
 };
 </code></pre>
 <h2 id="final">final</h2>
@@ -2287,8 +2287,6 @@ addRxPlugin(RxDBEncryptionPlugin);
 <h2 id="notice-not-everything-within-the-jsonschema-spec-is-allowed">NOTICE: Not everything within the jsonschema-spec is allowed</h2>
 <p>The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of <a href="http://json-schema.org/" target="_blank">json-schema.org</a>.
 For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$</code> and <code>additionalProperties</code> is always set to <code>false</code>. But don&apos;t worry, RxDB will instantly throw an error when you pass a invalid schema into it.</p>
-<hr>
-<p>If you are new to RxDB, you should continue <a href="schema-validation.html">here</a></p>
 
                                 
                                 </section>
@@ -2332,7 +2330,7 @@ For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-z
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxSchema","level":"1.6","depth":1,"next":{"title":"Example","level":"1.6.1","depth":2,"anchor":"#example","path":"rx-schema.md","ref":"./rx-schema.md#example","articles":[]},"previous":{"title":"isRxDatabase()","level":"1.5.2.10","depth":3,"anchor":"#isrxdatabase","path":"rx-database.md","ref":"./rx-database.md#isrxdatabase","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-schema.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxSchema","level":"1.6","depth":1,"next":{"title":"Example","level":"1.6.1","depth":2,"anchor":"#example","path":"rx-schema.md","ref":"./rx-schema.md#example","articles":[]},"previous":{"title":"isRxDatabase()","level":"1.5.2.10","depth":3,"anchor":"#isrxdatabase","path":"rx-database.md","ref":"./rx-database.md#isrxdatabase","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-schema.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -2355,6 +2353,10 @@ For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-z
     
         
         <script src="gitbook/gitbook-plugin-scripts/28fd35f20e40e37a9994a4812fc3c7cc-analytics.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-scripts/9bc541ba5d318730a5b44c9770ae18fc-next-button.js"></script>
         
     
         

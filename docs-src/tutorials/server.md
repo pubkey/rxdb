@@ -172,8 +172,3 @@ After the replication worked, the client has the same document.
 const docs = await clientDB.items.find().exec();
 ```
 
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](../contribute.md)

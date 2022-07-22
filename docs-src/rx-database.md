@@ -209,7 +209,3 @@ Returns true if the given object is an instance of RxDatabase. Returns false if 
 import { isRxDatabase } from 'rxdb';
 const is = isRxDatabase(myObj);
 ```
-
-
------------
-If you are new to RxDB, you should continue [here](./rx-schema.md)

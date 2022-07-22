@@ -73,7 +73,3 @@ const db = await createRxDatabase({
 ```
 
 
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./rx-collection.md)

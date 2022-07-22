@@ -233,7 +233,3 @@ console.log(doc.myField);
 ```
 
 Notice: This hook does not run on already created or cached documents. Make sure to add `postCreate`-hooks before interacting with the collection.
-
-
----------
-If you are new to RxDB, you should continue [here](./orm.md)

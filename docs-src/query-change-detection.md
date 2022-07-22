@@ -40,8 +40,3 @@ await anyUser.save();
 
 But not with QueryChangeDetection enabled.
 Now, when one user logs off, it will calculate the new results from the current results plus the RxChangeEvent. This can often be done in-memory without making IO-requests to the storage-engine. QueryChangeDetection not only works on subscribed queries, but also when you do multiple `.exec()`'s on the same query.
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./in-memory.md)

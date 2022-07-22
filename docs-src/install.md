@@ -64,9 +64,3 @@ import {
   /* ... */
 } from 'rxdb';
 ```
-
-
-
---------------------------------------------------------------------------------
-
-If you are new to RxDB, you should continue [here](./dev-mode.md)

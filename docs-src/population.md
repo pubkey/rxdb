@@ -155,6 +155,3 @@ const doc = await humansCollection.findOne('Alice').exec();
 const friends = await myDocument.friends_;
 console.dir(friends); //> Array.<RxDocument>
 ```
-
----------
-If you are new to RxDB, you should continue [here](./data-migration.md)
