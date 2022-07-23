@@ -69,6 +69,9 @@ export async function writeSingle<RxDocType>(
         context
     );
 
+    console.log('writeSingle result:');
+    console.log(JSON.stringify(writeResult, null, 4));
+
     if (Object.keys(writeResult.error).length > 0) {
         const error = firstPropertyValueOfObject(writeResult.error);
         throw error;
@@ -541,18 +544,19 @@ export function getWrappedStorageInstance<
              * then the previous one
              */
             if (writeRow.previous) {
-                const prev = parseRevision(writeRow.previous._rev);
-                const current = parseRevision(writeRow.document._rev);
-                if (current.height <= prev.height) {
-                    throw newRxError('SNH', {
-                        dataBefore: writeRow.previous,
-                        dataAfter: writeRow.document,
-                        args: {
-                            prev,
-                            current
-                        }
-                    });
-                }
+                // TODO run this in the dev-mode plugin
+                // const prev = parseRevision(writeRow.previous._rev);
+                // const current = parseRevision(writeRow.document._rev);
+                // if (current.height <= prev.height) {
+                //     throw newRxError('SNH', {
+                //         dataBefore: writeRow.previous,
+                //         dataAfter: writeRow.document,
+                //         args: {
+                //             prev,
+                //             current
+                //         }
+                //     });
+                // }
             }
 
             /**
@@ -578,27 +582,15 @@ export function getWrappedStorageInstance<
         data._meta.lwt = now();
 
         /**
-         * Run the hooks once for the previous doc,
-         * once for the new write data
+         * Yes we really want to set the revision here.
+         * If you make a plugin that relies on having it's own revision
+         * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
          */
-        const previous = writeRow.previous;
-
-        /**
-         * Do not update the revision here.
-         * The caller of bulkWrite() must be able to set
-         * the revision and to be sure that the given revision
-         * is used when storing the document.
-         * The revision must be provided by the caller of bulkWrite().
-         */
-        if (!data._rev) {
-            throw newRxError('SNH', {
-                data
-            });
-        }
+        data._rev = createRevision(data, writeRow.previous);
 
         return {
             document: data,
-            previous
+            previous: writeRow.previous
         };
     }
 
@@ -758,6 +750,9 @@ export function getWrappedStorageInstance<
             });
         }
     };
+
+    (ret as any).originalStorageInstance = storageInstance;
+
     return ret;
 }
 

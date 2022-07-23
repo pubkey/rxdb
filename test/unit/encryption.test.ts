@@ -120,12 +120,14 @@ config.parallel('encryption.test.ts', () => {
         it('BUG: should have a pwHash-doc after creating the database', async () => {
             const name = randomCouchString(10);
             const password = randomCouchString(10);
+            console.log('---- 1');
             const db = await createRxDatabase({
                 name,
                 storage,
                 password,
                 ignoreDuplicate: true
             });
+            console.log('---- 2');
             const doc = await getSingleDocument<InternalStorePasswordDocType>(
                 db.internalStore,
                 getPrimaryKeyOfInternalDocument(
@@ -136,6 +138,7 @@ config.parallel('encryption.test.ts', () => {
             if (!doc) {
                 throw new Error('error in test this should never happen ' + doc);
             }
+            console.log('---- 3');
             assert.strictEqual(typeof doc.data.hash, 'string');
             const db2 = await createRxDatabase({
                 name,
@@ -143,6 +146,7 @@ config.parallel('encryption.test.ts', () => {
                 password,
                 ignoreDuplicate: true
             });
+            console.log('---- 4');
             const doc2 = await getSingleDocument<InternalStorePasswordDocType>(
                 db.internalStore,
                 getPrimaryKeyOfInternalDocument(
@@ -150,11 +154,14 @@ config.parallel('encryption.test.ts', () => {
                     INTERNAL_CONTEXT_ENCRYPTION
                 )
             );
+            console.log('---- 5');
             assert.ok(doc2);
             assert.strictEqual(typeof doc2.data.hash, 'string');
 
+            console.log('---- 6');
             db.destroy();
             db2.destroy();
+            console.log('---- 7');
         });
         it('prevent 2 instances with different passwords on same adapter', async () => {
             const name = randomCouchString(10);

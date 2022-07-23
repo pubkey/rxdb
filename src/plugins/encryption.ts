@@ -27,7 +27,6 @@ import type {
 } from '../types';
 import {
     clone,
-    createRevision,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
@@ -220,13 +219,16 @@ export async function storePasswordHashIntoInternalStore(
     internalStorageInstance: RxStorageInstance<InternalStoreDocType, any, any>,
     password: string
 ): Promise<boolean> {
+    console.log('storePasswordHashIntoInternalStore()');
     const pwHash = fastUnsecureHash(password, 1);
     const pwHashDocumentKey = 'pwHash';
+    console.log('storePasswordHashIntoInternalStore() - 0');
     const pwHashDocumentId = getPrimaryKeyOfInternalDocument(
         pwHashDocumentKey,
         INTERNAL_CONTEXT_ENCRYPTION
     );
 
+    console.log('storePasswordHashIntoInternalStore() - 0.5');
     const docData: RxDocumentWriteData<InternalStorePasswordDocType> = {
         id: pwHashDocumentId,
         key: pwHashDocumentKey,
@@ -241,7 +243,8 @@ export async function storePasswordHashIntoInternalStore(
         },
         _rev: getDefaultRevision()
     };
-    docData._rev = createRevision(docData);
+
+    console.log('storePasswordHashIntoInternalStore() - 1');
 
     let pwHashDoc;
     try {
@@ -252,24 +255,34 @@ export async function storePasswordHashIntoInternalStore(
             },
             'encryption-password-hash'
         );
+        console.log('storePasswordHashIntoInternalStore() - 1.1');
     } catch (err) {
+        console.log('storePasswordHashIntoInternalStore() - 1.2');
+        console.dir(err);
         if (
             (err as any).isError &&
             (err as RxStorageBulkWriteError<InternalStorePasswordDocType>).status === 409
         ) {
+            console.log('storePasswordHashIntoInternalStore() - 1.3');
             pwHashDoc = ensureNotFalsy((err as RxStorageBulkWriteError<InternalStorePasswordDocType>).documentInDb);
         } else {
+            console.log('storePasswordHashIntoInternalStore() - 1.4');
             throw err;
         }
     }
 
+    console.log('storePasswordHashIntoInternalStore() - 2');
+
+
     if (pwHash !== pwHashDoc.data.hash) {
+        console.log('storePasswordHashIntoInternalStore() - 3');
         // different hash was already set by other instance
         throw newRxError('DB1', {
             passwordHash: pwHash,
             existingPasswordHash: pwHashDoc.data.hash
         });
     } else {
+        console.log('storePasswordHashIntoInternalStore() - 4');
         return true;
     }
 }

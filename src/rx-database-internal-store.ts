@@ -14,7 +14,6 @@ import type {
     RxStorageInstance
 } from './types';
 import {
-    createRevision,
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
@@ -171,7 +170,6 @@ export async function ensureStorageTokenDocumentExists<Collections = any>(
         _rev: getDefaultRevision(),
         _attachments: {}
     };
-    docData._rev = createRevision(docData);
 
     const writeResult = await rxDatabase.internalStore.bulkWrite(
         [{ document: docData }],

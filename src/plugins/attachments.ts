@@ -4,7 +4,6 @@ import {
 
 import {
     blobBufferUtil,
-    createRevision,
     flatClone,
     PROMISE_RESOLVE_VOID
 } from './../util';
@@ -75,10 +74,6 @@ export class RxAttachment {
                 const docWriteData: RxDocumentWriteData<{}> = flatCloneDocWithMeta(this.doc._data);
                 docWriteData._attachments = flatClone(docWriteData._attachments);
                 delete docWriteData._attachments[this.id];
-
-
-                docWriteData._rev = createRevision(docWriteData, this.doc._data);
-
                 const writeResult: RxDocumentData<any> = await writeSingle(
                     this.doc.collection.storageInstance,
                     {
@@ -177,9 +172,6 @@ export async function putAttachment(
                 type,
                 data
             };
-
-            docWriteData._rev = createRevision(docWriteData, this._data);
-
             const writeRow = {
                 previous: flatClone(this._data),
                 document: flatClone(docWriteData)

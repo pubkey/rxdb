@@ -17,6 +17,8 @@ import {
     RxCollection,
     createRevision,
     normalizeMangoQuery,
+    RxStorageInstance,
+    now,
 } from '../../';
 
 import {
@@ -39,6 +41,7 @@ import {
     simpleHumanV3
 } from '../helper/schema-objects';
 import { HumanDocumentType } from '../helper/schemas';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 config.parallel('data-migration.test.js', () => {
 
@@ -774,6 +777,8 @@ config.parallel('data-migration.test.js', () => {
                         schema: schemas.humanFinal
                     }
                 });
+
+
                 const col = cols.humans;
                 await col.bulkInsert([
                     {
@@ -781,16 +786,29 @@ config.parallel('data-migration.test.js', () => {
                         firstName: 'foo',
                         lastName: 'bar',
                         age: 20
-                    },
-                    {
-                        passportId: nonChangedKey,
-                        firstName: 'foo',
-                        lastName: 'bar',
-                        age: 21
                     }
                 ]);
 
-                const revBeforeMigration = (await col.findOne(nonChangedKey).exec(true)).toJSON(true)._rev;
+                /**
+                 * To ensure that we really keep that revision, we
+                 * hackly insert this document via the RxStorageInstance.
+                 */
+                const originalStorageInstance: RxStorageInstance<HumanDocumentType, any, any> = (col.storageInstance as any).originalStorageInstance;
+                await originalStorageInstance.bulkWrite([{
+                    document: {
+                        passportId: nonChangedKey,
+                        firstName: 'foo',
+                        lastName: 'bar',
+                        age: 21,
+                        _meta: {
+                            lwt: now()
+                        },
+                        _rev: EXAMPLE_REVISION_1,
+                        _attachments: {},
+                        _deleted: false
+                    }
+                }], 'test-data-migration');
+
                 await db.destroy();
 
                 const db2 = await createRxDatabase({
@@ -819,7 +837,7 @@ config.parallel('data-migration.test.js', () => {
                  * If document data was not changed by migration, it should have kept the same revision
                  */
                 const revAfterMigration = (await col2.findOne(nonChangedKey).exec(true)).toJSON(true)._rev;
-                assert.strictEqual(revBeforeMigration, revAfterMigration);
+                assert.strictEqual(EXAMPLE_REVISION_1, revAfterMigration);
 
                 /**
                  * If document was changed, we should have an increased revision height

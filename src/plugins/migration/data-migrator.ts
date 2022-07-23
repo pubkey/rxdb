@@ -21,7 +21,8 @@ import {
     PROMISE_RESOLVE_VOID,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_NULL,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    now
 } from '../../util';
 import {
     createRxSchema
@@ -510,6 +511,7 @@ export async function _migrateDocuments(
             const attachmentsBefore = migratedDocData._attachments;
             const saveData: WithAttachmentsData<any> = migratedDocData;
             saveData._attachments = attachmentsBefore;
+            saveData._meta.lwt = now();
             bulkWriteToStorageInput.push(saveData);
             action.res = saveData;
             action.type = 'success';
@@ -531,7 +533,13 @@ export async function _migrateDocuments(
      * runs on multiple nodes which must lead to the equal storage state.
      */
     if (bulkWriteToStorageInput.length) {
-        await oldCollection.newestCollection.storageInstance.bulkWrite(
+        /**
+         * To ensure that we really keep that revision, we
+         * hackly insert this document via the RxStorageInstance.originalStorageInstance
+         * so that getWrappedStorageInstance() does not overwrite its own revision.
+         */
+        const originalStorageInstance: RxStorageInstance<any, any, any> = (oldCollection.newestCollection.storageInstance as any).originalStorageInstance;
+        await originalStorageInstance.bulkWrite(
             bulkWriteToStorageInput.map(document => ({ document })),
             'data-migrator-import'
         );
@@ -550,7 +558,6 @@ export async function _migrateDocuments(
         const writeDeleted = flatClone(docData);
         writeDeleted._deleted = true;
         writeDeleted._attachments = {};
-        writeDeleted._rev = createRevision(writeDeleted, docData);
         return {
             previous: docData,
             document: writeDeleted
