@@ -1,19 +1,19 @@
-import schema from './src/Schema';
 import { addRxPlugin, createRxDatabase } from 'rxdb';
 import { getRxStorageMemory } from 'rxdb/plugins/memory';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 import PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import PouchdbReplication from 'pouchdb-replication';
 
-import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
+import schema from './src/Schema';
 
 addPouchPlugin(PouchdbAdapterHttp);
 addPouchPlugin(PouchdbReplication);
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 
-const syncURL = 'http://localhost:10102/'; // Replace localhost with a public ip address!
+// const syncURL = 'http://localhost:10102/'; // Replace localhost with a public ip address!
 const dbName = 'heroesreactdatabase1';
 const HeroesCollectionName = 'heroes';
 
