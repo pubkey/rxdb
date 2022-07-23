@@ -126,6 +126,7 @@ config.parallel('encryption.test.ts', () => {
                 password,
                 ignoreDuplicate: true
             });
+            await db.storageTokenDocument;
             const doc = await getSingleDocument<InternalStoreStorageTokenDocType>(
                 db.internalStore,
                 STORAGE_TOKEN_DOCUMENT_ID
@@ -140,6 +141,7 @@ config.parallel('encryption.test.ts', () => {
                 password,
                 ignoreDuplicate: true
             });
+            await ensureNoStartupErrors(db2);
             const doc2 = await getSingleDocument<InternalStoreStorageTokenDocType>(
                 db.internalStore,
                 STORAGE_TOKEN_DOCUMENT_ID
