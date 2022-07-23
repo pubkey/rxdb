@@ -9,20 +9,18 @@ import {
     createRxDatabase,
     RxJsonSchema,
     randomCouchString,
-    getPrimaryKeyOfInternalDocument,
     getSingleDocument,
-    INTERNAL_CONTEXT_ENCRYPTION,
     isRxCollection,
     RxCollection,
     STORAGE_TOKEN_DOCUMENT_ID,
-    InternalStoreStorageTokenDocType
+    InternalStoreStorageTokenDocType,
+    ensureNoStartupErrors
 } from '../../';
 
 import {
     encryptString,
     decryptString,
-    wrappedKeyEncryptionStorage,
-    InternalStorePasswordDocType
+    wrappedKeyEncryptionStorage
 } from '../../plugins/encryption';
 
 
@@ -298,24 +296,28 @@ config.parallel('encryption.test.ts', () => {
             await db1.destroy();
 
             // 2. reopen with wrong password
+
+            const db2 = await createRxDatabase({
+                name,
+                storage,
+                password: 'foobarfoobar'
+            });
+
             await AsyncTestUtil.assertThrows(
-                () => createRxDatabase({
-                    name,
-                    storage,
-                    password: 'foobarfoobar'
-                }),
+                () => ensureNoStartupErrors(db2),
                 'RxError',
                 'different password'
             );
+            await db2.destroy();
 
             // 3. reopen with correct password
-            const db2 = await createRxDatabase({
+            const db3 = await createRxDatabase({
                 name,
                 storage,
                 password
             });
-            assert.ok(db2);
-            await db2.destroy();
+            assert.ok(db3);
+            await db3.destroy();
         });
         it('#917 Unexpected end of JSON input', async () => {
             const schema: RxJsonSchema<{ name: string; color: string; happy: boolean; }> = {

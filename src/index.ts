@@ -16,7 +16,8 @@ export {
     isRxDatabase,
     dbCount,
     _collectionNamePrimary, // used in tests
-    isRxDatabaseFirstTimeInstantiated
+    isRxDatabaseFirstTimeInstantiated,
+    ensureNoStartupErrors
 } from './rx-database';
 
 export * from './rx-database-internal-store';

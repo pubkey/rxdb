@@ -135,7 +135,6 @@ describe('util.test.js', () => {
                 });
 
             // ensure we had no duplicates
-            console.dir(Array.from(values.values()));
             assert.strictEqual(values.size, runs);
 
             // ensure that all values have maximum two decimals
