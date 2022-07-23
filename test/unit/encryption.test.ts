@@ -13,7 +13,9 @@ import {
     getSingleDocument,
     INTERNAL_CONTEXT_ENCRYPTION,
     isRxCollection,
-    RxCollection
+    RxCollection,
+    STORAGE_TOKEN_DOCUMENT_ID,
+    InternalStoreStorageTokenDocType
 } from '../../';
 
 import {
@@ -117,7 +119,7 @@ config.parallel('encryption.test.ts', () => {
                 'EN2'
             );
         });
-        it('BUG: should have a pwHash-doc after creating the database', async () => {
+        it('BUG: should have stored the password hash when creating the database', async () => {
             const name = randomCouchString(10);
             const password = randomCouchString(10);
             const db = await createRxDatabase({
@@ -126,32 +128,26 @@ config.parallel('encryption.test.ts', () => {
                 password,
                 ignoreDuplicate: true
             });
-            const doc = await getSingleDocument<InternalStorePasswordDocType>(
+            const doc = await getSingleDocument<InternalStoreStorageTokenDocType>(
                 db.internalStore,
-                getPrimaryKeyOfInternalDocument(
-                    'pwHash',
-                    INTERNAL_CONTEXT_ENCRYPTION
-                )
+                STORAGE_TOKEN_DOCUMENT_ID
             );
             if (!doc) {
                 throw new Error('error in test this should never happen ' + doc);
             }
-            assert.strictEqual(typeof doc.data.hash, 'string');
+            assert.strictEqual(typeof doc.data.passwordHash, 'string');
             const db2 = await createRxDatabase({
                 name,
                 storage,
                 password,
                 ignoreDuplicate: true
             });
-            const doc2 = await getSingleDocument<InternalStorePasswordDocType>(
+            const doc2 = await getSingleDocument<InternalStoreStorageTokenDocType>(
                 db.internalStore,
-                getPrimaryKeyOfInternalDocument(
-                    'pwHash',
-                    INTERNAL_CONTEXT_ENCRYPTION
-                )
+                STORAGE_TOKEN_DOCUMENT_ID
             );
             assert.ok(doc2);
-            assert.strictEqual(typeof doc2.data.hash, 'string');
+            assert.strictEqual(typeof doc2.data.passwordHash, 'string');
 
             db.destroy();
             db2.destroy();
@@ -164,16 +160,31 @@ config.parallel('encryption.test.ts', () => {
                 password: randomCouchString(10),
                 ignoreDuplicate: true
             });
+            await db.storageToken;
+            const db2 = await createRxDatabase({
+                name,
+                storage,
+                password: randomCouchString(10),
+                ignoreDuplicate: true
+            });
+
+            /**
+             * Because the database creation does some
+             * tasks lazy, we have to run addCollections
+             * so that ensureNoStartupErrors(rxDatabase) can throw
+             * its stored errors.
+             */
             await AsyncTestUtil.assertThrows(
-                () => createRxDatabase({
-                    name,
-                    storage,
-                    password: randomCouchString(10),
-                    ignoreDuplicate: true
+                () => db2.addCollections({
+                    humanenc: {
+                        schema: schemas.encryptedHuman
+                    }
                 }),
-                'RxError'
+                'RxError',
+                'DB1'
             );
             db.destroy();
+            db2.destroy();
         });
     });
     describe('RxCollection creation', () => {

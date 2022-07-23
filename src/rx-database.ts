@@ -24,7 +24,9 @@ import type {
     RxCleanupPolicy,
     InternalStoreDocType,
     InternalStoreStorageTokenDocType,
-    InternalStoreCollectionDocType
+    InternalStoreCollectionDocType,
+    RxTypeError,
+    RxError
 } from './types';
 
 import {
@@ -142,9 +144,15 @@ export class RxDatabaseBase<
              * Start writing the storage token.
              * Do not await the creation because it would run
              * in a critical path that increases startup time.
+             * 
+             * Writing the token takes about 20 milliseconds
+             * even on a fast adapter, so this is worth it.
              */
-            this.storageTokenDocument = ensureStorageTokenDocumentExists(this.asRxDatabase);
-            this.storageToken = this.storageTokenDocument.then(doc => doc.data.token);
+            this.storageTokenDocument = ensureStorageTokenDocumentExists(this.asRxDatabase)
+                .catch(err => this.startupErrors.push(err) as any);
+            this.storageToken = this.storageTokenDocument
+                .then(doc => doc.data.token)
+                .catch(err => this.startupErrors.push(err) as any);
         }
     }
 
@@ -153,6 +161,14 @@ export class RxDatabaseBase<
     }
 
     public _subs: Subscription[] = [];
+
+    /**
+     * Beceause having unhandled exceptions would fail,
+     * we have to store the async errors of the constructor here
+     * so we can throw them later.
+     */
+    public startupErrors: (RxError | RxTypeError)[] = [];
+
     public destroyed: boolean = false;
     public collections: Collections = {} as any;
     public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
@@ -304,6 +320,8 @@ export class RxDatabaseBase<
             bulkPutDocs,
             'rx-database-add-collection'
         );
+
+        await ensureNoStartupErrors(this);
 
         Object.entries(putDocsResult.error).forEach(([_id, error]) => {
             const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
@@ -669,6 +687,7 @@ export function createRxDatabase<
                 storageInstance,
                 cleanupPolicy
             ) as any;
+
             return runAsyncPluginHooks('createRxDatabase', {
                 database: rxDatabase,
                 creator: {
@@ -761,4 +780,20 @@ export async function isRxDatabaseFirstTimeInstantiated(
 ): Promise<boolean> {
     const tokenDoc = await database.storageTokenDocument;
     return tokenDoc.data.instanceToken === database.token;
+}
+
+
+/**
+ * For better performance some tasks run async
+ * and are awaited later.
+ * But we still have to ensure that there have been no errors
+ * on database creation.
+ */
+export async function ensureNoStartupErrors(
+    rxDatabase: RxDatabaseBase<any, any, any>
+) {
+    await rxDatabase.storageToken;
+    if (rxDatabase.startupErrors[0]) {
+        throw rxDatabase.startupErrors[0];
+    }
 }

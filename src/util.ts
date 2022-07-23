@@ -67,7 +67,14 @@ export function fastUnsecureHash(
         if (hashValue < 0) {
             hashValue = hashValue * -1;
         }
-        ret += '' + hashValue;
+
+        /**
+         * To make the output smaller
+         * but still have it to represent the same value,
+         * we use the biggest radix of 36 instead of just
+         * transforming it into a hex string.
+         */
+        ret += '' + hashValue.toString(36);
     }
     return ret;
 }

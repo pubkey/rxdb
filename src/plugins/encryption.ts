@@ -8,31 +8,22 @@ import * as cryptoEnc from 'crypto-js/enc-utf8';
 import objectPath from 'object-path';
 import { wrapRxStorageInstance } from '../plugin-helpers';
 import {
-    getPrimaryKeyOfInternalDocument,
-    INTERNAL_CONTEXT_ENCRYPTION,
     INTERNAL_STORE_SCHEMA_TITLE
 } from '../rx-database-internal-store';
 import { newRxError, newRxTypeError } from '../rx-error';
-import { hasEncryption, writeSingle } from '../rx-storage-helper';
+import { hasEncryption } from '../rx-storage-helper';
 import type {
     InternalStoreDocType,
     RxAttachmentWriteData,
     RxDocumentData,
-    RxDocumentWriteData,
     RxJsonSchema,
     RxStorage,
-    RxStorageBulkWriteError,
-    RxStorageInstance,
     RxStorageInstanceCreationParams
 } from '../types';
 import {
     clone,
-    createRevision,
     ensureNotFalsy,
-    flatClone,
-    getDefaultRevision,
-    fastUnsecureHash,
-    now
+    flatClone
 } from '../util';
 
 export const MINIMUM_PASSWORD_LENGTH: 8 = 8;
@@ -86,10 +77,6 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
                     ) {
                         try {
                             validatePassword(params.password);
-                            await storePasswordHashIntoInternalStore(
-                                retInstance as any,
-                                params.password
-                            );
                         } catch (err) {
                             /**
                              * Even if the checks fail,
@@ -208,70 +195,6 @@ function cloneWithoutAttachments<T>(data: RxDocumentData<T>): RxDocumentData<T> 
     data = clone(data);
     data._attachments = attachments;
     return data;
-}
-
-
-/**
- * validates and inserts the password hash into the internal collection
- * to ensure there is/was no other instance with a different password
- * which would cause strange side effects when both instances save into the same db
- */
-export async function storePasswordHashIntoInternalStore(
-    internalStorageInstance: RxStorageInstance<InternalStoreDocType, any, any>,
-    password: string
-): Promise<boolean> {
-    const pwHash = fastUnsecureHash(password, 1);
-    const pwHashDocumentKey = 'pwHash';
-    const pwHashDocumentId = getPrimaryKeyOfInternalDocument(
-        pwHashDocumentKey,
-        INTERNAL_CONTEXT_ENCRYPTION
-    );
-
-    const docData: RxDocumentWriteData<InternalStorePasswordDocType> = {
-        id: pwHashDocumentId,
-        key: pwHashDocumentKey,
-        context: INTERNAL_CONTEXT_ENCRYPTION,
-        data: {
-            hash: pwHash
-        },
-        _deleted: false,
-        _attachments: {},
-        _meta: {
-            lwt: now()
-        },
-        _rev: getDefaultRevision()
-    };
-    docData._rev = createRevision(docData);
-
-    let pwHashDoc;
-    try {
-        pwHashDoc = await writeSingle(
-            internalStorageInstance,
-            {
-                document: docData
-            },
-            'encryption-password-hash'
-        );
-    } catch (err) {
-        if (
-            (err as any).isError &&
-            (err as RxStorageBulkWriteError<InternalStorePasswordDocType>).status === 409
-        ) {
-            pwHashDoc = ensureNotFalsy((err as RxStorageBulkWriteError<InternalStorePasswordDocType>).documentInDb);
-        } else {
-            throw err;
-        }
-    }
-
-    if (pwHash !== pwHashDoc.data.hash) {
-        // different hash was already set by other instance
-        throw newRxError('DB1', {
-            passwordHash: pwHash,
-            existingPasswordHash: pwHashDoc.data.hash
-        });
-    } else {
-        return true;
-    }
 }
 
 

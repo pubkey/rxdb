@@ -1,3 +1,4 @@
+import { newRxError } from './rx-error';
 import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData
@@ -16,6 +17,7 @@ import type {
 import {
     createRevision,
     ensureNotFalsy,
+    fastUnsecureHash,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     randomCouchString
@@ -23,7 +25,6 @@ import {
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
-export const INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
 export const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 
 /**
@@ -61,7 +62,6 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDoc
             enum: [
                 INTERNAL_CONTEXT_COLLECTION,
                 INTERNAL_CONTEXT_STORAGE_TOKEN,
-                INTERNAL_CONTEXT_ENCRYPTION,
                 INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
                 'OTHER'
             ]
@@ -151,6 +151,8 @@ export async function ensureStorageTokenDocumentExists<Collections = any>(
      */
     const storageToken = randomCouchString(10);
 
+    const passwordHash = rxDatabase.password ? fastUnsecureHash(rxDatabase.password, 2) : undefined;
+
     const docData: RxDocumentData<InternalStoreStorageTokenDocType> = {
         id: STORAGE_TOKEN_DOCUMENT_ID,
         context: INTERNAL_CONTEXT_STORAGE_TOKEN,
@@ -164,7 +166,8 @@ export async function ensureStorageTokenDocumentExists<Collections = any>(
              * or if databases have existed earlier on that storage
              * with the same database name.
              */
-            instanceToken: rxDatabase.token
+            instanceToken: rxDatabase.token,
+            passwordHash
         },
         _deleted: false,
         _meta: getDefaultRxDocumentMeta(),
@@ -191,7 +194,20 @@ export async function ensureStorageTokenDocumentExists<Collections = any>(
         error.isError &&
         (error as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).status === 409
     ) {
-        const storageTokenDocInDb = (error as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).documentInDb;
+        const conflictError = (error as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>);
+
+
+        if (
+            passwordHash &&
+            passwordHash !== ensureNotFalsy(conflictError.documentInDb).data.passwordHash
+        ) {
+            throw newRxError('DB1', {
+                passwordHash,
+                existingPasswordHash: ensureNotFalsy(conflictError.documentInDb).data.passwordHash
+            });
+        }
+
+        const storageTokenDocInDb = conflictError.documentInDb;
         return ensureNotFalsy(storageTokenDocInDb);
     }
     throw error;
