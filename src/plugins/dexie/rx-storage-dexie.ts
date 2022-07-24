@@ -30,14 +30,6 @@ import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper
 
 
 export const RxStorageDexieStatics: RxStorageStatics = {
-    hash(data: Buffer | Blob | string): Promise<string> {
-        return new Promise(res => {
-            binaryMd5(data, (digest: string) => {
-                res(digest);
-            });
-        });
-    },
-    hashKey: 'md5',
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: FilledMangoQuery<RxDocType>

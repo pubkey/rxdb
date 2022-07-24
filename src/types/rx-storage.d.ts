@@ -107,7 +107,6 @@ export type BulkWriteRowById<RxDocType> = {
 export type RxAttachmentDataMeta = {
     /**
      * The digest which is the output of the hash function
-     * from storage.statics.hash(attachment.data)
      */
     digest: string;
     /**

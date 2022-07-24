@@ -6,12 +6,17 @@ import { newRxError } from '../../rx-error';
 
 import {
     getPouchIndexDesignDocNameByIndex,
-    pouchHash,
     pouchSwapPrimaryToId,
     primarySwapPouchDbQuerySelector
 } from './pouchdb-helper';
-import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
+import type {
+    DeterministicSortComparator,
+    QueryMatcher
+} from 'event-reduce-js';
+import {
+    getPrimaryFieldOfPrimaryKey,
+    getSchemaByObjectPath
+} from '../../rx-schema-helper';
 import type {
     MangoQuery,
     MangoQuerySortDirection,
@@ -27,15 +32,6 @@ import { overwritable } from '../../overwritable';
 import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
 
 export const RxStoragePouchStatics: RxStorageStatics = {
-
-    /**
-     * create the same diggest as an attachment with that data
-     * would have created by pouchdb internally.
-     */
-    hash(data: Buffer | Blob | string): Promise<string> {
-        return pouchHash(data);
-    },
-    hashKey: 'md5',
     getSortComparator<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         query: MangoQuery<RxDocType>

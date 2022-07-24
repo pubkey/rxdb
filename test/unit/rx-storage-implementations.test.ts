@@ -162,11 +162,6 @@ const testContext = 'rx-storage-implementations.test.ts'
 
 config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.storage.name + ')', () => {
     describe('statics', () => {
-        it('.hashKey', () => {
-            const statics = config.storage.getStorage().statics;
-            assert.strictEqual(typeof statics.hashKey, 'string');
-            assert.ok(statics.hashKey.length > 0);
-        });
     });
     describe('RxStorageInstance', () => {
         describe('creation', () => {
@@ -2163,10 +2158,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
-                const attachmentHash = await hashAttachmentData(
-                    dataStringBase64,
-                    statics
-                );
+                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const dataLength = getAttachmentSize(dataStringBase64);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -2179,7 +2171,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: statics.hashKey + '-' + attachmentHash,
+                            digest: 'md5-' + attachmentHash,
                             length: dataLength,
                             data: dataStringBase64,
                             type: 'text/plain'
@@ -2229,8 +2221,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
                 const attachmentHash = await hashAttachmentData(
-                    dataStringBase64,
-                    statics
+                    dataStringBase64
                 );
                 const dataLength = getAttachmentSize(dataStringBase64);
 
@@ -2244,7 +2235,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: statics.hashKey + '-' + attachmentHash,
+                            digest: 'md5-' + attachmentHash,
                             length: dataLength,
                             data: dataStringBase64,
                             type: 'text/plain'
@@ -2263,7 +2254,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 await waitUntil(() => flattenEvents(emitted).length === 1);
 
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
-                assert.strictEqual(writeResult._attachments.foo.digest, statics.hashKey + '-' + attachmentHash);
+                assert.strictEqual(writeResult._attachments.foo.digest, 'md5-' + attachmentHash);
 
                 /**
                  * When getting the document from the storage again,
@@ -2339,7 +2330,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 let previous: RxDocumentData<TestDocType> | undefined;
 
                 const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const attachmentHash = await config.storage.getStorage().statics.hash(data);
+                const attachmentHash = await hashAttachmentData(data);
                 const dataString = await blobBufferUtil.toBase64String(data);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -2351,7 +2342,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: config.storage.getStorage().statics.hashKey + '-' + attachmentHash,
+                            digest: 'md5-' + attachmentHash,
                             length: blobBufferUtil.size(data),
                             data: dataString,
                             type: 'text/plain'
@@ -2379,11 +2370,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 writeData._attachments = flatClone(previous._attachments) as any;
 
                 const data2 = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const attachmentHash2 = await config.storage.getStorage().statics.hash(data2);
+                const attachmentHash2 = await hashAttachmentData(data2);
                 const dataString2 = await blobBufferUtil.toBase64String(data2);
                 writeData._attachments.bar = {
                     data: dataString2,
-                    digest: config.storage.getStorage().statics.hashKey + '-' + attachmentHash2,
+                    digest: 'md5-' + attachmentHash2,
                     length: blobBufferUtil.size(data2),
                     type: 'text/plain'
                 };
@@ -2424,7 +2415,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
 
                 const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const attachmentHash = await config.storage.getStorage().statics.hash(data);
+                const attachmentHash = await hashAttachmentData(data);
                 const dataString = await blobBufferUtil.toBase64String(data);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -2436,7 +2427,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: config.storage.getStorage().statics.hashKey + '-' + attachmentHash,
+                            digest: 'md5-' + attachmentHash,
                             length: blobBufferUtil.size(data),
                             data: dataString,
                             type: 'text/plain'

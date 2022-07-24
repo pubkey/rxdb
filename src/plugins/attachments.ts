@@ -139,9 +139,7 @@ export async function putAttachment(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
-
     const dataSize = blobBufferUtil.size(attachmentData.data);
-    const storageStatics = this.collection.database.storage.statics;
     const dataString = await blobBufferUtil.toBase64String(attachmentData.data);
 
     const id = attachmentData.id;
@@ -149,9 +147,8 @@ export async function putAttachment(
     const data = dataString;
 
     const newDigest = await hashAttachmentData(
-        dataString,
-        storageStatics
-    ).then(hash => storageStatics.hashKey + '-' + hash);
+        dataString
+    ).then(hash => 'md5-' + hash);
 
     this._atomicQueue = this._atomicQueue
         .then(async () => {

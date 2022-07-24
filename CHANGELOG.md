@@ -23,6 +23,9 @@
 
 - In the RxDB internal `_meta.lwt` field, we now use 2 decimal number of the unix timestamp in milliseconds.
 
+
+- REMOVE RxStorageStatics `.hash` and `.hashKey`
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

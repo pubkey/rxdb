@@ -26,19 +26,9 @@ import {
 import { getLokiSortComparator, RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
 import type { LeaderElector } from 'broadcast-channel';
 
-import { binaryMd5 } from 'pouchdb-md5';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 
 export const RxStorageLokiStatics: RxStorageStatics = {
-
-    hash(data: Buffer | Blob | string): Promise<string> {
-        return new Promise(res => {
-            binaryMd5(data, (digest: string) => {
-                res(digest);
-            });
-        });
-    },
-    hashKey: 'md5',
     prepareQuery<RxDocType>(
         _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: MangoQuery<RxDocType>
