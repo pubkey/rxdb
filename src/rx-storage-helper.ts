@@ -4,7 +4,6 @@
 
 import type { ChangeEvent } from 'event-reduce-js';
 import { overwritable } from './overwritable';
-import { pouchHash } from './plugins/pouchdb';
 import { newRxError } from './rx-error';
 import {
     fillPrimaryKey,
@@ -484,28 +483,6 @@ export function getUniqueDeterministicEventKey(
     return eventKey;
 }
 
-/**
- * To be able to support PouchDB with attachments,
- * we have to use the md5 hashing here, even if the RxDatabase itself
- * has a different hashing function.
- */
-export function hashAttachmentData(
-    attachmentBase64String: string
-): Promise<string> {
-    let binary;
-    try {
-        binary = atob(attachmentBase64String);
-    } catch (err) {
-        console.log('could not run atob() on ' + attachmentBase64String);
-        throw err;
-    }
-    return pouchHash(binary);
-}
-export function getAttachmentSize(
-    attachmentBase64String: string
-): number {
-    return atob(attachmentBase64String).length;
-}
 
 /**
  * Wraps the normal storageInstance of a RxCollection

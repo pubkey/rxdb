@@ -20,8 +20,7 @@ import {
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type { ChangeEvent } from 'event-reduce-js';
-import { getAttachmentSize, hashAttachmentData } from '../../rx-storage-helper';
-import { RxStoragePouchStatics } from './pouch-statics';
+import { getAttachmentSize, hashAttachmentData } from '../attachments';
 
 export type PouchStorageInternals = {
     pouchInstanceId: string;

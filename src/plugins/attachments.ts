@@ -21,7 +21,33 @@ import type {
     RxAttachmentCreator,
     RxAttachmentWriteData
 } from '../types';
-import { flatCloneDocWithMeta, hashAttachmentData, writeSingle } from '../rx-storage-helper';
+import { flatCloneDocWithMeta, writeSingle } from '../rx-storage-helper';
+import { pouchHash } from './pouchdb';
+
+
+/**
+ * To be able to support PouchDB with attachments,
+ * we have to use the md5 hashing here, even if the RxDatabase itself
+ * has a different hashing function.
+ */
+export function hashAttachmentData(
+    attachmentBase64String: string
+): Promise<string> {
+    let binary;
+    try {
+        binary = atob(attachmentBase64String);
+    } catch (err) {
+        console.log('could not run atob() on ' + attachmentBase64String);
+        throw err;
+    }
+    return pouchHash(binary);
+}
+
+export function getAttachmentSize(
+    attachmentBase64String: string
+): number {
+    return atob(attachmentBase64String).length;
+}
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;

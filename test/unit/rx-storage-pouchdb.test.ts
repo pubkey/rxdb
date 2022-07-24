@@ -10,10 +10,13 @@ import {
     MangoQuery,
     ensureNotFalsy,
     now,
-    blobBufferUtil,
+    blobBufferUtil
+} from '../../';
+
+import {
     hashAttachmentData,
     getAttachmentSize
-} from '../../';
+} from '../../plugins/attachments';
 
 import {
     addCustomEventsPluginToPouch,
@@ -41,7 +44,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
     }
     describe('utils', () => {
         it('.hashAttachmentData() must return the same hash as pouchdb creates for an attachment', async () => {
-            const storage = getRxStoragePouch('memory');
             const pouch: PouchDBInstance = new PouchDB(
                 randomCouchString(12),
                 {

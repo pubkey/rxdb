@@ -18,14 +18,17 @@ import {
     createRevision,
     normalizeMangoQuery,
     RxStorageInstance,
-    now,
-    hashAttachmentData,
+    now
 } from '../../';
 
 import {
     PouchDB,
     PouchDBInstance
 } from '../../plugins/pouchdb';
+
+import {
+    hashAttachmentData
+} from '../../plugins/attachments';
 
 
 import {

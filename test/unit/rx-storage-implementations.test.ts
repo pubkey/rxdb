@@ -17,9 +17,7 @@ import {
     shuffleArray,
     now,
     getSingleDocument,
-    hashAttachmentData,
     parseRevision,
-    getAttachmentSize,
     fillWithDefaultSettings,
     createRevision,
     flatCloneDocWithMeta,
@@ -59,8 +57,9 @@ import {
 import { compressObject } from 'jsonschema-key-compression';
 
 import {
-    pouchHash
-} from '../../plugins/pouchdb';
+    hashAttachmentData,
+    getAttachmentSize
+} from '../../plugins/attachments';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
