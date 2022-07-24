@@ -58,10 +58,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             const attachmentId = 'myText';
             const docId = 'myDoc';
 
-            const rxdbHash = await hashAttachmentData(
-                attachmentDataBBase64,
-                storage.statics
-            );
+            const rxdbHash = await hashAttachmentData(attachmentDataBBase64);
 
             await pouch.put({
                 _id: docId,

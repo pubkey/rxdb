@@ -19,6 +19,7 @@ import {
     normalizeMangoQuery,
     RxStorageInstance,
     now,
+    hashAttachmentData,
 } from '../../';
 
 import {
@@ -1091,8 +1092,8 @@ config.parallel('data-migration.test.js', () => {
                 'text/plain'
             );
 
-            const statics = config.storage.getStorage().statics;
-            const attachmentHash = await statics.hash(dataBlobBuffer);
+            const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
+            const attachmentHash = await hashAttachmentData(dataStringBase64);
 
             const col = await humansCollection.createMigrationCollection(10, {
                 3: (doc: any) => {
