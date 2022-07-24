@@ -35,7 +35,6 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now,
-    parseRevision,
     randomCouchString
 } from './util';
 
