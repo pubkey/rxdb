@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - RENAME the `ajv-validate` plugin to `validate-ajv` to be in equal with the other validation plugins.
+- The `is-my-json-valid` validation is no longer supported until [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) is fixed.
 - REFACTORED the [schema validation plugins](https://rxdb.info/schema-validation.html), they are no longer plugins but now they get wrapped around any other RxStorage.
   - It allows us to run the validation inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
   - It allows us to configure which `RxDatabase` instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
@@ -19,9 +20,8 @@
 
 - REMOVED support for temporary documents [see here](https://github.com/pubkey/rxdb/pull/3777#issuecomment-1120669088)
 - REMOVED RxDatabase.broadcastChannel The broadcast channel has been moved out of the RxDatabase and is part of the RxStorage. So it is not longer exposed via `RxDatabase.broadcastChannel`.
-- The `is-my-json-valid` validation is no longer supported until [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) is fixed.
 
-- In RxDB `_meta.lwt` field, we now use 2 decimal number of the unix timestamp in milliseconds.
+- In the RxDB internal `_meta.lwt` field, we now use 2 decimal number of the unix timestamp in milliseconds.
 
 <!-- ADD new changes here! -->
 

@@ -15,8 +15,7 @@ import {
     flatClone,
     PROMISE_RESOLVE_NULL,
     PROMISE_RESOLVE_VOID,
-    ensureNotFalsy,
-    createRevision
+    ensureNotFalsy
 } from './util';
 import {
     newRxError,
@@ -321,7 +320,6 @@ export const basePrototype = {
                             const isConflict = isBulkWriteConflictError(useError as any);
                             if (isConflict) {
                                 // conflict error -> retrying
-                                newData._rev = createRevision(newData, isConflict.documentInDb);
                             } else {
                                 rej(useError);
                                 return;
@@ -388,7 +386,6 @@ export const basePrototype = {
         }
 
         await this.collection._runHooks('pre', 'save', newData, this);
-        newData._rev = createRevision(newData, oldData);
 
         const writeResult = await this.collection.storageInstance.bulkWrite([{
             previous: oldData,
@@ -419,7 +416,6 @@ export const basePrototype = {
         return collection._runHooks('pre', 'remove', deletedData, this)
             .then(async () => {
                 deletedData._deleted = true;
-                deletedData._rev = createRevision(deletedData, this._data);
 
                 const writeResult = await collection.storageInstance.bulkWrite([{
                     previous: this._data,

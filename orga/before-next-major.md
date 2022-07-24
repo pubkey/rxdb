@@ -10,7 +10,7 @@ This has a performance-benefit over using the Proxy-API which is also not suppor
 To create the constructor, the collection merges prototypes from RxDocument, RxSchema and the ORM-functions.
 The current implementation of this prototype-merging is very complicated and has hacky workarrounds to work with vue-devtools.
 We should rewrite it to a single pure function that returns the constructor.
-Instead of mergin the prototype into a single object, we should chain them together.
+Instead of merging the prototype into a single object, we should chain them together.
 
 ### Refactor data-migrator
 
@@ -18,20 +18,6 @@ Instead of mergin the prototype into a single object, we should chain them toget
  - This could have been done in much less code which would be easier to understand.
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
  
-
-## Move rxjs into a plugin instead of having it internal
-RxDB relies heavily on rxjs. This made it easy in the past to handle the data flow inside of RxDB and also created feature-rich interfaces for users when they want to observe data.
-As long as you have rxjs in your project anyways, like you would have in an angular project, there is no problem with that.
-As soon as a user has another data-handling library like redux or mobx, rxjs increases the build size by 22kb (5kb gzipped) and also adds the burden to map rxjs observables into the own state management.
-
-The change would ensure that rxjs is no longer used inside of RxDB. And also there will be a RxDB-plugin which offers the same observable-features as there are today, but optional.
-This would also allow us to create plugins for mobx or react-hooks in the future.
-
-## Make RxDocument-acessors functions
-
-Things like `RxDocument.deleted$` or `RxDocument.$` should be functions instead of getters.
-We apply a hack atm which does not really work with typescript.
-https://github.com/microsoft/TypeScript/issues/39254#issuecomment-649831793
 
 
 ## Make RxDcouments immutable

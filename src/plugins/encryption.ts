@@ -144,7 +144,6 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
                         });
                         docData._attachments = newAttachments;
                     }
-
                     return docData;
                 }
                 function modifyFromStorage(docData: RxDocumentData<any>): Promise<RxDocumentData<RxDocType>> {
@@ -196,7 +195,6 @@ function cloneWithoutAttachments<T>(data: RxDocumentData<T>): RxDocumentData<T> 
     data._attachments = attachments;
     return data;
 }
-
 
 function validatePassword(password: any) {
     if (password && typeof password !== 'string') {

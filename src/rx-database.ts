@@ -37,7 +37,6 @@ import {
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID,
     getDefaultRevision,
-    createRevision,
     getDefaultRxDocumentMeta
 } from './util';
 import {
@@ -236,7 +235,6 @@ export class RxDatabaseBase<
         }
         const writeDoc = flatCloneDocWithMeta(doc);
         writeDoc._deleted = true;
-        writeDoc._rev = createRevision(writeDoc, doc);
 
         await this.internalStore.bulkWrite([{
             document: writeDoc,
@@ -291,7 +289,6 @@ export class RxDatabaseBase<
                 _rev: getDefaultRevision(),
                 _attachments: {}
             };
-            collectionDocData._rev = createRevision(collectionDocData);
             bulkPutDocs.push({
                 document: collectionDocData
             });
@@ -574,7 +571,6 @@ export async function _removeAllOfCollection(
     const writeRows = relevantDocs.map(doc => {
         const writeDoc = flatCloneDocWithMeta(doc);
         writeDoc._deleted = true;
-        writeDoc._rev = createRevision(writeDoc, doc);
         return {
             previous: doc,
             document: writeDoc

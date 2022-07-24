@@ -18,8 +18,7 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS,
     getDefaultRxDocumentMeta,
     getDefaultRevision,
-    nextTick,
-    createRevision
+    nextTick
 } from './util';
 import {
     fillObjectDataBeforeInsert,
@@ -331,7 +330,6 @@ export class RxCollectionBase<
                 _rev: getDefaultRevision(),
                 _deleted: false
             });
-            docData._rev = createRevision(docData);
             const row: BulkWriteRow<RxDocumentType> = { document: docData };
             return row;
         });
@@ -406,7 +404,6 @@ export class RxCollectionBase<
         const removeDocs: BulkWriteRow<RxDocumentType>[] = docsData.map(doc => {
             const writeDoc = flatClone(doc);
             writeDoc._deleted = true;
-            writeDoc._rev = createRevision(writeDoc, doc);
             return {
                 previous: doc,
                 document: writeDoc

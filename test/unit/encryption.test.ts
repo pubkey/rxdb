@@ -120,6 +120,7 @@ config.parallel('encryption.test.ts', () => {
         it('BUG: should have stored the password hash when creating the database', async () => {
             const name = randomCouchString(10);
             const password = randomCouchString(10);
+            console.log('---- 1');
             const db = await createRxDatabase({
                 name,
                 storage,
@@ -135,6 +136,7 @@ config.parallel('encryption.test.ts', () => {
                 throw new Error('error in test this should never happen ' + doc);
             }
             assert.strictEqual(typeof doc.data.passwordHash, 'string');
+            console.log('---- 3');
             const db2 = await createRxDatabase({
                 name,
                 storage,
@@ -146,11 +148,14 @@ config.parallel('encryption.test.ts', () => {
                 db.internalStore,
                 STORAGE_TOKEN_DOCUMENT_ID
             );
+            console.log('---- 5');
             assert.ok(doc2);
             assert.strictEqual(typeof doc2.data.passwordHash, 'string');
 
+            console.log('---- 6');
             db.destroy();
             db2.destroy();
+            console.log('---- 7');
         });
         it('prevent 2 instances with different passwords on same adapter', async () => {
             const name = randomCouchString(10);

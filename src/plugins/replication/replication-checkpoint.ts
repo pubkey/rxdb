@@ -11,7 +11,6 @@ import {
     writeSingle
 } from '../../rx-storage-helper';
 import {
-    createRevision,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta
@@ -78,7 +77,6 @@ export async function setLastPushCheckpoint(
             _rev: getDefaultRevision(),
             _attachments: {}
         };
-        insertData._rev = createRevision(insertData);
         const res = await writeSingle(
             collection.database.internalStore,
             {
@@ -100,7 +98,6 @@ export async function setLastPushCheckpoint(
             _deleted: false,
             _attachments: {}
         };
-        docData._rev = createRevision(docData, doc);
         const res = await writeSingle<InternalStoreReplicationPushDocType>(
             collection.database.internalStore,
             {
@@ -270,7 +267,6 @@ export async function setLastPullDocument<RxDocType>(
             _deleted: false,
             _attachments: {}
         };
-        insertData._rev = createRevision(insertData);
         return writeSingle<InternalStoreReplicationPullDocType<RxDocType>>(
             collection.database.internalStore,
             {
@@ -281,7 +277,6 @@ export async function setLastPullDocument<RxDocType>(
     } else {
         const newDoc = flatCloneDocWithMeta(lastPullCheckpointDoc);
         newDoc.data = { lastPulledDoc: lastPulledDoc as any };
-        newDoc._rev = createRevision(newDoc, lastPullCheckpointDoc);
         return writeSingle<InternalStoreReplicationPullDocType<RxDocType>>(
             collection.database.internalStore,
             {

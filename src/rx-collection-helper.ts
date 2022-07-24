@@ -4,7 +4,10 @@ import type {
     RxStorageInstance,
     RxStorageInstanceCreationParams
 } from './types';
-import { createRevision, getDefaultRxDocumentMeta } from './util';
+import {
+    getDefaultRevision,
+    getDefaultRxDocumentMeta
+} from './util';
 import {
     fillPrimaryKey
 } from './rx-schema-helper';
@@ -32,7 +35,7 @@ export function fillObjectDataBeforeInsert<RxDocType>(
         useJson._attachments = {};
     }
     if (!useJson.hasOwnProperty('_rev')) {
-        useJson._rev = createRevision(useJson);
+        useJson._rev = getDefaultRevision();
     }
     return useJson;
 }

@@ -15,7 +15,11 @@ import type {
     RxPlugin,
     RxDocumentData
 } from '../types';
-import { createRevision, flatClone, getDefaultRevision, now } from '../util';
+import {
+    flatClone,
+    getDefaultRevision,
+    now
+} from '../util';
 
 function dumpRxDatabase(
     this: RxDatabase,
@@ -117,7 +121,6 @@ function importDumpRxCollection<RxDocType>(
                     _deleted: false
                 }
             );
-            document._rev = createRevision(document);
             return {
                 document
             }

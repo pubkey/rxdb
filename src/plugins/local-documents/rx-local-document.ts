@@ -16,7 +16,13 @@ import type {
     RxLocalDocument,
     RxLocalDocumentData
 } from '../../types';
-import { clone, createRevision, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
+import {
+    clone,
+    flatClone,
+    getDefaultRevision,
+    getDefaultRxDocumentMeta,
+    getFromObjectOrThrow
+} from '../../util';
 import { getLocalDocStateByParent } from './local-documents-helper';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
@@ -145,7 +151,6 @@ const RxLocalDocumentPrototype: any = {
                             const isConflict = isBulkWriteConflictError(err as any);
                             if (isConflict) {
                                 // conflict error -> retrying
-                                newData._rev = createRevision(newData, isConflict.documentInDb);
                             } else {
                                 rej(err);
                                 return;
@@ -170,7 +175,6 @@ const RxLocalDocumentPrototype: any = {
         const state = await getLocalDocStateByParent(this.parent);
         const oldData: RxDocumentData<RxLocalDocumentData> = this._dataSync$.getValue() as any;
         newData.id = (this as any).id;
-        newData._rev = createRevision(newData, oldData);
         return state.storageInstance.bulkWrite([{
             previous: oldData,
             document: newData
@@ -195,7 +199,6 @@ const RxLocalDocumentPrototype: any = {
             _rev: getDefaultRevision(),
             _attachments: {}
         };
-        writeData._rev = createRevision(writeData, this._data);
         return writeSingle(state.storageInstance, {
             previous: this._data,
             document: writeData

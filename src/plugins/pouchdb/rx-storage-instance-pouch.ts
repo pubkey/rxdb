@@ -167,6 +167,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             });
         }
 
+
+        console.log('POUCHDB bulkWrite(' + context + '):');
+        console.log(JSON.stringify(documentWrites, null, 4));
+
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
         const insertDocsById: Map<string, any> = new Map();
         const writeDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
@@ -181,6 +185,17 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                     writeData.previous._meta.lwt >= writeData.document._meta.lwt
                 )
             ) {
+                throw newRxError('SNH', {
+                    args: writeData
+                });
+            }
+
+            /**
+             * Ensure that a revision exists,
+             * having an empty revision here would not throw
+             * but just not resolve forever.
+             */
+            if (!writeData.document._rev) {
                 throw newRxError('SNH', {
                     args: writeData
                 });
