@@ -14,7 +14,6 @@ import type {
 import {
     Query as MingoQuery
 } from 'mingo';
-import { binaryMd5 } from 'pouchdb-md5';
 import { getDexieSortComparator, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
 import type {
     DexieSettings,
