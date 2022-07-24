@@ -492,7 +492,14 @@ export function getUniqueDeterministicEventKey(
 export function hashAttachmentData(
     attachmentBase64String: string
 ): Promise<string> {
-    return pouchHash(atob(attachmentBase64String));
+    let binary;
+    try {
+        binary = atob(attachmentBase64String);
+    } catch (err) {
+        console.log('could not run atob() on ' + attachmentBase64String);
+        throw err;
+    }
+    return pouchHash(binary);
 }
 export function getAttachmentSize(
     attachmentBase64String: string

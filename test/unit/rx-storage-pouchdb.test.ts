@@ -75,7 +75,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             const pouchDoc = await pouch.get(docId);
             assert.strictEqual(
                 pouchDoc._attachments[attachmentId].digest,
-                storage.statics.hashKey + '-' + rxdbHash
+                'md5-' + rxdbHash
             );
 
             const size = getAttachmentSize(attachmentDataBBase64);

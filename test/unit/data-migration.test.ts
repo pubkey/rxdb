@@ -1116,7 +1116,7 @@ config.parallel('data-migration.test.js', () => {
             const attachment = docs[0].getAttachment('foo');
             assert.ok(attachment);
             assert.strictEqual(attachment.type, 'text/plain');
-            assert.strictEqual(attachment.digest, statics.hashKey + '-' + attachmentHash);
+            assert.strictEqual(attachment.digest, 'md5-' + attachmentHash);
             assert.strictEqual(attachment.length, attachmentData.length);
 
             olds.forEach(oldCol => oldCol.storageInstance.close().catch(() => { }));

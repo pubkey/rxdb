@@ -58,6 +58,10 @@ import {
 } from '../helper/revisions';
 import { compressObject } from 'jsonschema-key-compression';
 
+import {
+    pouchHash
+} from '../../plugins/pouchdb';
+
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 declare type TestDocType = { key: string; value: string; };
@@ -2148,9 +2152,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
-                const statics = config.storage.getStorage().statics;
-
-
                 const attachmentData = new Array(20).fill('a').join('');
                 const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
                     attachmentData,
@@ -2206,8 +2207,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
-                const statics = config.storage.getStorage().statics;
-
                 const emitted: EventBulk<RxStorageChangeEvent<any>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
@@ -2220,9 +2219,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
-                const attachmentHash = await hashAttachmentData(
-                    dataStringBase64
-                );
+                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const dataLength = getAttachmentSize(dataStringBase64);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -2329,9 +2326,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 let previous: RxDocumentData<TestDocType> | undefined;
 
-                const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const attachmentHash = await hashAttachmentData(data);
-                const dataString = await blobBufferUtil.toBase64String(data);
+                const dataBlobBuffer = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
+                const dataString = await blobBufferUtil.toBase64String(dataBlobBuffer);
+                const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
+                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
@@ -2343,7 +2341,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     _attachments: {
                         foo: {
                             digest: 'md5-' + attachmentHash,
-                            length: blobBufferUtil.size(data),
+                            length: blobBufferUtil.size(dataBlobBuffer),
                             data: dataString,
                             type: 'text/plain'
                         }
@@ -2370,7 +2368,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 writeData._attachments = flatClone(previous._attachments) as any;
 
                 const data2 = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const attachmentHash2 = await hashAttachmentData(data2);
+                const dataStringBase642 = await blobBufferUtil.toBase64String(data2);
+                const attachmentHash2 = await hashAttachmentData(dataStringBase642);
                 const dataString2 = await blobBufferUtil.toBase64String(data2);
                 writeData._attachments.bar = {
                     data: dataString2,
@@ -2415,7 +2414,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
 
                 const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const attachmentHash = await hashAttachmentData(data);
+                const dataStringBase64 = await blobBufferUtil.toBase64String(data);
+                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const dataString = await blobBufferUtil.toBase64String(data);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
