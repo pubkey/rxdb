@@ -3,7 +3,8 @@ import type {
     RxConflictHandler,
     RxConflictHandlerInput,
     RxConflictHandlerOutput,
-    RxDocumentData
+    RxDocumentData,
+    RxStorageInstanceReplicationState
 } from '../types';
 import {
     getDefaultRevision,
@@ -45,13 +46,14 @@ export const defaultConflictHandler: RxConflictHandler<any> = function (
  * Conflicts are only solved in the upstream, never in the downstream.
  */
 export async function resolveConflictError<RxDocType>(
-    conflictHandler: RxConflictHandler<RxDocType>,
+    state: RxStorageInstanceReplicationState<RxDocType>,
     input: RxConflictHandlerInput<RxDocType>,
     forkState: RxDocumentData<RxDocType>
 ): Promise<{
     resolvedDoc: RxDocumentData<RxDocType>;
     output: RxConflictHandlerOutput<RxDocType>;
 } | undefined> {
+    const conflictHandler: RxConflictHandler<RxDocType> = state.input.conflictHandler;
     const conflictHandlerOutput = await conflictHandler(input, 'replication-resolve-conflict');
 
     if (conflictHandlerOutput.isEqual) {
@@ -79,7 +81,11 @@ export async function resolveConflictError<RxDocType>(
             }
         );
         resolvedDoc._meta.lwt = now();
-        resolvedDoc._rev = createRevision(resolvedDoc, forkState);
+        resolvedDoc._rev = createRevision(
+            state.input.hashFunction,
+            resolvedDoc,
+            forkState
+        );
         return {
             resolvedDoc,
             output: conflictHandlerOutput

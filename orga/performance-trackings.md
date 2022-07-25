@@ -931,3 +931,28 @@ AFTER:
     "total": 2059.198253
   }
 }
+
+
+## 25. Juli 2022
+Do not use md5 as default hashing method.
+
+BEFORE:
+
+{
+    "description": "memory",
+    "time-to-first-insert": 11.17971400047342,
+    "insert-documents": 44.939861000825964,
+    "find-by-ids": 0.0864659994840622,
+    "find-by-query": 1.9507423328856628
+}
+
+
+AFTER:
+
+{
+    "description": "memory",
+    "time-to-first-insert": 4.654121999939282,
+    "insert-documents": 36.99423733229438,
+    "find-by-ids": 0.11590833341081937,
+    "find-by-query": 2.83842833340168
+}

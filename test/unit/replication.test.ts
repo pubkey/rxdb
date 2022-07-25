@@ -24,7 +24,7 @@ import {
     ensureNotFalsy,
     randomCouchString,
     now,
-    hash,
+    fastUnsecureHash
 } from '../../';
 
 import {
@@ -49,7 +49,7 @@ import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
-    const REPLICATION_IDENTIFIER_TEST_HASH = hash(REPLICATION_IDENTIFIER_TEST);
+    const REPLICATION_IDENTIFIER_TEST_HASH = fastUnsecureHash(REPLICATION_IDENTIFIER_TEST);
 
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
     async function getTestCollections(docsAmount: { local: number, remote: number }): Promise<{

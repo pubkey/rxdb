@@ -66,10 +66,6 @@ export async function writeSingle<RxDocType>(
         [writeRow],
         context
     );
-
-    console.log('writeSingle result:');
-    console.log(JSON.stringify(writeResult, null, 4));
-
     if (Object.keys(writeResult.error).length > 0) {
         const error = firstPropertyValueOfObject(writeResult.error);
         throw error;
@@ -573,7 +569,11 @@ export function getWrappedStorageInstance<
          * If you make a plugin that relies on having it's own revision
          * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
          */
-        data._rev = createRevision(data, writeRow.previous);
+        data._rev = createRevision(
+            database.hashFunction,
+            data,
+            writeRow.previous
+        );
 
         return {
             document: data,
@@ -637,7 +637,11 @@ export function getWrappedStorageInstance<
                                         {},
                                         error.writeRow.document,
                                         {
-                                            _rev: createRevision(error.writeRow.document, error.documentInDb)
+                                            _rev: createRevision(
+                                                database.hashFunction,
+                                                error.writeRow.document,
+                                                error.documentInDb
+                                            )
                                         }
                                     )
                                 };

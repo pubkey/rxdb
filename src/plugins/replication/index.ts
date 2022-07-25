@@ -30,11 +30,11 @@ import {
 import {
     ensureInteger,
     ensureNotFalsy,
+    fastUnsecureHash,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     getHeightOfRevision,
-    hash,
     lastOfArray,
     now,
     PROMISE_RESOLVE_FALSE,
@@ -577,7 +577,7 @@ export function replicateRxCollection<RxDocType>(
         autoStart = true,
     }: ReplicationOptions<RxDocType>
 ): RxReplicationState<RxDocType> {
-    const replicationIdentifierHash = hash(
+    const replicationIdentifierHash = fastUnsecureHash(
         [
             collection.database.name,
             collection.name,

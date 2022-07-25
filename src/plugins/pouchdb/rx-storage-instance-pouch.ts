@@ -167,10 +167,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             });
         }
 
-
-        console.log('POUCHDB bulkWrite(' + context + '):');
-        console.log(JSON.stringify(documentWrites, null, 4));
-
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
         const insertDocsById: Map<string, any> = new Map();
         const writeDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {

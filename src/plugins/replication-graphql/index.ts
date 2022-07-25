@@ -9,11 +9,8 @@ import type {
 import GraphQLClient from 'graphql-client';
 import objectPath from 'object-path';
 import {
+    fastUnsecureHash,
     flatClone
-} from '../../util';
-
-import {
-    hash
 } from '../../util';
 
 import {
@@ -250,7 +247,7 @@ export function syncGraphQL<RxDocType>(
     }
 
     const replicationState = replicateRxCollection<RxDocType>({
-        replicationIdentifier: GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + hash(url),
+        replicationIdentifier: GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(url),
         collection,
         deletedFlag,
         pull: replicationPrimitivesPull,

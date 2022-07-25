@@ -57,7 +57,7 @@ export function wrappedValidateStorageFactory(
     function initValidator(
         schema: RxJsonSchema<any>
     ): ValidatorFunction {
-        const hash = fastUnsecureHash(schema, 3);
+        const hash = fastUnsecureHash(JSON.stringify(schema));
         if (!VALIDATOR_CACHE.has(hash)) {
             const validator = getValidator(schema);
             VALIDATOR_CACHE.set(hash, validator);

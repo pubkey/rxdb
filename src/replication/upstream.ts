@@ -325,7 +325,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                                 realMasterState
                             };
                             return resolveConflictError(
-                                state.input.conflictHandler,
+                                state,
                                 input,
                                 forkStateById[docId]
                             ).then(resolved => {

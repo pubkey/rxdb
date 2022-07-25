@@ -1,4 +1,5 @@
 import type {
+    HashFunction,
     RxDocumentData,
     WithDeleted
 } from '../types';
@@ -10,6 +11,7 @@ import {
 } from '../util';
 
 export function docStateToWriteDoc<RxDocType>(
+    hashFunction: HashFunction,
     docState: WithDeleted<RxDocType>,
     previous?: RxDocumentData<RxDocType>
 ): RxDocumentData<RxDocType> {
@@ -24,7 +26,11 @@ export function docStateToWriteDoc<RxDocType>(
             _rev: getDefaultRevision()
         }
     );
-    docData._rev = createRevision(docData, previous);
+    docData._rev = createRevision(
+        hashFunction,
+        docData,
+        previous
+    );
     return docData;
 }
 

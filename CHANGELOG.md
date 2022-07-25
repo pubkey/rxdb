@@ -26,6 +26,9 @@
 
 - REMOVE RxStorageStatics `.hash` and `.hashKey`
 
+- CHANGE removed default usage of `md5` as default hashing. Use a faster non-cryptographic hash instead.
+  - ADD option to pass a custom hash function when calling `createRxDatabase`.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

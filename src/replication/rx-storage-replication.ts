@@ -32,6 +32,7 @@ import type {
     BulkWriteRow,
     ById,
     EventBulk,
+    HashFunction,
     RxConflictHandler,
     RxDocumentData,
     RxReplicationHandler,
@@ -158,7 +159,8 @@ export async function awaitRxStorageReplicationIdle(
 
 export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpointType>(
     instance: RxStorageInstance<RxDocType, any, any, MasterCheckpointType>,
-    conflictHandler: RxConflictHandler<RxDocType>
+    conflictHandler: RxConflictHandler<RxDocType>,
+    hashFunction: HashFunction
 ): RxReplicationHandler<RxDocType, MasterCheckpointType> {
 
     const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
@@ -218,7 +220,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                         const masterState = masterDocsState[id];
                         if (!masterState) {
                             writeRows.push({
-                                document: docStateToWriteDoc(row.newDocumentState)
+                                document: docStateToWriteDoc(hashFunction, row.newDocumentState)
                             });
                         } else if (
                             masterState &&
@@ -233,7 +235,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                         ) {
                             writeRows.push({
                                 previous: masterState,
-                                document: docStateToWriteDoc(row.newDocumentState, masterState)
+                                document: docStateToWriteDoc(hashFunction, row.newDocumentState, masterState)
                             });
                         } else {
                             conflicts.push(writeDocToDocState(masterState));

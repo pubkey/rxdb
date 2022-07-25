@@ -8,7 +8,9 @@ import {
     createRxSchema,
     randomCouchString,
     RxDatabase,
-    isRxDatabaseFirstTimeInstantiated
+    isRxDatabaseFirstTimeInstantiated,
+    fastUnsecureHash,
+    RxCollection
 } from '../../';
 
 
@@ -90,9 +92,9 @@ config.parallel('rx-database.test.js', () => {
                 db2.destroy();
             });
             it('2 password-instances on same adapter', async () => {
-                if(
+                if (
                     config.storage.name === 'lokijs'
-                ){
+                ) {
                     /**
                      * TODO on lokijs this test somehow fails
                      * to properly clean up the open broadcast channels.
@@ -144,6 +146,27 @@ config.parallel('rx-database.test.js', () => {
                     ignoreDuplicate: true
                 });
                 assert.strictEqual(db.internalStore.options.ajax, 'bar');
+                db.destroy();
+            });
+            it('should respect the given hashFunction', async () => {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    storage: config.storage.getStorage(),
+                    hashFunction(i: string) {
+                        return fastUnsecureHash(i) + 'xxx';
+                    }
+                });
+
+                const cols = await db.addCollections({
+                    human: {
+                        schema: schemas.human
+                    }
+                });
+                const collection: RxCollection<schemas.HumanDocumentType> = cols.human;
+                const doc = await collection.insert(schemaObjects.human());
+                const rev = doc.toJSON(true)._rev;
+                assert.ok(rev.endsWith('xxx'));
+
                 db.destroy();
             });
         });

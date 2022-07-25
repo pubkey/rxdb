@@ -4,6 +4,7 @@ import { EventBulk, RxDocumentData, WithDeleted } from './rx-storage';
 import type {
     RxStorageInstance
 } from './rx-storage.interface';
+import { HashFunction } from './util';
 
 export type RxStorageReplicationMeta = {
 
@@ -151,6 +152,8 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * writes when the replicatoin is destroyed unexpected.
      */
     waitBeforePersist?: () => Promise<any>;
+
+    hashFunction: HashFunction;
 };
 
 export type RxStorageInstanceReplicationState<RxDocType> = {

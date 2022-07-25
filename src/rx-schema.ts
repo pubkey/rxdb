@@ -1,10 +1,10 @@
 import deepEqual from 'fast-deep-equal';
 
 import {
-    hash,
     overwriteGetterForCaching,
     flatClone,
-    isMaybeReadonlyArray
+    isMaybeReadonlyArray,
+    fastUnsecureHash
 } from './util';
 import {
     newRxError,
@@ -72,7 +72,7 @@ export class RxSchema<RxDocType = any> {
         return overwriteGetterForCaching(
             this,
             'hash',
-            hash(this.jsonSchema)
+            fastUnsecureHash(JSON.stringify(this.jsonSchema))
         );
     }
 

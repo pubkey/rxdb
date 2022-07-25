@@ -13,9 +13,9 @@ import {
     sortDocumentsByLastWriteTime,
     RxDocumentData,
     ensureInteger,
-    objectPathMonad
+    objectPathMonad,
+    defaultHashFunction
 } from '../../';
-
 import {
     validateDatabaseName,
     deepFreezeWhenDevMode
@@ -26,13 +26,6 @@ describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
         it('should work with a string', () => {
             const hash = fastUnsecureHash('foobar');
-            assert.strictEqual(typeof hash, 'string');
-            assert.ok(hash.length > 0);
-        });
-        it('should work on object', () => {
-            const hash = fastUnsecureHash({
-                foo: 'bar'
-            });
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
         });
@@ -48,30 +41,86 @@ describe('util.test.js', () => {
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
         });
+
+
+        // // TESTS for the performance of different javascript hash functions.
+        // const MurmurHash3 = require('imurmurhash');
+        // const mmh3 = require('murmurhash3'); // Node native C++ binding
+        // const murmurhash = require('murmurhash');
+        // const fnv1a = require('fnv1a');
+        // const hashSum = require('hash-sum');
+        // const ohash = require('ohash');
+
+        // /**
+        //  * @link https://stackoverflow.com/questions/6122571/simple-non-secure-hash-function-for-javascript#comment67396297_6122571
+        //  */
+        // function hashJoaat(b) {
+        //     for (var a = 0, c = b.length; c--;)a += b.charCodeAt(c), a += a << 10, a ^= a >> 6; a += a << 3; a ^= a >> 11; return ((a + (a << 15) & 4294967295) >>> 0).toString(16)
+        // }
+
+        // [
+        //     (str: string) => murmurhash.v3(str).toString(36),
+        //     (str: string) => fastUnsecureHash(str),
+        //     (str: string) => hashSum(str),
+        //     (str: string) => fnv1a(str).toString(36),
+        //     (str: string) => mmh3.murmur32HexSync(str).toString(36),
+        //     (str: string) => murmurhash.v2(str).toString(36),
+        //     (str: string) => ohash.murmurHash(str),
+        //     (str: string) => hashJoaat(str),
+        //     (str: string) => {
+        //         const hashState = new MurmurHash3('string');
+        //         hashState.hash(str);
+        //         return hashState.result();
+        //     },
+        //     (str: string) => Md5.hash(str)
+        // ].forEach(method => {
+        //     it('run once', async () => {
+        //         await wait(1000);
+        //         let str = randomCouchString(20000);
+        //         const start = performance.now();
+        //         let t = 0;
+        //         while (t < 6000) {
+        //             t++;
+        //             method(str);
+        //             str += '-';
+        //         }
+
+        //         console.log('sample: ' + method(str));
+
+        //         const time = performance.now() - start;
+        //         console.log('time ' + time);
+        //     });
+        // });
     });
     describe('.createRevision()', () => {
         it('should return the same values for the same document data', () => {
-            const hash1 = createRevision({
-                foo: 'bar',
-                bar: 'foo',
-                _deleted: false,
-                _attachments: {},
-                _meta: {
-                    lwt: 1
+            const hash1 = createRevision(
+                defaultHashFunction,
+                {
+                    foo: 'bar',
+                    bar: 'foo',
+                    _deleted: false,
+                    _attachments: {},
+                    _meta: {
+                        lwt: 1
+                    }
+                } as any
+            );
+            const hash2 = createRevision(
+                defaultHashFunction,
+                {
+                    foo: 'bar',
+                    bar: 'foo',
+                    // _rev_tree and _rev must be ignored from hashing
+                    _rev: '1-asdf',
+                    _rev_tree: 'foobar',
+                    _deleted: false,
+                    _attachments: {},
+                    _meta: {
+                        lwt: 1
+                    }
                 }
-            } as any);
-            const hash2 = createRevision({
-                foo: 'bar',
-                bar: 'foo',
-                // _rev_tree and _rev must be ignored from hashing
-                _rev: '1-asdf',
-                _rev_tree: 'foobar',
-                _deleted: false,
-                _attachments: {},
-                _meta: {
-                    lwt: 1
-                }
-            });
+            );
             assert.strictEqual(hash1, hash2);
         });
     });

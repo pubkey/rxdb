@@ -26,7 +26,8 @@ import type {
     InternalStoreStorageTokenDocType,
     InternalStoreCollectionDocType,
     RxTypeError,
-    RxError
+    RxError,
+    HashFunction
 } from './types';
 
 import {
@@ -37,7 +38,8 @@ import {
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID,
     getDefaultRevision,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    defaultHashFunction
 } from './util';
 import {
     newRxError
@@ -113,6 +115,7 @@ export class RxDatabaseBase<
          * Stores information documents about the collections of the database
          */
         public readonly internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>,
+        public readonly hashFunction: HashFunction,
         public readonly cleanupPolicy?: Partial<RxCleanupPolicy>
     ) {
         DB_COUNT++;
@@ -625,7 +628,8 @@ export function createRxDatabase<
         ignoreDuplicate = false,
         options = {},
         cleanupPolicy,
-        localDocuments = false
+        localDocuments = false,
+        hashFunction = defaultHashFunction
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions>
@@ -681,6 +685,7 @@ export function createRxDatabase<
                 eventReduce,
                 options,
                 storageInstance,
+                hashFunction,
                 cleanupPolicy
             ) as any;
 

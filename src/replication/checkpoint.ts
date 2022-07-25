@@ -107,7 +107,11 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 ]);
             }
             newDoc._meta.lwt = now();
-            newDoc._rev = createRevision(newDoc, previousCheckpointDoc);
+            newDoc._rev = createRevision(
+                state.input.hashFunction,
+                newDoc,
+                previousCheckpointDoc
+            );
             const result = await state.input.metaInstance.bulkWrite([{
                 previous: previousCheckpointDoc,
                 document: newDoc
@@ -127,7 +131,11 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                     throw error;
                 } else {
                     previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
-                    newDoc._rev = createRevision(newDoc, previousCheckpointDoc);
+                    newDoc._rev = createRevision(
+                        state.input.hashFunction,
+                        newDoc,
+                        previousCheckpointDoc
+                    );
                 }
             }
         }

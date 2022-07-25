@@ -22,7 +22,8 @@ import {
     createRevision,
     flatCloneDocWithMeta,
     ById,
-    stackCheckpoints
+    stackCheckpoints,
+    defaultHashFunction
 } from '../../';
 
 import {
@@ -772,7 +773,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foobar: 0
                     }
                 };
-                docData._rev = createRevision(docData);
+                docData._rev = createRevision(defaultHashFunction, docData);
 
                 const res1 = await storageInstance.bulkWrite(
                     [{
@@ -786,7 +787,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 let newDocData: RxDocumentWriteData<TestDocType> = clone(docData);
                 newDocData._meta.foobar = 1;
                 newDocData._meta.lwt = now();
-                newDocData._rev = createRevision(newDocData, docData);
+                newDocData._rev = createRevision(defaultHashFunction, newDocData, docData);
 
                 const res2 = await storageInstance.bulkWrite(
                     [{
@@ -802,7 +803,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 newDocData = clone(docData);
                 newDocData._meta.foobar = 2;
                 newDocData._meta.lwt = now();
-                newDocData._rev = createRevision(newDocData, docData);
+                newDocData._rev = createRevision(defaultHashFunction, newDocData, docData);
                 assert.strictEqual(parseRevision(newDocData._rev).height, 3);
 
                 const res3 = await storageInstance.bulkWrite(
@@ -1792,7 +1793,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     t++;
                     const newDoc = clone(previous);
                     newDoc.value = t + '';
-                    const newRev = createRevision(newDoc, previous);
+                    const newRev = createRevision(defaultHashFunction, newDoc, previous);
                     newDoc._rev = newRev;
                     newDoc._meta.lwt = now();
                     const updateResult = await storageInstance.bulkWrite([
@@ -1840,7 +1841,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 newDoc.value = t + '';
                 newDoc._deleted = true;
                 newDoc._meta.lwt = now();
-                const newRev = createRevision(newDoc, previous);
+                const newRev = createRevision(defaultHashFunction, newDoc, previous);
                 newDoc._rev = newRev;
                 const deleteResult = await storageInstance.bulkWrite([
                     {

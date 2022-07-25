@@ -19,7 +19,7 @@ import {
     addRxPlugin,
     createRxDatabase,
     RxJsonSchema,
-    hash,
+    fastUnsecureHash,
     randomCouchString,
     ensureNotFalsy
 } from '../../';
@@ -73,7 +73,7 @@ describe('replication-graphql.test.ts', () => {
     // for port see karma.config.js
     const browserServerUrl = 'http://localhost:18000' + GRAPHQL_PATH;
 
-    const getEndpointHash = () => hash(AsyncTestUtil.randomString(10));
+    const getEndpointHash = () => fastUnsecureHash(AsyncTestUtil.randomString(10));
     const getTimestamp = () => Math.round(new Date().getTime() / 1000);
     const endpointHash = getEndpointHash(); // used when we not care about it's value
 

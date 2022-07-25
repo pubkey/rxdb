@@ -350,6 +350,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                             });
                         newForkState._meta.lwt = now();
                         newForkState._rev = (masterState as any)._rev ? (masterState as any)._rev : createRevision(
+                            state.input.hashFunction,
                             newForkState,
                             forkStateFullDoc
                         );

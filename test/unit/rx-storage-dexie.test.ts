@@ -9,7 +9,8 @@ import {
     normalizeMangoQuery,
     randomCouchString,
     now,
-    createRevision
+    createRevision,
+    defaultHashFunction
 } from '../../';
 
 import {
@@ -172,7 +173,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     data._meta = {
                         lwt: now()
                     };
-                    data._rev = createRevision(data);
+                    data._rev = createRevision(defaultHashFunction, data);
                     return {
                         document: data
                     }

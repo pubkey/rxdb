@@ -18,7 +18,8 @@ import {
     createRevision,
     normalizeMangoQuery,
     RxStorageInstance,
-    now
+    now,
+    defaultHashFunction
 } from '../../';
 
 import {
@@ -969,7 +970,7 @@ config.parallel('data-migration.test.js', () => {
                         // }
                     } as any
                 );
-                insertDocData._rev = createRevision(insertDocData);
+                insertDocData._rev = createRevision(defaultHashFunction, insertDocData);
                 await collection.storageInstance.bulkWrite([{
                     document: insertDocData
                 }], 'data-migration-test');

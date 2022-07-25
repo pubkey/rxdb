@@ -150,7 +150,7 @@ export async function ensureStorageTokenDocumentExists<Collections = any>(
      */
     const storageToken = randomCouchString(10);
 
-    const passwordHash = rxDatabase.password ? fastUnsecureHash(rxDatabase.password, 2) : undefined;
+    const passwordHash = rxDatabase.password ? fastUnsecureHash(rxDatabase.password) : undefined;
 
     const docData: RxDocumentData<InternalStoreStorageTokenDocType> = {
         id: STORAGE_TOKEN_DOCUMENT_ID,

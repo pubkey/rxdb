@@ -393,7 +393,6 @@ config.parallel('attachments.test.ts', () => {
             }
 
             // getting the data again must be decrypted
-            console.log('-------------');
             const data = await attachment.getStringData();
             assert.strictEqual(data, 'foo bar aaa');
             c.database.destroy();

@@ -139,7 +139,11 @@ export function getMetaWriteRow<RxDocType>(
         RX_REPLICATION_META_INSTANCE_SCHEMA,
         newMeta
     );
-    newMeta._rev = createRevision(newMeta, previous);
+    newMeta._rev = createRevision(
+        state.input.hashFunction,
+        newMeta,
+        previous
+    );
     return {
         previous,
         document: newMeta
