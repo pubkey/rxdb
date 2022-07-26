@@ -104,7 +104,7 @@ import {
     storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError
 } from './rx-storage-helper';
-import { defaultConflictHandler } from './replication';
+import { defaultConflictHandler } from './replication-protocol';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -737,7 +737,7 @@ export class RxCollectionBase<
     /**
      * sync with a GraphQL endpoint
      */
-    syncGraphQL(_options: SyncOptionsGraphQL<RxDocumentType>): RxGraphQLReplicationState<RxDocumentType> {
+    syncGraphQL<CheckpointType>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType> {
         throw pluginMissing('replication-graphql');
     }
 

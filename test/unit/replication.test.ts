@@ -6,7 +6,6 @@
 
 import assert from 'assert';
 import {
-    clone,
     wait,
     waitUntil
 } from 'async-test-util';
@@ -24,28 +23,27 @@ import {
     ensureNotFalsy,
     randomCouchString,
     now,
-    fastUnsecureHash
+    fastUnsecureHash,
+    lastOfArray,
+    rxStorageInstanceToReplicationHandler
 } from '../../';
 
 import {
-    setLastPullDocument,
-    getLastPullDocument,
     replicateRxCollection,
     wasLastWriteFromPullReplication,
-    setLastWritePullReplication,
     getPullReplicationFlag,
-    setLastPushCheckpoint,
-    getLastPushCheckpoint,
-    getChangesSinceLastPushCheckpoint
+    getLastPushCheckpoint
 } from '../../plugins/replication';
 
 import type {
     ReplicationPullHandler,
     ReplicationPushHandler,
     RxDocumentData,
-    RxDocumentWriteData
+    RxReplicationWriteToMasterRow
 } from '../../src/types';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+
+
+type CheckpointType = any;
 
 describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
@@ -72,372 +70,47 @@ describe('replication.test.js', () => {
      */
     function getPullHandler(
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>
-    ): ReplicationPullHandler<TestDocType> {
-        const handler: ReplicationPullHandler<TestDocType> = async (latestPullDocument) => {
-            const minTimestamp = latestPullDocument ? latestPullDocument.updatedAt : 0;
-            const docs = await remoteCollection.find({
-                selector: {
-                    updatedAt: {
-                        $gt: minTimestamp
-                    }
-                },
-                sort: [
-                    { updatedAt: 'asc' }
-                ]
-            }).exec();
-            const docsData = docs.map(doc => {
-                const docData: RxDocumentData<HumanWithTimestampDocumentType> = flatClone(doc.toJSON()) as any;
-                docData._deleted = false;
-                return docData;
-            });
-
+    ): ReplicationPullHandler<TestDocType, CheckpointType> {
+        const helper = rxStorageInstanceToReplicationHandler(
+            remoteCollection.storageInstance,
+            remoteCollection.database.conflictHandler as any,
+            remoteCollection.database.hashFunction
+        );
+        const handler: ReplicationPullHandler<TestDocType, CheckpointType> = async (
+            latestPullCheckpoint: CheckpointType | null,
+            bulkSize: number
+        ) => {
+            const result = await helper.masterChangesSince(latestPullCheckpoint, bulkSize);
             return {
-                documents: docsData,
-                hasMoreDocuments: false
-            }
+                checkpoint: result.checkpoint,
+                documents: result.documentsData
+            };
         };
         return handler;
     }
     function getPushHandler(
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>
     ): ReplicationPushHandler<TestDocType> {
-        const handler: ReplicationPushHandler<TestDocType> = async (docs) => {
-            // process deleted
-            const deletedIds = docs
-                .filter(doc => doc._deleted)
-                .map(doc => doc.id);
-            const deletedDocs = await remoteCollection.findByIds(deletedIds);
-            await Promise.all(
-                Array.from(deletedDocs.values()).map(doc => doc.remove())
-            );
-
-            // process insert/updated
-            const changedDocs = docs
-                .filter(doc => !doc._deleted)
-                // overwrite the timestamp with the 'server' time
-                // because the 'client' cannot be trusted.
-                .map(doc => {
-                    doc = flatClone(doc);
-                    doc.updatedAt = now();
-                    return doc;
-                });
-            await Promise.all(
-                changedDocs.map(doc => remoteCollection.atomicUpsert(doc))
-            );
+        const helper = rxStorageInstanceToReplicationHandler(
+            remoteCollection.storageInstance,
+            remoteCollection.conflictHandler,
+            remoteCollection.database.hashFunction
+        );
+        const handler: ReplicationPushHandler<TestDocType> = async (
+            rows: RxReplicationWriteToMasterRow<TestDocType>[]
+        ) => {
+            console.log('push handler:');
+            console.log(JSON.stringify(rows, null, 4));
+            const result = await helper.masterWrite(rows);
+            return result;
         }
         return handler;
     }
-    config.parallel('revision-flag', () => {
-        describe('.wasLastWriteFromPullReplication()', () => {
-            it('should be false on non-set flag', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(1);
-                const doc = await c.findOne().exec(true);
-
-                const wasFromPull = wasLastWriteFromPullReplication(
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    doc.toJSON(true)
-                );
-                assert.strictEqual(wasFromPull, false);
-
-                c.database.destroy();
-            });
-            it('should be true for pulled revision', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(0);
-                const toStorage: RxDocumentData<HumanWithTimestampDocumentType> = Object.assign(
-                    schemaObjects.humanWithTimestamp(),
-                    {
-                        _rev: '1-62080c42d471e3d2625e49dcca3b8e3e',
-                        _attachments: {},
-                        _deleted: false,
-                        _meta: {
-                            lwt: now(),
-                            [getPullReplicationFlag(REPLICATION_IDENTIFIER_TEST_HASH)]: 1
-                        }
-                    }
-                );
-
-                const wasFromPull = wasLastWriteFromPullReplication(
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    toStorage
-                );
-                assert.strictEqual(wasFromPull, true);
-
-                c.database.destroy();
-            });
-        });
-    });
-    config.parallel('replication-checkpoints', () => {
-        describe('.setLastPushCheckpoint()', () => {
-            it('should set the last push sequence', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(0);
-                const ret = await setLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST,
-                    1
-                );
-                assert.ok(ret.id.includes(REPLICATION_IDENTIFIER_TEST));
-                c.database.destroy();
-            });
-            it('should be able to run multiple times', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(0);
-                await setLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST,
-                    1
-                );
-                await setLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST,
-                    2
-                );
-                c.database.destroy();
-            });
-        });
-        describe('.getLastPushCheckpoint()', () => {
-            it('should get undefined if not set before', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(0);
-                const ret = await getLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST
-                );
-                assert.strictEqual(typeof ret, 'undefined');
-                c.database.destroy();
-            });
-            it('should get the value if set before', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(0);
-                await setLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST,
-                    5
-                );
-                const ret = await getLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST
-                );
-                assert.strictEqual(ret, 5);
-                c.database.destroy();
-            });
-            it('should get the value if set multiple times', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(0);
-                await setLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST,
-                    5
-                );
-                const ret = await getLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST
-                );
-                assert.strictEqual(ret, 5);
-
-                await setLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST,
-                    10
-                );
-                const ret2 = await getLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST
-                );
-                assert.strictEqual(ret2, 10);
-                c.database.destroy();
-            });
-        });
-        describe('.getChangesSinceLastPushCheckpoint()', () => {
-            it('should get all changes', async () => {
-                const amount = 5;
-                const c = await humansCollection.createHumanWithTimestamp(amount);
-                const changesResult = await getChangesSinceLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    () => false,
-                    10
-                );
-                assert.strictEqual(changesResult.changedDocs.size, amount);
-                const firstChange = Array.from(changesResult.changedDocs.values())[0];
-                assert.ok(firstChange.doc.name);
-                c.database.destroy();
-            });
-            it('should get only the newest update to documents', async () => {
-                const amount = 5;
-                const c = await humansCollection.createHumanWithTimestamp(amount);
-                const oneDoc = await c.findOne().exec(true);
-                await oneDoc.atomicPatch({ age: 1 });
-                const changesResult = await getChangesSinceLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    () => false,
-                    10
-                );
-                assert.strictEqual(changesResult.changedDocs.size, amount);
-                c.database.destroy();
-            });
-            it('should not get more changes then the limit', async () => {
-                const amount = 30;
-                const c = await humansCollection.createHumanWithTimestamp(amount);
-                const changesResult = await getChangesSinceLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    () => false,
-                    10
-                );
-                /**
-                 * The returned size can be lower then the batchSize
-                 * because we skip internal changes like index documents.
-                 */
-                assert.ok(changesResult.changedDocs.size <= 10);
-                c.database.destroy();
-            });
-            it('should get deletions', async () => {
-                const amount = 5;
-                const c = await humansCollection.createHumanWithTimestamp(amount);
-                const oneDoc = await c.findOne().exec(true);
-                await oneDoc.remove();
-                const changesResult = await getChangesSinceLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    () => false,
-                    10
-                );
-                assert.strictEqual(changesResult.changedDocs.size, amount);
-                const deleted = Array.from(changesResult.changedDocs.values()).find((change) => {
-                    return change.doc._deleted === true;
-                });
-
-                if (!deleted) {
-                    throw new Error('deleted missing');
-                }
-
-                assert.ok(deleted.doc._deleted);
-                assert.ok(deleted.doc.age);
-
-                c.database.destroy();
-            });
-            it('should have resolved the primary', async () => {
-                const amount = 5;
-                const c = await humansCollection.createHumanWithTimestamp(amount);
-                const changesResult = await getChangesSinceLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    () => false,
-                    10
-                );
-                const firstChange = Array.from(changesResult.changedDocs.values())[0];
-
-                assert.ok(firstChange.doc.id);
-                c.database.destroy();
-            });
-            it('should have filtered out documents that are already replicated from the remote', async () => {
-                const amount = 5;
-                const c = await humansCollection.createHumanWithTimestamp(amount);
-                const toStorageInstance: RxDocumentWriteData<HumanWithTimestampDocumentType> = Object.assign(
-                    schemaObjects.humanWithTimestamp(),
-                    {
-                        _attachments: {},
-                        _deleted: false,
-                        _meta: {
-                            lwt: now()
-                        },
-                        _rev: EXAMPLE_REVISION_1
-                    }
-                );
-                setLastWritePullReplication(
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    toStorageInstance,
-                    1
-                );
-                const docId = toStorageInstance.id;
-
-                await c.storageInstance.bulkWrite([{
-                    document: toStorageInstance
-                }], 'replication-test');
-
-                const allDocs = await c.find().exec();
-
-                assert.strictEqual(allDocs.length, amount + 1);
-                const changesResult = await getChangesSinceLastPushCheckpoint(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    () => false,
-                    10
-                );
-
-                assert.strictEqual(changesResult.changedDocs.size, amount);
-                const shouldNotBeFound = Array.from(changesResult.changedDocs.values()).find((change) => change.id === docId);
-                assert.ok(!shouldNotBeFound);
-
-                c.database.destroy();
-            });
-        });
-        describe('.setLastPullDocument()', () => {
-            it('should set the document', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(1);
-                const doc = await c.findOne().exec(true);
-                const docData = doc.toJSON(true);
-                const ret = await setLastPullDocument(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    docData
-                );
-                assert.ok(ret.id.includes(REPLICATION_IDENTIFIER_TEST_HASH));
-                c.database.destroy();
-            });
-            it('should be able to run multiple times', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(1);
-                const doc = await c.findOne().exec(true);
-                const docData = doc.toJSON(true);
-                await setLastPullDocument(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    docData
-                );
-                const ret = await setLastPullDocument(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    docData
-                );
-                assert.ok(ret.id.includes(REPLICATION_IDENTIFIER_TEST_HASH));
-                c.database.destroy();
-            });
-        });
-        describe('.getLastPullDocument()', () => {
-            it('should return null if no doc set', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(0);
-                const ret = await getLastPullDocument(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH
-                );
-                assert.strictEqual(ret, null);
-                c.database.destroy();
-            });
-            it('should return the doc if it was set', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(1);
-                const doc = await c.findOne().exec(true);
-                let docData = doc.toJSON(true);
-                docData = clone(docData); // clone to make it mutateable
-                (docData as any).name = 'foobar';
-
-                await setLastPullDocument(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH,
-                    docData
-                );
-                const ret = await getLastPullDocument(
-                    c,
-                    REPLICATION_IDENTIFIER_TEST_HASH
-                );
-                if (!ret) {
-                    throw new Error('last pull document missing');
-                }
-                assert.strictEqual(ret.name, 'foobar');
-                c.database.destroy();
-            });
-        });
-    });
     config.parallel('non-live replication', () => {
         it('should replicate both sides', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
 
+            console.log('--- 0');
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -453,6 +126,7 @@ describe('replication.test.js', () => {
                 console.log('got error :');
                 console.dir(err);
             });
+
             await replicationState.awaitInitialReplication();
 
             const docsLocal = await localCollection.find().exec();
@@ -490,7 +164,10 @@ describe('replication.test.js', () => {
                 console.log('got error :');
                 console.dir(err);
             });
+
+            console.log('--- 1');
             await replicationState.awaitInitialReplication();
+            console.log('--- 2');
 
             const docsRemoteQuery = await remoteCollection.findOne();
 
@@ -500,19 +177,23 @@ describe('replication.test.js', () => {
                 id
             });
             const doc = await localCollection.insert(docData);
+            console.log('--- 3');
             await waitUntil(async () => {
                 const remoteDoc = await docsRemoteQuery.exec();
                 return !!remoteDoc;
             });
+            console.log('--- 4');
 
             // UPDATE
             await doc.atomicPatch({
                 age: 100
             });
+            console.log('--- 5');
             await waitUntil(async () => {
                 const remoteDoc = await docsRemoteQuery.exec(true);
                 return remoteDoc.age === 100;
             });
+            console.log('--- 6');
 
             // DELETE
             await wait(100);
@@ -522,6 +203,7 @@ describe('replication.test.js', () => {
                 return !remoteDoc;
             });
 
+            console.log('--- 7');
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });

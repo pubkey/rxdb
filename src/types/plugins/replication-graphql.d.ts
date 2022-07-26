@@ -1,3 +1,4 @@
+import { RxReplicationWriteToMasterRow } from '../replication-protocol';
 import { RxDocumentData } from '../rx-storage';
 
 export interface RxGraphQLReplicationQueryBuilderResponseObject {
@@ -11,14 +12,14 @@ export type RxGraphQLReplicationQueryBuilderResponse =
 
 export type RxGraphQLReplicationPushQueryBuilder = (
     // typed 'any' because the data might be modified by the push.modifier.
-    docs: any[]
-    ) =>
-    RxGraphQLReplicationQueryBuilderResponse;
-export type RxGraphQLReplicationPullQueryBuilder<RxDocType> = (latestPulledDocument: RxDocumentData<RxDocType> | null) =>
-    RxGraphQLReplicationQueryBuilderResponse;
+    rows: RxReplicationWriteToMasterRow<any>[]
+) => RxGraphQLReplicationQueryBuilderResponse;
+export type RxGraphQLReplicationPullQueryBuilder<CheckpointType> = (
+    latestPulledCheckpoint: CheckpointType | null
+) => RxGraphQLReplicationQueryBuilderResponse;
 
-export interface GraphQLSyncPullOptions<RxDocType> {
-    queryBuilder: RxGraphQLReplicationPullQueryBuilder<RxDocType>;
+export interface GraphQLSyncPullOptions<RxDocType, CheckpointType> {
+    queryBuilder: RxGraphQLReplicationPullQueryBuilder<CheckpointType>;
     /**
      * Amount of documents that the remote will send in one request.
      * If the response contains less then [batchSize] documents,
@@ -31,15 +32,15 @@ export interface GraphQLSyncPullOptions<RxDocType> {
 }
 export interface GraphQLSyncPushOptions<RxDocType> {
     queryBuilder: RxGraphQLReplicationPushQueryBuilder;
-    modifier?: (doc: RxDocumentData<RxDocType>) => Promise<any> | any;
+    modifier?: (row: RxReplicationWriteToMasterRow<RxDocType>) => Promise<any> | any;
     batchSize?: number;
 }
 
-export type SyncOptionsGraphQL<RxDocType> = {
+export type SyncOptionsGraphQL<RxDocType, CheckpointType> = {
     url: string;
     headers?: { [k: string]: string }; // send with all requests to the endpoint
     waitForLeadership?: boolean; // default=true
-    pull?: GraphQLSyncPullOptions<RxDocType>;
+    pull?: GraphQLSyncPullOptions<RxDocType, CheckpointType>;
     push?: GraphQLSyncPushOptions<RxDocType>;
     deletedFlag?: string; // default='_deleted'
     live?: boolean; // default=false

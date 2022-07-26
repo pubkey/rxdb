@@ -9,13 +9,14 @@ import type {
 import GraphQLClient from 'graphql-client';
 import objectPath from 'object-path';
 import {
-    fastUnsecureHash,
-    flatClone
+    fastUnsecureHash
 } from '../../util';
 
 import {
     DEFAULT_MODIFIER,
-    GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX
+    GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX,
+    swapDeletedFlagToDeleted,
+    swapDeletedToDeletedFlag
 } from './helper';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -27,16 +28,19 @@ import type {
     RxPlugin,
     RxDocumentData,
     ReplicationPullOptions,
-    ReplicationPushOptions
+    ReplicationPushOptions,
+    RxReplicationWriteToMasterRow
 } from '../../types';
-import { replicateRxCollection, RxReplicationStateBase } from '../replication';
+import {
+    replicateRxCollection,
+    RxReplicationStateBase
+} from '../replication';
 import {
     RxReplicationError,
     RxReplicationPullError,
     RxReplicationPushError
 } from '../replication/rx-replication-error';
-import { newRxError } from '../../rx-error';
-import { addRxPlugin, SyncOptionsGraphQL } from '../../index';
+import { addRxPlugin, SyncOptionsGraphQL, WithDeleted } from '../../index';
 
 export class RxGraphQLReplicationState<RxDocType> {
 
@@ -52,7 +56,7 @@ export class RxGraphQLReplicationState<RxDocType> {
          * The GraphQL replication uses the replication primitives plugin
          * internally. So we need that replicationState.
          */
-        public readonly replicationState: RxReplicationStateBase<RxDocType>,
+        public readonly replicationState: RxReplicationStateBase<RxDocType, any>, // TODO type checkpoint
         public readonly collection: RxCollection<RxDocType>,
         public readonly url: string,
         public readonly clientState: { client: any }
@@ -75,12 +79,8 @@ export class RxGraphQLReplicationState<RxDocType> {
         return this.replicationState.awaitInitialReplication();
     }
 
-    run(retryOnFail = true): Promise<void> {
-        return this.replicationState.run(retryOnFail);
-    }
-
-    notifyAboutRemoteChange(): Promise<void> {
-        return this.replicationState.notifyAboutRemoteChange();
+    start(): Promise<void> {
+        return this.replicationState.start();
     }
 
     cancel(): Promise<any> {
@@ -95,7 +95,7 @@ export class RxGraphQLReplicationState<RxDocType> {
     }
 }
 
-export function syncGraphQL<RxDocType>(
+export function syncGraphQL<RxDocType, CheckpointType>(
     this: RxCollection,
     {
         url,
@@ -108,7 +108,7 @@ export function syncGraphQL<RxDocType>(
         liveInterval = 1000 * 10, // in ms
         retryTime = 1000 * 5, // in ms
         autoStart = true,
-    }: SyncOptionsGraphQL<RxDocType>
+    }: SyncOptionsGraphQL<RxDocType, CheckpointType>
 ): RxGraphQLReplicationState<RxDocType> {
     const collection = this;
 
@@ -127,65 +127,52 @@ export function syncGraphQL<RxDocType>(
         })
     }
 
-    let replicationPrimitivesPull: ReplicationPullOptions<RxDocType> | undefined;
+    let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, CheckpointType> | undefined;
     if (pull) {
         replicationPrimitivesPull = {
-            async handler(latestPulledDocument) {
-                const pullGraphQL = await pull.queryBuilder(latestPulledDocument);
+            async handler(
+                lastPulledCheckpoint: CheckpointType
+            ) {
+                const pullGraphQL = await pull.queryBuilder(lastPulledCheckpoint);
                 const result = await mutateableClientState.client.query(pullGraphQL.query, pullGraphQL.variables);
                 if (result.errors) {
                     if (typeof result.errors === 'string') {
                         throw new RxReplicationPullError(
                             result.errors,
-                            latestPulledDocument,
+                            lastPulledCheckpoint,
                         );
                     } else {
                         throw new RxReplicationPullError(
                             overwritable.tunnelErrorMessage('GQL2'),
-                            latestPulledDocument,
+                            lastPulledCheckpoint,
                             result.errors
                         );
                     }
                 }
 
                 const dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
-                const docsData: any[] = objectPath.get(result, dataPath);
+                const data: any = objectPath.get(result, dataPath);
+
+                const docsData: WithDeleted<RxDocType>[] = data.documents;
+                const newCheckpoint = data.checkpoint;
 
                 // optimization shortcut, do not proceed if there are no documents.
                 if (docsData.length === 0) {
                     return {
                         documents: [],
-                        hasMoreDocuments: false
+                        checkpoint: null
                     };
                 }
 
-                let hasMoreDocuments: boolean = false;
-                if (docsData.length > pull.batchSize) {
-                    throw newRxError('GQL3', {
-                        args: {
-                            pull,
-                            documents: docsData
-                        }
-                    });
-                } else if (docsData.length === pull.batchSize) {
-                    hasMoreDocuments = true;
-                }
-
-                const modified: any[] = (await Promise.all(docsData
-                    .map(async (doc: any) => {
-                        // swap out deleted flag
-                        if (deletedFlag !== '_deleted') {
-                            const isDeleted = !!doc[deletedFlag];
-                            doc._deleted = isDeleted;
-                            delete doc[deletedFlag];
-                        }
-
-                        return await pullModifier(doc);
+                const modified: any[] = (await Promise.all(
+                    docsData.map((doc: WithDeleted<RxDocType>) => {
+                        doc = swapDeletedFlagToDeleted(deletedFlag, doc);
+                        return pullModifier(doc);
                     })
                 )).filter(doc => !!doc);
                 return {
                     documents: modified,
-                    hasMoreDocuments
+                    checkpoint: newCheckpoint
                 }
             }
         }
@@ -194,27 +181,24 @@ export function syncGraphQL<RxDocType>(
     if (push) {
         replicationPrimitivesPush = {
             batchSize: push.batchSize,
-            async handler(docs: RxDocumentData<RxDocType>[]) {
-                let modifiedPushDocs: RxDocumentData<RxDocType>[] = await Promise.all(
-                    docs.map(async (doc) => {
-                        let changedDoc: any = flatClone(doc);
-
-                        // swap out deleted flag
-                        if (deletedFlag !== '_deleted') {
-                            const isDeleted = !!doc._deleted;
-                            changedDoc[deletedFlag] = isDeleted;
-                            delete changedDoc._deleted;
-                        }
-
-                        changedDoc = await pushModifier(changedDoc);
-                        return changedDoc ? changedDoc : null;
+            async handler(
+                rows: RxReplicationWriteToMasterRow<RxDocType>[]
+            ) {
+                let modifiedPushRows: RxReplicationWriteToMasterRow<any>[] = await Promise.all(
+                    rows.map(async (row) => {
+                        let useRow: RxReplicationWriteToMasterRow<any> = {
+                            newDocumentState: swapDeletedToDeletedFlag(deletedFlag, row.newDocumentState),
+                            assumedMasterState: row.assumedMasterState ? swapDeletedToDeletedFlag(deletedFlag, row.assumedMasterState) : undefined
+                        };
+                        useRow = await pushModifier(useRow);
+                        return useRow ? useRow : null;
                     })
-                );
+                ) as any;
                 /**
                  * The push modifier might have returned null instead of a document
                  * which means that these documents must not be pushed and filtered out.
                  */
-                modifiedPushDocs = modifiedPushDocs.filter(doc => !!doc) as any;
+                modifiedPushRows = modifiedPushRows.filter(row => !!row) as any;
 
                 /**
                  * Optimization shortcut.
@@ -222,31 +206,38 @@ export function syncGraphQL<RxDocType>(
                  * because all were filtered out by the modifier,
                  * we can quit here.
                  */
-                if (modifiedPushDocs.length === 0) {
+                if (modifiedPushRows.length === 0) {
                     return;
                 }
 
-                const pushObj = await push.queryBuilder(modifiedPushDocs);
+                const pushObj = await push.queryBuilder(modifiedPushRows);
                 const result = await mutateableClientState.client.query(pushObj.query, pushObj.variables);
+
+
                 if (result.errors) {
                     if (typeof result.errors === 'string') {
                         throw new RxReplicationPushError(
                             result.errors,
-                            docs
+                            modifiedPushRows
                         );
                     } else {
                         throw new RxReplicationPushError(
                             overwritable.tunnelErrorMessage('GQL4'),
-                            docs,
+                            modifiedPushRows,
                             result.errors
                         );
                     }
                 }
+
+                // TODO make this path variable
+                const conflicts = result.conflicts;
+
+                return conflicts;
             }
         };
     }
 
-    const replicationState = replicateRxCollection<RxDocType>({
+    const replicationState = replicateRxCollection<RxDocType, CheckpointType>({
         replicationIdentifier: GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(url),
         collection,
         deletedFlag,

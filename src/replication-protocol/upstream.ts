@@ -62,6 +62,8 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         .pipe(
             filter(eventBulk => eventBulk.context !== state.downstreamBulkWriteFlag)
         ).subscribe(eventBulk => {
+            console.log('upstream emitted:');
+            console.log(JSON.stringify(eventBulk, null, 4));
             state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
             openTasks.push({
                 task: eventBulk,
@@ -199,6 +201,8 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         docs: RxDocumentData<RxDocType>[],
         checkpoint: CheckpointType
     ): Promise<boolean> {
+        console.log('persistToMaster()');
+        console.dir(docs);
         state.stats.up.persistToMaster = state.stats.up.persistToMaster + 1;
 
         /**

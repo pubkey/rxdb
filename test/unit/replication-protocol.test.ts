@@ -44,10 +44,10 @@ import {
 import { HumanDocumentType } from '../helper/schemas';
 import { EXAMPLE_REVISION_1, EXAMPLE_REVISION_2 } from '../helper/revisions';
 
-const testContext = 'rx-storage-replication.test.ts';
+const testContext = 'replication-protocol.test.ts';
 
 const useParallel = config.storage.name === 'dexie-worker' ? describe : config.parallel;
-useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.name + ')', () => {
+useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () => {
     const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (input, context) => {
 
         if (deepEqual(input.newDocumentState, input.realMasterState)) {

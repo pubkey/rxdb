@@ -75,7 +75,7 @@ export {
 } from './rx-schema-helper';
 
 export * from './rx-storage-helper';
-export * from './replication/index';
+export * from './replication-protocol/index';
 export * from './rx-storage-multiinstance';
 export * from './custom-index';
 export * from './query-planner';

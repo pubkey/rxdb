@@ -1,21 +1,9 @@
 /**
- * Replicates two RxStorageInstances
- * with each other.
- * 
- * Compared to the 'normal' replication plugins,
- * this one is made for internal use where:
- * - No permission handling is needed.
- * - It is made so that the write amount on the master is less but might increase on the child.
- * - It does not have to be easy to implement a compatible backend.
- *   Here we use another RxStorageImplementation as replication goal
- *   so it has to exactly behave like the RxStorage interface defines.
- * 
- * This is made to be used internally by plugins
- * to get a really fast replication performance.
- * 
- * The replication works like git, where the fork contains all new writes
- * and must be merged with the master before it can push it's new state to the master.
+ * These files contain the replication protocol.
+ * It can be used to replicated RxStorageInstances or RxCollections
+ * or even to do a client(s)-server replication.
  */
+
 
 import {
     BehaviorSubject,
@@ -52,6 +40,15 @@ import {
 import { startReplicationDownstream } from './downstream';
 import { docStateToWriteDoc, writeDocToDocState } from './helper';
 import { startReplicationUpstream } from './upstream';
+
+
+export * from './checkpoint';
+export * from './downstream';
+export * from './upstream';
+export * from './meta-instance';
+export * from './conflicts';
+export * from './helper';
+
 
 export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
@@ -109,7 +106,7 @@ export function replicateRxStorageInstance<RxDocType>(
 
 export function awaitRxStorageReplicationFirstInSync(
     state: RxStorageInstanceReplicationState<any>
-) {
+): Promise<void> {
     return firstValueFrom(
         combineLatest([
             state.firstSyncDone.down.pipe(
@@ -119,7 +116,7 @@ export function awaitRxStorageReplicationFirstInSync(
                 filter(v => !!v)
             )
         ])
-    );
+    ).then(() => { });
 }
 
 export function awaitRxStorageReplicationInSync(
