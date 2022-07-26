@@ -7,17 +7,13 @@
 
 import {
     BehaviorSubject,
-    firstValueFrom,
-    Observable,
     Subject,
     Subscription
 } from 'rxjs';
-import {
-    filter
-} from 'rxjs/operators';
 import type {
     EventBulk,
     ReplicationOptions,
+    ReplicationPullHandlerResult,
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxCollection,
@@ -35,7 +31,7 @@ import {
     PROMISE_RESOLVE_TRUE
 } from '../../util';
 import {
-    RxReplicationError
+    RxReplicationError, RxReplicationPullError, RxReplicationPushError
 } from './rx-replication-error';
 import {
     awaitRxStorageReplicationFirstInSync,
@@ -95,17 +91,28 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                 }
             });
         });
-        this.liveInterval = liveInterval !== void 0 ? ensureInteger(liveInterval) : 1000 * 10;
 
-
-        this.startPromise = new Promise(res => {
+        const startPromise = new Promise<void>(res => {
             this.callOnStart = res;
         });
+        this.startPromise = startPromise;
 
+
+        const useLiveInterval = liveInterval !== void 0 ? ensureInteger(liveInterval) : 1000 * 10;
+        this.liveInterval = useLiveInterval;
+        if (this.liveInterval) {
+            (async () => {
+                while (!this.isStopped()) {
+                    await startPromise;
+                    this.remoteEvents$.next('RESYNC');
+                    await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
+                    await this.collection.promiseWait(useLiveInterval);
+                }
+            })();
+        }
     }
 
     private callOnStart: () => void = undefined as any;
-
 
 
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
@@ -149,14 +156,38 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                             documentsData: []
                         };
                     }
-                    // TODO retry-logic
-                    const result = await this.pull.handler(
-                        checkpoint,
-                        bulkSize
-                    );
+
+                    /**
+                     * Retries must be done here in the replication primitives plugin,
+                     * because the replication protocol itself has no
+                     * error handling.
+                     */
+                    let done = false;
+                    let result: ReplicationPullHandlerResult<RxDocType> = {} as any;
+                    while (!done) {
+                        try {
+                            result = await this.pull.handler(
+                                checkpoint,
+                                bulkSize
+                            );
+                            done = true;
+                        } catch (err: any | Error | RxReplicationError<RxDocType, CheckpointType>) {
+                            if (err instanceof RxReplicationPullError) {
+                                this.subjects.error.next(err);
+                            } else {
+                                const emitError: RxReplicationError<RxDocType, CheckpointType> = new RxReplicationPullError(
+                                    err.message,
+                                    checkpoint,
+                                    err
+                                );
+                                this.subjects.error.next(emitError);
+                            }
+                            await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
+                        }
+                    }
                     return {
-                        documentsData: result.documents,
-                        checkpoint: result.checkpoint
+                        documentsData: ensureNotFalsy(result).documents,
+                        checkpoint: ensureNotFalsy(result).checkpoint
                     }
                 },
                 masterWrite: async (
@@ -165,9 +196,30 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                     if (!this.push) {
                         return [];
                     }
-                    // TODO add retry logic
-                    const result = await this.push.handler(rows);
-                    return result;
+
+
+                    let done = false;
+                    let result: WithDeleted<RxDocType>[] = {} as any;
+                    while (!done) {
+                        try {
+                            result = await this.push.handler(rows);
+                            done = true;
+                        } catch (err: any | Error | RxReplicationError<RxDocType, CheckpointType>) {
+                            if (err instanceof RxReplicationPushError) {
+                                this.subjects.error.next(err);
+                            } else {
+                                const emitError: RxReplicationPushError<RxDocType> = new RxReplicationPushError(
+                                    err.message,
+                                    rows,
+                                    err
+                                );
+                                this.subjects.error.next(emitError);
+                            }
+                            await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
+                        }
+                    }
+
+                    return ensureNotFalsy(result);
                 }
             }
         });
@@ -209,6 +261,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
      * For multi-tab support you should set and observe a flag in a local document.
      */
     async awaitInSync(): Promise<true> {
+        await this.startPromise;
         await awaitRxStorageReplicationFirstInSync(ensureNotFalsy(this.internalReplicationState));
         await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
         return true;

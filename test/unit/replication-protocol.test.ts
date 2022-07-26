@@ -42,7 +42,7 @@ import {
     randomBoolean
 } from 'async-test-util';
 import { HumanDocumentType } from '../helper/schemas';
-import { EXAMPLE_REVISION_1, EXAMPLE_REVISION_2 } from '../helper/revisions';
+import { EXAMPLE_REVISION_1, EXAMPLE_REVISION_2, EXAMPLE_REVISION_3 } from '../helper/revisions';
 
 const testContext = 'replication-protocol.test.ts';
 
@@ -78,6 +78,13 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         //         resolvedDocumentState: i.newDocumentState
         //     });
         // }
+
+        if (docA._deleted !== docB._deleted) {
+            return Promise.resolve({
+                isEqual: false,
+                documentData: input.newDocumentState
+            });
+        }
 
         const ageA = docA.age ? docA.age : 0;
         const ageB = docB.age ? docB.age : 0;
@@ -306,7 +313,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
             await cleanUp(replicationState, masterInstance);
         });
-        it('should replicate the insert and the update', async () => {
+        it('should replicate the insert and the update and the delete', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(1);
             const metaInstance = await createMetaInstance();
@@ -322,6 +329,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             });
 
             const passportId = 'foobar';
+
+            // INSERT
+
             const docData = getDocData({
                 passportId,
                 age: 1
@@ -331,13 +341,15 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 document: docData
             }], testContext);
             assert.deepStrictEqual(writeResult.error, {});
-            const previous = getFromObjectOrThrow(writeResult.success, passportId);
+            let previous = getFromObjectOrThrow(writeResult.success, passportId);
 
             // wait until it is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
                 return docsAfterUpdate[passportId];
             });
+
+            // UPDATE
 
             const updateData: typeof docData = clone(docData);
             updateData.firstName = 'xxx';
@@ -350,6 +362,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 document: updateData
             }], testContext);
             assert.deepStrictEqual(updateResult.error, {});
+            previous = getFromObjectOrThrow(updateResult.success, passportId);
 
             // wait until the change is replicated to the master
             await waitUntil(async () => {
@@ -358,6 +371,23 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             });
             await ensureEqualState(masterInstance, forkInstance);
 
+            // DELETE
+            const deleteData: typeof docData = clone(docData);
+            deleteData._rev = EXAMPLE_REVISION_3;
+            deleteData._deleted = true;
+            deleteData._meta.lwt = now();
+            const deleteResult = await forkInstance.bulkWrite([{
+                previous,
+                document: deleteData
+            }], testContext);
+            assert.deepStrictEqual(deleteResult.error, {});
+
+            // wait until the change is replicated to the master
+            await waitUntil(async () => {
+                const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
+                return !docsAfterUpdate[passportId];
+            });
+            await ensureEqualState(masterInstance, forkInstance);
 
             await cleanUp(replicationState, masterInstance);
         });

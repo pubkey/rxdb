@@ -35,4 +35,4 @@ export class RxReplicationPushError<RxDocType> extends Error {
     }
 }
 
-export type RxReplicationError<RxDocType> = RxReplicationPullError<RxDocType> | RxReplicationPushError<RxDocType>;
+export type RxReplicationError<RxDocType, CheckpointType> = RxReplicationPullError<CheckpointType> | RxReplicationPushError<RxDocType>;
