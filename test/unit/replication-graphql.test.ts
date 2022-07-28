@@ -21,7 +21,8 @@ import {
     RxJsonSchema,
     fastUnsecureHash,
     randomCouchString,
-    ensureNotFalsy
+    ensureNotFalsy,
+    RxReplicationWriteToMasterRow
 } from '../../';
 
 import {
@@ -106,25 +107,24 @@ describe('replication-graphql.test.ts', () => {
             variables
         });
     };
-    const pushQueryBuilder = (docs: RxDocumentData<HumanWithTimestampDocumentType>[]) => {
-        if (!docs || docs.length === 0) {
-            throw new Error('test pushQueryBuilder(): called with no no docs');
+    const pushQueryBuilder = (rows: RxReplicationWriteToMasterRow<HumanWithTimestampDocumentType>[]) => {
+        if (!rows || rows.length === 0) {
+            throw new Error('test pushQueryBuilder(): called with no docs');
         }
         const query = `
-        mutation CreateHumans($humans: [HumanInput]) {
-            setHumans(humans: $humans) { id }
+        mutation CreateHumans($writeRows: [HumanWriteRow!]) {
+            writeHumans(writeRows: $writeRows) {
+                id
+                name
+                age
+                updatedAt
+                deleted
+            }
         }
         `;
         const variables = {
-            humans: docs.map(doc => ({
-                id: doc.id,
-                name: doc.name,
-                age: doc.age,
-                updatedAt: doc.updatedAt,
-                deleted: (doc as any).deleted ? true : false
-            }))
+            writeRows: rows
         };
-
         return Promise.resolve({
             query,
             variables
@@ -150,8 +150,12 @@ describe('replication-graphql.test.ts', () => {
             it('spawn, reach and close a server', async () => {
                 const server = await SpawnServer.spawn();
                 const res = await server.client.query(`{
-                 info
-            }`);
+                    info
+                }`);
+                if (!res.data) {
+                    console.log(JSON.stringify(res, null, 4));
+                    throw new Error('res has error');
+                }
                 assert.strictEqual(res.data.info, 1);
                 server.close();
             });
@@ -162,7 +166,15 @@ describe('replication-graphql.test.ts', () => {
                     throw new Error('missing doc');
                 }
                 const res = await server.setDocument(doc);
-                assert.strictEqual(res.data.setHumans.id, doc.id);
+
+                /**
+                 * Because no conflicts have arised,
+                 * an empty array must be returned.
+                 */
+                assert.strictEqual(
+                    res.data.writeHumans.length,
+                    0
+                );
                 server.close();
             });
             it('should be able to use the ws-subscriptions', async () => {
@@ -179,7 +191,17 @@ describe('replication-graphql.test.ts', () => {
 
                 const query = `subscription onHumanChanged {
                     humanChanged {
-                        id
+                        documents {
+                            id,
+                            name,
+                            age,
+                            updatedAt,
+                            deleted
+                        },
+                        checkpoint {
+                            id
+                            updatedAt
+                        }
                     }
                 }`;
 
@@ -202,7 +224,7 @@ describe('replication-graphql.test.ts', () => {
                 await server.setDocument(doc);
 
                 await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-                assert.ok(emitted[0].data.humanChanged.id);
+                assert.ok(emitted[0].data.humanChanged.checkpoint.id);
                 assert.strictEqual(emittedError.length, 0);
 
                 server.close();
@@ -548,6 +570,8 @@ describe('replication-graphql.test.ts', () => {
                 }
                 await server.setDocument(doc);
 
+                await replicationState.notifyAboutRemoteChange();
+
                 await waitUntil(async () => {
                     const docs = await c.find().exec();
                     return docs.length === 2;
@@ -631,7 +655,9 @@ describe('replication-graphql.test.ts', () => {
                 firstDoc.deleted = true;
 
                 await server.setDocument(firstDoc);
-                await replicationState.run();
+
+                await replicationState.notifyAboutRemoteChange();
+                await replicationState.awaitInSync();
 
                 const docs2 = await c.find().exec();
 
@@ -662,7 +688,8 @@ describe('replication-graphql.test.ts', () => {
                 localDoc['deleted'] = false;
                 await server.setDocument(localDoc);
 
-                await replicationState.run();
+                await replicationState.notifyAboutRemoteChange();
+                await replicationState.awaitInSync();
 
                 const docsAfter = await c.find().exec();
                 assert.strictEqual(docsAfter.length, 1);
@@ -699,7 +726,7 @@ describe('replication-graphql.test.ts', () => {
                         reject(new Error('Timeout reached'));
                     },
                         // small buffer until the promise rejects
-                        liveInterval + 5000);
+                        liveInterval + 1000);
                 });
 
                 const raceProm = Promise.race([
@@ -822,19 +849,25 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // check for inserts
+                console.log('---- 0');
                 await c.insert(schemaObjects.humanWithTimestamp());
+                console.log('---- 1');
                 await AsyncTestUtil.waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     return docsOnServer2.length === amount + 1;
                 });
+                console.log('---- 2');
 
                 // check for deletes
+                console.log('---- 3');
                 await c.findOne().remove();
+                console.log('---- 4');
                 await AsyncTestUtil.waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     const oneShouldBeDeleted = docsOnServer2.find((d: any) => d.deleted === true);
                     return !!oneShouldBeDeleted;
                 });
+                console.log('---- 5');
 
                 server.close();
                 c.database.destroy();
@@ -1039,16 +1072,18 @@ describe('replication-graphql.test.ts', () => {
                 });
                 await c.insert(insertData);
 
+                console.log('----------------XX - 0');
                 await AsyncTestUtil.waitUntil(async () => {
                     /**
                      * we have to do replicationState.run() each time
                      * because pouchdb takes a while until the update_seq is increased
                      */
-                    await replicationState.run();
+                    await replicationState.notifyAboutRemoteChange();
                     const docsOnServer2 = server.getDocuments();
                     const shouldBe = (amount * 2) + 2;
                     return docsOnServer2.length === shouldBe;
                 });
+                console.log('----------------XX - 1');
                 await AsyncTestUtil.waitUntil(() => {
                     const docsOnDb2 = server.getDocuments();
                     return docsOnDb2.length === (amount * 2) + 2;
@@ -1103,7 +1138,7 @@ describe('replication-graphql.test.ts', () => {
                      * we have to do replicationState.run() each time
                      * because pouchdb takes a while until the update_seq is increased
                      */
-                    await replicationState.run();
+                    await replicationState.notifyAboutRemoteChange();
                     const docsOnServer2 = server.getDocuments();
                     const shouldBe = (amount * 2) + 2;
                     return docsOnServer2.length === shouldBe;
@@ -2182,10 +2217,10 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn()
                 ]);
                 const pushQueryBuilderFailing = (doc: any) => {
-                    // Note: setHumanFail will error out
+                    // Note: will error out
                     const query = `
-                    mutation CreateHuman($human: HumanInput) {
-                        setHumanFail(human: $human) {
+                    mutation CreateHuman($writeRows: [HumanWriteRow!]) {
+                        writeHumansFail(writeRows: $writeRows) {
                             id,
                             updatedAt
                         }
@@ -2234,10 +2269,10 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn()
                 ]);
                 const pullQueryBuilderFailing = (doc: any) => {
-                    // Note: setHumanFail will error out
+                    // Note: will error out
                     const query = `
-                    mutation CreateHuman($humans: [HumanInput]) {
-                        setHumansFail(humans: $humans) {  }
+                    mutation CreateHuman($writeRows: [HumanWriteRow!]) {
+                        writeHumansFail(writeRows: $writeRows) {  }
                     }
                     `;
                     const variables = {

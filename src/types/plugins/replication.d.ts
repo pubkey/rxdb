@@ -58,7 +58,7 @@ export type ReplicationPushOptions<RxDocType> = {
 export type RxReplicationState<RxDocType, CheckpointType> = RxReplicationStateBase<RxDocType, CheckpointType> & {
     readonly received$: Observable<RxDocumentData<RxDocType>>;
     readonly send$: Observable<any>;
-    readonly error$: Observable<RxReplicationError<RxDocType>>;
+    readonly error$: Observable<RxReplicationError<RxDocType, CheckpointType>>;
     readonly canceled$: Observable<any>;
     readonly active$: Observable<boolean>;
 }

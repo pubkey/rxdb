@@ -19,10 +19,9 @@ import {
 import type {
     BulkWriteRow,
     ById,
-    EventBulk,
+    DocumentsWithCheckpoint,
     HashFunction,
     RxConflictHandler,
-    RxDocumentData,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
@@ -166,17 +165,15 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
     const replicationHandler: RxReplicationHandler<RxDocType, MasterCheckpointType> = {
         masterChangeStream$: instance.changeStream().pipe(
             map(eventBulk => {
-                const ret: EventBulk<RxDocumentData<RxDocType>, MasterCheckpointType> = {
-                    id: eventBulk.id,
+                const ret: DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> = {
                     checkpoint: eventBulk.checkpoint,
-                    events: eventBulk.events.map(event => {
+                    documents: eventBulk.events.map(event => {
                         if (event.change.doc) {
                             return writeDocToDocState(event.change.doc as any);
                         } else {
                             return writeDocToDocState(event.change.previous as any);
                         }
-                    }),
-                    context: eventBulk.context
+                    })
                 };
                 return ret;
             })
@@ -191,7 +188,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             ).then(result => {
                 return {
                     checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
-                    documentsData: result.documents.map(d => writeDocToDocState(d))
+                    documents: result.documents.map(d => writeDocToDocState(d))
                 }
             })
         },

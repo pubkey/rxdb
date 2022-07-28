@@ -168,12 +168,14 @@ export type {
     RxConflictHandlerOutput,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
+    RxReplicationWriteToMasterRow,
 
     // stuff from the RxStorage replication
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
     RxStorageReplicationDirection,
     RxStorageReplicationMeta,
+    DocumentsWithCheckpoint,
 
     // other stuff
     RxDumpCollectionBase,

@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput } from './conflict-handling';
-import { EventBulk, RxDocumentData, WithDeleted } from './rx-storage';
+import { RxDocumentData, WithDeleted } from './rx-storage';
 import type {
     RxStorageInstance
 } from './rx-storage.interface';
@@ -56,6 +56,12 @@ export type RxReplicationWriteToMasterRow<RxDocType> = {
     newDocumentState: WithDeleted<RxDocType>;
 };
 
+
+export type DocumentsWithCheckpoint<RxDocType, CheckpointType> = {
+    documents: WithDeleted<RxDocType>[];
+    checkpoint: CheckpointType;
+}
+
 /**
  * The replication handler contains all logic
  * that is required by the replication protocol
@@ -75,7 +81,7 @@ export type RxReplicationWriteToMasterRow<RxDocType> = {
  */
 export type RxReplicationHandler<RxDocType, MasterCheckpointType> = {
     masterChangeStream$: Observable<
-        EventBulk<WithDeleted<RxDocType>, MasterCheckpointType> |
+        DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> |
         /**
          * Emit this when the masterChangeStream$ might have missed out
          * some events because the fork lost the connection to the master.
@@ -86,10 +92,7 @@ export type RxReplicationHandler<RxDocType, MasterCheckpointType> = {
     masterChangesSince(
         checkpoint: MasterCheckpointType,
         bulkSize: number
-    ): Promise<{
-        checkpoint: MasterCheckpointType;
-        documentsData: WithDeleted<RxDocType>[];
-    }>;
+    ): Promise<DocumentsWithCheckpoint<RxDocType, MasterCheckpointType>>;
     /**
      * Writes the fork changes to the master.
      * Only returns the conflicts if there are any.

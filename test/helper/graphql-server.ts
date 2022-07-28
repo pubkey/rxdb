@@ -24,7 +24,8 @@ import {
     GRAPHQL_PATH,
     GRAPHQL_SUBSCRIPTION_PATH
 } from './graphql-config';
-import { lastOfArray } from 'event-reduce-js';
+import { ensureNotFalsy, lastOfArray } from 'event-reduce-js';
+import { RxReplicationWriteToMasterRow } from '../../src';
 
 let lastPort = 16121;
 export function getPort() {
@@ -88,12 +89,10 @@ export function spawn(
             id: String!
             updatedAt: Int!
         }
-
         type FeedResponse {
             documents: [Human!]!
             checkpoint: Checkpoint!
         }
-
         type Query {
             info: Int
             feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): FeedResponse!
@@ -101,8 +100,12 @@ export function spawn(
             getAll: [Human!]!
         }
         type Mutation {
-            setHumans(humans: [HumanInput]): Human
-            setHumansFail(humans: [HumanInput]): Human
+            writeHumans(writeRows: [HumanWriteRow!]): [Human!]
+            writeHumansFail(writeRows: [HumanWriteRow!]): [Human!]
+        }
+        input HumanWriteRow {
+            assumedMasterState: HumanInput,
+            newDocumentState: HumanInput!
         }
         input HumanInput {
             id: ID!,
@@ -124,9 +127,8 @@ export function spawn(
             count: Int!
         }
         type Subscription {
-            humanChanged: Human
+            humanChanged: FeedResponse
         }
-
         schema {
             query: Query
             mutation: Mutation
@@ -190,18 +192,36 @@ export function spawn(
         getAll: () => {
             return documents;
         },
-        setHumans: (args: any) => {
-            // console.log('## setHumans()');
-            // console.dir(args);
-            const docs: Human[] = args.humans;
-            let last: any;
-            docs.forEach(doc => {
+        writeHumans: (args: any) => {
+            const rows: RxReplicationWriteToMasterRow<Human>[] = args.writeRows;
+
+
+            let last: Human | undefined = null as any;
+            const conflicts: Human[] = [];
+
+
+            const storedDocs = rows.map(row => {
+                const doc = row.newDocumentState;
                 const previousDoc = documents.find((d: Human) => d.id === doc.id);
+
+
+                if (
+                    (previousDoc && !row.assumedMasterState) ||
+                    (
+                        previousDoc && row.assumedMasterState &&
+                        previousDoc.updatedAt > row.assumedMasterState.updatedAt &&
+                        row.newDocumentState.deleted === previousDoc.deleted
+                    )
+                ) {
+                    conflicts.push(previousDoc);
+                    return;
+                }
+
                 documents = documents.filter((d: Human) => d.id !== doc.id);
                 doc.updatedAt = Math.ceil(new Date().getTime() / 1000);
 
                 // because javascript timer precission is not high enought,
-                // and we store seconds, not microseconds
+                // and we store seconds, not microseconds (because graphql does not allow big numbers)
                 // we have to ensure that the new updatedAt is always higher then the previous one
                 // otherwise the feed would not return updated documents some times
                 if (previousDoc && previousDoc.updatedAt >= doc.updatedAt) {
@@ -213,19 +233,30 @@ export function spawn(
                 // console.log('server: setHumans(' + doc.id + ') with new updatedAt: ' + doc.updatedAt);
                 // console.dir(documents);
 
+                last = doc;
+                return doc;
+            });
+
+            if (last) {
                 pubsub.publish(
                     'humanChanged',
                     {
-                        humanChanged: doc
+                        humanChanged: {
+                            documents: storedDocs.filter(d => !!d),
+                            checkpoint: {
+                                id: ensureNotFalsy(last).id,
+                                updatedAt: ensureNotFalsy(last).updatedAt
+                            }
+                        },
                     }
                 );
-                last = doc;
-            });
-            return last;
+            }
+
+            return conflicts;
         },
         // used in tests
-        setHumansFail: (_args: any) => {
-            throw new Error('setHumansFail called');
+        writeHumansFail: (_args: any) => {
+            throw new Error('writeHumansFail called');
         },
         humanChanged: () => pubsub.asyncIterator('humanChanged')
     };
@@ -290,14 +321,22 @@ export function spawn(
                     subServer,
                     client,
                     url: ret,
-                    async setDocument(doc: any) {
+                    async setDocument(doc: Human) {
+
+                        const previous = documents.find(d => d.id = doc.id);
+                        const row = {
+                            assumedMasterState: previous ? previous : undefined,
+                            newDocumentState: doc
+                        };
+
+
                         const result = await client.query(
                             `
-                            mutation CreateHumans($humans: [HumanInput]) {
-                                setHumans(humans: $humans) { id }
+                            mutation CreateHumans($writeRows: [HumanWriteRow!]) {
+                                writeHumans(writeRows: $writeRows) { id }
                             }`,
                             {
-                                humans: [doc]
+                                writeRows: [row]
                             }
                         );
                         // console.dir(result);

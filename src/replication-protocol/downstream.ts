@@ -11,7 +11,7 @@ import type {
     RxDocumentData,
     ById,
     WithDeleted,
-    EventBulk
+    DocumentsWithCheckpoint
 } from '../types';
 import {
     createRevision,
@@ -50,7 +50,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
     let timer = 0;
 
 
-    type Task = EventBulk<WithDeleted<RxDocType>, any> | 'RESYNC';
+    type Task = DocumentsWithCheckpoint<RxDocType, any> | 'RESYNC';
     type TaskWithTime = {
         time: number;
         task: Task;
@@ -144,14 +144,14 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                 state.input.bulkSize
             );
 
-            if (downResult.documentsData.length === 0) {
+            if (downResult.documents.length === 0) {
                 break;
             }
 
             lastCheckpoint = stackCheckpoints([lastCheckpoint, downResult.checkpoint]);
             promises.push(
                 persistFromMaster(
-                    downResult.documentsData,
+                    downResult.documents,
                     lastCheckpoint
                 )
             );
@@ -174,7 +174,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             if (task === 'RESYNC') {
                 throw new Error('SNH');
             }
-            docsOfAllTasks = docsOfAllTasks.concat(task.events);
+            docsOfAllTasks = docsOfAllTasks.concat(task.documents);
             lastCheckpoint = stackCheckpoints([lastCheckpoint, task.checkpoint]);
         });
 

@@ -36,7 +36,6 @@ type CheckpointType = any;
 
 describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
-    const REPLICATION_IDENTIFIER_TEST_HASH = fastUnsecureHash(REPLICATION_IDENTIFIER_TEST);
 
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
     async function getTestCollections(docsAmount: { local: number, remote: number }): Promise<{
@@ -70,10 +69,7 @@ describe('replication.test.js', () => {
             bulkSize: number
         ) => {
             const result = await helper.masterChangesSince(latestPullCheckpoint, bulkSize);
-            return {
-                checkpoint: result.checkpoint,
-                documents: result.documentsData
-            };
+            return result;
         };
         return handler;
     }

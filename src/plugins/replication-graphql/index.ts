@@ -77,8 +77,16 @@ export class RxGraphQLReplicationState<RxDocType> {
         return this.replicationState.awaitInitialReplication();
     }
 
+    awaitInSync() {
+        return this.replicationState.awaitInSync();
+    }
+
     start(): Promise<void> {
         return this.replicationState.start();
+    }
+
+    notifyAboutRemoteChange() {
+        this.replicationState.remoteEvents$.next('RESYNC');
     }
 
     cancel(): Promise<any> {
@@ -133,10 +141,6 @@ export function syncGraphQL<RxDocType, CheckpointType>(
             ) {
                 const pullGraphQL = await pull.queryBuilder(lastPulledCheckpoint);
 
-
-                console.log('query:');
-                console.log(JSON.stringify(pullGraphQL, null, 4));
-
                 const result = await mutateableClientState.client.query(pullGraphQL.query, pullGraphQL.variables);
 
                 console.log('pull handler result:');
@@ -161,9 +165,6 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 const dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
                 const data: any = objectPath.get(result, dataPath);
 
-                console.log('Data:');
-                console.dir(data);
-
                 const docsData: WithDeleted<RxDocType>[] = data.documents;
                 const newCheckpoint = data.checkpoint;
 
@@ -171,7 +172,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 if (docsData.length === 0) {
                     return {
                         documents: [],
-                        checkpoint: null
+                        checkpoint: lastPulledCheckpoint
                     };
                 }
 
@@ -218,12 +219,11 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                  * we can quit here.
                  */
                 if (modifiedPushRows.length === 0) {
-                    return;
+                    return [];
                 }
 
                 const pushObj = await push.queryBuilder(modifiedPushRows);
                 const result = await mutateableClientState.client.query(pushObj.query, pushObj.variables);
-
 
                 if (result.errors) {
                     if (typeof result.errors === 'string') {
@@ -240,10 +240,15 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                     }
                 }
 
-                // TODO make this path variable
-                const conflicts = result.conflicts;
+                console.log(':::::::::::::::::::::::::');
+                console.log(JSON.stringify(pushObj.variables, null, 4));
+                console.log(JSON.stringify(result, null, 4));
 
-                return conflicts;
+                const dataPath = Object.keys(result.data)[0];
+                console.log('dataPath: ' + dataPath);
+                const data: any = objectPath.get(result.data, dataPath);
+                console.dir(data);
+                return data;
             }
         };
     }

@@ -11,7 +11,7 @@ import {
     Subscription
 } from 'rxjs';
 import type {
-    EventBulk,
+    DocumentsWithCheckpoint,
     ReplicationOptions,
     ReplicationPullHandlerResult,
     ReplicationPullOptions,
@@ -49,7 +49,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
     public readonly subjects = {
         received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
         send: new Subject(), // all documents that are send to the endpoint
-        error: new Subject<RxReplicationError<RxDocType>>(), // all errors that are received from the endpoint, emits new Error() objects
+        error: new Subject<RxReplicationError<RxDocType, CheckpointType>>(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
         active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
         initialReplicationComplete: new BehaviorSubject<boolean>(false) // true the initial replication-cycle is over
@@ -117,7 +117,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
 
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
     public remoteEvents$: Subject<
-        EventBulk<WithDeleted<RxDocType>, any> |
+        DocumentsWithCheckpoint<RxDocType, CheckpointType> |
         'RESYNC'
     > = new Subject();
 
@@ -153,7 +153,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                     if (!this.pull) {
                         return {
                             checkpoint: null,
-                            documentsData: []
+                            documents: []
                         };
                     }
 
@@ -185,10 +185,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                             await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
                         }
                     }
-                    return {
-                        documentsData: ensureNotFalsy(result).documents,
-                        checkpoint: ensureNotFalsy(result).checkpoint
-                    }
+                    return ensureNotFalsy(result);
                 },
                 masterWrite: async (
                     rows: RxReplicationWriteToMasterRow<RxDocType>[]
@@ -196,7 +193,6 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                     if (!this.push) {
                         return [];
                     }
-
                     let done = false;
                     let result: WithDeleted<RxDocType>[] = {} as any;
                     while (!done) {
@@ -217,7 +213,6 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                             await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
                         }
                     }
-
                     return ensureNotFalsy(result);
                 }
             }
