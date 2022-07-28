@@ -46,10 +46,9 @@ export class RxGraphQLReplicationState<RxDocType> {
 
     public received$: Observable<RxDocumentData<RxDocType>>;
     public send$: Observable<any> = undefined as any;
-    public error$: Observable<RxReplicationError<RxDocType>> = undefined as any;
+    public error$: Observable<RxReplicationError<RxDocType, any>> = undefined as any;
     public canceled$: Observable<boolean> = undefined as any;
     public active$: Observable<boolean> = undefined as any;
-    public initialReplicationComplete$: Observable<true>;
 
     constructor(
         /**
@@ -67,7 +66,6 @@ export class RxGraphQLReplicationState<RxDocType> {
         this.error$ = replicationState.subjects.error.asObservable();
         this.canceled$ = replicationState.subjects.canceled.asObservable();
         this.active$ = replicationState.subjects.active.asObservable();
-        this.initialReplicationComplete$ = replicationState.initialReplicationComplete$;
     }
 
 
@@ -75,7 +73,7 @@ export class RxGraphQLReplicationState<RxDocType> {
         return this.replicationState.isStopped();
     }
 
-    awaitInitialReplication(): Promise<true> {
+    awaitInitialReplication(): Promise<void> {
         return this.replicationState.awaitInitialReplication();
     }
 
@@ -134,8 +132,18 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 lastPulledCheckpoint: CheckpointType
             ) {
                 const pullGraphQL = await pull.queryBuilder(lastPulledCheckpoint);
+
+
+                console.log('query:');
+                console.log(JSON.stringify(pullGraphQL, null, 4));
+
                 const result = await mutateableClientState.client.query(pullGraphQL.query, pullGraphQL.variables);
+
+                console.log('pull handler result:');
+                console.dir(result);
                 if (result.errors) {
+                    console.log('pull error:');
+                    console.log(JSON.stringify(result, null, 4));
                     if (typeof result.errors === 'string') {
                         throw new RxReplicationPullError(
                             result.errors,
@@ -152,6 +160,9 @@ export function syncGraphQL<RxDocType, CheckpointType>(
 
                 const dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
                 const data: any = objectPath.get(result, dataPath);
+
+                console.log('Data:');
+                console.dir(data);
 
                 const docsData: WithDeleted<RxDocType>[] = data.documents;
                 const newCheckpoint = data.checkpoint;

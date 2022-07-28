@@ -24,7 +24,9 @@ import {
     rxStorageInstanceToReplicationHandler,
     cancelRxStorageReplication,
     awaitRxStorageReplicationInSync,
-    defaultHashFunction
+    defaultHashFunction,
+    getComposedPrimaryKeyOfDocumentData,
+    setCheckpoint
 } from '../../';
 
 
@@ -42,7 +44,11 @@ import {
     randomBoolean
 } from 'async-test-util';
 import { HumanDocumentType } from '../helper/schemas';
-import { EXAMPLE_REVISION_1, EXAMPLE_REVISION_2, EXAMPLE_REVISION_3 } from '../helper/revisions';
+import {
+    EXAMPLE_REVISION_1,
+    EXAMPLE_REVISION_2,
+    EXAMPLE_REVISION_3
+} from '../helper/revisions';
 
 const testContext = 'replication-protocol.test.ts';
 
@@ -237,6 +243,72 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
     }
 
     describe('helpers', () => {
+        describe('checkpoint', () => {
+            /**
+             * @link https://github.com/pubkey/rxdb/pull/3627
+             */
+            it('should not write a duplicate checkpoint', async () => {
+                const masterInstance = await createRxStorageInstance(1);
+                const forkInstance = await createRxStorageInstance(0);
+                const metaInstance = await createMetaInstance();
+
+                await masterInstance.bulkWrite([{
+                    document: getDocData()
+                }], testContext);
+
+                const replicationState = replicateRxStorageInstance({
+                    identifier: randomCouchString(10),
+                    replicationHandler: rxStorageInstanceToReplicationHandler(
+                        masterInstance,
+                        THROWING_CONFLICT_HANDLER,
+                        defaultHashFunction
+                    ),
+                    forkInstance,
+                    metaInstance,
+                    bulkSize: 100,
+                    conflictHandler: THROWING_CONFLICT_HANDLER,
+                    hashFunction: defaultHashFunction
+                });
+                await awaitRxStorageReplicationFirstInSync(replicationState);
+                await awaitRxStorageReplicationInSync(replicationState);
+
+
+                const checkpointDocId = getComposedPrimaryKeyOfDocumentData(
+                    RX_REPLICATION_META_INSTANCE_SCHEMA,
+                    {
+                        isCheckpoint: '1',
+                        itemId: 'down',
+                        replicationIdentifier: replicationState.checkpointKey
+                    }
+                );
+                const checkpointDocBeforeResult = await replicationState.input.metaInstance.findDocumentsById(
+                    [checkpointDocId],
+                    false
+                );
+                console.dir(checkpointDocBeforeResult);
+                const checkpointDocBefore = getFromObjectOrThrow(checkpointDocBeforeResult, checkpointDocId);
+
+
+                await setCheckpoint(
+                    replicationState,
+                    'down',
+                    clone(checkpointDocBefore.data)
+                );
+
+                const checkpointDocAfterResult = await replicationState.input.metaInstance.findDocumentsById(
+                    [checkpointDocId],
+                    false
+                );
+                const checkpointDocAfter = getFromObjectOrThrow(checkpointDocAfterResult, checkpointDocId);
+
+                assert.strictEqual(
+                    checkpointDocAfter._rev,
+                    checkpointDocBefore._rev
+                );
+
+                await cleanUp(replicationState, masterInstance);
+            });
+        });
 
     });
     describe('down', () => {

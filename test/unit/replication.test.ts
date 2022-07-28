@@ -12,33 +12,22 @@ import {
 
 import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
-import {
-    HumanWithTimestampDocumentType
-} from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    flatClone,
     RxCollection,
     ensureNotFalsy,
     randomCouchString,
-    now,
     fastUnsecureHash,
-    lastOfArray,
     rxStorageInstanceToReplicationHandler
 } from '../../';
 
 import {
-    replicateRxCollection,
-    wasLastWriteFromPullReplication,
-    getPullReplicationFlag,
-    getLastPushCheckpoint
-} from '../../plugins/replication';
+    replicateRxCollection} from '../../plugins/replication';
 
 import type {
     ReplicationPullHandler,
     ReplicationPushHandler,
-    RxDocumentData,
     RxReplicationWriteToMasterRow
 } from '../../src/types';
 
@@ -349,256 +338,6 @@ describe('replication.test.js', () => {
         });
     });
     config.parallel('issues', () => {
-        it('should not create push checkpoints unnecessarily [PR: #3627]', async () => {
-            // TODO move this test to the replication protocol
-            const { localCollection, remoteCollection } =
-                await getTestCollections({ local: 5, remote: 5 });
 
-            const replicationState = replicateRxCollection({
-                collection: localCollection,
-                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: false,
-                pull: {
-                    handler: getPullHandler(remoteCollection)
-                },
-                push: {
-                    handler: getPushHandler(remoteCollection)
-                },
-            });
-            replicationState.error$.subscribe((err) => {
-                console.log('got error :');
-                console.dir(err);
-            });
-
-            await replicationState.awaitInitialReplication();
-            await replicationState.run();
-
-            const originalSequence = await getLastPushCheckpoint(
-                localCollection,
-                REPLICATION_IDENTIFIER_TEST
-            );
-            // call .run() often
-            for (let i = 0; i < 3; i++) {
-                await replicationState.run()
-            }
-
-            const newSequence = await getLastPushCheckpoint(
-                localCollection,
-                REPLICATION_IDENTIFIER_TEST
-            );
-            assert.strictEqual(originalSequence, newSequence);
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
-        });
-
-        /**
-         * When a local write happens while the pull is running,
-         * we should drop the pulled documents and first run the push again
-         * to ensure we do not loose local writes.
-         */
-        it('should re-run push if a local write happend between push and pull', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
-
-            // write to this document to track pushed and pulled data
-            const docData = schemaObjects.humanWithTimestamp();
-            docData.age = 0;
-            const doc = await localCollection.insert(docData);
-
-            /**
-             * To speed up this test,
-             * we do some stuff only after the initial replication is done.
-             */
-            let initalReplicationDone = false;
-
-            /**
-             * Track all pushed random values,
-             * so we can later ensure that no local write was non-pushed.
-             */
-            const pushedRandomValues: string[] = [];
-            let writeWhilePull = false;
-
-            const replicationState = replicateRxCollection({
-                collection: localCollection,
-                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: false,
-                pull: {
-                    async handler(latestPulledDocument: RxDocumentData<TestDocType> | null) {
-                        /**
-                         * We simulate a write-while-pull-running
-                         * by just doing the write inside of the pull handler.
-                         */
-                        if (writeWhilePull) {
-                            await doc.atomicUpdate(docData => {
-                                docData.name = 'write-from-pull-handler';
-                                docData.age = docData.age + 1;
-                                return docData;
-                            });
-                            writeWhilePull = false;
-                        }
-                        return getPullHandler(remoteCollection)(latestPulledDocument);
-                    }
-                },
-                push: {
-                    handler(docs: RxDocumentData<TestDocType>[]) {
-                        if (initalReplicationDone) {
-                            const randomValue = ensureNotFalsy(docs[0]).name;
-                            pushedRandomValues.push(randomValue);
-                        }
-                        return getPushHandler(remoteCollection)(docs);
-                    }
-                }
-            });
-            await replicationState.awaitInitialReplication();
-            initalReplicationDone = true;
-
-            await doc.atomicPatch({
-                name: 'before-run'
-            });
-            writeWhilePull = true;
-            await replicationState.run();
-
-            assert.strictEqual(
-                doc.name,
-                'write-from-pull-handler'
-            );
-
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
-        });
-        it('should not stack up run()-calls more then 2', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
-            const replicationState = replicateRxCollection({
-                collection: localCollection,
-                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: false,
-                retryTime: 50,
-                pull: {
-                    handler() {
-                        throw new Error('throw on pull');
-                    }
-                },
-                push: {
-                    handler() {
-                        throw new Error('throw on push');
-                    }
-                }
-            });
-
-            // change replicationState._run to count the calls
-            const oldRun = replicationState._run.bind(replicationState);
-            let count = 0;
-            const newRun = function () {
-                count++;
-                return oldRun();
-            };
-            replicationState._run = newRun.bind(replicationState);
-
-            const amount = 50;
-            // call .run() often
-            await Promise.all(
-                new Array(amount).fill(0).map(
-                    () => replicationState.run()
-                )
-            );
-
-            await waitUntil(
-                () => replicationState.runQueueCount === 0
-            );
-            assert.ok(count < 10);
-
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
-        });
-        it('should not stack up failed runs and then run many times', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
-            let pullCount = 0;
-            let throwOnPull = false;
-            let startTracking = false;
-            const replicationState = replicateRxCollection({
-                collection: localCollection,
-                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: false,
-                retryTime: 50,
-                pull: {
-                    handler(latestPulledDocument: RxDocumentData<TestDocType> | null) {
-                        if (throwOnPull) {
-                            throw new Error('throwOnPull is true');
-                        }
-                        if (startTracking) {
-                            pullCount = pullCount + 1;
-                        }
-                        return getPullHandler(remoteCollection)(latestPulledDocument);
-                    }
-                },
-                push: {
-                    handler: getPushHandler(remoteCollection)
-                }
-            });
-            await replicationState.awaitInitialReplication();
-
-            // call run() many times but simulate an error on the pull handler.
-            throwOnPull = true;
-
-            let t = 0;
-            while (t < 100) {
-                t++;
-                await replicationState.run();
-            }
-
-            throwOnPull = false;
-            startTracking = true;
-
-
-            await wait(config.isFastMode() ? 200 : 500);
-
-
-            if (pullCount > 2) {
-                throw new Error('pullCount too height ' + pullCount);
-            }
-
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
-        });
-        /**
-         * @link https://github.com/pubkey/rxdb/issues/3727
-         */
-        it('#3727 should not go into infinite push loop when number of changed requests equals to batchSize', async () => {
-            const MAX_PUSH_COUNT = 30 // arbitrary big number
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 4 });
-            let pushCount = 0;
-            const replicationState = replicateRxCollection({
-                collection: localCollection,
-                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                pull: {
-                    handler: getPullHandler(remoteCollection)
-                },
-                push: {
-                    batchSize: 5,
-                    handler: async (documents) => {
-                        pushCount++;
-
-                        if (pushCount > MAX_PUSH_COUNT) {
-                            // Exit push cycle. Otherwise test will never end
-                            throw new Error('Stop replication');
-                        }
-
-                        const ret = await getPushHandler(remoteCollection)(documents);
-                        return ret;
-                    }
-                }
-            });
-
-            await replicationState.awaitInitialReplication();
-            const docData = schemaObjects.humanWithTimestamp();
-            await localCollection.insert(docData)
-            await replicationState.run();
-
-            if (pushCount > MAX_PUSH_COUNT) {
-                throw new Error('Infinite push loop');
-            }
-
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
-        });
     });
 });

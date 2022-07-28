@@ -78,20 +78,26 @@ describe('replication-graphql.test.ts', () => {
     const endpointHash = getEndpointHash(); // used when we not care about it's value
 
     const batchSize = 5 as const;
-    const queryBuilder = (doc: any) => {
-        if (!doc) {
-            doc = {
+    const queryBuilder = (checkpoint: any) => {
+        if (!checkpoint) {
+            checkpoint = {
                 id: '',
                 updatedAt: 0
             };
         }
         const query = `{
-            feedForRxDBReplication(lastId: "${doc.id}", minUpdatedAt: ${doc.updatedAt}, limit: ${batchSize}) {
-                id
-                name
-                age
-                updatedAt
-                deleted
+            feedForRxDBReplication(lastId: "${checkpoint.id}", minUpdatedAt: ${checkpoint.updatedAt}, limit: ${batchSize}) {
+                documents {
+                    id
+                    name
+                    age
+                    updatedAt
+                    deleted
+                }
+                checkpoint {
+                    id
+                    updatedAt
+                }
             }
         }`;
         const variables = {};
@@ -219,8 +225,11 @@ describe('replication-graphql.test.ts', () => {
                 });
                 assert.strictEqual(replicationState.isStopped(), false);
 
+                console.log('---');
+
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c.find().exec();
+                    console.log('docs.lenght: ' + docs.length);
                     return docs.length === batchSize;
                 });
 
@@ -278,11 +287,17 @@ describe('replication-graphql.test.ts', () => {
                     {
                         collectionFeedForRxDBReplication(lastId: $lastId, minUpdatedAt: $updatedAt, limit: $batchSize) {
                             collection {
-                                id
-                                name
-                                age
-                                updatedAt
-                                deleted
+                                documents {
+                                    id
+                                    name
+                                    age
+                                    updatedAt
+                                    deleted
+                                }
+                                checkpoint {
+                                    id
+                                    updatedAt
+                                }
                             }
                         }
                     }`;
@@ -390,11 +405,17 @@ describe('replication-graphql.test.ts', () => {
                     {
                         collectionFeedForRxDBReplication(lastId: $lastId, minUpdatedAt: $updatedAt, limit: $batchSize) {
                             collection {
-                                id
-                                name
-                                age
-                                updatedAt
-                                deletedAt
+                                documents {
+                                    id
+                                    name
+                                    age
+                                    updatedAt
+                                    deletedAt
+                                }
+                                checkpoint {
+                                    id
+                                    updatedAt
+                                }
                             }
                         }
                     }`;
@@ -501,7 +522,7 @@ describe('replication-graphql.test.ts', () => {
             });
         });
         config.parallel('live:true pull only', () => {
-            it('should also get documents that come in afterwards with active .run()', async () => {
+            it('should also get documents that come in afterwards', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn(getTestData(1))
@@ -526,10 +547,11 @@ describe('replication-graphql.test.ts', () => {
                     throw new Error('doc missing');
                 }
                 await server.setDocument(doc);
-                await replicationState.run();
 
-                const docs = await c.find().exec();
-                assert.strictEqual(docs.length, 2);
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === 2;
+                });
 
                 server.close();
                 await c.database.destroy();

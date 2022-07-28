@@ -197,7 +197,6 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                         return [];
                     }
 
-
                     let done = false;
                     let result: WithDeleted<RxDocType>[] = {} as any;
                     while (!done) {

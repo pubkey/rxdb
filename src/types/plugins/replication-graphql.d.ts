@@ -1,5 +1,4 @@
 import { RxReplicationWriteToMasterRow } from '../replication-protocol';
-import { RxDocumentData } from '../rx-storage';
 
 export interface RxGraphQLReplicationQueryBuilderResponseObject {
     query: string;

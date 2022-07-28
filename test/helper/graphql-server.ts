@@ -24,6 +24,7 @@ import {
     GRAPHQL_PATH,
     GRAPHQL_SUBSCRIPTION_PATH
 } from './graphql-config';
+import { lastOfArray } from 'event-reduce-js';
 
 let lastPort = 16121;
 export function getPort() {
@@ -83,10 +84,20 @@ export function spawn(
      * matches ./schemas.js#humanWithTimestamp
      */
     const schema = buildSchema(`
+        type Checkpoint {
+            id: String!
+            updatedAt: Int!
+        }
+
+        type FeedResponse {
+            documents: [Human!]!
+            checkpoint: Checkpoint!
+        }
+
         type Query {
             info: Int
-            feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
-            collectionFeedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, offset: Int, limit: Int!): HumanCollection!
+            feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): FeedResponse!
+            collectionFeedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, offset: Int, limit: Int!): CollectionFeedResponse!
             getAll: [Human!]!
         }
         type Mutation {
@@ -108,9 +119,9 @@ export function spawn(
             deleted: Boolean!,
             deletedAt: Int
         }
-        type HumanCollection {
-            collection: [Human!]
-            totalCount: Int!
+        type CollectionFeedResponse {
+            collection: FeedResponse!
+            count: Int!
         }
         type Subscription {
             humanChanged: Human
@@ -133,15 +144,14 @@ export function spawn(
     const root = {
         info: () => 1,
         collectionFeedForRxDBReplication: (args: any) => {
-            const { limit, offset = 0, ...feedForRxDBReplicationArgs } = args;
-            const collection = root.feedForRxDBReplication(feedForRxDBReplicationArgs);
+            const result = root.feedForRxDBReplication(args);
 
             // console.log('collection');
             // console.dir(collection);
 
             return {
-                totalCount: collection.length,
-                collection: collection.slice(offset, offset + limit)
+                collection: result,
+                count: result.documents.length
             };
         },
         feedForRxDBReplication: (args: any) => {
@@ -155,7 +165,9 @@ export function spawn(
                 if (doc.updatedAt < args.minUpdatedAt) return false;
                 if (doc.updatedAt > args.minUpdatedAt) return true;
                 if (doc.updatedAt === args.minUpdatedAt) {
-                    if (doc.id > args.lastId) return true;
+                    if (doc.id > args.lastId) {
+                        return true;
+                    }
                     else return false;
                 }
             });
@@ -163,7 +175,17 @@ export function spawn(
             // limit if requested
             const limited = args.limit ? filteredByMinUpdatedAtAndId.slice(0, args.limit) : filteredByMinUpdatedAtAndId;
 
-            return limited;
+            const last = lastOfArray(limited);
+            return {
+                documents: limited,
+                checkpoint: last ? {
+                    id: last.id,
+                    updatedAt: last.updatedAt
+                } : {
+                    id: args.lastId,
+                    updatedAt: args.minUpdatedAt
+                }
+            };
         },
         getAll: () => {
             return documents;
