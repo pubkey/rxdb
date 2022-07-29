@@ -20,7 +20,9 @@ import type {
     RxDocumentData,
     RxReplicationState,
     RxReplicationWriteToMasterRow,
+    RxStorageInstance,
     RxStorageInstanceReplicationState,
+    RxStorageReplicationMeta,
     WithDeleted
 } from '../../types';
 import {
@@ -116,6 +118,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
 
 
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
+    public metaInstance?: RxStorageInstance<RxStorageReplicationMeta, any, {}, any>;
     public remoteEvents$: Subject<
         DocumentsWithCheckpoint<RxDocType, CheckpointType> |
         'RESYNC'
@@ -128,7 +131,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
         }
 
         const database = this.collection.database;
-        const metaInstance = await this.collection.database.storage.createStorageInstance({
+        this.metaInstance = await this.collection.database.storage.createStorageInstance({
             databaseName: database.name,
             collectionName: this.collection.name + '-rx-replication-' + this.replicationIdentifierHash,
             databaseInstanceToken: database.token,
@@ -140,7 +143,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
         this.internalReplicationState = replicateRxStorageInstance({
             bulkSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
             forkInstance: this.collection.storageInstance,
-            metaInstance,
+            metaInstance: this.metaInstance,
             hashFunction: database.hashFunction,
             identifier: 'rx-replication-' + this.replicationIdentifierHash,
             conflictHandler: this.collection.conflictHandler,
@@ -277,6 +280,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
 
         if (this.internalReplicationState) {
             await cancelRxStorageReplication(this.internalReplicationState);
+            await ensureNotFalsy(this.metaInstance).close();
         }
 
 
