@@ -140,11 +140,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 lastPulledCheckpoint: CheckpointType
             ) {
                 const pullGraphQL = await pull.queryBuilder(lastPulledCheckpoint);
-
                 const result = await mutateableClientState.client.query(pullGraphQL.query, pullGraphQL.variables);
-
-                console.log('pull handler result:');
-                console.log(JSON.stringify(result, null, 4));
                 if (result.errors) {
                     console.log('pull error:');
                     console.log(JSON.stringify(result, null, 4));
@@ -207,11 +203,6 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                     })
                 ) as any;
 
-
-
-                console.log('modifiedPushRows:');
-                console.dir(modifiedPushRows);
-
                 /**
                  * The push modifier might have returned null instead of a document
                  * which means that these documents must not be pushed and filtered out.
@@ -245,15 +236,8 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                         );
                     }
                 }
-
-                console.log(':::::::::::::::::::::::::');
-                console.log(JSON.stringify(pushObj.variables, null, 4));
-                console.log(JSON.stringify(result, null, 4));
-
                 const dataPath = Object.keys(result.data)[0];
-                console.log('dataPath: ' + dataPath);
                 const data: any = objectPath.get(result.data, dataPath);
-                console.dir(data);
                 return data;
             }
         };

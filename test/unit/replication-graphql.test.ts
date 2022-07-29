@@ -247,7 +247,6 @@ describe('replication-graphql.test.ts', () => {
 
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c.find().exec();
-                    console.log('docs.lenght: ' + docs.length);
                     return docs.length === batchSize;
                 });
 
@@ -2123,10 +2122,16 @@ describe('replication-graphql.test.ts', () => {
                     return !notUpdated;
                 });
 
-                server.close();
-                db.destroy();
+                await db.destroy();
+                await server.close();
             });
             it('#3856 atomicUpsert not working', async () => {
+
+                console.log('############################');
+                console.log('############################');
+                console.log('############################');
+                console.log('############################');
+
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: config.storage.getStorage(),
@@ -2198,8 +2203,8 @@ describe('replication-graphql.test.ts', () => {
                     return !notUpdated;
                 });
 
-                server.close();
-                db.destroy();
+                await db.destroy();
+                await server.close();
             });
         });
     });

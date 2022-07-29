@@ -23,7 +23,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             }, 5 * 1000);
         } catch (err) {
             console.dir(OPEN_POUCHDB_STORAGE_INSTANCES);
-            throw new Error('no all storage instances have been closed');
+            throw new Error('no all PouchDB storage instances have been closed (open: ' + OPEN_POUCHDB_STORAGE_INSTANCES.size + ')');
         }
     });
     it('ensure every PouchDB database is removed', async () => {

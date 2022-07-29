@@ -85,6 +85,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
 
+        console.log('# create pouch rx storage instance ' + this.collectionName);
+
         /**
          * Instead of listening to pouch.changes,
          * we have overwritten pouchdbs bulkDocs()
@@ -132,6 +134,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     close() {
         ensureNotClosed(this);
+
+        console.log('# close() pouch rx storage instance ' + this.collectionName);
+
         this.closed = true;
         this.subs.forEach(sub => sub.unsubscribe());
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
