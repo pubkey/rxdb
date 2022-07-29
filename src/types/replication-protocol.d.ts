@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput } from './conflict-handling';
-import { RxDocumentData, WithDeleted } from './rx-storage';
+import { BulkWriteRow, RxDocumentData, WithDeleted } from './rx-storage';
 import type {
     RxStorageInstance
 } from './rx-storage.interface';
@@ -171,9 +171,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
          */
         processed: {
             up: Subject<RxReplicationWriteToMasterRow<RxDocType>>;
-            down: Subject<{
-
-            }>;
+            down: Subject<BulkWriteRow<RxDocType>>;
         }
         resolvedConflicts: Subject<{
             input: RxConflictHandlerInput<RxDocType>;

@@ -206,6 +206,12 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                         return useRow ? useRow : null;
                     })
                 ) as any;
+
+
+
+                console.log('modifiedPushRows:');
+                console.dir(modifiedPushRows);
+
                 /**
                  * The push modifier might have returned null instead of a document
                  * which means that these documents must not be pushed and filtered out.

@@ -48,7 +48,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
     public readonly subs: Subscription[] = [];
     public readonly subjects = {
         received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
-        send: new Subject(), // all documents that are send to the endpoint
+        send: new Subject<WithDeleted<RxDocType>>(), // all documents that are send to the endpoint
         error: new Subject<RxReplicationError<RxDocType, CheckpointType>>(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
         active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
@@ -217,6 +217,18 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                 }
             }
         });
+        this.subs.push(
+            this.internalReplicationState.events.processed.down
+                .subscribe(row => this.subjects.received.next(row.document))
+        );
+        this.subs.push(
+            this.internalReplicationState.events.processed.up
+                .subscribe(writeToMasterRow => {
+                    this.subjects.send.next(writeToMasterRow.newDocumentState);
+                })
+        );
+
+
         if (!this.live) {
             await awaitRxStorageReplicationFirstInSync(this.internalReplicationState);
             await this.cancel();
@@ -235,10 +247,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
     }
 
     async awaitInitialReplication(): Promise<void> {
-        console.log('awaitInitialReplication() 0');
         await this.startPromise;
-        console.log('awaitInitialReplication() 1');
-        console.dir(this.internalReplicationState);
         return awaitRxStorageReplicationFirstInSync(
             ensureNotFalsy(this.internalReplicationState)
         );
