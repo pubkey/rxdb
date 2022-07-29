@@ -217,7 +217,7 @@ describe('replication-graphql.test.ts', () => {
                 await AsyncTestUtil.wait(300);
 
                 const doc = getTestData(1).pop();
-                await server.setDocument(doc);
+                await server.setDocument(ensureNotFalsy(doc));
 
                 await AsyncTestUtil.waitUntil(() => emitted.length === 1);
                 assert.ok(emitted[0].data.humanChanged.checkpoint.id);
@@ -662,7 +662,7 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.destroy();
             });
-            it('should overwrite the local doc if it was deleted locally before synced from the server', async () => {
+            it('should overwrite the client doc if it was deleted locally before synced from the server', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const localDoc: any = schemaObjects.humanWithTimestamp();
                 const rxDoc = await c.insert(localDoc);
@@ -671,7 +671,7 @@ describe('replication-graphql.test.ts', () => {
                 const docs = await c.find().exec();
                 assert.strictEqual(docs.length, 0);
 
-                const server = await SpawnServer.spawn();
+                const server = await SpawnServer.spawn<HumanWithTimestampDocumentType>();
                 const replicationState = c.syncGraphQL({
                     url: server.url,
                     pull: {
@@ -681,8 +681,11 @@ describe('replication-graphql.test.ts', () => {
                     live: true,
                     deletedFlag: 'deleted'
                 });
+                await replicationState.awaitInitialReplication();
+
                 localDoc['deleted'] = false;
                 await server.setDocument(localDoc);
+
 
                 await replicationState.notifyAboutRemoteChange();
                 await replicationState.awaitInSync();

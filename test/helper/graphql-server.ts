@@ -26,6 +26,7 @@ import {
 } from './graphql-config';
 import { ensureNotFalsy, lastOfArray } from 'event-reduce-js';
 import { RxReplicationWriteToMasterRow } from '../../src';
+import { HumanWithTimestampDocumentType } from './schema-objects';
 
 let lastPort = 16121;
 export function getPort() {
@@ -62,7 +63,7 @@ export interface GraphqlServer<T> {
 }
 
 export interface GraphQLServerModule {
-    spawn<T>(docs?: T[]): Promise<GraphqlServer<T>>;
+    spawn<T = HumanWithTimestampDocumentType>(docs?: T[]): Promise<GraphqlServer<T>>;
 }
 
 declare type Human = {
