@@ -18,12 +18,12 @@ import {
     RxCollection,
     ensureNotFalsy,
     randomCouchString,
-    fastUnsecureHash,
     rxStorageInstanceToReplicationHandler
 } from '../../';
 
 import {
-    replicateRxCollection} from '../../plugins/replication';
+    replicateRxCollection
+} from '../../plugins/replication';
 
 import type {
     ReplicationPullHandler,
@@ -84,8 +84,6 @@ describe('replication.test.js', () => {
         const handler: ReplicationPushHandler<TestDocType> = async (
             rows: RxReplicationWriteToMasterRow<TestDocType>[]
         ) => {
-            console.log('push handler:');
-            console.log(JSON.stringify(rows, null, 4));
             const result = await helper.masterWrite(rows);
             return result;
         }
@@ -94,8 +92,6 @@ describe('replication.test.js', () => {
     config.parallel('non-live replication', () => {
         it('should replicate both sides', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
-
-            console.log('--- 0');
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -150,10 +146,7 @@ describe('replication.test.js', () => {
                 console.dir(err);
             });
 
-            console.log('--- 1');
             await replicationState.awaitInitialReplication();
-            console.log('--- 2');
-
             const docsRemoteQuery = await remoteCollection.findOne();
 
             // insert
@@ -162,23 +155,19 @@ describe('replication.test.js', () => {
                 id
             });
             const doc = await localCollection.insert(docData);
-            console.log('--- 3');
             await waitUntil(async () => {
                 const remoteDoc = await docsRemoteQuery.exec();
                 return !!remoteDoc;
             });
-            console.log('--- 4');
 
             // UPDATE
             await doc.atomicPatch({
                 age: 100
             });
-            console.log('--- 5');
             await waitUntil(async () => {
                 const remoteDoc = await docsRemoteQuery.exec(true);
                 return remoteDoc.age === 100;
             });
-            console.log('--- 6');
 
             // DELETE
             await wait(100);
@@ -188,29 +177,26 @@ describe('replication.test.js', () => {
                 return !remoteDoc;
             });
 
-            console.log('--- 7');
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
         it('should allow 0 value for liveInterval', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
-            assert.doesNotThrow(async () => {
-                const replicationState = replicateRxCollection({
-                    collection: localCollection,
-                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                    live: true,
-                    liveInterval: 0,
-                    pull: {
-                        handler: getPullHandler(remoteCollection)
-                    },
-                    push: {
-                        handler: getPushHandler(remoteCollection)
-                    }
-                });
-                await replicationState.awaitInitialReplication();
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                liveInterval: 0,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
             });
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            await replicationState.awaitInitialReplication();
+            await localCollection.database.destroy();
+            await remoteCollection.database.destroy();
         });
         it('should push data even if liveInterval is set to 0', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });

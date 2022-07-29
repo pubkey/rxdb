@@ -357,7 +357,7 @@ export function syncCouchDB(
         const pouchSync = syncFun(remote, useOptions);
         setPouchEventEmitter(repState, pouchSync);
 
-        this.onDestroy.then(() => repState.cancel());
+        this.onDestroy.push(() => repState.cancel());
     });
 
     return repState;

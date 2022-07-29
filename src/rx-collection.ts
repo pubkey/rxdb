@@ -157,14 +157,6 @@ export class RxCollectionBase<
         ) as any;
     }
 
-    get onDestroy() {
-        if (!this._onDestroy) {
-            this._onDestroy = new Promise(res => this._onDestroyCall = res);
-        }
-        return this._onDestroy;
-    }
-
-    public destroyed = false;
     public _atomicUpsertQueues: Map<string, Promise<any>> = new Map();
     // defaults
     public synced: boolean = false;
@@ -179,12 +171,17 @@ export class RxCollectionBase<
     public $: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
 
-    /**
-     * returns a promise that is resolved when the collection gets destroyed
-     */
-    private _onDestroy?: Promise<void>;
 
-    private _onDestroyCall?: () => void;
+
+    /**
+     * When the collection is destroyed,
+     * these functions will be called an awaited.
+     * Used to automatically clean up stuff that
+     * belongs to this collection.
+     */
+    public onDestroy: (() => Promise<any>)[] = [];
+    public destroyed = false;
+
     public async prepare(): Promise<void> {
         this.storageInstance = getWrappedStorageInstance(
             this.database,
@@ -851,9 +848,7 @@ export class RxCollectionBase<
          */
         this.destroyed = true;
 
-        if (this._onDestroyCall) {
-            this._onDestroyCall();
-        }
+
         Array.from(this.timeouts).forEach(timeout => clearTimeout(timeout));
         if (this._changeEventBuffer) {
             this._changeEventBuffer.destroy();
@@ -867,6 +862,7 @@ export class RxCollectionBase<
          * but the change is not added to the changes collection.
          */
         return this.database.requestIdlePromise()
+            .then(() => Promise.all(this.onDestroy.map(fn => fn())))
             .then(() => this.storageInstance.close())
             .then(() => {
                 /**

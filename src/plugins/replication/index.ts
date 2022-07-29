@@ -81,9 +81,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
 
 
         // stop the replication when the collection gets destroyed
-        this.collection.onDestroy.then(() => {
-            this.cancel();
-        });
+        this.collection.onDestroy.push(() => this.cancel());
 
         // create getters for the observables
         Object.keys(this.subjects).forEach(key => {
@@ -277,6 +275,9 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
         if (this.isStopped()) {
             return PROMISE_RESOLVE_FALSE;
         }
+
+
+        console.log('RxReplicationState.cancel()');
 
         if (this.internalReplicationState) {
             await cancelRxStorageReplication(this.internalReplicationState);
