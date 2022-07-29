@@ -144,7 +144,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 const result = await mutateableClientState.client.query(pullGraphQL.query, pullGraphQL.variables);
 
                 console.log('pull handler result:');
-                console.dir(result);
+                console.log(JSON.stringify(result, null, 4));
                 if (result.errors) {
                     console.log('pull error:');
                     console.log(JSON.stringify(result, null, 4));

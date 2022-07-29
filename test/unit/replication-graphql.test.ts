@@ -1030,10 +1030,9 @@ describe('replication-graphql.test.ts', () => {
             });
             it('should push and pull some docs; live: true', async () => {
                 const amount = batchSize * 1;
-                const testData = getTestData(amount);
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(amount),
-                    SpawnServer.spawn(testData)
+                    SpawnServer.spawn(getTestData(amount))
                 ]);
 
                 const replicationState = c.syncGraphQL({
@@ -1053,7 +1052,7 @@ describe('replication-graphql.test.ts', () => {
 
                 await replicationState.awaitInitialReplication();
 
-                const docsOnServer = server.getDocuments();
+                let docsOnServer = server.getDocuments();
                 assert.strictEqual(docsOnServer.length, amount * 2);
 
                 const docsOnDb = await c.find().exec();
@@ -1062,31 +1061,32 @@ describe('replication-graphql.test.ts', () => {
 
                 // insert one on local and one on server
                 const doc: any = schemaObjects.humanWithTimestamp({
-                    name: 'some1local'
+                    id: 'z-some-local'
                 });
                 doc['deleted'] = false;
                 await server.setDocument(doc);
 
+                docsOnServer = server.getDocuments();
+                console.dir(docsOnServer.map(d => d.id));
+
+
                 const insertData = schemaObjects.humanWithTimestamp({
-                    name: 'some1server'
+                    id: 'z-some-server'
                 });
                 await c.insert(insertData);
 
-                console.log('----------------XX - 0');
-                await AsyncTestUtil.waitUntil(async () => {
-                    /**
-                     * we have to do replicationState.run() each time
-                     * because pouchdb takes a while until the update_seq is increased
-                     */
-                    await replicationState.notifyAboutRemoteChange();
-                    const docsOnServer2 = server.getDocuments();
-                    const shouldBe = (amount * 2) + 2;
-                    return docsOnServer2.length === shouldBe;
-                });
-                console.log('----------------XX - 1');
+
+                await replicationState.notifyAboutRemoteChange();
+                await replicationState.awaitInSync();
+
                 await AsyncTestUtil.waitUntil(() => {
-                    const docsOnDb2 = server.getDocuments();
-                    return docsOnDb2.length === (amount * 2) + 2;
+                    docsOnServer = server.getDocuments();
+                    const shouldBe = (amount * 2) + 2;
+                    return docsOnServer.length === shouldBe;
+                }, 2000, 200);
+                await AsyncTestUtil.waitUntil(async () => {
+                    const docsOnClient = await c.find().exec();
+                    return docsOnClient.length === (amount * 2) + 2;
                 });
                 await server.close();
                 await c.database.destroy();

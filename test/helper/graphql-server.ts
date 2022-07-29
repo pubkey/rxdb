@@ -199,12 +199,9 @@ export function spawn(
             let last: Human | undefined = null as any;
             const conflicts: Human[] = [];
 
-
             const storedDocs = rows.map(row => {
                 const doc = row.newDocumentState;
                 const previousDoc = documents.find((d: Human) => d.id === doc.id);
-
-
                 if (
                     (previousDoc && !row.assumedMasterState) ||
                     (
@@ -218,6 +215,7 @@ export function spawn(
                 }
 
                 documents = documents.filter((d: Human) => d.id !== doc.id);
+
                 doc.updatedAt = Math.ceil(new Date().getTime() / 1000);
 
                 // because javascript timer precission is not high enought,
@@ -229,9 +227,6 @@ export function spawn(
                 }
 
                 documents.push(doc);
-
-                // console.log('server: setHumans(' + doc.id + ') with new updatedAt: ' + doc.updatedAt);
-                // console.dir(documents);
 
                 last = doc;
                 return doc;
@@ -323,7 +318,7 @@ export function spawn(
                     url: ret,
                     async setDocument(doc: Human) {
 
-                        const previous = documents.find(d => d.id = doc.id);
+                        const previous = documents.find(d => d.id === doc.id);
                         const row = {
                             assumedMasterState: previous ? previous : undefined,
                             newDocumentState: doc
@@ -339,14 +334,16 @@ export function spawn(
                                 writeRows: [row]
                             }
                         );
-                        // console.dir(result);
+                        if (result.data.writeHumans.length > 0) {
+                            throw new Error('setDocument() caused a conflict');
+                        }
                         return result;
                     },
                     overwriteDocuments(docs: any[]) {
                         documents = docs.slice();
                     },
                     getDocuments() {
-                        return documents;
+                        return documents.slice(0);
                     },
                     requireHeader(name: string, value: string) {
                         if (!name) {
