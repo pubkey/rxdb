@@ -17,6 +17,15 @@ export const defaultConflictHandler: RxConflictHandler<any> = function (
     i: RxConflictHandlerInput<any>,
     _context: string
 ): Promise<RxConflictHandlerOutput<any>> {
+
+
+    /**
+     * If the documents are deep equal,
+     * we have no conflict.
+     * On your custom conflict handler you might only
+     * check some properties, like the updatedAt time,
+     * for better performance, because deepEqual is expensive.
+     */
     if (deepEqual(
         i.newDocumentState,
         i.realMasterState

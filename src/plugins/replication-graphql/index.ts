@@ -40,7 +40,11 @@ import {
     RxReplicationPullError,
     RxReplicationPushError
 } from '../replication/rx-replication-error';
-import { addRxPlugin, SyncOptionsGraphQL, WithDeleted } from '../../index';
+import {
+    addRxPlugin,
+    SyncOptionsGraphQL,
+    WithDeleted
+} from '../../index';
 
 export class RxGraphQLReplicationState<RxDocType> {
 
