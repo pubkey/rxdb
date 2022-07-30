@@ -19,7 +19,6 @@ import {
     addRxPlugin,
     createRxDatabase,
     RxJsonSchema,
-    fastUnsecureHash,
     randomCouchString,
     ensureNotFalsy,
     RxReplicationWriteToMasterRow
@@ -70,8 +69,6 @@ declare type WithDeleted<T> = T & { deleted: boolean };
 describe('replication-graphql.test.ts', () => {
     // for port see karma.config.js
     const browserServerUrl = 'http://localhost:18000' + GRAPHQL_PATH;
-
-    const getEndpointHash = () => fastUnsecureHash(AsyncTestUtil.randomString(10));
     const getTimestamp = () => Math.round(new Date().getTime() / 1000);
 
     const batchSize = 5 as const;
@@ -1072,20 +1069,24 @@ describe('replication-graphql.test.ts', () => {
                     id: 'z-some-server'
                 });
                 await c.insert(insertData);
-
-
+                
+                console.log('---------------------- 0');
                 await replicationState.notifyAboutRemoteChange();
+                console.log('---------------------- 0.1');
                 await replicationState.awaitInSync();
 
+                console.log('---------------------- 0.2');
                 await AsyncTestUtil.waitUntil(() => {
                     docsOnServer = server.getDocuments();
                     const shouldBe = (amount * 2) + 2;
                     return docsOnServer.length === shouldBe;
                 });
+                console.log('---------------------- 1');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docsOnClient = await c.find().exec();
                     return docsOnClient.length === (amount * 2) + 2;
                 });
+                console.log('---------------------- 2');
                 await server.close();
                 await c.database.destroy();
             });

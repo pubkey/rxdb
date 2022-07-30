@@ -28,7 +28,7 @@ export class RxReplicationPushError<RxDocType> extends Error {
          * Typed as 'any' because might contain the custom deletedFlag
          * and might be modified by the push modifier.
          */
-        public readonly pushRows: RxReplicationWriteToMasterRow<any>[],
+        public readonly pushRows: RxReplicationWriteToMasterRow<RxDocType>[],
         public readonly innerErrors?: any
     ) {
         super(message);

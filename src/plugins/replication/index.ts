@@ -38,7 +38,6 @@ import {
 import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,
-    cancelRxStorageReplication,
     replicateRxStorageInstance,
     RX_REPLICATION_META_INSTANCE_SCHEMA
 } from '../../replication-protocol';
