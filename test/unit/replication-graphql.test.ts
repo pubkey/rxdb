@@ -1019,7 +1019,6 @@ describe('replication-graphql.test.ts', () => {
                 console.dir(docsOnServer.map(d => d.id));
                 console.log('---------------------- 0.02');
 
-
                 const insertData = schemaObjects.humanWithTimestamp({
                     id: 'z-some-server'
                 });
@@ -1046,6 +1045,7 @@ describe('replication-graphql.test.ts', () => {
                     return docsOnClient.length === (amount * 2) + 2;
                 });
                 console.log('---------------------- 2');
+                await replicationState.awaitInSync();
                 await server.close();
                 await c.database.destroy();
             });
@@ -1105,6 +1105,7 @@ describe('replication-graphql.test.ts', () => {
                     return docsOnDb2.length === (amount * 2) + 2;
                 });
 
+                await replicationState.awaitInSync();
                 await server.close();
                 await c.database.destroy();
             });
