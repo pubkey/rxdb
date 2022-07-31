@@ -43,7 +43,6 @@ export type SyncOptionsGraphQL<RxDocType, CheckpointType> = {
     push?: GraphQLSyncPushOptions<RxDocType>;
     deletedFlag?: string; // default='_deleted'
     live?: boolean; // default=false
-    liveInterval?: number; // time in milliseconds
     retryTime?: number; // time in milliseconds
     autoStart?: boolean; // default=true
 };

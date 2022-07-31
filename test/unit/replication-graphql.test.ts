@@ -575,50 +575,6 @@ describe('replication-graphql.test.ts', () => {
                 // replication should be canceled when collection is destroyed
                 assert.ok(replicationState.isStopped());
             });
-            it('should also get documents that come in afterwards with interval .run()', async () => {
-                // TODO this test randomly fails some times
-                const [c, server] = await Promise.all([
-                    humansCollection.createHumanWithTimestamp(0),
-                    SpawnServer.spawn(getTestData(1))
-                ]);
-
-                const replicationState = c.syncGraphQL({
-                    url: server.url,
-                    pull: {
-                        batchSize,
-                        queryBuilder
-                    },
-                    live: true,
-                    liveInterval: 50,
-                    deletedFlag: 'deleted'
-                });
-
-                const errorSub = replicationState.error$.subscribe((err: any) => {
-                    console.error('got error while replication');
-                    console.dir(err);
-                });
-
-                await replicationState.awaitInitialReplication();
-
-                // add document & trigger pull
-                const doc = getTestData(1).pop();
-                if (!doc) {
-                    throw new Error('doc missing');
-                }
-                await server.setDocument(doc);
-
-                await AsyncTestUtil.waitUntil(async () => {
-                    const docs = await c.find().exec();
-                    if (docs.length > 2) {
-                        throw new Error('got too many documents');
-                    }
-                    return docs.length === 2;
-                }, 10 * 1000, 100);
-
-                server.close();
-                errorSub.unsubscribe();
-                c.database.destroy();
-            });
             it('should overwrite the local doc if the remote gets deleted', async () => {
                 const amount = 3;
 
@@ -697,7 +653,6 @@ describe('replication-graphql.test.ts', () => {
                     // this test takes too long, do not run in fast mode
                     return;
                 }
-                const liveInterval = 4000;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn()
@@ -710,8 +665,7 @@ describe('replication-graphql.test.ts', () => {
                         queryBuilder
                     },
                     deletedFlag: 'deleted',
-                    live: true,
-                    liveInterval: liveInterval,
+                    live: true
                 });
 
                 let timeoutId: any;
@@ -721,7 +675,7 @@ describe('replication-graphql.test.ts', () => {
                         reject(new Error('Timeout reached'));
                     },
                         // small buffer until the promise rejects
-                        liveInterval + 1000);
+                        1000);
                 });
 
                 const raceProm = Promise.race([
@@ -834,7 +788,6 @@ describe('replication-graphql.test.ts', () => {
                         queryBuilder: pushQueryBuilder
                     },
                     live: true,
-                    liveInterval: 1000 * 60, // height
                     deletedFlag: 'deleted'
                 });
 
@@ -1041,8 +994,7 @@ describe('replication-graphql.test.ts', () => {
                         queryBuilder
                     },
                     live: true,
-                    deletedFlag: 'deleted',
-                    liveInterval: 60 * 1000
+                    deletedFlag: 'deleted'
                 });
 
                 await replicationState.awaitInitialReplication();
@@ -1069,7 +1021,7 @@ describe('replication-graphql.test.ts', () => {
                     id: 'z-some-server'
                 });
                 await c.insert(insertData);
-                
+
                 console.log('---------------------- 0');
                 await replicationState.notifyAboutRemoteChange();
                 console.log('---------------------- 0.1');
@@ -1109,8 +1061,7 @@ describe('replication-graphql.test.ts', () => {
                         queryBuilder
                     },
                     live: true,
-                    deletedFlag: 'deleted',
-                    liveInterval: 60 * 1000
+                    deletedFlag: 'deleted'
                 });
 
                 await replicationState.awaitInitialReplication();
@@ -1338,8 +1289,7 @@ describe('replication-graphql.test.ts', () => {
                         }
                     },
                     live: true,
-                    deletedFlag: 'deleted',
-                    liveInterval: 60 * 1000
+                    deletedFlag: 'deleted'
                 });
 
 

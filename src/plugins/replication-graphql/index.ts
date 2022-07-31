@@ -115,7 +115,6 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         push,
         deletedFlag = '_deleted',
         live = false,
-        liveInterval = 1000 * 10, // in ms
         retryTime = 1000 * 5, // in ms
         autoStart = true,
     }: SyncOptionsGraphQL<RxDocType, CheckpointType>
@@ -255,7 +254,6 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         push: replicationPrimitivesPush,
         waitForLeadership,
         live,
-        liveInterval,
         retryTime,
         autoStart
     });

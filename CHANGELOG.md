@@ -29,6 +29,8 @@
 - CHANGE removed default usage of `md5` as default hashing. Use a faster non-cryptographic hash instead.
   - ADD option to pass a custom hash function when calling `createRxDatabase`.
 
+- Removed the `liveInterval` option of the replication. It was an edge case feature with wrong defaults. If you want to run the pull replication on internval, you can send a `RESYNC` event manually in a loop.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

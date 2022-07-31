@@ -86,12 +86,6 @@ export type ReplicationOptions<RxDocType, CheckpointType> = {
      */
     live?: boolean;
     /**
-     * Interval in milliseconds on when to run() again,
-     * Set this to 0 when you have a back-channel from your server
-     * that like a websocket that tells the client when to pull.
-     */
-    liveInterval?: number;
-    /**
      * Time in milliseconds
      */
     retryTime?: number;

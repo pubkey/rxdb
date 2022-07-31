@@ -1,8 +1,8 @@
 # Replication with GraphQL
 
-With RxDB you can do a two-way replication with a GraphQL endpoint. This allows you to replicate data from the server into the client-side database and then query and modify it in **realtime**.
+The GraphQL replication provides handlers for graphQL to run a [replication](./replication.md) with a GraphQL endpoint.
 
-When the user is offline, you still can use the data and later sync it with the server when the client is online again like in other [Offline-First](http://offlinefirst.org/) systems.
+
 
 ## Comparison to Couchdb-Sync
 
@@ -266,12 +266,7 @@ const replicationState = myCollection.syncGraphQL({
         pullQueryBuilder,
     },
     deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
-    live: true,
-    /**
-     * Because we use the subscriptions as notifiers,
-     * we can set the liveInterval to a very height value.
-     */
-    liveInterval: 60 * 1000
+    live: true
 });
 
 

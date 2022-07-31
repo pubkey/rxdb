@@ -55,7 +55,6 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
         active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
         initialReplicationComplete: new BehaviorSubject<boolean>(false) // true the initial replication-cycle is over
     };
-    public liveInterval: number;
     private startPromise: Promise<void>;
     constructor(
         /**
@@ -67,7 +66,6 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live?: boolean,
-        liveInterval?: number,
         public retryTime?: number,
         public autoStart?: boolean,
     ) {
@@ -98,20 +96,6 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
             this.callOnStart = res;
         });
         this.startPromise = startPromise;
-
-
-        const useLiveInterval = liveInterval !== void 0 ? ensureInteger(liveInterval) : 1000 * 10;
-        this.liveInterval = useLiveInterval;
-        if (this.liveInterval) {
-            (async () => {
-                while (!this.isStopped()) {
-                    await startPromise;
-                    this.remoteEvents$.next('RESYNC');
-                    await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
-                    await this.collection.promiseWait(useLiveInterval);
-                }
-            })();
-        }
     }
 
     private callOnStart: () => void = undefined as any;
@@ -307,7 +291,6 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         pull,
         push,
         live = false,
-        liveInterval = 1000 * 10,
         retryTime = 1000 * 5,
         waitForLeadership = true,
         autoStart = true,
@@ -326,11 +309,9 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         pull,
         push,
         live,
-        liveInterval,
         retryTime,
         autoStart
     );
-    ensureInteger(replicationState.liveInterval);
     /**
      * Always await this Promise to ensure that the current instance
      * is leader when waitForLeadership=true

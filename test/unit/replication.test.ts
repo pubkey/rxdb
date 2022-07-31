@@ -180,56 +180,6 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
-        it('should allow 0 value for liveInterval', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
-            const replicationState = replicateRxCollection({
-                collection: localCollection,
-                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: true,
-                liveInterval: 0,
-                pull: {
-                    handler: getPullHandler(remoteCollection)
-                },
-                push: {
-                    handler: getPushHandler(remoteCollection)
-                }
-            });
-            await replicationState.awaitInitialReplication();
-            await localCollection.database.destroy();
-            await remoteCollection.database.destroy();
-        });
-        it('should push data even if liveInterval is set to 0', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
-            let callProof: string | null = null;
-            const replicationState = replicateRxCollection({
-                collection: localCollection,
-                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: true,
-                liveInterval: 0,
-                autoStart: false,
-                push: {
-                    handler() {
-                        callProof = 'yeah';
-                        return Promise.resolve([]);
-                    }
-                },
-            });
-            // ensure proof is still null once replicateRxCollection()
-            assert.strictEqual(callProof, null, 'replicateRxCollection should not trigger a push on init.');
-
-            // insert a new doc to trigger a push
-            await localCollection.insert(schemaObjects.humanWithTimestamp());
-
-            await replicationState.start();
-            /**
-             * At some time,
-             * the push handler should be called
-             */
-            await waitUntil(() => callProof === 'yeah');
-
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
-        });
     });
     config.parallel('other', () => {
         describe('autoStart', () => {
