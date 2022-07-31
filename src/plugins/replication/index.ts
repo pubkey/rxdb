@@ -26,14 +26,15 @@ import type {
     WithDeleted
 } from '../../types';
 import {
-    ensureInteger,
     ensureNotFalsy,
     fastUnsecureHash,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE
 } from '../../util';
 import {
-    RxReplicationError, RxReplicationPullError, RxReplicationPushError
+    RxReplicationError,
+    RxReplicationPullError,
+    RxReplicationPushError
 } from './rx-replication-error';
 import {
     awaitRxStorageReplicationFirstInSync,

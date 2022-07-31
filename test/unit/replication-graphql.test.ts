@@ -996,7 +996,8 @@ describe('replication-graphql.test.ts', () => {
                     live: true,
                     deletedFlag: 'deleted'
                 });
-
+                
+                console.log('---------------------- 0');
                 await replicationState.awaitInitialReplication();
 
                 let docsOnServer = server.getDocuments();
@@ -1006,6 +1007,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnDb.length, amount * 2);
 
 
+                console.log('---------------------- 0.01');
                 // insert one on local and one on server
                 const doc: any = schemaObjects.humanWithTimestamp({
                     id: 'z-some-local'
@@ -1015,14 +1017,15 @@ describe('replication-graphql.test.ts', () => {
 
                 docsOnServer = server.getDocuments();
                 console.dir(docsOnServer.map(d => d.id));
+                console.log('---------------------- 0.02');
 
 
                 const insertData = schemaObjects.humanWithTimestamp({
                     id: 'z-some-server'
                 });
                 await c.insert(insertData);
+                console.log('---------------------- 0.03');
 
-                console.log('---------------------- 0');
                 await replicationState.notifyAboutRemoteChange();
                 console.log('---------------------- 0.1');
                 await replicationState.awaitInSync();
