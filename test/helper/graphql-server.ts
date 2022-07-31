@@ -88,7 +88,7 @@ export function spawn(
     const schema = buildSchema(`
         type Checkpoint {
             id: String!
-            updatedAt: Int!
+            updatedAt: Float!
         }
         type FeedResponse {
             documents: [Human!]!
@@ -96,8 +96,8 @@ export function spawn(
         }
         type Query {
             info: Int
-            feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): FeedResponse!
-            collectionFeedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, offset: Int, limit: Int!): CollectionFeedResponse!
+            feedForRxDBReplication(lastId: String!, minUpdatedAt: Float!, limit: Int!): FeedResponse!
+            collectionFeedForRxDBReplication(lastId: String!, minUpdatedAt: Float!, offset: Int, limit: Int!): CollectionFeedResponse!
             getAll: [Human!]!
         }
         type Mutation {
@@ -112,16 +112,16 @@ export function spawn(
             id: ID!,
             name: String!,
             age: Int!,
-            updatedAt: Int!,
+            updatedAt: Float!,
             deleted: Boolean!
         }
         type Human {
             id: ID!,
             name: String!,
             age: Int!,
-            updatedAt: Int!,
+            updatedAt: Float!,
             deleted: Boolean!,
-            deletedAt: Int
+            deletedAt: Float
         }
         type CollectionFeedResponse {
             collection: FeedResponse!
@@ -217,7 +217,7 @@ export function spawn(
 
                 documents = documents.filter((d: Human) => d.id !== doc.id);
 
-                doc.updatedAt = Math.ceil(new Date().getTime() / 1000);
+                doc.updatedAt = new Date().getTime();
 
                 // because javascript timer precission is not high enought,
                 // and we store seconds, not microseconds (because graphql does not allow big numbers)

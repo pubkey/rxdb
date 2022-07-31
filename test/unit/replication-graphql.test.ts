@@ -69,7 +69,7 @@ declare type WithDeleted<T> = T & { deleted: boolean };
 describe('replication-graphql.test.ts', () => {
     // for port see karma.config.js
     const browserServerUrl = 'http://localhost:18000' + GRAPHQL_PATH;
-    const getTimestamp = () => Math.round(new Date().getTime() / 1000);
+    const getTimestamp = () => new Date().getTime();
 
     const batchSize = 5 as const;
     const queryBuilder = (checkpoint: any) => {
@@ -297,7 +297,7 @@ describe('replication-graphql.test.ts', () => {
                         };
                     }
 
-                    const query = `query($lastId: String!, $updatedAt: Int!, $batchSize: Int!)
+                    const query = `query($lastId: String!, $updatedAt: Float!, $batchSize: Int!)
                     {
                         collectionFeedForRxDBReplication(lastId: $lastId, minUpdatedAt: $updatedAt, limit: $batchSize) {
                             collection {
@@ -415,7 +415,7 @@ describe('replication-graphql.test.ts', () => {
                         };
                     }
 
-                    const query = `query($lastId: String!, $updatedAt: Int!, $batchSize: Int!)
+                    const query = `query($lastId: String!, $updatedAt: Float!, $batchSize: Int!)
                     {
                         collectionFeedForRxDBReplication(lastId: $lastId, minUpdatedAt: $updatedAt, limit: $batchSize) {
                             collection {
