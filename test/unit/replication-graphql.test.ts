@@ -1031,7 +1031,8 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.awaitInSync();
 
                 console.log('---------------------- 0.2');
-                await AsyncTestUtil.waitUntil(() => {
+                await AsyncTestUtil.waitUntil(async () => {
+                    await replicationState.notifyAboutRemoteChange();
                     docsOnServer = server.getDocuments();
                     const shouldBe = (amount * 2) + 2;
                     console.dir(docsOnServer.map(d => d.id));
@@ -1039,6 +1040,7 @@ describe('replication-graphql.test.ts', () => {
                 });
                 console.log('---------------------- 1');
                 await AsyncTestUtil.waitUntil(async () => {
+                    await replicationState.notifyAboutRemoteChange();
                     const docsOnClient = await c.find().exec();
                     console.log('docsOnClient.length: ' + docsOnClient.length);
                     return docsOnClient.length === (amount * 2) + 2;
