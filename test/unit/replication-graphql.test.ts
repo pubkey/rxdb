@@ -977,7 +977,7 @@ describe('replication-graphql.test.ts', () => {
                 c.database.destroy();
             });
             it('should push and pull some docs; live: true', async () => {
-                const amount = batchSize * 1;
+                const amount = batchSize;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(amount),
                     SpawnServer.spawn(getTestData(amount))
@@ -996,7 +996,7 @@ describe('replication-graphql.test.ts', () => {
                     live: true,
                     deletedFlag: 'deleted'
                 });
-                
+
                 console.log('---------------------- 0');
                 await replicationState.awaitInitialReplication();
 
@@ -1034,6 +1034,7 @@ describe('replication-graphql.test.ts', () => {
                 await AsyncTestUtil.waitUntil(() => {
                     docsOnServer = server.getDocuments();
                     const shouldBe = (amount * 2) + 2;
+                    console.dir(docsOnServer.map(d => d.id));
                     return docsOnServer.length === shouldBe;
                 });
                 console.log('---------------------- 1');
