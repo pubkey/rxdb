@@ -1039,6 +1039,7 @@ describe('replication-graphql.test.ts', () => {
                 console.log('---------------------- 1');
                 await AsyncTestUtil.waitUntil(async () => {
                     const docsOnClient = await c.find().exec();
+                    console.log('docsOnClient.length: ' + docsOnClient.length);
                     return docsOnClient.length === (amount * 2) + 2;
                 });
                 console.log('---------------------- 2');
