@@ -397,6 +397,9 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
             ));
 
             return hadConflictWrites;
+        }).catch(unhandledError => {
+            state.events.error.next(unhandledError);
+            return false;
         });
 
         return persistenceQueue;

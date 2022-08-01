@@ -139,7 +139,9 @@ describe('replication-graphql.test.ts', () => {
         });
     };
     describe('node', () => {
-        if (!config.platform.isNode()) return;
+        if (!config.platform.isNode()) {
+            return;
+        }
         const REQUIRE_FUN = require;
         addPouchPlugin(REQUIRE_FUN('pouchdb-adapter-http'));
         const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
@@ -318,7 +320,7 @@ describe('replication-graphql.test.ts', () => {
                                     name
                                     age
                                     updatedAt
-                                    deleted
+                                    _deleted: deleted
                                 }
                                 checkpoint {
                                     id
@@ -441,39 +443,6 @@ describe('replication-graphql.test.ts', () => {
                 const docs = await c.find().exec();
                 assert.strictEqual(docs.length, amount);
 
-                server.close();
-                c.database.destroy();
-            });
-            it('should not save pulled documents that do not match the schema', async () => {
-                return; // TODO
-                const testData = getTestData(1);
-                const [c, server] = await Promise.all([
-                    humansCollection.createHumanWithTimestamp(0),
-                    SpawnServer.spawn(testData)
-                ]);
-                const replicationState = c.syncGraphQL({
-                    url: server.url,
-                    pull: {
-                        batchSize,
-                        queryBuilder: pullQueryBuilder,
-                        modifier: (docData: any) => {
-                            // delete name which is required in the schema
-                            delete docData.name;
-                            return docData;
-                        }
-                    }
-                });
-
-                const errors: any[] = [];
-                const errorSub = replicationState.error$.subscribe((err: any) => {
-                    errors.push(err);
-                });
-                await AsyncTestUtil.waitUntil(() => errors.length === 1);
-
-                const firstError = errors[0];
-                assert.strictEqual(firstError.code, 'VD2');
-
-                errorSub.unsubscribe();
                 server.close();
                 c.database.destroy();
             });

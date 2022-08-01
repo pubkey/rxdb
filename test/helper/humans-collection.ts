@@ -58,11 +58,12 @@ export async function create(
 
 export async function createBySchema<RxDocumentType = {}>(
     schema: RxJsonSchema<RxDocumentType>,
-    name = 'human'
+    name = 'human',
+    storage = config.storage.getStorage()
 ): Promise<RxCollection<RxDocumentType, {}, {}>> {
     const db = await createRxDatabase<{ [prop: string]: RxCollection<RxDocumentType> }>({
         name: randomCouchString(10),
-        storage: config.storage.getStorage(),
+        storage,
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
@@ -338,12 +339,13 @@ export async function createPrimary(
 export async function createHumanWithTimestamp(
     amount = 0,
     name = randomCouchString(10),
-    multiInstance = true
+    multiInstance = true,
+    storage = config.storage.getStorage()
 ): Promise<RxCollection<schemaObjects.HumanWithTimestampDocumentType>> {
 
     const db = await createRxDatabase<{ humans: RxCollection<schemaObjects.HumanWithTimestampDocumentType> }>({
         name,
-        storage: config.storage.getStorage(),
+        storage,
         multiInstance,
         eventReduce: true,
         ignoreDuplicate: true

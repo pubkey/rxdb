@@ -398,7 +398,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                     useCheckpoint
                 ));
             });
-        });
+        }).catch(unhandledError => state.events.error.next(unhandledError));
         return persistenceQueue;
     }
 }

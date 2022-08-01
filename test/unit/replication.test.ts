@@ -13,7 +13,12 @@ import {
 
 import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
+
+import {
+    wrappedValidateAjvStorage
+} from '../../plugins/validate-ajv';
 
 import {
     RxCollection,
@@ -128,8 +133,6 @@ describe('replication.test.js', () => {
         });
         it('should allow asynchronous push and pull modifiers', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
-
-
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -156,18 +159,64 @@ describe('replication.test.js', () => {
 
             await replicationState.awaitInitialReplication();
 
-
             const docsLocal = await localCollection.find().exec();
             const docsRemote = await remoteCollection.find().exec();
 
-            const pullModifiedLocal = docsLocal.filter(d => d.name ==='pull-modified');
+            const pullModifiedLocal = docsLocal.filter(d => d.name === 'pull-modified');
             assert.strictEqual(pullModifiedLocal.length, 5);
 
-            const pushModifiedRemote = docsRemote.filter(d => d.name ==='push-modified');
+            const pushModifiedRemote = docsRemote.filter(d => d.name === 'push-modified');
             assert.strictEqual(pushModifiedRemote.length, 5);
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
+        });
+        it('should not save pulled documents that do not match the schema', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 5 });
+
+            /**
+             * Use collection with different schema
+             * to provoke validation errors.
+             */
+            const otherSchema = clone(schemas.humanWithTimestamp);
+            console.dir(otherSchema);
+            otherSchema.properties.age.maximum = 0;
+            const otherSchemaCollection = await humansCollection.createBySchema(
+                otherSchema,
+                undefined,
+                wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage()
+                })
+            );
+
+            const replicationState = replicateRxCollection({
+                collection: otherSchemaCollection as any,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            const errors: any[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await replicationState.awaitInitialReplication();
+
+            await wait(config.isFastMode() ? 0 : 100);
+
+            const docsLocal = await otherSchemaCollection.find().exec();
+            assert.strictEqual(docsLocal.length, 0);
+
+
+            assert.strictEqual(errors.length, 1);
+            assert.ok(errors[0].message.includes('does not match schema'));
+
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+            otherSchemaCollection.database.destroy();
         });
     });
     config.parallel('live replication', () => {

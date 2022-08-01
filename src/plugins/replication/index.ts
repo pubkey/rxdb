@@ -229,6 +229,11 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
             }
         });
         this.subs.push(
+            this.internalReplicationState.events.error.subscribe(err => {
+                this.subjects.error.next(err);
+            })
+        );
+        this.subs.push(
             this.internalReplicationState.events.processed.down
                 .subscribe(row => this.subjects.received.next(row.document))
         );

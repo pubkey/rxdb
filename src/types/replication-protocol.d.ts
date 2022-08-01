@@ -1,5 +1,6 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput } from './conflict-handling';
+import { RxError, RxTypeError } from './rx-error';
 import { BulkWriteRow, RxDocumentData, WithDeleted } from './rx-storage';
 import type {
     RxStorageInstance
@@ -190,7 +191,12 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
          */
         active: {
             [direction in RxStorageReplicationDirection]: BehaviorSubject<boolean>;
-        }
+        },
+        /**
+         * All errors that would otherwhise be unhandled,
+         * get emitted here.
+         */
+        error: Subject<RxError | RxTypeError>
     };
 
 
