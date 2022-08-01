@@ -142,6 +142,8 @@ export const ERROR_MESSAGES = {
     RC3: 'RxCollection.syncCouchDB() Do not use a collection\'s pouchdb as remote, use the collection instead',
     RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication when live: true',
     RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication if multiInstance because the replication might run on another instance',
+    RC_PULL: 'RxReplication pull handler throwed an error - see .errors for more details',
+    RC_PUSH: 'RxReplication push handler throwed an error - see .errors for more details',
 
     // plugins/dev-mode/check-schema.js
     SC1: 'fieldnames do not match the regex',
@@ -197,9 +199,9 @@ export const ERROR_MESSAGES = {
 
     // plugins/replication-graphql.js
     GQL1: 'GraphQL replication: cannot find sub schema by key',
-    GQL2: 'GraphQL replication: unknown errors occurred in replication pull - see innerErrors for more details',
+    // removed in 13.0.0, use RC_PULL instead - GQL2: 'GraphQL replication: unknown errors occurred in replication pull - see innerErrors for more details',
     GQL3: 'GraphQL replication: pull returns more documents then batchSize',
-    GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
+    // removed in 13.0.0, use RC_PUSH instead - GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
 
     // plugins/replication/
     REP1: 'Replication: _deleted field not provided',

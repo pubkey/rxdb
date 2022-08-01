@@ -21,7 +21,8 @@ import {
     RxJsonSchema,
     randomCouchString,
     ensureNotFalsy,
-    RxReplicationWriteToMasterRow
+    RxReplicationWriteToMasterRow,
+    RxError
 } from '../../';
 
 import {
@@ -39,9 +40,6 @@ import {
 import {
     wrappedKeyCompressionStorage
 } from '../../plugins/key-compression';
-import {
-    RxReplicationError
-} from '../../plugins/replication';
 import {
     wrappedKeyEncryptionStorage
 } from '../../plugins/encryption';
@@ -97,11 +95,6 @@ describe('replication-graphql.test.ts', () => {
             }
         }`;
         const variables = {};
-
-
-        console.log('query builder response:');
-        console.dir(query);
-
         return Promise.resolve({
             query,
             variables
@@ -141,11 +134,6 @@ describe('replication-graphql.test.ts', () => {
                 return useRow;
             })
         };
-
-        console.log('pushQueryBuilder() outzput:');
-        console.dir(query);
-        console.log(JSON.stringify(variables, null, 4));
-
         return Promise.resolve({
             query,
             variables
@@ -1365,30 +1353,7 @@ describe('replication-graphql.test.ts', () => {
                     first()
                 ).toPromise();
 
-                if (!error || (error as RxReplicationError<any, any>).type !== 'pull') {
-                    console.dir(error);
-                    throw error;
-                }
-
-                replicationState.cancel();
-                c.database.destroy();
-            });
-            it('should contain include replication action data in pull request failure', async () => {
-                const c = await humansCollection.createHumanWithTimestamp(0);
-                const replicationState = c.syncGraphQL({
-                    url: ERROR_URL,
-                    pull: {
-                        batchSize,
-                        queryBuilder
-                    }
-                });
-
-                const error = await replicationState.error$.pipe(
-                    first()
-                ).toPromise();
-
-                assert.strictEqual(ensureNotFalsy(error).type, 'pull');
-
+                assert.strictEqual(ensureNotFalsy(error).parameters.direction, 'pull');
                 replicationState.cancel();
                 c.database.destroy();
             });
@@ -1410,17 +1375,13 @@ describe('replication-graphql.test.ts', () => {
                     ).toPromise()
                 );
 
-                if (error.type === 'pull') {
-                    throw new Error('wrong error type');
-                }
-
                 console.log('error:');
                 console.dir(error);
                 console.log(JSON.stringify(error, null, 4));
-                const firstRow = ensureNotFalsy(error).pushRows[0];
+                const firstRow = ensureNotFalsy(error).parameters.pushRows[0];
                 const newDocState = firstRow.newDocumentState;
 
-                assert.strictEqual(ensureNotFalsy(error).type, 'push');
+                assert.strictEqual(ensureNotFalsy(error).parameters.direction, 'push');
                 assert.strictEqual(newDocState.id, localDoc.id);
                 assert.strictEqual(newDocState.name, localDoc.name);
                 assert.strictEqual(newDocState.age, localDoc.age);
@@ -1822,7 +1783,14 @@ describe('replication-graphql.test.ts', () => {
                     live: true
                 });
                 const replicationError = await replicationState.error$.pipe(first()).toPromise();
+
+                console.log('---------------------');
+                console.dir(replicationError);
+                console.log(JSON.stringify(replicationError, null, 4));
+
+
                 assert.notStrictEqual(ensureNotFalsy(replicationError).message, '[object Object]');
+
 
                 server.close();
                 await c.database.destroy();

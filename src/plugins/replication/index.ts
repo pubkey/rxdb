@@ -18,11 +18,13 @@ import type {
     ReplicationPushOptions,
     RxCollection,
     RxDocumentData,
+    RxError,
     RxReplicationState,
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
+    RxTypeError,
     WithDeleted
 } from '../../types';
 import {
@@ -32,16 +34,12 @@ import {
     PROMISE_RESOLVE_TRUE
 } from '../../util';
 import {
-    RxReplicationError,
-    RxReplicationPullError,
-    RxReplicationPushError
-} from './rx-replication-error';
-import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,
     replicateRxStorageInstance,
     RX_REPLICATION_META_INSTANCE_SCHEMA
 } from '../../replication-protocol';
+import { newRxError } from '../../rx-error';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationStateBase<any, any>[]> = new WeakMap();
@@ -51,7 +49,7 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
     public readonly subjects = {
         received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
         send: new Subject<WithDeleted<RxDocType>>(), // all documents that are send to the endpoint
-        error: new Subject<RxReplicationError<RxDocType, CheckpointType>>(), // all errors that are received from the endpoint, emits new Error() objects
+        error: new Subject<RxError | RxTypeError>(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
         active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
         initialReplicationComplete: new BehaviorSubject<boolean>(false) // true the initial replication-cycle is over
@@ -159,17 +157,14 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                                 bulkSize
                             );
                             done = true;
-                        } catch (err: any | Error | RxReplicationError<RxDocType, CheckpointType>) {
-                            if (err instanceof RxReplicationPullError) {
-                                this.subjects.error.next(err);
-                            } else {
-                                const emitError: RxReplicationError<RxDocType, CheckpointType> = new RxReplicationPullError(
-                                    err.message,
-                                    checkpoint,
-                                    err
-                                );
-                                this.subjects.error.next(emitError);
-                            }
+                        } catch (err: any | Error | Error[]) {
+                            const emitError = newRxError('RC_PULL', {
+                                checkpoint,
+                                error: Array.isArray(err) ? undefined : err,
+                                errors: Array.isArray(err) ? err : undefined,
+                                direction: 'pull'
+                            });
+                            this.subjects.error.next(emitError);
                             await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
                         }
                     }
@@ -187,17 +182,14 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                         try {
                             result = await this.push.handler(rows);
                             done = true;
-                        } catch (err: any | Error | RxReplicationError<RxDocType, CheckpointType>) {
-                            if (err instanceof RxReplicationPushError) {
-                                this.subjects.error.next(err);
-                            } else {
-                                const emitError: RxReplicationPushError<RxDocType> = new RxReplicationPushError(
-                                    err.message,
-                                    rows,
-                                    err
-                                );
-                                this.subjects.error.next(emitError);
-                            }
+                        } catch (err: any | Error | Error[]) {
+                            const emitError = newRxError('RC_PUSH', {
+                                pushRows: rows,
+                                error: Array.isArray(err) ? undefined : err,
+                                errors: Array.isArray(err) ? err : undefined,
+                                direction: 'push'
+                            });
+                            this.subjects.error.next(emitError);
                             await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
                         }
                     }
@@ -329,5 +321,3 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
     });
     return replicationState as any;
 }
-
-export * from './rx-replication-error';

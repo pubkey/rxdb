@@ -34,6 +34,8 @@
 - CHANGE use `Float` instead of `Int` to represent timestamps in GraphQL.
 - REMOVED support for the `deletedFlag` in the GraphQL replication. Use a [GraphQL alias](https://devinschulz.com/rename-fields-by-using-aliases-in-graphql/) instead.
 
+- REPLACED `RxReplicationPullError` and `RxReplicationPushError` with normal `RxError` like in the rest of the RxDB code.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

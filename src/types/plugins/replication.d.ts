@@ -1,11 +1,12 @@
 import type { Observable } from 'rxjs';
 import type { RxReplicationStateBase } from '../../plugins/replication';
-import { RxReplicationError } from '../../plugins/replication/rx-replication-error';
 import type {
     InternalStoreDocType,
     RxCollection,
     RxDocumentData,
+    RxError,
     RxReplicationWriteToMasterRow,
+    RxTypeError,
     WithDeleted
 } from '../../types';
 
@@ -58,7 +59,7 @@ export type ReplicationPushOptions<RxDocType> = {
 export type RxReplicationState<RxDocType, CheckpointType> = RxReplicationStateBase<RxDocType, CheckpointType> & {
     readonly received$: Observable<RxDocumentData<RxDocType>>;
     readonly send$: Observable<WithDeleted<RxDocType>>;
-    readonly error$: Observable<RxReplicationError<RxDocType, CheckpointType>>;
+    readonly error$: Observable<RxError | RxTypeError>;
     readonly canceled$: Observable<any>;
     readonly active$: Observable<boolean>;
 }

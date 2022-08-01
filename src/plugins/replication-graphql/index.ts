@@ -18,9 +18,6 @@ import {
 } from './helper';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
-import {
-    overwritable
-} from '../../overwritable';
 import type {
     RxCollection,
     RxPlugin,
@@ -34,12 +31,9 @@ import {
     RxReplicationStateBase
 } from '../replication';
 import {
-    RxReplicationError,
-    RxReplicationPullError,
-    RxReplicationPushError
-} from '../replication/rx-replication-error';
-import {
     addRxPlugin,
+    RxError,
+    RxTypeError,
     SyncOptionsGraphQL,
     WithDeleted
 } from '../../index';
@@ -48,7 +42,7 @@ export class RxGraphQLReplicationState<RxDocType> {
 
     public received$: Observable<RxDocumentData<RxDocType>>;
     public send$: Observable<any> = undefined as any;
-    public error$: Observable<RxReplicationError<RxDocType, any>> = undefined as any;
+    public error$: Observable<RxError | RxTypeError> = undefined as any;
     public canceled$: Observable<boolean> = undefined as any;
     public active$: Observable<boolean> = undefined as any;
 
@@ -142,20 +136,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 const pullGraphQL = await pull.queryBuilder(lastPulledCheckpoint);
                 const result = await mutateableClientState.client.query(pullGraphQL.query, pullGraphQL.variables);
                 if (result.errors) {
-                    console.log('pull error:');
-                    console.log(JSON.stringify(result, null, 4));
-                    if (typeof result.errors === 'string') {
-                        throw new RxReplicationPullError(
-                            result.errors,
-                            lastPulledCheckpoint,
-                        );
-                    } else {
-                        throw new RxReplicationPullError(
-                            overwritable.tunnelErrorMessage('GQL2'),
-                            lastPulledCheckpoint,
-                            result.errors
-                        );
-                    }
+                    throw result.errors;
                 }
 
                 const dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
@@ -218,18 +199,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 const result = await mutateableClientState.client.query(pushObj.query, pushObj.variables);
 
                 if (result.errors) {
-                    if (typeof result.errors === 'string') {
-                        throw new RxReplicationPushError(
-                            result.errors,
-                            modifiedPushRows
-                        );
-                    } else {
-                        throw new RxReplicationPushError(
-                            overwritable.tunnelErrorMessage('GQL4'),
-                            modifiedPushRows,
-                            result.errors
-                        );
-                    }
+                    throw result.errors;
                 }
                 const dataPath = Object.keys(result.data)[0];
                 const data: any = objectPath.get(result.data, dataPath);
