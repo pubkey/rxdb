@@ -25,8 +25,7 @@ export class RxReplicationPushError<RxDocType> extends Error {
         public readonly message: string,
         /**
          * The documents that failed to be pushed.
-         * Typed as 'any' because might contain the custom deletedFlag
-         * and might be modified by the push modifier.
+         * Typed as 'any' because they might be modified by the push modifier.
          */
         public readonly pushRows: RxReplicationWriteToMasterRow<RxDocType>[],
         public readonly innerErrors?: any

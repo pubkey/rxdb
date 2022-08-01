@@ -25,7 +25,7 @@ export function pullQueryBuilderFromRxSchema(
     const queryName = prefixes.feed + ucCollectionName;
 
     const outputFields = Object.keys(schema.properties).filter(k => !(input.ignoreOutputKeys as string[]).includes(k));
-    outputFields.push(input.deletedFlag);
+    // outputFields.push(input.deletedFlag);
 
     const builder: RxGraphQLReplicationPullQueryBuilder<any> = (doc: any) => {
 

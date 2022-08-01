@@ -14,9 +14,7 @@ import {
 
 import {
     DEFAULT_MODIFIER,
-    GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX,
-    swapDeletedFlagToDeleted,
-    swapDeletedToDeletedFlag
+    GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX
 } from './helper';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -113,7 +111,6 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         waitForLeadership = true,
         pull,
         push,
-        deletedFlag = '_deleted',
         live = false,
         retryTime = 1000 * 5, // in ms
         autoStart = true,
@@ -177,7 +174,6 @@ export function syncGraphQL<RxDocType, CheckpointType>(
 
                 const modified: any[] = (await Promise.all(
                     docsData.map((doc: WithDeleted<RxDocType>) => {
-                        doc = swapDeletedFlagToDeleted(deletedFlag, doc);
                         return pullModifier(doc);
                     })
                 )).filter(doc => !!doc);
@@ -197,12 +193,8 @@ export function syncGraphQL<RxDocType, CheckpointType>(
             ) {
                 let modifiedPushRows: RxReplicationWriteToMasterRow<any>[] = await Promise.all(
                     rows.map(async (row) => {
-                        let useRow: RxReplicationWriteToMasterRow<any> = {
-                            newDocumentState: swapDeletedToDeletedFlag(deletedFlag, row.newDocumentState),
-                            assumedMasterState: row.assumedMasterState ? swapDeletedToDeletedFlag(deletedFlag, row.assumedMasterState) : undefined
-                        };
-                        useRow = await pushModifier(useRow);
-                        return useRow ? useRow : null;
+                        row = await pushModifier(row);
+                        return row ? row : null;
                     })
                 ) as any;
 
@@ -249,7 +241,6 @@ export function syncGraphQL<RxDocType, CheckpointType>(
     const replicationState = replicateRxCollection<RxDocType, CheckpointType>({
         replicationIdentifier: GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(url),
         collection,
-        deletedFlag,
         pull: replicationPrimitivesPull,
         push: replicationPrimitivesPush,
         waitForLeadership,

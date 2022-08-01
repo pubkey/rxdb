@@ -31,6 +31,9 @@
 
 - Removed the `liveInterval` option of the replication. It was an edge case feature with wrong defaults. If you want to run the pull replication on internval, you can send a `RESYNC` event manually in a loop.
 
+- CHANGE use `Float` instead of `Int` to represent timestamps in GraphQL.
+- REMOVED support for the `deletedFlag` in the GraphQL replication. Use a [GraphQL alias](https://devinschulz.com/rename-fields-by-using-aliases-in-graphql/) instead.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

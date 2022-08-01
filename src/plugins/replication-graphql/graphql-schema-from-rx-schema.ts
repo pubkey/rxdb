@@ -21,7 +21,6 @@ export type GraphQLParamType = 'ID' | 'ID!' | 'String' | 'String!' | 'Int' | 'In
 
 export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
     schema: RxJsonSchema<any>;
-    deletedFlag: string;
     // which keys must be send to the feed-query to get the newer documents?
     feedKeys: string[];
     ignoreInputKeys?: string[];
@@ -170,10 +169,10 @@ export function fillUpOptionals(
     input.schema = schema;
 
     // add deleted flag to schema
-    schema.properties[input.deletedFlag] = {
-        type: 'boolean'
-    };
-    (schema.required as string[]).push(input.deletedFlag);
+    // schema.properties[input.deletedFlag] = {
+    //     type: 'boolean'
+    // };
+    // (schema.required as string[]).push(input.deletedFlag);
 
     // fill up prefixes
     if (!input.prefixes) {
