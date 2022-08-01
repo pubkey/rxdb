@@ -21,8 +21,7 @@ import {
     RxJsonSchema,
     randomCouchString,
     ensureNotFalsy,
-    RxReplicationWriteToMasterRow,
-    RxError
+    RxReplicationWriteToMasterRow
 } from '../../';
 
 import {
@@ -70,7 +69,7 @@ describe('replication-graphql.test.ts', () => {
     const getTimestamp = () => new Date().getTime();
 
     const batchSize = 5 as const;
-    const queryBuilder = (checkpoint: any) => {
+    const pullQueryBuilder = (checkpoint: any) => {
         if (!checkpoint) {
             checkpoint = {
                 id: '',
@@ -249,7 +248,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: false
                 });
@@ -277,7 +276,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: false
                 });
@@ -373,7 +372,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: false
                 });
@@ -398,7 +397,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     }
                 });
                 await replicationState.awaitInitialReplication();
@@ -422,7 +421,7 @@ describe('replication-graphql.test.ts', () => {
                     url: ERROR_URL,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     }
                 });
                 replicationState.replicationState.retryTime = 100;
@@ -456,7 +455,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder,
+                        queryBuilder: pullQueryBuilder,
                         modifier: (docData: any) => {
                             // delete name which is required in the schema
                             delete docData.name;
@@ -489,7 +488,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: true
                 });
@@ -530,7 +529,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: true
                 });
@@ -570,7 +569,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: true
                 });
@@ -603,7 +602,7 @@ describe('replication-graphql.test.ts', () => {
                     url: ERROR_URL,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: true
                 });
@@ -816,7 +815,7 @@ describe('replication-graphql.test.ts', () => {
                     },
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: false
                 });
@@ -844,7 +843,7 @@ describe('replication-graphql.test.ts', () => {
                     return pushQueryBuilder(doc);
                 };
                 const asyncQueryBuilder = (doc: any): Promise<any> => {
-                    return queryBuilder(doc);
+                    return pullQueryBuilder(doc);
                 };
 
                 const replicationState = c.syncGraphQL({
@@ -856,45 +855,6 @@ describe('replication-graphql.test.ts', () => {
                     pull: {
                         batchSize,
                         queryBuilder: asyncQueryBuilder
-                    },
-                    live: false
-                });
-
-                await replicationState.awaitInitialReplication();
-
-                const docsOnServer = server.getDocuments();
-                assert.strictEqual(docsOnServer.length, amount * 2);
-
-                const docsOnDb = await c.find().exec();
-                assert.strictEqual(docsOnDb.length, amount * 2);
-
-                server.close();
-                c.database.destroy();
-            });
-            it('should allow asynchronous push and pull modifiers', async () => {
-                const amount = batchSize * 4;
-                const testData = getTestData(amount);
-                const [c, server] = await Promise.all([
-                    humansCollection.createHumanWithTimestamp(amount),
-                    SpawnServer.spawn(testData)
-                ]);
-
-                const asyncModifier = async (d: any) => {
-                    await wait(10);
-                    return d;
-                };
-
-                const replicationState = c.syncGraphQL({
-                    url: server.url,
-                    push: {
-                        batchSize,
-                        queryBuilder: pushQueryBuilder,
-                        modifier: asyncModifier
-                    },
-                    pull: {
-                        batchSize,
-                        queryBuilder: queryBuilder,
-                        modifier: asyncModifier
                     },
                     live: false
                 });
@@ -925,7 +885,7 @@ describe('replication-graphql.test.ts', () => {
                     },
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: true
                 });
@@ -998,7 +958,7 @@ describe('replication-graphql.test.ts', () => {
                     },
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: true
                 });
@@ -1080,7 +1040,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     push: {
                         batchSize,
@@ -1092,7 +1052,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     push: {
                         batchSize,
@@ -1123,82 +1083,6 @@ describe('replication-graphql.test.ts', () => {
                 await db1.destroy();
                 await db2.destroy();
             });
-            it('should push and pull with modifier filter', async () => {
-                const amount = batchSize * 1;
-
-                const serverData = getTestData(amount);
-                const serverDoc = getTestData(1)[0];
-                serverDoc.id = 'server-doc';
-                serverDoc.age = 101;
-                serverData.push(serverDoc);
-                const server = await SpawnServer.spawn(serverData);
-
-                const name = randomCouchString(10);
-                const db = await createRxDatabase({
-                    name,
-                    storage: config.storage.getStorage(),
-                });
-                const collections = await db.addCollections({
-                    humans: {
-                        schema: schemas.humanWithTimestamp
-                    }
-                });
-                const collection = collections.humans;
-
-                for (let i = 0; i < amount; i++) {
-                    const insertDocsData = schemaObjects.humanWithTimestamp();
-                    insertDocsData.name = insertDocsData.name + '-client';
-                    await collection.insert(insertDocsData);
-                }
-                const localDoc = schemaObjects.humanWithTimestamp();
-                localDoc.name = localDoc.name + '-client-age-too-big';
-                localDoc.age = 102;
-                await collection.insert(localDoc);
-
-                const replicationState = collection.syncGraphQL({
-                    url: server.url,
-                    push: {
-                        batchSize,
-                        queryBuilder: pushQueryBuilder,
-                        modifier: (row: RxReplicationWriteToMasterRow<HumanWithTimestampDocumentType>) => {
-                            if (row.newDocumentState.age > 100) {
-                                return null;
-                            }
-                            return row;
-                        }
-                    },
-                    pull: {
-                        batchSize,
-                        queryBuilder,
-                        modifier: (doc: any) => {
-                            if (doc.age > 100) {
-                                return null;
-                            }
-                            return doc;
-                        }
-                    },
-                    live: false
-                });
-                const errSub = replicationState.error$.subscribe((err) => {
-                    console.dir(err);
-                    throw new Error('The replication threw an error');
-                });
-
-                await replicationState.awaitInitialReplication();
-
-                console.log('################');
-
-                const docsOnServer = server.getDocuments();
-                console.dir(docsOnServer);
-                const docsOnDb = await collection.find().exec();
-
-                assert.strictEqual(docsOnServer.length, 2 * amount + 1);
-                assert.strictEqual(docsOnDb.length, 2 * amount + 1);
-
-                errSub.unsubscribe();
-                server.close();
-                db.destroy();
-            });
             it('should not do more requests then needed', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -1222,7 +1106,7 @@ describe('replication-graphql.test.ts', () => {
                             console.log('pull query builder!');
                             console.dir(args);
                             pullCount++;
-                            return queryBuilder(args);
+                            return pullQueryBuilder(args);
                         }
                     },
                     live: true
@@ -1288,7 +1172,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     }
                 });
 
@@ -1345,7 +1229,7 @@ describe('replication-graphql.test.ts', () => {
                     url: ERROR_URL,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     }
                 });
 
@@ -1378,7 +1262,7 @@ describe('replication-graphql.test.ts', () => {
                 console.log('error:');
                 console.dir(error);
                 console.log(JSON.stringify(error, null, 4));
-                const firstRow = ensureNotFalsy(error).parameters.pushRows[0];
+                const firstRow = (error as any).parameters.pushRows[0];
                 const newDocState = firstRow.newDocumentState;
 
                 assert.strictEqual(ensureNotFalsy(error).parameters.direction, 'push');
@@ -1583,7 +1467,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     }
                 });
                 await replicationState.awaitInitialReplication();
@@ -1629,7 +1513,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     }
                 });
                 await replicationState.awaitInitialReplication();
@@ -1707,7 +1591,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     headers: {
                         Authorization: 'password'
@@ -1733,7 +1617,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     headers: {
                         Authorization: 'password'
@@ -1775,7 +1659,7 @@ describe('replication-graphql.test.ts', () => {
                     url: server.url,
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     headers: {
                         Authorization: 'wrong-password'
@@ -1880,7 +1764,7 @@ describe('replication-graphql.test.ts', () => {
                     },
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: true
                 });
@@ -1933,7 +1817,7 @@ describe('replication-graphql.test.ts', () => {
                     },
                     pull: {
                         batchSize,
-                        queryBuilder
+                        queryBuilder: pullQueryBuilder
                     },
                     live: true
                 });
@@ -2007,7 +1891,7 @@ describe('replication-graphql.test.ts', () => {
                     },
                     pull: {
                         batchSize,
-                        queryBuilder,
+                        queryBuilder: pullQueryBuilder,
                     },
                     live: true
                 });

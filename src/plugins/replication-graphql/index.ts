@@ -13,7 +13,6 @@ import {
 } from '../../util';
 
 import {
-    DEFAULT_MODIFIER,
     GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX
 } from './helper';
 
@@ -108,13 +107,9 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         live = false,
         retryTime = 1000 * 5, // in ms
         autoStart = true,
-    }: SyncOptionsGraphQL<RxDocType, CheckpointType>
+    }: SyncOptionsGraphQL<CheckpointType>
 ): RxGraphQLReplicationState<RxDocType> {
     const collection = this;
-
-    // fill in defaults for pull & push
-    const pullModifier = pull && pull.modifier ? pull.modifier : DEFAULT_MODIFIER;
-    const pushModifier = push && push.modifier ? push.modifier : DEFAULT_MODIFIER;
 
     /**
      * We use this object to store the GraphQL client
@@ -145,21 +140,8 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 const docsData: WithDeleted<RxDocType>[] = data.documents;
                 const newCheckpoint = data.checkpoint;
 
-                // optimization shortcut, do not proceed if there are no documents.
-                if (docsData.length === 0) {
-                    return {
-                        documents: [],
-                        checkpoint: lastPulledCheckpoint
-                    };
-                }
-
-                const modified: any[] = (await Promise.all(
-                    docsData.map((doc: WithDeleted<RxDocType>) => {
-                        return pullModifier(doc);
-                    })
-                )).filter(doc => !!doc);
                 return {
-                    documents: modified,
+                    documents: docsData,
                     checkpoint: newCheckpoint
                 }
             }
@@ -172,30 +154,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
-                let modifiedPushRows: RxReplicationWriteToMasterRow<any>[] = await Promise.all(
-                    rows.map(async (row) => {
-                        row = await pushModifier(row);
-                        return row ? row : null;
-                    })
-                ) as any;
-
-                /**
-                 * The push modifier might have returned null instead of a document
-                 * which means that these documents must not be pushed and filtered out.
-                 */
-                modifiedPushRows = modifiedPushRows.filter(row => !!row) as any;
-
-                /**
-                 * Optimization shortcut.
-                 * If we have no more documents to push,
-                 * because all were filtered out by the modifier,
-                 * we can quit here.
-                 */
-                if (modifiedPushRows.length === 0) {
-                    return [];
-                }
-
-                const pushObj = await push.queryBuilder(modifiedPushRows);
+                const pushObj = await push.queryBuilder(rows);
                 const result = await mutateableClientState.client.query(pushObj.query, pushObj.variables);
 
                 if (result.errors) {

@@ -6,6 +6,7 @@
 
 import assert from 'assert';
 import {
+    clone,
     wait,
     waitUntil
 } from 'async-test-util';
@@ -121,6 +122,49 @@ describe('replication.test.js', () => {
                 docsLocal.length,
                 10
             );
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+        it('should allow asynchronous push and pull modifiers', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    handler: getPullHandler(remoteCollection),
+                    modifier: async (doc) => {
+                        await wait(0);
+                        doc = clone(doc);
+                        doc.name = 'pull-modified';
+                        return doc;
+                    }
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                    modifier: async (doc) => {
+                        await wait(0);
+                        doc = clone(doc);
+                        doc.name = 'push-modified';
+                        return doc;
+                    }
+                }
+            });
+
+            await replicationState.awaitInitialReplication();
+
+
+            const docsLocal = await localCollection.find().exec();
+            const docsRemote = await remoteCollection.find().exec();
+
+            const pullModifiedLocal = docsLocal.filter(d => d.name ==='pull-modified');
+            assert.strictEqual(pullModifiedLocal.length, 5);
+
+            const pushModifiedRemote = docsRemote.filter(d => d.name ==='push-modified');
+            assert.strictEqual(pushModifiedRemote.length, 5);
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();

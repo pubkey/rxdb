@@ -17,7 +17,7 @@ export type RxGraphQLReplicationPullQueryBuilder<CheckpointType> = (
     latestPulledCheckpoint: CheckpointType | null
 ) => RxGraphQLReplicationQueryBuilderResponse;
 
-export interface GraphQLSyncPullOptions<RxDocType, CheckpointType> {
+export interface GraphQLSyncPullOptions<CheckpointType> {
     queryBuilder: RxGraphQLReplicationPullQueryBuilder<CheckpointType>;
     /**
      * Amount of documents that the remote will send in one request.
@@ -26,21 +26,19 @@ export interface GraphQLSyncPullOptions<RxDocType, CheckpointType> {
      * that are not replicated.
      */
     batchSize: number;
-    modifier?: (doc: RxDocType | any) => Promise<any> | any;
     dataPath?: string;
 }
-export interface GraphQLSyncPushOptions<RxDocType> {
+export interface GraphQLSyncPushOptions {
     queryBuilder: RxGraphQLReplicationPushQueryBuilder;
-    modifier?: (row: RxReplicationWriteToMasterRow<RxDocType>) => Promise<any> | any;
     batchSize?: number;
 }
 
-export type SyncOptionsGraphQL<RxDocType, CheckpointType> = {
+export type SyncOptionsGraphQL<CheckpointType> = {
     url: string;
     headers?: { [k: string]: string }; // send with all requests to the endpoint
     waitForLeadership?: boolean; // default=true
-    pull?: GraphQLSyncPullOptions<RxDocType, CheckpointType>;
-    push?: GraphQLSyncPushOptions<RxDocType>;
+    pull?: GraphQLSyncPullOptions<CheckpointType>;
+    push?: GraphQLSyncPushOptions;
     deletedFlag?: string; // default='_deleted'
     live?: boolean; // default=false
     retryTime?: number; // time in milliseconds

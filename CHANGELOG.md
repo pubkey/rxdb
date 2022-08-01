@@ -21,7 +21,7 @@
 - REMOVED support for temporary documents [see here](https://github.com/pubkey/rxdb/pull/3777#issuecomment-1120669088)
 - REMOVED RxDatabase.broadcastChannel The broadcast channel has been moved out of the RxDatabase and is part of the RxStorage. So it is not longer exposed via `RxDatabase.broadcastChannel`.
 
-- In the RxDB internal `_meta.lwt` field, we now use 2 decimal number of the unix timestamp in milliseconds.
+- In the RxDB internal `_meta.lwt` field, we now use 2 decimals number of the unix timestamp in milliseconds.
 
 
 - REMOVE RxStorageStatics `.hash` and `.hashKey`
@@ -35,6 +35,7 @@
 - REMOVED support for the `deletedFlag` in the GraphQL replication. Use a [GraphQL alias](https://devinschulz.com/rename-fields-by-using-aliases-in-graphql/) instead.
 
 - REPLACED `RxReplicationPullError` and `RxReplicationPushError` with normal `RxError` like in the rest of the RxDB code.
+- REMOVED the option to filter out replication documents with the push/pull modifiers [#2552](https://github.com/pubkey/rxdb/issues/2552) because this does not work with the new replication protocol.
 
 <!-- ADD new changes here! -->
 

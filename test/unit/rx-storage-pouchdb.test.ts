@@ -115,7 +115,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
             await waitUntil(() => flattenEvents(emitted).length === 1);
 
-            const first = flattenEvents(emitted)[0];
+            const first: any = flattenEvents(emitted)[0];
             assert.deepStrictEqual(
                 first.change.operation,
                 'INSERT'

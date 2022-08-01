@@ -7,6 +7,7 @@
 
 import {
     BehaviorSubject,
+    mergeMap,
     Subject,
     Subscription
 } from 'rxjs';
@@ -30,6 +31,7 @@ import type {
 import {
     ensureNotFalsy,
     fastUnsecureHash,
+    flatClone,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE
 } from '../../util';
@@ -40,6 +42,7 @@ import {
     RX_REPLICATION_META_INSTANCE_SCHEMA
 } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
+import { DEFAULT_MODIFIER } from './replication-helper';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationStateBase<any, any>[]> = new WeakMap();
@@ -113,6 +116,10 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
             return
         }
 
+        // fill in defaults for pull & push
+        const pullModifier = this.pull && this.pull.modifier ? this.pull.modifier : DEFAULT_MODIFIER;
+        const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
+
         const database = this.collection.database;
         this.metaInstance = await this.collection.database.storage.createStorageInstance({
             databaseName: database.name,
@@ -131,7 +138,18 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
             identifier: 'rx-replication-' + this.replicationIdentifierHash,
             conflictHandler: this.collection.conflictHandler,
             replicationHandler: {
-                masterChangeStream$: this.remoteEvents$.asObservable(),
+                masterChangeStream$: this.remoteEvents$.asObservable().pipe(
+                    mergeMap(async (ev) => {
+                        if (ev === 'RESYNC') {
+                            return ev;
+                        }
+                        const useEv = flatClone(ev);
+                        useEv.documents = await Promise.all(
+                            ev.documents.map(d => pullModifier(d))
+                        );
+                        return useEv;
+                    })
+                ),
                 masterChangesSince: async (
                     checkpoint: CheckpointType,
                     bulkSize: number
@@ -160,15 +178,19 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                         } catch (err: any | Error | Error[]) {
                             const emitError = newRxError('RC_PULL', {
                                 checkpoint,
-                                error: Array.isArray(err) ? undefined : err,
-                                errors: Array.isArray(err) ? err : undefined,
+                                errors: Array.isArray(err) ? err : [err],
                                 direction: 'pull'
                             });
                             this.subjects.error.next(emitError);
                             await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
                         }
                     }
-                    return ensureNotFalsy(result);
+
+                    const useResult = flatClone(result);
+                    useResult.documents = await Promise.all(
+                        result.documents.map(d => pullModifier(d))
+                    );
+                    return useResult;
                 },
                 masterWrite: async (
                     rows: RxReplicationWriteToMasterRow<RxDocType>[]
@@ -177,16 +199,25 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
                         return [];
                     }
                     let done = false;
+                    const useRows = await Promise.all(
+                        rows.map(async (row) => {
+                            row.newDocumentState = await pushModifier(row.newDocumentState);
+                            if (row.assumedMasterState) {
+                                row.assumedMasterState = await pushModifier(row.assumedMasterState);
+                            }
+                            return row;
+                        })
+                    );
+
                     let result: WithDeleted<RxDocType>[] = {} as any;
                     while (!done) {
                         try {
-                            result = await this.push.handler(rows);
+                            result = await this.push.handler(useRows);
                             done = true;
                         } catch (err: any | Error | Error[]) {
                             const emitError = newRxError('RC_PUSH', {
                                 pushRows: rows,
-                                error: Array.isArray(err) ? undefined : err,
-                                errors: Array.isArray(err) ? err : undefined,
+                                errors: Array.isArray(err) ? err : [err],
                                 direction: 'push'
                             });
                             this.subjects.error.next(emitError);

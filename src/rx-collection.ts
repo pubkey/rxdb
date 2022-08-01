@@ -734,7 +734,7 @@ export class RxCollectionBase<
     /**
      * sync with a GraphQL endpoint
      */
-    syncGraphQL<CheckpointType>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType> {
+    syncGraphQL<CheckpointType>(_options: SyncOptionsGraphQL<CheckpointType>): RxGraphQLReplicationState<RxDocumentType> {
         throw pluginMissing('replication-graphql');
     }
 

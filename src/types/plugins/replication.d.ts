@@ -2,6 +2,7 @@ import type { Observable } from 'rxjs';
 import type { RxReplicationStateBase } from '../../plugins/replication';
 import type {
     InternalStoreDocType,
+    MaybePromise,
     RxCollection,
     RxDocumentData,
     RxError,
@@ -18,11 +19,6 @@ export type InternalStoreReplicationPullDocType<RxDocType> = InternalStoreDocTyp
     lastPulledDoc: RxDocumentData<RxDocType>;
 }>;
 
-export type PullRunResult =
-    'ok' |      // pull was sucessfull 
-    'error' |   // pull errored and must be retried
-    'drop';     // pulled document where dropped because a local write happened in between -> re-run the whole run() cycle
-
 export type ReplicationPullHandlerResult<RxDocType> = {
     checkpoint: any;
     documents: WithDeleted<RxDocType>[];
@@ -35,6 +31,14 @@ export type ReplicationPullOptions<RxDocType, CheckpointType> = {
      * from the remote actor.
      */
     handler: ReplicationPullHandler<RxDocType, CheckpointType>;
+
+    /**
+     * A modifier that runs on all documents that are pulled,
+     * before they are used by RxDB.
+     * - the ones from the pull handler
+     * - the ones from the pull stream
+     */
+    modifier?: (docData: any) => MaybePromise<WithDeleted<RxDocType>>;
 };
 
 /**
@@ -50,6 +54,14 @@ export type ReplicationPushOptions<RxDocType> = {
      * On error, all documents are send again at later time.
      */
     handler: ReplicationPushHandler<RxDocType>;
+
+
+    /**
+     * A modifier that runs on all pushed documents before
+     * they are send into the push handler.
+     */
+    modifier?: (docData: WithDeleted<RxDocType>) => MaybePromise<any>;
+
     /**
      * How many local changes to process at once.
      */
