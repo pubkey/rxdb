@@ -147,7 +147,7 @@ await db.addCollections({
 });
 
 // insert a document
-db.heroes.insert({ name: 'Bob' });                          
+await db.heroes.insert({ name: 'Bob' });                          
 ```
 
 You can continue with the [quickstart here](https://rxdb.info/quickstart.html).
