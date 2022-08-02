@@ -71,7 +71,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         waitForLeadership = true,
         pull,
         push,
-        live = false,
+        live = true,
         retryTime = 1000 * 5, // in ms
         autoStart = true,
     }: SyncOptionsGraphQL<RxDocType, CheckpointType>

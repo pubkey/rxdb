@@ -151,10 +151,10 @@ const replicationState = await replicateRxCollection({
      */
     replicationIdentifier: 'my-rest-replication-to-https://example.com/api/sync',
     /**
-     * By default it will do a one-time replication.
-     * By settings live: true the replication will continuously
-     * replicate all changes.
-     * (optional), default is false.
+     * By default it will do an ongoing realtime replicatino.
+     * By settings live: false the replication will run once until the local state
+     * is in sync with the remote state, then it will cancel itself.
+     * (optional), default is true.
      */
     live: true,
     /**

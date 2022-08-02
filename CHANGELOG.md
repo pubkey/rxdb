@@ -36,6 +36,7 @@
 
 - REPLACED `RxReplicationPullError` and `RxReplicationPushError` with normal `RxError` like in the rest of the RxDB code.
 - REMOVED the option to filter out replication documents with the push/pull modifiers [#2552](https://github.com/pubkey/rxdb/issues/2552) because this does not work with the new replication protocol.
+- CHANGE default of replication `live` to be set to `true`. Because most people want to do a live replication, not a one time replication.
 
 <!-- ADD new changes here! -->
 

@@ -36,8 +36,10 @@ export type ReplicationPullOptions<RxDocType, CheckpointType> = {
      * that are happening on the backend.
      * Emits an document bulk together with the latest checkpoint of these documents.
      * Also can emit a 'RESYNC' event when the client was offline and is online again.
+     * 
+     * Not required for non-live replication.
      */
-    stream$: Observable<RxReplicationPullStreamItem<RxDocType, CheckpointType>>;
+    stream$?: Observable<RxReplicationPullStreamItem<RxDocType, CheckpointType>>;
 
     /**
      * Amount of documents that the remote will send in one request.

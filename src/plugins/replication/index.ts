@@ -336,7 +336,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         collection,
         pull,
         push,
-        live = false,
+        live = true,
         retryTime = 1000 * 5,
         waitForLeadership = true,
         autoStart = true,
