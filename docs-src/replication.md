@@ -149,7 +149,7 @@ const replicationState = await replicateRxCollection({
      * If you replicate with a remote server, it is recommended to put the
      * server url into the replicationIdentifier.
      */
-    replicationIdentifier: 'my-rest-replication-to-https://example.com/rest',
+    replicationIdentifier: 'my-rest-replication-to-https://example.com/api/sync',
     /**
      * By default it will do a one-time replication.
      * By settings live: true the replication will continuously
@@ -172,10 +172,10 @@ const replicationState = await replicateRxCollection({
      */
     waitForLeadership: true,
     /**
-     * Trigger or not a first replication
-     * if `false`, the first replication should be trigged by : 
-     *  - `replicationState.run()`
-     *  - a write to non-[local](./rx-local-document.md) document
+     * If this is set to false,
+     * the replication will not start automatically
+     * but will wait for replicationState.start() being called.
+     * (optional), default is true
      */
     autoStart: true,
     /**
@@ -243,7 +243,9 @@ const replicationState = await replicateRxCollection({
                  */
                 documents: documentsFromRemote,
                 /**
-                 * Must be true if there might be more newer changes on the remote.
+                 * The last checkpoint of the returned documents.
+                 * On the next call to the pull handler,
+                 * this checkoint will be passed as 'lastCheckpoint'
                  */
                 checkpoint: documentsFromRemote.length === 0 ? lastCheckpoint : {
                     id: lastOfArray(documentsFromRemote).id,
@@ -261,6 +263,7 @@ const replicationState = await replicateRxCollection({
         /**
          * Stream of the backend document writes.
          * See below.
+         * You only need a stream$ when you have set live=true
          */
         stream$: pullStream$.asObservable()
     },
@@ -274,7 +277,7 @@ const replicationState = await replicateRxCollection({
  */
 const pullStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 let firstOpen = true;
-function connectSocket(){
+function connectSocket() {
     const socket = new WebSocket('wss://example.com/api/sync/stream');
     /**
      * When the backend sends a new batch of documents+checkpoint,
@@ -348,3 +351,88 @@ replicationState.error$.subscribe((error) => {
 ## Security
 
 Be aware that client side clocks can never be trusted. When you have a client-backend replication, the backend should overwrite the `updatedAt` timestamp or use another field, when it receives the change from the client.
+
+## RxReplicationState
+
+The function `replicateRxCollection()` returns a `RxReplicationState` that can be used to manage and observe the replication.
+
+### Observable
+
+To observe the replication, the `RxReplicationState` has some `Observable` properties:
+
+```ts
+// emits each document that was recieved from the remote
+myRxReplicationState.received$.subscribe(doc => console.dir(doc));
+
+// emits each document that was send to the remote
+myRxReplicationState.send$.subscribe(doc => console.dir(doc));
+
+// emits all errors that happen when running the push- & pull-handlers.
+myRxReplicationState.error$.subscribe(error => console.dir(error));
+
+// emits true when the replication was canceled, false when not.
+myRxReplicationState.canceled$.subscribe(bool => console.dir(bool));
+
+// emits true when a replication cycle is running, false when not.
+myRxReplicationState.active$.subscribe(bool => console.dir(bool));
+```
+
+### awaitInitialReplication()
+
+With `awaitInitialReplication()` you can await the initial replication that is done when a full replication cycle was finished for the first time.
+
+**WARNING:** When `multiInstance: true` and `waitForLeadership: true` and another tab is already running the replication, `awaitInitialReplication()` will not resolve until the other tab is closed and the replication starts in this tab.
+
+
+```ts
+await myRxReplicationState.awaitInitialReplication();
+```
+
+### awaitInSync()
+
+Returns a `Promise` that resolves when:
+- `awaitInitialReplication()` has emitted.
+- All local data is replicated with the remote.
+- No replication cycle is running or in retry-state.
+
+**WARNING:** When `multiInstance: true` and `waitForLeadership: true` and another tab is already running the replication, `awaitInSync()` will not resolve until the other tab is closed and the replication starts in this tab.
+
+```ts
+await myRxReplicationState.awaitInSync();
+```
+
+
+### reSync()
+
+Triggers a `RESYNC` cycle where the replication goes into `Checkpoint iteration` until the client is in sync with the backend. Used in unit tests or when no proper `pull.stream$` can be implemented so that the client only knows that something has been changed but not what.
+
+```ts
+myRxReplicationState.reSync();
+```
+
+If your backend is not capable of sending events to the client at all, you could run `reSync()` in an interval so that the client will automatically fetch server changes after some time at least.
+
+
+```ts
+// trigger RESYNC each 10 seconds.
+setInterval(() => myRxReplicationState.reSync(), 10 * 1000);
+```
+
+
+
+### cancel()
+
+Cancels the replication. Returns a promise that resolved when everything has been cleaned up.
+
+```ts
+await myRxReplicationState.cancel()
+```
+
+
+### isStopped()
+
+Returns `true` if the replication is stopped. This can be if a non-live replication is finished or a replication got canceled.
+
+```js
+replicationState.isStopped(); // true/false
+```

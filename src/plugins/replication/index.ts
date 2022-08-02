@@ -13,7 +13,6 @@ import {
     Subscription
 } from 'rxjs';
 import type {
-    DocumentsWithCheckpoint,
     ReplicationOptions,
     ReplicationPullHandlerResult,
     ReplicationPullOptions,
@@ -21,6 +20,7 @@ import type {
     RxCollection,
     RxDocumentData,
     RxError,
+    RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
     RxStorageInstanceReplicationState,
@@ -113,15 +113,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
     public metaInstance?: RxStorageInstance<RxStorageReplicationMeta, any, {}, any>;
-    public remoteEvents$: Subject<
-        DocumentsWithCheckpoint<RxDocType, CheckpointType> |
-        'RESYNC'
-    > = new Subject();
+    public remoteEvents$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>> = new Subject();
 
 
     public async start(): Promise<void> {
         if (this.isStopped()) {
-            return
+            return;
         }
 
         // fill in defaults for pull & push
@@ -251,7 +248,15 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     this.subjects.send.next(writeToMasterRow.newDocumentState);
                 })
         );
-
+        if (
+            this.pull &&
+            this.pull.stream$ &&
+            this.live
+        ) {
+            this.subs.push(
+                this.pull.stream$.subscribe(ev => this.remoteEvents$.next(ev))
+            );
+        }
 
         if (!this.live) {
             await awaitRxStorageReplicationFirstInSync(this.internalReplicationState);
