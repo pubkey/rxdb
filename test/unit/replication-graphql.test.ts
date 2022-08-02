@@ -426,7 +426,7 @@ describe('replication-graphql.test.ts', () => {
                         queryBuilder: pullQueryBuilder
                     }
                 });
-                replicationState.replicationState.retryTime = 100;
+                replicationState.retryTime = 100;
 
 
                 // on the first error, we switch out the graphql-client
@@ -473,7 +473,7 @@ describe('replication-graphql.test.ts', () => {
                 }
                 await server.setDocument(doc);
 
-                await replicationState.notifyAboutRemoteChange();
+                await replicationState.reSync();
 
                 await waitUntil(async () => {
                     const docs = await c.find().exec();
@@ -514,7 +514,7 @@ describe('replication-graphql.test.ts', () => {
 
                 await server.setDocument(firstDoc);
 
-                await replicationState.notifyAboutRemoteChange();
+                await replicationState.reSync();
                 await replicationState.awaitInSync();
 
                 const docs2 = await c.find().exec();
@@ -548,7 +548,7 @@ describe('replication-graphql.test.ts', () => {
                 await server.setDocument(localDoc);
 
 
-                await replicationState.notifyAboutRemoteChange();
+                await replicationState.reSync();
                 await replicationState.awaitInSync();
 
                 const docsAfter = await c.find().exec();
@@ -887,13 +887,13 @@ describe('replication-graphql.test.ts', () => {
                 await c.insert(insertData);
                 console.log('---------------------- 0.03');
 
-                await replicationState.notifyAboutRemoteChange();
+                await replicationState.reSync();
                 console.log('---------------------- 0.1');
                 await replicationState.awaitInSync();
 
                 console.log('---------------------- 0.2');
                 await AsyncTestUtil.waitUntil(async () => {
-                    await replicationState.notifyAboutRemoteChange();
+                    await replicationState.reSync();
                     docsOnServer = server.getDocuments();
                     const shouldBe = (amount * 2) + 2;
                     console.dir(docsOnServer.map(d => d.id));
@@ -901,7 +901,7 @@ describe('replication-graphql.test.ts', () => {
                 });
                 console.log('---------------------- 1');
                 await AsyncTestUtil.waitUntil(async () => {
-                    await replicationState.notifyAboutRemoteChange();
+                    await replicationState.reSync();
                     const docsOnClient = await c.find().exec();
                     console.log('docsOnClient.length: ' + docsOnClient.length);
                     return docsOnClient.length === (amount * 2) + 2;
@@ -956,7 +956,7 @@ describe('replication-graphql.test.ts', () => {
                      * we have to do replicationState.run() each time
                      * because pouchdb takes a while until the update_seq is increased
                      */
-                    await replicationState.notifyAboutRemoteChange();
+                    await replicationState.reSync();
                     const docsOnServer2 = server.getDocuments();
                     const shouldBe = (amount * 2) + 2;
                     return docsOnServer2.length === shouldBe;
@@ -1088,7 +1088,7 @@ describe('replication-graphql.test.ts', () => {
                 console.log('.................... 1');
 
                 function getStats() {
-                    return ensureNotFalsy(replicationState.replicationState.internalReplicationState).stats;
+                    return ensureNotFalsy(replicationState.internalReplicationState).stats;
                 }
 
 
@@ -1432,7 +1432,7 @@ describe('replication-graphql.test.ts', () => {
                 testData[0].name = 'Alice';
                 const server = await SpawnServer.spawn(testData);
 
-                const replicationState: RxGraphQLReplicationState<HumanWithTimestampDocumentType> = collection.syncGraphQL({
+                const replicationState: RxGraphQLReplicationState<HumanWithTimestampDocumentType, any> = collection.syncGraphQL({
                     url: server.url,
                     pull: {
                         batchSize,
@@ -1605,7 +1605,7 @@ describe('replication-graphql.test.ts', () => {
                 replicationState.setHeaders({
                     'Authorization': '1234'
                 });
-                await replicationState.notifyAboutRemoteChange();
+                await replicationState.reSync();
                 await replicationState.awaitInSync();
 
                 const docs = await c.find().exec();
@@ -1800,7 +1800,7 @@ describe('replication-graphql.test.ts', () => {
                 await collection.insert(testData);
 
                 // sync
-                await replicationState.notifyAboutRemoteChange();
+                await replicationState.reSync();
                 await replicationState.awaitInSync();
 
                 assert.strictEqual(server.getDocuments().length, 1);
@@ -1814,7 +1814,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docAfter.age, newAge);
 
                 // check server
-                await replicationState.notifyAboutRemoteChange();
+                await replicationState.reSync();
                 await replicationState.awaitInSync();
 
                 await AsyncTestUtil.waitUntil(() => {
@@ -1874,7 +1874,7 @@ describe('replication-graphql.test.ts', () => {
                 await collection.insert(testData);
 
                 // sync
-                await replicationState.notifyAboutRemoteChange();
+                await replicationState.reSync();
                 await replicationState.awaitInSync();
 
                 assert.strictEqual(server.getDocuments().length, 1);
@@ -1892,7 +1892,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docAfter.age, newAge);
 
                 // check server
-                await replicationState.notifyAboutRemoteChange();
+                await replicationState.reSync();
                 await replicationState.awaitInSync();
 
                 await AsyncTestUtil.waitUntil(() => {

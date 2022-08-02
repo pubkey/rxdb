@@ -80,7 +80,7 @@ To use the replication you first have to ensure that:
 
 - **documents are never deleted, instead the `_deleted` field is set to `true`.**
 
-  This is needed so that the deletion state of a document exists in the database and can be replicated with other instances.
+  This is needed so that the deletion state of a document exists in the database and can be replicated with other instances. If your backend uses a different field to mark deleted documents, you have to transform the data in the push/pull handlers or with the modifiers.
 
 
 For example if your documents look like this:
@@ -143,3 +143,29 @@ you need to import the [leader election plugin](./leader-election.md) so that Rx
 
  * At the moment it is not possible to replicate [attachments](./rx-attachment.md), make a pull request if you need this.
  * It is not possible to do a multi-master replication, like with CouchDB. RxDB always assumes that the backend is the single source of truth.
+
+
+## Error handling
+
+When sending a document to the remote fails for any reason, RxDB will send it again in a later point in time.
+This happens for **all** errors. The document write could have already reached the remote instance and be processed, while only the answering fails.
+The remote instance must be designed to handle this properly and to not crash on duplicate data transmissions. 
+Depending on your use case, it might be ok to just write the duplicate document data again.
+But for a more resilent error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-send data.
+
+Also the replication has an `.error$` stream that emits all `RxError` objects that arise during replication.
+Notice that these errors are contain an inner `.parameters.errors` field that contains the original error. Also they contain a `.parameters.direction` field that indicates if the error was thrown during `pull` or `push`. You can use these to properly handle errors. For example when the client is outdated, the server might respond with a `426 Upgrade Required` error code that can then be used to force a page reload.
+
+
+```ts
+replicationState.error$.subscribe((error) => {
+    if(
+        error.parameters.errors &&
+        error.parameters.errors[0] &&
+        error.parameters.errors[0].code === 426
+    ) {
+        // client is outdated -> enforce a page reload
+        location.reload();
+    }
+});
+```

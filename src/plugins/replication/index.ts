@@ -8,6 +8,7 @@
 import {
     BehaviorSubject,
     mergeMap,
+    Observable,
     Subject,
     Subscription
 } from 'rxjs';
@@ -20,7 +21,6 @@ import type {
     RxCollection,
     RxDocumentData,
     RxError,
-    RxReplicationState,
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
     RxStorageInstanceReplicationState,
@@ -45,9 +45,9 @@ import { newRxError } from '../../rx-error';
 import { DEFAULT_MODIFIER } from './replication-helper';
 
 
-export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationStateBase<any, any>[]> = new WeakMap();
+export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
 
-export class RxReplicationStateBase<RxDocType, CheckpointType> {
+export class RxReplicationState<RxDocType, CheckpointType> {
     public readonly subs: Subscription[] = [];
     public readonly subjects = {
         received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
@@ -57,6 +57,14 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
         active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
         initialReplicationComplete: new BehaviorSubject<boolean>(false) // true the initial replication-cycle is over
     };
+
+
+    readonly received$: Observable<RxDocumentData<RxDocType>> = this.subjects.received.asObservable();
+    readonly send$: Observable<WithDeleted<RxDocType>> = this.subjects.send.asObservable();
+    readonly error$: Observable<RxError | RxTypeError> = this.subjects.error.asObservable();
+    readonly canceled$: Observable<any> = this.subjects.canceled.asObservable();
+    readonly active$: Observable<boolean> = this.subjects.active.asObservable();
+
     private startPromise: Promise<void>;
     constructor(
         /**
@@ -283,6 +291,10 @@ export class RxReplicationStateBase<RxDocType, CheckpointType> {
         return true;
     }
 
+    reSync() {
+        this.remoteEvents$.next('RESYNC');
+    }
+
     async cancel(): Promise<any> {
         if (this.isStopped()) {
             return PROMISE_RESOLVE_FALSE;
@@ -332,7 +344,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
             replicationIdentifier
         ].join('|')
     );
-    const replicationState = new RxReplicationStateBase<RxDocType, CheckpointType>(
+    const replicationState = new RxReplicationState<RxDocType, CheckpointType>(
         replicationIdentifierHash,
         collection,
         pull,
@@ -341,19 +353,29 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         retryTime,
         autoStart
     );
+
+
+    startReplicationOnLeaderShip(waitForLeadership, replicationState);
+    return replicationState as any;
+}
+
+
+export function startReplicationOnLeaderShip(
+    waitForLeadership: boolean,
+    replicationState: RxReplicationState<any, any>
+) {
     /**
-     * Always await this Promise to ensure that the current instance
-     * is leader when waitForLeadership=true
-     */
-    const mustWaitForLeadership = waitForLeadership && collection.database.multiInstance;
-    const waitTillRun: Promise<any> = mustWaitForLeadership ? collection.database.waitForLeadership() : PROMISE_RESOLVE_TRUE;
-    waitTillRun.then(() => {
+        * Always await this Promise to ensure that the current instance
+        * is leader when waitForLeadership=true
+        */
+    const mustWaitForLeadership = waitForLeadership && replicationState.collection.database.multiInstance;
+    const waitTillRun: Promise<any> = mustWaitForLeadership ? replicationState.collection.database.waitForLeadership() : PROMISE_RESOLVE_TRUE;
+    return waitTillRun.then(() => {
         if (replicationState.isStopped()) {
             return;
         }
-        if (autoStart) {
+        if (replicationState.autoStart) {
             replicationState.start();
         }
     });
-    return replicationState as any;
 }

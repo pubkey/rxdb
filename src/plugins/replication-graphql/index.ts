@@ -3,9 +3,6 @@
  * you can use it to sync collections with remote graphql endpoint
  */
 
-import type {
-    Observable
-} from 'rxjs';
 import GraphQLClient from 'graphql-client';
 import objectPath from 'object-path';
 import {
@@ -20,72 +17,42 @@ import { RxDBLeaderElectionPlugin } from '../leader-election';
 import type {
     RxCollection,
     RxPlugin,
-    RxDocumentData,
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow
 } from '../../types';
 import {
-    replicateRxCollection,
-    RxReplicationStateBase
+    RxReplicationState,
+    startReplicationOnLeaderShip
 } from '../replication';
 import {
     addRxPlugin,
-    RxError,
-    RxTypeError,
     SyncOptionsGraphQL,
     WithDeleted
 } from '../../index';
 
-export class RxGraphQLReplicationState<RxDocType> {
-
-    public received$: Observable<RxDocumentData<RxDocType>>;
-    public send$: Observable<any> = undefined as any;
-    public error$: Observable<RxError | RxTypeError> = undefined as any;
-    public canceled$: Observable<boolean> = undefined as any;
-    public active$: Observable<boolean> = undefined as any;
+export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxReplicationState<RxDocType, CheckpointType> {
 
     constructor(
-        /**
-         * The GraphQL replication uses the replication primitives plugin
-         * internally. So we need that replicationState.
-         */
-        public readonly replicationState: RxReplicationStateBase<RxDocType, any>, // TODO type checkpoint
-        public readonly collection: RxCollection<RxDocType>,
         public readonly url: string,
-        public readonly clientState: { client: any }
+        public readonly clientState: { client: any },
+        public readonly replicationIdentifierHash: string,
+        public readonly collection: RxCollection<RxDocType>,
+        public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
+        public readonly push?: ReplicationPushOptions<RxDocType>,
+        public readonly live?: boolean,
+        public retryTime?: number,
+        public autoStart?: boolean
     ) {
-        // map observables from replicationState to this
-        this.received$ = replicationState.subjects.received.asObservable();
-        this.send$ = replicationState.subjects.send.asObservable();
-        this.error$ = replicationState.subjects.error.asObservable();
-        this.canceled$ = replicationState.subjects.canceled.asObservable();
-        this.active$ = replicationState.subjects.active.asObservable();
-    }
-
-
-    isStopped(): boolean {
-        return this.replicationState.isStopped();
-    }
-
-    awaitInitialReplication(): Promise<void> {
-        return this.replicationState.awaitInitialReplication();
-    }
-
-    awaitInSync() {
-        return this.replicationState.awaitInSync();
-    }
-
-    start(): Promise<void> {
-        return this.replicationState.start();
-    }
-
-    notifyAboutRemoteChange() {
-        this.replicationState.remoteEvents$.next('RESYNC');
-    }
-
-    cancel(): Promise<any> {
-        return this.replicationState.cancel();
+        super(
+            replicationIdentifierHash,
+            collection,
+            pull,
+            push,
+            live,
+            retryTime,
+            autoStart
+        );
     }
 
     setHeaders(headers: { [k: string]: string }): void {
@@ -107,8 +74,8 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         live = false,
         retryTime = 1000 * 5, // in ms
         autoStart = true,
-    }: SyncOptionsGraphQL<CheckpointType>
-): RxGraphQLReplicationState<RxDocType> {
+    }: SyncOptionsGraphQL<RxDocType, CheckpointType>
+): RxGraphQLReplicationState<RxDocType, CheckpointType> {
     const collection = this;
 
     /**
@@ -144,13 +111,14 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                     documents: docsData,
                     checkpoint: newCheckpoint
                 }
-            }
+            },
+            batchSize: pull.batchSize,
+            modifier: pull.modifier
         }
     }
     let replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined;
     if (push) {
         replicationPrimitivesPush = {
-            batchSize: push.batchSize,
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
@@ -163,28 +131,26 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 const dataPath = Object.keys(result.data)[0];
                 const data: any = objectPath.get(result.data, dataPath);
                 return data;
-            }
+            },
+            batchSize: push.batchSize,
+            modifier: push.modifier
         };
     }
 
-    const replicationState = replicateRxCollection<RxDocType, CheckpointType>({
-        replicationIdentifier: GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(url),
+
+    const graphqlReplicationState = new RxGraphQLReplicationState(
+        url,
+        mutateableClientState,
+        GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(url),
         collection,
-        pull: replicationPrimitivesPull,
-        push: replicationPrimitivesPush,
-        waitForLeadership,
+        replicationPrimitivesPull,
+        replicationPrimitivesPush,
         live,
         retryTime,
         autoStart
-    });
-
-    const graphqlReplicationState = new RxGraphQLReplicationState(
-        replicationState,
-        collection,
-        url,
-        mutateableClientState
     );
 
+    startReplicationOnLeaderShip(waitForLeadership, graphqlReplicationState);
     return graphqlReplicationState;
 }
 

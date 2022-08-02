@@ -1,13 +1,9 @@
-import type { Observable } from 'rxjs';
-import type { RxReplicationStateBase } from '../../plugins/replication';
 import type {
     InternalStoreDocType,
     MaybePromise,
     RxCollection,
     RxDocumentData,
-    RxError,
     RxReplicationWriteToMasterRow,
-    RxTypeError,
     WithDeleted
 } from '../../types';
 
@@ -31,6 +27,15 @@ export type ReplicationPullOptions<RxDocType, CheckpointType> = {
      * from the remote actor.
      */
     handler: ReplicationPullHandler<RxDocType, CheckpointType>;
+
+    /**
+     * Amount of documents that the remote will send in one request.
+     * If the response contains less then [batchSize] documents,
+     * RxDB will assume there are no more changes on the backend
+     * that are not replicated.
+     * [default=100]
+     */
+    batchSize?: number;
 
     /**
      * A modifier that runs on all documents that are pulled,
@@ -68,13 +73,6 @@ export type ReplicationPushOptions<RxDocType> = {
     batchSize?: number;
 }
 
-export type RxReplicationState<RxDocType, CheckpointType> = RxReplicationStateBase<RxDocType, CheckpointType> & {
-    readonly received$: Observable<RxDocumentData<RxDocType>>;
-    readonly send$: Observable<WithDeleted<RxDocType>>;
-    readonly error$: Observable<RxError | RxTypeError>;
-    readonly canceled$: Observable<any>;
-    readonly active$: Observable<boolean>;
-}
 
 export type ReplicationOptions<RxDocType, CheckpointType> = {
     /**
