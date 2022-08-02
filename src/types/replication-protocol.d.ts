@@ -63,6 +63,15 @@ export type DocumentsWithCheckpoint<RxDocType, CheckpointType> = {
     checkpoint: CheckpointType;
 }
 
+
+export type RxReplicationPullStreamItem<RxDocType, MasterCheckpointType> = DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> |
+    /**
+     * Emit this when the masterChangeStream$ might have missed out
+     * some events because the fork lost the connection to the master.
+     * Like when the user went offline and reconnects.
+     */
+    'RESYNC';
+
 /**
  * The replication handler contains all logic
  * that is required by the replication protocol
@@ -81,15 +90,7 @@ export type DocumentsWithCheckpoint<RxDocType, CheckpointType> = {
  * before being replicated to the master.
  */
 export type RxReplicationHandler<RxDocType, MasterCheckpointType> = {
-    masterChangeStream$: Observable<
-        DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> |
-        /**
-         * Emit this when the masterChangeStream$ might have missed out
-         * some events because the fork lost the connection to the master.
-         * Like when the user went offline and reconnects.
-         */
-        'RESYNC'
-    >;
+    masterChangeStream$: Observable<RxReplicationPullStreamItem<RxDocType, MasterCheckpointType>>;
     masterChangesSince(
         checkpoint: MasterCheckpointType,
         bulkSize: number

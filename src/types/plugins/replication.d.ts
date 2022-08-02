@@ -1,8 +1,10 @@
+import { Observable } from 'rxjs';
 import type {
     InternalStoreDocType,
     MaybePromise,
     RxCollection,
     RxDocumentData,
+    RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow,
     WithDeleted
 } from '../../types';
@@ -27,6 +29,15 @@ export type ReplicationPullOptions<RxDocType, CheckpointType> = {
      * from the remote actor.
      */
     handler: ReplicationPullHandler<RxDocType, CheckpointType>;
+
+
+    /**
+     * An observable that streams all document changes
+     * that are happening on the backend.
+     * Emits an document bulk together with the latest checkpoint of these documents.
+     * Also can emit a 'RESYNC' event when the client was offline and is online again.
+     */
+    stream$: Observable<RxReplicationPullStreamItem<RxDocType, CheckpointType>>;
 
     /**
      * Amount of documents that the remote will send in one request.
