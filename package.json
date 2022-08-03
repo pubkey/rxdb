@@ -143,7 +143,7 @@
     "graphql-client": "2.0.1",
     "is-electron": "2.2.0",
     "is-my-json-valid": "2.20.6",
-    "isomorphic-ws": "5.0.0",
+    "isomorphic-ws": "4.0.1",
     "jsonschema-key-compression": "1.6.1",
     "lokijs": "1.5.12",
     "mingo": "5.1.0",

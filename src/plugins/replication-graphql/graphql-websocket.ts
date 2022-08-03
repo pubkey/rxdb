@@ -4,6 +4,7 @@ import { getFromMapOrThrow } from '../../util';
 import {
     WebSocket as IsomorphicWebSocket
 } from 'isomorphic-ws';
+
 export type WebsocketWithRefCount = {
     url: string;
     socket: SubscriptionClient;
