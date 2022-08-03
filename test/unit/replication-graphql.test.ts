@@ -1206,8 +1206,8 @@ describe('replication-graphql.test.ts', () => {
                     return !doc;
                 });
 
-                server.close();
-                c.database.destroy();
+                await server.close();
+                await c.database.destroy();
             });
         });
 

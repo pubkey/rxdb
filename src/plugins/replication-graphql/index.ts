@@ -180,6 +180,9 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                     console.dir(error);
                 }
             });
+            wsClient.onReconnected(() => {
+                graphqlReplicationState.remoteEvents$.next('RESYNC');
+            });
         }
         return startBefore();
     }

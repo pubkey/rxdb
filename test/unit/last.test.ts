@@ -61,7 +61,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
                 return GRAPHQL_WEBSOCKET_BY_URL.size === 0;
             }, 5 * 1000);
         } catch (err) {
-            const openSocketUrls = Array.from(BROADCAST_CHANNEL_BY_TOKEN.keys());
+            const openSocketUrls = Array.from(GRAPHQL_WEBSOCKET_BY_URL.keys());
             console.log('open graphql websockets:');
             console.log(openSocketUrls.join(', '));
             throw new Error('not all graphql websockets have been closed (' + openSocketUrls.length + ')');
