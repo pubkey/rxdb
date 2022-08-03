@@ -55,6 +55,9 @@ export const heroSchemaLiteral = {
         },
         lastName: {
             type: 'string'
+        },
+        age: {
+            type: 'integer'
         }
     },
     required: ['firstName', 'lastName', 'passportId'],
