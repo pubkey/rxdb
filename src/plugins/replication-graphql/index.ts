@@ -6,6 +6,7 @@
 import GraphQLClient from 'graphql-client';
 import objectPath from 'object-path';
 import {
+    ensureNotFalsy,
     fastUnsecureHash
 } from '../../util';
 
@@ -165,8 +166,8 @@ export function syncGraphQL<RxDocType, CheckpointType>(
     graphqlReplicationState.start = () => {
         if (mustUseSocket) {
             console.log('# START WEBSOCKET CLIENT');
-            const wsClient = getGraphQLWebSocket(url.ws);
-            const clientRequest = wsClient.request(pull.streamQuery);
+            const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws));
+            const clientRequest = wsClient.request(ensureNotFalsy(pull.streamQuery));
             clientRequest.subscribe({
                 next(data: any) {
                     const firstField = Object.keys(data.data)[0];
@@ -186,7 +187,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
     const cancelBefore = graphqlReplicationState.cancel.bind(graphqlReplicationState);
     graphqlReplicationState.cancel = () => {
         if (mustUseSocket) {
-            removeGraphQLWebSocketRef(url.ws);
+            removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
         }
         return cancelBefore();
     }
