@@ -143,6 +143,7 @@
     "graphql-client": "2.0.1",
     "is-electron": "2.2.0",
     "is-my-json-valid": "2.20.6",
+    "isomorphic-ws": "5.0.0",
     "jsonschema-key-compression": "1.6.1",
     "lokijs": "1.5.12",
     "mingo": "5.1.0",
@@ -156,10 +157,12 @@
     "pouchdb-md5": "7.3.0",
     "pouchdb-replication": "7.3.0",
     "pouchdb-selector-core": "7.3.0",
+    "subscriptions-transport-ws": "0.11.0",
     "threads": "1.7.0",
     "unload": "2.3.1",
     "url": "^0.11.0",
     "util": "0.12.4",
+    "ws": "8.8.1",
     "z-schema": "5.0.3"
   },
   "devDependencies": {
@@ -259,7 +262,6 @@
     "shelljs": "0.8.5",
     "source-map-support": "0.5.21",
     "stream": "0.0.2",
-    "subscriptions-transport-ws": "0.11.0",
     "terser": "5.12.1",
     "terser-webpack-plugin": "5.3.3",
     "ts-loader": "9.2.7",

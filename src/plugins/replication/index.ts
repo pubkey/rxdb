@@ -299,6 +299,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     reSync() {
         this.remoteEvents$.next('RESYNC');
     }
+    emitEvent(ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>) {
+        this.remoteEvents$.next(ev);
+    }
 
     async cancel(): Promise<any> {
         if (this.isStopped()) {

@@ -20,9 +20,10 @@ export type RxGraphQLReplicationPullQueryBuilder<CheckpointType> = (
 ) => RxGraphQLReplicationQueryBuilderResponse;
 export type GraphQLSyncPullOptions<RxDocType, CheckpointType> = Omit<
     ReplicationPullOptions<RxDocType, CheckpointType>,
-    'handler'
+    'handler' | 'stream$'
 > & {
     queryBuilder: RxGraphQLReplicationPullQueryBuilder<CheckpointType>;
+    streamQuery?: RxGraphQLReplicationQueryBuilderResponseObject;
     dataPath?: string;
 }
 
@@ -33,12 +34,16 @@ export type GraphQLSyncPushOptions<RxDocType> = Omit<
     queryBuilder: RxGraphQLReplicationPushQueryBuilder;
 }
 
+export type GraphQLServerUrl = {
+    http?: string;
+    ws?: string;
+};
 
 export type SyncOptionsGraphQL<RxDocType, CheckpointType> = Omit<
     ReplicationOptions<RxDocType, CheckpointType>,
     'pull' | 'push' | 'replicationIdentifier' | 'collection'
 > & {
-    url: string;
+    url: GraphQLServerUrl;
     headers?: { [k: string]: string }; // send with all requests to the endpoint
     pull?: GraphQLSyncPullOptions<RxDocType, CheckpointType>;
     push?: GraphQLSyncPushOptions<RxDocType>;

@@ -27,6 +27,7 @@ import {
 import { ensureNotFalsy, lastOfArray } from 'event-reduce-js';
 import { RxReplicationWriteToMasterRow } from '../../src';
 import { HumanWithTimestampDocumentType } from './schema-objects';
+import { GraphQLServerUrl } from '../../src/types';
 
 let lastPort = 16121;
 export function getPort() {
@@ -54,7 +55,7 @@ export interface GraphqlServer<T> {
     wsPort: number;
     subServer: any;
     client: any;
-    url: string;
+    url: GraphQLServerUrl;
     setDocument(doc: T): Promise<{ data: any }>;
     overwriteDocuments(docs: T[]): void;
     getDocuments(): T[];
@@ -287,15 +288,16 @@ export function spawn(
         graphiql: true,
     }));
 
-    const ret = 'http://localhost:' + port + GRAPHQL_PATH;
+    const httpUrl = 'http://localhost:' + port + GRAPHQL_PATH;
     let client = graphQlClient({
-        url: ret
+        url: httpUrl
     });
     const retServer: Promise<GraphqlServer<Human>> = new Promise(res => {
         const server = app.listen(port, function () {
 
             const wsPort = port + 500;
             const ws = createServer(server);
+            const websocketUrl = 'ws://localhost:' + wsPort + GRAPHQL_SUBSCRIPTION_PATH;
             ws.listen(wsPort, () => {
                 // console.log(`GraphQL Server is now running on http://localhost:${wsPort}`);
                 // Set up the WebSocket for handling GraphQL subscriptions
@@ -316,7 +318,10 @@ export function spawn(
                     wsPort,
                     subServer,
                     client,
-                    url: ret,
+                    url: {
+                        http: httpUrl,
+                        ws: websocketUrl
+                    },
                     async setDocument(doc: Human) {
 
                         const previous = documents.find(d => d.id === doc.id);
@@ -351,7 +356,7 @@ export function spawn(
                             reqHeaderName = '';
                             reqHeaderValue = '';
                             client = graphQlClient({
-                                url: ret
+                                url: httpUrl
                             });
                         } else {
                             reqHeaderName = name;
@@ -359,7 +364,7 @@ export function spawn(
                             const headers: { [key: string]: string } = {};
                             headers[name] = value;
                             client = graphQlClient({
-                                url: ret,
+                                url: httpUrl,
                                 headers
                             });
                         }
@@ -367,13 +372,13 @@ export function spawn(
                     close(now = false) {
                         if (now) {
                             server.close();
-                            subServer.close();
+//                            subServer.close();
                             return Promise.resolve();
                         } else {
                             return new Promise(res2 => {
                                 setTimeout(() => {
                                     server.close();
-                                    subServer.close();
+                                    //subServer.close();
                                     res2();
                                 }, 1000);
                             });

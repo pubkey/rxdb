@@ -99,6 +99,27 @@ describe('replication-graphql.test.ts', () => {
             variables
         });
     };
+    const pullStreamQueryBuilder = () => {
+        const query = `subscription onHumanChanged {
+            humanChanged {
+                documents {
+                    id,
+                    name,
+                    age,
+                    updatedAt,
+                    _deleted: deleted
+                },
+                checkpoint {
+                    id
+                    updatedAt
+                }
+            }
+        }`;
+        return {
+            query,
+            variables: {}
+        };
+    };
     const pushQueryBuilder = (rows: RxReplicationWriteToMasterRow<HumanWithTimestampDocumentType>[]) => {
         if (!rows || rows.length === 0) {
             throw new Error('test pushQueryBuilder(): called with no docs');
@@ -190,7 +211,8 @@ describe('replication-graphql.test.ts', () => {
             it('should be able to use the ws-subscriptions', async () => {
                 const server = await SpawnServer.spawn();
 
-                const endpointUrl = 'ws://localhost:' + server.wsPort + '/subscriptions';
+                const endpointUrl = server.url.ws;
+                console.log('endpointUrlendpointUrlendpointUrl: ' + endpointUrl);
                 const client = new SubscriptionClient(
                     endpointUrl,
                     {
@@ -237,7 +259,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(emitted[0].data.humanChanged.checkpoint.id);
                 assert.strictEqual(emittedError.length, 0);
 
-                server.close();
+                await server.close();
             });
         });
         config.parallel('live:false pull only', () => {
@@ -420,7 +442,9 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = c.syncGraphQL({
-                    url: ERROR_URL,
+                    url: {
+                        http: ERROR_URL
+                    },
                     pull: {
                         batchSize,
                         queryBuilder: pullQueryBuilder
@@ -434,7 +458,7 @@ describe('replication-graphql.test.ts', () => {
                     first()
                 ).toPromise().then(() => {
                     const client = GraphQLClient({
-                        url: server.url
+                        url: server.url.http
                     });
                     replicationState.clientState.client = client;
                 });
@@ -568,7 +592,9 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = c.syncGraphQL({
-                    url: ERROR_URL,
+                    url: {
+                        http: ERROR_URL
+                    },
                     pull: {
                         batchSize,
                         queryBuilder: pullQueryBuilder
@@ -1129,6 +1155,63 @@ describe('replication-graphql.test.ts', () => {
             });
         });
 
+        config.parallel('live:true with pull.stream$', () => {
+            it('should pull all ongoing document writes from the server', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder
+                    },
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQuery: pullStreamQueryBuilder()
+                    },
+                    live: true
+                });
+                await replicationState.awaitInSync();
+
+                const testDocData = getTestData(1)[0];
+
+                // insert on remote
+                await server.setDocument(testDocData);
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === 1;
+                });
+
+                // update on remote
+                const updateDocData: typeof testDocData = clone(testDocData);
+                updateDocData.name = 'updated';
+                await server.setDocument(updateDocData);
+                await waitUntil(async () => {
+                    const doc = await c.findOne().exec(true);
+                    return doc.name === 'updated';
+                });
+
+                // delete on remote
+                const deleteDocData: typeof testDocData = clone(updateDocData);
+                deleteDocData.deleted = true;
+                await server.setDocument(deleteDocData);
+                await waitUntil(async () => {
+                    const doc = await c.findOne().exec();
+                    if (doc) {
+                        console.dir(doc.toJSON());
+                    }
+                    return !doc;
+                });
+
+                server.close();
+                c.database.destroy();
+            });
+        });
+
+
         config.parallel('observables', () => {
             it('should emit the received documents when pulling', async () => {
                 const testData = getTestData(batchSize);
@@ -1195,7 +1278,9 @@ describe('replication-graphql.test.ts', () => {
             it('should emit an error when the server is not reachable', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const replicationState = c.syncGraphQL({
-                    url: ERROR_URL,
+                    url: {
+                        http: ERROR_URL
+                    },
                     pull: {
                         batchSize,
                         queryBuilder: pullQueryBuilder
@@ -1213,7 +1298,9 @@ describe('replication-graphql.test.ts', () => {
             it('should contain include replication action data in push request failure', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const replicationState = c.syncGraphQL({
-                    url: ERROR_URL,
+                    url: {
+                        http: ERROR_URL
+                    },
                     push: {
                         queryBuilder: pushQueryBuilder,
                     }
@@ -1938,7 +2025,9 @@ describe('replication-graphql.test.ts', () => {
                 );
 
                 const replicationState = collection.syncGraphQL({
-                    url: browserServerUrl,
+                    url: {
+                        http: browserServerUrl
+                    },
                     push: {
                         batchSize,
                         queryBuilder: pushQueryBuilder
@@ -1970,7 +2059,9 @@ describe('replication-graphql.test.ts', () => {
                 });
                 const collection2 = collections2.humans;
                 const replicationState2 = collection2.syncGraphQL({
-                    url: browserServerUrl,
+                    url: {
+                        http: browserServerUrl
+                    },
                     push: {
                         batchSize,
                         queryBuilder: pushQueryBuilder
