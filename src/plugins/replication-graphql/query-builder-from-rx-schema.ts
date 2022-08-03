@@ -7,7 +7,8 @@ import {
 import { ucfirst } from '../../util';
 import type {
     RxGraphQLReplicationPullQueryBuilder,
-    RxGraphQLReplicationPushQueryBuilder
+    RxGraphQLReplicationPushQueryBuilder,
+    WithDeleted
 } from '../../types';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
@@ -22,14 +23,14 @@ export function pullQueryBuilderFromRxSchema(
     const prefixes: Prefixes = input.prefixes as any;
 
     const ucCollectionName = ucfirst(collectionName);
-    const queryName = prefixes.feed + ucCollectionName;
+    const queryName = prefixes.pull + ucCollectionName;
 
     const outputFields = Object.keys(schema.properties).filter(k => !(input.ignoreOutputKeys as string[]).includes(k));
     // outputFields.push(input.deletedFlag);
 
     const builder: RxGraphQLReplicationPullQueryBuilder<any> = (doc: any) => {
 
-        const queryKeys = input.feedKeys.map(key => {
+        const queryKeys = input.checkpointFields.map(key => {
             const subSchema: any = schema.properties[key];
             if (!subSchema) {
                 throw newRxError('GQL1', {
@@ -37,7 +38,7 @@ export function pullQueryBuilderFromRxSchema(
                     schema,
                     key,
                     args: {
-                        feedKeys: input.feedKeys
+                        feedKeys: input.checkpointFields
                     }
                 });
             }
@@ -78,9 +79,9 @@ export function pushQueryBuilderFromRxSchema(
     const prefixes: Prefixes = input.prefixes as any;
 
     const ucCollectionName = ucfirst(collectionName);
-    const queryName = prefixes.set + ucCollectionName;
+    const queryName = prefixes.push + ucCollectionName;
 
-    const builder: RxGraphQLReplicationPushQueryBuilder = (docs: any[]) => {
+    const builder: RxGraphQLReplicationPushQueryBuilder = (pushRows) => {
         const query = '' +
             'mutation Set' + ucCollectionName + '($' + collectionName + ': [' + ucCollectionName + 'Input]) {\n' +
             SPACING + queryName + '(' + collectionName + ': $' + collectionName + ') {\n' +
@@ -88,8 +89,8 @@ export function pushQueryBuilderFromRxSchema(
             SPACING + '}\n' +
             '}';
 
-        const sendDocs: any[] = [];
-        docs.forEach(doc => {
+        const sendRows: typeof pushRows = [];
+        function transformPushDoc(doc: WithDeleted<any>) {
             const sendDoc: any = {};
             Object.entries(doc).forEach(([k, v]) => {
                 if (
@@ -101,10 +102,17 @@ export function pushQueryBuilderFromRxSchema(
                     sendDoc[k] = v;
                 }
             });
-            sendDocs.push(sendDoc);
+            return sendDoc;
+        }
+        pushRows.forEach(pushRow => {
+            const newRow: typeof pushRow = {
+                newDocumentState: transformPushDoc(pushRow.newDocumentState),
+                assumedMasterState: pushRow.assumedMasterState ? transformPushDoc(pushRow.assumedMasterState) : undefined
+            };
+            sendRows.push(newRow);
         });
         const variables = {
-            [collectionName]: sendDocs
+            [collectionName]: sendRows
         };
         return {
             query,

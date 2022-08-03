@@ -1342,35 +1342,27 @@ describe('replication-graphql.test.ts', () => {
                 const output = graphQLSchemaFromRxSchema({
                     human: {
                         schema: schemas.humanWithTimestamp,
-                        feedKeys: [
+                        checkpointFields: [
                             'id',
                             'updatedAt'
                         ]
-                    },
-                    deepNestedHuman: {
-                        schema: schemas.deepNestedHuman,
-                        feedKeys: [
-                            'passportId'
-                        ]
                     }
                 });
-
                 const build = buildSchema(output.asString);
-
                 assert.ok(build);
             });
             it('should create a valid output with subscription params', () => {
                 const output = graphQLSchemaFromRxSchema({
                     human: {
                         schema: schemas.humanWithTimestamp,
-                        feedKeys: [
+                        checkpointFields: [
                             'id',
                             'updatedAt'
                         ]
                     },
                     deepNestedHuman: {
                         schema: schemas.deepNestedHuman,
-                        feedKeys: [
+                        checkpointFields: [
                             'passportId'
                         ],
                         subscriptionParams: {
@@ -1383,7 +1375,6 @@ describe('replication-graphql.test.ts', () => {
             });
         });
         config.parallel('.pullQueryBuilderFromRxSchema()', () => {
-            return; // TODO
             it('assumption: parseQuery() fails on non-graphql input', () => {
                 assert.throws(
                     () => parseQuery('foobar')
@@ -1393,7 +1384,7 @@ describe('replication-graphql.test.ts', () => {
                 const builder = pullQueryBuilderFromRxSchema(
                     'human', {
                     schema: schemas.humanWithTimestamp,
-                    feedKeys: [
+                    checkpointFields: [
                         'id',
                         'updatedAt'
                     ]
@@ -1411,7 +1402,7 @@ describe('replication-graphql.test.ts', () => {
                 const builder = pullQueryBuilderFromRxSchema(
                     'human', {
                     schema: schemas.humanWithTimestamp,
-                    feedKeys: [
+                    checkpointFields: [
                         'id',
                         'updatedAt'
                     ]
@@ -1423,12 +1414,11 @@ describe('replication-graphql.test.ts', () => {
             });
         });
         config.parallel('.pushQueryBuilderFromRxSchema()', () => {
-            return; // TODO
             it('should create a valid builder', async () => {
                 const builder = pushQueryBuilderFromRxSchema(
                     'human', {
                     schema: schemas.humanWithTimestamp,
-                    feedKeys: [
+                    checkpointFields: [
                         'id',
                         'updatedAt'
                     ]
@@ -1436,12 +1426,14 @@ describe('replication-graphql.test.ts', () => {
 
                 // build valid output for insert document
                 const output = await builder([{
-                    id: 'foo',
-                    name: 'foo',
-                    age: 1234,
-                    updatedAt: 12343,
-                    _attachments: {},
-                    _rev: '1-foobar'
+                    newDocumentState: {
+                        id: 'foo',
+                        name: 'foo',
+                        age: 1234,
+                        updatedAt: 12343,
+                        _attachments: {},
+                        _rev: '1-foobar'
+                    }
                 }]);
                 const parsed = parseQuery(output.query);
 
@@ -1454,8 +1446,10 @@ describe('replication-graphql.test.ts', () => {
 
                 // build valid output for deleted document
                 const outputDeleted = await builder([{
-                    id: 'foo',
-                    _deleted: true
+                    newDocumentState: {
+                        id: 'foo',
+                        _deleted: true
+                    }
                 }]);
                 parseQuery(outputDeleted.query);
 
@@ -1468,25 +1462,31 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(parsed);
             });
             it('should keep the deleted value', async () => {
-                const docData: any = schemaObjects.humanWithTimestamp();
+                const docData = schemaObjects.humanWithTimestamp();
                 /**
                  * The GraphQL replication will
                  * internally switch out _deleted with the deleted flag.
                  * So the pushQueryBuilder MUST NOT switch out again.
                  */
-                docData.deleted = true;
+                (docData as any).deleted = true;
                 const ownPushQueryBuilder = pushQueryBuilderFromRxSchema(
                     'human',
                     {
-                        feedKeys: [
+                        checkpointFields: [
                             'id',
                             'updatedAt'
                         ],
-                        schema: schemas.humanWithTimestamp
+                        schema: schemas.humanWithTimestamp,
+                        deletedField: 'deleted'
                     }
                 );
-                const pushData = await ownPushQueryBuilder([docData]);
-                const pushDoc = pushData.variables.human[0];
+                const pushData = await ownPushQueryBuilder([{
+                    newDocumentState: docData
+                }]);
+
+                console.log('-.------');
+                console.log(JSON.stringify(pushData.variables, null, 4));
+                const pushDoc = pushData.variables.human[0].newDocumentState;
                 assert.ok(pushDoc.deleted);
             });
         });
