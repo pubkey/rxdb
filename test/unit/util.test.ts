@@ -253,7 +253,13 @@ describe('util.test.js', () => {
         it('should work with non latin-1 chars', async () => {
             const plain = 'aäß';
             const base64 = 'YcOkw58=';
+
+            console.log('-----------------');
             const blobBuffer = blobBufferUtil.createBlobBuffer(plain, 'plain/text');
+            assert.strictEqual(
+                await blobBufferUtil.toString(blobBuffer),
+                plain
+            );
             assert.strictEqual(
                 await blobBufferUtil.toBase64String(blobBuffer),
                 base64

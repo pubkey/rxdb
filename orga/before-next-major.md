@@ -42,12 +42,6 @@ Ensure that it works with typescript. Check the rxjs repo and find out how they 
 Rename the paths in the `exports` field in the `package.json` so that users can do `import {} from 'rxdb/core'` instead of the current `import {} from 'rxdb/plugins/core'`.
 
 
-## Do not use md5 as default for revision creation
-
-Md5 is slow AF and we do not need cryptographically secure hashing anyways. Instead we should use something else
-which has better performance.
-Of course the pouchdb RxStorage still needs md5 but we could add the hashing function to the RxStorage.statics to make it variable.
-
 ## Do not allow type mixing
 
 In the RxJsonSchema, a property of a document can have multiple types like
@@ -61,23 +55,3 @@ In the RxJsonSchema, a property of a document can have multiple types like
 This is bad and should not be used. Instead each field must have exactly one type.
 Having mixed types causes many confusion, for example when the type is `['string', 'number']`,
 you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
-
-
-
-## getLocal() return RxLocalDocument|null
-
-Should we return `undefined` if there is no document? Same goes for normal get-doc-by-id functions.
-
-
-## Use Node.js Blob API
-
-In the `blobBufferUtil` methods we use Buffer in node and Blob in the browsers. Since node 18, Blob is supported in node so we might also use that here to remove some complexity.
-https://nodejs.org/api/buffer.html#class-blob
-
-
-# Maybe
-
-## Use Proxy instead of getters/setter on RxDocument
-Currently there is a hack invovled into the proxy-get-methods like `myDocument.firstName$` etc.
-This had to be done because IE11 does not support the Proxy-Object (and there is no way to polyfill).
-If we give up IE11-Support, we could use the proxy-object which would also allow to directly mutate arrays like described in [#561](https://github.com/pubkey/rxdb/issues/561). This would also give a performance-benefit.

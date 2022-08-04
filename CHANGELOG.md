@@ -38,6 +38,8 @@
 - REMOVED the option to filter out replication documents with the push/pull modifiers [#2552](https://github.com/pubkey/rxdb/issues/2552) because this does not work with the new replication protocol.
 - CHANGE default of replication `live` to be set to `true`. Because most people want to do a live replication, not a one time replication.
 
+- CHANGED Attachment data is now always handled as `Blob` because Node.js does support `Blob` since version 18.0.0 so we no longer have to use a `Buffer` but instead can use Blob for browsers and Node.js
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

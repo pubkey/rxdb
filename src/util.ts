@@ -550,7 +550,14 @@ export function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]> {
 }
 
 
-const USE_NODE_BLOB_BUFFER_METHODS = typeof FileReader === 'undefined';
+
+
+/**
+ * This is an abstraction over the Blob/Buffer data structure.
+ * We need this because it behaves different in different JavaScript runtimes.
+ * Since RxDB 13.0.0 we switch to Blob-only because Node.js does not support
+ * the Blob data structure which is also supported by the browsers.
+ */
 export const blobBufferUtil = {
     /**
      * depending if we are on node or browser,
@@ -560,27 +567,9 @@ export const blobBufferUtil = {
         data: string,
         type: string
     ): BlobBuffer {
-
-        let blobBuffer: any;
-        if (isElectronRenderer) {
-            // if we are inside of electron-renderer, always use the node-buffer
-            return Buffer.from(data, {
-                type
-            } as any);
-        }
-
-        if (USE_NODE_BLOB_BUFFER_METHODS) {
-            // for node
-            blobBuffer = Buffer.from(data, {
-                type
-            } as any);
-        } else {
-            // for browsers
-            blobBuffer = new Blob([data], {
-                type
-            } as any);
-        }
-
+        const blobBuffer = new Blob([data], {
+            type
+        } as any);
         return blobBuffer;
     },
     /**
@@ -591,122 +580,50 @@ export const blobBufferUtil = {
         base64String: string,
         type: string
     ): Promise<BlobBuffer> {
-        let blobBuffer: any;
-        if (isElectronRenderer) {
-            // if we are inside of electron-renderer, always use the node-buffer
-            return Buffer.from(
-                base64String,
-                'base64'
-            );
-        }
+        const base64Response = await fetch(`data:${type};base64,${base64String}`);
+        const blob = await base64Response.blob();
+        return blob;
 
-
-        if (USE_NODE_BLOB_BUFFER_METHODS) {
-            // for node
-            blobBuffer = Buffer.from(
-                base64String,
-                'base64'
-            );
-            return blobBuffer;
-        } else {
-            /**
-             * For browsers.
-             * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
-             */
-            const base64Response = await fetch(`data:${type};base64,${base64String}`);
-            const blob = await base64Response.blob();
-            return blob;
-        }
     },
     isBlobBuffer(data: any): boolean {
-        if ((typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) || data instanceof Blob) {
+        if (data instanceof Blob || (typeof Buffer !== 'undefined' && Buffer.isBuffer(data))) {
             return true;
         } else {
             return false;
         }
     },
     toString(blobBuffer: BlobBuffer | string): Promise<string> {
+        /**
+         * in the electron-renderer we have a typed array insteaf of a blob
+         * so we have to transform it.
+         * @link https://github.com/pubkey/rxdb/issues/1371
+         */
+        const blobBufferType = Object.prototype.toString.call(blobBuffer);
+        if (blobBufferType === '[object Uint8Array]') {
+            blobBuffer = new Blob([blobBuffer]);
+        }
         if (typeof blobBuffer === 'string') {
             return Promise.resolve(blobBuffer);
         }
 
-        if (USE_NODE_BLOB_BUFFER_METHODS) {
-            // node
-            return nextTick()
-                .then(() => blobBuffer.toString());
-        }
-        return new Promise(res => {
-            // browser
-            const reader = new FileReader();
-            reader.addEventListener('loadend', e => {
-                const text = (e.target as any).result;
-                res(text);
-            });
-
-            const blobBufferType = Object.prototype.toString.call(blobBuffer);
-
-            /**
-             * in the electron-renderer we have a typed array insteaf of a blob
-             * so we have to transform it.
-             * @link https://github.com/pubkey/rxdb/issues/1371
-             */
-            if (blobBufferType === '[object Uint8Array]') {
-                blobBuffer = new Blob([blobBuffer]);
-            }
-
-            reader.readAsText(blobBuffer as any);
-        });
+        return (blobBuffer as Blob).text();
     },
-    toBase64String(blobBuffer: BlobBuffer | string): Promise<string> {
+    async toBase64String(blobBuffer: BlobBuffer | string): Promise<string> {
         if (typeof blobBuffer === 'string') {
             return Promise.resolve(blobBuffer);
         }
-        if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
-            // node
-            return nextTick()
-                /**
-                 * We use btoa() instead of blobBuffer.toString('base64')
-                 * to ensure that we have the same behavior in nodejs and the browser.
-                 */
-                .then(() => blobBuffer.toString('base64'));
-        }
-        return new Promise((res, rej) => {
-            /**
-             * Browser
-             * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
-             */
-            const reader = new FileReader;
-            reader.onerror = rej;
-            reader.onload = () => {
-                // looks like 'data:plain/text;base64,YWFh...'
-                const fullResult = reader.result as any;
-                const split = fullResult.split(',');
-                split.shift();
-                res(split.join(','));
-            };
+        const text = await (blobBuffer as Blob).text();
 
-            const blobBufferType = Object.prototype.toString.call(blobBuffer);
-
-            /**
-             * in the electron-renderer we have a typed array insteaf of a blob
-             * so we have to transform it.
-             * @link https://github.com/pubkey/rxdb/issues/1371
-             */
-            if (blobBufferType === '[object Uint8Array]') {
-                blobBuffer = new Blob([blobBuffer]);
-            }
-
-            reader.readAsDataURL(blobBuffer as any);
-        });
+        /**
+         * We need to format into an utf-8 string or else btoa()
+         * will not work properly on latin-1 characters.
+         * @link https://stackoverflow.com/a/30106551/3443137
+         */
+        const base64 = btoa(unescape(encodeURIComponent(text)));
+        return base64;
     },
     size(blobBuffer: BlobBuffer): number {
-        if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
-            // node
-            return Buffer.byteLength(blobBuffer);
-        } else {
-            // browser
-            return (blobBuffer as Blob).size;
-        }
+        return (blobBuffer as Blob).size;
     }
 };
 
