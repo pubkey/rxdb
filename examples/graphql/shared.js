@@ -44,13 +44,10 @@ export const heroSchema = {
 export const graphQLGenerationInput = {
     hero: {
         schema: heroSchema,
-        feedKeys: [
+        checkpointFields: [
             'id',
             'updatedAt'
         ],
-        deletedFlag: 'deleted',
-        subscriptionParams: {
-            token: 'String!'
-        }
+        deletedFlag: 'deleted'
     }
 };

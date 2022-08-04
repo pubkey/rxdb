@@ -24,6 +24,10 @@ import {
     graphQLSchemaFromRxSchema
 } from 'rxdb/plugins/replication-graphql';
 
+import {
+    lastOfArray
+} from 'rxdb';
+
 function log(msg) {
     const prefix = '# GraphQL Server: ';
     if (typeof msg === 'string') {
@@ -87,32 +91,31 @@ export async function run() {
 
     // The root provides a resolver function for each API endpoint
     const root = {
-        feedHero: (args, request) => {
-            log('## feedHero()');
+        pullHero: (args, request) => {
+            log('## pullHero()');
             log(args);
             authenticateRequest(request);
 
-            if (!args.id) {
-                // use empty string because it will always be first on sorting
-                args.id = '';
-            }
+
+            const lastId = args.checkpoint ? args.checkpoint.id : '';
+            const minUpdatedAt = args.checkpoint ? args.checkpoint.updatedAt : 0;
 
             // sorted by updatedAt and primary
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
 
             // only return where updatedAt >= minUpdatedAt
             const filterForMinUpdatedAtAndId = sortedDocuments.filter(doc => {
-                if (!args.updatedAt) {
+                if (!args.checkpoint) {
                     return true;
                 }
-                if (doc.updatedAt < args.updatedAt) {
+                if (doc.updatedAt < minUpdatedAt) {
                     return false;
                 }
-                if (doc.updatedAt > args.updatedAt) {
+                if (doc.updatedAt > minUpdatedAt) {
                     return true;
                 }
-                if (doc.updatedAt === args.updatedAt) {
-                    if (doc.id > args.id) {
+                if (doc.updatedAt === minUpdatedAt) {
+                    if (doc.id > lastId) {
                         return true;
                     } else {
                         return false;
@@ -120,41 +123,68 @@ export async function run() {
                 }
             });
 
-            // limit
-            const limited = filterForMinUpdatedAtAndId.slice(0, args.limit);
-            return limited;
+            // apply limit
+            const limitedDocs = filterForMinUpdatedAtAndId.slice(0, args.limit);
+
+            const last = lastOfArray(limitedDocs);
+            const ret = {
+                documents: limitedDocs,
+                checkpoint: last ? {
+                    id: last.id,
+                    updatedAt: last.updatedAt
+                } : {
+                    id: lastId,
+                    updatedAt: minUpdatedAt
+                }
+            };
+            console.log('pullHero() ret:');
+            console.log(JSON.stringify(ret, null, 4));
+            return ret;
         },
-        setHero: (args, request) => {
-            log('## setHero()');
+        pushHero: (args, request) => {
+            log('## pushHero()');
             log(args);
             authenticateRequest(request);
 
-            const docs = args.hero;
-            docs.forEach(doc => {
+            const rows = args.heroPushRow;
+            let lastCheckpoint = {
+                id: '',
+                updatedAt: 0
+            };
+            const writtenDocs = rows.map(row => {
+                const doc = row.newDocumentState;
                 documents = documents.filter(d => d.id !== doc.id);
-                doc.updatedAt = Math.round(new Date().getTime() / 1000);
+                doc.updatedAt = Math.round(new Date().getTime());
                 documents.push(doc);
 
-                pubsub.publish(
-                    'changedHero',
-                    {
-                        changedHero: doc
-                    }
-                );
-                log('published changedHero ' + doc.id);
+                lastCheckpoint.id = doc.id;
+                lastCheckpoint.updatedAt = doc.updatedAt;
+                return doc;
             });
+
+            pubsub.publish(
+                'streamHero',
+                {
+                    streamHero: {
+                        documents: writtenDocs,
+                        checkpoint: lastCheckpoint
+                    }
+                }
+            );
+
 
             console.log('## current documents:');
             console.log(JSON.stringify(documents, null, 4));
 
-            return docs[0];
+            // TODO add conflict handler
+            return [];
         },
-        changedHero: (args) => {
-            log('## changedHero()');
+        streamHero: (args) => {
+            log('## streamHero()');
             console.dir(args);
             validateBearerToken(args.token);
 
-            return pubsub.asyncIterator('changedHero');
+            return pubsub.asyncIterator('streamHero');
         }
     };
 

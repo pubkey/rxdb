@@ -95,13 +95,15 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         })
     };
 
+
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, CheckpointType> | undefined;
     if (pull) {
+        const pullBatchSize = pull.batchSize ? pull.batchSize : 20;
         replicationPrimitivesPull = {
             async handler(
                 lastPulledCheckpoint: CheckpointType
             ) {
-                const pullGraphQL = await pull.queryBuilder(lastPulledCheckpoint);
+                const pullGraphQL = await pull.queryBuilder(lastPulledCheckpoint, pullBatchSize);
                 const result = await mutateableClientState.client.query(pullGraphQL.query, pullGraphQL.variables);
                 if (result.errors) {
                     throw result.errors;

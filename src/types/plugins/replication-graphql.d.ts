@@ -16,7 +16,8 @@ export type RxGraphQLReplicationPushQueryBuilder = (
 
 
 export type RxGraphQLReplicationPullQueryBuilder<CheckpointType> = (
-    latestPulledCheckpoint: CheckpointType | null
+    latestPulledCheckpoint: CheckpointType | null,
+    limit: number
 ) => RxGraphQLReplicationQueryBuilderResponse;
 export type GraphQLSyncPullOptions<RxDocType, CheckpointType> = Omit<
     ReplicationPullOptions<RxDocType, CheckpointType>,

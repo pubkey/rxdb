@@ -34,9 +34,6 @@ import {
     pullQueryBuilderFromRxSchema,
     pushQueryBuilderFromRxSchema
 } from 'rxdb/plugins/replication-graphql';
-import {
-    getLastPushCheckpoint
-} from 'rxdb/plugins/replication';
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 
@@ -70,7 +67,12 @@ const storageField = document.querySelector('#storage-key');
 const databaseNameField = document.querySelector('#database-name');
 
 console.log('hostname: ' + window.location.hostname);
-const syncURL = 'http://' + window.location.hostname + ':' + GRAPHQL_PORT + GRAPHQL_PATH;
+
+
+const syncUrls = {
+    http: 'http://' + window.location.hostname + ':' + GRAPHQL_PORT + GRAPHQL_PATH,
+    ws: 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH
+};
 
 
 const batchSize = 5;
@@ -173,6 +175,12 @@ async function run() {
     });
 
     heroesList.innerHTML = 'Create collection..';
+
+
+    console.log('pullQueryBuilder output');
+    const asdf = pullQueryBuilder({});
+    console.dir(asdf);
+
     await db.addCollections({
         hero: {
             schema: heroSchema
@@ -184,7 +192,7 @@ async function run() {
     if (doSync()) {
         heroesList.innerHTML = 'Start replication..';
         const replicationState = db.hero.syncGraphQL({
-            url: syncURL,
+            url: syncUrls,
             headers: {
                 /* optional, set an auth header */
                 Authorization: 'Bearer ' + JWT_BEARER_TOKEN
@@ -207,14 +215,6 @@ async function run() {
             deletedFlag: 'deleted'
         });
 
-        setInterval(async () => {
-            var last = await getLastPushCheckpoint(
-                db.hero,
-                replicationState.endpointHash
-            );
-            console.log('last endpoint hash: ' + last);
-        }, 1000);
-
 
         // show replication-errors in logs
         heroesList.innerHTML = 'Subscribe to errors..';
@@ -227,7 +227,6 @@ async function run() {
         // setup graphql-subscriptions for pull-trigger
         db.waitForLeadership().then(() => {
             // heroesList.innerHTML = 'Create SubscriptionClient..';
-            const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
             const wsClient = new SubscriptionClient(
                 endpointUrl,
                 {

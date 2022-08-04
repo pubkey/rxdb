@@ -69,15 +69,15 @@ describe('replication-graphql.test.ts', () => {
     const getTimestamp = () => new Date().getTime();
 
     const batchSize = 5 as const;
-    const pullQueryBuilder = (checkpoint: any) => {
+    const pullQueryBuilder = (checkpoint: any, limit: number) => {
         if (!checkpoint) {
             checkpoint = {
                 id: '',
                 updatedAt: 0
             };
         }
-        const query = `{
-            feedForRxDBReplication(lastId: "${checkpoint.id}", minUpdatedAt: ${checkpoint.updatedAt}, limit: ${batchSize}) {
+        const query = `query FeedForRxDBReplication($checkpoint: CheckpointInput, $limit: Int!) {
+            feedForRxDBReplication(checkpoint: $checkpoint, limit: $limit) {
                 documents {
                     id
                     name
@@ -93,7 +93,10 @@ describe('replication-graphql.test.ts', () => {
                 }
             }
         }`;
-        const variables = {};
+        const variables = {
+            checkpoint,
+            limit
+        };
         return Promise.resolve({
             query,
             variables
@@ -278,6 +281,12 @@ describe('replication-graphql.test.ts', () => {
                 });
                 assert.strictEqual(replicationState.isStopped(), false);
 
+                const errSub = replicationState.error$.subscribe((err) => {
+                    console.dir(err.parameters.errors);
+                    console.log(JSON.stringify(err.parameters.errors, null, 4));
+                    throw new Error('The replication threw an error');
+                });
+
                 console.log('---');
 
                 await AsyncTestUtil.waitUntil(async () => {
@@ -285,6 +294,7 @@ describe('replication-graphql.test.ts', () => {
                     return docs.length === batchSize;
                 });
 
+                errSub.unsubscribe();
                 server.close();
                 c.database.destroy();
             });
@@ -837,8 +847,8 @@ describe('replication-graphql.test.ts', () => {
                 const asyncPushQueryBuilder = (doc: any): Promise<any> => {
                     return pushQueryBuilder(doc);
                 };
-                const asyncQueryBuilder = (doc: any): Promise<any> => {
-                    return pullQueryBuilder(doc);
+                const asyncQueryBuilder = (doc: any, limit: number): Promise<any> => {
+                    return pullQueryBuilder(doc, limit);
                 };
 
                 const replicationState = c.syncGraphQL({
@@ -1097,11 +1107,11 @@ describe('replication-graphql.test.ts', () => {
                     },
                     pull: {
                         batchSize: 20,
-                        queryBuilder: args => {
+                        queryBuilder: (args, limit: number) => {
                             console.log('pull query builder!');
                             console.dir(args);
                             pullCount++;
-                            return pullQueryBuilder(args);
+                            return pullQueryBuilder(args, limit);
                         }
                     },
                     live: true
@@ -1348,6 +1358,8 @@ describe('replication-graphql.test.ts', () => {
                         ]
                     }
                 });
+
+
                 const build = buildSchema(output.asString);
                 assert.ok(build);
             });
@@ -1388,12 +1400,12 @@ describe('replication-graphql.test.ts', () => {
                         'id',
                         'updatedAt'
                     ]
-                }, batchSize);
+                });
 
                 const output = await builder({
                     id: 'foo',
                     updatedAt: 12343
-                });
+                }, batchSize);
 
                 const parsed = parseQuery(output.query);
                 assert.ok(parsed);
@@ -1406,9 +1418,9 @@ describe('replication-graphql.test.ts', () => {
                         'id',
                         'updatedAt'
                     ]
-                }, batchSize);
+                });
 
-                const output = await builder(null);
+                const output = await builder(null, batchSize);
                 const parsed = parseQuery(output.query);
                 assert.ok(parsed);
             });
@@ -1421,7 +1433,8 @@ describe('replication-graphql.test.ts', () => {
                     checkpointFields: [
                         'id',
                         'updatedAt'
-                    ]
+                    ],
+                    deletedField: 'deleted'
                 });
 
                 // build valid output for insert document
@@ -1435,14 +1448,19 @@ describe('replication-graphql.test.ts', () => {
                         _rev: '1-foobar'
                     }
                 }]);
-                const parsed = parseQuery(output.query);
 
-                const variable: HumanWithTimestampDocumentType = output.variables.human;
+
+                console.log(output.query);
+
+                const parsed = parseQuery(output.query);
+                const firstPushRowDoc: HumanWithTimestampDocumentType = output.variables.humanPushRow[0].newDocumentState;
+
+                console.dir(output.variables);
 
                 // should not have added internal properties
-                assert.ok(!variable.hasOwnProperty('_rev'));
-                assert.ok(!variable.hasOwnProperty('_attachments'));
-                assert.ok(!variable.hasOwnProperty('_deleted'));
+                assert.ok(!firstPushRowDoc.hasOwnProperty('_rev'));
+                assert.ok(!firstPushRowDoc.hasOwnProperty('_attachments'));
+                assert.ok(!firstPushRowDoc.hasOwnProperty('_deleted'));
 
                 // build valid output for deleted document
                 const outputDeleted = await builder([{
@@ -1454,10 +1472,10 @@ describe('replication-graphql.test.ts', () => {
                 parseQuery(outputDeleted.query);
 
                 // should not have added internal properties
-                const variableDeleted: HumanWithTimestampDocumentType = outputDeleted.variables.human;
-                assert.ok(!variableDeleted.hasOwnProperty('_rev'));
-                assert.ok(!variableDeleted.hasOwnProperty('_attachments'));
-                assert.ok(!variableDeleted.hasOwnProperty('_deleted'));
+                const firstPushRowDocDeleted: HumanWithTimestampDocumentType = outputDeleted.variables.humanPushRow[0].newDocumentState;
+                assert.ok(!firstPushRowDocDeleted.hasOwnProperty('_rev'));
+                assert.ok(!firstPushRowDocDeleted.hasOwnProperty('_attachments'));
+                assert.ok(!firstPushRowDocDeleted.hasOwnProperty('_deleted'));
 
                 assert.ok(parsed);
             });
@@ -1486,7 +1504,7 @@ describe('replication-graphql.test.ts', () => {
 
                 console.log('-.------');
                 console.log(JSON.stringify(pushData.variables, null, 4));
-                const pushDoc = pushData.variables.human[0].newDocumentState;
+                const pushDoc = pushData.variables.humanPushRow[0].newDocumentState;
                 assert.ok(pushDoc.deleted);
             });
         });

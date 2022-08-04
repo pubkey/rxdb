@@ -91,13 +91,17 @@ export function spawn(
             id: String!
             updatedAt: Float!
         }
+        input CheckpointInput {
+            id: String!
+            updatedAt: Float!
+        }
         type FeedResponse {
             documents: [Human!]!
             checkpoint: Checkpoint!
         }
         type Query {
             info: Int
-            feedForRxDBReplication(lastId: String!, minUpdatedAt: Float!, limit: Int!): FeedResponse!
+            feedForRxDBReplication(checkpoint: CheckpointInput, limit: Int!): FeedResponse!
             collectionFeedForRxDBReplication(lastId: String!, minUpdatedAt: Float!, offset: Int, limit: Int!): CollectionFeedResponse!
             getAll: [Human!]!
         }
@@ -159,6 +163,9 @@ export function spawn(
             };
         },
         feedForRxDBReplication: (args: any) => {
+            const lastId = args.checkpoint ? args.checkpoint.id : '';
+            const minUpdatedAt = args.checkpoint ? args.checkpoint.updatedAt : 0;
+
             // console.log('## feedForRxDBReplication');
             // console.dir(args);
             // sorted by updatedAt and primary
@@ -166,10 +173,12 @@ export function spawn(
 
             // only return where updatedAt >= minUpdatedAt
             const filteredByMinUpdatedAtAndId = sortedDocuments.filter((doc) => {
-                if (doc.updatedAt < args.minUpdatedAt) return false;
-                if (doc.updatedAt > args.minUpdatedAt) return true;
-                if (doc.updatedAt === args.minUpdatedAt) {
-                    if (doc.id > args.lastId) {
+                if (doc.updatedAt < minUpdatedAt) {
+                    return false;
+                } else if (doc.updatedAt > minUpdatedAt) {
+                    return true;
+                } else if (doc.updatedAt === minUpdatedAt) {
+                    if (doc.id > lastId) {
                         return true;
                     }
                     else return false;
@@ -180,16 +189,19 @@ export function spawn(
             const limited = args.limit ? filteredByMinUpdatedAtAndId.slice(0, args.limit) : filteredByMinUpdatedAtAndId;
 
             const last = lastOfArray(limited);
-            return {
+            const ret = {
                 documents: limited,
                 checkpoint: last ? {
                     id: last.id,
                     updatedAt: last.updatedAt
                 } : {
-                    id: args.lastId,
-                    updatedAt: args.minUpdatedAt
+                    id: lastId,
+                    updatedAt: minUpdatedAt
                 }
             };
+            console.log('feedForRxDBReplication() ret:');
+            console.log(JSON.stringify(ret, null, 4));
+            return ret;
         },
         getAll: () => {
             return documents;
@@ -372,7 +384,7 @@ export function spawn(
                     close(now = false) {
                         if (now) {
                             server.close();
-//                            subServer.close();
+                            //                            subServer.close();
                             return Promise.resolve();
                         } else {
                             return new Promise(res2 => {
