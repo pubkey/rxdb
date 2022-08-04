@@ -50,6 +50,10 @@ import {
 } from '../helper/graphql-config';
 
 import {
+    wrappedValidateAjvStorage
+} from '../../plugins/validate-ajv';
+
+import {
     GraphQLServerModule
 } from '../helper/graphql-server';
 
@@ -84,9 +88,7 @@ describe('replication-graphql.test.ts', () => {
                     name
                     age
                     updatedAt
-                    # Our server uses a different deleted flag, so we substitute it in the query
-                    # @link https://devinschulz.com/rename-fields-by-using-aliases-in-graphql/
-                    _deleted: deleted
+                    deleted
                 }
                 checkpoint {
                     id
@@ -111,7 +113,7 @@ describe('replication-graphql.test.ts', () => {
                     name,
                     age,
                     updatedAt,
-                    _deleted: deleted
+                    deleted
                 },
                 checkpoint {
                     id
@@ -137,28 +139,12 @@ describe('replication-graphql.test.ts', () => {
                 name
                 age
                 updatedAt
-                # Our server uses a different deleted flag, so we substitute it in the query
-                # @link https://devinschulz.com/rename-fields-by-using-aliases-in-graphql/
-                _deleted: deleted
+                deleted
             }
         }
         `;
-
-        /**
-         * Our backend server uses a different _deleted field,
-         * so we have to swap it out.
-         */
         const variables = {
-            writeRows: rows.map(row => {
-                const useRow: typeof row = clone(row);
-                (useRow.newDocumentState as any).deleted = useRow.newDocumentState._deleted;
-                delete (useRow.newDocumentState as any)._deleted;
-                if (useRow.assumedMasterState) {
-                    (useRow.assumedMasterState as any).deleted = useRow.assumedMasterState._deleted;
-                    delete (useRow.assumedMasterState as any)._deleted;
-                }
-                return useRow;
-            })
+            writeRows: rows
         };
         return Promise.resolve({
             query,
@@ -430,18 +416,28 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn([doc])
                 ]);
 
+                console.log('#######################');
+                console.log('#######################');
+                console.log('#######################');
+                console.log('#######################');
                 const replicationState = c.syncGraphQL({
                     url: server.url,
                     pull: {
                         batchSize,
                         queryBuilder: pullQueryBuilder
-                    }
+                    },
+                    deletedFlag: 'deleted'
+                });
+                const errorSub = replicationState.error$.subscribe(err => {
+                    console.dir(err);
+                    throw err;
                 });
                 await replicationState.awaitInitialReplication();
                 const docs = await c.find().exec();
 
                 assert.strictEqual(docs.length, 0);
 
+                errorSub.unsubscribe();
                 server.close();
                 c.database.destroy();
             });
@@ -461,7 +457,8 @@ describe('replication-graphql.test.ts', () => {
                     pull: {
                         batchSize,
                         queryBuilder: pullQueryBuilder
-                    }
+                    },
+                    deletedFlag: 'deleted'
                 });
                 replicationState.retryTime = 100;
 
@@ -496,7 +493,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
 
 
@@ -537,7 +535,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
 
                 await replicationState.awaitInitialReplication();
@@ -577,7 +576,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
                 await replicationState.awaitInitialReplication();
 
@@ -612,7 +612,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
 
                 let timeoutId: any;
@@ -655,7 +656,8 @@ describe('replication-graphql.test.ts', () => {
                         queryBuilder: pushQueryBuilder
                     },
                     live: false,
-                    retryTime: 1000
+                    retryTime: 1000,
+                    deletedFlag: 'deleted'
                 });
                 const errSub = replicationState.error$.subscribe((err) => {
                     console.dir(err);
@@ -683,7 +685,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pushQueryBuilder
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
                 await replicationState.awaitInitialReplication();
                 const docsOnServer = server.getDocuments();
@@ -708,7 +711,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pushQueryBuilder
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
 
                 await replicationState.awaitInitialReplication();
@@ -733,7 +737,12 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pushQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
+                });
+                const errorSub = replicationState.error$.subscribe(err => {
+                    console.dir(err);
+                    throw err;
                 });
 
                 await replicationState.awaitInitialReplication();
@@ -754,14 +763,17 @@ describe('replication-graphql.test.ts', () => {
                 // check for deletes
                 console.log('---- 3');
                 await c.findOne().remove();
+                await replicationState.awaitInSync();
                 console.log('---- 4');
                 await AsyncTestUtil.waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
+                    console.log(JSON.stringify(docsOnServer2, null, 4));
                     const oneShouldBeDeleted = docsOnServer2.find((d: any) => d.deleted === true);
                     return !!oneShouldBeDeleted;
-                });
+                }, 1000, 200);
                 console.log('---- 5');
 
+                errorSub.unsubscribe();
                 server.close();
                 c.database.destroy();
             });
@@ -788,7 +800,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pushQueryBuilder
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
 
                 const emitted = [];
@@ -825,7 +838,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
 
                 await replicationState.awaitInitialReplication();
@@ -864,7 +878,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: asyncQueryBuilder
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
 
                 await replicationState.awaitInitialReplication();
@@ -895,7 +910,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
 
                 console.log('---------------------- 0');
@@ -968,7 +984,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
 
                 await replicationState.awaitInitialReplication();
@@ -1054,7 +1071,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pushQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
                 collection2.syncGraphQL({
                     url: server.url,
@@ -1066,7 +1084,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pushQueryBuilder
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
 
 
@@ -1117,7 +1136,8 @@ describe('replication-graphql.test.ts', () => {
                             return pullQueryBuilder(args, limit);
                         }
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
 
 
@@ -1185,7 +1205,8 @@ describe('replication-graphql.test.ts', () => {
                         queryBuilder: pullQueryBuilder,
                         streamQueryBuilder: pullStreamQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
                 const errSub = replicationState.error$.subscribe((err) => {
                     console.dir(err);
@@ -1213,17 +1234,22 @@ describe('replication-graphql.test.ts', () => {
                     return doc.name === 'updated';
                 });
 
+                console.log('kkkkkkk 0');
+
                 // delete on remote
                 const deleteDocData: typeof testDocData = clone(updateDocData);
                 deleteDocData.deleted = true;
                 await server.setDocument(deleteDocData);
+                console.log('kkkkkkk 1');
                 await waitUntil(async () => {
                     const doc = await c.findOne().exec();
                     if (doc) {
                         console.dir(doc.toJSON());
                     }
                     return !doc;
-                });
+                }, 1000, 200);
+
+                console.log('kkkkkkk 2');
 
                 errSub.unsubscribe();
                 await server.close();
@@ -1245,7 +1271,8 @@ describe('replication-graphql.test.ts', () => {
                     pull: {
                         batchSize,
                         queryBuilder: pullQueryBuilder
-                    }
+                    },
+                    deletedFlag: 'deleted'
                 });
 
                 const emitted: RxDocumentData<HumanWithTimestampDocumentType>[] = [];
@@ -1276,7 +1303,8 @@ describe('replication-graphql.test.ts', () => {
                         queryBuilder: pushQueryBuilder,
                         batchSize
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
 
                 const emitted: any[] = [];
@@ -1304,7 +1332,8 @@ describe('replication-graphql.test.ts', () => {
                     pull: {
                         batchSize,
                         queryBuilder: pullQueryBuilder
-                    }
+                    },
+                    deletedFlag: 'deleted'
                 });
 
                 const error = await replicationState.error$.pipe(
@@ -1323,7 +1352,8 @@ describe('replication-graphql.test.ts', () => {
                     },
                     push: {
                         queryBuilder: pushQueryBuilder,
-                    }
+                    },
+                    deletedFlag: 'deleted'
                 });
 
                 const localDoc = schemaObjects.humanWithTimestamp();
@@ -1587,7 +1617,8 @@ describe('replication-graphql.test.ts', () => {
                     pull: {
                         batchSize,
                         queryBuilder: pullQueryBuilder
-                    }
+                    },
+                    deletedFlag: 'deleted'
                 });
                 await replicationState.awaitInitialReplication();
 
@@ -1633,7 +1664,8 @@ describe('replication-graphql.test.ts', () => {
                     pull: {
                         batchSize,
                         queryBuilder: pullQueryBuilder
-                    }
+                    },
+                    deletedFlag: 'deleted'
                 });
                 await replicationState.awaitInitialReplication();
 
@@ -1684,7 +1716,8 @@ describe('replication-graphql.test.ts', () => {
                             const ret = pushQueryBuilder(doc);
                             return ret;
                         }
-                    }
+                    },
+                    deletedFlag: 'deleted'
                 });
                 const errorSub = replicationState.error$.subscribe(err => {
                     console.dir(err);
@@ -1715,7 +1748,8 @@ describe('replication-graphql.test.ts', () => {
                     headers: {
                         Authorization: 'password'
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
                 await replicationState.awaitInitialReplication();
 
@@ -1741,7 +1775,8 @@ describe('replication-graphql.test.ts', () => {
                     headers: {
                         Authorization: 'password'
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
                 await replicationState.awaitInitialReplication();
 
@@ -1783,7 +1818,8 @@ describe('replication-graphql.test.ts', () => {
                     headers: {
                         Authorization: 'wrong-password'
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
                 const replicationError = await replicationState.error$.pipe(first()).toPromise();
 
@@ -1834,7 +1870,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pushQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
                 await replicationState.awaitInitialReplication();
                 const docsOnServer = server.getDocuments();
@@ -1885,7 +1922,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
                 replicationState.error$.subscribe((err: any) => console.error('REPLICATION ERROR', err));
                 await replicationState.awaitInitialReplication();
@@ -1911,7 +1949,9 @@ describe('replication-graphql.test.ts', () => {
             it('#1812 updates fail when graphql is enabled', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: config.storage.getStorage(),
+                    storage: wrappedValidateAjvStorage({
+                        storage: config.storage.getStorage()
+                    }),
                     multiInstance: false,
                     eventReduce: true,
                     password: randomCouchString(10)
@@ -1938,7 +1978,12 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
+                });
+                const errorSub = replicationState.error$.subscribe(err => {
+                    console.dir(err);
+                    throw err;
                 });
 
                 // ensure we are in sync even when there are no doc in the db at this moment
@@ -1971,8 +2016,9 @@ describe('replication-graphql.test.ts', () => {
                     const serverDocs = server.getDocuments();
                     const notUpdated = serverDocs.find((d: any) => d.age !== newAge);
                     return !notUpdated;
-                });
+                }, 1000, 200);
 
+                errorSub.unsubscribe();
                 await db.destroy();
                 await server.close();
             });
@@ -2012,7 +2058,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder,
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
 
                 // ensure we are in sync even when there are no doc in the db at this moment
@@ -2095,7 +2142,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pushQueryBuilder
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
                 await replicationState.awaitInitialReplication();
 
@@ -2129,7 +2177,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pushQueryBuilder
                     },
-                    live: true
+                    live: true,
+                    deletedFlag: 'deleted'
                 });
                 await replicationState2.awaitInitialReplication();
                 const addDoc = schemaObjects.humanWithTimestamp();

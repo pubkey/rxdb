@@ -46,6 +46,7 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
         public readonly clientState: { headers: any; client: any },
         public readonly replicationIdentifierHash: string,
         public readonly collection: RxCollection<RxDocType>,
+        public readonly deletedFlag: string,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live?: boolean,
@@ -55,6 +56,7 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
         super(
             replicationIdentifierHash,
             collection,
+            deletedFlag,
             pull,
             push,
             live,
@@ -77,6 +79,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
     {
         url,
         headers = {},
+        deletedFlag = '_deleted',
         waitForLeadership = true,
         pull,
         push,
@@ -157,6 +160,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         mutateableClientState,
         GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(url.http ? url.http : url.ws as any),
         collection,
+        deletedFlag,
         replicationPrimitivesPull,
         replicationPrimitivesPush,
         live,

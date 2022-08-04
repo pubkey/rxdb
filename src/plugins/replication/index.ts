@@ -73,6 +73,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          */
         public readonly replicationIdentifierHash: string,
         public readonly collection: RxCollection<RxDocType>,
+        public readonly deletedFlag: string,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live?: boolean,
@@ -88,10 +89,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
 
         // stop the replication when the collection gets destroyed
-        this.collection.onDestroy.push(() => {
-            console.log('RxReplication collection.onDestroy called');
-            return this.cancel();
-        });
+        this.collection.onDestroy.push(() => this.cancel());
 
         // create getters for the observables
         Object.keys(this.subjects).forEach(key => {
@@ -149,8 +147,11 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             return ev;
                         }
                         const useEv = flatClone(ev);
+                        if (this.deletedFlag !== '_deleted') {
+                            useEv.documents = useEv.documents.map(doc => swapDeletedFlagToDefaultDeleted(this.deletedFlag, doc))
+                        }
                         useEv.documents = await Promise.all(
-                            ev.documents.map(d => pullModifier(d))
+                            useEv.documents.map(d => pullModifier(d))
                         );
                         return useEv;
                     })
@@ -192,9 +193,13 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     }
 
                     const useResult = flatClone(result);
+                    if (this.deletedFlag !== '_deleted') {
+                        useResult.documents = useResult.documents.map(doc => swapDeletedFlagToDefaultDeleted(this.deletedFlag, doc))
+                    }
                     useResult.documents = await Promise.all(
-                        result.documents.map(d => pullModifier(d))
+                        useResult.documents.map(d => pullModifier(d))
                     );
+
                     return useResult;
                 },
                 masterWrite: async (
@@ -210,6 +215,14 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             if (row.assumedMasterState) {
                                 row.assumedMasterState = await pushModifier(row.assumedMasterState);
                             }
+
+                            if (this.deletedFlag !== '_deleted') {
+                                row.newDocumentState = swapDefaultDeletedToDeletedFlag(this.deletedFlag, row.newDocumentState) as any;
+                                if (row.assumedMasterState) {
+                                    row.assumedMasterState = swapDefaultDeletedToDeletedFlag(this.deletedFlag, row.assumedMasterState) as any;
+                                }
+                            }
+
                             return row;
                         })
                     );
@@ -315,9 +328,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             return PROMISE_RESOLVE_FALSE;
         }
 
-
-        console.log('RxReplicationState.cancel()');
-
         if (this.internalReplicationState) {
             this.internalReplicationState.events.canceled.next(true);
         }
@@ -344,6 +354,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
     {
         replicationIdentifier,
         collection,
+        deletedFlag = '_deleted',
         pull,
         push,
         live = true,
@@ -362,6 +373,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
     const replicationState = new RxReplicationState<RxDocType, CheckpointType>(
         replicationIdentifierHash,
         collection,
+        deletedFlag,
         pull,
         push,
         live,
@@ -393,4 +405,36 @@ export function startReplicationOnLeaderShip(
             replicationState.start();
         }
     });
+}
+
+
+export function swapDefaultDeletedToDeletedFlag<RxDocType>(
+    deletedFlag: string,
+    doc: WithDeleted<RxDocType>
+): RxDocType {
+    if (deletedFlag === '_deleted') {
+        return doc;
+    } else {
+        doc = flatClone(doc);
+        const isDeleted = doc._deleted;
+        (doc as any)[deletedFlag] = isDeleted;
+        delete (doc as any)._deleted;
+        return doc;
+    }
+}
+
+
+export function swapDeletedFlagToDefaultDeleted<RxDocType>(
+    deletedFlag: string,
+    doc: RxDocType
+): WithDeleted<RxDocType> {
+    if (deletedFlag === '_deleted') {
+        return doc as any;
+    } else {
+        doc = flatClone(doc);
+        const isDeleted = (doc as any)[deletedFlag];
+        (doc as any)._deleted = isDeleted;
+        delete (doc as any)[deletedFlag];
+        return doc as any;
+    }
 }
