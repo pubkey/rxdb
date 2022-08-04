@@ -3,6 +3,7 @@ import * as path from 'path';
 import {
     BackupMetaFileContent,
     BackupOptions,
+    BlobBuffer,
     RxDatabase
 } from '../../types';
 import { blobBufferUtil, now } from '../../util';
@@ -61,7 +62,7 @@ export function prepareFolders(
 
 export async function writeToFile(
     location: string,
-    data: string | Blob
+    data: string | BlobBuffer
 ): Promise<void> {
     if (typeof data !== 'string') {
         data = await blobBufferUtil.toString(data);

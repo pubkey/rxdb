@@ -569,7 +569,7 @@ export const blobBufferUtil = {
     ): BlobBuffer {
         const blobBuffer = new Blob([data], {
             type
-        } as any);
+        });
         return blobBuffer;
     },
     /**
