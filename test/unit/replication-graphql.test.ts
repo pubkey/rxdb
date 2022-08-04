@@ -34,7 +34,8 @@ import {
     graphQLSchemaFromRxSchema,
     pullQueryBuilderFromRxSchema,
     pushQueryBuilderFromRxSchema,
-    RxGraphQLReplicationState
+    RxGraphQLReplicationState,
+    pullStreamBuilderFromRxSchema
 } from '../../plugins/replication-graphql';
 import {
     wrappedKeyCompressionStorage
@@ -102,9 +103,9 @@ describe('replication-graphql.test.ts', () => {
             variables
         });
     };
-    const pullStreamQueryBuilder = () => {
-        const query = `subscription onHumanChanged {
-            humanChanged {
+    const pullStreamQueryBuilder = (headers: { [k: string]: string }) => {
+        const query = `subscription onHumanChanged($headers: Headers) {
+            humanChanged(headers: $headers) {
                 documents {
                     id,
                     name,
@@ -120,7 +121,9 @@ describe('replication-graphql.test.ts', () => {
         }`;
         return {
             query,
-            variables: {}
+            variables: {
+                headers
+            }
         };
     };
     const pushQueryBuilder = (rows: RxReplicationWriteToMasterRow<HumanWithTimestampDocumentType>[]) => {
@@ -1180,9 +1183,15 @@ describe('replication-graphql.test.ts', () => {
                     pull: {
                         batchSize,
                         queryBuilder: pullQueryBuilder,
-                        streamQuery: pullStreamQueryBuilder()
+                        streamQueryBuilder: pullStreamQueryBuilder
                     },
                     live: true
+                });
+                const errSub = replicationState.error$.subscribe((err) => {
+                    console.dir(err);
+                    console.dir(err.parameters.errors);
+                    console.log(JSON.stringify(err.parameters.errors, null, 4));
+                    throw new Error('The replication threw an error');
                 });
                 await replicationState.awaitInSync();
 
@@ -1216,6 +1225,7 @@ describe('replication-graphql.test.ts', () => {
                     return !doc;
                 });
 
+                errSub.unsubscribe();
                 await server.close();
                 await c.database.destroy();
             });
@@ -1421,6 +1431,41 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 const output = await builder(null, batchSize);
+                const parsed = parseQuery(output.query);
+                assert.ok(parsed);
+            });
+        });
+        config.parallel('.pullStreamBuilderFromRxSchema()', () => {
+            it('should create a valid builder', async () => {
+                const builder = pullStreamBuilderFromRxSchema(
+                    'human', {
+                    schema: schemas.humanWithTimestamp,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ],
+                    headerFields: ['AUTH_TOKEN']
+                });
+
+                const output = await builder({
+                    AUTH_TOKEN: 'foobar'
+                });
+
+                assert.strictEqual(output.variables.headers.AUTH_TOKEN, 'foobar');
+                const parsed = parseQuery(output.query);
+                assert.ok(parsed);
+            });
+            it('builder should work on null-document', async () => {
+                const builder = pullStreamBuilderFromRxSchema(
+                    'human', {
+                    schema: schemas.humanWithTimestamp,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ]
+                });
+
+                const output = await builder({});
                 const parsed = parseQuery(output.query);
                 assert.ok(parsed);
             });

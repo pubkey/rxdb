@@ -4,9 +4,10 @@ import {
     Prefixes,
     SPACING
 } from './graphql-schema-from-rx-schema';
-import { ucfirst } from '../../util';
+import { ensureNotFalsy, ucfirst } from '../../util';
 import type {
     RxGraphQLReplicationPullQueryBuilder,
+    RxGraphQLReplicationPullStreamQueryBuilder,
     RxGraphQLReplicationPushQueryBuilder,
     WithDeleted
 } from '../../types';
@@ -47,6 +48,41 @@ export function pullQueryBuilderFromRxSchema(
         };
     };
 
+    return builder;
+}
+
+export function pullStreamBuilderFromRxSchema(
+    collectionName: string,
+    input: GraphQLSchemaFromRxSchemaInputSingleCollection,
+) {
+    input = fillUpOptionals(input);
+    const schema = input.schema;
+    const prefixes: Prefixes = input.prefixes as any;
+
+    const ucCollectionName = ucfirst(collectionName);
+    const outputFields = Object.keys(schema.properties).filter(k => !(input.ignoreOutputKeys as string[]).includes(k));
+
+    const headersName = ucCollectionName + 'Input' + prefixes.headers;
+
+    const query = 'subscription on' + ucfirst(ensureNotFalsy(prefixes.stream)) + '($headers: ' + headersName + ') {\n' +
+        SPACING + prefixes.stream + ucCollectionName + '(headers: $headers) {\n' +
+        SPACING + SPACING + SPACING + 'documents {\n' +
+        SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' +
+        SPACING + SPACING + SPACING + '}\n' +
+        SPACING + SPACING + SPACING + 'checkpoint {\n' +
+        SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' +
+        SPACING + SPACING + SPACING + '}\n' +
+        SPACING + '}' +
+        '}';
+
+    const builder: RxGraphQLReplicationPullStreamQueryBuilder = (headers: any) => {
+        return {
+            query,
+            variables: {
+                headers
+            }
+        }
+    };
     return builder;
 }
 

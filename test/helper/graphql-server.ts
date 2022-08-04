@@ -128,12 +128,15 @@ export function spawn(
             deleted: Boolean!,
             deletedAt: Float
         }
+        input Headers {
+            token: String
+        }
         type CollectionFeedResponse {
             collection: FeedResponse!
             count: Int!
         }
         type Subscription {
-            humanChanged: FeedResponse
+            humanChanged(headers: Headers): FeedResponse
         }
         schema {
             query: Query

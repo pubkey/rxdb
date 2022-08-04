@@ -21,7 +21,8 @@ import type {
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow,
-    GraphQLServerUrl
+    GraphQLServerUrl,
+    RxReplicationPullStreamItem
 } from '../../types';
 import {
     RxReplicationState,
@@ -37,11 +38,12 @@ import {
     removeGraphQLWebSocketRef,
     getGraphQLWebSocket
 } from './graphql-websocket';
+import { Subject } from 'rxjs';
 
 export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxReplicationState<RxDocType, CheckpointType> {
     constructor(
         public readonly url: GraphQLServerUrl,
-        public readonly clientState: { client: any },
+        public readonly clientState: { headers: any; client: any },
         public readonly replicationIdentifierHash: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
@@ -62,6 +64,7 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
     }
 
     setHeaders(headers: { [k: string]: string }): void {
+        this.clientState.headers = headers;
         this.clientState.client = GraphQLClient({
             url: this.url.http,
             headers
@@ -89,12 +92,15 @@ export function syncGraphQL<RxDocType, CheckpointType>(
      * so we can later swap out the client inside of the replication handlers.
      */
     const mutateableClientState = {
+        headers,
         client: GraphQLClient({
             url: url.http,
             headers
         })
     };
 
+
+    const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>> = new Subject();
 
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, CheckpointType> | undefined;
     if (pull) {
@@ -121,7 +127,8 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 }
             },
             batchSize: pull.batchSize,
-            modifier: pull.modifier
+            modifier: pull.modifier,
+            stream$: pullStream$.asObservable()
         }
     }
     let replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined;
@@ -145,7 +152,6 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         };
     }
 
-
     const graphqlReplicationState = new RxGraphQLReplicationState(
         url,
         mutateableClientState,
@@ -158,10 +164,9 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         autoStart
     );
 
-
     const mustUseSocket = url.ws &&
         pull &&
-        pull.streamQuery &&
+        pull.streamQueryBuilder &&
         live;
 
     const startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
@@ -169,21 +174,25 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         if (mustUseSocket) {
             console.log('# START WEBSOCKET CLIENT');
             const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws));
-            const clientRequest = wsClient.request(ensureNotFalsy(pull.streamQuery));
+
+            console.dir(pull);
+
+            const clientRequest = wsClient.request(ensureNotFalsy(pull.streamQueryBuilder)(mutateableClientState.headers));
             clientRequest.subscribe({
                 next(data: any) {
                     const firstField = Object.keys(data.data)[0];
                     console.log('client request emitted:');
                     console.dir(data.data[firstField]);
-                    graphqlReplicationState.emitEvent(data.data[firstField]);
+                    pullStream$.next(data.data[firstField]);
                 },
                 error(error: any) {
                     console.log('client request error:');
                     console.dir(error);
+                    pullStream$.error(error);
                 }
             });
             wsClient.onReconnected(() => {
-                graphqlReplicationState.remoteEvents$.next('RESYNC');
+                pullStream$.next('RESYNC');
             });
         }
         return startBefore();
@@ -191,6 +200,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
 
     const cancelBefore = graphqlReplicationState.cancel.bind(graphqlReplicationState);
     graphqlReplicationState.cancel = () => {
+        pullStream$.complete();
         if (mustUseSocket) {
             removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
         }

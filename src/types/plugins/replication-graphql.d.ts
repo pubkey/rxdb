@@ -24,9 +24,11 @@ export type GraphQLSyncPullOptions<RxDocType, CheckpointType> = Omit<
     'handler' | 'stream$'
 > & {
     queryBuilder: RxGraphQLReplicationPullQueryBuilder<CheckpointType>;
-    streamQuery?: RxGraphQLReplicationQueryBuilderResponseObject;
+    streamQueryBuilder?: RxGraphQLReplicationPullStreamQueryBuilder;
     dataPath?: string;
 }
+
+export type RxGraphQLReplicationPullStreamQueryBuilder = (headers: { [k: string]: string }) => RxGraphQLReplicationQueryBuilderResponse;
 
 export type GraphQLSyncPushOptions<RxDocType> = Omit<
     ReplicationPushOptions<RxDocType>,

@@ -12,6 +12,7 @@ export type Prefixes = {
     pull?: string;
     pullBulk?: string;
     stream?: string;
+    headers?: string;
 };
 
 /**
@@ -36,7 +37,7 @@ export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
     ignoreOutputKeys?: string[];
     withRevisions?: boolean;
     prefixes?: Prefixes;
-    subscriptionParams?: { [k: string]: GraphQLParamType };
+    headerFields?: string[];
     /**
      * Name of the boolean field that marks deleted documents.
      * [default='_deleted']
@@ -126,6 +127,25 @@ export function graphQLSchemaFromRxSchema(
             direction: 'input'
         });
 
+        const headersSchema: any = {
+            type: 'object',
+            additionalProperties: false,
+            properties: {},
+            required: []
+        };
+        ensureNotFalsy(collectionSettings.headerFields).forEach(headerField => {
+            headersSchema.properties[headerField] = {
+                type: 'string'
+            };
+            headersSchema.required.push(headerField);
+        });
+        const headersInputName = collectionNameInput + prefixes.headers;
+        const headersInputGraphQL = getGraphqlSchemaFromJsonSchema({
+            rootName: headersInputName,
+            schema: headersSchema,
+            direction: 'input'
+        });
+
 
         ret.inputs = ret.inputs.concat(
             inputGraphQL
@@ -139,6 +159,10 @@ export function graphQLSchemaFromRxSchema(
             checkpointInputGraphQL
                 .typeDefinitions
                 .map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.checkpoint))
+        ).concat(
+            headersInputGraphQL
+                .typeDefinitions
+                .map(str => replaceTopLevelTypeName(str, headersInputName))
         );
 
         // output
@@ -196,11 +220,10 @@ export function graphQLSchemaFromRxSchema(
 
         // subscription
         let subscriptionParamsString = '';
-        if (collectionSettings.subscriptionParams && Object.keys(collectionSettings.subscriptionParams).length > 0) {
+        if (collectionSettings.headerFields && collectionSettings.headerFields.length > 0) {
             subscriptionParamsString = '(' +
-                Object
-                    .entries(collectionSettings.subscriptionParams)
-                    .map(([name, type]) => name + ': ' + type)
+                collectionSettings.headerFields
+                    .map(headerField => headerField + ': String')
                     .join(', ') +
                 ')';
         }
@@ -281,6 +304,12 @@ export function fillUpOptionals(
     }
     if (!prefixes.stream) {
         prefixes.stream = 'stream';
+    }
+    if (!prefixes.headers) {
+        prefixes.headers = 'Headers';
+    }
+    if (!input.headerFields) {
+        input.headerFields = [];
     }
 
 

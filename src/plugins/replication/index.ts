@@ -254,7 +254,14 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             this.live
         ) {
             this.subs.push(
-                this.pull.stream$.subscribe(ev => this.remoteEvents$.next(ev))
+                this.pull.stream$.subscribe({
+                    next: ev => {
+                        this.remoteEvents$.next(ev);
+                    },
+                    error: err => {
+                        this.subjects.error.next(err);
+                    }
+                })
             );
         }
 

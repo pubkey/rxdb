@@ -32,7 +32,8 @@ addPouchPlugin(require('pouchdb-adapter-idb'));
 import {
     RxDBReplicationGraphQLPlugin,
     pullQueryBuilderFromRxSchema,
-    pushQueryBuilderFromRxSchema
+    pushQueryBuilderFromRxSchema,
+    pullStreamBuilderFromRxSchema
 } from 'rxdb/plugins/replication-graphql';
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 
@@ -83,6 +84,11 @@ const pullQueryBuilder = pullQueryBuilderFromRxSchema(
     batchSize
 );
 const pushQueryBuilder = pushQueryBuilderFromRxSchema(
+    'hero',
+    graphQLGenerationInput.hero
+);
+
+const pullStreamBuilder = pullStreamBuilderFromRxSchema(
     'hero',
     graphQLGenerationInput.hero
 );
@@ -203,7 +209,8 @@ async function run() {
             },
             pull: {
                 batchSize,
-                queryBuilder: pullQueryBuilder
+                queryBuilder: pullQueryBuilder,
+                streamQuery: pullStreamBuilder
             },
             live: true,
             /**
