@@ -219,16 +219,12 @@ export function graphQLSchemaFromRxSchema(
         ret.mutations.push(SPACING + mutationString);
 
         // subscription
-        let subscriptionParamsString = '';
+        let subscriptionHeaderInputString = '';
         if (collectionSettings.headerFields && collectionSettings.headerFields.length > 0) {
-            subscriptionParamsString = '(' +
-                collectionSettings.headerFields
-                    .map(headerField => headerField + ': String')
-                    .join(', ') +
-                ')';
+            subscriptionHeaderInputString = '(headers: ' + headersInputName + ')';
         }
         const subscriptionName = prefixes.stream + ucCollectionName;
-        const subscriptionString = subscriptionName + subscriptionParamsString + ': ' + ucCollectionName + prefixes.pullBulk + '!';
+        const subscriptionString = subscriptionName + subscriptionHeaderInputString + ': ' + ucCollectionName + prefixes.pullBulk + '!';
         ret.subscriptions.push(SPACING + subscriptionString);
     });
 

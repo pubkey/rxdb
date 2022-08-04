@@ -1,10 +1,5 @@
 import './style.css';
 import {
-    SubscriptionClient
-} from 'subscriptions-transport-ws';
-
-
-import {
     addRxPlugin,
     createRxDatabase
 } from 'rxdb';
@@ -210,7 +205,7 @@ async function run() {
             pull: {
                 batchSize,
                 queryBuilder: pullQueryBuilder,
-                streamQuery: pullStreamBuilder
+                streamQueryBuilder: pullStreamBuilder
             },
             live: true,
             /**
@@ -228,60 +223,6 @@ async function run() {
         replicationState.error$.subscribe(err => {
             console.error('replication error:');
             console.dir(err);
-        });
-
-
-        // setup graphql-subscriptions for pull-trigger
-        db.waitForLeadership().then(() => {
-            // heroesList.innerHTML = 'Create SubscriptionClient..';
-            const wsClient = new SubscriptionClient(
-                endpointUrl,
-                {
-                    reconnect: true,
-                    timeout: 1000 * 60,
-                    onConnect: () => {
-                        console.log('SubscriptionClient.onConnect()');
-                    },
-                    connectionCallback: () => {
-                        console.log('SubscriptionClient.connectionCallback:');
-                    },
-                    reconnectionAttempts: 10000,
-                    inactivityTimeout: 10 * 1000,
-                    lazy: true
-                });
-            // heroesList.innerHTML = 'Subscribe to GraphQL Subscriptions..';
-            const query = `
-        subscription onChangedHero($token: String!) {
-            changedHero(token: $token) {
-                id
-            }
-        }
-        `;
-            const ret = wsClient.request(
-                {
-                    query,
-                    /**
-                     * there is no method in javascript to set custom auth headers
-                     * at websockets. So we send the auth header directly as variable
-                     * @link https://stackoverflow.com/a/4361358/3443137
-                     */
-                    variables: {
-                        token: JWT_BEARER_TOKEN
-                    }
-                }
-            );
-            ret.subscribe({
-                next: async (data) => {
-                    console.log('subscription emitted => trigger notifyAboutRemoteChange()');
-                    console.dir(data);
-                    await replicationState.notifyAboutRemoteChange();
-                    console.log('notifyAboutRemoteChange() done');
-                },
-                error(error) {
-                    console.log('notifyAboutRemoteChange() got error:');
-                    console.dir(error);
-                }
-            });
         });
     }
 

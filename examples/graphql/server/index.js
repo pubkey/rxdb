@@ -181,8 +181,13 @@ export async function run() {
         },
         streamHero: (args) => {
             log('## streamHero()');
+
             console.dir(args);
-            validateBearerToken(args.token);
+            const authHeaderValue = args.headers.Authorization;
+            const bearerToken = authHeaderValue.split(' ')[1];
+
+
+            validateBearerToken(bearerToken);
 
             return pubsub.asyncIterator('streamHero');
         }
