@@ -106,7 +106,7 @@ For example if your documents look like this:
 
 Then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes via `pullHandler()`, it can send the latest `updatedAt+id` checkpoint to the remote endpoint and then recieve all newer documents.
 
-By default, the field is `_deleted`. If your remote endpoint uses a different field to mark deleted documents, you can set the `deletedFlag` in the replication options which will automatically map the field on all pull and push requests.
+By default, the field is `_deleted`. If your remote endpoint uses a different field to mark deleted documents, you can set the `deletedField` in the replication options which will automatically map the field on all pull and push requests.
 
 ## Conflict handling
 
@@ -180,14 +180,14 @@ const replicationState = await replicateRxCollection({
     autoStart: true,
 
     /**
-     * Custom deleted flag, the boolean property of the document data that
+     * Custom deleted field, the boolean property of the document data that
      * marks a document as being deleted.
      * If your backend uses a different fieldname then '_deleted', set the fieldname here.
      * RxDB will still store the documents internally with '_deleted', setting this field
      * only maps the data on the data layer.
      * [default='_deleted']
      */
-    deletedFlag: 'deleted',
+    deletedField: 'deleted',
 
     /**
      * Optional,

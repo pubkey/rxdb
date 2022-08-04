@@ -102,7 +102,7 @@ export type ReplicationOptions<RxDocType, CheckpointType> = {
      * to flag a document as being deleted.
      * [default='_deleted']
      */
-    deletedFlag?: '_deleted' | string;
+    deletedField?: '_deleted' | string;
     pull?: ReplicationPullOptions<RxDocType, CheckpointType>;
     push?: ReplicationPushOptions<RxDocType>;
     /**

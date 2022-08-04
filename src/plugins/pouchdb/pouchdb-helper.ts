@@ -398,6 +398,6 @@ export function getPouchIndexDesignDocNameByIndex(
 export const RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted' as const;
 
 
-export type RxLocalDocumentDataWithCustomDeletedFlag<D> = RxLocalDocumentData<D> & {
+export type RxLocalDocumentDataWithCustomDeletedField<D> = RxLocalDocumentData<D> & {
     [k in typeof RXDB_POUCH_DELETED_FLAG]?: boolean;
 };

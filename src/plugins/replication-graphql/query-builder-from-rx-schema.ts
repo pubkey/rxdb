@@ -24,7 +24,7 @@ export function pullQueryBuilderFromRxSchema(
     const queryName = prefixes.pull + ucCollectionName;
 
     const outputFields = Object.keys(schema.properties).filter(k => !(input.ignoreOutputKeys as string[]).includes(k));
-    // outputFields.push(input.deletedFlag);
+    // outputFields.push(input.deletedField);
 
     const checkpointInputName = ucCollectionName + 'Input' + prefixes.checkpoint;
 

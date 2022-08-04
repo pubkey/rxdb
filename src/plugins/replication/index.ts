@@ -73,7 +73,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          */
         public readonly replicationIdentifierHash: string,
         public readonly collection: RxCollection<RxDocType>,
-        public readonly deletedFlag: string,
+        public readonly deletedField: string,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live?: boolean,
@@ -147,8 +147,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             return ev;
                         }
                         const useEv = flatClone(ev);
-                        if (this.deletedFlag !== '_deleted') {
-                            useEv.documents = useEv.documents.map(doc => swapDeletedFlagToDefaultDeleted(this.deletedFlag, doc))
+                        if (this.deletedField !== '_deleted') {
+                            useEv.documents = useEv.documents.map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc))
                         }
                         useEv.documents = await Promise.all(
                             useEv.documents.map(d => pullModifier(d))
@@ -193,8 +193,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     }
 
                     const useResult = flatClone(result);
-                    if (this.deletedFlag !== '_deleted') {
-                        useResult.documents = useResult.documents.map(doc => swapDeletedFlagToDefaultDeleted(this.deletedFlag, doc))
+                    if (this.deletedField !== '_deleted') {
+                        useResult.documents = useResult.documents.map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc))
                     }
                     useResult.documents = await Promise.all(
                         useResult.documents.map(d => pullModifier(d))
@@ -216,10 +216,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                                 row.assumedMasterState = await pushModifier(row.assumedMasterState);
                             }
 
-                            if (this.deletedFlag !== '_deleted') {
-                                row.newDocumentState = swapDefaultDeletedToDeletedFlag(this.deletedFlag, row.newDocumentState) as any;
+                            if (this.deletedField !== '_deleted') {
+                                row.newDocumentState = swapDefaultDeletedTodeletedField(this.deletedField, row.newDocumentState) as any;
                                 if (row.assumedMasterState) {
-                                    row.assumedMasterState = swapDefaultDeletedToDeletedFlag(this.deletedFlag, row.assumedMasterState) as any;
+                                    row.assumedMasterState = swapDefaultDeletedTodeletedField(this.deletedField, row.assumedMasterState) as any;
                                 }
                             }
 
@@ -354,7 +354,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
     {
         replicationIdentifier,
         collection,
-        deletedFlag = '_deleted',
+        deletedField = '_deleted',
         pull,
         push,
         live = true,
@@ -373,7 +373,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
     const replicationState = new RxReplicationState<RxDocType, CheckpointType>(
         replicationIdentifierHash,
         collection,
-        deletedFlag,
+        deletedField,
         pull,
         push,
         live,
@@ -408,33 +408,33 @@ export function startReplicationOnLeaderShip(
 }
 
 
-export function swapDefaultDeletedToDeletedFlag<RxDocType>(
-    deletedFlag: string,
+export function swapDefaultDeletedTodeletedField<RxDocType>(
+    deletedField: string,
     doc: WithDeleted<RxDocType>
 ): RxDocType {
-    if (deletedFlag === '_deleted') {
+    if (deletedField === '_deleted') {
         return doc;
     } else {
         doc = flatClone(doc);
         const isDeleted = doc._deleted;
-        (doc as any)[deletedFlag] = isDeleted;
+        (doc as any)[deletedField] = isDeleted;
         delete (doc as any)._deleted;
         return doc;
     }
 }
 
 
-export function swapDeletedFlagToDefaultDeleted<RxDocType>(
-    deletedFlag: string,
+export function swapdeletedFieldToDefaultDeleted<RxDocType>(
+    deletedField: string,
     doc: RxDocType
 ): WithDeleted<RxDocType> {
-    if (deletedFlag === '_deleted') {
+    if (deletedField === '_deleted') {
         return doc as any;
     } else {
         doc = flatClone(doc);
-        const isDeleted = (doc as any)[deletedFlag];
+        const isDeleted = (doc as any)[deletedField];
         (doc as any)._deleted = isDeleted;
-        delete (doc as any)[deletedFlag];
+        delete (doc as any)[deletedField];
         return doc as any;
     }
 }

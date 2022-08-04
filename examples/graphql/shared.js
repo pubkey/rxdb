@@ -48,7 +48,7 @@ export const graphQLGenerationInput = {
             'id',
             'updatedAt'
         ],
-        deletedFlag: 'deleted',
+        deletedField: 'deleted',
         headerFields: ['Authorization']
     }
 };

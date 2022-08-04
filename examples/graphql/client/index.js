@@ -205,7 +205,7 @@ async function run() {
                 streamQueryBuilder: pullStreamBuilder
             },
             live: true,
-            deletedFlag: 'deleted'
+            deletedField: 'deleted'
         });
 
 

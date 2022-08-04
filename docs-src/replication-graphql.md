@@ -55,7 +55,7 @@ Then your data is always sortable by `updatedAt`. This ensures that when RxDB fe
 Deleted documents still exist but have `deleted: true` set. This ensures that when RxDB fetches new documents, even the deleted documents are send back and can be known at the client-side.
 
 RxDB documents also have an internal `_deleted` field that is managed by RxDB when deleting documents or pulling deleted documents from a GraphQL server.
-If you use something like a `deletedAt` field instead and configure the `deletedFlag` option in the `syncGraphQL` to use the timestamp field, RxDB will still be able to keep track of deleted documents with an efficient Boolean flag.
+If you use something like a `deletedAt` field instead and configure the `deletedField` option in the `syncGraphQL` to use the timestamp field, RxDB will still be able to keep track of deleted documents with an efficient Boolean flag.
 
 ### GraphQL Server
 
@@ -192,7 +192,7 @@ const replicationState = myCollection.syncGraphQL({
          */
         batchSize: 5
     },
-    deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
+    deletedField: 'deleted', // the flag which indicates if a pulled document is deleted
     live: true // if this is true, rxdb will watch for ongoing changes and sync them, when false, a one-time-replication will be done
 });
 ```
@@ -239,7 +239,7 @@ const replicationState = myCollection.syncGraphQL({
          */
         modifier: doc => doc
     },
-    deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
+    deletedField: 'deleted', // the flag which indicates if a pulled document is deleted
     live: true // if this is true, rxdb will watch for ongoing changes and sync them
 });
 ```
@@ -265,7 +265,7 @@ const replicationState = myCollection.syncGraphQL({
     pull: {
         pullQueryBuilder,
     },
-    deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
+    deletedField: 'deleted', // the flag which indicates if a pulled document is deleted
     live: true
 });
 
