@@ -266,7 +266,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
                 assert.strictEqual(replicationState.isStopped(), false);
 
@@ -301,7 +302,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
 
                 await AsyncTestUtil.waitUntil(async () => {
