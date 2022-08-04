@@ -181,10 +181,10 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
         ),
         masterChangesSince(
             checkpoint,
-            bulkSize
+            batchSize
         ) {
             return instance.getChangedDocumentsSince(
-                bulkSize,
+                batchSize,
                 checkpoint
             ).then(result => {
                 return {

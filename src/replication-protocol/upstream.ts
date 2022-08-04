@@ -95,7 +95,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         while (!state.events.canceled.getValue()) {
             initialSyncStartTime = timer++;
             const upResult = await state.input.forkInstance.getChangedDocumentsSince(
-                state.input.bulkSize,
+                state.input.batchSize,
                 lastCheckpoint
             );
             if (upResult.documents.length === 0) {

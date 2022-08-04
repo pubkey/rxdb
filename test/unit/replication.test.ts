@@ -72,9 +72,9 @@ describe('replication.test.js', () => {
         );
         const handler: ReplicationPullHandler<TestDocType, CheckpointType> = async (
             latestPullCheckpoint: CheckpointType | null,
-            bulkSize: number
+            batchSize: number
         ) => {
-            const result = await helper.masterChangesSince(latestPullCheckpoint, bulkSize);
+            const result = await helper.masterChangesSince(latestPullCheckpoint, batchSize);
             return result;
         };
         return handler;

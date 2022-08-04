@@ -136,7 +136,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         });
 
         this.internalReplicationState = replicateRxStorageInstance({
-            bulkSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
+            batchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
             forkInstance: this.collection.storageInstance,
             metaInstance: this.metaInstance,
             hashFunction: database.hashFunction,
@@ -157,7 +157,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 ),
                 masterChangesSince: async (
                     checkpoint: CheckpointType,
-                    bulkSize: number
+                    batchSize: number
                 ) => {
                     if (!this.pull) {
                         return {
@@ -177,7 +177,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         try {
                             result = await this.pull.handler(
                                 checkpoint,
-                                bulkSize
+                                batchSize
                             );
                             done = true;
                         } catch (err: any | Error | Error[]) {

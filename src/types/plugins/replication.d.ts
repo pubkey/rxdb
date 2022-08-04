@@ -22,7 +22,7 @@ export type ReplicationPullHandlerResult<RxDocType> = {
     documents: WithDeleted<RxDocType>[];
 };
 
-export type ReplicationPullHandler<RxDocType, CheckpointType> = (lastPulledCheckpoint: CheckpointType, bulkSize: number) => Promise<ReplicationPullHandlerResult<RxDocType>>;
+export type ReplicationPullHandler<RxDocType, CheckpointType> = (lastPulledCheckpoint: CheckpointType, batchSize: number) => Promise<ReplicationPullHandlerResult<RxDocType>>;
 export type ReplicationPullOptions<RxDocType, CheckpointType> = {
     /**
      * A handler that pulls the new remote changes

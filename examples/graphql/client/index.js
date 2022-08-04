@@ -18,6 +18,9 @@ import {
     getRxStorageDexie
 } from 'rxdb/plugins/dexie';
 
+import {
+    getRxStorageMemory
+} from 'rxdb/plugins/memory';
 
 import {
     filter
@@ -71,7 +74,7 @@ const syncUrls = {
 };
 
 
-const batchSize = 5;
+const batchSize = 50;
 
 const pullQueryBuilder = pullQueryBuilderFromRxSchema(
     'hero',
@@ -122,7 +125,7 @@ function getStorageKey() {
     const url = new URL(url_string);
     let storageKey = url.searchParams.get('storage');
     if (!storageKey) {
-        storageKey = 'pouchdb';
+        storageKey = 'dexie';
     }
     return storageKey;
 }
@@ -149,6 +152,8 @@ function getStorage() {
         });
     } else if (storageKey === 'dexie') {
         return getRxStorageDexie();
+    } else if (storageKey === 'memory') {
+        return getRxStorageMemory();
     } else {
         throw new Error('storage key not defined ' + storageKey);
     }
@@ -163,10 +168,9 @@ async function run() {
         name: getDatabaseName(),
         storage: wrappedValidateAjvStorage({
             storage: getStorage()
-        })
+        }),
+        multiInstance: getStorageKey() !== 'memory'
     });
-    console.log('db.token: ' + db.token);
-    console.log('db.storageToken: ' + db.storageToken);
     window.db = db;
 
     // display crown when tab is leader
@@ -176,18 +180,11 @@ async function run() {
     });
 
     heroesList.innerHTML = 'Create collection..';
-
-
-    console.log('pullQueryBuilder output');
-    const asdf = pullQueryBuilder({});
-    console.dir(asdf);
-
     await db.addCollections({
         hero: {
             schema: heroSchema
         }
     });
-
 
     // set up replication
     if (doSync()) {
@@ -208,12 +205,6 @@ async function run() {
                 streamQueryBuilder: pullStreamBuilder
             },
             live: true,
-            /**
-             * Because the websocket is used to inform the client
-             * when something has changed,
-             * we can set the liveIntervall to a high value
-             */
-            liveInterval: 1000 * 60 * 10, // 10 minutes
             deletedFlag: 'deleted'
         });
 

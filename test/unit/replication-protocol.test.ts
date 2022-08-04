@@ -265,7 +265,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     ),
                     forkInstance,
                     metaInstance,
-                    bulkSize: 100,
+                    batchSize: 100,
                     conflictHandler: THROWING_CONFLICT_HANDLER,
                     hashFunction: defaultHashFunction
                 });
@@ -326,7 +326,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 ),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -361,7 +361,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -395,7 +395,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -477,7 +477,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceA,
                 metaInstance: metaInstanceA,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -487,7 +487,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceB,
                 metaInstance: metaInstanceB,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -528,7 +528,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(forkInstanceB, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceA,
                 metaInstance: metaInstanceA,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -537,7 +537,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(forkInstanceC, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceB,
                 metaInstance: metaInstanceB,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -546,7 +546,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceC,
                 metaInstance: metaInstanceC,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -636,7 +636,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstanceA, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceA,
                 metaInstance: metaInstanceA,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -645,7 +645,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstanceB, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceB,
                 metaInstance: metaInstanceB,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -696,7 +696,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -743,7 +743,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 ),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -810,7 +810,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -849,7 +849,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: Math.ceil(writeAmount / 4),
+                batchSize: Math.ceil(writeAmount / 4),
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 /**
                  * To give the fork some time to do additional writes
@@ -953,7 +953,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: Math.ceil(writeAmount / 4),
+                batchSize: Math.ceil(writeAmount / 4),
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
@@ -1087,7 +1087,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER as any, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
+                batchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER as any,
                 hashFunction: defaultHashFunction
             });
@@ -1141,7 +1141,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 /**
                  * Must be smaller then the amount of document
                  */
-                bulkSize: 20,
+                batchSize: 20,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashFunction
             });
