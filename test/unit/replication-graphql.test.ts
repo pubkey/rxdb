@@ -399,7 +399,8 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: pullQueryBuilder
                     },
-                    live: false
+                    live: false,
+                    deletedFlag: 'deleted'
                 });
 
                 await replicationState.awaitInitialReplication();
