@@ -1387,9 +1387,9 @@ describe('replication-graphql.test.ts', () => {
                         checkpointFields: [
                             'passportId'
                         ],
-                        subscriptionParams: {
-                            foo: 'ID!'
-                        }
+                        headerFields: [
+                            'foo'
+                        ]
                     }
                 });
                 const build = buildSchema(output.asString);
