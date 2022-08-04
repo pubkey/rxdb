@@ -2,7 +2,7 @@
 
 RxDB has multiple plugins that can be used to ensure that your document data is always matching the provided JSON schema.
 
-**NOTICE:** Schema validation can be CPU expensive and increases your build size. You should always use a scehma validation plugin in developement mode. For most use cases, you should not use a validation plugin in production.
+**NOTICE:** Schema validation can be CPU expensive and increases your build size. You should always use a schema validation plugin in developement mode. For most use cases, you should not use a validation plugin in production.
 
 
 The validation-module does the schema validation when you insert or update a `RxDocument` or when document data is replicated with the replication plugin. When no validation plugin is used, any document data can be safed but there might be undefined behavior when saving data that does not comply to the schema.
