@@ -557,14 +557,14 @@ export function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]> {
  */
 // Encoding UTF8 -> base64
 export function b64EncodeUnicode(str: string) {
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
         return String.fromCharCode(parseInt(p1, 16))
     }))
 }
 
 // Decoding base64 -> UTF8
 export function b64DecodeUnicode(str: string) {
-    return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+    return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
     }).join(''))
 }
@@ -629,6 +629,17 @@ export const blobBufferUtil = {
         if (typeof blobBuffer === 'string') {
             return Promise.resolve(blobBuffer);
         }
+
+        /**
+         * in the electron-renderer we have a typed array insteaf of a blob
+         * so we have to transform it.
+         * @link https://github.com/pubkey/rxdb/issues/1371
+         */
+        const blobBufferType = Object.prototype.toString.call(blobBuffer);
+        if (blobBufferType === '[object Uint8Array]') {
+            blobBuffer = new Blob([blobBuffer]);
+        }
+
         const text = await (blobBuffer as Blob).text();
 
         /**
