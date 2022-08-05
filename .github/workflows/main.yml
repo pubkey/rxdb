@@ -393,6 +393,7 @@ jobs:
         run: |
           npm install --legacy-peer-deps
           npm run build
+
       - name: electron install
         working-directory: ./examples/electron
         run: |
@@ -408,6 +409,7 @@ jobs:
       - name: electron-remote install
         working-directory: ./examples/electron-remote
         run: |
+          npm run preinstall
           npm install --legacy-peer-deps
 
       - name: electron-remote test
