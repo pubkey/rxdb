@@ -2153,11 +2153,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     multiInstance: false
                 });
                 const attachmentData = new Array(20).fill('a').join('');
+
+
                 const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
                     attachmentData,
                     'text/plain'
                 );
-
                 const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
                 const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const dataLength = getAttachmentSize(dataStringBase64);
@@ -2189,7 +2190,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 const attachmentDataAfter = await storageInstance.getAttachmentData('foobar', 'foo');
                 assert.strictEqual(attachmentDataAfter, dataStringBase64);
-
 
                 storageInstance.close();
             });

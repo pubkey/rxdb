@@ -21,6 +21,8 @@ import type {
     RxStorageInstanceCreationParams
 } from '../types';
 import {
+    b64DecodeUnicode,
+    b64EncodeUnicode,
     clone,
     ensureNotFalsy,
     flatClone
@@ -138,7 +140,7 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
                             const useAttachment: RxAttachmentWriteData = flatClone(attachment) as any;
                             if (useAttachment.data) {
                                 const dataString = useAttachment.data;
-                                useAttachment.data = encryptString(dataString, password);
+                                useAttachment.data = b64EncodeUnicode(encryptString(dataString, password));
                             }
                             newAttachments[id] = useAttachment;
                         });
@@ -166,7 +168,8 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
                         params.schema.attachments &&
                         params.schema.attachments.encrypted
                     ) {
-                        return decryptString(attachmentData, password);
+                        const decrypted = decryptString(b64DecodeUnicode(attachmentData), password);
+                        return decrypted;
                     } else {
                         return attachmentData;
                     }

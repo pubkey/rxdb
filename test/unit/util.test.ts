@@ -282,6 +282,11 @@ describe('util.test.js', () => {
                 plain
             );
         });
+        // it('should not loose information on transformations', () => {
+        //     const baseInput = 'U2FsdGVkX1+Ir6zTZzI4qonSi65Ur30bpTGGs0AZI47raNL2mi2KN2VyabAwzJ5s';
+        //     const blobBuffer = blobBufferUtil.createBlobBufferFromBase64(baseInput, 'plain/text');
+
+        // });
     });
     describe('.deepFreezeWhenDevMode()', () => {
         it('should not allow to mutate the object', () => {

@@ -23,12 +23,7 @@ import './unit/rx-storage-pouchdb.test';
 import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 
-
-import './unit/replication-protocol.test';
-import './unit/replication.test';
-import './unit/replication-graphql.test';
-import './unit/replication-couchdb.test';
-
+import './unit/attachments.test';
 
 import './unit/instance-of-check.test';
 import './unit/rx-schema.test';
@@ -49,7 +44,6 @@ import './unit/conflict-handling.test';
 import './unit/event-reduce.test';
 import './unit/key-compression.test';
 import './unit/reactive-collection.test';
-import './unit/attachments.test';
 import './unit/reactive-query.test';
 import './unit/data-migration.test';
 import './unit/cross-instance.test';
@@ -57,6 +51,13 @@ import './unit/reactive-document.test';
 import './unit/cleanup.test';
 import './unit/hooks.test';
 import './unit/orm.test';
+
+import './unit/replication-protocol.test';
+import './unit/replication.test';
+import './unit/replication-graphql.test';
+import './unit/replication-couchdb.test';
+
+
 import './unit/population.test';
 import './unit/leader-election.test';
 import './unit/backup.test';

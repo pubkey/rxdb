@@ -377,6 +377,12 @@ config.parallel('attachments.test.ts', () => {
     });
     describe('encryption', () => {
         it('should store the data encrypted', async () => {
+
+            console.log(':::::::::::::::::::::::::::::');
+            console.log(':::::::::::::::::::::::::::::');
+            console.log(':::::::::::::::::::::::::::::');
+            console.log(':::::::::::::::::::::::::::::');
+
             const c = await createEncryptedAttachmentsCollection(1);
             const doc = await c.findOne().exec(true);
             const attachment = await doc.putAttachment({
@@ -385,16 +391,27 @@ config.parallel('attachments.test.ts', () => {
                 type: 'text/plain'
             });
 
+
+            console.log('---- 1');
+
             // the data stored in the storage must be encrypted
             if (config.storage.name === 'pouchdb') {
+                console.log('---- 2');
                 const encryptedData = await doc.collection.storageInstance.internals.pouch.getAttachment(doc.primary, 'cat.txt');
+                console.log('encryptedData:');
+                console.log(typeof encryptedData);
+                console.dir(encryptedData);
                 const dataString = await blobBufferUtil.toString(encryptedData);
+                console.log('dataString: ' + dataString);
                 assert.notStrictEqual(dataString, 'foo bar aaa');
+                console.log('---- 3');
             }
 
             // getting the data again must be decrypted
+            console.log('---- 4');
             const data = await attachment.getStringData();
             assert.strictEqual(data, 'foo bar aaa');
+            console.log('---- 5');
             c.database.destroy();
         });
     });

@@ -84,9 +84,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ) {
         OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-
-        console.log('# create pouch rx storage instance ' + this.collectionName);
-
         /**
          * Instead of listening to pouch.changes,
          * we have overwritten pouchdbs bulkDocs()
@@ -134,9 +131,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     close() {
         ensureNotClosed(this);
-
-        console.log('# close() pouch rx storage instance ' + this.collectionName);
-
         this.closed = true;
         this.subs.forEach(sub => sub.unsubscribe());
         OPEN_POUCHDB_STORAGE_INSTANCES.delete(this);
@@ -287,10 +281,21 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         attachmentId: string
     ): Promise<string> {
         ensureNotClosed(this);
-        const attachmentData = await this.internals.pouch.getAttachment(
+        let attachmentData = await this.internals.pouch.getAttachment(
             documentId,
             attachmentId
         );
+
+        /**
+         * In Node.js, PouchDB works with Buffers because it is old and Node.js did
+         * not support Blob at the time is was coded.
+         * So here we have to transform the Buffer to a Blob.
+         */
+        const isBuffer = typeof Buffer !== 'undefined' && Buffer.isBuffer(attachmentData);
+        if (isBuffer) {
+            attachmentData = new Blob([attachmentData]);
+        }
+
         const ret = await blobBufferUtil.toBase64String(attachmentData);
         return ret;
     }

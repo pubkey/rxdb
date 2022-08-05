@@ -3,6 +3,7 @@ import {
 } from 'rxjs/operators';
 
 import {
+    b64DecodeUnicode,
     blobBufferUtil,
     flatClone,
     PROMISE_RESOLVE_VOID
@@ -35,9 +36,9 @@ export function hashAttachmentData(
 ): Promise<string> {
     let binary;
     try {
-        binary = atob(attachmentBase64String);
+        binary = b64DecodeUnicode(attachmentBase64String);
     } catch (err) {
-        console.log('could not run atob() on ' + attachmentBase64String);
+        console.log('could not run b64DecodeUnicode() on ' + attachmentBase64String);
         throw err;
     }
     return pouchHash(binary);
@@ -126,6 +127,7 @@ export class RxAttachment {
             this.doc.primary,
             this.id
         );
+        console.dir(plainDataBase64);
         const ret = await blobBufferUtil.createBlobBufferFromBase64(
             plainDataBase64,
             this.type as any
