@@ -57,7 +57,6 @@ import './unit/replication.test';
 import './unit/replication-graphql.test';
 import './unit/replication-couchdb.test';
 
-
 import './unit/population.test';
 import './unit/leader-election.test';
 import './unit/backup.test';
