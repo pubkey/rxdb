@@ -2113,6 +2113,7 @@ describe('replication-graphql.test.ts', () => {
                     live: true,
                     deletedField: 'deleted'
                 });
+                ensureReplicationHasNoErrors(replicationState);
 
                 // ensure we are in sync even when there are no doc in the db at this moment
                 await replicationState.awaitInitialReplication();
