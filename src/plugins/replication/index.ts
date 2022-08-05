@@ -416,7 +416,7 @@ export function swapDefaultDeletedTodeletedField<RxDocType>(
         return doc;
     } else {
         doc = flatClone(doc);
-        const isDeleted = doc._deleted;
+        const isDeleted = !!doc._deleted;
         (doc as any)[deletedField] = isDeleted;
         delete (doc as any)._deleted;
         return doc;
@@ -432,7 +432,7 @@ export function swapdeletedFieldToDefaultDeleted<RxDocType>(
         return doc as any;
     } else {
         doc = flatClone(doc);
-        const isDeleted = (doc as any)[deletedField];
+        const isDeleted = !!(doc as any)[deletedField];
         (doc as any)._deleted = isDeleted;
         delete (doc as any)[deletedField];
         return doc as any;

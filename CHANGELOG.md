@@ -32,7 +32,6 @@
 - Removed the `liveInterval` option of the replication. It was an edge case feature with wrong defaults. If you want to run the pull replication on internval, you can send a `RESYNC` event manually in a loop.
 
 - CHANGE use `Float` instead of `Int` to represent timestamps in GraphQL.
-- REMOVED support for the `deletedFlag` in the GraphQL replication. Use a [GraphQL alias](https://devinschulz.com/rename-fields-by-using-aliases-in-graphql/) instead.
 
 - REPLACED `RxReplicationPullError` and `RxReplicationPushError` with normal `RxError` like in the rest of the RxDB code.
 - REMOVED the option to filter out replication documents with the push/pull modifiers [#2552](https://github.com/pubkey/rxdb/issues/2552) because this does not work with the new replication protocol.

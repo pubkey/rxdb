@@ -102,7 +102,7 @@ export function spawn(
         type Query {
             info: Int
             feedForRxDBReplication(checkpoint: CheckpointInput, limit: Int!): FeedResponse!
-            collectionFeedForRxDBReplication(lastId: String!, minUpdatedAt: Float!, offset: Int, limit: Int!): CollectionFeedResponse!
+            collectionFeedForRxDBReplication(checkpoint: CheckpointInput, limit: Int!): CollectionFeedResponse!
             getAll: [Human!]!
         }
         type Mutation {

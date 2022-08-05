@@ -185,6 +185,10 @@ const replicationState = await replicateRxCollection({
      * If your backend uses a different fieldname then '_deleted', set the fieldname here.
      * RxDB will still store the documents internally with '_deleted', setting this field
      * only maps the data on the data layer.
+     * 
+     * If a custom deleted field contains a non-boolean value, the deleted state
+     * of the documents depends on if the value is truthy or not. So instead of providing a boolean * * deleted value, you could also work with using a 'deletedAt' timestamp instead.
+     * 
      * [default='_deleted']
      */
     deletedField: 'deleted',

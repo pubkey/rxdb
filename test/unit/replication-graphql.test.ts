@@ -151,6 +151,16 @@ describe('replication-graphql.test.ts', () => {
             variables
         });
     };
+    function ensureReplicationHasNoErrors(replicationState: RxGraphQLReplicationState<any, any>) {
+        /**
+         * We do not have to unsubscribe because the observable will cancel anyway.
+         */
+        replicationState.error$.subscribe(err => {
+            console.dir(err.parameters.errors);
+            console.log(JSON.stringify(err.parameters.errors, null, 4));
+            throw err;
+        });
+    }
     describe('node', () => {
         if (!config.platform.isNode()) {
             return;
@@ -270,21 +280,13 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
                 assert.strictEqual(replicationState.isStopped(), false);
-
-                const errSub = replicationState.error$.subscribe((err) => {
-                    console.dir(err.parameters.errors);
-                    console.log(JSON.stringify(err.parameters.errors, null, 4));
-                    throw new Error('The replication threw an error');
-                });
-
-                console.log('---');
+                ensureReplicationHasNoErrors(replicationState);
 
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c.find().exec();
                     return docs.length === batchSize;
                 });
 
-                errSub.unsubscribe();
                 server.close();
                 c.database.destroy();
             });
@@ -326,24 +328,24 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(getTestData(batchSize))
                 ]);
 
-                const collectionQueryBuilder = (doc: any) => {
-                    if (!doc) {
-                        doc = {
+                const collectionQueryBuilder = (checkpoint: any, limit: number) => {
+                    if (!checkpoint) {
+                        checkpoint = {
                             id: '',
                             updatedAt: 0
                         };
                     }
 
-                    const query = `query($lastId: String!, $updatedAt: Float!, $batchSize: Int!)
+                    const query = `query($checkpoint: CheckpointInput, $limit: Int!)
                     {
-                        collectionFeedForRxDBReplication(lastId: $lastId, minUpdatedAt: $updatedAt, limit: $batchSize) {
+                        collectionFeedForRxDBReplication(checkpoint: $checkpoint, limit: $limit) {
                             collection {
                                 documents {
                                     id
                                     name
                                     age
                                     updatedAt
-                                    _deleted: deleted
+                                    deleted
                                 }
                                 checkpoint {
                                     id
@@ -354,9 +356,8 @@ describe('replication-graphql.test.ts', () => {
                     }`;
 
                     const variables = {
-                        lastId: doc.id,
-                        updatedAt: doc.updatedAt,
-                        batchSize
+                        checkpoint,
+                        limit
                     };
 
                     return {
@@ -371,8 +372,10 @@ describe('replication-graphql.test.ts', () => {
                         batchSize,
                         queryBuilder: collectionQueryBuilder,
                         dataPath: 'data.collectionFeedForRxDBReplication.collection'
-                    }
+                    },
+                    deletedField: 'deleted'
                 });
+                ensureReplicationHasNoErrors(replicationState);
                 assert.strictEqual(replicationState.isStopped(), false);
 
                 await AsyncTestUtil.waitUntil(async () => {
@@ -431,16 +434,78 @@ describe('replication-graphql.test.ts', () => {
                     },
                     deletedField: 'deleted'
                 });
-                const errorSub = replicationState.error$.subscribe(err => {
-                    console.dir(err);
-                    throw err;
-                });
+                ensureReplicationHasNoErrors(replicationState);
                 await replicationState.awaitInitialReplication();
                 const docs = await c.find().exec();
 
                 assert.strictEqual(docs.length, 0);
 
-                errorSub.unsubscribe();
+                server.close();
+                c.database.destroy();
+            });
+            /**
+             * @link https://github.com/pubkey/rxdb/pull/3644
+             */
+            it('should handle truthy deleted flag values', async () => {
+                const doc: any = schemaObjects.humanWithTimestamp();
+                doc['deletedAt'] = Math.floor(new Date().getTime() / 1000);
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn([doc])
+                ]);
+
+                const deletedAtQueryBuilder = (checkpoint: any, limit: number) => {
+                    if (!checkpoint) {
+                        checkpoint = {
+                            id: '',
+                            updatedAt: 0
+                        };
+                    }
+
+                    const query = `query FeedForRxDBReplication($checkpoint: CheckpointInput, $limit: Int!)
+                    {
+                        collectionFeedForRxDBReplication(checkpoint: $checkpoint, limit: $limit) {
+                            collection {
+                                documents {
+                                    id
+                                    name
+                                    age
+                                    updatedAt
+                                    deletedAt
+                                }
+                                checkpoint {
+                                    id
+                                    updatedAt
+                                }
+                            }
+                        }
+                    }`;
+
+                    const variables = {
+                        checkpoint,
+                        limit
+                    };
+
+                    return {
+                        query,
+                        variables
+                    };
+                }
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        queryBuilder: deletedAtQueryBuilder,
+                        dataPath: 'data.collectionFeedForRxDBReplication.collection'
+                    },
+                    deletedField: 'deletedAt'
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+                await replicationState.awaitInitialReplication();
+                const docs = await c.find().exec();
+                assert.strictEqual(docs.length, 0);
+
                 server.close();
                 c.database.destroy();
             });
@@ -662,10 +727,8 @@ describe('replication-graphql.test.ts', () => {
                     retryTime: 1000,
                     deletedField: 'deleted'
                 });
-                const errSub = replicationState.error$.subscribe((err) => {
-                    console.dir(err);
-                    throw new Error('The replication threw an error');
-                });
+                ensureReplicationHasNoErrors(replicationState);
+
 
                 await replicationState.awaitInitialReplication();
 
@@ -673,7 +736,6 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, batchSize);
 
                 server.close();
-                errSub.unsubscribe();
                 c.database.destroy();
             });
             it('should send all documents in multiple batches', async () => {
@@ -743,10 +805,8 @@ describe('replication-graphql.test.ts', () => {
                     live: true,
                     deletedField: 'deleted'
                 });
-                const errorSub = replicationState.error$.subscribe(err => {
-                    console.dir(err);
-                    throw err;
-                });
+                ensureReplicationHasNoErrors(replicationState);
+
 
                 await replicationState.awaitInitialReplication();
 
@@ -776,7 +836,6 @@ describe('replication-graphql.test.ts', () => {
                 }, 1000, 200);
                 console.log('---- 5');
 
-                errorSub.unsubscribe();
                 server.close();
                 c.database.destroy();
             });
@@ -1211,12 +1270,7 @@ describe('replication-graphql.test.ts', () => {
                     live: true,
                     deletedField: 'deleted'
                 });
-                const errSub = replicationState.error$.subscribe((err) => {
-                    console.dir(err);
-                    console.dir(err.parameters.errors);
-                    console.log(JSON.stringify(err.parameters.errors, null, 4));
-                    throw new Error('The replication threw an error');
-                });
+                ensureReplicationHasNoErrors(replicationState);
                 await replicationState.awaitInSync();
 
                 const testDocData = getTestData(1)[0];
@@ -1254,7 +1308,6 @@ describe('replication-graphql.test.ts', () => {
 
                 console.log('kkkkkkk 2');
 
-                errSub.unsubscribe();
                 await server.close();
                 await c.database.destroy();
             });
@@ -1723,16 +1776,14 @@ describe('replication-graphql.test.ts', () => {
                     },
                     deletedField: 'deleted'
                 });
-                const errorSub = replicationState.error$.subscribe(err => {
-                    console.dir(err);
-                });
+                ensureReplicationHasNoErrors(replicationState);
+
                 await replicationState.awaitInitialReplication();
 
                 const serverDocs = server.getDocuments();
                 assert.strictEqual(serverDocs.length, 1);
                 assert.ok(serverDocs[0].age);
 
-                errorSub.unsubscribe();
                 server.close();
                 db.destroy();
             });
@@ -1929,7 +1980,7 @@ describe('replication-graphql.test.ts', () => {
                     live: true,
                     deletedField: 'deleted'
                 });
-                replicationState.error$.subscribe((err: any) => console.error('REPLICATION ERROR', err));
+                ensureReplicationHasNoErrors(replicationState);
                 await replicationState.awaitInitialReplication();
 
                 const docsOnServer = server.getDocuments();
@@ -1985,10 +2036,8 @@ describe('replication-graphql.test.ts', () => {
                     live: true,
                     deletedField: 'deleted'
                 });
-                const errorSub = replicationState.error$.subscribe(err => {
-                    console.dir(err);
-                    throw err;
-                });
+                ensureReplicationHasNoErrors(replicationState);
+
 
                 // ensure we are in sync even when there are no doc in the db at this moment
                 await replicationState.awaitInitialReplication();
@@ -2022,7 +2071,6 @@ describe('replication-graphql.test.ts', () => {
                     return !notUpdated;
                 }, 1000, 200);
 
-                errorSub.unsubscribe();
                 await db.destroy();
                 await server.close();
             });
