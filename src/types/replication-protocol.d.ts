@@ -1,9 +1,11 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput } from './conflict-handling';
-import { EventBulk, RxDocumentData, WithDeleted } from './rx-storage';
+import { RxError, RxTypeError } from './rx-error';
+import { BulkWriteRow, RxDocumentData, WithDeleted } from './rx-storage';
 import type {
     RxStorageInstance
 } from './rx-storage.interface';
+import { HashFunction } from './util';
 
 export type RxStorageReplicationMeta = {
 
@@ -55,6 +57,21 @@ export type RxReplicationWriteToMasterRow<RxDocType> = {
     newDocumentState: WithDeleted<RxDocType>;
 };
 
+
+export type DocumentsWithCheckpoint<RxDocType, CheckpointType> = {
+    documents: WithDeleted<RxDocType>[];
+    checkpoint: CheckpointType;
+}
+
+
+export type RxReplicationPullStreamItem<RxDocType, MasterCheckpointType> = DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> |
+    /**
+     * Emit this when the masterChangeStream$ might have missed out
+     * some events because the fork lost the connection to the master.
+     * Like when the user went offline and reconnects.
+     */
+    'RESYNC';
+
 /**
  * The replication handler contains all logic
  * that is required by the replication protocol
@@ -73,22 +90,11 @@ export type RxReplicationWriteToMasterRow<RxDocType> = {
  * before being replicated to the master.
  */
 export type RxReplicationHandler<RxDocType, MasterCheckpointType> = {
-    masterChangeStream$: Observable<
-        EventBulk<WithDeleted<RxDocType>, MasterCheckpointType> |
-        /**
-         * Emit this when the masterChangeStream$ might have missed out
-         * some events because the fork lost the connection to the master.
-         * Like when the user went offline and reconnects.
-         */
-        'RESYNC'
-    >;
+    masterChangeStream$: Observable<RxReplicationPullStreamItem<RxDocType, MasterCheckpointType>>;
     masterChangesSince(
         checkpoint: MasterCheckpointType,
-        bulkSize: number
-    ): Promise<{
-        checkpoint: MasterCheckpointType;
-        documentsData: WithDeleted<RxDocType>[];
-    }>;
+        batchSize: number
+    ): Promise<DocumentsWithCheckpoint<RxDocType, MasterCheckpointType>>;
     /**
      * Writes the fork changes to the master.
      * Only returns the conflicts if there are any.
@@ -107,7 +113,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * mixed with other replications.
      */
     identifier: string;
-    bulkSize: number;
+    batchSize: number;
     replicationHandler: RxReplicationHandler<RxDocType, any>;
     conflictHandler: RxConflictHandler<RxDocType>;
 
@@ -151,6 +157,8 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * writes when the replicatoin is destroyed unexpected.
      */
     waitBeforePersist?: () => Promise<any>;
+
+    hashFunction: HashFunction;
 };
 
 export type RxStorageInstanceReplicationState<RxDocType> = {
@@ -165,9 +173,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
          */
         processed: {
             up: Subject<RxReplicationWriteToMasterRow<RxDocType>>;
-            down: Subject<{
-
-            }>;
+            down: Subject<BulkWriteRow<RxDocType>>;
         }
         resolvedConflicts: Subject<{
             input: RxConflictHandlerInput<RxDocType>;
@@ -186,7 +192,12 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
          */
         active: {
             [direction in RxStorageReplicationDirection]: BehaviorSubject<boolean>;
-        }
+        },
+        /**
+         * All errors that would otherwhise be unhandled,
+         * get emitted here.
+         */
+        error: Subject<RxError | RxTypeError>
     };
 
 

@@ -351,7 +351,7 @@ export class RxQueryBase<
         runPluginHooks('prePrepareQuery', hookInput);
 
         const value = this.collection.database.storage.statics.prepareQuery(
-            this.collection.storageInstance.schema,
+            this.collection.schema.jsonSchema,
             hookInput.mangoQuery
         );
 
@@ -455,9 +455,6 @@ export function createRxQuery(
 
     // ensure when created with same params, only one is created
     ret = tunnelQueryCache(ret);
-
-    runPluginHooks('createRxQuery', ret);
-
     triggerCacheReplacement(collection);
 
     return ret;

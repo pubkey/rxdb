@@ -18,8 +18,7 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS,
     getDefaultRxDocumentMeta,
     getDefaultRevision,
-    nextTick,
-    createRevision
+    nextTick
 } from './util';
 import {
     fillObjectDataBeforeInsert,
@@ -96,21 +95,16 @@ import type {
 import {
     RxSchema
 } from './rx-schema';
-import {
-    createWithConstructor as createRxDocumentWithConstructor,
-    isRxDocument
-} from './rx-document';
 
 import {
-    createRxDocument,
-    getRxDocumentConstructor
+    createRxDocument
 } from './rx-document-prototype-merge';
 import {
     getWrappedStorageInstance,
     storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError
 } from './rx-storage-helper';
-import { defaultConflictHandler } from './replication';
+import { defaultConflictHandler } from './replication-protocol';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -163,14 +157,6 @@ export class RxCollectionBase<
         ) as any;
     }
 
-    get onDestroy() {
-        if (!this._onDestroy) {
-            this._onDestroy = new Promise(res => this._onDestroyCall = res);
-        }
-        return this._onDestroy;
-    }
-
-    public destroyed = false;
     public _atomicUpsertQueues: Map<string, Promise<any>> = new Map();
     // defaults
     public synced: boolean = false;
@@ -185,12 +171,17 @@ export class RxCollectionBase<
     public $: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
 
-    /**
-     * returns a promise that is resolved when the collection gets destroyed
-     */
-    private _onDestroy?: Promise<void>;
 
-    private _onDestroyCall?: () => void;
+
+    /**
+     * When the collection is destroyed,
+     * these functions will be called an awaited.
+     * Used to automatically clean up stuff that
+     * belongs to this collection.
+     */
+    public onDestroy: (() => Promise<any>)[] = [];
+    public destroyed = false;
+
     public async prepare(): Promise<void> {
         this.storageInstance = getWrappedStorageInstance(
             this.database,
@@ -288,31 +279,13 @@ export class RxCollectionBase<
     async insert(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        // inserting a temporary-document
-        let tempDoc: RxDocument | null = null;
-        if (isRxDocument(json)) {
-            tempDoc = json as RxDocument;
-            if (!tempDoc._isTemporary) {
-                throw newRxError('COL1', {
-                    data: json
-                });
-            }
-            json = tempDoc.toJSON() as any;
-        }
-
         const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this.schema, json);
         const writeResult = await this.bulkInsert([useJson]);
 
         const isError = writeResult.error[0];
         throwIfIsStorageWriteError(this as any, useJson[this.schema.primaryPath] as any, json, isError);
         const insertResult = ensureNotFalsy(writeResult.success[0]);
-
-        if (tempDoc) {
-            tempDoc._dataSync$.next(insertResult._data);
-            return tempDoc as any;
-        } else {
-            return insertResult;
-        }
+        return insertResult;
     }
 
     async bulkInsert(
@@ -338,10 +311,10 @@ export class RxCollectionBase<
         });
         const docs = await Promise.all(
             useDocs.map(doc => {
-                return this._runHooks('pre', 'insert', doc).then(() => {
-                    this.schema.validate(doc);
-                    return doc;
-                });
+                return this._runHooks('pre', 'insert', doc)
+                    .then(() => {
+                        return doc;
+                    });
             })
         );
 
@@ -354,7 +327,6 @@ export class RxCollectionBase<
                 _rev: getDefaultRevision(),
                 _deleted: false
             });
-            docData._rev = createRevision(docData);
             const row: BulkWriteRow<RxDocumentType> = { document: docData };
             return row;
         });
@@ -429,7 +401,6 @@ export class RxCollectionBase<
         const removeDocs: BulkWriteRow<RxDocumentType>[] = docsData.map(doc => {
             const writeDoc = flatClone(doc);
             writeDoc._deleted = true;
-            writeDoc._rev = createRevision(writeDoc, doc);
             return {
                 previous: doc,
                 document: writeDoc
@@ -738,10 +709,6 @@ export class RxCollectionBase<
 
     /**
      * Export collection to a JSON friendly format.
-     * @param _decrypted
-     * When true, all encrypted values will be decrypted.
-     * When false or omitted and an interface or type is loaded in this collection,
-     * all base properties of the type are typed as `any` since data could be encrypted.
      */
     exportJSON(): Promise<RxDumpCollection<RxDocumentType>>;
     exportJSON(): Promise<RxDumpCollectionAny<RxDocumentType>>;
@@ -767,7 +734,7 @@ export class RxCollectionBase<
     /**
      * sync with a GraphQL endpoint
      */
-    syncGraphQL(_options: SyncOptionsGraphQL<RxDocumentType>): RxGraphQLReplicationState<RxDocumentType> {
+    syncGraphQL<CheckpointType = any>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType, CheckpointType> {
         throw pluginMissing('replication-graphql');
     }
 
@@ -853,22 +820,6 @@ export class RxCollectionBase<
     }
 
     /**
-     * creates a temporaryDocument which can be saved later
-     */
-    newDocument(docData: Partial<RxDocumentType> = {}): RxDocument<RxDocumentType, OrmMethods> {
-        const filledDocData: RxDocumentData<RxDocumentType> = this.schema.fillObjectWithDefaults(docData);
-        const doc: any = createRxDocumentWithConstructor(
-            getRxDocumentConstructor(this as any),
-            this as any,
-            filledDocData
-        );
-        doc._isTemporary = true;
-
-        this._runHooksSync('post', 'create', docData, doc);
-        return doc as any;
-    }
-
-    /**
      * Returns a promise that resolves after the given time.
      * Ensures that is properly cleans up when the collection is destroyed
      * so that no running timeouts prevent the exit of the JavaScript process.
@@ -897,9 +848,7 @@ export class RxCollectionBase<
          */
         this.destroyed = true;
 
-        if (this._onDestroyCall) {
-            this._onDestroyCall();
-        }
+
         Array.from(this.timeouts).forEach(timeout => clearTimeout(timeout));
         if (this._changeEventBuffer) {
             this._changeEventBuffer.destroy();
@@ -913,6 +862,7 @@ export class RxCollectionBase<
          * but the change is not added to the changes collection.
          */
         return this.database.requestIdlePromise()
+            .then(() => Promise.all(this.onDestroy.map(fn => fn())))
             .then(() => this.storageInstance.close())
             .then(() => {
                 /**
@@ -1040,7 +990,8 @@ export function createRxCollection(
         collectionName: name,
         schema: schema.jsonSchema,
         options: instanceCreationOptions,
-        multiInstance: database.multiInstance
+        multiInstance: database.multiInstance,
+        password: database.password
     };
 
     runPluginHooks(

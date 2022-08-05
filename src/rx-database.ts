@@ -1,7 +1,6 @@
 import { IdleQueue } from 'custom-idle-queue';
 import type {
-    LeaderElector,
-    BroadcastChannel
+    LeaderElector
 } from 'broadcast-channel';
 import type {
     CollectionsOfDatabase,
@@ -25,7 +24,10 @@ import type {
     RxCleanupPolicy,
     InternalStoreDocType,
     InternalStoreStorageTokenDocType,
-    InternalStoreCollectionDocType
+    InternalStoreCollectionDocType,
+    RxTypeError,
+    RxError,
+    HashFunction
 } from './types';
 
 import {
@@ -36,8 +38,8 @@ import {
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID,
     getDefaultRevision,
-    createRevision,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    defaultHashFunction
 } from './util';
 import {
     newRxError
@@ -46,7 +48,6 @@ import {
     createRxSchema,
     RxSchema
 } from './rx-schema';
-import { overwritable } from './overwritable';
 import {
     runPluginHooks,
     runAsyncPluginHooks
@@ -80,7 +81,6 @@ import {
     INTERNAL_CONTEXT_COLLECTION,
     INTERNAL_STORE_SCHEMA
 } from './rx-database-internal-store';
-import { BROADCAST_CHANNEL_BY_TOKEN } from './rx-storage-multiinstance';
 
 /**
  * stores the used database names
@@ -115,6 +115,7 @@ export class RxDatabaseBase<
          * Stores information documents about the collections of the database
          */
         public readonly internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>,
+        public readonly hashFunction: HashFunction,
         public readonly cleanupPolicy?: Partial<RxCleanupPolicy>
     ) {
         DB_COUNT++;
@@ -145,9 +146,15 @@ export class RxDatabaseBase<
              * Start writing the storage token.
              * Do not await the creation because it would run
              * in a critical path that increases startup time.
+             * 
+             * Writing the token takes about 20 milliseconds
+             * even on a fast adapter, so this is worth it.
              */
-            this.storageTokenDocument = ensureStorageTokenDocumentExists(this.asRxDatabase);
-            this.storageToken = this.storageTokenDocument.then(doc => doc.data.token);
+            this.storageTokenDocument = ensureStorageTokenDocumentExists(this.asRxDatabase)
+                .catch(err => this.startupErrors.push(err) as any);
+            this.storageToken = this.storageTokenDocument
+                .then(doc => doc.data.token)
+                .catch(err => this.startupErrors.push(err) as any);
         }
     }
 
@@ -155,27 +162,15 @@ export class RxDatabaseBase<
         return this.observable$;
     }
 
+    public _subs: Subscription[] = [];
 
     /**
-     * Set if multiInstance: true
-     * This broadcast channel is used to send events to other instances like
-     * other browser tabs or nodejs processes.
-     * We transfer everything in EventBulks because sending many small events has been shown
-     * to be performance expensive.
-     * 
-     * @deprecated The broadcast channel has been moved out of the RxDatabase and is part of the
-     * RxStorage but only if it is needed there.
-     * @see ./rx-storage-multiinstance.ts
-     * 
+     * Beceause having unhandled exceptions would fail,
+     * we have to store the async errors of the constructor here
+     * so we can throw them later.
      */
-    get broadcastChannel(): BroadcastChannel<RxChangeEventBulk<any>> | undefined {
-        const bcState = BROADCAST_CHANNEL_BY_TOKEN.get(this.token);
-        if (bcState) {
-            return bcState.bc as any;
-        }
-    }
+    public startupErrors: (RxError | RxTypeError)[] = [];
 
-    public _subs: Subscription[] = [];
     public destroyed: boolean = false;
     public collections: Collections = {} as any;
     public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
@@ -243,7 +238,6 @@ export class RxDatabaseBase<
         }
         const writeDoc = flatCloneDocWithMeta(doc);
         writeDoc._deleted = true;
-        writeDoc._rev = createRevision(writeDoc, doc);
 
         await this.internalStore.bulkWrite([{
             document: writeDoc,
@@ -272,16 +266,6 @@ export class RxDatabaseBase<
             const schema = createRxSchema(rxJsonSchema);
             schemas[collectionName] = schema;
 
-            // crypt=true but no password given
-            if (
-                schema.crypt &&
-                !this.password
-            ) {
-                throw newRxError('DB7', {
-                    name: name as string
-                });
-            }
-
             // collection already exists
             if ((this.collections as any)[name]) {
                 throw newRxError('DB3', {
@@ -308,7 +292,6 @@ export class RxDatabaseBase<
                 _rev: getDefaultRevision(),
                 _attachments: {}
             };
-            collectionDocData._rev = createRevision(collectionDocData);
             bulkPutDocs.push({
                 document: collectionDocData
             });
@@ -337,6 +320,8 @@ export class RxDatabaseBase<
             bulkPutDocs,
             'rx-database-add-collection'
         );
+
+        await ensureNoStartupErrors(this);
 
         Object.entries(putDocsResult.error).forEach(([_id, error]) => {
             const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
@@ -434,8 +419,6 @@ export class RxDatabaseBase<
 
     /**
      * Export database to a JSON friendly format.
-     * @param _decrypted
-     * When true, all encrypted values will be decrypted.
      */
     exportJSON(_collections?: string[]): Promise<RxDumpDatabase<Collections>>;
     exportJSON(_collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
@@ -525,8 +508,6 @@ export class RxDatabaseBase<
             ))
             // destroy internal storage instances
             .then(() => this.internalStore.close())
-            // close broadcastChannel if exists
-            .then(() => this.broadcastChannel ? this.broadcastChannel.close() : null)
             // remove combination from USED_COMBINATIONS-map
             .then(() => USED_DATABASE_NAMES.delete(this.name))
             .then(() => true);
@@ -584,13 +565,15 @@ export async function _removeAllOfCollection(
     rxDatabase: RxDatabaseBase<any, any, any>,
     collectionName: string
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
-    const docs = await getAllCollectionDocuments(rxDatabase.internalStore);
+    const docs = await getAllCollectionDocuments(
+        rxDatabase.storage,
+        rxDatabase.internalStore
+    );
     const relevantDocs = docs
         .filter((colDoc) => colDoc.data.name === collectionName);
     const writeRows = relevantDocs.map(doc => {
         const writeDoc = flatCloneDocWithMeta(doc);
         writeDoc._deleted = true;
-        writeDoc._rev = createRevision(writeDoc, doc);
         return {
             previous: doc,
             document: writeDoc
@@ -613,7 +596,8 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
     storage: RxStorage<Internals, InstanceCreationOptions>,
     databaseName: string,
     options: InstanceCreationOptions,
-    multiInstance: boolean
+    multiInstance: boolean,
+    password?: string
 ): Promise<RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>> {
     const internalStore = await storage.createStorageInstance<InternalStoreDocType>(
         {
@@ -622,7 +606,8 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
             collectionName: INTERNAL_STORAGE_NAME,
             schema: INTERNAL_STORE_SCHEMA,
             options,
-            multiInstance
+            multiInstance,
+            password
         }
     );
     return internalStore;
@@ -643,7 +628,8 @@ export function createRxDatabase<
         ignoreDuplicate = false,
         options = {},
         cleanupPolicy,
-        localDocuments = false
+        localDocuments = false,
+        hashFunction = defaultHashFunction
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions>
@@ -659,10 +645,6 @@ export function createRxDatabase<
         options,
         localDocuments
     });
-    if (password) {
-        overwritable.validatePassword(password);
-    }
-
     // check if combination already used
     if (!ignoreDuplicate) {
         throwIfDatabaseNameUsed(name);
@@ -679,35 +661,49 @@ export function createRxDatabase<
         storage,
         name,
         instanceCreationOptions as any,
-        multiInstance
-    ).then(storageInstance => {
-        const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
-            name,
-            databaseInstanceToken,
-            storage,
-            instanceCreationOptions,
-            password,
-            multiInstance,
-            eventReduce,
-            options,
-            storageInstance,
-            cleanupPolicy
-        ) as any;
-        return runAsyncPluginHooks('createRxDatabase', {
-            database: rxDatabase,
-            creator: {
+        multiInstance,
+        password
+    )
+        /**
+         * Creating the internal store might fail
+         * if some RxStorage wrapper is used that does some checks
+         * and then throw.
+         * In that case we have to properly clean up the database.
+         */
+        .catch(err => {
+            USED_DATABASE_NAMES.delete(name);
+            throw err;
+        })
+        .then(storageInstance => {
+            const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
+                name,
+                databaseInstanceToken,
                 storage,
                 instanceCreationOptions,
-                name,
                 password,
                 multiInstance,
                 eventReduce,
-                ignoreDuplicate,
                 options,
-                localDocuments
-            }
-        }).then(() => rxDatabase);
-    });
+                storageInstance,
+                hashFunction,
+                cleanupPolicy
+            ) as any;
+
+            return runAsyncPluginHooks('createRxDatabase', {
+                database: rxDatabase,
+                creator: {
+                    storage,
+                    instanceCreationOptions,
+                    name,
+                    password,
+                    multiInstance,
+                    eventReduce,
+                    ignoreDuplicate,
+                    options,
+                    localDocuments
+                }
+            }).then(() => rxDatabase);
+        });
 }
 
 /**
@@ -730,6 +726,7 @@ export async function removeRxDatabase(
     );
 
     const collectionDocs = await getAllCollectionDocuments(
+        storage,
         dbInternalsStorageInstance
     );
 
@@ -784,4 +781,20 @@ export async function isRxDatabaseFirstTimeInstantiated(
 ): Promise<boolean> {
     const tokenDoc = await database.storageTokenDocument;
     return tokenDoc.data.instanceToken === database.token;
+}
+
+
+/**
+ * For better performance some tasks run async
+ * and are awaited later.
+ * But we still have to ensure that there have been no errors
+ * on database creation.
+ */
+export async function ensureNoStartupErrors(
+    rxDatabase: RxDatabaseBase<any, any, any>
+) {
+    await rxDatabase.storageToken;
+    if (rxDatabase.startupErrors[0]) {
+        throw rxDatabase.startupErrors[0];
+    }
 }

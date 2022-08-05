@@ -1,10 +1,10 @@
 import deepEqual from 'fast-deep-equal';
 
 import {
-    hash,
     overwriteGetterForCaching,
     flatClone,
-    isMaybeReadonlyArray
+    isMaybeReadonlyArray,
+    fastUnsecureHash
 } from './util';
 import {
     newRxError,
@@ -31,7 +31,6 @@ import {
     normalizeRxJsonSchema
 } from './rx-schema-helper';
 import { overwritable } from './overwritable';
-import { fillObjectDataBeforeInsert } from './rx-collection-helper';
 
 export class RxSchema<RxDocType = any> {
     public indexes: MaybeReadonly<string[]>[];
@@ -67,27 +66,13 @@ export class RxSchema<RxDocType = any> {
     }
 
     /**
-        * true if schema contains at least one encrypted path
-        */
-    get crypt(): boolean {
-        if (
-            !!this.jsonSchema.encrypted && this.jsonSchema.encrypted.length > 0 ||
-            this.jsonSchema.attachments && this.jsonSchema.attachments.encrypted
-        ) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * @overrides itself on the first call
      */
     public get hash(): string {
         return overwriteGetterForCaching(
             this,
             'hash',
-            hash(this.jsonSchema)
+            fastUnsecureHash(JSON.stringify(this.jsonSchema))
         );
     }
 
@@ -108,36 +93,6 @@ export class RxSchema<RxDocType = any> {
                 });
             }
         });
-    }
-
-    /**
-     * validate if the given document data matches the schema
-     * @param schemaPath if given, validates against deep-path of schema
-     * @throws {Error} if not valid
-     * @param obj equal to input-obj
-     *
-     */
-    public validate(obj: Partial<RxDocType> | any, schemaPath?: string): void {
-        if (!this.validateFullDocumentData) {
-            return;
-        } else {
-            const fullDocData = fillObjectDataBeforeInsert(this, obj);
-            return this.validateFullDocumentData(fullDocData, schemaPath);
-        }
-    }
-
-    /**
-     * @overwritten by the given validation plugin
-     */
-    public validateFullDocumentData(
-        _docData: RxDocumentData<RxDocType>,
-        _schemaPath?: string
-    ) {
-        /**
-         * This method might be overwritten by a validation plugin,
-         * otherwise do nothing, because if not validation plugin
-         * was added to RxDB, we assume all given data is valid.
-         */
     }
 
     /**

@@ -1,17 +1,36 @@
 import schema from './src/Schema';
-import { createRxDatabase } from 'rxdb';
-import { getRxStoragePouch } from 'rxdb/plugins/pouchdb'
+import { addRxPlugin, createRxDatabase } from 'rxdb';
+import { getRxStorageMemory } from 'rxdb/plugins/memory';
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
+import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
+import PouchdbAdapterHttp from 'pouchdb-adapter-http';
+import PouchdbReplication from 'pouchdb-replication';
+
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
+
+addPouchPlugin(PouchdbAdapterHttp);
+addPouchPlugin(PouchdbReplication);
+addRxPlugin(RxDBReplicationCouchDBPlugin);
+addRxPlugin(RxDBQueryBuilderPlugin);
 
 const syncURL = 'http://localhost:10102/'; // Replace localhost with a public ip address!
 const dbName = 'heroesreactdatabase1';
+const HeroesCollectionName = 'heroes';
+
+const isDevelopment = process.env.NODE_ENV !== 'production' || process.env.DEBUG_PROD === 'true';
+
 const initialize = async () => {
+    if (isDevelopment) {
+        const { RxDBDevModePlugin } = await import('rxdb/plugins/dev-mode');
+        await addRxPlugin(RxDBDevModePlugin);
+    }
+
     let db;
     try {
         console.log('Initializing database...');
         db = await createRxDatabase({
             name: dbName,
-            storage: getRxStoragePouch('asyncstorage'),
-            password: 'myLongAndStupidPassword',
+            storage: getRxStorageMemory(),
             multiInstance: false,
             ignoreDuplicate: true,
         });
@@ -21,18 +40,24 @@ const initialize = async () => {
     }
     console.log('Adding hero collection...');
     try {
-        const heroCollection = await db.addCollections({
-            heroes: {
+        await db.addCollections({
+            [HeroesCollectionName]: {
                 schema: schema,
             },
         });
-        heroCollection.sync({
-            remote: syncURL + dbName + '/',
-            options: {
-                live: true,
-                retry: true,
-            },
-        });
+
+        // TODO
+        // const rxReplicationState = db.collections[HeroesCollectionName].syncCouchDB({
+        //     remote: syncURL + dbName + '/',
+        //     options: {
+        //         live: true,
+        //         retry: true,
+        //     },
+        // });
+        //
+        // rxReplicationState.error$.subscribe(async error => {
+        //     console.error(error)
+        // })
     } catch (err) {
         console.log('ERROR CREATING COLLECTION', err);
     }

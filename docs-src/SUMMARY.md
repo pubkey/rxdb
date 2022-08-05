@@ -54,7 +54,6 @@
         * [insert()](./rx-collection.md#insert)
         * [bulkInsert()](./rx-collection.md#bulkinsert)
         * [bulkRemove()](./rx-collection.md#bulkremove)
-        * [newDocument()](./rx-collection.md#newdocument)
         * [upsert()](./rx-collection.md#upsert)
         * [atomicUpsert()](./rx-collection.md#atomicupsert)
         * [find()](./rx-collection.md#find)
@@ -123,9 +122,9 @@
     * [RxStorage Memory Synced](./rx-storage-memory-synced.md)
     * [RxStorage Sharding](./rx-storage-sharding.md)
 
-* [Replication CouchDB](./replication-couchdb.md)
-* [Replication GraphQL](./replication-graphql.md)
-* [Replication Primitives](./replication.md)
+* [Replication](./replication.md)
+    * [Replication GraphQL](./replication-graphql.md)
+    * [Replication CouchDB](./replication-couchdb.md)
 
 * [Cleanup](./cleanup.md)
 

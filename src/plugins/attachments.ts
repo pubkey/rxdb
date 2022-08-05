@@ -3,8 +3,8 @@ import {
 } from 'rxjs/operators';
 
 import {
+    b64DecodeUnicode,
     blobBufferUtil,
-    createRevision,
     flatClone,
     PROMISE_RESOLVE_VOID
 } from './../util';
@@ -22,8 +22,33 @@ import type {
     RxAttachmentCreator,
     RxAttachmentWriteData
 } from '../types';
-import { flatCloneDocWithMeta, hashAttachmentData, writeSingle } from '../rx-storage-helper';
-import { runAsyncPluginHooks } from '../hooks';
+import { flatCloneDocWithMeta, writeSingle } from '../rx-storage-helper';
+import { pouchHash } from './pouchdb';
+
+
+/**
+ * To be able to support PouchDB with attachments,
+ * we have to use the md5 hashing here, even if the RxDatabase itself
+ * has a different hashing function.
+ */
+export function hashAttachmentData(
+    attachmentBase64String: string
+): Promise<string> {
+    let binary;
+    try {
+        binary = b64DecodeUnicode(attachmentBase64String);
+    } catch (err) {
+        console.log('could not run b64DecodeUnicode() on ' + attachmentBase64String);
+        throw err;
+    }
+    return pouchHash(binary);
+}
+
+export function getAttachmentSize(
+    attachmentBase64String: string
+): number {
+    return atob(attachmentBase64String).length;
+}
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -76,10 +101,6 @@ export class RxAttachment {
                 const docWriteData: RxDocumentWriteData<{}> = flatCloneDocWithMeta(this.doc._data);
                 docWriteData._attachments = flatClone(docWriteData._attachments);
                 delete docWriteData._attachments[this.id];
-
-
-                docWriteData._rev = createRevision(docWriteData, this.doc._data);
-
                 const writeResult: RxDocumentData<any> = await writeSingle(
                     this.doc.collection.storageInstance,
                     {
@@ -106,15 +127,9 @@ export class RxAttachment {
             this.doc.primary,
             this.id
         );
-        const hookInput = {
-            database: this.doc.collection.database,
-            schema: this.doc.collection.schema.jsonSchema,
-            type: this.type,
-            plainData: plainDataBase64
-        };
-        await runAsyncPluginHooks('postReadAttachment', hookInput);
+        console.dir(plainDataBase64);
         const ret = await blobBufferUtil.createBlobBufferFromBase64(
-            hookInput.plainData,
+            plainDataBase64,
             this.type as any
         );
         return ret;
@@ -152,30 +167,16 @@ export async function putAttachment(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
-
     const dataSize = blobBufferUtil.size(attachmentData.data);
-    const storageStatics = this.collection.database.storage.statics;
     const dataString = await blobBufferUtil.toBase64String(attachmentData.data);
 
-    const hookAttachmentData = {
-        id: attachmentData.id,
-        type: attachmentData.type,
-        data: dataString
-    };
-    await runAsyncPluginHooks('preWriteAttachment', {
-        database: this.collection.database,
-        schema: this.collection.schema.jsonSchema,
-        attachmentData: hookAttachmentData
-    });
-
-    const {
-        id, data, type
-    } = hookAttachmentData;
+    const id = attachmentData.id;
+    const type = attachmentData.type;
+    const data = dataString;
 
     const newDigest = await hashAttachmentData(
-        dataString,
-        storageStatics
-    ).then(hash => storageStatics.hashKey + '-' + hash);
+        dataString
+    ).then(hash => 'md5-' + hash);
 
     this._atomicQueue = this._atomicQueue
         .then(async () => {
@@ -196,9 +197,6 @@ export async function putAttachment(
                 type,
                 data
             };
-
-            docWriteData._rev = createRevision(docWriteData, this._data);
-
             const writeRow = {
                 previous: flatClone(this._data),
                 document: flatClone(docWriteData)
@@ -284,18 +282,7 @@ export async function preMigrateDocument<RxDocType>(
             Object.keys(attachments).map(async (attachmentId) => {
                 const attachment: RxAttachmentData = attachments[attachmentId];
                 const docPrimary: string = (data.docData as any)[data.oldCollection.schema.primaryPath];
-
-                let rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
-
-                const hookInput = {
-                    database: data.oldCollection.database,
-                    schema: data.oldCollection.schema.jsonSchema,
-                    type: attachment.type,
-                    plainData: rawAttachmentData
-                };
-                await runAsyncPluginHooks('postReadAttachment', hookInput);
-                rawAttachmentData = hookInput.plainData;
-
+                const rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
                 newAttachments[attachmentId] = {
                     digest: attachment.digest,
                     length: attachment.length,

@@ -4,12 +4,10 @@ const {
     addRxPlugin,
     blobBufferUtil,
 } = require('rxdb');
-const { RxDBEncryptionPlugin } = require('rxdb/plugins/encryption');
 const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
 const { RxDBAttachmentsPlugin } = require('rxdb/plugins/attachments');
 const { getRxStoragePouch, addPouchPlugin } = require('rxdb/plugins/pouchdb');
 
-addRxPlugin(RxDBEncryptionPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBAttachmentsPlugin);
 addPouchPlugin(require('pouchdb-adapter-idb'));
@@ -30,11 +28,7 @@ module.exports = (function () {
                 password: 'myLongAndStupidPassword',
                 multiInstance: true
             });
-
             await db.waitForLeadership();
-            if (db.broadcastChannel.method.type !== 'native') {
-                throw new Error('wrong BroadcastChannel-method chosen: ' + db.broadcastChannel.method.type);
-            }
 
             await db.addCollections({
                 heroes: {
@@ -48,9 +42,7 @@ module.exports = (function () {
                                 maxLength: 100
                             }
                         },
-                        attachments: {
-                            encrypted: true
-                        }
+                        attachments: {}
                     }
                 }
             });
@@ -59,7 +51,8 @@ module.exports = (function () {
             });
             assert.ok(doc);
 
-            const attachmentData = blobBufferUtil.createBlobBuffer('foo bar asldfkjalkdsfj', 'text/plain');
+            const dataString = 'foo bar asldfkjalkdsfj';
+            const attachmentData = blobBufferUtil.createBlobBuffer(dataString, 'text/plain');
             const attachment = await doc.putAttachment({
                 id: 'cat.jpg',
                 data: attachmentData,
@@ -70,7 +63,7 @@ module.exports = (function () {
 
             // issue #1371 Attachments not working in electron renderer with idb
             const readData = await attachment.getStringData();
-            assert.equal(readData, attachmentData);
+            assert.strictEqual(readData, dataString);
 
             await db.destroy();
         }());

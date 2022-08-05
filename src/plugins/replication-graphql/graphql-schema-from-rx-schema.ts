@@ -1,15 +1,18 @@
 import { getGraphqlSchemaFromJsonSchema } from 'get-graphql-from-jsonschema';
 
-import { scalarTypes } from 'get-graphql-from-jsonschema/build/lib/scalarTypes';
 import { fillWithDefaultSettings } from '../../rx-schema-helper';
 
 import { RxJsonSchema } from '../../types';
-import { clone, ucfirst } from '../../util';
+import { clone, ensureNotFalsy, flatClone, ucfirst } from '../../util';
 
 export type Prefixes = {
-    set?: string;
-    feed?: string;
-    changed?: string;
+    push?: string;
+    pushRow?: string;
+    checkpoint?: string;
+    pull?: string;
+    pullBulk?: string;
+    stream?: string;
+    headers?: string;
 };
 
 /**
@@ -17,18 +20,29 @@ export type Prefixes = {
  * to have better IDE autocomplete,
  * all strings are allowed
  */
-export type GraphQLParamType = 'ID' | 'ID!' | 'String' | 'String!' | 'Int' | 'Int!' | string;
+export type GraphQLParamType = 'ID' | 'ID!' |
+    'String' | 'String!' |
+    'Int' | 'Int!' |
+    'Float' | 'Float!' |
+    string;
 
 export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
     schema: RxJsonSchema<any>;
-    deletedFlag: string;
-    // which keys must be send to the feed-query to get the newer documents?
-    feedKeys: string[];
+    /**
+     * These fields of the document data
+     * will be used for the checkpoint.
+     */
+    checkpointFields: string[];
     ignoreInputKeys?: string[];
     ignoreOutputKeys?: string[];
     withRevisions?: boolean;
     prefixes?: Prefixes;
-    subscriptionParams?: { [k: string]: GraphQLParamType }
+    headerFields?: string[];
+    /**
+     * Name of the boolean field that marks deleted documents.
+     * [default='_deleted']
+     */
+    deletedField?: string;
 };
 
 export type GraphQLSchemaFromRxSchemaInput = {
@@ -66,66 +80,151 @@ export function graphQLSchemaFromRxSchema(
         collectionSettings = fillUpOptionals(collectionSettings);
 
         const schema = collectionSettings.schema;
-        const prefixes: Prefixes = collectionSettings.prefixes as any;
+        const prefixes: Prefixes = ensureNotFalsy(collectionSettings.prefixes);
         const ucCollectionName = ucfirst(collectionName);
         const collectionNameInput = ucfirst(collectionName) + 'Input';
 
         // input
-        const inputSchema = stripKeysFromSchema(schema, collectionSettings.ignoreInputKeys as string[]);
+        const inputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreInputKeys));
 
         const inputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionNameInput,
             schema: inputSchema as any,
             direction: 'input'
         });
+        const pushRowGraphQL = getGraphqlSchemaFromJsonSchema({
+            rootName: collectionNameInput + prefixes.pushRow,
+            schema: {
+                type: 'object',
+                properties: {
+                    assumedMasterState: inputSchema as any,
+                    newDocumentState: inputSchema as any
+                },
+                required: ['newDocumentState'],
+                additionalProperties: false
+            },
+            direction: 'input'
+        });
+
+        const checkpointSchema = {
+            type: 'object',
+            properties: {},
+            required: [],
+            additionalProperties: false
+        } as any;
+        collectionSettings.checkpointFields.forEach(key => {
+            const subSchema: any = schema.properties[key];
+            checkpointSchema.properties[key] = subSchema;
+            checkpointSchema.required.push(key);
+        });
+
+        console.log('checkpointSchema:');
+        console.log(JSON.stringify(checkpointSchema, null, 4));
+
+        const checkpointInputGraphQL = getGraphqlSchemaFromJsonSchema({
+            rootName: collectionNameInput + prefixes.checkpoint,
+            schema: checkpointSchema,
+            direction: 'input'
+        });
+
+        const headersSchema: any = {
+            type: 'object',
+            additionalProperties: false,
+            properties: {},
+            required: []
+        };
+        ensureNotFalsy(collectionSettings.headerFields).forEach(headerField => {
+            headersSchema.properties[headerField] = {
+                type: 'string'
+            };
+            headersSchema.required.push(headerField);
+        });
+        const headersInputName = collectionNameInput + prefixes.headers;
+        const headersInputGraphQL = getGraphqlSchemaFromJsonSchema({
+            rootName: headersInputName,
+            schema: headersSchema,
+            direction: 'input'
+        });
+
 
         ret.inputs = ret.inputs.concat(
             inputGraphQL
                 .typeDefinitions
                 .map(str => replaceTopLevelTypeName(str, collectionNameInput))
+        ).concat(
+            pushRowGraphQL
+                .typeDefinitions
+                .map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.pushRow))
+        ).concat(
+            checkpointInputGraphQL
+                .typeDefinitions
+                .map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.checkpoint))
+        ).concat(
+            headersInputGraphQL
+                .typeDefinitions
+                .map(str => replaceTopLevelTypeName(str, headersInputName))
         );
 
         // output
-        const outputSchema = stripKeysFromSchema(schema, collectionSettings.ignoreOutputKeys as string[]);
+        const outputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreOutputKeys));
         const outputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionName,
             schema: outputSchema as any,
             direction: 'output'
         });
+        const checkpointOutputGraphQL = getGraphqlSchemaFromJsonSchema({
+            rootName: ucCollectionName + prefixes.checkpoint,
+            schema: checkpointSchema,
+            direction: 'output'
+        });
+        const pullBulkOutputGraphQL = getGraphqlSchemaFromJsonSchema({
+            rootName: ucCollectionName + prefixes.pullBulk,
+            schema: {
+                type: 'object',
+                properties: {
+                    documents: {
+                        type: 'array',
+                        items: inputSchema as any
+                    },
+                    checkpoint: checkpointSchema
+                },
+                required: ['documents', 'checkpoint'],
+                additionalProperties: false
+            },
+            direction: 'output'
+        });
         ret.types = ret.types.concat(
             outputGraphQL.typeDefinitions
                 .map(str => replaceTopLevelTypeName(str, ucCollectionName))
+        ).concat(
+            checkpointOutputGraphQL.typeDefinitions
+                .map(str => replaceTopLevelTypeName(str, ucCollectionName + prefixes.checkpoint))
+        ).concat(
+            pullBulkOutputGraphQL.typeDefinitions
+                .map(str => replaceTopLevelTypeName(str, ucCollectionName + prefixes.pullBulk))
         );
 
         // query
-        const queryName = prefixes.feed + ucCollectionName;
-        const queryKeys = collectionSettings.feedKeys.map(key => {
-            const subSchema: any = schema.properties[key];
-            const graphqlType = (scalarTypes as any)[subSchema.type];
-            const keyString = key + ': ' + graphqlType + '';
-            return keyString;
-        });
-        queryKeys.push('limit: Int!');
-        const queryString = queryName + '(' + queryKeys.join(', ') + '): [' + ucCollectionName + '!]!';
+        const queryName = prefixes.pull + ucCollectionName;
+        const queryKeys = [
+            'checkpoint: ' + collectionNameInput + prefixes.checkpoint,
+            'limit: Int!'
+        ];
+        const queryString = queryName + '(' + queryKeys.join(', ') + '): ' + ucCollectionName + prefixes.pullBulk + '!';
         ret.queries.push(SPACING + queryString);
 
         // mutation
-        const mutationName = prefixes.set + ucCollectionName;
-        const mutationString = mutationName + '(' + collectionName + ': [' + collectionNameInput + ']): ' + ucCollectionName;
+        const mutationName = prefixes.push + ucCollectionName;
+        const mutationString = mutationName + '(' + collectionName + prefixes.pushRow + ': [' + collectionNameInput + prefixes.pushRow + ']): [' + ucCollectionName + '!]!';
         ret.mutations.push(SPACING + mutationString);
 
         // subscription
-        let subscriptionParamsString = '';
-        if (collectionSettings.subscriptionParams && Object.keys(collectionSettings.subscriptionParams).length > 0) {
-            subscriptionParamsString = '(' +
-                Object
-                    .entries(collectionSettings.subscriptionParams)
-                    .map(([name, type]) => name + ': ' + type)
-                    .join(', ') +
-                ')';
+        let subscriptionHeaderInputString = '';
+        if (collectionSettings.headerFields && collectionSettings.headerFields.length > 0) {
+            subscriptionHeaderInputString = '(headers: ' + headersInputName + ')';
         }
-        const subscriptionName = prefixes.changed + ucCollectionName;
-        const subscriptionString = subscriptionName + subscriptionParamsString + ': ' + ucCollectionName;
+        const subscriptionName = prefixes.stream + ucCollectionName;
+        const subscriptionString = subscriptionName + subscriptionHeaderInputString + ': ' + ucCollectionName + prefixes.pullBulk + '!';
         ret.subscriptions.push(SPACING + subscriptionString);
     });
 
@@ -159,6 +258,7 @@ export function graphQLSchemaFromRxSchema(
 export function fillUpOptionals(
     input: GraphQLSchemaFromRxSchemaInputSingleCollection
 ): GraphQLSchemaFromRxSchemaInputSingleCollection {
+    input = flatClone(input);
 
     const schema = fillWithDefaultSettings(input.schema);
     // strip internal attributes
@@ -169,26 +269,45 @@ export function fillUpOptionals(
     });
     input.schema = schema;
 
-    // add deleted flag to schema
-    schema.properties[input.deletedFlag] = {
+    // add deleted field to schema
+    if (!input.deletedField) {
+        input.deletedField = '_deleted';
+    }
+    schema.properties[input.deletedField] = {
         type: 'boolean'
     };
-    (schema.required as string[]).push(input.deletedFlag);
+    (schema.required as string[]).push(input.deletedField);
 
     // fill up prefixes
     if (!input.prefixes) {
         input.prefixes = {} as any;
     }
     const prefixes: Prefixes = input.prefixes as any;
-    if (!prefixes.set) {
-        prefixes.set = 'set';
+    if (!prefixes.push) {
+        prefixes.push = 'push';
     }
-    if (!prefixes.feed) {
-        prefixes.feed = 'feed';
+    if (!prefixes.pushRow) {
+        prefixes.pushRow = 'PushRow';
     }
-    if (!prefixes.changed) {
-        prefixes.changed = 'changed';
+    if (!prefixes.checkpoint) {
+        prefixes.checkpoint = 'Checkpoint';
     }
+    if (!prefixes.pull) {
+        prefixes.pull = 'pull';
+    }
+    if (!prefixes.pullBulk) {
+        prefixes.pullBulk = 'PullBulk';
+    }
+    if (!prefixes.stream) {
+        prefixes.stream = 'stream';
+    }
+    if (!prefixes.headers) {
+        prefixes.headers = 'Headers';
+    }
+    if (!input.headerFields) {
+        input.headerFields = [];
+    }
+
 
     if (!input.withRevisions) {
         input.withRevisions = false;

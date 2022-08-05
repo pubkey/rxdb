@@ -45,7 +45,6 @@ import type {
     SyncOptions,
     PouchDBInstance
 } from '../types';
-import { runPluginHooks } from '../hooks';
 
 /**
  * Contains all pouchdb instances that
@@ -169,17 +168,7 @@ export function setPouchEventEmitter(
 
                 (ev as any).change.docs
                     .filter((doc: any) => doc.language !== 'query') // remove internal docs
-                    .map((doc: any) => {
-                        const hookParams = {
-                            database: rxRepState.collection.database,
-                            primaryPath: rxRepState.collection.schema.primaryPath,
-                            schema: rxRepState.collection.schema.jsonSchema,
-                            doc
-                        };
-
-                        runPluginHooks('postReadFromInstance', hookParams);
-                        return hookParams.doc;
-                    }) // do primary-swap and keycompression
+                    // do primary-swap and keycompression
                     .forEach((doc: any) => rxRepState._subjects.docs.next(doc));
             }));
 
@@ -368,7 +357,7 @@ export function syncCouchDB(
         const pouchSync = syncFun(remote, useOptions);
         setPouchEventEmitter(repState, pouchSync);
 
-        this.onDestroy.then(() => repState.cancel());
+        this.onDestroy.push(() => repState.cancel());
     });
 
     return repState;

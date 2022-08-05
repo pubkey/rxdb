@@ -1,13 +1,12 @@
 <form
     autocomplete="off"
-    *ngIf="tempDoc"
     class="hero-insert-component"
 >
     <mat-form-field>
         <input
             matInput
             #input
-            [(ngModel)]="tempDoc.name"
+            [(ngModel)]="name"
             [autofocus]="true"
             name="name"
             placeholder="Name"
@@ -17,7 +16,7 @@
     <mat-form-field>
         <input
             matInput
-            [(ngModel)]="tempDoc.color"
+            [(ngModel)]="color"
             name="color"
             placeholder="Color"
         />

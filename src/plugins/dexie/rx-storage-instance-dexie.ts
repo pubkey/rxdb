@@ -42,7 +42,8 @@ import {
     fromDexieToStorage,
     fromStorageToDexie,
     getDexieDbWithTables,
-    getDocsInDb
+    getDocsInDb,
+    RX_STORAGE_NAME_DEXIE
 } from './dexie-helper';
 import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
@@ -447,6 +448,7 @@ export function createDexieStorageInstance<RxDocType>(
     );
 
     addRxStorageMultiInstanceSupport(
+        RX_STORAGE_NAME_DEXIE,
         params,
         instance
     );

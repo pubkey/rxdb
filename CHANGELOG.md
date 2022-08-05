@@ -2,6 +2,41 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- RENAME the `ajv-validate` plugin to `validate-ajv` to be in equal with the other validation plugins.
+- The `is-my-json-valid` validation is no longer supported until [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) is fixed.
+- REFACTORED the [schema validation plugins](https://rxdb.info/schema-validation.html), they are no longer plugins but now they get wrapped around any other RxStorage.
+  - It allows us to run the validation inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
+  - It allows us to configure which `RxDatabase` instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
+- REFACTORED the [key compression plugin](https://rxdb.info/key-compression.html), it is no longer a plugin but now a wrapper around any other RxStorage.
+  - It allows to run the key-comresion inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
+
+- REFACTORED the encryption plugin, it is no longer a plugin but now a wrapper around any other RxStorage.
+  - It allows to run the encryption inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
+  - It allows do use asynchronous crypto function like [WebCrypto](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+- Store the password hash in the same write request as the database token to improve performance.
+
+- REMOVED many unused plugin hooks because they decreased the performance.
+
+- REMOVED support for temporary documents [see here](https://github.com/pubkey/rxdb/pull/3777#issuecomment-1120669088)
+- REMOVED RxDatabase.broadcastChannel The broadcast channel has been moved out of the RxDatabase and is part of the RxStorage. So it is not longer exposed via `RxDatabase.broadcastChannel`.
+
+- In the RxDB internal `_meta.lwt` field, we now use 2 decimals number of the unix timestamp in milliseconds.
+
+
+- REMOVE RxStorageStatics `.hash` and `.hashKey`
+
+- CHANGE removed default usage of `md5` as default hashing. Use a faster non-cryptographic hash instead.
+  - ADD option to pass a custom hash function when calling `createRxDatabase`.
+
+- Removed the `liveInterval` option of the replication. It was an edge case feature with wrong defaults. If you want to run the pull replication on internval, you can send a `RESYNC` event manually in a loop.
+
+- CHANGE use `Float` instead of `Int` to represent timestamps in GraphQL.
+
+- REPLACED `RxReplicationPullError` and `RxReplicationPushError` with normal `RxError` like in the rest of the RxDB code.
+- REMOVED the option to filter out replication documents with the push/pull modifiers [#2552](https://github.com/pubkey/rxdb/issues/2552) because this does not work with the new replication protocol.
+- CHANGE default of replication `live` to be set to `true`. Because most people want to do a live replication, not a one time replication.
+
+- CHANGED Attachment data is now always handled as `Blob` because Node.js does support `Blob` since version 18.0.0 so we no longer have to use a `Buffer` but instead can use Blob for browsers and Node.js
 
 <!-- ADD new changes here! -->
 

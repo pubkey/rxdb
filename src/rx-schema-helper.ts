@@ -250,7 +250,7 @@ export const RX_META_SCHEMA: JsonSchema = {
              */
             minimum: RX_META_LWT_MINIMUM,
             maximum: 1000000000000000,
-            multipleOf: 1
+            multipleOf: 0.01
         }
     },
     /**

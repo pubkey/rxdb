@@ -63,7 +63,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, PouchCheckpoint>> = new Subject();
     private subs: Subscription[] = [];
-    private primaryPath: StringKeys<RxDocumentData<RxDocType>>;
+    public primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
     public closed: boolean = false;
 
@@ -72,7 +72,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
      * Some PouchDB operations give wrong results when they run in parallel.
      * So we have to ensure they are queued up.
      */
-    private nonParallelQueue: Promise<any> = PROMISE_RESOLVE_VOID;
+    public nonParallelQueue: Promise<any> = PROMISE_RESOLVE_VOID;
 
     constructor(
         public readonly storage: RxStorage<PouchStorageInternals, PouchSettings>,
@@ -84,7 +84,6 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ) {
         OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-
         /**
          * Instead of listening to pouch.changes,
          * we have overwritten pouchdbs bulkDocs()
@@ -186,6 +185,17 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
                 });
             }
 
+            /**
+             * Ensure that a revision exists,
+             * having an empty revision here would not throw
+             * but just not resolve forever.
+             */
+            if (!writeData.document._rev) {
+                throw newRxError('SNH', {
+                    args: writeData
+                });
+            }
+
             const primary: string = (writeData.document as any)[this.primaryPath];
             writeRowById.set(primary, writeData);
             const storeDocumentData: any = rxDocumentDataToPouchDocumentData<RxDocType>(
@@ -271,79 +281,34 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         attachmentId: string
     ): Promise<string> {
         ensureNotClosed(this);
-        const attachmentData = await this.internals.pouch.getAttachment(
+        let attachmentData = await this.internals.pouch.getAttachment(
             documentId,
             attachmentId
         );
+
+        /**
+         * In Node.js, PouchDB works with Buffers because it is old and Node.js did
+         * not support Blob at the time is was coded.
+         * So here we have to transform the Buffer to a Blob.
+         */
+        const isBuffer = typeof Buffer !== 'undefined' && Buffer.isBuffer(attachmentData);
+        if (isBuffer) {
+            attachmentData = new Blob([attachmentData]);
+        }
+
         const ret = await blobBufferUtil.toBase64String(attachmentData);
         return ret;
     }
 
-    async findDocumentsById(
+    findDocumentsById(
         ids: string[],
         deleted: boolean
     ): Promise<RxDocumentDataById<RxDocType>> {
-        ensureNotClosed(this);
-
-        /**
-         * On deleted documents, PouchDB will only return the tombstone.
-         * So we have to get the properties directly for each document
-         * with the hack of getting the changes and then make one request per document
-         * with the latest revision.
-         * TODO create an issue at pouchdb on how to get the document data of deleted documents,
-         * when one past revision was written via new_edits=false
-         * @link https://stackoverflow.com/a/63516761/3443137
-         */
-        if (deleted) {
-            const retDocs: RxDocumentDataById<RxDocType> = {};
-            this.nonParallelQueue = this.nonParallelQueue.then(async () => {
-                const viaChanges = await this.internals.pouch.changes({
-                    live: false,
-                    since: 0,
-                    doc_ids: ids,
-                    style: 'all_docs'
-                });
-                await Promise.all(
-                    viaChanges.results.map(async (result) => {
-                        const firstDoc = await this.internals.pouch.get(
-                            result.id,
-                            {
-                                rev: result.changes[0].rev,
-                                deleted: 'ok',
-                                style: 'all_docs'
-                            }
-                        );
-                        const useFirstDoc = pouchDocumentDataToRxDocumentData(
-                            this.primaryPath,
-                            firstDoc
-                        );
-                        retDocs[result.id] = useFirstDoc;
-                    })
-                );
-            });
-            await this.nonParallelQueue;
-            return retDocs;
-        } else {
-            const ret: RxDocumentDataById<RxDocType> = {};
-            this.nonParallelQueue = this.nonParallelQueue.then(async () => {
-                const pouchResult = await this.internals.pouch.allDocs({
-                    include_docs: true,
-                    keys: ids
-                });
-                pouchResult.rows
-                    .filter(row => !!row.doc)
-                    .forEach(row => {
-                        let docData = row.doc;
-                        docData = pouchDocumentDataToRxDocumentData(
-                            this.primaryPath,
-                            docData
-                        );
-                        ret[row.id] = docData;
-                    });
-            });
-            await this.nonParallelQueue;
-            return ret;
-        }
+        return pouchFindDocumentsById<RxDocType>(
+            this,
+            ids,
+            deleted
+        );
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, PouchCheckpoint>> {
@@ -418,7 +383,8 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             pouchChangesOpts.limit = skippedDesignDocuments;
         }
 
-        const documentsData = await this.findDocumentsById(
+        const documentsData = await pouchFindDocumentsById<RxDocType>(
+            this,
             changedDocuments.map(o => o.id),
             true
         );
@@ -435,8 +401,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         }
 
         const lastRow = lastOfArray(changedDocuments);
+        const documents = changedDocuments.map(changeRow => getFromObjectOrThrow(documentsData, changeRow.id));
+
         return {
-            documents: changedDocuments.map(changeRow => getFromObjectOrThrow(documentsData, changeRow.id)),
+            documents,
             checkpoint: lastRow ? {
                 sequence: lastRow.sequence
             } : checkpoint ? checkpoint : {
@@ -458,5 +426,78 @@ function ensureNotClosed(
 ) {
     if (instance.closed) {
         throw new Error('RxStorageInstancePouch is closed ' + instance.databaseName + '-' + instance.collectionName);
+    }
+}
+
+
+/**
+ * Because we internally use the findDocumentsById()
+ * method, it is defined here because RxStorage wrappers
+ * might swap out the function.
+ */
+async function pouchFindDocumentsById<RxDocType>(
+    instance: RxStorageInstancePouch<RxDocType>,
+    ids: string[],
+    deleted: boolean
+): Promise<RxDocumentDataById<RxDocType>> {
+    ensureNotClosed(instance);
+    const ret: RxDocumentDataById<RxDocType> = {};
+
+    /**
+     * On deleted documents, PouchDB will only return the tombstone.
+     * So we have to get the properties directly for each document
+     * with the hack of getting the changes and then make one request per document
+     * with the latest revision.
+     * TODO create an issue at pouchdb on how to get the document data of deleted documents,
+     * when one past revision was written via new_edits=false
+     * @link https://stackoverflow.com/a/63516761/3443137
+     */
+    if (deleted) {
+        instance.nonParallelQueue = instance.nonParallelQueue.then(async () => {
+            const viaChanges = await instance.internals.pouch.changes({
+                live: false,
+                since: 0,
+                doc_ids: ids,
+                style: 'all_docs'
+            });
+            await Promise.all(
+                viaChanges.results.map(async (result) => {
+                    const firstDoc = await instance.internals.pouch.get(
+                        result.id,
+                        {
+                            rev: result.changes[0].rev,
+                            deleted: 'ok',
+                            style: 'all_docs'
+                        }
+                    );
+                    const useFirstDoc = pouchDocumentDataToRxDocumentData(
+                        instance.primaryPath,
+                        firstDoc
+                    );
+                    ret[result.id] = useFirstDoc;
+                })
+            );
+        });
+        await instance.nonParallelQueue;
+        return ret;
+    } else {
+        instance.nonParallelQueue = instance.nonParallelQueue.then(async () => {
+            const pouchResult = await instance.internals.pouch.allDocs({
+                include_docs: true,
+                keys: ids
+            });
+            pouchResult.rows
+                .filter(row => !!row.doc)
+                .forEach(row => {
+                    let docData = row.doc;
+                    docData = pouchDocumentDataToRxDocumentData(
+                        instance.primaryPath,
+                        docData
+                    );
+                    ret[row.id] = docData;
+                });
+        });
+        await instance.nonParallelQueue;
+        return ret;
     }
 }

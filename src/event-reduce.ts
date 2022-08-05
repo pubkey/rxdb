@@ -16,7 +16,6 @@ import type {
     StringKeys,
     RxDocumentData
 } from './types';
-import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
 import { clone, ensureNotFalsy } from './util';
 import { normalizeMangoQuery } from './rx-query-helper';
@@ -64,7 +63,7 @@ export function getQueryParams<RxDocType>(
          * we send for example compressed documents to be sorted by compressed queries.
          */
         const sortComparator = collection.database.storage.statics.getSortComparator(
-            collection.storageInstance.schema,
+            collection.schema.jsonSchema,
             preparedQuery
         );
 
@@ -74,7 +73,6 @@ export function getQueryParams<RxDocType>(
                 docB,
                 rxQuery
             };
-            runPluginHooks('preSortComparator', sortComparatorData);
             return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
         };
 
@@ -84,7 +82,7 @@ export function getQueryParams<RxDocType>(
          * we send for example compressed documents to match compressed queries.
          */
         const queryMatcher = collection.database.storage.statics.getQueryMatcher(
-            collection.storageInstance.schema,
+            collection.schema.jsonSchema,
             preparedQuery
         );
         const useQueryMatcher: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
@@ -92,8 +90,6 @@ export function getQueryParams<RxDocType>(
                 doc,
                 rxQuery
             };
-            runPluginHooks('preQueryMatcher', queryMatcherData);
-
             return queryMatcher(queryMatcherData.doc);
         };
 

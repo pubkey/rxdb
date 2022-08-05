@@ -117,20 +117,6 @@ export type FilledMangoQuery<RxDocType> = Override<
  */
 export type RxStorageStatics = Readonly<{
     /**
-     * Returns a hash of the given value.
-     * Used to check equalness of attachments data and other stuff.
-     * Pouchdb uses md5 but we can use whatever we want as long as each
-     * storage class returns the same hash each time.
-     */
-    hash(data: Buffer | Blob | string): Promise<string>;
-
-    /**
-     * Key of the used hash algorithm.
-     * Like 'md5' or 'sha1'.
-     */
-    hashKey: string;
-
-    /**
      * PouchDB and others have some bugs
      * and behaviors that must be worked arround
      * before querying the db.
@@ -143,7 +129,7 @@ export type RxStorageStatics = Readonly<{
      * when the query is used multiple times.
      *
      * @returns a format of the query that can be used with the storage
-     * when calling .query()
+     * when calling RxStorageInstance().query()
      */
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
@@ -189,14 +175,6 @@ export interface RxStorageInstance<
     InstanceCreationOptions,
     CheckpointType = any
     > {
-
-    /**
-     * The RxStorage which was used to create the given instance.
-     * We need this here to make it easy to get access static methods and stuff
-     * when working with the RxStorageInstance.
-     */
-    readonly storage: RxStorage<Internals, InstanceCreationOptions>;
-
     readonly databaseName: string;
     /**
      * Returns the internal data that is used by the storage engine.

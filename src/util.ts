@@ -1,6 +1,7 @@
 import type {
     BlobBuffer,
     DeepReadonlyObject,
+    HashFunction,
     MaybeReadonly,
     RxDocumentData,
     RxDocumentMeta
@@ -33,58 +34,67 @@ export function pluginMissing(
 }
 
 /**
- * this is a very fast hashing but its unsecure
+ * This is a very fast hash method
+ * but it is not cryptographically secure.
+ * For each run it will append a number between 0 and 2147483647 (=biggest 32 bit int).
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
- * @return a number as hash-result
+ * @return a string as hash-result
  */
-export function fastUnsecureHash(obj: any): number {
-    if (typeof obj !== 'string') obj = JSON.stringify(obj);
+export function fastUnsecureHash(
+    inputString: string
+): string {
     let hashValue = 0,
         i, chr, len;
-    if (obj.length === 0) return hashValue;
-    for (i = 0, len = obj.length; i < len; i++) {
-        chr = obj.charCodeAt(i);
-        // tslint:disable-next-line
+
+    /**
+     * For better performance we first transform all
+     * chars into their ascii numbers at once.
+     * 
+     * This is what makes the murmurhash implementation such fast.
+     * @link https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L4
+     */
+    const encoded = new TextEncoder().encode(inputString);
+
+    for (i = 0, len = inputString.length; i < len; i++) {
+        chr = encoded[i];
         hashValue = ((hashValue << 5) - hashValue) + chr;
-        // tslint:disable-next-line
         hashValue |= 0; // Convert to 32bit integer
     }
-    if (hashValue < 0) hashValue = hashValue * -1;
-    return hashValue;
-}
-
-/**
- * Does a RxDB-specific hashing of the given data.
- * We use a static salt so using a rainbow-table
- * or google-ing the hash will not work.
- *
- * spark-md5 is used here
- * because pouchdb uses the same
- * and build-size could be reduced by 9kb
- * 
- * TODO instead of using md5 we should use the hash method from the given RxStorage
- * this change would require some rewrites because the RxStorage hash is async.
- * So maybe it is even better to use non-cryptographic hashing like we do at fastUnsecureHash()
- * which would even be faster.
- */
-import Md5 from 'spark-md5';
-export const RXDB_HASH_SALT = 'rxdb-specific-hash-salt';
-export function hash(msg: string | any): string {
-    if (typeof msg !== 'string') {
-        msg = JSON.stringify(msg);
+    if (hashValue < 0) {
+        hashValue = hashValue * -1;
     }
-    return Md5.hash(RXDB_HASH_SALT + msg);
+
+    /**
+     * To make the output smaller
+     * but still have it to represent the same value,
+     * we use the biggest radix of 36 instead of just
+     * transforming it into a hex string.
+     */
+    return hashValue.toString(36);
+}
+
+
+/**
+ * Default hash method used to create revision hashes
+ * that do not have to be cryptographically secure.
+ * IMPORTANT: Changing the default hashing method
+ * requires a BREAKING change!
+ */
+export function defaultHashFunction(input: string): string {
+    return fastUnsecureHash(input);
 }
 
 /**
- * Returns the current unix time in milliseconds
+ * Returns the current unix time in milliseconds (with two decmials!)
  * Because the accuracy of getTime() in javascript is bad,
  * and we cannot rely on performance.now() on all plattforms,
  * this method implements a way to never return the same value twice.
  * This ensures that when now() is called often, we do not loose the information
  * about which call came first and which came after.
- * Caution: Do not call this too often in a short timespan
- * because it might return 'the future'.
+ * 
+ * We had to move from having no decimals, to having two decimal
+ * because it turned out that some storages are such fast that
+ * calling this method too often would return 'the future'.
  */
 let _lastNow: number = 0;
 /**
@@ -93,11 +103,21 @@ let _lastNow: number = 0;
  */
 export function now(): number {
     let ret = new Date().getTime();
+    ret = ret + 0.01;
     if (ret <= _lastNow) {
-        ret = _lastNow + 1;
+        ret = _lastNow + 0.01;
     }
-    _lastNow = ret;
-    return ret;
+
+    /**
+     * Strip the returned number to max two decimals.
+     * In theory we would not need this but
+     * in practice JavaScript has no such good number precision
+     * so rounding errors could add another decimal place.
+     */
+    const twoDecimals = parseFloat(ret.toFixed(2));
+
+    _lastNow = twoDecimals;
+    return twoDecimals;
 }
 
 /**
@@ -417,6 +437,7 @@ export function getHeightOfRevision(revision: string): number {
  * Creates the next write revision for a given document.
  */
 export function createRevision<RxDocType>(
+    hashFunction: HashFunction,
     docData: RxDocumentData<RxDocType> & {
         /**
          * Passing a revision is optional here,
@@ -460,9 +481,8 @@ export function createRevision<RxDocType>(
     docWithoutRev._rev = previousDocData ? newRevisionHeight : 1;
 
     const diggestString = JSON.stringify(docWithoutRev);
-    const revisionHash = Md5.hash(diggestString);
 
-
+    const revisionHash = hashFunction(diggestString);
     return newRevisionHeight + '-' + revisionHash;
 }
 
@@ -530,7 +550,31 @@ export function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]> {
 }
 
 
-const USE_NODE_BLOB_BUFFER_METHODS = typeof FileReader === 'undefined';
+/**
+ * atob() and btoa() do not work well with non ascii chars,
+ * so we have to use these helper methods instead.
+ * @link https://stackoverflow.com/a/30106551/3443137
+ */
+// Encoding UTF8 -> base64
+export function b64EncodeUnicode(str: string) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+        return String.fromCharCode(parseInt(p1, 16))
+    }))
+}
+
+// Decoding base64 -> UTF8
+export function b64DecodeUnicode(str: string) {
+    return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    }).join(''))
+}
+
+/**
+ * This is an abstraction over the Blob/Buffer data structure.
+ * We need this because it behaves different in different JavaScript runtimes.
+ * Since RxDB 13.0.0 we switch to Blob-only because Node.js does not support
+ * the Blob data structure which is also supported by the browsers.
+ */
 export const blobBufferUtil = {
     /**
      * depending if we are on node or browser,
@@ -540,27 +584,9 @@ export const blobBufferUtil = {
         data: string,
         type: string
     ): BlobBuffer {
-
-        let blobBuffer: any;
-        if (isElectronRenderer) {
-            // if we are inside of electron-renderer, always use the node-buffer
-            return Buffer.from(data, {
-                type
-            } as any);
-        }
-
-        if (USE_NODE_BLOB_BUFFER_METHODS) {
-            // for node
-            blobBuffer = Buffer.from(data, {
-                type
-            } as any);
-        } else {
-            // for browsers
-            blobBuffer = new Blob([data], {
-                type
-            } as any);
-        }
-
+        const blobBuffer = new Blob([data], {
+            type
+        });
         return blobBuffer;
     },
     /**
@@ -571,122 +597,61 @@ export const blobBufferUtil = {
         base64String: string,
         type: string
     ): Promise<BlobBuffer> {
-        let blobBuffer: any;
-        if (isElectronRenderer) {
-            // if we are inside of electron-renderer, always use the node-buffer
-            return Buffer.from(
-                base64String,
-                'base64'
-            );
-        }
+        const base64Response = await fetch(`data:${type};base64,${base64String}`);
+        const blob = await base64Response.blob();
+        return blob;
 
-
-        if (USE_NODE_BLOB_BUFFER_METHODS) {
-            // for node
-            blobBuffer = Buffer.from(
-                base64String,
-                'base64'
-            );
-            return blobBuffer;
-        } else {
-            /**
-             * For browsers.
-             * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
-             */
-            const base64Response = await fetch(`data:${type};base64,${base64String}`);
-            const blob = await base64Response.blob();
-            return blob;
-        }
     },
     isBlobBuffer(data: any): boolean {
-        if ((typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) || data instanceof Blob) {
+        if (data instanceof Blob || (typeof Buffer !== 'undefined' && Buffer.isBuffer(data))) {
             return true;
         } else {
             return false;
         }
     },
     toString(blobBuffer: BlobBuffer | string): Promise<string> {
+        /**
+         * in the electron-renderer we have a typed array insteaf of a blob
+         * so we have to transform it.
+         * @link https://github.com/pubkey/rxdb/issues/1371
+         */
+        const blobBufferType = Object.prototype.toString.call(blobBuffer);
+        if (blobBufferType === '[object Uint8Array]') {
+            blobBuffer = new Blob([blobBuffer]);
+        }
         if (typeof blobBuffer === 'string') {
             return Promise.resolve(blobBuffer);
         }
 
-        if (USE_NODE_BLOB_BUFFER_METHODS) {
-            // node
-            return nextTick()
-                .then(() => blobBuffer.toString());
-        }
-        return new Promise(res => {
-            // browser
-            const reader = new FileReader();
-            reader.addEventListener('loadend', e => {
-                const text = (e.target as any).result;
-                res(text);
-            });
-
-            const blobBufferType = Object.prototype.toString.call(blobBuffer);
-
-            /**
-             * in the electron-renderer we have a typed array insteaf of a blob
-             * so we have to transform it.
-             * @link https://github.com/pubkey/rxdb/issues/1371
-             */
-            if (blobBufferType === '[object Uint8Array]') {
-                blobBuffer = new Blob([blobBuffer]);
-            }
-
-            reader.readAsText(blobBuffer as any);
-        });
+        return (blobBuffer as Blob).text();
     },
-    toBase64String(blobBuffer: BlobBuffer | string): Promise<string> {
+    async toBase64String(blobBuffer: BlobBuffer | string): Promise<string> {
         if (typeof blobBuffer === 'string') {
             return Promise.resolve(blobBuffer);
         }
-        if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
-            // node
-            return nextTick()
-                /**
-                 * We use btoa() instead of blobBuffer.toString('base64')
-                 * to ensure that we have the same behavior in nodejs and the browser.
-                 */
-                .then(() => blobBuffer.toString('base64'));
+
+        /**
+         * in the electron-renderer we have a typed array insteaf of a blob
+         * so we have to transform it.
+         * @link https://github.com/pubkey/rxdb/issues/1371
+         */
+        const blobBufferType = Object.prototype.toString.call(blobBuffer);
+        if (blobBufferType === '[object Uint8Array]') {
+            blobBuffer = new Blob([blobBuffer]);
         }
-        return new Promise((res, rej) => {
-            /**
-             * Browser
-             * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
-             */
-            const reader = new FileReader;
-            reader.onerror = rej;
-            reader.onload = () => {
-                // looks like 'data:plain/text;base64,YWFh...'
-                const fullResult = reader.result as any;
-                const split = fullResult.split(',');
-                split.shift();
-                res(split.join(','));
-            };
 
-            const blobBufferType = Object.prototype.toString.call(blobBuffer);
+        const text = await (blobBuffer as Blob).text();
 
-            /**
-             * in the electron-renderer we have a typed array insteaf of a blob
-             * so we have to transform it.
-             * @link https://github.com/pubkey/rxdb/issues/1371
-             */
-            if (blobBufferType === '[object Uint8Array]') {
-                blobBuffer = new Blob([blobBuffer]);
-            }
-
-            reader.readAsDataURL(blobBuffer as any);
-        });
+        /**
+         * We need to format into an utf-8 string or else btoa()
+         * will not work properly on latin-1 characters.
+         * @link https://stackoverflow.com/a/30106551/3443137
+         */
+        const base64 = b64EncodeUnicode(text);
+        return base64;
     },
     size(blobBuffer: BlobBuffer): number {
-        if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
-            // node
-            return Buffer.byteLength(blobBuffer);
-        } else {
-            // browser
-            return (blobBuffer as Blob).size;
-        }
+        return (blobBuffer as Blob).size;
     }
 };
 

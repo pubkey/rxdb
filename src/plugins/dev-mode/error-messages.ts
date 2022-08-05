@@ -6,13 +6,15 @@
 
 
 export const ERROR_MESSAGES = {
-    // util.js
+    // util.js / config
     UT1: 'given name is no string or empty',
     UT2: `collection- and database-names must match the regex to be compatible with couchdb databases.
     See https://neighbourhood.ie/blog/2020/10/13/everything-you-need-to-know-about-couchdb-database-names/
     info: if your database-name specifies a folder, the name must contain the slash-char '/' or '\\'`,
     UT3: 'replication-direction must either be push or pull or both. But not none',
     UT4: 'given leveldown is no valid adapter',
+    UT5: 'keyCompression is set to true in the schema but no key-compression handler is used in the storage',
+    UT6: 'schema contains encrypted fields but no encryption handler is used in the storage',
 
     // plugins
     PL1: 'Given plugin is not RxDB plugin. Pouchdb plugins must be added via addPouchPlugin()',
@@ -55,7 +57,7 @@ export const ERROR_MESSAGES = {
     DB4: 'RxDatabase.addCollections(): schema is missing',
     DB5: 'RxDatabase.addCollections(): collection-name not allowed',
     DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://pubkey.github.io/rxdb/questions-answers.html#cant-change-the-schema',
-    DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
+    // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
     DB8: 'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' +
         'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
     DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
@@ -115,6 +117,7 @@ export const ERROR_MESSAGES = {
     // plugins/encryption.js
     EN1: 'password is no string',
     EN2: 'validatePassword: min-length of password not complied',
+    EN3: 'Schema contains encrypted properties but no password is given',
 
     // plugins/json-dump.js
     JD1: 'You must create the collections before you can import their data',
@@ -139,6 +142,8 @@ export const ERROR_MESSAGES = {
     RC3: 'RxCollection.syncCouchDB() Do not use a collection\'s pouchdb as remote, use the collection instead',
     RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication when live: true',
     RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication if multiInstance because the replication might run on another instance',
+    RC_PULL: 'RxReplication pull handler throwed an error - see .errors for more details',
+    RC_PUSH: 'RxReplication push handler throwed an error - see .errors for more details',
 
     // plugins/dev-mode/check-schema.js
     SC1: 'fieldnames do not match the regex',
@@ -194,9 +199,9 @@ export const ERROR_MESSAGES = {
 
     // plugins/replication-graphql.js
     GQL1: 'GraphQL replication: cannot find sub schema by key',
-    GQL2: 'GraphQL replication: unknown errors occurred in replication pull - see innerErrors for more details',
+    // removed in 13.0.0, use RC_PULL instead - GQL2: 'GraphQL replication: unknown errors occurred in replication pull - see innerErrors for more details',
     GQL3: 'GraphQL replication: pull returns more documents then batchSize',
-    GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
+    // removed in 13.0.0, use RC_PUSH instead - GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
 
     // plugins/replication/
     REP1: 'Replication: _deleted field not provided',

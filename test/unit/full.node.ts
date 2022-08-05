@@ -88,7 +88,6 @@ const run = async function () {
         replicationIdentifier: 'my-custom-rest-replication',
         live: true,
         // use realy high values to ensure that the CI fails if the node process does not exit by itself.
-        liveInterval: 50000,
         retryTime: 50000,
         pull: {
             handler() {

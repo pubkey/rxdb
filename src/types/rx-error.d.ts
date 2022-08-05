@@ -4,6 +4,7 @@ import {
 } from '../rx-schema';
 import { RxPlugin } from './rx-plugin';
 import { ERROR_MESSAGES } from '../plugins/dev-mode/error-messages';
+import { RxReplicationWriteToMasterRow } from './replication-protocol';
 
 type KeyOf<T extends object> = Extract<keyof T, string>;
 export type RxErrorKey = KeyOf<typeof ERROR_MESSAGES>;
@@ -94,6 +95,23 @@ export interface RxErrorParameters {
     readonly index?: string | string[] | readonly string[];
     readonly plugin?: RxPlugin | any;
     readonly plugins?: Set<RxPlugin | any>;
+
+    // used in the replication plugin
+
+    /**
+     * The checkpoint of the response from the last successfull
+     * pull by the client.
+     * Null if there was no pull operation before
+     * so that there is no last pulled checkpoint.
+     */
+    readonly checkpoint?: any;
+    /**
+     * The documents that failed to be pushed.
+     * Typed as 'any' because they might be modified by the push modifier.
+     */
+    readonly pushRows?: RxReplicationWriteToMasterRow<any>[],
+    readonly direction?: 'pull' | 'push'
+
 }
 
 /**

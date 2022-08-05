@@ -1,10 +1,8 @@
 const { createRxDatabase, addRxPlugin } = require('rxdb');
-const { RxDBEncryptionPlugin } = require('rxdb/plugins/encryption');
 const { RxDBQueryBuilderPlugin } = require('rxdb/plugins/query-builder');
 const { RxDBDevModePlugin } = require('rxdb/plugins/dev-mode');
 const { addPouchPlugin, getRxStoragePouch } = require('rxdb/plugins/pouchdb');
 
-addRxPlugin(RxDBEncryptionPlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBDevModePlugin);
 addPouchPlugin(require('pouchdb-adapter-memory'));

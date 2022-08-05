@@ -12,7 +12,8 @@ import {
 
 import {
     createRxDatabase,
-    addRxPlugin
+    addRxPlugin,
+    RxStorage
 } from 'rxdb';
 
 import {
@@ -23,6 +24,7 @@ import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import {
     COUCHDB_PORT,
     HERO_COLLECTION_NAME,
@@ -65,8 +67,6 @@ function doSync(): boolean {
  * Loads RxDB plugins
  */
 async function loadRxDBPlugins(): Promise<void> {
-
-
     addRxPlugin(RxDBReplicationCouchDBPlugin);
     // http-adapter is always needed for replication with the node-server
     addPouchPlugin(PouchdbAdapterHttp);
@@ -95,12 +95,6 @@ async function loadRxDBPlugins(): Promise<void> {
             // which does many checks and add full error-messages
             import('rxdb/plugins/dev-mode').then(
                 module => addRxPlugin(module as any)
-            ),
-
-            // we use the schema-validation only in dev-mode
-            // this validates each document if it is matching the jsonschema
-            import('rxdb/plugins/validate').then(
-                module => addRxPlugin(module as any)
             )
         ]);
     } else { }
@@ -114,10 +108,18 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     await loadRxDBPlugins();
 
+
+    let storage: RxStorage<any, any> = getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb');
+    if (isDevMode()) {
+        // we use the schema-validation only in dev-mode
+        // this validates each document if it is matching the jsonschema
+        storage = wrappedValidateAjvStorage({ storage });
+    }
+
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase<RxHeroesCollections>({
         name: DATABASE_NAME,
-        storage: getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb'),
+        storage,
         multiInstance: !IS_SERVER_SIDE_RENDERING
         // password: 'myLongAndStupidPassword' // no password needed
     });

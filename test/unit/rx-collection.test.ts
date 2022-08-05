@@ -39,6 +39,7 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
+import { wrappedKeyCompressionStorage } from '../../plugins/key-compression';
 
 import { RxDBUpdatePlugin } from '../../plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
@@ -46,7 +47,7 @@ import { RxDBMigrationPlugin } from '../../plugins/migration';
 addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
-import { HumanDocumentType } from '../helper/schemas';
+import { enableKeyCompression, HumanDocumentType } from '../helper/schemas';
 import { RxDocumentData } from '../../src/types';
 
 describe('rx-collection.test.js', () => {
@@ -122,11 +123,13 @@ describe('rx-collection.test.js', () => {
                 it('should create compound-indexes (keyCompression: true)', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: wrappedKeyCompressionStorage({
+                            storage: getRxStoragePouch('memory')
+                        })
                     });
                     await db.addCollections({
                         human: {
-                            schema: schemas.compoundIndex
+                            schema: enableKeyCompression(schemas.compoundIndex)
                         }
                     });
                     const collection = db.collections.human;
@@ -320,65 +323,6 @@ describe('rx-collection.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('should not insert broken human (required missing)', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage(),
-                    });
-                    const collections = await db.addCollections({
-                        human: {
-                            schema: schemas.human
-                        }
-                    });
-                    const human: any = schemaObjects.human();
-                    delete human.firstName;
-                    await AsyncTestUtil.assertThrows(
-                        () => collections.human.insert(human),
-                        'RxError',
-                        'not match schema'
-                    );
-                    db.destroy();
-                });
-                it('should not insert human with additional prop', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage(),
-                    });
-                    const collections = await db.addCollections({
-                        human: {
-                            schema: schemas.human
-                        }
-                    });
-                    const human: any = schemaObjects.human();
-                    human['any'] = randomCouchString(20);
-                    await AsyncTestUtil.assertThrows(
-                        () => collections.human.insert(human),
-                        'RxError',
-                        'not match schema'
-                    );
-                    db.destroy();
-                });
-                it('should not insert when primary is missing', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage(),
-                    });
-                    const collections = await db.addCollections({
-                        human: {
-                            schema: schemas.primaryHuman
-                        }
-                    });
-                    await AsyncTestUtil.assertThrows(
-                        () => collections.human.insert({
-                            firstName: 'foo',
-                            lastName: 'bar',
-                            age: 20
-                        }),
-                        'RxError',
-                        'is required'
-                    );
-                    db.destroy();
-                });
                 it('should throw a conflict-error', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
@@ -1566,27 +1510,6 @@ describe('rx-collection.test.js', () => {
                     );
                     db.destroy();
                 });
-                it('throw when schema not matching', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage()
-                    });
-                    const collections = await db.addCollections({
-                        human: {
-                            schema: schemas.primaryHuman
-                        }
-                    });
-                    const collection = collections.human;
-                    const obj: any = schemaObjects.simpleHuman();
-                    obj.firstName = 'foobar';
-                    obj['foo'] = 'bar';
-                    await AsyncTestUtil.assertThrows(
-                        () => collection.upsert(obj),
-                        'RxError',
-                        'not match'
-                    );
-                    db.destroy();
-                });
             });
         });
         describe('.atomicUpsert()', () => {
@@ -1793,25 +1716,6 @@ describe('rx-collection.test.js', () => {
                     assert.strictEqual(typeof afterUpdate.firstName, 'undefined');
 
                     db.destroy();
-                });
-            });
-            config.parallel('negative', () => {
-                it('should throw when not matching schema', async () => {
-                    const c = await humansCollection.createPrimary(0);
-                    const docData = schemaObjects.simpleHuman();
-                    await Promise.all([
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData)
-                    ]);
-                    const docData2 = clone(docData);
-                    docData2['firstName'] = 1337 as any;
-                    await AsyncTestUtil.assertThrows(
-                        () => c.atomicUpsert(docData2),
-                        'RxError',
-                        'schema'
-                    );
-                    c.database.destroy();
                 });
             });
         });

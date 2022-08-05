@@ -84,7 +84,7 @@ config.parallel('cleanup.test.js', () => {
         replicateRxCollection({
             collection,
             replicationIdentifier: 'my-rep',
-            deletedFlag: '_deleted',
+            deletedField: '_deleted',
             pull: {
                 async handler() {
                     await wait(50);

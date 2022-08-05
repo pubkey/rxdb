@@ -18,6 +18,7 @@ export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
 export const DEXIE_CHANGES_TABLE_NAME = 'changes';
 
+export const RX_STORAGE_NAME_DEXIE = 'dexie';
 
 const DEXIE_STATE_DB_BY_NAME: Map<string, DexieStorageInternals> = new Map();
 const REF_COUNT_PER_DEXIE_DB: Map<DexieStorageInternals, number> = new Map();

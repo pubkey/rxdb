@@ -4,15 +4,13 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
-
 import config from './config';
 import {
-    addRxPlugin,
     createRxDatabase,
     isRxDocument,
     randomCouchString,
     RxJsonSchema,
+    addRxPlugin
 } from '../../';
 
 import {
@@ -20,8 +18,6 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
-import { RxDBValidatePlugin } from '../../plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
 addPouchPlugin(require('pouchdb-adapter-memory'));
 
 const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string }> = {
@@ -55,17 +51,6 @@ config.parallel('core.node.js', () => {
                 storage: getRxStoragePouch('memory'),
             });
             db.destroy();
-        });
-        it('should not be able to create a encrypted database', async () => {
-            await AsyncTestUtil.assertThrows(
-                () => createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                    password: 'myLongAndStupidPassword'
-                }),
-                Error,
-                'plugin'
-            );
         });
         it('create collection', async () => {
             const db = await createRxDatabase({
@@ -111,27 +96,17 @@ config.parallel('core.node.js', () => {
         });
     });
     describe('error-codes', () => {
-        it('should throw error-codes instead of messages', async () => {
-            const db = await createRxDatabase({
-                name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
-            });
-            const col = await db.addCollections({
-                humans: {
-                    schema
-                }
-            });
+        it('should throw error-codes instead of messages', () => {
             let error;
             try {
-                await col.humans.insert({
+                addRxPlugin({
                     foo: 'bar'
-                });
+                } as any);
             } catch (e) {
                 error = e;
             }
             assert.ok(error);
-            assert.strictEqual((error as any).code, 'VD2');
-            db.destroy();
+            assert.strictEqual((error as any).code, 'PL1');
         });
     });
 });

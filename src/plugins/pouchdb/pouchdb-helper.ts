@@ -20,13 +20,15 @@ import {
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type { ChangeEvent } from 'event-reduce-js';
-import { getAttachmentSize, hashAttachmentData } from '../../rx-storage-helper';
-import { RxStoragePouchStatics } from './pouch-statics';
+import { getAttachmentSize, hashAttachmentData } from '../attachments';
 
 export type PouchStorageInternals = {
     pouchInstanceId: string;
     pouch: PouchDBInstance;
 };
+
+
+export const RX_STORAGE_NAME_POUCHDB = 'pouchdb';
 
 /**
  * Used to check in tests if all instances have been cleaned up.
@@ -354,32 +356,35 @@ export async function writeAttachmentsToAttachments(
     }
     const ret: { [attachmentId: string]: RxAttachmentData; } = {};
     await Promise.all(
-        Object.entries(attachments).map(async ([key, obj]) => {
-            if (!obj.type) {
-                throw newRxError('SNH', { args: { obj } });
-            }
-            /**
-             * Is write attachment,
-             * so we have to remove the data to have a
-             * non-write attachment.
-             */
-            if ((obj as RxAttachmentWriteData).data) {
-                const asWrite = (obj as RxAttachmentWriteData);
-                const dataAsBase64String = typeof asWrite.data === 'string' ? asWrite.data : await blobBufferUtil.toBase64String(asWrite.data);
-                const hash = await hashAttachmentData(
-                    dataAsBase64String,
-                    RxStoragePouchStatics
-                );
-                const length = getAttachmentSize(dataAsBase64String);
-                ret[key] = {
-                    digest: 'md5-' + hash,
-                    length,
-                    type: asWrite.type
-                };
-            } else {
-                ret[key] = obj as RxAttachmentData;
-            }
-        })
+        Object.entries(attachments)
+            .map(async ([key, obj]) => {
+                if (!obj.type) {
+                    throw newRxError('SNH', { args: { obj } });
+                }
+                /**
+                 * Is write attachment,
+                 * so we have to remove the data to have a
+                 * non-write attachment.
+                 */
+                if ((obj as RxAttachmentWriteData).data) {
+                    const asWrite = (obj as RxAttachmentWriteData);
+                    let data: any = asWrite.data;
+                    const isBuffer = typeof Buffer !== 'undefined' && Buffer.isBuffer(data);
+                    if (isBuffer) {
+                        data = new Blob([data]);
+                    }
+                    const dataAsBase64String = typeof data === 'string' ? data : await blobBufferUtil.toBase64String(data);
+                    const hash = await hashAttachmentData(dataAsBase64String);
+                    const length = getAttachmentSize(dataAsBase64String);
+                    ret[key] = {
+                        digest: 'md5-' + hash,
+                        length,
+                        type: asWrite.type
+                    };
+                } else {
+                    ret[key] = obj as RxAttachmentData;
+                }
+            })
     );
     return ret;
 }
@@ -399,6 +404,6 @@ export function getPouchIndexDesignDocNameByIndex(
 export const RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted' as const;
 
 
-export type RxLocalDocumentDataWithCustomDeletedFlag<D> = RxLocalDocumentData<D> & {
+export type RxLocalDocumentDataWithCustomDeletedField<D> = RxLocalDocumentData<D> & {
     [k in typeof RXDB_POUCH_DELETED_FLAG]?: boolean;
 };

@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-ajv-validate",
-  "main": "../../dist/lib/plugins/ajv-validate.js",
-  "jsnext:main": "../../dist/es/plugins/ajv-validate.js",
-  "module": "../../dist/es/plugins/ajv-validate.js",
-  "types": "../../dist/types/plugins/ajv-validate.d.ts",
-  "sideEffects": false
-}

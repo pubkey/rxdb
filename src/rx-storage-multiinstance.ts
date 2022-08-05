@@ -99,6 +99,7 @@ export function removeBroadcastChannelReference(
 
 
 export function addRxStorageMultiInstanceSupport<RxDocType>(
+    storageName: string,
     instanceCreationParams: RxStorageInstanceCreationParams<RxDocType, any>,
     instance: RxStorageInstance<RxDocType, any, any>,
     /**
@@ -110,8 +111,6 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     if (!instanceCreationParams.multiInstance) {
         return;
     }
-
-    const storage = instance.storage;
 
     type Emit = EventBulk<RxStorageChangeEvent<RxDocType>, any>;
 
@@ -128,7 +127,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
 
     const eventListener = (msg: RxStorageMultiInstanceBroadcastType) => {
         if (
-            msg.storageName === storage.name &&
+            msg.storageName === storageName &&
             msg.databaseName === instanceCreationParams.databaseName &&
             msg.collectionName === instanceCreationParams.collectionName &&
             msg.version === instanceCreationParams.schema.version
@@ -146,7 +145,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
             return;
         }
         broadcastChannel.postMessage({
-            storageName: storage.name,
+            storageName: storageName,
             databaseName: instanceCreationParams.databaseName,
             collectionName: instanceCreationParams.collectionName,
             version: instanceCreationParams.schema.version,

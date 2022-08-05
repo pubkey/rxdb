@@ -16,8 +16,7 @@ import {
 // rxdb plugins
 import { RxDBServerPlugin } from 'rxdb/plugins/server';
 addRxPlugin(RxDBServerPlugin);
-import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 
 
 // add the memory-adapter
@@ -38,7 +37,9 @@ async function run() {
     console.log('# create database');
     const db = await createRxDatabase<RxHeroesDatabase>({
         name: DATABASE_NAME,
-        storage: getRxStoragePouch('memory')
+        storage: wrappedValidateAjvStorage({
+            storage: getRxStoragePouch('memory')
+        })
     });
 
     await db.addCollections({

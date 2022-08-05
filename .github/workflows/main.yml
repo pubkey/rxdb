@@ -176,6 +176,10 @@ jobs:
         with:
           run: npm run test:browser:ci:memory
 
+      - name: npm run test:fast:memory-validation
+        run: npm run test:fast:memory-validation
+
+
   # run the node tests for the LokiJS RxStorage in a different
   # task to run in parallel.
   node-dexie-worker:
@@ -389,6 +393,7 @@ jobs:
         run: |
           npm install --legacy-peer-deps
           npm run build
+
       - name: electron install
         working-directory: ./examples/electron
         run: |
@@ -404,6 +409,7 @@ jobs:
       - name: electron-remote install
         working-directory: ./examples/electron-remote
         run: |
+          npm run preinstall
           npm install --legacy-peer-deps
 
       - name: electron-remote test

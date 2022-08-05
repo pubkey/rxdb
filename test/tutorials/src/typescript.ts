@@ -62,7 +62,7 @@ async function run() {
         title: 'human schema',
         description: 'describes a human being',
         version: 0,
-        keyCompression: true,
+        keyCompression: false,
         primaryKey: 'passportId',
         type: 'object',
         properties: {

@@ -14,6 +14,7 @@ import type {
 } from '../types';
 import {
     ensureNotFalsy,
+    flatClone,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID
 } from '../util';
@@ -94,7 +95,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         while (!state.events.canceled.getValue()) {
             initialSyncStartTime = timer++;
             const upResult = await state.input.forkInstance.getChangedDocumentsSince(
-                state.input.bulkSize,
+                state.input.batchSize,
                 lastCheckpoint
             );
             if (upResult.documents.length === 0) {
@@ -158,10 +159,12 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
                 docs = docs.concat(
                     taskWithTime.task.events.map(r => {
-                        if (r.change.doc) {
-                            return r.change.doc;
+                        if (r.change.operation === 'DELETE') {
+                            const ret: any = flatClone(r.change.previous);
+                            ret._deleted = true;
+                            return ret;
                         } else {
-                            return r.change.previous as any;
+                            return r.change.doc;
                         }
                     })
                 );
@@ -325,7 +328,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                                 realMasterState
                             };
                             return resolveConflictError(
-                                state.input.conflictHandler,
+                                state,
                                 input,
                                 forkStateById[docId]
                             ).then(resolved => {
@@ -394,6 +397,9 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
             ));
 
             return hadConflictWrites;
+        }).catch(unhandledError => {
+            state.events.error.next(unhandledError);
+            return false;
         });
 
         return persistenceQueue;

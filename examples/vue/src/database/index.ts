@@ -24,8 +24,7 @@ if (process.env.NODE_ENV === 'development') {
   addRxPlugin(RxDBDevModePlugin);
 }
 
-import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
@@ -52,7 +51,9 @@ export async function createDatabase(): Promise<Plugin> {
   console.log('DatabaseService: creating database..');
   const db = await createRxDatabase<RxHeroesCollections>({
     name: 'heroes',
-    storage: getRxStoragePouch(useAdapter),
+    storage: wrappedValidateAjvStorage({
+      storage: getRxStoragePouch(useAdapter)
+    })
     // password: 'myLongAndStupidPassword' // no password needed
   });
   console.log('DatabaseService: created database');

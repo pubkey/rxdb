@@ -1,9 +1,9 @@
 {
   "name": "rxdb-example-react-native",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
-    "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/react-native/rxdb-local.tgz)",
+    "preinstall": "(cd ../../ && npx yarn pack ../../ --filename ./examples/react-native/rxdb-local.tgz)",
     "start": "expo start",
     "eject": "expo eject",
     "android": "expo start --android",
@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "babel-preset-expo": "8.5.1",
-    "expo-cli": "3.28.6",
+    "expo-cli": "5.5.1",
     "jest-expo": "37.0.0",
     "react-native-gesture-handler": "1.10.3",
     "react-test-renderer": "17.0.2",
@@ -26,11 +26,12 @@
   "dependencies": {
     "expo": "43.0.5",
     "global": "4.4.0",
-    "pouchdb-adapter-asyncstorage": "6.4.1",
-    "pouchdb-adapter-http": "7.2.2",
+    "pouchdb-adapter-http": "7.3.0",
+    "pouchdb-adapter-memory": "7.3.0",
+    "pouchdb-replication": "7.3.0",
     "random-token": "0.0.8",
     "react": "17.0.2",
-    "react-native": "0.67.4",
+    "react-native": "0.64.3",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.5.6"
   }

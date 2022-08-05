@@ -3,7 +3,6 @@ import assert from 'assert';
 import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
 import {
-    addRxPlugin,
     randomCouchString,
     now,
     fillWithDefaultSettings,
@@ -24,7 +23,10 @@ import {
     RxStorageReplicationMeta,
     rxStorageInstanceToReplicationHandler,
     cancelRxStorageReplication,
-    awaitRxStorageReplicationInSync
+    awaitRxStorageReplicationInSync,
+    defaultHashFunction,
+    getComposedPrimaryKeyOfDocumentData,
+    setCheckpoint
 } from '../../';
 
 
@@ -32,12 +34,6 @@ import {
     RxLocalDocumentData,
     RX_LOCAL_DOCUMENT_SCHEMA
 } from '../../plugins/local-documents';
-import {
-    RxDBKeyCompressionPlugin
-} from '../../plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
-import { RxDBValidatePlugin } from '../../plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
 import * as schemas from '../helper/schemas';
 import deepEqual from 'fast-deep-equal';
 
@@ -48,12 +44,16 @@ import {
     randomBoolean
 } from 'async-test-util';
 import { HumanDocumentType } from '../helper/schemas';
-import { EXAMPLE_REVISION_1, EXAMPLE_REVISION_2 } from '../helper/revisions';
+import {
+    EXAMPLE_REVISION_1,
+    EXAMPLE_REVISION_2,
+    EXAMPLE_REVISION_3
+} from '../helper/revisions';
 
-const testContext = 'rx-storage-replication.test.ts';
+const testContext = 'replication-protocol.test.ts';
 
 const useParallel = config.storage.name === 'dexie-worker' ? describe : config.parallel;
-useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.name + ')', () => {
+useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () => {
     const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (input, context) => {
 
         if (deepEqual(input.newDocumentState, input.realMasterState)) {
@@ -84,6 +84,13 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
         //         resolvedDocumentState: i.newDocumentState
         //     });
         // }
+
+        if (docA._deleted !== docB._deleted) {
+            return Promise.resolve({
+                isEqual: false,
+                documentData: input.newDocumentState
+            });
+        }
 
         const ageA = docA.age ? docA.age : 0;
         const ageB = docB.age ? docB.age : 0;
@@ -122,7 +129,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
             },
             docData
         );
-        withMeta._rev = createRevision(withMeta)
+        withMeta._rev = createRevision(defaultHashFunction, withMeta)
         return withMeta;
     }
     async function createRxStorageInstance(
@@ -166,7 +173,8 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
         storageInstance: RxStorageInstance<RxDocType, any, any>,
         mangoQuery: MangoQuery<RxDocType> = {}
     ): Promise<RxDocumentData<RxDocType>[]> {
-        const preparedQuery = storageInstance.storage.statics.prepareQuery(
+        const storage = config.storage.getStorage();
+        const preparedQuery = storage.statics.prepareQuery(
             storageInstance.schema,
             normalizeMangoQuery(
                 storageInstance.schema,
@@ -235,6 +243,72 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
     }
 
     describe('helpers', () => {
+        describe('checkpoint', () => {
+            /**
+             * @link https://github.com/pubkey/rxdb/pull/3627
+             */
+            it('should not write a duplicate checkpoint', async () => {
+                const masterInstance = await createRxStorageInstance(1);
+                const forkInstance = await createRxStorageInstance(0);
+                const metaInstance = await createMetaInstance();
+
+                await masterInstance.bulkWrite([{
+                    document: getDocData()
+                }], testContext);
+
+                const replicationState = replicateRxStorageInstance({
+                    identifier: randomCouchString(10),
+                    replicationHandler: rxStorageInstanceToReplicationHandler(
+                        masterInstance,
+                        THROWING_CONFLICT_HANDLER,
+                        defaultHashFunction
+                    ),
+                    forkInstance,
+                    metaInstance,
+                    batchSize: 100,
+                    conflictHandler: THROWING_CONFLICT_HANDLER,
+                    hashFunction: defaultHashFunction
+                });
+                await awaitRxStorageReplicationFirstInSync(replicationState);
+                await awaitRxStorageReplicationInSync(replicationState);
+
+
+                const checkpointDocId = getComposedPrimaryKeyOfDocumentData(
+                    RX_REPLICATION_META_INSTANCE_SCHEMA,
+                    {
+                        isCheckpoint: '1',
+                        itemId: 'down',
+                        replicationIdentifier: replicationState.checkpointKey
+                    }
+                );
+                const checkpointDocBeforeResult = await replicationState.input.metaInstance.findDocumentsById(
+                    [checkpointDocId],
+                    false
+                );
+                console.dir(checkpointDocBeforeResult);
+                const checkpointDocBefore = getFromObjectOrThrow(checkpointDocBeforeResult, checkpointDocId);
+
+
+                await setCheckpoint(
+                    replicationState,
+                    'down',
+                    clone(checkpointDocBefore.data)
+                );
+
+                const checkpointDocAfterResult = await replicationState.input.metaInstance.findDocumentsById(
+                    [checkpointDocId],
+                    false
+                );
+                const checkpointDocAfter = getFromObjectOrThrow(checkpointDocAfterResult, checkpointDocId);
+
+                assert.strictEqual(
+                    checkpointDocAfter._rev,
+                    checkpointDocBefore._rev
+                );
+
+                await cleanUp(replicationState, masterInstance);
+            });
+        });
 
     });
     describe('down', () => {
@@ -245,11 +319,16 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(
+                    masterInstance,
+                    THROWING_CONFLICT_HANDLER,
+                    defaultHashFunction
+                ),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
@@ -279,11 +358,12 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
@@ -305,21 +385,25 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             await cleanUp(replicationState, masterInstance);
         });
-        it('should replicate the insert and the update', async () => {
+        it('should replicate the insert and the update and the delete', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(1);
             const metaInstance = await createMetaInstance();
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
-                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
 
             const passportId = 'foobar';
+
+            // INSERT
+
             const docData = getDocData({
                 passportId,
                 age: 1
@@ -329,13 +413,15 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
                 document: docData
             }], testContext);
             assert.deepStrictEqual(writeResult.error, {});
-            const previous = getFromObjectOrThrow(writeResult.success, passportId);
+            let previous = getFromObjectOrThrow(writeResult.success, passportId);
 
             // wait until it is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
                 return docsAfterUpdate[passportId];
             });
+
+            // UPDATE
 
             const updateData: typeof docData = clone(docData);
             updateData.firstName = 'xxx';
@@ -348,6 +434,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
                 document: updateData
             }], testContext);
             assert.deepStrictEqual(updateResult.error, {});
+            previous = getFromObjectOrThrow(updateResult.success, passportId);
 
             // wait until the change is replicated to the master
             await waitUntil(async () => {
@@ -356,6 +443,23 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
             });
             await ensureEqualState(masterInstance, forkInstance);
 
+            // DELETE
+            const deleteData: typeof docData = clone(docData);
+            deleteData._rev = EXAMPLE_REVISION_3;
+            deleteData._deleted = true;
+            deleteData._meta.lwt = now();
+            const deleteResult = await forkInstance.bulkWrite([{
+                previous,
+                document: deleteData
+            }], testContext);
+            assert.deepStrictEqual(deleteResult.error, {});
+
+            // wait until the change is replicated to the master
+            await waitUntil(async () => {
+                const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
+                return !docsAfterUpdate[passportId];
+            });
+            await ensureEqualState(masterInstance, forkInstance);
 
             await cleanUp(replicationState, masterInstance);
         });
@@ -370,20 +474,22 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationStateAtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceA,
                 metaInstance: metaInstanceA,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
 
             const replicationStateBtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceB,
                 metaInstance: metaInstanceB,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
 
             // insert a document on A
@@ -419,27 +525,30 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationStateAtoB = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(forkInstanceB, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(forkInstanceB, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceA,
                 metaInstance: metaInstanceA,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
             const replicationStateBtoC = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(forkInstanceC, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(forkInstanceC, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceB,
                 metaInstance: metaInstanceB,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
             const replicationStateCtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceC,
                 metaInstance: metaInstanceC,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
 
             // insert a document on A
@@ -524,19 +633,21 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationStateAtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstanceA, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstanceA, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceA,
                 metaInstance: metaInstanceA,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
             const replicationStateBtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstanceB, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstanceB, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance: forkInstanceB,
                 metaInstance: metaInstanceB,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
 
             // insert a document on A
@@ -582,11 +693,12 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
@@ -614,7 +726,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
                             firstName: idx === 0 ? 'master' : 'fork',
                             age: idx
                         });
-                        docData._rev = createRevision(docData);
+                        docData._rev = createRevision(defaultHashFunction, docData);
                         docData._meta.lwt = now();
                         await instance.bulkWrite([{
                             document: docData
@@ -626,12 +738,14 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
                 identifier: randomCouchString(10),
                 replicationHandler: rxStorageInstanceToReplicationHandler(
                     masterInstance,
-                    HIGHER_AGE_CONFLICT_HANDLER
+                    HIGHER_AGE_CONFLICT_HANDLER,
+                    defaultHashFunction
                 ),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
-                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
 
             await awaitRxStorageReplicationFirstInSync(replicationState);
@@ -671,7 +785,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
                             firstName: idx === 0 ? 'master' : 'fork',
                             age: idx
                         });
-                        docData._rev = createRevision(docData);
+                        docData._rev = createRevision(defaultHashFunction, docData);
                         docData._meta.lwt = now();
                         await instance.bulkWrite([{
                             document: docData
@@ -680,7 +794,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
                         // update
                         const newDocData = clone(docData);
                         newDocData.age = newDocData.age + 1;
-                        newDocData._rev = createRevision(newDocData, docData);
+                        newDocData._rev = createRevision(defaultHashFunction, newDocData, docData);
                         newDocData._meta.lwt = now();
                         const updateResult = await instance.bulkWrite([{
                             previous: docData,
@@ -693,11 +807,12 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
-                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
+                batchSize: 100,
+                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
 
             await awaitRxStorageReplicationFirstInSync(replicationState);
@@ -731,17 +846,18 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: Math.ceil(writeAmount / 4),
+                batchSize: Math.ceil(writeAmount / 4),
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 /**
                  * To give the fork some time to do additional writes
                  * before the persistence is running,
                  * we await 50 milliseconds.
                  */
-                waitBeforePersist: () => promiseWait(70)
+                waitBeforePersist: () => promiseWait(70),
+                hashFunction: defaultHashFunction
             });
 
             // insert
@@ -751,7 +867,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
             const docData = Object.assign({}, clone(document), {
                 age: 0
             });
-            docData._rev = createRevision(docData);
+            docData._rev = createRevision(defaultHashFunction, docData);
             docData._meta.lwt = now();
             const insertResult = await forkInstance.bulkWrite([{
                 document: docData
@@ -772,7 +888,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
                     newDocState._meta.lwt = now();
                     newDocState.lastName = randomCouchString(12);
                     newDocState.age = updateId++;
-                    newDocState._rev = createRevision(newDocState, currentDocState);
+                    newDocState._rev = createRevision(defaultHashFunction, newDocState, currentDocState);
 
                     const writeRow = {
                         previous: currentDocState,
@@ -834,11 +950,12 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
             const instances = [masterInstance, forkInstance];
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: Math.ceil(writeAmount / 4),
-                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER
+                batchSize: Math.ceil(writeAmount / 4),
+                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
 
             // insert
@@ -853,7 +970,7 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
                             firstName: idx === 0 ? 'master' : 'fork',
                             age: idx
                         });
-                        docData._rev = createRevision(docData);
+                        docData._rev = createRevision(defaultHashFunction, docData);
                         docData._meta.lwt = now();
                         const insertResult = await instance.bulkWrite([{
                             document: docData
@@ -877,12 +994,12 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
                     }
                     const current = await instance.findDocumentsById([docId], true);
                     const currentDocState = getFromObjectOrThrow(current, docId);
-                    const newDocState = clone(currentDocState);
+                    const newDocState: typeof currentDocState = clone(currentDocState);
                     newDocState._meta.lwt = now();
                     newDocState.lastName = randomCouchString(12);
                     newDocState.firstName = flag;
                     newDocState.age = updateId++;
-                    newDocState._rev = createRevision(newDocState, currentDocState);
+                    newDocState._rev = createRevision(defaultHashFunction, newDocState, currentDocState);
 
                     const writeResult = await instance.bulkWrite([{
                         previous: currentDocState,
@@ -967,11 +1084,12 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationState = replicateRxStorageInstance<RxLocalDocumentData>({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER as any),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER as any, defaultHashFunction),
                 forkInstance,
                 metaInstance,
-                bulkSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER as any
+                batchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER as any,
+                hashFunction: defaultHashFunction
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
@@ -1017,14 +1135,15 @@ useParallel('rx-storage-replication.test.ts (implementation: ' + config.storage.
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, defaultHashFunction),
                 forkInstance,
                 metaInstance,
                 /**
                  * Must be smaller then the amount of document
                  */
-                bulkSize: 20,
-                conflictHandler: THROWING_CONFLICT_HANDLER
+                batchSize: 20,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashFunction
             });
 
             await awaitRxStorageReplicationFirstInSync(replicationState);

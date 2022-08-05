@@ -93,3 +93,6 @@ export type RxTestStorage = {
     // true if the storage supports $regex queries, false if not.
     readonly hasRegexSupport: boolean;
 }
+
+
+export type HashFunction = (input: string) => string;
