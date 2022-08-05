@@ -78,13 +78,16 @@ This is extremely helpful when used together with UIs that should always show th
 
 ```js
 const query = myCollection.find();
-query.$.subscribe(results => {
+const querySub = query.$.subscribe(results => {
     console.log('got results: ' + results.length);
 });
 // > 'got results: 5'   // BehaviorSubjects emit on subscription
 
 await myCollection.insert({/* ... */}); // insert one
 // > 'got results: 6'   // $.subscribe() was called again with the new results
+
+// stop watching this query
+querySub.unsubscribe()
 ```
 
 ## update()
