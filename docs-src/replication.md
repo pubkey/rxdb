@@ -297,6 +297,21 @@ function connectSocket() {
     /**
      * When the backend sends a new batch of documents+checkpoint,
      * emit it into the stream$.
+     * 
+     * event.data must look like this
+     * {
+     *     documents: [
+     *        {
+     *            id: 'foobar',
+     *            _deleted: false,
+     *            updatedAt: 1234
+     *        }
+     *     ],
+     *     checkpoint: {
+     *         id: 'foobar',
+     *         updatedAt: 1234
+     *     }
+     * }
      */
     socket.onmessage = event => pullStream$.next(event.data);
     /**
@@ -314,7 +329,7 @@ function connectSocket() {
              * it might have missed out events that happend on the server.
              * So we have to emit a RESYNC so that the replication goes
              * into 'Checkpoint iteration' mode until the client is in sync
-             * and then it will go into 'Event observation' mode again.
+             * and then it will go back into 'Event observation' mode again.
              */
             pullStream$.next('RESYNC');
         }
