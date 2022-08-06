@@ -186,6 +186,11 @@ async function run() {
         }
     });
 
+    db.hero.preSave(function (docData) {
+        docData.updatedAt = new Date().getTime();
+        
+    });
+
     // set up replication
     if (doSync()) {
         heroesList.innerHTML = 'Start replication..';
@@ -244,12 +249,14 @@ async function run() {
             name: 'asc'
         })
         .$.subscribe(function (heroes) {
+            console.log('emitted heroes:');
+            console.dir(heroes.map(d => d.toJSON()));
             let html = '';
             heroes.forEach(function (hero) {
                 html += `
                     <li class="hero-item">
                         <div class="color-box" style="background:${hero.color}"></div>
-                        <div class="name">${hero.name} (revision: ${hero._rev})</div>
+                        <div class="name">${hero.name} (updatedAt: ${hero.updatedAt})</div>
                         <div class="delete-icon" onclick="window.deleteHero('${hero.primary}')">DELETE</div>
                     </li>
                 `;
@@ -278,7 +285,8 @@ async function run() {
         const obj = {
             id: name,
             name: name,
-            color: color
+            color: color,
+            updatedAt: new Date().getTime()
         };
         console.log('inserting hero:');
         console.dir(obj);

@@ -151,10 +151,28 @@ export async function run() {
                 id: '',
                 updatedAt: 0
             };
+
+            const conflicts = [];
+
+
             const writtenDocs = rows.map(row => {
+                const docId = row.newDocumentState.id;
+                const docCurrentMaster = documents.find(d => d.id === docId);
+
+                /**
+                 * Detect conflicts.
+                 */
+                if (
+                    docCurrentMaster &&
+                    row.assumedMasterState &&
+                    docCurrentMaster.updatedAt !== row.assumedMasterState.updatedAt
+                ) {
+                    conflicts.push(docCurrentMaster);
+                    return;
+                }
+
                 const doc = row.newDocumentState;
                 documents = documents.filter(d => d.id !== doc.id);
-                doc.updatedAt = Math.round(new Date().getTime());
                 documents.push(doc);
 
                 lastCheckpoint.id = doc.id;
@@ -175,9 +193,10 @@ export async function run() {
 
             console.log('## current documents:');
             console.log(JSON.stringify(documents, null, 4));
+            console.log('## conflicts:');
+            console.log(JSON.stringify(conflicts, null, 4));
 
-            // TODO add conflict handler
-            return [];
+            return conflicts;
         },
         streamHero: (args) => {
             log('## streamHero()');
