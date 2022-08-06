@@ -155,7 +155,8 @@ export async function run() {
             const conflicts = [];
 
 
-            const writtenDocs = rows.map(row => {
+            const writtenDocs = [];
+            rows.forEach(row => {
                 const docId = row.newDocumentState.id;
                 const docCurrentMaster = documents.find(d => d.id === docId);
 
@@ -177,7 +178,7 @@ export async function run() {
 
                 lastCheckpoint.id = doc.id;
                 lastCheckpoint.updatedAt = doc.updatedAt;
-                return doc;
+                writtenDocs.push(doc);
             });
 
             pubsub.publish(
