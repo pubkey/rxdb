@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter, startWith, mergeMap, shareReplay } from 'rxjs/operators';
-import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, RXJS_SHARE_REPLAY_DEFAULTS, getDefaultRxDocumentMeta, getDefaultRevision, nextTick, createRevision } from './util';
+import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, RXJS_SHARE_REPLAY_DEFAULTS, getDefaultRxDocumentMeta, getDefaultRevision, nextTick } from './util';
 import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { newRxError, newRxTypeError } from './rx-error';
@@ -8,10 +8,9 @@ import { DocCache } from './doc-cache';
 import { createQueryCache, defaultCacheReplacementPolicy } from './query-cache';
 import { createChangeEventBuffer } from './change-event-buffer';
 import { runAsyncPluginHooks, runPluginHooks } from './hooks';
-import { createWithConstructor as createRxDocumentWithConstructor, isRxDocument } from './rx-document';
-import { createRxDocument, getRxDocumentConstructor } from './rx-document-prototype-merge';
+import { createRxDocument } from './rx-document-prototype-merge';
 import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent, throwIfIsStorageWriteError } from './rx-storage-helper';
-import { defaultConflictHandler } from './replication';
+import { defaultConflictHandler } from './replication-protocol';
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
@@ -30,7 +29,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     var conflictHandler = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : defaultConflictHandler;
     this.storageInstance = {};
     this.timeouts = new Set();
-    this.destroyed = false;
     this._atomicUpsertQueues = new Map();
     this.synced = false;
     this.hooks = {};
@@ -39,6 +37,8 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     this._queryCache = createQueryCache();
     this.$ = {};
     this._changeEventBuffer = {};
+    this.onDestroy = [];
+    this.destroyed = false;
     this.database = database;
     this.name = name;
     this.schema = schema;
@@ -155,34 +155,12 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     try {
       var _this4 = this;
 
-      // inserting a temporary-document
-      var tempDoc = null;
-
-      if (isRxDocument(json)) {
-        tempDoc = json;
-
-        if (!tempDoc._isTemporary) {
-          throw newRxError('COL1', {
-            data: json
-          });
-        }
-
-        json = tempDoc.toJSON();
-      }
-
       var useJson = fillObjectDataBeforeInsert(_this4.schema, json);
       return Promise.resolve(_this4.bulkInsert([useJson])).then(function (writeResult) {
         var isError = writeResult.error[0];
         throwIfIsStorageWriteError(_this4, useJson[_this4.schema.primaryPath], json, isError);
         var insertResult = ensureNotFalsy(writeResult.success[0]);
-
-        if (tempDoc) {
-          tempDoc._dataSync$.next(insertResult._data);
-
-          return tempDoc;
-        } else {
-          return insertResult;
-        }
+        return insertResult;
       });
     } catch (e) {
       return Promise.reject(e);
@@ -210,8 +188,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       });
       return Promise.resolve(Promise.all(useDocs.map(function (doc) {
         return _this6._runHooks('pre', 'insert', doc).then(function () {
-          _this6.schema.validate(doc);
-
           return doc;
         });
       }))).then(function (docs) {
@@ -224,7 +200,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
             _rev: getDefaultRevision(),
             _deleted: false
           });
-          docData._rev = createRevision(docData);
           var row = {
             document: docData
           };
@@ -286,7 +261,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           var removeDocs = docsData.map(function (doc) {
             var writeDoc = flatClone(doc);
             writeDoc._deleted = true;
-            writeDoc._rev = createRevision(writeDoc, doc);
             return {
               previous: doc,
               document: writeDoc
@@ -619,10 +593,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   }
   /**
    * Export collection to a JSON friendly format.
-   * @param _decrypted
-   * When true, all encrypted values will be decrypted.
-   * When false or omitted and an interface or type is loaded in this collection,
-   * all base properties of the type are typed as `any` since data could be encrypted.
    */
   ;
 
@@ -745,21 +715,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     });
   }
   /**
-   * creates a temporaryDocument which can be saved later
-   */
-  ;
-
-  _proto.newDocument = function newDocument() {
-    var docData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    var filledDocData = this.schema.fillObjectWithDefaults(docData);
-    var doc = createRxDocumentWithConstructor(getRxDocumentConstructor(this), this, filledDocData);
-    doc._isTemporary = true;
-
-    this._runHooksSync('post', 'create', docData, doc);
-
-    return doc;
-  }
-  /**
    * Returns a promise that resolves after the given time.
    * Ensures that is properly cleans up when the collection is destroyed
    * so that no running timeouts prevent the exit of the JavaScript process.
@@ -796,11 +751,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
 
     this.destroyed = true;
-
-    if (this._onDestroyCall) {
-      this._onDestroyCall();
-    }
-
     Array.from(this.timeouts).forEach(function (timeout) {
       return clearTimeout(timeout);
     });
@@ -819,6 +769,10 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
 
     return this.database.requestIdlePromise().then(function () {
+      return Promise.all(_this16.onDestroy.map(function (fn) {
+        return fn();
+      }));
+    }).then(function () {
       return _this16.storageInstance.close();
     }).then(function () {
       /**
@@ -866,19 +820,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       return this.$.pipe(filter(function (cE) {
         return cE.operation === 'DELETE';
       }));
-    }
-  }, {
-    key: "onDestroy",
-    get: function get() {
-      var _this17 = this;
-
-      if (!this._onDestroy) {
-        this._onDestroy = new Promise(function (res) {
-          return _this17._onDestroyCall = res;
-        });
-      }
-
-      return this._onDestroy;
     }
   }, {
     key: "asRxCollection",
@@ -990,7 +931,8 @@ export function createRxCollection(_ref2) {
     collectionName: name,
     schema: schema.jsonSchema,
     options: instanceCreationOptions,
-    multiInstance: database.multiInstance
+    multiInstance: database.multiInstance,
+    password: database.password
   };
   runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
   return createRxCollectionStorageInstance(database, storageInstanceCreationParams).then(function (storageInstance) {

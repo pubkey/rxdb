@@ -20,12 +20,6 @@ export declare const overwritable: {
      */
     deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T>;
     /**
-     * validates if a password can be used
-     * @overwritten by plugin (optional)
-     * @throws if password not valid
-     */
-    validatePassword(_password: string | any): void;
-    /**
      * overwritten to map error-codes to text-messages
      */
     tunnelErrorMessage(message: string): string;

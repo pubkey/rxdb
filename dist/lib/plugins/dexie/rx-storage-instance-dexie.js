@@ -412,7 +412,7 @@ exports.RxStorageInstanceDexie = RxStorageInstanceDexie;
 function createDexieStorageInstance(storage, params, settings) {
   var internals = (0, _dexieHelper.getDexieDbWithTables)(params.databaseName, params.collectionName, settings, params.schema);
   var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
-  (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(params, instance);
+  (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(_dexieHelper.RX_STORAGE_NAME_DEXIE, params, instance);
   return Promise.resolve(instance);
 }
 

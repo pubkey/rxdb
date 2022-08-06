@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCH_INSTANCES = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
+exports.RX_STORAGE_NAME_POUCHDB = exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCH_INSTANCES = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
 exports.getPouchIndexDesignDocNameByIndex = getPouchIndexDesignDocNameByIndex;
 exports.openPouchId = openPouchId;
@@ -25,9 +25,7 @@ var _util = require("../../util");
 
 var _rxError = require("../../rx-error");
 
-var _rxStorageHelper = require("../../rx-storage-helper");
-
-var _pouchStatics = require("./pouch-statics");
+var _attachments = require("../attachments");
 
 var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attachments) {
   try {
@@ -58,8 +56,8 @@ var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attac
         var _temp4 = function () {
           if (obj.data) {
             var _temp5 = function _temp5(dataAsBase64String) {
-              return Promise.resolve((0, _rxStorageHelper.hashAttachmentData)(dataAsBase64String, _pouchStatics.RxStoragePouchStatics)).then(function (hash) {
-                var length = (0, _rxStorageHelper.getAttachmentSize)(dataAsBase64String);
+              return Promise.resolve((0, _attachments.hashAttachmentData)(dataAsBase64String)).then(function (hash) {
+                var length = (0, _attachments.getAttachmentSize)(dataAsBase64String);
                 ret[key] = {
                   digest: 'md5-' + hash,
                   length: length,
@@ -69,10 +67,16 @@ var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attac
             };
 
             var _asWrite = obj;
+            var data = _asWrite.data;
+            var isBuffer = typeof Buffer !== 'undefined' && Buffer.isBuffer(data);
 
-            var _temp6 = typeof _asWrite.data === 'string';
+            if (isBuffer) {
+              data = new Blob([data]);
+            }
 
-            return _temp6 ? _temp5(_asWrite.data) : Promise.resolve(_util.blobBufferUtil.toBase64String(_asWrite.data)).then(_temp5);
+            var _temp6 = typeof data === 'string';
+
+            return _temp6 ? _temp5(data) : Promise.resolve(_util.blobBufferUtil.toBase64String(data)).then(_temp5);
           } else {
             ret[key] = obj;
           }
@@ -91,10 +95,12 @@ var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attac
 };
 
 exports.writeAttachmentsToAttachments = writeAttachmentsToAttachments;
-
+var RX_STORAGE_NAME_POUCHDB = 'pouchdb';
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
+
+exports.RX_STORAGE_NAME_POUCHDB = RX_STORAGE_NAME_POUCHDB;
 var OPEN_POUCHDB_STORAGE_INSTANCES = new Set();
 /**
  * All open PouchDB instances are stored here

@@ -32,6 +32,8 @@ var _customEventsPlugin = require("./custom-events-plugin");
 
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
 
+var _rxStorageHelper = require("../../rx-storage-helper");
+
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
  * Will skip indexes that already exist.
@@ -96,7 +98,7 @@ exports.createIndexesOnPouch = createIndexesOnPouch;
 var RxStoragePouch = /*#__PURE__*/function () {
   function RxStoragePouch(adapter) {
     var pouchSettings = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    this.name = 'pouchdb';
+    this.name = _pouchdbHelper.RX_STORAGE_NAME_POUCHDB;
     this.statics = _pouchStatics.RxStoragePouchStatics;
     this.adapter = adapter;
     this.pouchSettings = pouchSettings;
@@ -128,6 +130,7 @@ var RxStoragePouch = /*#__PURE__*/function () {
     try {
       var _this2 = this;
 
+      (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this2.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
@@ -139,7 +142,7 @@ var RxStoragePouch = /*#__PURE__*/function () {
 
           _pouchdbHelper.OPEN_POUCH_INSTANCES.set(pouchInstanceId, pouch);
 
-          (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(params, instance);
+          (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(_pouchdbHelper.RX_STORAGE_NAME_POUCHDB, params, instance);
           return instance;
         });
       });

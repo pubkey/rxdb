@@ -2,6 +2,11 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+
+<!-- ADD new changes here! -->
+
+### 13.0.0-beta.1 (6 August 2022)
+
 - RENAME the `ajv-validate` plugin to `validate-ajv` to be in equal with the other validation plugins.
 - The `is-my-json-valid` validation is no longer supported until [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) is fixed.
 - REFACTORED the [schema validation plugins](https://rxdb.info/schema-validation.html), they are no longer plugins but now they get wrapped around any other RxStorage.
@@ -22,7 +27,6 @@
 
 - In the RxDB internal `_meta.lwt` field, we now use 2 decimals number of the unix timestamp in milliseconds.
 
-
 - REMOVE RxStorageStatics `.hash` and `.hashKey`
 
 - CHANGE removed default usage of `md5` as default hashing. Use a faster non-cryptographic hash instead.
@@ -37,8 +41,6 @@
 - CHANGE default of replication `live` to be set to `true`. Because most people want to do a live replication, not a one time replication.
 
 - CHANGED Attachment data is now always handled as `Blob` because Node.js does support `Blob` since version 18.0.0 so we no longer have to use a `Buffer` but instead can use Blob for browsers and Node.js
-
-<!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 

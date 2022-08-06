@@ -8,8 +8,6 @@ exports.getRxStorageDexie = getRxStorageDexie;
 
 var _mingo = require("mingo");
 
-var _pouchdbMd = require("pouchdb-md5");
-
 var _dexieHelper = require("./dexie-helper");
 
 var _rxStorageInstanceDexie = require("./rx-storage-instance-dexie");
@@ -18,15 +16,9 @@ var _rxError = require("../../rx-error");
 
 var _queryPlanner = require("../../query-planner");
 
+var _rxStorageHelper = require("../../rx-storage-helper");
+
 var RxStorageDexieStatics = {
-  hash: function hash(data) {
-    return new Promise(function (res) {
-      (0, _pouchdbMd.binaryMd5)(data, function (digest) {
-        res(digest);
-      });
-    });
-  },
-  hashKey: 'md5',
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     if (!mutateableQuery.sort) {
       throw (0, _rxError.newRxError)('SNH', {
@@ -74,7 +66,7 @@ exports.RxStorageDexieStatics = RxStorageDexieStatics;
 
 var RxStorageDexie = /*#__PURE__*/function () {
   function RxStorageDexie(settings) {
-    this.name = 'dexie';
+    this.name = _dexieHelper.RX_STORAGE_NAME_DEXIE;
     this.statics = RxStorageDexieStatics;
     this.settings = settings;
   }
@@ -82,6 +74,7 @@ var RxStorageDexie = /*#__PURE__*/function () {
   var _proto = RxStorageDexie.prototype;
 
   _proto.createStorageInstance = function createStorageInstance(params) {
+    (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
     return (0, _rxStorageInstanceDexie.createDexieStorageInstance)(this, params, this.settings);
   };
 

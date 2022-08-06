@@ -23,7 +23,7 @@ var createLokiStorageInstance = function createLokiStorageInstance(storage, para
   try {
     var _temp5 = function _temp5() {
       var instance = new RxStorageInstanceLoki(params.databaseInstanceToken, storage, params.databaseName, params.collectionName, params.schema, _internals, params.options, databaseSettings);
-      (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(params, instance, _internals.leaderElector ? _internals.leaderElector.broadcastChannel : undefined);
+      (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(_lokijsHelper.RX_STORAGE_NAME_LOKIJS, params, instance, _internals.leaderElector ? _internals.leaderElector.broadcastChannel : undefined);
 
       if (params.multiInstance) {
         /**
@@ -148,10 +148,34 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
 
     if (this.internals.leaderElector) {
+      /**
+       * To run handleRemoteRequest(),
+       * the instance will call its own methods.
+       * But these methods could have already been swapped out by a RxStorageWrapper
+       * so we must store the original methods here and use them instead.
+       */
+      var copiedSelf = {
+        bulkWrite: this.bulkWrite.bind(this),
+        changeStream: this.changeStream.bind(this),
+        cleanup: this.cleanup.bind(this),
+        close: this.close.bind(this),
+        query: this.query.bind(this),
+        findDocumentsById: this.findDocumentsById.bind(this),
+        collectionName: this.collectionName,
+        databaseName: this.databaseName,
+        conflictResultionTasks: this.conflictResultionTasks.bind(this),
+        getAttachmentData: this.getAttachmentData.bind(this),
+        getChangedDocumentsSince: this.getChangedDocumentsSince.bind(this),
+        internals: this.internals,
+        options: this.options,
+        remove: this.remove.bind(this),
+        resolveConflictResultionTask: this.resolveConflictResultionTask.bind(this),
+        schema: this.schema
+      };
       this.internals.leaderElector.awaitLeadership().then(function () {
         // this instance is leader now, so it has to reply to queries from other instances
         (0, _util.ensureNotFalsy)(_this.internals.leaderElector).broadcastChannel.addEventListener('message', function (msg) {
-          return (0, _lokijsHelper.handleRemoteRequest)(_this, msg);
+          return (0, _lokijsHelper.handleRemoteRequest)(copiedSelf, msg);
         });
       });
     }

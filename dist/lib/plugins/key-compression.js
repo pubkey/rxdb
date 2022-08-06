@@ -3,15 +3,20 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBKeyCompressionPlugin = void 0;
-exports.createCompressionState = createCompressionState;
+exports.compressDocumentData = compressDocumentData;
+exports.decompressDocumentData = decompressDocumentData;
 exports.getCompressionStateByRxJsonSchema = getCompressionStateByRxJsonSchema;
+exports.wrappedKeyCompressionStorage = wrappedKeyCompressionStorage;
 
 var _jsonschemaKeyCompression = require("jsonschema-key-compression");
 
 var _overwritable = require("../overwritable");
 
+var _pluginHelpers = require("../plugin-helpers");
+
 var _rxSchemaHelper = require("../rx-schema-helper");
+
+var _rxStorageHelper = require("../rx-storage-helper");
 
 var _util = require("../util");
 
@@ -26,170 +31,151 @@ var _util = require("../util");
  */
 var COMPRESSION_STATE_BY_SCHEMA = new WeakMap();
 
-function createCompressionState(schema) {
-  var compressionSchema = (0, _util.flatClone)(schema);
-  delete compressionSchema.primaryKey;
-  var table = (0, _jsonschemaKeyCompression.createCompressionTable)(compressionSchema, _jsonschemaKeyCompression.DEFAULT_COMPRESSION_FLAG, [
-  /**
-   * Do not compress the primary field
-   * for easier debugging.
-   */
-  (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey), '_rev', '_attachments', '_deleted', '_meta']);
-  delete compressionSchema.primaryKey;
-  var compressedSchema = (0, _jsonschemaKeyCompression.createCompressedJsonSchema)(table, compressionSchema); // also compress primary key
-
-  if (typeof schema.primaryKey !== 'string') {
-    var composedPrimary = schema.primaryKey;
-    var newComposedPrimary = {
-      key: (0, _jsonschemaKeyCompression.compressedPath)(table, composedPrimary.key),
-      fields: composedPrimary.fields.map(function (field) {
-        return (0, _jsonschemaKeyCompression.compressedPath)(table, field);
-      }),
-      separator: composedPrimary.separator
-    };
-    compressedSchema.primaryKey = newComposedPrimary;
-  } else {
-    compressedSchema.primaryKey = (0, _jsonschemaKeyCompression.compressedPath)(table, schema.primaryKey);
-  }
-  /**
-   * the key compression module does not know about indexes
-   * in the schema, so we have to also compress them here.
-   */
-
-
-  if (schema.indexes) {
-    var newIndexes = schema.indexes.map(function (idx) {
-      if ((0, _util.isMaybeReadonlyArray)(idx)) {
-        return idx.map(function (subIdx) {
-          return (0, _jsonschemaKeyCompression.compressedPath)(table, subIdx);
-        });
-      } else {
-        return (0, _jsonschemaKeyCompression.compressedPath)(table, idx);
-      }
-    });
-    compressedSchema.indexes = newIndexes;
-  }
-
-  return {
-    table: table,
-    schema: compressedSchema
-  };
-}
-
 function getCompressionStateByRxJsonSchema(schema) {
-  var state = COMPRESSION_STATE_BY_SCHEMA.get(schema);
+  /**
+   * Because we cache the state by the JsonSchema,
+   * it must be ausured that the given schema object
+   * is never mutated.
+   */
+  _overwritable.overwritable.deepFreezeWhenDevMode(schema);
 
-  if (!state) {
+  var compressionState = COMPRESSION_STATE_BY_SCHEMA.get(schema);
+
+  if (!compressionState) {
+    var compressionSchema = (0, _util.flatClone)(schema);
+    delete compressionSchema.primaryKey;
+    var table = (0, _jsonschemaKeyCompression.createCompressionTable)(compressionSchema, _jsonschemaKeyCompression.DEFAULT_COMPRESSION_FLAG, [
     /**
-     * Because we cache the state by the JsonSchema,
-     * it must be ausured that the given schema object never changes.
+     * Do not compress the primary field
+     * for easier debugging.
      */
-    _overwritable.overwritable.deepFreezeWhenDevMode(schema);
+    (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey), '_rev', '_attachments', '_deleted', '_meta']);
+    delete compressionSchema.primaryKey;
+    var compressedSchema = (0, _jsonschemaKeyCompression.createCompressedJsonSchema)(table, compressionSchema); // also compress primary key
 
-    state = createCompressionState(schema);
-    COMPRESSION_STATE_BY_SCHEMA.set(schema, state);
+    if (typeof schema.primaryKey !== 'string') {
+      var composedPrimary = schema.primaryKey;
+      var newComposedPrimary = {
+        key: (0, _jsonschemaKeyCompression.compressedPath)(table, composedPrimary.key),
+        fields: composedPrimary.fields.map(function (field) {
+          return (0, _jsonschemaKeyCompression.compressedPath)(table, field);
+        }),
+        separator: composedPrimary.separator
+      };
+      compressedSchema.primaryKey = newComposedPrimary;
+    } else {
+      compressedSchema.primaryKey = (0, _jsonschemaKeyCompression.compressedPath)(table, schema.primaryKey);
+    }
+    /**
+     * the key compression module does not know about indexes
+     * in the schema, so we have to also compress them here.
+     */
+
+
+    if (schema.indexes) {
+      var newIndexes = schema.indexes.map(function (idx) {
+        if ((0, _util.isMaybeReadonlyArray)(idx)) {
+          return idx.map(function (subIdx) {
+            return (0, _jsonschemaKeyCompression.compressedPath)(table, subIdx);
+          });
+        } else {
+          return (0, _jsonschemaKeyCompression.compressedPath)(table, idx);
+        }
+      });
+      compressedSchema.indexes = newIndexes;
+    }
+
+    compressionState = {
+      table: table,
+      schema: schema,
+      compressedSchema: compressedSchema
+    };
+    COMPRESSION_STATE_BY_SCHEMA.set(schema, compressionState);
   }
 
-  return state;
+  return compressionState;
 }
 
-var RxDBKeyCompressionPlugin = {
-  name: 'key-compression',
-  rxdb: true,
-  prototypes: {},
-  overwritable: {},
-  hooks: {
-    /**
-     * replace the keys of a query-obj with the compressed keys
-     * because the storage instance only knows the compressed schema
-     * @return compressed queryJSON
-     */
-    prePrepareQuery: {
-      after: function after(input) {
-        var rxQuery = input.rxQuery;
-        var mangoQuery = input.mangoQuery;
+function wrappedKeyCompressionStorage(args) {
+  var statics = Object.assign({}, args.storage.statics, {
+    prepareQuery: function prepareQuery(schema, mutateableQuery) {
+      if (schema.keyCompression) {
+        var compressionState = getCompressionStateByRxJsonSchema(schema);
+        mutateableQuery = (0, _jsonschemaKeyCompression.compressQuery)(compressionState.table, mutateableQuery);
+        return args.storage.statics.prepareQuery(compressionState.compressedSchema, mutateableQuery);
+      }
 
-        if (!rxQuery.collection.schema.jsonSchema.keyCompression) {
-          return;
-        }
-
-        var compressionState = getCompressionStateByRxJsonSchema(rxQuery.collection.schema.jsonSchema);
-        var compressedQuery = (0, _jsonschemaKeyCompression.compressQuery)(compressionState.table, mangoQuery);
-        input.mangoQuery = compressedQuery;
+      return args.storage.statics.prepareQuery(schema, mutateableQuery);
+    },
+    getSortComparator: function getSortComparator(schema, preparedQuery) {
+      if (!schema.keyCompression) {
+        return args.storage.statics.getSortComparator(schema, preparedQuery);
+      } else {
+        var compressionState = getCompressionStateByRxJsonSchema(schema);
+        return args.storage.statics.getSortComparator(compressionState.schema, preparedQuery);
       }
     },
-    preCreateRxStorageInstance: {
-      after: function after(params) {
-        /**
-         * When key compression is used,
-         * the storage instance only knows about the compressed schema
-         */
-        if (params.schema.keyCompression) {
-          var compressionState = createCompressionState(params.schema);
-          params.schema = compressionState.schema;
-        }
-      }
-    },
-    preQueryMatcher: {
-      after: function after(params) {
-        if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
-          return;
-        }
-
-        var state = getCompressionStateByRxJsonSchema(params.rxQuery.collection.schema.jsonSchema);
-        params.doc = (0, _jsonschemaKeyCompression.compressObject)(state.table, params.doc);
-      }
-    },
-    preSortComparator: {
-      after: function after(params) {
-        if (!params.rxQuery.collection.schema.jsonSchema.keyCompression) {
-          return;
-        }
-
-        var state = getCompressionStateByRxJsonSchema(params.rxQuery.collection.schema.jsonSchema);
-        params.docA = (0, _jsonschemaKeyCompression.compressObject)(state.table, params.docA);
-        params.docB = (0, _jsonschemaKeyCompression.compressObject)(state.table, params.docB);
-      }
-    },
-    preWriteToStorageInstance: {
-      /**
-       * Must run as last because other plugin hooks
-       * might no longer work when the key-compression
-       * changed the document keys.
-       */
-      after: function after(params) {
-        if (!params.schema.keyCompression) {
-          return;
-        }
-
-        var state = getCompressionStateByRxJsonSchema(params.schema);
-        /**
-         * Do not send attachments to compressObject()
-         * because it will deep clone which does not work on Blob or Buffer.
-         */
-
-        params.doc = (0, _util.flatClone)(params.doc);
-        var attachments = params.doc._attachments;
-        delete params.doc._attachments;
-        params.doc = (0, _jsonschemaKeyCompression.compressObject)(state.table, params.doc);
-        params.doc._attachments = attachments;
-      }
-    },
-    postReadFromInstance: {
-      /**
-       * Use 'before' because it must de-compress
-       * the object keys before the other hooks can work.
-       */
-      before: function before(params) {
-        if (!params.schema.keyCompression) {
-          return;
-        }
-
-        var state = getCompressionStateByRxJsonSchema(params.schema);
-        params.doc = (0, _jsonschemaKeyCompression.decompressObject)(state.table, params.doc);
+    getQueryMatcher: function getQueryMatcher(schema, preparedQuery) {
+      if (!schema.keyCompression) {
+        return args.storage.statics.getQueryMatcher(schema, preparedQuery);
+      } else {
+        var compressionState = getCompressionStateByRxJsonSchema(schema);
+        return args.storage.statics.getQueryMatcher(compressionState.schema, preparedQuery);
       }
     }
-  }
-};
-exports.RxDBKeyCompressionPlugin = RxDBKeyCompressionPlugin;
+  });
+  return Object.assign({}, args.storage, {
+    statics: statics,
+    createStorageInstance: function createStorageInstance(params) {
+      try {
+        var modifyToStorage = function modifyToStorage(docData) {
+          return compressDocumentData(compressionState, docData);
+        };
+
+        var modifyFromStorage = function modifyFromStorage(docData) {
+          return decompressDocumentData(compressionState, docData);
+        };
+        /**
+         * Because this wrapper resolves the key-compression,
+         * we can set the flag to false
+         * which allows underlying storages to detect wrong conficturations
+         * like when keyCompression is set to false but no key-compression module is used.
+         */
+
+
+        if (!params.schema.keyCompression) {
+          return Promise.resolve(args.storage.createStorageInstance(params));
+        }
+
+        var compressionState = getCompressionStateByRxJsonSchema(params.schema);
+        var childSchema = (0, _util.flatClone)(compressionState.compressedSchema);
+        childSchema.keyCompression = false;
+        return Promise.resolve(args.storage.createStorageInstance(Object.assign({}, params, {
+          schema: childSchema
+        }))).then(function (instance) {
+          return (0, _pluginHelpers.wrapRxStorageInstance)(instance, modifyToStorage, modifyFromStorage);
+        });
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    }
+  });
+}
+
+function compressDocumentData(compressionState, docData) {
+  /**
+   * Do not send attachments to compressObject()
+   * because it will deep clone which does not work on Blob or Buffer.
+   */
+  docData = (0, _rxStorageHelper.flatCloneDocWithMeta)(docData);
+  var attachments = docData._attachments;
+  delete docData._attachments;
+  docData = (0, _jsonschemaKeyCompression.compressObject)(compressionState.table, docData);
+  docData._attachments = attachments;
+  return docData;
+}
+
+function decompressDocumentData(compressionState, docData) {
+  return (0, _jsonschemaKeyCompression.decompressObject)(compressionState.table, docData);
+}
 //# sourceMappingURL=key-compression.js.map

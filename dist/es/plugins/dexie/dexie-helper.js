@@ -39,6 +39,7 @@ export var closeDexieDb = function closeDexieDb(statePromise) {
 export var DEXIE_DOCS_TABLE_NAME = 'docs';
 export var DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
 export var DEXIE_CHANGES_TABLE_NAME = 'changes';
+export var RX_STORAGE_NAME_DEXIE = 'dexie';
 var DEXIE_STATE_DB_BY_NAME = new Map();
 var REF_COUNT_PER_DEXIE_DB = new Map();
 export function getDexieDbWithTables(databaseName, collectionName, settings, schema) {

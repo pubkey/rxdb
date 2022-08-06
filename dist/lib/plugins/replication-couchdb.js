@@ -25,8 +25,6 @@ var _pouchdb = require("../plugins/pouchdb");
 
 var _rxCollection = require("../rx-collection");
 
-var _hooks = require("../hooks");
-
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
  * you can use it to sync collections with remote or local couchdb-instances
@@ -138,16 +136,7 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
     ev.change.docs.filter(function (doc) {
       return doc.language !== 'query';
     }) // remove internal docs
-    .map(function (doc) {
-      var hookParams = {
-        database: rxRepState.collection.database,
-        primaryPath: rxRepState.collection.schema.primaryPath,
-        schema: rxRepState.collection.schema.jsonSchema,
-        doc: doc
-      };
-      (0, _hooks.runPluginHooks)('postReadFromInstance', hookParams);
-      return hookParams.doc;
-    }) // do primary-swap and keycompression
+    // do primary-swap and keycompression
     .forEach(function (doc) {
       return rxRepState._subjects.docs.next(doc);
     });
@@ -321,7 +310,7 @@ function syncCouchDB(_ref2) {
     var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
-    _this2.onDestroy.then(function () {
+    _this2.onDestroy.push(function () {
       return repState.cancel();
     });
   });

@@ -1,18 +1,10 @@
 import { Query as MingoQuery } from 'mingo';
-import { binaryMd5 } from 'pouchdb-md5';
-import { getDexieSortComparator } from './dexie-helper';
+import { getDexieSortComparator, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
 import { createDexieStorageInstance } from './rx-storage-instance-dexie';
 import { newRxError } from '../../rx-error';
 import { getQueryPlan } from '../../query-planner';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 export var RxStorageDexieStatics = {
-  hash: function hash(data) {
-    return new Promise(function (res) {
-      binaryMd5(data, function (digest) {
-        res(digest);
-      });
-    });
-  },
-  hashKey: 'md5',
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     if (!mutateableQuery.sort) {
       throw newRxError('SNH', {
@@ -58,7 +50,7 @@ export var RxStorageDexieStatics = {
 };
 export var RxStorageDexie = /*#__PURE__*/function () {
   function RxStorageDexie(settings) {
-    this.name = 'dexie';
+    this.name = RX_STORAGE_NAME_DEXIE;
     this.statics = RxStorageDexieStatics;
     this.settings = settings;
   }
@@ -66,6 +58,7 @@ export var RxStorageDexie = /*#__PURE__*/function () {
   var _proto = RxStorageDexie.prototype;
 
   _proto.createStorageInstance = function createStorageInstance(params) {
+    ensureRxStorageInstanceParamsAreCorrect(params);
     return createDexieStorageInstance(this, params, this.settings);
   };
 

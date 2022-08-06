@@ -1,5 +1,4 @@
 import { calculateActionName, runAction } from 'event-reduce-js';
-import { runPluginHooks } from './hooks';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
 import { clone, ensureNotFalsy } from './util';
 import { normalizeMangoQuery } from './rx-query-helper';
@@ -25,7 +24,7 @@ export function getQueryParams(rxQuery) {
      * we send for example compressed documents to be sorted by compressed queries.
      */
 
-    var sortComparator = collection.database.storage.statics.getSortComparator(collection.storageInstance.schema, preparedQuery);
+    var sortComparator = collection.database.storage.statics.getSortComparator(collection.schema.jsonSchema, preparedQuery);
 
     var useSortComparator = function useSortComparator(docA, docB) {
       var sortComparatorData = {
@@ -33,7 +32,6 @@ export function getQueryParams(rxQuery) {
         docB: docB,
         rxQuery: rxQuery
       };
-      runPluginHooks('preSortComparator', sortComparatorData);
       return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
     };
     /**
@@ -43,14 +41,13 @@ export function getQueryParams(rxQuery) {
      */
 
 
-    var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.storageInstance.schema, preparedQuery);
+    var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.schema.jsonSchema, preparedQuery);
 
     var useQueryMatcher = function useQueryMatcher(doc) {
       var queryMatcherData = {
         doc: doc,
         rxQuery: rxQuery
       };
-      runPluginHooks('preQueryMatcher', queryMatcherData);
       return queryMatcher(queryMatcherData.doc);
     };
 

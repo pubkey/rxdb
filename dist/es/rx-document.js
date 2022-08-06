@@ -1,8 +1,8 @@
 import objectPath from 'object-path';
 import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { clone, trimDots, getHeightOfRevision, pluginMissing, flatClone, PROMISE_RESOLVE_NULL, PROMISE_RESOLVE_VOID, ensureNotFalsy, createRevision } from './util';
-import { newRxError, newRxTypeError, isBulkWriteConflictError } from './rx-error';
+import { clone, trimDots, getHeightOfRevision, pluginMissing, flatClone, PROMISE_RESOLVE_NULL, PROMISE_RESOLVE_VOID, ensureNotFalsy } from './util';
+import { newRxError, isBulkWriteConflictError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 import { overwritable } from './overwritable';
@@ -441,44 +441,6 @@ export var basePrototype = {
   },
 
   /**
-   * set data by objectPath
-   * This can only be called on temporary documents
-   */
-  set: function set(objPath, value) {
-    // setters can only be used on temporary documents
-    if (!this._isTemporary) {
-      throw newRxTypeError('DOC16', {
-        objPath: objPath,
-        value: value
-      });
-    }
-
-    if (typeof objPath !== 'string') {
-      throw newRxTypeError('DOC15', {
-        objPath: objPath,
-        value: value
-      });
-    } // if equal, do nothing
-
-
-    if (Object.is(this.get(objPath), value)) return; // throw if nested without root-object
-
-    var pathEls = objPath.split('.');
-    pathEls.pop();
-    var rootPath = pathEls.join('.');
-
-    if (typeof objectPath.get(this._data, rootPath) === 'undefined') {
-      throw newRxError('DOC10', {
-        childpath: objPath,
-        rootPath: rootPath
-      });
-    }
-
-    objectPath.set(this._data, objPath, value);
-    return this;
-  },
-
-  /**
    * updates document
    * @overwritten by plugin (optinal)
    * @param updateObj mongodb-like syntax
@@ -541,10 +503,7 @@ export var basePrototype = {
 
                 var isConflict = isBulkWriteConflictError(useError);
 
-                if (isConflict) {
-                  // conflict error -> retrying
-                  newData._rev = createRevision(newData, isConflict.documentInDb);
-                } else {
+                if (isConflict) {} else {
                   rej(useError);
                   _exit2 = true;
                 }
@@ -627,10 +586,6 @@ export var basePrototype = {
       }
 
       return Promise.resolve(_this4.collection._runHooks('pre', 'save', newData, _this4)).then(function () {
-        newData._rev = createRevision(newData, oldData);
-
-        _this4.collection.schema.validate(newData);
-
         return Promise.resolve(_this4.collection.storageInstance.bulkWrite([{
           previous: oldData,
           document: newData
@@ -646,40 +601,12 @@ export var basePrototype = {
   },
 
   /**
-   * saves the temporary document and makes a non-temporary out of it
-   * Saving a temporary doc is basically the same as RxCollection.insert()
-   * @return false if nothing to save
-   */
-  save: function save() {
-    var _this5 = this;
-
-    // .save() cannot be called on non-temporary-documents
-    if (!this._isTemporary) {
-      throw newRxError('DOC17', {
-        id: this.primary,
-        document: this
-      });
-    }
-
-    return this.collection.insert(this).then(function () {
-      _this5._isTemporary = false;
-
-      _this5.collection._docCache.set(_this5.primary, _this5); // internal events
-
-
-      _this5._dataSync$.next(_this5._data);
-
-      return true;
-    });
-  },
-
-  /**
    * remove the document,
    * this not not equal to a pouchdb.remove(),
    * instead we keep the values and only set _deleted: true
    */
   remove: function remove() {
-    var _this6 = this;
+    var _this5 = this;
 
     var collection = this.collection;
 
@@ -694,22 +621,21 @@ export var basePrototype = {
     return collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       try {
         deletedData._deleted = true;
-        deletedData._rev = createRevision(deletedData, _this6._data);
         return Promise.resolve(collection.storageInstance.bulkWrite([{
-          previous: _this6._data,
+          previous: _this5._data,
           document: deletedData
         }], 'rx-document-remove')).then(function (writeResult) {
-          var isError = writeResult.error[_this6.primary];
-          throwIfIsStorageWriteError(collection, _this6.primary, deletedData, isError);
-          return ensureNotFalsy(writeResult.success[_this6.primary]);
+          var isError = writeResult.error[_this5.primary];
+          throwIfIsStorageWriteError(collection, _this5.primary, deletedData, isError);
+          return ensureNotFalsy(writeResult.success[_this5.primary]);
         });
       } catch (e) {
         return Promise.reject(e);
       }
     }).then(function () {
-      return _this6.collection._runHooks('post', 'remove', deletedData, _this6);
+      return _this5.collection._runHooks('post', 'remove', deletedData, _this5);
     }).then(function () {
-      return _this6;
+      return _this5;
     });
   },
   destroy: function destroy() {
@@ -720,9 +646,7 @@ export function createRxDocumentConstructor() {
   var proto = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : basePrototype;
 
   var constructor = function RxDocumentConstructor(collection, jsonData) {
-    this.collection = collection; // if true, this is a temporary document
-
-    this._isTemporary = false; // assume that this is always equal to the doc-data in the database
+    this.collection = collection; // assume that this is always equal to the doc-data in the database
 
     this._dataSync$ = new BehaviorSubject(jsonData);
     this._isDeleted$ = new BehaviorSubject(false);

@@ -9,13 +9,12 @@ import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } f
 import { newRxError } from '../rx-error';
 import { isInstanceOf as isInstanceOfPouchDB, addPouchPlugin, getPouchDBOfRxCollection } from '../plugins/pouchdb';
 import { isRxCollection } from '../rx-collection';
-import { runPluginHooks } from '../hooks';
+
 /**
  * Contains all pouchdb instances that
  * are used inside of RxDB by collections or databases.
  * Used to ensure the remote of a replication cannot be an internal pouchdb.
  */
-
 var INTERNAL_POUCHDBS = new WeakSet();
 export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
   function RxCouchDBReplicationStateBase(collection, syncOptions) {
@@ -113,16 +112,7 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
     ev.change.docs.filter(function (doc) {
       return doc.language !== 'query';
     }) // remove internal docs
-    .map(function (doc) {
-      var hookParams = {
-        database: rxRepState.collection.database,
-        primaryPath: rxRepState.collection.schema.primaryPath,
-        schema: rxRepState.collection.schema.jsonSchema,
-        doc: doc
-      };
-      runPluginHooks('postReadFromInstance', hookParams);
-      return hookParams.doc;
-    }) // do primary-swap and keycompression
+    // do primary-swap and keycompression
     .forEach(function (doc) {
       return rxRepState._subjects.docs.next(doc);
     });
@@ -293,7 +283,7 @@ export function syncCouchDB(_ref2) {
     var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
-    _this2.onDestroy.then(function () {
+    _this2.onDestroy.push(function () {
       return repState.cancel();
     });
   });

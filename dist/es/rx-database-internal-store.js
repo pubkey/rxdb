@@ -1,5 +1,6 @@
+import { newRxError } from './rx-error';
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
-import { createRevision, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './util';
+import { ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './util';
 export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists(rxDatabase) {
   try {
     /**
@@ -8,6 +9,7 @@ export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumen
      * and only fetch the existing one if a conflict happened.
      */
     var storageToken = randomCouchString(10);
+    var passwordHash = rxDatabase.password ? fastUnsecureHash(rxDatabase.password) : undefined;
     var docData = {
       id: STORAGE_TOKEN_DOCUMENT_ID,
       context: INTERNAL_CONTEXT_STORAGE_TOKEN,
@@ -22,14 +24,14 @@ export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumen
          * or if databases have existed earlier on that storage
          * with the same database name.
          */
-        instanceToken: rxDatabase.token
+        instanceToken: rxDatabase.token,
+        passwordHash: passwordHash
       },
       _deleted: false,
       _meta: getDefaultRxDocumentMeta(),
       _rev: getDefaultRevision(),
       _attachments: {}
     };
-    docData._rev = createRevision(docData);
     return Promise.resolve(rxDatabase.internalStore.bulkWrite([{
       document: docData
     }], 'internal-add-storage-token')).then(function (writeResult) {
@@ -46,7 +48,16 @@ export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumen
       var error = ensureNotFalsy(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
 
       if (error.isError && error.status === 409) {
-        var storageTokenDocInDb = error.documentInDb;
+        var conflictError = error;
+
+        if (passwordHash && passwordHash !== ensureNotFalsy(conflictError.documentInDb).data.passwordHash) {
+          throw newRxError('DB1', {
+            passwordHash: passwordHash,
+            existingPasswordHash: ensureNotFalsy(conflictError.documentInDb).data.passwordHash
+          });
+        }
+
+        var storageTokenDocInDb = conflictError.documentInDb;
         return ensureNotFalsy(storageTokenDocInDb);
       }
 
@@ -61,9 +72,9 @@ export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumen
  * Returns all internal documents
  * with context 'collection'
  */
-export var getAllCollectionDocuments = function getAllCollectionDocuments(storageInstance) {
+export var getAllCollectionDocuments = function getAllCollectionDocuments(storage, storageInstance) {
   try {
-    var getAllQueryPrepared = storageInstance.storage.statics.prepareQuery(storageInstance.schema, {
+    var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
       selector: {
         context: INTERNAL_CONTEXT_COLLECTION
       },
@@ -88,7 +99,6 @@ export var getAllCollectionDocuments = function getAllCollectionDocuments(storag
 
 export var INTERNAL_CONTEXT_COLLECTION = 'collection';
 export var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
-export var INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
 export var INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 /**
  * Do not change the title,
@@ -119,7 +129,7 @@ export var INTERNAL_STORE_SCHEMA = fillWithDefaultSettings({
     },
     context: {
       type: 'string',
-      "enum": [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_ENCRYPTION, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES, 'OTHER']
+      "enum": [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES, 'OTHER']
     },
     data: {
       type: 'object',

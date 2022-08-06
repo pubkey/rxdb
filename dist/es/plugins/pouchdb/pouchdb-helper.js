@@ -1,8 +1,7 @@
 import { binaryMd5 } from 'pouchdb-md5';
 import { blobBufferUtil, flatClone, getHeightOfRevision } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getAttachmentSize, hashAttachmentData } from '../../rx-storage-helper';
-import { RxStoragePouchStatics } from './pouch-statics';
+import { getAttachmentSize, hashAttachmentData } from '../attachments';
 export var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attachments) {
   try {
     if (!attachments) {
@@ -32,7 +31,7 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
         var _temp4 = function () {
           if (obj.data) {
             var _temp5 = function _temp5(dataAsBase64String) {
-              return Promise.resolve(hashAttachmentData(dataAsBase64String, RxStoragePouchStatics)).then(function (hash) {
+              return Promise.resolve(hashAttachmentData(dataAsBase64String)).then(function (hash) {
                 var length = getAttachmentSize(dataAsBase64String);
                 ret[key] = {
                   digest: 'md5-' + hash,
@@ -43,10 +42,16 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
             };
 
             var _asWrite = obj;
+            var data = _asWrite.data;
+            var isBuffer = typeof Buffer !== 'undefined' && Buffer.isBuffer(data);
 
-            var _temp6 = typeof _asWrite.data === 'string';
+            if (isBuffer) {
+              data = new Blob([data]);
+            }
 
-            return _temp6 ? _temp5(_asWrite.data) : Promise.resolve(blobBufferUtil.toBase64String(_asWrite.data)).then(_temp5);
+            var _temp6 = typeof data === 'string';
+
+            return _temp6 ? _temp5(data) : Promise.resolve(blobBufferUtil.toBase64String(data)).then(_temp5);
           } else {
             ret[key] = obj;
           }
@@ -63,10 +68,11 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
     return Promise.reject(e);
   }
 };
-
+export var RX_STORAGE_NAME_POUCHDB = 'pouchdb';
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
+
 export var OPEN_POUCHDB_STORAGE_INSTANCES = new Set();
 /**
  * All open PouchDB instances are stored here

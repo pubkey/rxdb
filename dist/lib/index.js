@@ -11,6 +11,7 @@ var _exportNames = {
   dbCount: true,
   _collectionNamePrimary: true,
   isRxDatabaseFirstTimeInstantiated: true,
+  ensureNoStartupErrors: true,
   overwritable: true,
   isRxCollection: true,
   RxCollectionBase: true,
@@ -96,6 +97,12 @@ Object.defineProperty(exports, "dbCount", {
   enumerable: true,
   get: function get() {
     return _rxDatabase.dbCount;
+  }
+});
+Object.defineProperty(exports, "ensureNoStartupErrors", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.ensureNoStartupErrors;
   }
 });
 Object.defineProperty(exports, "fillObjectDataBeforeInsert", {
@@ -307,7 +314,7 @@ Object.keys(_rxStorageHelper).forEach(function (key) {
   });
 });
 
-var _index = require("./replication/index");
+var _index = require("./replication-protocol/index");
 
 Object.keys(_index).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -359,6 +366,20 @@ Object.keys(_queryPlanner).forEach(function (key) {
     enumerable: true,
     get: function get() {
       return _queryPlanner[key];
+    }
+  });
+});
+
+var _pluginHelpers = require("./plugin-helpers");
+
+Object.keys(_pluginHelpers).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _pluginHelpers[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _pluginHelpers[key];
     }
   });
 });

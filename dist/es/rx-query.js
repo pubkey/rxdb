@@ -226,7 +226,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
       mangoQuery: normalizeMangoQuery(this.collection.schema.jsonSchema, clone(this.mangoQuery))
     };
     runPluginHooks('prePrepareQuery', hookInput);
-    var value = this.collection.database.storage.statics.prepareQuery(this.collection.storageInstance.schema, hookInput.mangoQuery);
+    var value = this.collection.database.storage.statics.prepareQuery(this.collection.schema.jsonSchema, hookInput.mangoQuery);
 
     this.getPreparedQuery = function () {
       return value;
@@ -410,7 +410,6 @@ export function createRxQuery(op, queryObj, collection) {
   var ret = new RxQueryBase(op, queryObj, collection); // ensure when created with same params, only one is created
 
   ret = tunnelQueryCache(ret);
-  runPluginHooks('createRxQuery', ret);
   triggerCacheReplacement(collection);
   return ret;
 }
