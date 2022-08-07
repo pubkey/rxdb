@@ -1,6 +1,6 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { ensureNotFalsy, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../util';
+import { ensureNotFalsy, flatClone, PROMISE_RESOLVE_FALSE } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { resolveConflictError } from './conflicts';
 import { writeDocToDocState } from './helper';
@@ -212,10 +212,10 @@ export function startReplicationUpstream(state) {
         return Promise.resolve();
       }
 
-      checkpointQueue = checkpointQueue.then(function () {
+      state.checkpointQueue = state.checkpointQueue.then(function () {
         return getLastCheckpointDoc(state, 'up');
       });
-      return Promise.resolve(checkpointQueue).then(function (lastCheckpoint) {
+      return Promise.resolve(state.checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
 
         function _temp13() {
@@ -353,7 +353,6 @@ export function startReplicationUpstream(state) {
   }
 
   var persistenceQueue = PROMISE_RESOLVE_FALSE;
-  var checkpointQueue = PROMISE_RESOLVE_VOID;
   var nonPersistedFromMaster = {
     docs: {}
   };
@@ -439,7 +438,7 @@ export function startReplicationUpstream(state) {
                    * but to ensure order on parrallel checkpoint writes,
                    * we have to use a queue.
                    */
-                  checkpointQueue = checkpointQueue.then(function () {
+                  state.checkpointQueue = state.checkpointQueue.then(function () {
                     return setCheckpoint(state, 'up', useCheckpoint);
                   });
                   return hadConflictWrites;

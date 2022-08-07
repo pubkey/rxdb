@@ -307,11 +307,13 @@ var cancelRxStorageReplication = function cancelRxStorageReplication(replication
     replicationState.events.canceled.next(true);
     return Promise.resolve(replicationState.streamQueue.down).then(function () {
       return Promise.resolve(replicationState.streamQueue.up).then(function () {
-        replicationState.events.active.up.complete();
-        replicationState.events.active.down.complete();
-        replicationState.events.processed.up.complete();
-        replicationState.events.processed.down.complete();
-        replicationState.events.resolvedConflicts.complete();
+        return Promise.resolve(replicationState.checkpointQueue).then(function () {
+          replicationState.events.active.up.complete();
+          replicationState.events.active.down.complete();
+          replicationState.events.processed.up.complete();
+          replicationState.events.processed.down.complete();
+          replicationState.events.resolvedConflicts.complete();
+        });
       });
     });
   } catch (e) {
@@ -395,6 +397,7 @@ function replicateRxStorageInstance(input) {
       down: _util.PROMISE_RESOLVE_VOID,
       up: _util.PROMISE_RESOLVE_VOID
     },
+    checkpointQueue: _util.PROMISE_RESOLVE_VOID,
     lastCheckpointDoc: {}
   };
   (0, _downstream.startReplicationDownstream)(state);

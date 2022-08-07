@@ -5411,10 +5411,10 @@ function startReplicationDownstream(state) {
         return Promise.resolve();
       }
 
-      checkpointQueue = checkpointQueue.then(function () {
+      state.checkpointQueue = state.checkpointQueue.then(function () {
         return (0, _checkpoint.getLastCheckpointDoc)(state, 'down');
       });
-      return Promise.resolve(checkpointQueue).then(function (lastCheckpoint) {
+      return Promise.resolve(state.checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
 
         function _temp2() {
@@ -5549,7 +5549,6 @@ function startReplicationDownstream(state) {
 
 
   var persistenceQueue = _util.PROMISE_RESOLVE_VOID;
-  var checkpointQueue = _util.PROMISE_RESOLVE_VOID;
   var nonPersistedFromMaster = {
     docs: {}
   };
@@ -5691,7 +5690,7 @@ function startReplicationDownstream(state) {
          * but to ensure order on parrallel checkpoint writes,
          * we have to use a queue.
          */
-        checkpointQueue = checkpointQueue.then(function () {
+        state.checkpointQueue = state.checkpointQueue.then(function () {
           return (0, _checkpoint.setCheckpoint)(state, 'down', useCheckpoint);
         });
       });
@@ -6043,11 +6042,13 @@ var cancelRxStorageReplication = function cancelRxStorageReplication(replication
     replicationState.events.canceled.next(true);
     return Promise.resolve(replicationState.streamQueue.down).then(function () {
       return Promise.resolve(replicationState.streamQueue.up).then(function () {
-        replicationState.events.active.up.complete();
-        replicationState.events.active.down.complete();
-        replicationState.events.processed.up.complete();
-        replicationState.events.processed.down.complete();
-        replicationState.events.resolvedConflicts.complete();
+        return Promise.resolve(replicationState.checkpointQueue).then(function () {
+          replicationState.events.active.up.complete();
+          replicationState.events.active.down.complete();
+          replicationState.events.processed.up.complete();
+          replicationState.events.processed.down.complete();
+          replicationState.events.resolvedConflicts.complete();
+        });
       });
     });
   } catch (e) {
@@ -6131,6 +6132,7 @@ function replicateRxStorageInstance(input) {
       down: _util.PROMISE_RESOLVE_VOID,
       up: _util.PROMISE_RESOLVE_VOID
     },
+    checkpointQueue: _util.PROMISE_RESOLVE_VOID,
     lastCheckpointDoc: {}
   };
   (0, _downstream.startReplicationDownstream)(state);
@@ -6586,10 +6588,10 @@ function startReplicationUpstream(state) {
         return Promise.resolve();
       }
 
-      checkpointQueue = checkpointQueue.then(function () {
+      state.checkpointQueue = state.checkpointQueue.then(function () {
         return (0, _checkpoint.getLastCheckpointDoc)(state, 'up');
       });
-      return Promise.resolve(checkpointQueue).then(function (lastCheckpoint) {
+      return Promise.resolve(state.checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
 
         function _temp13() {
@@ -6727,7 +6729,6 @@ function startReplicationUpstream(state) {
   }
 
   var persistenceQueue = _util.PROMISE_RESOLVE_FALSE;
-  var checkpointQueue = _util.PROMISE_RESOLVE_VOID;
   var nonPersistedFromMaster = {
     docs: {}
   };
@@ -6813,7 +6814,7 @@ function startReplicationUpstream(state) {
                    * but to ensure order on parrallel checkpoint writes,
                    * we have to use a queue.
                    */
-                  checkpointQueue = checkpointQueue.then(function () {
+                  state.checkpointQueue = state.checkpointQueue.then(function () {
                     return (0, _checkpoint.setCheckpoint)(state, 'up', useCheckpoint);
                   });
                   return hadConflictWrites;
