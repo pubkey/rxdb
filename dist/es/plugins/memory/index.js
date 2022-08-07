@@ -1,3 +1,4 @@
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 import { flatClone } from '../../util';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
 import { createMemoryStorageInstance } from './rx-storage-instance-memory';
@@ -8,6 +9,8 @@ export function getRxStorageMemory() {
     statics: RxStorageDexieStatics,
     collectionStates: new Map(),
     createStorageInstance: function createStorageInstance(params) {
+      ensureRxStorageInstanceParamsAreCorrect(params); // TODO we should not need to append the schema version here.
+
       params = flatClone(params);
       params.collectionName = params.collectionName + '-' + params.schema.version;
       var useSettings = Object.assign({}, settings, params.options);

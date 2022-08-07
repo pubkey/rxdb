@@ -1,4 +1,4 @@
-import { createRevision, getDefaultRxDocumentMeta } from './util';
+import { getDefaultRevision, getDefaultRxDocumentMeta } from './util';
 import { fillPrimaryKey } from './rx-schema-helper';
 
 /**
@@ -31,7 +31,7 @@ export function fillObjectDataBeforeInsert(schema, data) {
   }
 
   if (!useJson.hasOwnProperty('_rev')) {
-    useJson._rev = createRevision(useJson);
+    useJson._rev = getDefaultRevision();
   }
 
   return useJson;

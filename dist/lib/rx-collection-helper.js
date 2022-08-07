@@ -42,7 +42,7 @@ function fillObjectDataBeforeInsert(schema, data) {
   }
 
   if (!useJson.hasOwnProperty('_rev')) {
-    useJson._rev = (0, _util.createRevision)(useJson);
+    useJson._rev = (0, _util.getDefaultRevision)();
   }
 
   return useJson;

@@ -106,12 +106,11 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> ex
 }
 
 /**
- * Properties are possibly encrypted so type them as any.
+ * Properties are possibly encrypted so type them as any. TODO this is no longer needed.
  */
 export type RxDumpCollectionAsAny<T> = { [P in keyof T]: any };
 
 interface RxDumpCollectionBase {
-    encrypted: boolean;
     name: string;
     passwordHash: string | null;
     schemaHash: string;

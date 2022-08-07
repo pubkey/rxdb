@@ -15,63 +15,68 @@ export function pluginMissing(pluginKey) {
   return new Error("You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n            import { " + pluginName + " } from 'rxdb/plugins/" + pluginKey + "';\n            addRxPlugin(" + pluginName + ");\n        ");
 }
 /**
- * this is a very fast hashing but its unsecure
+ * This is a very fast hash method
+ * but it is not cryptographically secure.
+ * For each run it will append a number between 0 and 2147483647 (=biggest 32 bit int).
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
- * @return a number as hash-result
+ * @return a string as hash-result
  */
 
-export function fastUnsecureHash(obj) {
-  if (typeof obj !== 'string') obj = JSON.stringify(obj);
+export function fastUnsecureHash(inputString) {
   var hashValue = 0,
       i,
       chr,
       len;
-  if (obj.length === 0) return hashValue;
+  /**
+   * For better performance we first transform all
+   * chars into their ascii numbers at once.
+   * 
+   * This is what makes the murmurhash implementation such fast.
+   * @link https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L4
+   */
 
-  for (i = 0, len = obj.length; i < len; i++) {
-    chr = obj.charCodeAt(i); // tslint:disable-next-line
+  var encoded = new TextEncoder().encode(inputString);
 
-    hashValue = (hashValue << 5) - hashValue + chr; // tslint:disable-next-line
-
+  for (i = 0, len = inputString.length; i < len; i++) {
+    chr = encoded[i];
+    hashValue = (hashValue << 5) - hashValue + chr;
     hashValue |= 0; // Convert to 32bit integer
   }
 
-  if (hashValue < 0) hashValue = hashValue * -1;
-  return hashValue;
+  if (hashValue < 0) {
+    hashValue = hashValue * -1;
+  }
+  /**
+   * To make the output smaller
+   * but still have it to represent the same value,
+   * we use the biggest radix of 36 instead of just
+   * transforming it into a hex string.
+   */
+
+
+  return hashValue.toString(36);
 }
 /**
- * Does a RxDB-specific hashing of the given data.
- * We use a static salt so using a rainbow-table
- * or google-ing the hash will not work.
- *
- * spark-md5 is used here
- * because pouchdb uses the same
- * and build-size could be reduced by 9kb
- * 
- * TODO instead of using md5 we should use the hash method from the given RxStorage
- * this change would require some rewrites because the RxStorage hash is async.
- * So maybe it is even better to use non-cryptographic hashing like we do at fastUnsecureHash()
- * which would even be faster.
+ * Default hash method used to create revision hashes
+ * that do not have to be cryptographically secure.
+ * IMPORTANT: Changing the default hashing method
+ * requires a BREAKING change!
  */
 
-import Md5 from 'spark-md5';
-export var RXDB_HASH_SALT = 'rxdb-specific-hash-salt';
-export function hash(msg) {
-  if (typeof msg !== 'string') {
-    msg = JSON.stringify(msg);
-  }
-
-  return Md5.hash(RXDB_HASH_SALT + msg);
+export function defaultHashFunction(input) {
+  return fastUnsecureHash(input);
 }
 /**
- * Returns the current unix time in milliseconds
+ * Returns the current unix time in milliseconds (with two decmials!)
  * Because the accuracy of getTime() in javascript is bad,
  * and we cannot rely on performance.now() on all plattforms,
  * this method implements a way to never return the same value twice.
  * This ensures that when now() is called often, we do not loose the information
  * about which call came first and which came after.
- * Caution: Do not call this too often in a short timespan
- * because it might return 'the future'.
+ * 
+ * We had to move from having no decimals, to having two decimal
+ * because it turned out that some storages are such fast that
+ * calling this method too often would return 'the future'.
  */
 
 var _lastNow = 0;
@@ -82,13 +87,22 @@ var _lastNow = 0;
 
 export function now() {
   var ret = new Date().getTime();
+  ret = ret + 0.01;
 
   if (ret <= _lastNow) {
-    ret = _lastNow + 1;
+    ret = _lastNow + 0.01;
   }
+  /**
+   * Strip the returned number to max two decimals.
+   * In theory we would not need this but
+   * in practice JavaScript has no such good number precision
+   * so rounding errors could add another decimal place.
+   */
 
-  _lastNow = ret;
-  return ret;
+
+  var twoDecimals = parseFloat(ret.toFixed(2));
+  _lastNow = twoDecimals;
+  return twoDecimals;
 }
 /**
  * returns a promise that resolves on the next tick
@@ -395,7 +409,7 @@ export function getHeightOfRevision(revision) {
  * Creates the next write revision for a given document.
  */
 
-export function createRevision(docData, previousDocData) {
+export function createRevision(hashFunction, docData, previousDocData) {
   var previousRevision = previousDocData ? previousDocData._rev : null;
   var previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
   var newRevisionHeight = previousRevisionHeigth + 1;
@@ -426,7 +440,7 @@ export function createRevision(docData, previousDocData) {
   delete docWithoutRev._rev;
   docWithoutRev._rev = previousDocData ? newRevisionHeight : 1;
   var diggestString = JSON.stringify(docWithoutRev);
-  var revisionHash = Md5.hash(diggestString);
+  var revisionHash = hashFunction(diggestString);
   return newRevisionHeight + '-' + revisionHash;
 }
 /**
@@ -488,34 +502,40 @@ export function isMaybeReadonlyArray(x) {
   // still performing runtime type inspection.
   return Array.isArray(x);
 }
-var USE_NODE_BLOB_BUFFER_METHODS = typeof FileReader === 'undefined';
+/**
+ * atob() and btoa() do not work well with non ascii chars,
+ * so we have to use these helper methods instead.
+ * @link https://stackoverflow.com/a/30106551/3443137
+ */
+// Encoding UTF8 -> base64
+
+export function b64EncodeUnicode(str) {
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+    return String.fromCharCode(parseInt(p1, 16));
+  }));
+} // Decoding base64 -> UTF8
+
+export function b64DecodeUnicode(str) {
+  return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+}
+/**
+ * This is an abstraction over the Blob/Buffer data structure.
+ * We need this because it behaves different in different JavaScript runtimes.
+ * Since RxDB 13.0.0 we switch to Blob-only because Node.js does not support
+ * the Blob data structure which is also supported by the browsers.
+ */
+
 export var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
    */
   createBlobBuffer: function createBlobBuffer(data, type) {
-    var blobBuffer;
-
-    if (isElectronRenderer) {
-      // if we are inside of electron-renderer, always use the node-buffer
-      return Buffer.from(data, {
-        type: type
-      });
-    }
-
-    if (USE_NODE_BLOB_BUFFER_METHODS) {
-      // for node
-      blobBuffer = Buffer.from(data, {
-        type: type
-      });
-    } else {
-      // for browsers
-      blobBuffer = new Blob([data], {
-        type: type
-      });
-    }
-
+    var blobBuffer = new Blob([data], {
+      type: type
+    });
     return blobBuffer;
   },
 
@@ -525,125 +545,71 @@ export var blobBufferUtil = {
    */
   createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
     try {
-      var blobBuffer;
-
-      if (isElectronRenderer) {
-        // if we are inside of electron-renderer, always use the node-buffer
-        return Promise.resolve(Buffer.from(base64String, 'base64'));
-      }
-
-      if (USE_NODE_BLOB_BUFFER_METHODS) {
-        // for node
-        blobBuffer = Buffer.from(base64String, 'base64');
-        return Promise.resolve(blobBuffer);
-      } else {
-        /**
-         * For browsers.
-         * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
-         */
-        return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
-          return Promise.resolve(base64Response.blob());
-        });
-      }
+      return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
+        return Promise.resolve(base64Response.blob());
+      });
     } catch (e) {
       return Promise.reject(e);
     }
   },
   isBlobBuffer: function isBlobBuffer(data) {
-    if (typeof Buffer !== 'undefined' && Buffer.isBuffer(data) || data instanceof Blob) {
+    if (data instanceof Blob || typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) {
       return true;
     } else {
       return false;
     }
   },
   toString: function toString(blobBuffer) {
+    /**
+     * in the electron-renderer we have a typed array insteaf of a blob
+     * so we have to transform it.
+     * @link https://github.com/pubkey/rxdb/issues/1371
+     */
+    var blobBufferType = Object.prototype.toString.call(blobBuffer);
+
+    if (blobBufferType === '[object Uint8Array]') {
+      blobBuffer = new Blob([blobBuffer]);
+    }
+
     if (typeof blobBuffer === 'string') {
       return Promise.resolve(blobBuffer);
     }
 
-    if (USE_NODE_BLOB_BUFFER_METHODS) {
-      // node
-      return nextTick().then(function () {
-        return blobBuffer.toString();
-      });
-    }
-
-    return new Promise(function (res) {
-      // browser
-      var reader = new FileReader();
-      reader.addEventListener('loadend', function (e) {
-        var text = e.target.result;
-        res(text);
-      });
-      var blobBufferType = Object.prototype.toString.call(blobBuffer);
-      /**
-       * in the electron-renderer we have a typed array insteaf of a blob
-       * so we have to transform it.
-       * @link https://github.com/pubkey/rxdb/issues/1371
-       */
-
-      if (blobBufferType === '[object Uint8Array]') {
-        blobBuffer = new Blob([blobBuffer]);
-      }
-
-      reader.readAsText(blobBuffer);
-    });
+    return blobBuffer.text();
   },
   toBase64String: function toBase64String(blobBuffer) {
-    if (typeof blobBuffer === 'string') {
-      return Promise.resolve(blobBuffer);
-    }
-
-    if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
-      // node
-      return nextTick()
-      /**
-       * We use btoa() instead of blobBuffer.toString('base64')
-       * to ensure that we have the same behavior in nodejs and the browser.
-       */
-      .then(function () {
-        return blobBuffer.toString('base64');
-      });
-    }
-
-    return new Promise(function (res, rej) {
-      /**
-       * Browser
-       * @link https://ionicframework.com/blog/converting-a-base64-string-to-a-blob-in-javascript/
-       */
-      var reader = new FileReader();
-      reader.onerror = rej;
-
-      reader.onload = function () {
-        // looks like 'data:plain/text;base64,YWFh...'
-        var fullResult = reader.result;
-        var split = fullResult.split(',');
-        split.shift();
-        res(split.join(','));
-      };
-
-      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+    try {
+      if (typeof blobBuffer === 'string') {
+        return Promise.resolve(blobBuffer);
+      }
       /**
        * in the electron-renderer we have a typed array insteaf of a blob
        * so we have to transform it.
        * @link https://github.com/pubkey/rxdb/issues/1371
        */
 
+
+      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+
       if (blobBufferType === '[object Uint8Array]') {
         blobBuffer = new Blob([blobBuffer]);
       }
 
-      reader.readAsDataURL(blobBuffer);
-    });
+      return Promise.resolve(blobBuffer.text()).then(function (text) {
+        /**
+         * We need to format into an utf-8 string or else btoa()
+         * will not work properly on latin-1 characters.
+         * @link https://stackoverflow.com/a/30106551/3443137
+         */
+        var base64 = b64EncodeUnicode(text);
+        return base64;
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   },
   size: function size(blobBuffer) {
-    if (typeof Buffer !== 'undefined' && blobBuffer instanceof Buffer) {
-      // node
-      return Buffer.byteLength(blobBuffer);
-    } else {
-      // browser
-      return blobBuffer.size;
-    }
+    return blobBuffer.size;
   }
 };
 /**

@@ -80,8 +80,6 @@ var dumpRxCollection = function dumpRxCollection() {
 };
 
 function importDumpRxCollection(exportedJSON) {
-  var _this3 = this;
-
   // check schemaHash
   if (exportedJSON.schemaHash !== this.schema.hash) {
     throw (0, _rxError.newRxError)('JD2', {
@@ -90,11 +88,16 @@ function importDumpRxCollection(exportedJSON) {
     });
   }
 
-  var docs = exportedJSON.docs // validate schema
-  .map(function (doc) {
-    return _this3.schema.validate(doc);
-  });
-  return this.storageInstance.bulkWrite(docs.map(function (document) {
+  var docs = exportedJSON.docs;
+  return this.storageInstance.bulkWrite(docs.map(function (docData) {
+    var document = Object.assign({}, docData, {
+      _meta: {
+        lwt: (0, _util.now)()
+      },
+      _rev: (0, _util.getDefaultRevision)(),
+      _attachments: {},
+      _deleted: false
+    });
     return {
       document: document
     };

@@ -1,6 +1,4 @@
-/// <reference types="pouchdb-core" />
-/// <reference types="node" />
-import { BackupMetaFileContent, BackupOptions, RxDatabase } from '../../types';
+import { BackupMetaFileContent, BackupOptions, BlobBuffer, RxDatabase } from '../../types';
 /**
  * ensure that the given folder exists
  */
@@ -11,7 +9,7 @@ export declare function ensureFolderExists(folderPath: string): void;
 export declare function clearFolder(folderPath: string): void;
 export declare function deleteFolder(folderPath: string): void;
 export declare function prepareFolders(database: RxDatabase, options: BackupOptions): void;
-export declare function writeToFile(location: string, data: string | Buffer): Promise<void>;
+export declare function writeToFile(location: string, data: string | BlobBuffer): Promise<void>;
 export declare function writeJsonToFile(location: string, data: any): Promise<void>;
 export declare function metaFileLocation(options: BackupOptions): string;
 export declare function getMeta(options: BackupOptions): Promise<BackupMetaFileContent>;

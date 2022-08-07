@@ -1,69 +1,67 @@
 import { fillUpOptionals, SPACING } from './graphql-schema-from-rx-schema';
-import { ucfirst } from '../../util';
-import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-export function pullQueryBuilderFromRxSchema(collectionName, input, batchSize) {
+import { ensureNotFalsy, ucfirst } from '../../util';
+export function pullQueryBuilderFromRxSchema(collectionName, input) {
   input = fillUpOptionals(input);
   var schema = input.schema;
   var prefixes = input.prefixes;
   var ucCollectionName = ucfirst(collectionName);
-  var queryName = prefixes.feed + ucCollectionName;
+  var queryName = prefixes.pull + ucCollectionName;
+  var outputFields = Object.keys(schema.properties).filter(function (k) {
+    return !input.ignoreOutputKeys.includes(k);
+  }); // outputFields.push(input.deletedField);
+
+  var checkpointInputName = ucCollectionName + 'Input' + prefixes.checkpoint;
+
+  var builder = function builder(checkpoint, limit) {
+    var query = 'query ' + ucfirst(queryName) + '($checkpoint: ' + checkpointInputName + ', $limit: Int!) {\n' + SPACING + SPACING + queryName + '(checkpoint: $checkpoint, limit: $limit) {\n' + SPACING + SPACING + SPACING + 'documents {\n' + SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + SPACING + 'checkpoint {\n' + SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + '}\n' + '}';
+    return {
+      query: query,
+      variables: {
+        checkpoint: checkpoint,
+        limit: limit
+      }
+    };
+  };
+
+  return builder;
+}
+export function pullStreamBuilderFromRxSchema(collectionName, input) {
+  input = fillUpOptionals(input);
+  var schema = input.schema;
+  var prefixes = input.prefixes;
+  var ucCollectionName = ucfirst(collectionName);
   var outputFields = Object.keys(schema.properties).filter(function (k) {
     return !input.ignoreOutputKeys.includes(k);
   });
-  outputFields.push(input.deletedFlag);
+  var headersName = ucCollectionName + 'Input' + prefixes.headers;
+  var query = 'subscription on' + ucfirst(ensureNotFalsy(prefixes.stream)) + '($headers: ' + headersName + ') {\n' + SPACING + prefixes.stream + ucCollectionName + '(headers: $headers) {\n' + SPACING + SPACING + SPACING + 'documents {\n' + SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + SPACING + 'checkpoint {\n' + SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + '}' + '}';
 
-  var builder = function builder(doc) {
-    var queryKeys = input.feedKeys.map(function (key) {
-      var subSchema = schema.properties[key];
-
-      if (!subSchema) {
-        throw newRxError('GQL1', {
-          document: doc,
-          schema: schema,
-          key: key,
-          args: {
-            feedKeys: input.feedKeys
-          }
-        });
-      }
-
-      var type = subSchema.type;
-      var value = doc ? doc[key] : null;
-      var keyString = key + ': ';
-
-      if (type === 'number' || type === 'integer' || !value) {
-        keyString += value;
-      } else {
-        keyString += '"' + value + '"';
-      }
-
-      return keyString;
-    });
-    queryKeys.push('limit: ' + batchSize);
-    var query = '' + '{\n' + SPACING + queryName + '(' + queryKeys.join(', ') + ') {\n' + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING) + '\n' + SPACING + '}\n' + '}';
+  var builder = function builder(headers) {
     return {
       query: query,
-      variables: {}
+      variables: {
+        headers: headers
+      }
     };
   };
 
   return builder;
 }
 export function pushQueryBuilderFromRxSchema(collectionName, input) {
-  var primaryKey = getPrimaryFieldOfPrimaryKey(input.schema.primaryKey);
   input = fillUpOptionals(input);
   var prefixes = input.prefixes;
   var ucCollectionName = ucfirst(collectionName);
-  var queryName = prefixes.set + ucCollectionName;
+  var queryName = prefixes.push + ucCollectionName;
+  var variableName = collectionName + prefixes.pushRow;
+  var returnFields = Object.keys(input.schema.properties);
 
-  var builder = function builder(docs) {
+  var builder = function builder(pushRows) {
     var _variables;
 
-    var query = '' + 'mutation Set' + ucCollectionName + '($' + collectionName + ': [' + ucCollectionName + 'Input]) {\n' + SPACING + queryName + '(' + collectionName + ': $' + collectionName + ') {\n' + SPACING + SPACING + primaryKey + '\n' + // GraphQL enforces to return at least one field
-    SPACING + '}\n' + '}';
-    var sendDocs = [];
-    docs.forEach(function (doc) {
+    var query = '' + 'mutation ' + prefixes.push + ucCollectionName + '($' + variableName + ': [' + ucCollectionName + 'Input' + prefixes.pushRow + '!]) {\n' + SPACING + queryName + '(' + variableName + ': $' + variableName + ') {\n' + SPACING + SPACING + returnFields.join(',\n' + SPACING + SPACING) + '\n' + SPACING + '}\n' + '}';
+    var sendRows = [];
+
+    function transformPushDoc(doc) {
       var sendDoc = {};
       Object.entries(doc).forEach(function (_ref) {
         var k = _ref[0],
@@ -75,9 +73,17 @@ export function pushQueryBuilderFromRxSchema(collectionName, input) {
           sendDoc[k] = v;
         }
       });
-      sendDocs.push(sendDoc);
+      return sendDoc;
+    }
+
+    pushRows.forEach(function (pushRow) {
+      var newRow = {
+        newDocumentState: transformPushDoc(pushRow.newDocumentState),
+        assumedMasterState: pushRow.assumedMasterState ? transformPushDoc(pushRow.assumedMasterState) : undefined
+      };
+      sendRows.push(newRow);
     });
-    var variables = (_variables = {}, _variables[collectionName] = sendDocs, _variables);
+    var variables = (_variables = {}, _variables[variableName] = sendRows, _variables);
     return {
       query: query,
       variables: variables

@@ -4,6 +4,7 @@ import { DexieSettings } from '../../types';
 export declare const DEXIE_DOCS_TABLE_NAME = "docs";
 export declare const DEXIE_DELETED_DOCS_TABLE_NAME = "deleted-docs";
 export declare const DEXIE_CHANGES_TABLE_NAME = "changes";
+export declare const RX_STORAGE_NAME_DEXIE = "dexie";
 export declare function getDexieDbWithTables(databaseName: string, collectionName: string, settings: DexieSettings, schema: RxJsonSchema<any>): DexieStorageInternals;
 export declare function closeDexieDb(statePromise: DexieStorageInternals): Promise<void>;
 /**

@@ -1,5 +1,12 @@
 import type { RxDocument, RxPlugin, BlobBuffer, OldRxCollection, RxAttachmentData, RxDocumentData, RxAttachmentCreator } from '../types';
 /**
+ * To be able to support PouchDB with attachments,
+ * we have to use the md5 hashing here, even if the RxDatabase itself
+ * has a different hashing function.
+ */
+export declare function hashAttachmentData(attachmentBase64String: string): Promise<string>;
+export declare function getAttachmentSize(attachmentBase64String: string): number;
+/**
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
  */

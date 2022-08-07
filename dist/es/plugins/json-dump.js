@@ -3,7 +3,7 @@
  */
 import { createRxQuery, queryCollection, _getDefaultQuery } from '../rx-query';
 import { newRxError } from '../rx-error';
-import { flatClone } from '../util';
+import { flatClone, getDefaultRevision, now } from '../util';
 
 function dumpRxDatabase(collections) {
   var _this = this;
@@ -71,8 +71,6 @@ var dumpRxCollection = function dumpRxCollection() {
 };
 
 function importDumpRxCollection(exportedJSON) {
-  var _this3 = this;
-
   // check schemaHash
   if (exportedJSON.schemaHash !== this.schema.hash) {
     throw newRxError('JD2', {
@@ -81,11 +79,16 @@ function importDumpRxCollection(exportedJSON) {
     });
   }
 
-  var docs = exportedJSON.docs // validate schema
-  .map(function (doc) {
-    return _this3.schema.validate(doc);
-  });
-  return this.storageInstance.bulkWrite(docs.map(function (document) {
+  var docs = exportedJSON.docs;
+  return this.storageInstance.bulkWrite(docs.map(function (docData) {
+    var document = Object.assign({}, docData, {
+      _meta: {
+        lwt: now()
+      },
+      _rev: getDefaultRevision(),
+      _attachments: {},
+      _deleted: false
+    });
     return {
       document: document
     };

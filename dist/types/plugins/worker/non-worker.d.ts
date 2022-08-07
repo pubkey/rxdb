@@ -49,5 +49,12 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
     resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
 export declare function getRxStorageWorker(settings: RxStorageWorkerSettings): RxStorageWorker;
+/**
+ * TODO we have a bug.
+ * When the exact same RxStorage opens and closes
+ * many RxStorage instances, then it might happen
+ * that some calls to createStorageInstance() time out,
+ * because the worker thread is in the closing state.
+ */
 export declare function removeWorkerRef(instance: RxStorageInstanceWorker<any>): Promise<void>;
 export {};

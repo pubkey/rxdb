@@ -8,6 +8,8 @@ export declare const ERROR_MESSAGES: {
     UT2: string;
     UT3: string;
     UT4: string;
+    UT5: string;
+    UT6: string;
     PL1: string;
     PL2: string;
     P2: string;
@@ -34,7 +36,6 @@ export declare const ERROR_MESSAGES: {
     DB4: string;
     DB5: string;
     DB6: string;
-    DB7: string;
     DB8: string;
     DB9: string;
     DB10: string;
@@ -82,6 +83,7 @@ export declare const ERROR_MESSAGES: {
     AT1: string;
     EN1: string;
     EN2: string;
+    EN3: string;
     JD1: string;
     JD2: string;
     JD3: string;
@@ -98,6 +100,8 @@ export declare const ERROR_MESSAGES: {
     RC3: string;
     RC4: string;
     RC5: string;
+    RC_PULL: string;
+    RC_PUSH: string;
     SC1: string;
     SC2: string;
     SC3: string;
@@ -140,9 +144,7 @@ export declare const ERROR_MESSAGES: {
     IM2: string;
     S1: string;
     GQL1: string;
-    GQL2: string;
     GQL3: string;
-    GQL4: string;
     REP1: string;
     /**
      * Should never be thrown, use this for

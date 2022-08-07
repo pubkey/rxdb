@@ -36,17 +36,93 @@ function _settle(pact, state, value) {
   }
 }
 
-var lastId = 0;
+/**
+ * Because we internally use the findDocumentsById()
+ * method, it is defined here because RxStorage wrappers
+ * might swap out the function.
+ */
+var pouchFindDocumentsById = function pouchFindDocumentsById(instance, ids, deleted) {
+  try {
+    ensureNotClosed(instance);
+    var ret = {};
+    /**
+     * On deleted documents, PouchDB will only return the tombstone.
+     * So we have to get the properties directly for each document
+     * with the hack of getting the changes and then make one request per document
+     * with the latest revision.
+     * TODO create an issue at pouchdb on how to get the document data of deleted documents,
+     * when one past revision was written via new_edits=false
+     * @link https://stackoverflow.com/a/63516761/3443137
+     */
 
-const _Pact = /*#__PURE__*/function () {
+    if (deleted) {
+      instance.nonParallelQueue = instance.nonParallelQueue.then(function () {
+        try {
+          return Promise.resolve(instance.internals.pouch.changes({
+            live: false,
+            since: 0,
+            doc_ids: ids,
+            style: 'all_docs'
+          })).then(function (viaChanges) {
+            return Promise.resolve(Promise.all(viaChanges.results.map(function (result) {
+              try {
+                return Promise.resolve(instance.internals.pouch.get(result.id, {
+                  rev: result.changes[0].rev,
+                  deleted: 'ok',
+                  style: 'all_docs'
+                })).then(function (firstDoc) {
+                  var useFirstDoc = pouchDocumentDataToRxDocumentData(instance.primaryPath, firstDoc);
+                  ret[result.id] = useFirstDoc;
+                });
+              } catch (e) {
+                return Promise.reject(e);
+              }
+            }))).then(function () {});
+          });
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      });
+      return Promise.resolve(instance.nonParallelQueue).then(function () {
+        return ret;
+      });
+    } else {
+      instance.nonParallelQueue = instance.nonParallelQueue.then(function () {
+        try {
+          return Promise.resolve(instance.internals.pouch.allDocs({
+            include_docs: true,
+            keys: ids
+          })).then(function (pouchResult) {
+            pouchResult.rows.filter(function (row) {
+              return !!row.doc;
+            }).forEach(function (row) {
+              var docData = row.doc;
+              docData = pouchDocumentDataToRxDocumentData(instance.primaryPath, docData);
+              ret[row.id] = docData;
+            });
+          });
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      });
+      return Promise.resolve(instance.nonParallelQueue).then(function () {
+        return ret;
+      });
+    }
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
 
   _Pact.prototype.then = function (onFulfilled, onRejected) {
-    const result = new _Pact();
-    const state = this.s;
+    var result = new _Pact();
+    var state = this.s;
 
     if (state) {
-      const callback = state & 1 ? onFulfilled : onRejected;
+      var callback = state & 1 ? onFulfilled : onRejected;
 
       if (callback) {
         try {
@@ -63,7 +139,7 @@ const _Pact = /*#__PURE__*/function () {
 
     this.o = function (_this) {
       try {
-        const value = _this.v;
+        var value = _this.v;
 
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
@@ -197,6 +273,7 @@ function _for(test, update, body) {
   }
 }
 
+var lastId = 0;
 export var RxStorageInstancePouch = /*#__PURE__*/function () {
   /**
    * Some PouchDB operations give wrong results when they run in parallel.
@@ -314,6 +391,18 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
             args: writeData
           });
         }
+        /**
+         * Ensure that a revision exists,
+         * having an empty revision here would not throw
+         * but just not resolve forever.
+         */
+
+
+        if (!writeData.document._rev) {
+          throw newRxError('SNH', {
+            args: writeData
+          });
+        }
 
         var primary = writeData.document[_this5.primaryPath];
         writeRowById.set(primary, writeData);
@@ -422,6 +511,17 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
 
       ensureNotClosed(_this9);
       return Promise.resolve(_this9.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
+        /**
+         * In Node.js, PouchDB works with Buffers because it is old and Node.js did
+         * not support Blob at the time is was coded.
+         * So here we have to transform the Buffer to a Blob.
+         */
+        var isBuffer = typeof Buffer !== 'undefined' && Buffer.isBuffer(attachmentData);
+
+        if (isBuffer) {
+          attachmentData = new Blob([attachmentData]);
+        }
+
         return Promise.resolve(blobBufferUtil.toBase64String(attachmentData));
       });
     } catch (e) {
@@ -430,79 +530,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
   };
 
   _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
-    try {
-      var _this11 = this;
-
-      ensureNotClosed(_this11);
-      /**
-       * On deleted documents, PouchDB will only return the tombstone.
-       * So we have to get the properties directly for each document
-       * with the hack of getting the changes and then make one request per document
-       * with the latest revision.
-       * TODO create an issue at pouchdb on how to get the document data of deleted documents,
-       * when one past revision was written via new_edits=false
-       * @link https://stackoverflow.com/a/63516761/3443137
-       */
-
-      if (deleted) {
-        var retDocs = {};
-        _this11.nonParallelQueue = _this11.nonParallelQueue.then(function () {
-          try {
-            return Promise.resolve(_this11.internals.pouch.changes({
-              live: false,
-              since: 0,
-              doc_ids: ids,
-              style: 'all_docs'
-            })).then(function (viaChanges) {
-              return Promise.resolve(Promise.all(viaChanges.results.map(function (result) {
-                try {
-                  return Promise.resolve(_this11.internals.pouch.get(result.id, {
-                    rev: result.changes[0].rev,
-                    deleted: 'ok',
-                    style: 'all_docs'
-                  })).then(function (firstDoc) {
-                    var useFirstDoc = pouchDocumentDataToRxDocumentData(_this11.primaryPath, firstDoc);
-                    retDocs[result.id] = useFirstDoc;
-                  });
-                } catch (e) {
-                  return Promise.reject(e);
-                }
-              }))).then(function () {});
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
-        });
-        return Promise.resolve(_this11.nonParallelQueue).then(function () {
-          return retDocs;
-        });
-      } else {
-        var ret = {};
-        _this11.nonParallelQueue = _this11.nonParallelQueue.then(function () {
-          try {
-            return Promise.resolve(_this11.internals.pouch.allDocs({
-              include_docs: true,
-              keys: ids
-            })).then(function (pouchResult) {
-              pouchResult.rows.filter(function (row) {
-                return !!row.doc;
-              }).forEach(function (row) {
-                var docData = row.doc;
-                docData = pouchDocumentDataToRxDocumentData(_this11.primaryPath, docData);
-                ret[row.id] = docData;
-              });
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
-        });
-        return Promise.resolve(_this11.nonParallelQueue).then(function () {
-          return ret;
-        });
-      }
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    return pouchFindDocumentsById(this, ids, deleted);
   };
 
   _proto.changeStream = function changeStream() {
@@ -527,7 +555,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
       var _temp9 = function _temp9() {
-        return Promise.resolve(_this13.findDocumentsById(changedDocuments.map(function (o) {
+        return Promise.resolve(pouchFindDocumentsById(_this11, changedDocuments.map(function (o) {
           return o.id;
         }), true)).then(function (documentsData) {
           if (Object.keys(documentsData).length > 0 && checkpoint && checkpoint.sequence === lastSequence) {
@@ -539,10 +567,11 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
           }
 
           var lastRow = lastOfArray(changedDocuments);
+          var documents = changedDocuments.map(function (changeRow) {
+            return getFromObjectOrThrow(documentsData, changeRow.id);
+          });
           return {
-            documents: changedDocuments.map(function (changeRow) {
-              return getFromObjectOrThrow(documentsData, changeRow.id);
-            }),
+            documents: documents,
             checkpoint: lastRow ? {
               sequence: lastRow.sequence
             } : checkpoint ? checkpoint : {
@@ -552,9 +581,9 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
         });
       };
 
-      var _this13 = this;
+      var _this11 = this;
 
-      ensureNotClosed(_this13);
+      ensureNotClosed(_this11);
 
       if (!limit || typeof limit !== 'number') {
         throw new Error('wrong limit');
@@ -581,7 +610,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
       }, void 0, function () {
         first = false;
         skippedDesignDocuments = 0;
-        return Promise.resolve(_this13.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
+        return Promise.resolve(_this11.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
           var addChangedDocuments = pouchResults.results.filter(function (row) {
             var isDesignDoc = row.id.startsWith(POUCHDB_DESIGN_PREFIX);
 

@@ -10,10 +10,6 @@ export declare class RxSchema<RxDocType = any> {
         [P in keyof RxDocType]: RxDocType[P];
     };
     /**
-        * true if schema contains at least one encrypted path
-        */
-    get crypt(): boolean;
-    /**
      * @overrides itself on the first call
      */
     get hash(): string;
@@ -24,18 +20,6 @@ export declare class RxSchema<RxDocType = any> {
      * @throws {Error} if not valid
      */
     validateChange(dataBefore: any, dataAfter: any): void;
-    /**
-     * validate if the given document data matches the schema
-     * @param schemaPath if given, validates against deep-path of schema
-     * @throws {Error} if not valid
-     * @param obj equal to input-obj
-     *
-     */
-    validate(obj: Partial<RxDocType> | any, schemaPath?: string): void;
-    /**
-     * @overwritten by the given validation plugin
-     */
-    validateFullDocumentData(_docData: RxDocumentData<RxDocType>, _schemaPath?: string): void;
     /**
      * fills all unset fields with default-values if set
      */

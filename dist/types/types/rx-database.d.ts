@@ -12,6 +12,7 @@ import { RxStorage } from './rx-storage.interface';
 import { PouchDBExpressServerOptions } from './plugins/server';
 import { RxLocalDocument } from './plugins/local-documents';
 import { RxCleanupPolicy } from './plugins/cleanup';
+import { HashFunction } from './util';
 
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any> {
     storage: RxStorage<Internals, InstanceCreationOptions>,
@@ -28,6 +29,8 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
      * in the RxDatabase instance.
      */
     localDocuments?: boolean;
+
+    hashFunction?: HashFunction;
 }
 
 // options for the server-plugin
@@ -79,7 +82,6 @@ export interface RxDatabaseGenerated<Collections> extends RxLocalDocumentMutatio
 type ExtractDTcol<P> = P extends RxCollection<infer T> ? T : { [prop: string]: any };
 
 interface RxDumpDatabaseBase {
-    encrypted: boolean;
     instanceToken: string;
     name: string;
     passwordHash: string | null;

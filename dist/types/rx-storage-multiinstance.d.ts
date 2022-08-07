@@ -47,7 +47,7 @@ export declare type RxStorageMultiInstanceBroadcastType = {
 };
 export declare function getBroadcastChannelReference(databaseInstanceToken: string, databaseName: string, refObject: any): BroadcastChannel<RxStorageMultiInstanceBroadcastType>;
 export declare function removeBroadcastChannelReference(databaseInstanceToken: string, refObject: any): Promise<void> | undefined;
-export declare function addRxStorageMultiInstanceSupport<RxDocType>(instanceCreationParams: RxStorageInstanceCreationParams<RxDocType, any>, instance: RxStorageInstance<RxDocType, any, any>, 
+export declare function addRxStorageMultiInstanceSupport<RxDocType>(storageName: string, instanceCreationParams: RxStorageInstanceCreationParams<RxDocType, any>, instance: RxStorageInstance<RxDocType, any, any>, 
 /**
  * If provided, that channel will be used
  * instead of an own one.

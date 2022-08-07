@@ -19,14 +19,6 @@ var _overwritable = require("../../overwritable");
 var _util = require("../../util");
 
 var RxStoragePouchStatics = {
-  /**
-   * create the same diggest as an attachment with that data
-   * would have created by pouchdb internally.
-   */
-  hash: function hash(data) {
-    return (0, _pouchdbHelper.pouchHash)(data);
-  },
-  hashKey: 'md5',
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
 
@@ -122,10 +114,10 @@ var RxStoragePouchStatics = {
   }
 };
 /**
-     * pouchdb has many bugs and strange behaviors
-     * this functions takes a normal mango query
-     * and transforms it to one that fits for pouchdb
-     */
+ * pouchdb has many bugs and strange behaviors
+ * this functions takes a normal mango query
+ * and transforms it to one that fits for pouchdb
+ */
 
 exports.RxStoragePouchStatics = RxStoragePouchStatics;
 

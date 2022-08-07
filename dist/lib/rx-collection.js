@@ -29,13 +29,11 @@ var _changeEventBuffer = require("./change-event-buffer");
 
 var _hooks = require("./hooks");
 
-var _rxDocument = require("./rx-document");
-
 var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
 
 var _rxStorageHelper = require("./rx-storage-helper");
 
-var _replication = require("./replication");
+var _replicationProtocol = require("./replication-protocol");
 
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -53,10 +51,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
     var options = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
     var cacheReplacementPolicy = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : _queryCache.defaultCacheReplacementPolicy;
     var statics = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : {};
-    var conflictHandler = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : _replication.defaultConflictHandler;
+    var conflictHandler = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : _replicationProtocol.defaultConflictHandler;
     this.storageInstance = {};
     this.timeouts = new Set();
-    this.destroyed = false;
     this._atomicUpsertQueues = new Map();
     this.synced = false;
     this.hooks = {};
@@ -65,6 +62,8 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this._queryCache = (0, _queryCache.createQueryCache)();
     this.$ = {};
     this._changeEventBuffer = {};
+    this.onDestroy = [];
+    this.destroyed = false;
     this.database = database;
     this.name = name;
     this.schema = schema;
@@ -181,34 +180,12 @@ var RxCollectionBase = /*#__PURE__*/function () {
     try {
       var _this4 = this;
 
-      // inserting a temporary-document
-      var tempDoc = null;
-
-      if ((0, _rxDocument.isRxDocument)(json)) {
-        tempDoc = json;
-
-        if (!tempDoc._isTemporary) {
-          throw (0, _rxError.newRxError)('COL1', {
-            data: json
-          });
-        }
-
-        json = tempDoc.toJSON();
-      }
-
       var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this4.schema, json);
       return Promise.resolve(_this4.bulkInsert([useJson])).then(function (writeResult) {
         var isError = writeResult.error[0];
         (0, _rxStorageHelper.throwIfIsStorageWriteError)(_this4, useJson[_this4.schema.primaryPath], json, isError);
         var insertResult = (0, _util.ensureNotFalsy)(writeResult.success[0]);
-
-        if (tempDoc) {
-          tempDoc._dataSync$.next(insertResult._data);
-
-          return tempDoc;
-        } else {
-          return insertResult;
-        }
+        return insertResult;
       });
     } catch (e) {
       return Promise.reject(e);
@@ -236,8 +213,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
       });
       return Promise.resolve(Promise.all(useDocs.map(function (doc) {
         return _this6._runHooks('pre', 'insert', doc).then(function () {
-          _this6.schema.validate(doc);
-
           return doc;
         });
       }))).then(function (docs) {
@@ -250,7 +225,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
             _rev: (0, _util.getDefaultRevision)(),
             _deleted: false
           });
-          docData._rev = (0, _util.createRevision)(docData);
           var row = {
             document: docData
           };
@@ -312,7 +286,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
           var removeDocs = docsData.map(function (doc) {
             var writeDoc = (0, _util.flatClone)(doc);
             writeDoc._deleted = true;
-            writeDoc._rev = (0, _util.createRevision)(writeDoc, doc);
             return {
               previous: doc,
               document: writeDoc
@@ -645,10 +618,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
   }
   /**
    * Export collection to a JSON friendly format.
-   * @param _decrypted
-   * When true, all encrypted values will be decrypted.
-   * When false or omitted and an interface or type is loaded in this collection,
-   * all base properties of the type are typed as `any` since data could be encrypted.
    */
   ;
 
@@ -771,21 +740,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
     });
   }
   /**
-   * creates a temporaryDocument which can be saved later
-   */
-  ;
-
-  _proto.newDocument = function newDocument() {
-    var docData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    var filledDocData = this.schema.fillObjectWithDefaults(docData);
-    var doc = (0, _rxDocument.createWithConstructor)((0, _rxDocumentPrototypeMerge.getRxDocumentConstructor)(this), this, filledDocData);
-    doc._isTemporary = true;
-
-    this._runHooksSync('post', 'create', docData, doc);
-
-    return doc;
-  }
-  /**
    * Returns a promise that resolves after the given time.
    * Ensures that is properly cleans up when the collection is destroyed
    * so that no running timeouts prevent the exit of the JavaScript process.
@@ -822,11 +776,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
 
     this.destroyed = true;
-
-    if (this._onDestroyCall) {
-      this._onDestroyCall();
-    }
-
     Array.from(this.timeouts).forEach(function (timeout) {
       return clearTimeout(timeout);
     });
@@ -845,6 +794,10 @@ var RxCollectionBase = /*#__PURE__*/function () {
 
 
     return this.database.requestIdlePromise().then(function () {
+      return Promise.all(_this16.onDestroy.map(function (fn) {
+        return fn();
+      }));
+    }).then(function () {
       return _this16.storageInstance.close();
     }).then(function () {
       /**
@@ -892,19 +845,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return this.$.pipe((0, _operators.filter)(function (cE) {
         return cE.operation === 'DELETE';
       }));
-    }
-  }, {
-    key: "onDestroy",
-    get: function get() {
-      var _this17 = this;
-
-      if (!this._onDestroy) {
-        this._onDestroy = new Promise(function (res) {
-          return _this17._onDestroyCall = res;
-        });
-      }
-
-      return this._onDestroy;
     }
   }, {
     key: "asRxCollection",
@@ -1011,14 +951,15 @@ function createRxCollection(_ref2) {
       _ref2$cacheReplacemen = _ref2.cacheReplacementPolicy,
       cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref2$cacheReplacemen,
       _ref2$conflictHandler = _ref2.conflictHandler,
-      conflictHandler = _ref2$conflictHandler === void 0 ? _replication.defaultConflictHandler : _ref2$conflictHandler;
+      conflictHandler = _ref2$conflictHandler === void 0 ? _replicationProtocol.defaultConflictHandler : _ref2$conflictHandler;
   var storageInstanceCreationParams = {
     databaseInstanceToken: database.token,
     databaseName: database.name,
     collectionName: name,
     schema: schema.jsonSchema,
     options: instanceCreationOptions,
-    multiInstance: database.multiInstance
+    multiInstance: database.multiInstance,
+    password: database.password
   };
   (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
   return (0, _rxCollectionHelper.createRxCollectionStorageInstance)(database, storageInstanceCreationParams).then(function (storageInstance) {

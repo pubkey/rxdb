@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.closeLokiCollections = exports.OPEN_LOKIJS_STORAGE_INSTANCES = exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = exports.CHANGES_COLLECTION_SUFFIX = void 0;
+exports.closeLokiCollections = exports.RX_STORAGE_NAME_LOKIJS = exports.OPEN_LOKIJS_STORAGE_INSTANCES = exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = exports.CHANGES_COLLECTION_SUFFIX = void 0;
 exports.getLokiDatabase = getLokiDatabase;
 exports.getLokiLeaderElector = getLokiLeaderElector;
 exports.getLokiSortComparator = getLokiSortComparator;
@@ -343,6 +343,7 @@ var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
             _result = _operation;
           });
         }, function (err) {
+          console.dir(err);
           _isError = true;
           _result = err;
         });
@@ -493,12 +494,14 @@ exports.CHANGES_COLLECTION_SUFFIX = CHANGES_COLLECTION_SUFFIX;
 var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
 exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE;
 var LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
+exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
+var RX_STORAGE_NAME_LOKIJS = 'lokijs';
 /**
  * Loki attaches a $loki property to all data
  * which must be removed before returning the data back to RxDB.
  */
 
-exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
+exports.RX_STORAGE_NAME_LOKIJS = RX_STORAGE_NAME_LOKIJS;
 
 function stripLokiKey(docData) {
   if (!docData.$loki) {
@@ -510,6 +513,7 @@ function stripLokiKey(docData) {
    * In RxDB version 12.0.0,
    * we introduced the _meta field that already contains the last write time.
    * To be backwards compatible, we have to move the $lastWriteAt to the _meta field.
+   * TODO remove this in the next major version.
    */
 
   if (cloned.$lastWriteAt) {

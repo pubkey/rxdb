@@ -1,4 +1,4 @@
-import type { BlobBuffer, DeepReadonlyObject, MaybeReadonly, RxDocumentData, RxDocumentMeta } from './types';
+import type { BlobBuffer, DeepReadonlyObject, HashFunction, MaybeReadonly, RxDocumentData, RxDocumentMeta } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -6,13 +6,20 @@ import type { BlobBuffer, DeepReadonlyObject, MaybeReadonly, RxDocumentData, RxD
  */
 export declare function pluginMissing(pluginKey: string): Error;
 /**
- * this is a very fast hashing but its unsecure
+ * This is a very fast hash method
+ * but it is not cryptographically secure.
+ * For each run it will append a number between 0 and 2147483647 (=biggest 32 bit int).
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
- * @return a number as hash-result
+ * @return a string as hash-result
  */
-export declare function fastUnsecureHash(obj: any): number;
-export declare const RXDB_HASH_SALT = "rxdb-specific-hash-salt";
-export declare function hash(msg: string | any): string;
+export declare function fastUnsecureHash(inputString: string): string;
+/**
+ * Default hash method used to create revision hashes
+ * that do not have to be cryptographically secure.
+ * IMPORTANT: Changing the default hashing method
+ * requires a BREAKING change!
+ */
+export declare function defaultHashFunction(input: string): string;
 /**
  * Returns the current time in milliseconds,
  * also ensures to not return the same value twice.
@@ -118,7 +125,7 @@ export declare function getHeightOfRevision(revision: string): number;
 /**
  * Creates the next write revision for a given document.
  */
-export declare function createRevision<RxDocType>(docData: RxDocumentData<RxDocType> & {
+export declare function createRevision<RxDocType>(hashFunction: HashFunction, docData: RxDocumentData<RxDocType> & {
     /**
      * Passing a revision is optional here,
      * because it is anyway not needed to calculate
@@ -143,6 +150,19 @@ export declare function getFromObjectOrThrow<V>(obj: {
  * returns true if the supplied argument is either an Array<T> or a Readonly<Array<T>>
  */
 export declare function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]>;
+/**
+ * atob() and btoa() do not work well with non ascii chars,
+ * so we have to use these helper methods instead.
+ * @link https://stackoverflow.com/a/30106551/3443137
+ */
+export declare function b64EncodeUnicode(str: string): string;
+export declare function b64DecodeUnicode(str: string): string;
+/**
+ * This is an abstraction over the Blob/Buffer data structure.
+ * We need this because it behaves different in different JavaScript runtimes.
+ * Since RxDB 13.0.0 we switch to Blob-only because Node.js does not support
+ * the Blob data structure which is also supported by the browsers.
+ */
 export declare const blobBufferUtil: {
     /**
      * depending if we are on node or browser,

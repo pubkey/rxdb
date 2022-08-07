@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import { now, randomCouchString, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWriteTime, lastOfArray } from '../../util';
 import { newRxError } from '../../rx-error';
-import { closeDexieDb, fromDexieToStorage, fromStorageToDexie, getDexieDbWithTables, getDocsInDb } from './dexie-helper';
+import { closeDexieDb, fromDexieToStorage, fromStorageToDexie, getDexieDbWithTables, getDocsInDb, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
 import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { getNewestOfDocumentStates, getUniqueDeterministicEventKey } from '../../rx-storage-helper';
@@ -392,7 +392,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
 export function createDexieStorageInstance(storage, params, settings) {
   var internals = getDexieDbWithTables(params.databaseName, params.collectionName, settings, params.schema);
   var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
-  addRxStorageMultiInstanceSupport(params, instance);
+  addRxStorageMultiInstanceSupport(RX_STORAGE_NAME_DEXIE, params, instance);
   return Promise.resolve(instance);
 }
 

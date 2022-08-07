@@ -1,5 +1,3 @@
-/// <reference types="pouchdb-core" />
-/// <reference types="node" />
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
 import type { RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics, FilledMangoQuery } from '../../types';
 import type { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
@@ -9,8 +7,6 @@ export declare class RxStorageDexie implements RxStorage<DexieStorageInternals, 
     settings: DexieSettings;
     name: string;
     statics: Readonly<{
-        hash(data: string | Blob | Buffer): Promise<string>;
-        hashKey: string;
         prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: FilledMangoQuery<RxDocType>): any;
         getSortComparator<RxDocType_1>(schema: RxJsonSchema<RxDocumentData<RxDocType_1>>, preparedQuery: any): DeterministicSortComparator<RxDocType_1>;
         getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<RxDocumentData<RxDocType_2>>, preparedQuery: any): QueryMatcher<RxDocumentData<RxDocType_2>>;

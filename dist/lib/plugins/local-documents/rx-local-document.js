@@ -373,10 +373,7 @@ var RxLocalDocumentPrototype = {
                  */
                 var isConflict = (0, _rxError.isBulkWriteConflictError)(err);
 
-                if (isConflict) {
-                  // conflict error -> retrying
-                  newData._rev = (0, _util.createRevision)(newData, isConflict.documentInDb);
-                } else {
+                if (isConflict) {} else {
                   rej(err);
                   _exit2 = true;
                 }
@@ -411,7 +408,6 @@ var RxLocalDocumentPrototype = {
         var oldData = _this4._dataSync$.getValue();
 
         newData.id = _this4.id;
-        newData._rev = (0, _util.createRevision)(newData, oldData);
         return state.storageInstance.bulkWrite([{
           previous: oldData,
           document: newData
@@ -443,7 +439,6 @@ var RxLocalDocumentPrototype = {
           _rev: (0, _util.getDefaultRevision)(),
           _attachments: {}
         };
-        writeData._rev = (0, _util.createRevision)(writeData, _this6._data);
         return (0, _rxStorageHelper.writeSingle)(state.storageInstance, {
           previous: _this6._data,
           document: writeData

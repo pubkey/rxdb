@@ -237,7 +237,7 @@ var RX_META_SCHEMA = {
        */
       minimum: _util.RX_META_LWT_MINIMUM,
       maximum: 1000000000000000,
-      multipleOf: 1
+      multipleOf: 0.01
     }
   },
 

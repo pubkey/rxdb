@@ -2,12 +2,13 @@ import { adapterObject, getFromMapOrThrow, isMaybeReadonlyArray } from '../../ut
 import { addPouchPlugin, isLevelDown, PouchDB } from './pouch-db';
 import { newRxError } from '../../rx-error';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
-import { getPouchIndexDesignDocNameByIndex, openPouchId, OPEN_POUCH_INSTANCES } from './pouchdb-helper';
+import { getPouchIndexDesignDocNameByIndex, openPouchId, OPEN_POUCH_INSTANCES, RX_STORAGE_NAME_POUCHDB } from './pouchdb-helper';
 import PouchDBFind from 'pouchdb-find';
 import { RxStoragePouchStatics } from './pouch-statics';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { addCustomEventsPluginToPouch } from './custom-events-plugin';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
@@ -70,7 +71,7 @@ export var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
 export var RxStoragePouch = /*#__PURE__*/function () {
   function RxStoragePouch(adapter) {
     var pouchSettings = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    this.name = 'pouchdb';
+    this.name = RX_STORAGE_NAME_POUCHDB;
     this.statics = RxStoragePouchStatics;
     this.adapter = adapter;
     this.pouchSettings = pouchSettings;
@@ -102,6 +103,7 @@ export var RxStoragePouch = /*#__PURE__*/function () {
     try {
       var _this2 = this;
 
+      ensureRxStorageInstanceParamsAreCorrect(params);
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this2.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
@@ -111,7 +113,7 @@ export var RxStoragePouch = /*#__PURE__*/function () {
             pouchInstanceId: pouchInstanceId
           }, params.options);
           OPEN_POUCH_INSTANCES.set(pouchInstanceId, pouch);
-          addRxStorageMultiInstanceSupport(params, instance);
+          addRxStorageMultiInstanceSupport(RX_STORAGE_NAME_POUCHDB, params, instance);
           return instance;
         });
       });

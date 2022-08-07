@@ -62,7 +62,6 @@ var insertLocal = function insertLocal(id, data) {
         _rev: (0, _util.getDefaultRevision)(),
         _attachments: {}
       };
-      docData._rev = (0, _util.createRevision)(docData);
       return (0, _rxStorageHelper.writeSingle)(state.storageInstance, {
         document: docData
       }, 'local-document-insert').then(function (res) {

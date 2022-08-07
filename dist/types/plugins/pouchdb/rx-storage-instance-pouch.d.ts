@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, PouchCheckpoint, PouchSettings, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult } from '../../types';
+import type { BulkWriteRow, EventBulk, PouchCheckpoint, PouchSettings, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageInstance, RxStorageQueryResult, StringKeys } from '../../types';
 import { PouchStorageInternals } from './pouchdb-helper';
 export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<RxDocType, PouchStorageInternals, PouchSettings, PouchCheckpoint> {
     readonly storage: RxStorage<PouchStorageInternals, PouchSettings>;
@@ -11,13 +11,13 @@ export declare class RxStorageInstancePouch<RxDocType> implements RxStorageInsta
     readonly id: number;
     private changes$;
     private subs;
-    private primaryPath;
+    primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     closed: boolean;
     /**
      * Some PouchDB operations give wrong results when they run in parallel.
      * So we have to ensure they are queued up.
      */
-    private nonParallelQueue;
+    nonParallelQueue: Promise<any>;
     constructor(storage: RxStorage<PouchStorageInternals, PouchSettings>, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: Readonly<PouchStorageInternals>, options: Readonly<PouchSettings>);
     close(): Promise<void>;
     remove(): Promise<void>;

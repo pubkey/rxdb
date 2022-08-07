@@ -1,4 +1,4 @@
-import { createRevision, flatClone, getDefaultRevision, getDefaultRxDocumentMeta } from '../../util';
+import { flatClone, getDefaultRevision, getDefaultRxDocumentMeta } from '../../util';
 import { filter, map, startWith, mergeMap } from 'rxjs/operators';
 import { createRxLocalDocument } from './rx-local-document';
 import { getLocalDocStateByParent } from './local-documents-helper';
@@ -45,7 +45,6 @@ export var insertLocal = function insertLocal(id, data) {
         _rev: getDefaultRevision(),
         _attachments: {}
       };
-      docData._rev = createRevision(docData);
       return writeSingle(state.storageInstance, {
         document: docData
       }, 'local-document-insert').then(function (res) {
