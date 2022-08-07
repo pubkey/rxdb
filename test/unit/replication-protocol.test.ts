@@ -252,9 +252,10 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 const forkInstance = await createRxStorageInstance(0);
                 const metaInstance = await createMetaInstance();
 
-                await masterInstance.bulkWrite([{
+                const writeResult = await masterInstance.bulkWrite([{
                     document: getDocData()
                 }], testContext);
+                assert.deepStrictEqual(writeResult.error, {});
 
                 const replicationState = replicateRxStorageInstance({
                     identifier: randomCouchString(10),
@@ -281,13 +282,18 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         replicationIdentifier: replicationState.checkpointKey
                     }
                 );
-                const checkpointDocBeforeResult = await replicationState.input.metaInstance.findDocumentsById(
-                    [checkpointDocId],
-                    false
-                );
-                console.dir(checkpointDocBeforeResult);
-                const checkpointDocBefore = getFromObjectOrThrow(checkpointDocBeforeResult, checkpointDocId);
 
+                let checkpointDocBefore: any;
+                while (!checkpointDocBefore) {
+                    const response = await replicationState.input.metaInstance.findDocumentsById(
+                        [checkpointDocId],
+                        false
+                    );
+                    if (response[checkpointDocId]) {
+                        checkpointDocBefore = response[checkpointDocId];
+                    }
+                    await wait(20);
+                }
 
                 await setCheckpoint(
                     replicationState,
