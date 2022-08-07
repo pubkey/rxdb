@@ -15,8 +15,7 @@ import type {
 import {
     ensureNotFalsy,
     flatClone,
-    PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_FALSE
 } from '../util';
 import {
     getLastCheckpointDoc,
@@ -88,8 +87,8 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
             return;
         }
 
-        checkpointQueue = checkpointQueue.then(() => getLastCheckpointDoc(state, 'up'));
-        let lastCheckpoint: CheckpointType = await checkpointQueue;
+        state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'up'));
+        let lastCheckpoint: CheckpointType = await state.checkpointQueue;
 
         const promises: Promise<any>[] = [];
         while (!state.events.canceled.getValue()) {
@@ -186,7 +185,6 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
     }
 
     let persistenceQueue: Promise<boolean> = PROMISE_RESOLVE_FALSE;
-    let checkpointQueue: Promise<any> = PROMISE_RESOLVE_VOID;
     const nonPersistedFromMaster: {
         checkpoint?: CheckpointType;
         docs: ById<RxDocumentData<RxDocType>>;
@@ -390,7 +388,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
              * but to ensure order on parrallel checkpoint writes,
              * we have to use a queue.
              */
-            checkpointQueue = checkpointQueue.then(() => setCheckpoint(
+            state.checkpointQueue = state.checkpointQueue.then(() => setCheckpoint(
                 state,
                 'up',
                 useCheckpoint

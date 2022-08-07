@@ -133,8 +133,8 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             return;
         }
 
-        checkpointQueue = checkpointQueue.then(() => getLastCheckpointDoc(state, 'down'));
-        let lastCheckpoint: CheckpointType = await checkpointQueue;
+        state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'down'));
+        let lastCheckpoint: CheckpointType = await state.checkpointQueue;
 
         const promises: Promise<any>[] = [];
         while (!state.events.canceled.getValue()) {
@@ -194,7 +194,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
      * by processing the documents in bulks.
      */
     let persistenceQueue = PROMISE_RESOLVE_VOID;
-    let checkpointQueue: Promise<any> = PROMISE_RESOLVE_VOID;
     const nonPersistedFromMaster: {
         checkpoint?: CheckpointType;
         docs: ById<WithDeleted<RxDocType>>;
@@ -392,7 +391,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                  * but to ensure order on parrallel checkpoint writes,
                  * we have to use a queue.
                  */
-                checkpointQueue = checkpointQueue.then(() => setCheckpoint(
+                state.checkpointQueue = state.checkpointQueue.then(() => setCheckpoint(
                     state,
                     'down',
                     useCheckpoint
