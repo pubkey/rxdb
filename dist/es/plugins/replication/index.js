@@ -441,7 +441,10 @@ export var RxReplicationState = /*#__PURE__*/function () {
                   }
                 }))).then(function (useRows) {
                   function _temp10() {
-                    return ensureNotFalsy(result);
+                    var conflicts = ensureNotFalsy(result).map(function (doc) {
+                      return swapdeletedFieldToDefaultDeleted(_this3.deletedField, doc);
+                    });
+                    return conflicts;
                   }
 
                   var result = {};
@@ -572,47 +575,34 @@ export var RxReplicationState = /*#__PURE__*/function () {
   };
 
   _proto.cancel = function cancel() {
-    try {
-      var _temp15 = function _temp15() {
-        _this9.subs.forEach(function (sub) {
-          return sub.unsubscribe();
-        });
+    var _this8 = this;
 
-        _this9.subjects.canceled.next(true);
-
-        _this9.subjects.active.complete();
-
-        _this9.subjects.canceled.complete();
-
-        _this9.subjects.error.complete();
-
-        _this9.subjects.received.complete();
-
-        _this9.subjects.send.complete();
-
-        return PROMISE_RESOLVE_TRUE;
-      };
-
-      var _this9 = this;
-
-      if (_this9.isStopped()) {
-        return Promise.resolve(PROMISE_RESOLVE_FALSE);
-      }
-
-      if (_this9.internalReplicationState) {
-        _this9.internalReplicationState.events.canceled.next(true);
-      }
-
-      var _temp16 = function () {
-        if (_this9.metaInstance) {
-          return Promise.resolve(ensureNotFalsy(_this9.metaInstance).close()).then(function () {});
-        }
-      }();
-
-      return Promise.resolve(_temp16 && _temp16.then ? _temp16.then(_temp15) : _temp15(_temp16));
-    } catch (e) {
-      return Promise.reject(e);
+    if (this.isStopped()) {
+      return PROMISE_RESOLVE_FALSE;
     }
+
+    var promises = [];
+
+    if (this.internalReplicationState) {
+      this.internalReplicationState.events.canceled.next(true);
+    }
+
+    if (this.metaInstance) {
+      promises.push(ensureNotFalsy(this.internalReplicationState).checkpointQueue.then(function () {
+        return ensureNotFalsy(_this8.metaInstance).close();
+      }));
+    }
+
+    this.subs.forEach(function (sub) {
+      return sub.unsubscribe();
+    });
+    this.subjects.canceled.next(true);
+    this.subjects.active.complete();
+    this.subjects.canceled.complete();
+    this.subjects.error.complete();
+    this.subjects.received.complete();
+    this.subjects.send.complete();
+    return Promise.all(promises);
   };
 
   return RxReplicationState;
