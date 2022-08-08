@@ -448,7 +448,7 @@ describe('replication-graphql.test.ts', () => {
              */
             it('should handle truthy deleted flag values', async () => {
                 const doc: any = schemaObjects.humanWithTimestamp();
-                doc['deletedAt'] = Math.floor(new Date().getTime() / 1000);
+                doc['deletedAt'] = Math.floor(new Date().getTime());
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn([doc])
@@ -2038,12 +2038,12 @@ describe('replication-graphql.test.ts', () => {
                 });
                 ensureReplicationHasNoErrors(replicationState);
 
-
                 // ensure we are in sync even when there are no doc in the db at this moment
                 await replicationState.awaitInitialReplication();
 
                 // add one doc to the client database
-                const testData = getTestData(1).pop();
+                const testData = ensureNotFalsy(getTestData(1).pop());
+                testData.id = 'first';
                 delete (testData as any).deleted;
                 await collection.insert(testData);
 

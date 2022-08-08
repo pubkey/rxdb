@@ -242,7 +242,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
                         }
                     }
-                    return ensureNotFalsy(result);
+
+
+                    const conflicts = ensureNotFalsy(result).map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
+                    return conflicts;
                 }
             }
         });
@@ -323,18 +326,22 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.remoteEvents$.next(ev);
     }
 
-    async cancel(): Promise<any> {
+    cancel(): Promise<any> {
         if (this.isStopped()) {
             return PROMISE_RESOLVE_FALSE;
         }
+
+        const promises: Promise<any>[] = [];
 
         if (this.internalReplicationState) {
             this.internalReplicationState.events.canceled.next(true);
         }
         if (this.metaInstance) {
-            await ensureNotFalsy(this.metaInstance).close();
+            promises.push(
+                ensureNotFalsy(this.internalReplicationState).checkpointQueue
+                    .then(() => ensureNotFalsy(this.metaInstance).close())
+            );
         }
-
 
         this.subs.forEach(sub => sub.unsubscribe());
         this.subjects.canceled.next(true);
@@ -345,7 +352,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.subjects.received.complete();
         this.subjects.send.complete();
 
-        return PROMISE_RESOLVE_TRUE;
+        return Promise.all(promises);
     }
 }
 
