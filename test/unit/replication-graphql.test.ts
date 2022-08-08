@@ -1317,7 +1317,25 @@ describe('replication-graphql.test.ts', () => {
 
         config.parallel('observables', () => {
             it('should emit the received documents when pulling', async () => {
-                const testData = getTestData(batchSize);
+                /**
+                 * Some RxStorage implementations, like the 'sharding' plugin,
+                 * will not emit in the same order, so we have to sort the data
+                 * before we compare it.
+                 */
+                function sortById(
+                    a: RxDocumentData<HumanWithTimestampDocumentType>,
+                    b: RxDocumentData<HumanWithTimestampDocumentType>
+                ) {
+                    if (a.id < b.id) {
+                        return -1;
+                    }
+                    if (a.id > b.id) {
+                        return 1;
+                    }
+                    return 0;
+                }
+
+                const testData = getTestData(batchSize).sort(sortById as any);
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn(testData)
@@ -1332,8 +1350,10 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
 
-                const emitted: RxDocumentData<HumanWithTimestampDocumentType>[] = [];
+                let emitted: RxDocumentData<HumanWithTimestampDocumentType>[] = [];
                 const sub = replicationState.received$.subscribe((doc: any) => emitted.push(doc));
+
+                emitted = emitted.sort(sortById);
 
                 await replicationState.awaitInitialReplication();
                 assert.strictEqual(emitted.length, batchSize);
