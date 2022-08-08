@@ -279,7 +279,7 @@ export function wrapRxStorageInstance<RxDocType>(
     }
 
     const oldResolveConflictResultionTask = instance.resolveConflictResultionTask.bind(instance);
-    instance.resolveConflictResultionTask = async (taskSolution) => {
+    instance.resolveConflictResultionTask = (taskSolution) => {
         if (taskSolution.output.isEqual) {
             return oldResolveConflictResultionTask(taskSolution);
         }
@@ -287,7 +287,7 @@ export function wrapRxStorageInstance<RxDocType>(
             id: taskSolution.id,
             output: {
                 isEqual: false,
-                documentData: await fromStorage(taskSolution.output.documentData)
+                documentData: taskSolution.output.documentData
             }
         };
         return oldResolveConflictResultionTask(useSolution);
