@@ -86,16 +86,16 @@ export function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStora
     try {
       var _temp6 = function _temp6() {
         function _temp3() {
-          return Promise.resolve(fromStorage(ret.writeRow.document)).then(function (_fromStorage7) {
-            ret.writeRow.document = _fromStorage7;
+          return Promise.resolve(fromStorage(ret.writeRow.document)).then(function (_fromStorage6) {
+            ret.writeRow.document = _fromStorage6;
             return ret;
           });
         }
 
         var _temp2 = function () {
           if (ret.writeRow.previous) {
-            return Promise.resolve(fromStorage(ret.writeRow.previous)).then(function (_fromStorage6) {
-              ret.writeRow.previous = _fromStorage6;
+            return Promise.resolve(fromStorage(ret.writeRow.previous)).then(function (_fromStorage5) {
+              ret.writeRow.previous = _fromStorage5;
             });
           }
         }();
@@ -108,8 +108,8 @@ export function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStora
 
       var _temp7 = function () {
         if (ret.documentInDb) {
-          return Promise.resolve(fromStorage(ret.documentInDb)).then(function (_fromStorage5) {
-            ret.documentInDb = _fromStorage5;
+          return Promise.resolve(fromStorage(ret.documentInDb)).then(function (_fromStorage4) {
+            ret.documentInDb = _fromStorage4;
           });
         }
       }();
@@ -343,25 +343,18 @@ export function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStora
   var oldResolveConflictResultionTask = instance.resolveConflictResultionTask.bind(instance);
 
   instance.resolveConflictResultionTask = function (taskSolution) {
-    try {
-      if (taskSolution.output.isEqual) {
-        return Promise.resolve(oldResolveConflictResultionTask(taskSolution));
-      }
-
-      var _taskSolution$id2 = taskSolution.id;
-      return Promise.resolve(fromStorage(taskSolution.output.documentData)).then(function (_fromStorage4) {
-        var useSolution = {
-          id: _taskSolution$id2,
-          output: {
-            isEqual: false,
-            documentData: _fromStorage4
-          }
-        };
-        return oldResolveConflictResultionTask(useSolution);
-      });
-    } catch (e) {
-      return Promise.reject(e);
+    if (taskSolution.output.isEqual) {
+      return oldResolveConflictResultionTask(taskSolution);
     }
+
+    var useSolution = {
+      id: taskSolution.id,
+      output: {
+        isEqual: false,
+        documentData: taskSolution.output.documentData
+      }
+    };
+    return oldResolveConflictResultionTask(useSolution);
   };
 
   return instance;
