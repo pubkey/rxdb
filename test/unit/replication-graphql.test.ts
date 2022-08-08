@@ -613,7 +613,8 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs.length, amount);
                 await wait(250);
 
-                const firstDoc = AsyncTestUtil.clone(testData[0]);
+                const firstDoc: typeof testData[0] = AsyncTestUtil.clone(testData[0]);
+                firstDoc.updatedAt = new Date().getTime();
                 firstDoc.deleted = true;
 
                 await server.setDocument(firstDoc);

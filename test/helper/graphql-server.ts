@@ -232,7 +232,6 @@ export function spawn(
                 }
 
                 documents = documents.filter((d: Human) => d.id !== doc.id);
-                doc.updatedAt = new Date().getTime();
 
                 documents.push(doc);
 
