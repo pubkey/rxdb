@@ -211,10 +211,10 @@ export function startReplicationDownstream(state) {
         return Promise.resolve();
       }
 
-      checkpointQueue = checkpointQueue.then(function () {
+      state.checkpointQueue = state.checkpointQueue.then(function () {
         return getLastCheckpointDoc(state, 'down');
       });
-      return Promise.resolve(checkpointQueue).then(function (lastCheckpoint) {
+      return Promise.resolve(state.checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
 
         function _temp2() {
@@ -349,7 +349,6 @@ export function startReplicationDownstream(state) {
 
 
   var persistenceQueue = PROMISE_RESOLVE_VOID;
-  var checkpointQueue = PROMISE_RESOLVE_VOID;
   var nonPersistedFromMaster = {
     docs: {}
   };
@@ -491,7 +490,7 @@ export function startReplicationDownstream(state) {
          * but to ensure order on parrallel checkpoint writes,
          * we have to use a queue.
          */
-        checkpointQueue = checkpointQueue.then(function () {
+        state.checkpointQueue = state.checkpointQueue.then(function () {
           return setCheckpoint(state, 'down', useCheckpoint);
         });
       });

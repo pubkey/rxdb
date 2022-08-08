@@ -225,10 +225,10 @@ function startReplicationUpstream(state) {
         return Promise.resolve();
       }
 
-      checkpointQueue = checkpointQueue.then(function () {
+      state.checkpointQueue = state.checkpointQueue.then(function () {
         return (0, _checkpoint.getLastCheckpointDoc)(state, 'up');
       });
-      return Promise.resolve(checkpointQueue).then(function (lastCheckpoint) {
+      return Promise.resolve(state.checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
 
         function _temp13() {
@@ -366,7 +366,6 @@ function startReplicationUpstream(state) {
   }
 
   var persistenceQueue = _util.PROMISE_RESOLVE_FALSE;
-  var checkpointQueue = _util.PROMISE_RESOLVE_VOID;
   var nonPersistedFromMaster = {
     docs: {}
   };
@@ -452,7 +451,7 @@ function startReplicationUpstream(state) {
                    * but to ensure order on parrallel checkpoint writes,
                    * we have to use a queue.
                    */
-                  checkpointQueue = checkpointQueue.then(function () {
+                  state.checkpointQueue = state.checkpointQueue.then(function () {
                     return (0, _checkpoint.setCheckpoint)(state, 'up', useCheckpoint);
                   });
                   return hadConflictWrites;

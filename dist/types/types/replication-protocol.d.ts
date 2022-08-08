@@ -247,7 +247,8 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     streamQueue: {
         [direction in RxStorageReplicationDirection]: Promise<any>;
     }
-
+    
+    checkpointQueue: Promise<any>;
 
     /**
      * For better performance we store the last known checkpoint

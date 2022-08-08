@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 13.0.0-beta.1 (6 August 2022)
+### 13.0.0-beta.2 (7 August 2022)
 
 - RENAME the `ajv-validate` plugin to `validate-ajv` to be in equal with the other validation plugins.
 - The `is-my-json-valid` validation is no longer supported until [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) is fixed.
