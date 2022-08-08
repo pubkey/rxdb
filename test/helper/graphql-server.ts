@@ -232,16 +232,7 @@ export function spawn(
                 }
 
                 documents = documents.filter((d: Human) => d.id !== doc.id);
-
                 doc.updatedAt = new Date().getTime();
-
-                // because javascript timer precission is not high enought,
-                // and we store seconds, not microseconds (because graphql does not allow big numbers)
-                // we have to ensure that the new updatedAt is always higher then the previous one
-                // otherwise the feed would not return updated documents some times
-                if (previousDoc && previousDoc.updatedAt >= doc.updatedAt) {
-                    doc.updatedAt = doc.updatedAt + 1;
-                }
 
                 documents.push(doc);
 

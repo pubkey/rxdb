@@ -108,11 +108,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
     private callOnStart: () => void = undefined as any;
 
-
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
     public metaInstance?: RxStorageInstance<RxStorageReplicationMeta, any, {}, any>;
     public remoteEvents$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>> = new Subject();
-
 
     public async start(): Promise<void> {
         if (this.isStopped()) {

@@ -2056,7 +2056,10 @@ describe('replication-graphql.test.ts', () => {
                 // update document
                 const newAge = 1111;
                 const doc = await collection.findOne().exec(true);
-                await doc.atomicPatch({ age: newAge });
+                await doc.atomicPatch({
+                    age: newAge,
+                    updatedAt: new Date().getTime()
+                });
 
                 const docAfter = await collection.findOne().exec(true);
                 assert.strictEqual(docAfter.age, newAge);
@@ -2075,12 +2078,6 @@ describe('replication-graphql.test.ts', () => {
                 await server.close();
             });
             it('#3856 atomicUpsert not working', async () => {
-
-                console.log('############################');
-                console.log('############################');
-                console.log('############################');
-                console.log('############################');
-
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: config.storage.getStorage(),
