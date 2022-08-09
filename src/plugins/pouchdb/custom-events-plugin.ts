@@ -363,10 +363,20 @@ export function addCustomEventsPluginToPouch() {
                 }) as any;
             });
 
+
+            /**
+             * We cannot send the custom here,
+             * because when a migration between different major RxDB versions is done,
+             * multiple versions of the RxDB PouchDB RxStorage might have added their
+             * custom method via PouchDBCore.plugin()
+             */
+            const useOptsForOldBulkDocs = flatClone(deeperOptions);
+            delete useOptsForOldBulkDocs.custom;
+
             callReturn = oldBulkDocs.call(
                 this,
                 docs,
-                deeperOptions,
+                useOptsForOldBulkDocs,
                 (err: any, result: (PouchBulkDocResultRow | PouchWriteError)[]) => {
                     if (err) {
                         callback ? callback(err) : rej(err);
