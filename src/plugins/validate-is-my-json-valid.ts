@@ -12,19 +12,24 @@ import type {
 } from '../types';
 import { wrappedValidateStorageFactory } from '../plugin-helpers';
 
+
+export function getValidator(
+    schema: RxJsonSchema<any>
+) {
+    const validator = isMyJsonValid(schema as any);
+    return (docData: any) => {
+        const isValid = validator(docData);
+        if (!isValid) {
+            throw newRxError('VD2', {
+                errors: validator.errors,
+                document: docData,
+                schema
+            });
+        }
+    };
+}
+
 export const wrappedValidateIsMyJsonValidStorage = wrappedValidateStorageFactory(
-    (schema: RxJsonSchema<any>) => {
-        const validator = isMyJsonValid(schema as any);
-        return (docData) => {
-            const isValid = validator(docData);
-            if (!isValid) {
-                throw newRxError('VD2', {
-                    errors: validator.errors,
-                    document: docData,
-                    schema
-                });
-            }
-        };
-    },
+    getValidator,
     'is-my-json-valid'
 );

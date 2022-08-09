@@ -86,7 +86,8 @@ import type {
     RxChangeEventBulk,
     RxLocalDocumentData,
     RxDocumentBase,
-    RxConflictHandler
+    RxConflictHandler,
+    MaybePromise
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -179,7 +180,7 @@ export class RxCollectionBase<
      * Used to automatically clean up stuff that
      * belongs to this collection.
      */
-    public onDestroy: (() => Promise<any>)[] = [];
+    public onDestroy: (() => MaybePromise<any>)[] = [];
     public destroyed = false;
 
     public async prepare(): Promise<void> {

@@ -18,19 +18,24 @@ const ajv = new Ajv({
     strict: false
 });
 
+
+export function getValidator(
+    schema: RxJsonSchema<any>
+) {
+    const validator = ajv.compile(schema);
+    return (docData: RxDocumentData<any>) => {
+        const isValid = validator(docData);
+        if (!isValid) {
+            throw newRxError('VD2', {
+                errors: validator.errors as any,
+                document: docData,
+                schema
+            });
+        }
+    };
+}
+
 export const wrappedValidateAjvStorage = wrappedValidateStorageFactory(
-    (schema: RxJsonSchema<any>) => {
-        const validator = ajv.compile(schema);
-        return (docData: RxDocumentData<any>) => {
-            const isValid = validator(docData);
-            if (!isValid) {
-                throw newRxError('VD2', {
-                    errors: validator.errors as any,
-                    document: docData,
-                    schema
-                });
-            }
-        };
-    },
+    getValidator,
     'ajv'
 );
