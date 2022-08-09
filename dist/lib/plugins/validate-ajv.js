@@ -5,6 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getValidator = getValidator;
 exports.wrappedValidateAjvStorage = void 0;
 
 var _ajv = _interopRequireDefault(require("ajv"));
@@ -21,7 +22,8 @@ var _pluginHelpers = require("../plugin-helpers");
 var ajv = new _ajv["default"]({
   strict: false
 });
-var wrappedValidateAjvStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(function (schema) {
+
+function getValidator(schema) {
   var validator = ajv.compile(schema);
   return function (docData) {
     var isValid = validator(docData);
@@ -34,6 +36,8 @@ var wrappedValidateAjvStorage = (0, _pluginHelpers.wrappedValidateStorageFactory
       });
     }
   };
-}, 'ajv');
+}
+
+var wrappedValidateAjvStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(getValidator, 'ajv');
 exports.wrappedValidateAjvStorage = wrappedValidateAjvStorage;
 //# sourceMappingURL=validate-ajv.js.map

@@ -5,6 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getValidator = getValidator;
 exports.wrappedValidateZSchemaStorage = void 0;
 
 var _zSchema = _interopRequireDefault(require("z-schema"));
@@ -18,7 +19,7 @@ var _pluginHelpers = require("../plugin-helpers");
  * It's using z-schema as jsonschema-validator
  * @link https://github.com/zaggino/z-schema
  */
-var wrappedValidateZSchemaStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(function (schema) {
+function getValidator(schema) {
   var validatorInstance = new _zSchema["default"]();
 
   var validator = function validator(obj) {
@@ -53,6 +54,8 @@ var wrappedValidateZSchemaStorage = (0, _pluginHelpers.wrappedValidateStorageFac
       });
     }
   };
-}, 'z-schema');
+}
+
+var wrappedValidateZSchemaStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(getValidator, 'z-schema');
 exports.wrappedValidateZSchemaStorage = wrappedValidateZSchemaStorage;
 //# sourceMappingURL=validate-z-schema.js.map

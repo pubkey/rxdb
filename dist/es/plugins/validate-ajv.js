@@ -9,7 +9,7 @@ import { wrappedValidateStorageFactory } from '../plugin-helpers';
 var ajv = new Ajv({
   strict: false
 });
-export var wrappedValidateAjvStorage = wrappedValidateStorageFactory(function (schema) {
+export function getValidator(schema) {
   var validator = ajv.compile(schema);
   return function (docData) {
     var isValid = validator(docData);
@@ -22,5 +22,6 @@ export var wrappedValidateAjvStorage = wrappedValidateStorageFactory(function (s
       });
     }
   };
-}, 'ajv');
+}
+export var wrappedValidateAjvStorage = wrappedValidateStorageFactory(getValidator, 'ajv');
 //# sourceMappingURL=validate-ajv.js.map

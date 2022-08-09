@@ -1,7 +1,7 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData } from './types';
 import type { QueryMatcher } from 'event-reduce-js';
-export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocument<RxDocumentType[]> | RxDocument<RxDocumentType>> {
+export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocument<RxDocumentType>[] | RxDocument<RxDocumentType>> {
     op: RxQueryOP;
     mangoQuery: Readonly<MangoQuery>;
     collection: RxCollection<RxDocumentType>;
