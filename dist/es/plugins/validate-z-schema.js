@@ -6,7 +6,7 @@
 import ZSchema from 'z-schema';
 import { newRxError } from '../rx-error';
 import { wrappedValidateStorageFactory } from '../plugin-helpers';
-export var wrappedValidateZSchemaStorage = wrappedValidateStorageFactory(function (schema) {
+export function getValidator(schema) {
   var validatorInstance = new ZSchema();
 
   var validator = function validator(obj) {
@@ -41,5 +41,6 @@ export var wrappedValidateZSchemaStorage = wrappedValidateStorageFactory(functio
       });
     }
   };
-}, 'z-schema');
+}
+export var wrappedValidateZSchemaStorage = wrappedValidateStorageFactory(getValidator, 'z-schema');
 //# sourceMappingURL=validate-z-schema.js.map

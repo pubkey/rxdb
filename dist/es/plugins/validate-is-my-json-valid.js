@@ -6,7 +6,7 @@
 import isMyJsonValid from 'is-my-json-valid';
 import { newRxError } from '../rx-error';
 import { wrappedValidateStorageFactory } from '../plugin-helpers';
-export var wrappedValidateIsMyJsonValidStorage = wrappedValidateStorageFactory(function (schema) {
+export function getValidator(schema) {
   var validator = isMyJsonValid(schema);
   return function (docData) {
     var isValid = validator(docData);
@@ -19,5 +19,6 @@ export var wrappedValidateIsMyJsonValidStorage = wrappedValidateStorageFactory(f
       });
     }
   };
-}, 'is-my-json-valid');
+}
+export var wrappedValidateIsMyJsonValidStorage = wrappedValidateStorageFactory(getValidator, 'is-my-json-valid');
 //# sourceMappingURL=validate-is-my-json-valid.js.map
