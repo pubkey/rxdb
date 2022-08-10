@@ -133,6 +133,44 @@ validationImplementations.forEach(
                     await instance.close();
                 });
 
+                it('should allow this complex regex pattern', async () => {
+                    const schema: RxJsonSchema<{ id: string }> = {
+                        version: 0,
+                        primaryKey: 'id',
+                        required: ['id'],
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 40,
+                                pattern: '^[a-zA-ZöäüÖÄÜß_ 0-9\\-\\.\']{3,40}$',
+                            }
+                        }
+                    };
+                    const instance = await getRxStorageInstance(schema);
+                    const reg = /^[a-zA-ZöäüÖÄÜß0-9\\-_\\. ']{3,40}$/;
+                    console.log(reg.toString());
+
+                    // valid
+                    await instance.bulkWrite([{
+                        document: toRxDocumentData({
+                            id: 'abcdö-äü2'
+                        } as any)
+                    }], testContext);
+
+                    // non valid
+                    await assertThrows(
+                        () => instance.bulkWrite([{
+                            document: toRxDocumentData({
+                                id: 'a'
+                            } as any)
+                        }], testContext),
+                        'RxError',
+                        'VD2'
+                    );
+                    await instance.close();
+                });
+
             });
             describe('negative', () => {
                 it('not validate other object', async () => {
