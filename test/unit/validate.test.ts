@@ -143,7 +143,7 @@ validationImplementations.forEach(
                             id: {
                                 type: 'string',
                                 maxLength: 40,
-                                pattern: '^[a-zA-ZöäüÖÄÜß_ 0-9\\-\\.\']{3,40}$',
+                                pattern: '^[a-zA-ZöäüÖÄÜß_: 0-9\\-\\.]{3,40}$',
                             }
                         }
                     };
@@ -154,7 +154,7 @@ validationImplementations.forEach(
                     // valid
                     await instance.bulkWrite([{
                         document: toRxDocumentData({
-                            id: 'abcdö-äü2'
+                            id: 'abcdö-ä:ü2'
                         } as any)
                     }], testContext);
 
