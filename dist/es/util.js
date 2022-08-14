@@ -503,6 +503,13 @@ export function isMaybeReadonlyArray(x) {
   return Array.isArray(x);
 }
 /**
+ * NO! We cannot just use btoa() and atob()
+ * because they do not work correctly with binary data.
+ * @link https://stackoverflow.com/q/30106476/3443137
+ */
+
+import { encode, decode } from 'js-base64';
+/**
  * atob() and btoa() do not work well with non ascii chars,
  * so we have to use these helper methods instead.
  * @link https://stackoverflow.com/a/30106551/3443137
@@ -510,15 +517,11 @@ export function isMaybeReadonlyArray(x) {
 // Encoding UTF8 -> base64
 
 export function b64EncodeUnicode(str) {
-  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-    return String.fromCharCode(parseInt(p1, 16));
-  }));
+  return encode(str);
 } // Decoding base64 -> UTF8
 
 export function b64DecodeUnicode(str) {
-  return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
-    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join(''));
+  return decode(str);
 }
 /**
  * This is an abstraction over the Blob/Buffer data structure.
