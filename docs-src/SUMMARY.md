@@ -140,6 +140,8 @@
 
 * [Query Optimizer](./query-optimizer.md)
 
+* [Storage Migration](./storage-migration.md)
+
 * [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md)
 
 * [RxDB Premium](./premium.md)
