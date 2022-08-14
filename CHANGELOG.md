@@ -41,6 +41,7 @@
 - CHANGE default of replication `live` to be set to `true`. Because most people want to do a live replication, not a one time replication.
 
 - CHANGED Attachment data is now always handled as `Blob` because Node.js does support `Blob` since version 18.0.0 so we no longer have to use a `Buffer` but instead can use Blob for browsers and Node.js
+- FIXED multiple problems with encoding attachments data. We now use the `js-base64` library which properly handles utf-8/binary/ascii transformations.
 
 <!-- /CHANGELOG NEWEST -->
 

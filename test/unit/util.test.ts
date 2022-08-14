@@ -14,13 +14,17 @@ import {
     RxDocumentData,
     ensureInteger,
     objectPathMonad,
-    defaultHashFunction
+    defaultHashFunction,
+    b64DecodeUnicode,
+    b64EncodeUnicode
 } from '../../';
 import {
     validateDatabaseName,
     deepFreezeWhenDevMode
 } from '../../plugins/dev-mode';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+
+import { BIG_BASE64 } from '../helper/big-base64';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
@@ -198,6 +202,17 @@ describe('util.test.js', () => {
                 }
             });
 
+        });
+    });
+    describe('base64 helpers', () => {
+        it('should correctly encode/decode in a circle', () => {
+            const str = 'foobar';
+            const circled = b64DecodeUnicode(b64EncodeUnicode(str));
+            assert.strictEqual(str, circled);
+        });
+        it('should be able to decode this big base64', () => {
+            const decoded = b64DecodeUnicode(BIG_BASE64);
+            assert.ok(decoded);
         });
     });
     describe('blobBufferUtil', () => {
