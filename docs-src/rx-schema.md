@@ -337,44 +337,6 @@ const schemaWithFinalAge = {
 };
 ```
 
-
-## encryption
-
-By adding a field to the `encrypted` list, it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the `RxDocument`, you can access the unencrypted value.
-You can set all fields to be encrypted, even nested objects. You can not run queries over encrypted fields.
-The password used for encryption is set during database creation. [See RxDatabase](./rx-database.md#password).
-
-To use encryption, you first have to add the `encryption` plugin.
-
-```javascript
-import { addRxPlugin } from 'rxdb';
-import { RxDBEncryptionPlugin } from 'rxdb/plugins/encryption';
-addRxPlugin(RxDBEncryptionPlugin);
-```
-
-The encryption-module is using `crypto-js` and is only needed when you create your RxDB-Database with a [password](./rx-database.md#password-optional).
-
-
-```javascript
-const schemaWithDefaultAge = {
-  version: 0,
-  primaryKey: 'id',
-  type: 'object',
-  properties: {
-      id: {
-          type: 'string',
-          maxLength: 100 // <- the primary key must have set maxLength
-      },
-      secret: {
-          type: 'string'
-      },
-  },
-  required: ['id']
-  encrypted: ['secret']
-};
-```
-
-
 ## NOTICE: Not everything within the jsonschema-spec is allowed
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
 For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass a invalid schema into it.

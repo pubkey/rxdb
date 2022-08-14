@@ -38,7 +38,6 @@
     * [attachments](./rx-schema.md#attachments)
     * [default](./rx-schema.md#default)
     * [final](./rx-schema.md#final)
-    * [encryption](./rx-schema.md#encryption)
 
 * [Schema Validation](./schema-validation.md)
 
@@ -105,6 +104,8 @@
 * [ORM/DRM](./orm.md)
 
 * [Population](./population.md)
+
+* [Encryption](./encryption.md)
 
 * [DataMigration](./data-migration.md)
 

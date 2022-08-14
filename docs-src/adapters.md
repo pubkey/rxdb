@@ -22,7 +22,7 @@ import {
 } from 'rxdb'
 import {
     getRxStoragePouch
-} from 'rxdb/plugins/pouchdb'
+} from 'rxdb/plugins/pouchdb';
 // npm install pouchdb-adapter-memory --save
 addPouchPlugin(require('pouchdb-adapter-memory'));
 

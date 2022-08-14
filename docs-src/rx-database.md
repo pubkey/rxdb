@@ -76,6 +76,8 @@ const dbLoki = await createRxDatabase({
 `(optional)`
 If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
 
+[Read more about encryption here](./encryption.md).
+
 ### multiInstance
 `(optional=true)`
 When you create more than one instance of the same database in a single javascript-runtime, you should set `multiInstance` to ```true```. This will enable the event sharing between the two instances. For example when the user has opened multiple browser windows, events will be shared between them so that both windows react to the same changes.
