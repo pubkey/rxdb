@@ -162,3 +162,11 @@
 * [Questions & Answers](./questions-answers.md)
 
 * [Contribute](./contribute.md)
+
+* Major Release Notes
+    * [8.0.0](./releases/8.0.0.md)
+    * [9.0.0](./releases/9.0.0.md)
+    * [10.0.0](./releases/10.0.0.md)
+    * [11.0.0](./releases/11.0.0.md)
+    * [12.0.0](./releases/12.0.0.md)
+    * [13.0.0](./releases/13.0.0.md)
