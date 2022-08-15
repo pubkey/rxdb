@@ -28,8 +28,7 @@ const encryptedDexieStorage = wrappedKeyEncryptionStorage({
 const db = await createRxDatabase<RxStylechaseCollections>({
     name: 'mydatabase',
     storage: encryptedDexieStorage,
-    password: 'foooooobaaaaar',
-    multiInstance: false
+    password: 'foooooobaaaaar'
 });
 
 

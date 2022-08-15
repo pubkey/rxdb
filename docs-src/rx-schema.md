@@ -158,50 +158,6 @@ const myRxDocument = myRxCollection.findOne(id).exec();
 ```
 
 
-## keyCompression
-
-If set to true (disabled by default), the documents will be stored in a compressed format which saves up to 40% disc space.
-For compression the npm module [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) is used.
-
-`keyCompression` can only be set on the **top-level** of a schema.
-
-**Notice:** When you use `keyCompression` together with the graphql replication or replication primitives, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable `keyCompression` for that use case.
-
-
-```javascript
-
-// add the key-compression plugin
-import { addRxPlugin } from 'rxdb';
-import { RxDBKeyCompressionPlugin } from 'rxdb/plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
-
-const mySchema = {
-  keyCompression: true, // set this to true, to enable the keyCompression
-  version: 0,
-  title: 'human schema with compression',
-  primaryKey: 'id',
-  type: 'object',
-  properties: {
-      id: {
-          type: 'string',
-          maxLength: 100 // <- the primary key must have set maxLength
-      },
-      firstName: {
-          type: 'string'
-      },
-      lastName: {
-          type: 'string'
-      }
-  },
-  required: [
-    'id', 
-    'firstName',
-    'lastName'
-  ]
-};
-```
-
-
 ## Indexes
 RxDB supports secondary indexes which are defined at the schema-level of the collection.
 

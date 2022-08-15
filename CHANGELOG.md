@@ -7,7 +7,7 @@
 
 ### 13.0.0-beta.14 (14 August 2022)
 
-- RENAME the `ajv-validate` plugin to `validate-ajv` to be in equal with the other validation plugins.
+- RENAMED the `ajv-validate` plugin to `validate-ajv` to be in equal with the other validation plugins.
 - The `is-my-json-valid` validation is no longer supported until [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) is fixed.
 - REFACTORED the [schema validation plugins](https://rxdb.info/schema-validation.html), they are no longer plugins but now they get wrapped around any other RxStorage.
   - It allows us to run the validation inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.

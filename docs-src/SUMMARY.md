@@ -107,6 +107,8 @@
 
 * [Encryption](./encryption.md)
 
+* [Key Compression](./key-compression.md)
+
 * [DataMigration](./data-migration.md)
 
 * [LeaderElection](./leader-election.md)
