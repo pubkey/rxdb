@@ -180,7 +180,7 @@
     "@babel/plugin-transform-runtime": "7.18.10",
     "@babel/plugin-transform-spread": "7.18.9",
     "@babel/plugin-transform-template-literals": "7.18.9",
-    "@babel/plugin-transform-typescript": "7.18.10",
+    "@babel/plugin-transform-typescript": "7.18.12",
     "@babel/polyfill": "7.12.1",
     "@babel/preset-env": "7.18.10",
     "@babel/preset-typescript": "7.18.6",
