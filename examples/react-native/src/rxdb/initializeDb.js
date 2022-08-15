@@ -1,12 +1,11 @@
-import schema from './src/Schema';
 import { addRxPlugin, createRxDatabase } from 'rxdb';
 import { getRxStorageMemory } from 'rxdb/plugins/memory';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
 import PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import PouchdbReplication from 'pouchdb-replication';
-
 import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
+import schema from './schema';
 
 addPouchPlugin(PouchdbAdapterHttp);
 addPouchPlugin(PouchdbReplication);
@@ -19,7 +18,7 @@ const HeroesCollectionName = 'heroes';
 
 const isDevelopment = process.env.NODE_ENV !== 'production' || process.env.DEBUG_PROD === 'true';
 
-const initialize = async () => {
+export const initializeDb = async () => {
     if (isDevelopment) {
         const { RxDBDevModePlugin } = await import('rxdb/plugins/dev-mode');
         await addRxPlugin(RxDBDevModePlugin);
@@ -36,8 +35,9 @@ const initialize = async () => {
         });
         console.log('Database initialized!');
     } catch (err) {
-        console.log('ERROR CREATING DATABASE', err);
+        console.error('ERROR CREATING DATABASE', err);
     }
+
     console.log('Adding hero collection...');
     try {
         await db.addCollections({
@@ -59,10 +59,8 @@ const initialize = async () => {
         //     console.error(error)
         // })
     } catch (err) {
-        console.log('ERROR CREATING COLLECTION', err);
+        console.error('ERROR CREATING COLLECTION', err);
     }
 
     return db;
 };
-
-export default initialize;

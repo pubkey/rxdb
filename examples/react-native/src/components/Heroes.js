@@ -1,19 +1,20 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Alert,
     Dimensions,
     Image,
+    SafeAreaView,
     ScrollView,
-    StatusBar,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
-import { AppContext } from './context';
+import { StatusBar } from 'expo-status-bar';
+import { useAppContext } from '../AppContext';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const getRandomColor = () => {
     const letters = '0123456789ABCDEF';
@@ -23,13 +24,13 @@ const getRandomColor = () => {
 };
 
 export const Heroes = () => {
-    const { db } = useContext(AppContext);
+    const { db } = useAppContext();
     const [name, setName] = useState('');
     const [heroes, setHeroes] = useState([]);
 
     useEffect(() => {
         let sub;
-        if (db && db.heroes) {
+        if (db.heroes) {
             sub = db.heroes
                 .find()
                 .sort({ name: 1 })
@@ -42,7 +43,7 @@ export const Heroes = () => {
         };
     }, [db]);
 
-    const addHero = async () => {
+    const addHero = async (name) => {
         console.log('addHero: ' + name);
         const color = getRandomColor();
         console.log('color: ' + color);
@@ -62,6 +63,7 @@ export const Heroes = () => {
                 {
                     text: 'OK',
                     onPress: async () => {
+                        console.log('removeHero: ' + hero.get('name'));
                         const doc = db.heroes.findOne({
                             selector: {
                                 name: hero.get('name'),
@@ -75,8 +77,8 @@ export const Heroes = () => {
     };
 
     return (
-        <View style={styles.topContainer}>
-            <StatusBar backgroundColor="#55C7F7" barStyle="light-content" />
+        <SafeAreaView style={styles.topContainer}>
+            <StatusBar backgroundColor="#55C7F7" barStyle="light-content"/>
             <Text style={styles.title}>React native rxdb example</Text>
 
             <ScrollView style={styles.heroesList}>
@@ -86,18 +88,18 @@ export const Heroes = () => {
                         value={name}
                         onChangeText={(name) => setName(name)}
                         placeholder="Type to add a hero..."
-                        onSubmitEditing={addHero}
+                        onSubmitEditing={() => addHero(name)}
                     />
                     {name.length > 1 && (
-                        <TouchableOpacity onPress={addHero}>
+                        <TouchableOpacity onPress={() => addHero(name)}>
                             <Image
                                 style={styles.plusImage}
-                                source={require('./src/plusIcon.png')}
+                                source={require('./plusIcon.png')}
                             />
                         </TouchableOpacity>
                     )}
                 </View>
-                {heroes.length === 0 && <Text>No heroes to display ...</Text>}
+                {heroes.length === 0 && <Text style={styles.placeholder}>No heroes to display ...</Text>}
                 {heroes.map((hero, index) => (
                     <View style={styles.card} key={index}>
                         <View
@@ -115,15 +117,16 @@ export const Heroes = () => {
                         >
                             <Image
                                 style={styles.deleteImage}
-                                source={require('./assets/deleteIcon.png')}
+                                source={require('../../assets/deleteIcon.png')}
                             />
                         </TouchableOpacity>
                     </View>
                 ))}
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 };
+
 const styles = StyleSheet.create({
     topContainer: {
         alignItems: 'center',
@@ -131,13 +134,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     title: {
-        marginTop: 55,
+        marginTop: 20,
         fontSize: 25,
         color: 'white',
         fontWeight: '500',
     },
     heroesList: {
-        marginTop: 30,
+        marginTop: 24,
         borderRadius: 5,
         flex: 1,
         width: width - 30,
@@ -162,6 +165,9 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         color: '#D2DCE1',
+    },
+    placeholder: {
+        padding: 15,
     },
     card: {
         flex: 1,

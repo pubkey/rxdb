@@ -1,16 +1,12 @@
 {
   "expo": {
     "name": "RxDB React-Native Example",
-    "slug": "foo",
-    "privacy": "public",
-    "sdkVersion": "43.0.0",
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "slug": "rxdb-react-native-example",
     "version": "0.1.0",
+    "privacy": "public",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -20,10 +16,19 @@
       "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": [
-      "assets/**/*"
+      "**/*"
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
     }
   }
 }

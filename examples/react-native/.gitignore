@@ -1,11 +1,25 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
-# expo
-.expo/
-
 # dependencies
 /node_modules
 /rxdb-local.tgz
+
+# expo
+.expo/
+dist/
+npm-debug.*
+yarn-debug.log*
+yarn-error.log*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# jest
+.jest/
 
 # misc
 .env.local
@@ -13,8 +27,5 @@
 .env.test.local
 .env.production.local
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-dist/
-.jest/
+# macOS
+.DS_Store
