@@ -119,7 +119,7 @@ A---B1---C1---X    master/server state
       B1---C2      fork/client state
 ```
 
-In the case above, the client would tell hte master to move the document state from `B1` to `C2` by calling `pushHandler()`. But because the actual master state is `C1` and not `B1`, the master would reject the write by sending back the actual master state `C1`. 
+In the case above, the client would tell the master to move the document state from `B1` to `C2` by calling `pushHandler()`. But because the actual master state is `C1` and not `B1`, the master would reject the write by sending back the actual master state `C1`. 
 **RxDB resolves all conflicts on the client** so it would call the conflict handler of the `RxCollection` and create a new document state `D` that can then be written to the master.
 
 ```

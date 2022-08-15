@@ -47,7 +47,7 @@ await migrateStorage(
 
 ## Migrate from a previous RxDB major version
 
-To migrate from a previous RxDB major version, you have to install hte 'old' RxDB in the `package.json`
+To migrate from a previous RxDB major version, you have to install the 'old' RxDB in the `package.json`
 
 ```json
 {

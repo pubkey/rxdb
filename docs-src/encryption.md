@@ -60,7 +60,7 @@ await db.addCollections({
 
 ## Changing the password
 
-At the moment it is not possible to change the password. Opening an existing database with a different password will throw an error. To change th password you can use the [storage migration plugin](./storage-migration.md).
+At the moment it is not possible to change the password. Opening an existing database with a different password will throw an error. To change the password you can use the [storage migration plugin](./storage-migration.md).
 
 
 ## Encrypted attachments
