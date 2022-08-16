@@ -19,21 +19,17 @@ import {
 
 import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
-// import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
+import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 const validationImplementations: {
     key: string,
     implementation: ReturnType<typeof wrappedValidateStorageFactory>
 }[] = [
-        /*
-         * TODO is-my-json-valid is no longer supported, until this is fixed:
-         * @link https://github.com/mafintosh/is-my-json-valid/pull/192
         {
             key: 'is-my-json-valid',
             implementation: wrappedValidateIsMyJsonValidStorage
         },
-        */
         {
             key: 'ajv',
             implementation: wrappedValidateAjvStorage
