@@ -264,7 +264,7 @@ const replicationState = await replicateRxCollection({
                  */
                 checkpoint: documentsFromRemote.length === 0 ? lastCheckpoint : {
                     id: lastOfArray(documentsFromRemote).id,
-                    updatedAt: id: lastOfArray(documentsFromRemote).updatedAt
+                    updatedAt: lastOfArray(documentsFromRemote).updatedAt
                 }
             };
         },
