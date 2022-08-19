@@ -141,7 +141,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             lastTimeMasterChangesRequested = timer++;
             const downResult = await replicationHandler.masterChangesSince(
                 lastCheckpoint,
-                state.input.batchSize
+                state.input.pullBatchSize
             );
 
             if (downResult.documents.length === 0) {

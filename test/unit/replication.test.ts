@@ -97,21 +97,42 @@ describe('replication.test.js', () => {
     }
     config.parallel('non-live replication', () => {
         it('should replicate both sides', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+            const docsPerSide = 15;
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: docsPerSide,
+                remote: docsPerSide
+            });
+
+
+            const batchSize = 12;
+            const pullHandler = getPullHandler(remoteCollection);
+            const pushHandler = getPushHandler(remoteCollection);
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: false,
                 pull: {
-                    handler: getPullHandler(remoteCollection)
+                    batchSize,
+                    handler: (lastPulledCheckpoint: CheckpointType, pullBatchSize: number) => {
+                        // ensure the batchSize from the settings is respected
+                        assert.strictEqual(pullBatchSize, batchSize);
+                        return pullHandler(lastPulledCheckpoint, pullBatchSize);
+                    }
                 },
                 push: {
-                    handler: getPushHandler(remoteCollection)
+                    batchSize,
+                    handler: (docs) => {
+                        if (docs.length > batchSize) {
+                            throw new Error('push got more docs then the batch size');
+                        }
+                        return pushHandler(docs);
+                    }
                 }
             });
             replicationState.error$.subscribe(err => {
                 console.log('got error :');
-                console.dir(err);
+                console.log(JSON.stringify(err, null, 4));
+                throw err;
             });
 
             await replicationState.awaitInitialReplication();
@@ -125,7 +146,7 @@ describe('replication.test.js', () => {
             );
             assert.strictEqual(
                 docsLocal.length,
-                10
+                docsPerSide * 2
             );
 
             localCollection.database.destroy();
@@ -156,7 +177,6 @@ describe('replication.test.js', () => {
                     }
                 }
             });
-
             await replicationState.awaitInitialReplication();
 
             const docsLocal = await localCollection.find().exec();
