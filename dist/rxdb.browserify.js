@@ -5433,7 +5433,7 @@ function startReplicationDownstream(state) {
           return !_interrupt && !state.events.canceled.getValue();
         }, void 0, function () {
           lastTimeMasterChangesRequested = timer++;
-          return Promise.resolve(replicationHandler.masterChangesSince(lastCheckpoint, state.input.batchSize)).then(function (downResult) {
+          return Promise.resolve(replicationHandler.masterChangesSince(lastCheckpoint, state.input.pullBatchSize)).then(function (downResult) {
             if (downResult.documents.length === 0) {
               _interrupt = true;
               return;
@@ -6625,7 +6625,7 @@ function startReplicationUpstream(state) {
           return !_interrupt && !state.events.canceled.getValue();
         }, void 0, function () {
           initialSyncStartTime = timer++;
-          return Promise.resolve(state.input.forkInstance.getChangedDocumentsSince(state.input.batchSize, lastCheckpoint)).then(function (upResult) {
+          return Promise.resolve(state.input.forkInstance.getChangedDocumentsSince(state.input.pushBatchSize, lastCheckpoint)).then(function (upResult) {
             if (upResult.documents.length === 0) {
               _interrupt = true;
               return;

@@ -231,7 +231,7 @@ export function startReplicationDownstream(state) {
           return !_interrupt && !state.events.canceled.getValue();
         }, void 0, function () {
           lastTimeMasterChangesRequested = timer++;
-          return Promise.resolve(replicationHandler.masterChangesSince(lastCheckpoint, state.input.batchSize)).then(function (downResult) {
+          return Promise.resolve(replicationHandler.masterChangesSince(lastCheckpoint, state.input.pullBatchSize)).then(function (downResult) {
             if (downResult.documents.length === 0) {
               _interrupt = true;
               return;

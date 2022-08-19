@@ -308,7 +308,8 @@ export var RxReplicationState = /*#__PURE__*/function () {
 
         _this3.metaInstance = _this2$collection$dat;
         _this3.internalReplicationState = replicateRxStorageInstance({
-          batchSize: _this3.push && _this3.push.batchSize ? _this3.push.batchSize : 100,
+          pushBatchSize: _this3.push && _this3.push.batchSize ? _this3.push.batchSize : 100,
+          pullBatchSize: _this3.pull && _this3.pull.batchSize ? _this3.pull.batchSize : 100,
           forkInstance: _this3.collection.storageInstance,
           metaInstance: _this3.metaInstance,
           hashFunction: database.hashFunction,

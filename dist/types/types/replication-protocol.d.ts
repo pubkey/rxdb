@@ -113,7 +113,8 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * mixed with other replications.
      */
     identifier: string;
-    batchSize: number;
+    pullBatchSize: number;
+    pushBatchSize: number;
     replicationHandler: RxReplicationHandler<RxDocType, any>;
     conflictHandler: RxConflictHandler<RxDocType>;
 
