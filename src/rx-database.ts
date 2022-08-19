@@ -8,7 +8,7 @@ import type {
     RxCollectionCreator,
     RxJsonSchema,
     RxCollection,
-    ServerOptions,
+    CouchDBServerOptions,
     RxDumpDatabase,
     RxDumpDatabaseAny,
     AllMigrationStates,
@@ -439,8 +439,8 @@ export class RxDatabaseBase<
     /**
      * spawn server
      */
-    server(_options?: ServerOptions): Promise<ServerResponse> {
-        throw pluginMissing('server');
+    serverCouchDB(_options?: CouchDBServerOptions): Promise<ServerResponse> {
+        throw pluginMissing('server-couchdb');
     }
 
     backup(_options: BackupOptions): RxBackupState {

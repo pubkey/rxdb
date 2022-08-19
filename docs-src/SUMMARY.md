@@ -152,7 +152,7 @@
 
 * Tutorials
     * [Use RxDB with Typescript](./tutorials/typescript.md)
-    * [Using the Server Plugin](./tutorials/server.md)
+    * [Using the CouchDB Server Plugin](./tutorials/server-couchdb.md)
 
 * Opinions
     * [About Offline First](./offline-first.md)

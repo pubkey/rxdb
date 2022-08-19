@@ -34,7 +34,7 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
 }
 
 // options for the server-plugin
-export interface ServerOptions {
+export interface CouchDBServerOptions {
     path?: string;
     port?: number;
     cors?: boolean;

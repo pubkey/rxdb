@@ -1,8 +1,11 @@
 # Using the Server Plugin
 
-In this tutorial you learn how to use the server plugin and replicate data from a node-process to the client.
+In this tutorial you learn how to use the CouchDB server plugin and replicate data from a node-process to the client.
+It starts a server that is compatible with the [CouchDB replication protocol](https://docs.couchdb.org/en/3.2.0/replication/protocol.html).
 
-The server plugin is usefull
+**NOTICE**: The CouchDB server plugin can only be used with the [PouchDB RxStorage](../rx-storage-pouchdb.md).
+
+The CouchDB server plugin is usefull
 
 - To simulate the couchdb in developer-mode without setting up a real one
 - To replicate data between the renderer and the node-process in an electron-app
@@ -19,8 +22,8 @@ Because the server plugin only works in node, it is not part of the default rxdb
 
 // add the server-plugin
 import { addRxPlugin } from 'rxdb';
-import { RxDBServerPlugin } from 'rxdb/plugins/server';
-addRxPlugin(RxDBServerPlugin);
+import { RxDBServerCouchDBPlugin } from 'rxdb/plugins/server-couchdb';
+addRxPlugin(RxDBServerCouchDBPlugin);
 
 // add the PouchDB memory-adapter
 import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
@@ -80,7 +83,7 @@ Now we can spawn the server. Besides the RxDB specific options, you can set `pou
 /**
  * Start the server.
  */
-const {app, server} = await db.server({
+const {app, server} = await db.serverCouchDB({
     path: '/db', // (optional)
     port: 3000,  // (optional)
     cors: true,   // (optional), enable CORS-headers
@@ -166,7 +169,7 @@ clientDB.items.syncCouchDB({
 });
 ```
 
-After the replication worked, the client has the same document.
+After the replication is in sync, the client has the same documents as the server.
 
 ```typescript
 const docs = await clientDB.items.find().exec();

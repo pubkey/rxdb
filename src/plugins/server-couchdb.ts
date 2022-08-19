@@ -242,8 +242,8 @@ export function onDestroy(db: RxDatabase) {
     }
 }
 
-export const RxDBServerPlugin: RxPlugin = {
-    name: 'server',
+export const RxDBServerCouchDBPlugin: RxPlugin = {
+    name: 'server-couchdb',
     rxdb: true,
     init() {
         addPouchPlugin(PouchAdapterHttp);
@@ -251,7 +251,7 @@ export const RxDBServerPlugin: RxPlugin = {
     },
     prototypes: {
         RxDatabase: (proto: any) => {
-            proto.server = spawnServer;
+            proto.serverCouchDB = spawnServer;
         }
     },
     overwritable: {},
