@@ -16,8 +16,8 @@ import {
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
 addPouchPlugin(MemoryAdapter);
 
-import { RxDBServerPlugin } from 'rxdb/plugins/server-couchdb';
-addRxPlugin(RxDBServerPlugin);
+import { RxDBServerCouchDBPlugin } from 'rxdb/plugins/server-couchdb';
+addRxPlugin(RxDBServerCouchDBPlugin);
 
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
