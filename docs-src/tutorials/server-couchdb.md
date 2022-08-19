@@ -106,7 +106,7 @@ To ensure that everything is ok,
 You can create server without starting it. It allows to use server as a part of bigger Express app.
 
 ```typescript
-const {app, server} = await db.server({
+const {app, server} = await db.serverCouchDB({
     path: '/', // omitted when startServer is false and force set to /
     port: 3000,  // omitted when startServer is false
     cors: false,  // disable CORS-headers (default) - you probably want to configure CORS in your main app
@@ -117,7 +117,7 @@ const {app, server} = await db.server({
 Then you can mount rxdb server express app in your express app
 
 ```typescript
-const { app, server } = await db.server({
+const { app, server } = await db.serverCouchDB({
     startServer: false
 });
 const mainApp = express();
