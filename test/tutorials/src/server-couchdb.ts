@@ -75,7 +75,7 @@ async function run() {
     });
 
     // spawn the server
-    const serverState = await db.server({
+    const serverState = await db.serverCouchDB({
         path: '/db',
         port: 3000,
         cors: true,
