@@ -16,7 +16,7 @@ export type RxDocumentData<T> = T & {
      * Instead the documents are stored with _deleted: true
      * which means they will not be returned at queries.
      */
-    _deleted: boolean;
+    _deleted: boolean | undefined;
 
     /**
      * The attachments meta data is stored besides to document.
