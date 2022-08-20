@@ -6,6 +6,7 @@ import { newRxError } from '../../rx-error';
 
 import {
     getPouchIndexDesignDocNameByIndex,
+    POUCHDB_CHECKPOINT_SCHEMA,
     pouchSwapPrimaryToId,
     primarySwapPouchDbQuerySelector
 } from './pouchdb-helper';
@@ -129,7 +130,8 @@ export const RxStoragePouchStatics: RxStorageStatics = {
             schema,
             mutateableQuery
         );
-    }
+    },
+    checkpointSchema: POUCHDB_CHECKPOINT_SCHEMA
 };
 
 /**

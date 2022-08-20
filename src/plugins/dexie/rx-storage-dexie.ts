@@ -26,6 +26,7 @@ import {
 import { newRxError } from '../../rx-error';
 import { getQueryPlan } from '../../query-planner';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
 
 
 export const RxStorageDexieStatics: RxStorageStatics = {
@@ -81,7 +82,9 @@ export const RxStorageDexieStatics: RxStorageStatics = {
             }
         }
         return fun;
-    }
+    },
+
+    checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 
 }
 

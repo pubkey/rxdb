@@ -1,7 +1,10 @@
 import type {
     ChangeStreamEvent,
+    DeepReadonly,
+    JsonSchema,
     MaybeReadonly,
     PouchChangeRow,
+    PouchCheckpoint,
     PouchDBInstance,
     RxAttachmentData,
     RxAttachmentWriteData,
@@ -406,4 +409,18 @@ export const RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted' as const;
 
 export type RxLocalDocumentDataWithCustomDeletedField<D> = RxLocalDocumentData<D> & {
     [k in typeof RXDB_POUCH_DELETED_FLAG]?: boolean;
+};
+
+
+export const POUCHDB_CHECKPOINT_SCHEMA: DeepReadonly<JsonSchema<PouchCheckpoint>> = {
+    type: 'object',
+    properties: {
+        sequence: {
+            type: 'number'
+        }
+    },
+    required: [
+        'sequence'
+    ],
+    additionalProperties: false
 };

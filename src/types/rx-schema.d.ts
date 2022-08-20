@@ -31,7 +31,7 @@ export type CompositePrimaryKey<RxDocType> = {
 
 export type PrimaryKey<RxDocType> = StringKeys<RxDocType> | CompositePrimaryKey<RxDocType>;
 
-export type JsonSchema = {
+export type JsonSchema<RxDocType = any> = {
     allOf?: JsonSchema[];
     anyOf?: JsonSchema[];
     oneOf?: JsonSchema[];
@@ -59,7 +59,7 @@ export type JsonSchema = {
         [key: string]: JsonSchema;
     };
     properties?: {
-        [key: string]: JsonSchema;
+        [key in StringKeys<RxDocType>]: JsonSchema;
     };
     required?: string[];
     uniqueItems?: boolean;

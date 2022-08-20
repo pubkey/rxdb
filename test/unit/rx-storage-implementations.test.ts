@@ -25,7 +25,7 @@ import {
     stackCheckpoints,
     defaultHashFunction
 } from '../../';
-
+import Ajv from 'ajv';
 import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression';
@@ -1735,6 +1735,16 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const emptyResult = await storageInstance.getChangedDocumentsSince(10, checkpointTest);
                 assert.strictEqual(emptyResult.documents.length, 0);
                 assert.deepStrictEqual(emptyResult.checkpoint, checkpointTest);
+
+                // the checkpoint must match the checkpoint-schema of the RxStorage.statics
+                const checkpointSchema = config.storage.getStorage().statics.checkpointSchema;
+                const ajv = new Ajv({
+                    strict: false
+                });
+                const validator = ajv.compile(checkpointSchema);
+                const isValid = validator(checkpointTest);
+                assert.ok(isValid);
+
 
                 // delete one
                 await storageInstance.bulkWrite([

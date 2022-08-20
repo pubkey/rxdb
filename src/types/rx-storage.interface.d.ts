@@ -14,6 +14,8 @@ import type {
     RxStorageQueryResult
 } from './rx-storage';
 import type {
+    DeepReadonly,
+    JsonSchema,
     MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,
@@ -159,6 +161,14 @@ export type RxStorageStatics = Readonly<{
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         preparedQuery: PreparedQuery<RxDocType>
     ): QueryMatcher<RxDocumentData<RxDocType>>;
+
+    /**
+     * Contains the JsonSchema that matches the checkpoint
+     * of this RxStorage.
+     * Used in some plugins like the graphql plugin
+     * where it is used to create a GraphQL Schema from the checkpoint.
+     */
+    checkpointSchema: DeepReadonly<JsonSchema>;
 }>;
 
 

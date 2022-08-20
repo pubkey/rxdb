@@ -202,8 +202,6 @@ export function spawn(
                     updatedAt: minUpdatedAt
                 }
             };
-            console.log('feedForRxDBReplication() ret:');
-            console.log(JSON.stringify(ret, null, 4));
             return ret;
         },
         getAll: () => {
