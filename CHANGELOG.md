@@ -44,6 +44,7 @@
 - FIXED multiple problems with encoding attachments data. We now use the `js-base64` library which properly handles utf-8/binary/ascii transformations.
 
 - RENAMED the `server` plugin is now called `server-couchdb` and `RxDatabase.server()` is now `RxDatabase.serverCouchDB()`
+- ADDED the graphql server plugin
 
 <!-- /CHANGELOG NEWEST -->
 

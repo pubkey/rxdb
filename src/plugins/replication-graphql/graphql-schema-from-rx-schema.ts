@@ -32,7 +32,9 @@ export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
      * These fields of the document data
      * will be used for the checkpoint.
      */
-    checkpointFields: string[];
+    checkpointFields: {
+        [fieldName: string]: GraphQLParamType;
+    };
     ignoreInputKeys?: string[];
     ignoreOutputKeys?: string[];
     withRevisions?: boolean;

@@ -57,10 +57,10 @@ The replication runs in two **different modes**:
 ### Checkpoint iteration
 
 On first initial replication, or when the client comes online again, a checkpoint based iteration is used to catch up with the server state.
-A checkpoint is a subset of the field of the last pulled document. When the checkpoint is send to the backend via `pullHandler()`, the backend must be able to respond with all documents that have been written **after** the given checkpoint.
+A checkpoint is a subset of the fields of the last pulled document. When the checkpoint is send to the backend via `pullHandler()`, the backend must be able to respond with all documents that have been written **after** the given checkpoint.
 For example if your documents contain an `id` and an `updatedAt` field, these two can be used as checkpoint.
 
-When the checkpoint iteration reaches the last checkpoint, it will automatically switch to the `event observation` mode.
+When the checkpoint iteration reaches the last checkpoint, where the backend returns an empty array because there are no newer documents, the replication will automatically switch to the `event observation` mode.
   
 ### Event observation
 
@@ -68,7 +68,7 @@ While the client is connected to the backend, the events from the backend are ob
 
 If your backend for any reason is not able to provide a full `pullStream$` that contains all events and the checkpoint, you can instead only emit `RESYNC` events that tell RxDB that anything unknown has changed on the server and it should run the pull replication via `checkpoint iteration`.
 
-When the client goes offline and online again, it might happen that the `pullStream$` has missed out some events. Therefore the `pullStream$` should also emit a `RESYNC` event each time the client reconnects.
+When the client goes offline and online again, it might happen that the `pullStream$` has missed out some events. Therefore the `pullStream$` should also emit a `RESYNC` event each time the client reconnects, so that the client can become in sync with the backend via the `checkpoint iteration` mode.
 
 ## Data layout on the server
 

@@ -17,7 +17,7 @@ import type {
     PouchDBExpressServerOptions,
     RxDatabase,
     RxPlugin,
-    ServerResponse
+    CouchDBServerResponse
 } from '../types';
 
 import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
@@ -102,7 +102,7 @@ export async function spawnServer(
         startServer = true,
         pouchdbExpressOptions = {}
     }
-): Promise<ServerResponse> {
+): Promise<CouchDBServerResponse> {
     const db: RxDatabase = this;
     const collectionsPath = startServer ? path : '/';
     if (!SERVERS_OF_DB.has(db)) {
@@ -210,7 +210,7 @@ export async function spawnServer(
 
 
     await startupPromise;
-    const response: ServerResponse = {
+    const response: CouchDBServerResponse = {
         app,
         pouchApp,
         server

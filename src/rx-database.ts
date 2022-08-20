@@ -12,7 +12,7 @@ import type {
     RxDumpDatabase,
     RxDumpDatabaseAny,
     AllMigrationStates,
-    ServerResponse,
+    CouchDBServerResponse,
     BackupOptions,
     RxStorage,
     RxStorageInstance,
@@ -27,7 +27,8 @@ import type {
     InternalStoreCollectionDocType,
     RxTypeError,
     RxError,
-    HashFunction
+    HashFunction,
+    GraphQLServerOptions
 } from './types';
 
 import {
@@ -436,11 +437,11 @@ export class RxDatabaseBase<
         throw pluginMissing('json-dump');
     }
 
-    /**
-     * spawn server
-     */
-    serverCouchDB(_options?: CouchDBServerOptions): Promise<ServerResponse> {
+    serverCouchDB(_options?: CouchDBServerOptions): Promise<CouchDBServerResponse> {
         throw pluginMissing('server-couchdb');
+    }
+    serverGraphQL(_options?: GraphQLServerOptions): Promise<CouchDBServerResponse> {
+        throw pluginMissing('server-graphql');
     }
 
     backup(_options: BackupOptions): RxBackupState {
