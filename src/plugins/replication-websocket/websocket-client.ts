@@ -85,7 +85,8 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
 ) {
     const wsClient = await getWebSocket(options.url);
     const messages$ = new Subject<WebsocketMessageResponseType>();
-    wsClient.on('message', (message: WebsocketMessageResponseType) => {
+    wsClient.on('message', (messageBuffer) => {
+        const message: WebsocketMessageResponseType = JSON.parse(messageBuffer.toString());
         messages$.next(message);
     });
 
@@ -113,7 +114,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                 filter(msg => msg.id === 'stream' && msg.collection === options.collection.name),
                 map(msg => msg.result)
             ),
-            handler(lastPulledCheckpoint: CheckpointType, batchSize: number) {
+            async handler(lastPulledCheckpoint: CheckpointType, batchSize: number) {
                 const requestId = getRequestId();
                 const request: WebsocketMessageType = {
                     id: requestId,
@@ -122,19 +123,19 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                     params: [lastPulledCheckpoint, batchSize]
                 }
                 wsClient.send(JSON.stringify(request));
-                return firstValueFrom(
+                const result = await firstValueFrom(
                     messages$.pipe(
                         filter(msg => msg.id === requestId),
                         map(msg => msg.result)
                     )
                 );
+                return result;
             }
         },
         push: {
             batchSize: options.batchSize,
             handler(docs: RxReplicationWriteToMasterRow<RxDocType>[]) {
                 console.log('## call push handler()');
-
                 const requestId = getRequestId();
                 const request: WebsocketMessageType = {
                     id: requestId,

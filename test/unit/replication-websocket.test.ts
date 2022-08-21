@@ -74,20 +74,12 @@ describe('replication-websocket.test.ts', () => {
             });
 
 
+            await replicationState.awaitInSync();
 
-            await waitUntil(async () => {
-                const serverDocs = await remoteCollection.find().exec();
-                return serverDocs.length === 2;
-            });
-            console.log('# server has now 2 docs');
-            await waitUntil(async () => {
-                const clientDocs = await localCollection.find().exec();
-                console.dir(clientDocs.map(d => d.toJSON()));
-                return clientDocs.length === 2;
-            });
-            console.log('# client has now 2 docs');
-
-            process.exit();
+            const serverDocs = await remoteCollection.find().exec();
+            assert.strictEqual(serverDocs.length, 2);
+            const clientDocs = await localCollection.find().exec();
+            assert.strictEqual(clientDocs.length, 2);
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
