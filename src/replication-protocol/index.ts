@@ -160,10 +160,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
     conflictHandler: RxConflictHandler<RxDocType>,
     hashFunction: HashFunction
 ): RxReplicationHandler<RxDocType, MasterCheckpointType> {
-
     const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
-
-
     const replicationHandler: RxReplicationHandler<RxDocType, MasterCheckpointType> = {
         masterChangeStream$: instance.changeStream().pipe(
             map(eventBulk => {

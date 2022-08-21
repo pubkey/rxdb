@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-server-graphql",
-  "main": "../../dist/lib/plugins/server-graphql.js",
-  "jsnext:main": "../../dist/es/plugins/server-graphql.js",
-  "module": "../../dist/es/plugins/server-graphql.js",
-  "types": "../../dist/types/plugins/server-graphql.d.ts",
-  "sideEffects": false
-}

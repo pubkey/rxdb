@@ -28,7 +28,7 @@ import type {
     RxTypeError,
     RxError,
     HashFunction,
-    GraphQLServerOptions
+    MaybePromise
 } from './types';
 
 import {
@@ -172,6 +172,13 @@ export class RxDatabaseBase<
      */
     public startupErrors: (RxError | RxTypeError)[] = [];
 
+    /**
+     * When the database is destroyed,
+     * these functions will be called an awaited.
+     * Used to automatically clean up stuff that
+     * belongs to this collection.
+     */
+    public onDestroy: (() => MaybePromise<any>)[] = [];
     public destroyed: boolean = false;
     public collections: Collections = {} as any;
     public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
@@ -440,9 +447,6 @@ export class RxDatabaseBase<
     serverCouchDB(_options?: CouchDBServerOptions): Promise<CouchDBServerResponse> {
         throw pluginMissing('server-couchdb');
     }
-    serverGraphQL(_options?: GraphQLServerOptions): Promise<CouchDBServerResponse> {
-        throw pluginMissing('server-graphql');
-    }
 
     backup(_options: BackupOptions): RxBackupState {
         throw pluginMissing('backup');
@@ -501,6 +505,7 @@ export class RxDatabaseBase<
          * First wait until the database is idle
          */
         return this.requestIdlePromise()
+            .then(() => Promise.all(this.onDestroy.map(fn => fn())))
             // destroy all collections
             .then(() => Promise.all(
                 Object.keys(this.collections)

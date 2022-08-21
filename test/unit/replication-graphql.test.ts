@@ -1,6 +1,9 @@
 import assert from 'assert';
-import AsyncTestUtil, {
-    clone, wait, waitUntil
+import {
+    assertThrows,
+    clone,
+     wait,
+      waitUntil
 } from 'async-test-util';
 import GraphQLClient from 'graphql-client';
 
@@ -252,12 +255,12 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 // we have to wait here until the connection is established
-                await AsyncTestUtil.wait(300);
+                await wait(300);
 
                 const doc = getTestData(1).pop();
                 await server.setDocument(ensureNotFalsy(doc));
 
-                await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+                await waitUntil(() => emitted.length === 1);
                 assert.ok(emitted[0].data.humanChanged.checkpoint.id);
                 assert.strictEqual(emittedError.length, 0);
 
@@ -282,7 +285,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(replicationState.isStopped(), false);
                 ensureReplicationHasNoErrors(replicationState);
 
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     const docs = await c.find().exec();
                     return docs.length === batchSize;
                 });
@@ -308,7 +311,7 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
 
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     const ds = await c.find().exec();
                     return ds.length === amount;
                 });
@@ -378,7 +381,7 @@ describe('replication-graphql.test.ts', () => {
                 ensureReplicationHasNoErrors(replicationState);
                 assert.strictEqual(replicationState.isStopped(), false);
 
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     const docs = await c.find().exec();
                     return docs.length === batchSize;
                 });
@@ -613,7 +616,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs.length, amount);
                 await wait(250);
 
-                const firstDoc: typeof testData[0] = AsyncTestUtil.clone(testData[0]);
+                const firstDoc: typeof testData[0] = clone(testData[0]);
                 firstDoc.updatedAt = new Date().getTime();
                 firstDoc.deleted = true;
 
@@ -701,7 +704,7 @@ describe('replication-graphql.test.ts', () => {
                 ]).then(_ => clearTimeout(timeoutId));
 
                 // error should be thrown because awaitInitialReplication() should never resolve
-                await AsyncTestUtil.assertThrows(() => raceProm, Error, 'Timeout');
+                await assertThrows(() => raceProm, Error, 'Timeout');
 
                 server.close();
                 c.database.destroy();
@@ -818,7 +821,7 @@ describe('replication-graphql.test.ts', () => {
                 console.log('---- 0');
                 await c.insert(schemaObjects.humanWithTimestamp());
                 console.log('---- 1');
-                await AsyncTestUtil.waitUntil(() => {
+                await waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     return docsOnServer2.length === amount + 1;
                 });
@@ -829,7 +832,7 @@ describe('replication-graphql.test.ts', () => {
                 await c.findOne().remove();
                 await replicationState.awaitInSync();
                 console.log('---- 4');
-                await AsyncTestUtil.waitUntil(() => {
+                await waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     console.log(JSON.stringify(docsOnServer2, null, 4));
                     const oneShouldBeDeleted = docsOnServer2.find((d: any) => d.deleted === true);
@@ -1010,7 +1013,7 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.awaitInSync();
 
                 console.log('---------------------- 0.2');
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     await replicationState.reSync();
                     docsOnServer = server.getDocuments();
                     const shouldBe = (amount * 2) + 2;
@@ -1018,7 +1021,7 @@ describe('replication-graphql.test.ts', () => {
                     return docsOnServer.length === shouldBe;
                 });
                 console.log('---------------------- 1');
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     await replicationState.reSync();
                     const docsOnClient = await c.find().exec();
                     console.log('docsOnClient.length: ' + docsOnClient.length);
@@ -1070,7 +1073,7 @@ describe('replication-graphql.test.ts', () => {
                     name: 'many1server'
                 }));
 
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     /**
                      * we have to do replicationState.run() each time
                      * because pouchdb takes a while until the update_seq is increased
@@ -1080,7 +1083,7 @@ describe('replication-graphql.test.ts', () => {
                     const shouldBe = (amount * 2) + 2;
                     return docsOnServer2.length === shouldBe;
                 });
-                await AsyncTestUtil.waitUntil(() => {
+                await waitUntil(() => {
                     const docsOnDb2 = server.getDocuments();
                     return docsOnDb2.length === (amount * 2) + 2;
                 });
@@ -1156,7 +1159,7 @@ describe('replication-graphql.test.ts', () => {
                 await collection1.insert(schemaObjects.humanWithTimestamp({
                     name: 'mt1'
                 }));
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     const docs = await collection2.find().exec();
                     return docs.length === 1;
                 });
@@ -1165,7 +1168,7 @@ describe('replication-graphql.test.ts', () => {
                 await collection2.insert(schemaObjects.humanWithTimestamp({
                     name: 'mt2'
                 }));
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     const docs = await collection1.find().exec();
                     return docs.length === 2;
                 });
@@ -1938,7 +1941,7 @@ describe('replication-graphql.test.ts', () => {
                 // insert one which will trigger an auto push
                 await collection.insert(schemaObjects.humanWithTimestamp());
 
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     const docs = await server.getDocuments();
                     return docs.length === (amount + 1);
                 });
@@ -1993,7 +1996,7 @@ describe('replication-graphql.test.ts', () => {
                 const insertedDoc = await collection.insert(schemaObjects.humanWithTimestamp());
                 assert.ok(insertedDoc);
 
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     const docs = await server.getDocuments();
                     if (docs.length > (amount + 1)) {
                         throw new Error('too many docs');
@@ -2071,7 +2074,7 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.reSync();
                 await replicationState.awaitInSync();
 
-                await AsyncTestUtil.waitUntil(() => {
+                await waitUntil(() => {
                     const serverDocs = server.getDocuments();
                     const notUpdated = serverDocs.find((d: any) => d.age !== newAge);
                     return !notUpdated;
@@ -2145,7 +2148,7 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.reSync();
                 await replicationState.awaitInSync();
 
-                await AsyncTestUtil.waitUntil(() => {
+                await waitUntil(() => {
                     const serverDocs = server.getDocuments();
                     const notUpdated = serverDocs.find(
                         (d: any) => d.age !== newAge
@@ -2237,7 +2240,7 @@ describe('replication-graphql.test.ts', () => {
                 const addDoc = schemaObjects.humanWithTimestamp();
                 await collection2.insert(addDoc);
 
-                await AsyncTestUtil.waitUntil(async () => {
+                await waitUntil(async () => {
                     const docsEnd = await getDocsOnServer(replicationState);
                     const found = docsEnd.find(d => d.id === addDoc.id);
                     return !!found;

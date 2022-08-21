@@ -23,7 +23,7 @@ import './unit/rx-storage-pouchdb.test';
 import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 
-// import './unit/server-graphql.test';
+import './unit/replication-websocket.test';
 import './unit/replication-graphql.test';
 
 

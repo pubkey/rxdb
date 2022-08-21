@@ -32,9 +32,7 @@ export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
      * These fields of the document data
      * will be used for the checkpoint.
      */
-    checkpointFields: {
-        [fieldName: string]: GraphQLParamType;
-    };
+    checkpointFields: string[];
     ignoreInputKeys?: string[];
     ignoreOutputKeys?: string[];
     withRevisions?: boolean;
@@ -119,13 +117,12 @@ export function graphQLSchemaFromRxSchema(
             checkpointSchema.properties[key] = subSchema;
             checkpointSchema.required.push(key);
         });
-
         console.log('checkpointSchema:');
         console.log(JSON.stringify(checkpointSchema, null, 4));
 
         const checkpointInputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionNameInput + prefixes.checkpoint,
-            schema: checkpointSchema,
+            schema: checkpointSchema as any,
             direction: 'input'
         });
 
@@ -176,7 +173,7 @@ export function graphQLSchemaFromRxSchema(
         });
         const checkpointOutputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: ucCollectionName + prefixes.checkpoint,
-            schema: checkpointSchema,
+            schema: checkpointSchema as any,
             direction: 'output'
         });
         const pullBulkOutputGraphQL = getGraphqlSchemaFromJsonSchema({
@@ -188,7 +185,7 @@ export function graphQLSchemaFromRxSchema(
                         type: 'array',
                         items: inputSchema as any
                     },
-                    checkpoint: checkpointSchema
+                    checkpoint: checkpointSchema as any
                 },
                 required: ['documents', 'checkpoint'],
                 additionalProperties: false
