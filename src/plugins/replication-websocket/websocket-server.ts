@@ -12,14 +12,21 @@ import type {
     WebsocketServerState
 } from './websocket-types';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
-
+import {
+    PROMISE_RESOLVE_VOID
+} from '../../util';
 
 export function startWebsocketServer(options: WebsocketServerOptions): WebsocketServerState {
     const wss = new WebSocketServer({
         port: options.port,
         path: options.path
     });
+    let closed = false;
     function closeServer() {
+        if (closed) {
+            return PROMISE_RESOLVE_VOID;
+        }
+        closed = true;
         return new Promise<void>((res, rej) => {
             /**
              * We have to close all client connections,
@@ -30,7 +37,6 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
                 ws.close();
             }
             wss.close((err) => {
-                console.log('--- close callback');
                 if (err) {
                     rej(err);
                 } else {
@@ -69,8 +75,6 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
     wss.on('connection', function connection(ws) {
         ws.on('message', async (messageString: string) => {
             const message: WebsocketMessageType = JSON.parse(messageString);
-            console.log('--- received: %s', JSON.stringify(message, null, 4));
-
             const handler = getReplicationHandler(message.collection);
             const method = handler[message.method];
 
@@ -82,10 +86,6 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
                 if (!startedStreamCollections.has(message.collection)) {
                     startedStreamCollections.add(message.collection);
                     handler.masterChangeStream$.subscribe(ev => {
-
-                        console.log('sss - masterChangeStream$ emitted');
-                        console.log(JSON.stringify(ev, null, 4));
-
                         const streamResponse: WebsocketMessageResponseType = {
                             id: 'stream',
                             collection: message.collection,
@@ -97,9 +97,6 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
                 return;
             }
             const result = await (method as any)(...message.params);
-
-            console.log('--- result(' + message.id + '): %s', JSON.stringify(result, null, 4));
-
             const response: WebsocketMessageResponseType = {
                 id: message.id,
                 collection: message.collection,

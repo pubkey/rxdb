@@ -1,12 +1,9 @@
 import assert from 'assert';
-import AsyncTestUtil, {
-    clone,
-    wait,
-    waitUntil
+import {
+    wait
 } from 'async-test-util';
 import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import {
     startWebsocketServer,
@@ -171,10 +168,8 @@ config.parallel('replication-websocket.test.ts', () => {
         assert.strictEqual(serverDocs.length, 2);
 
 
-        // go 'offline'
-        console.log('#### go OFFLINE');
+        // go 'offline' by closing the server
         await serverState.close();
-        console.log('#### go OFFLINE DONE');
 
         // modify on both sides while offline
         await clientDoc.atomicPatch({
@@ -185,25 +180,20 @@ config.parallel('replication-websocket.test.ts', () => {
         });
         await wait(100);
 
-        // go 'online' again
-        console.log('########## got ONLINE again');
-        const serverState2 = await startWebsocketServer({
+        // go 'online' again by starting a new server on the same port
+        await startWebsocketServer({
             database: remoteCollection.database,
             port: portAndUrl.port
         });
 
-        console.log('### await in sync');
         await replicationState.awaitInSync();
-        console.log('### await in sync DONE');
         const clientDocOnServer = await remoteCollection.findOne(clientDoc.primary).exec(true);
         assert.strictEqual(clientDocOnServer.name, 'client-edited');
         const serverDocOnClient = await localCollection.findOne(serverDoc.primary).exec(true);
         assert.strictEqual(serverDocOnClient.name, 'server-edited');
 
-
-        process.exit();
-
-        localCollection.database.destroy();
-        remoteCollection.database.destroy();
+        console.log('destroy !!!');
+        await localCollection.database.destroy();
+        await remoteCollection.database.destroy();
     });
 });

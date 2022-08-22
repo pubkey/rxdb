@@ -159,6 +159,7 @@
     "pouchdb-md5": "7.3.0",
     "pouchdb-replication": "7.3.0",
     "pouchdb-selector-core": "7.3.0",
+    "reconnecting-websocket": "4.4.0",
     "subscriptions-transport-ws": "0.11.0",
     "threads": "1.7.0",
     "unload": "2.3.1",

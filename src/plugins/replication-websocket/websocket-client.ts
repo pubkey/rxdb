@@ -5,7 +5,7 @@ import {
     WebsocketMessageType
 } from './websocket-types';
 
-
+import ReconnectingWebSocket from 'reconnecting-websocket';
 import {
     WebSocket as IsomorphicWebSocket
 } from 'isomorphic-ws';
@@ -23,9 +23,10 @@ import { RxReplicationWriteToMasterRow } from '../../types';
 
 export type WebsocketWithRefCount = {
     url: string;
-    socket: IsomorphicWebSocket;
+    socket: ReconnectingWebSocket;
     refCount: number;
     openPromise: Promise<void>;
+    connect$: Subject<void>;
 };
 
 /**
@@ -35,27 +36,32 @@ export type WebsocketWithRefCount = {
 export const WEBSOCKET_BY_URL: Map<string, WebsocketWithRefCount> = new Map();
 export async function getWebSocket(
     url: string
-): Promise<IsomorphicWebSocket> {
+): Promise<WebsocketWithRefCount> {
     let has = WEBSOCKET_BY_URL.get(url);
     if (!has) {
-        const wsClient = new IsomorphicWebSocket(
+        const wsClient = new ReconnectingWebSocket(
             url,
+            undefined,
             {
-
-            },
+                WebSocket: IsomorphicWebSocket
+            }
         );
 
+
+        const connect$ = new Subject<void>();
         const openPromise = new Promise<void>(res => {
-            wsClient.on('open', function open() {
+            wsClient.onopen = () => {
+                connect$.next();
                 res();
-            });
+            };
         });
 
         has = {
             url,
             socket: wsClient,
             openPromise,
-            refCount: 1
+            refCount: 1,
+            connect$
         };
         WEBSOCKET_BY_URL.set(url, has);
     } else {
@@ -64,7 +70,7 @@ export async function getWebSocket(
 
 
     await has.openPromise;
-    return has.socket;
+    return has;
 }
 
 export function removeWebSocketRef(
@@ -74,6 +80,7 @@ export function removeWebSocketRef(
     obj.refCount = obj.refCount - 1;
     if (obj.refCount === 0) {
         WEBSOCKET_BY_URL.delete(url);
+        obj.connect$.complete();
         obj.socket.close();
     }
 }
@@ -83,16 +90,15 @@ export function removeWebSocketRef(
 export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     options: WebsocketClientOptions<RxDocType>
 ) {
-    const wsClient = await getWebSocket(options.url);
+    const socketState = await getWebSocket(options.url);
+    const wsClient = socketState.socket;
     const messages$ = new Subject<WebsocketMessageResponseType>();
-    wsClient.on('message', (messageBuffer) => {
-        const message: WebsocketMessageResponseType = JSON.parse(messageBuffer.toString());
 
-        console.log('ccc got message:');
-        console.log(JSON.stringify(message, null, 4));
-
+    wsClient.onmessage = (messageObj) => {
+        const message: WebsocketMessageResponseType = JSON.parse(messageObj.data);
         messages$.next(message);
-    });
+    };
+
 
     let requestCounter = 0;
     const requestFlag = randomCouchString(10);
@@ -116,11 +122,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
             batchSize: options.batchSize,
             stream$: messages$.pipe(
                 filter(msg => msg.id === 'stream' && msg.collection === options.collection.name),
-                map(msg => {
-                    console.log('ccc use message for stream$');
-                    console.log(JSON.stringify(msg.result, null, 4));
-                    return msg.result;
-                })
+                map(msg => msg.result)
             ),
             async handler(lastPulledCheckpoint: CheckpointType, batchSize: number) {
                 const requestId = getRequestId();
@@ -143,7 +145,6 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
         push: {
             batchSize: options.batchSize,
             handler(docs: RxReplicationWriteToMasterRow<RxDocType>[]) {
-                console.log('## call push handler()');
                 const requestId = getRequestId();
                 const request: WebsocketMessageType = {
                     id: requestId,
@@ -151,15 +152,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                     method: 'masterWrite',
                     params: [docs]
                 }
-
-                console.log('send push request');
-                try {
-                    wsClient.send(JSON.stringify(request));
-                } catch (err) {
-                    console.log('send push request err');
-                    console.dir(err);
-                }
-                console.log('send push request DONE');
+                wsClient.send(JSON.stringify(request));
                 return firstValueFrom(
                     messages$.pipe(
                         filter(msg => msg.id === requestId),
@@ -169,6 +162,16 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
             }
         }
     });
+
+    /**
+     * When the client goes offline and online again,
+     * we have to send a 'RESYNC' signal because the client
+     * might have missed out events while being offline.
+     */
+    socketState.connect$.subscribe(() => {
+        replicationState.reSync();
+    });
+
 
     return replicationState;
 }
