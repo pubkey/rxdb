@@ -10,7 +10,6 @@ import {
     replicateWithWebsocketServer
 } from '../../plugins/replication-websocket';
 import {
-    randomCouchString,
     RxCollection
 } from '../../';
 
@@ -19,18 +18,15 @@ config.parallel('replication-websocket.test.ts', () => {
         // creating a server only works on node.js
         return;
     }
-    const { getPort } = require('../helper/graphql-server');
 
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
     async function getTestCollections(docsAmount: { local: number, remote: number }): Promise<{
         localCollection: RxCollection<TestDocType, {}, {}, {}>,
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>
     }> {
-
-        const collectionName = 'col' + randomCouchString(10);
         const [localCollection, remoteCollection] = await Promise.all([
-            humansCollection.createHumanWithTimestamp(docsAmount.local, collectionName, false),
-            humansCollection.createHumanWithTimestamp(docsAmount.remote, collectionName, false)
+            humansCollection.createHumanWithTimestamp(docsAmount.local, undefined, false),
+            humansCollection.createHumanWithTimestamp(docsAmount.remote, undefined, false)
         ]);
         return {
             localCollection,
@@ -38,6 +34,7 @@ config.parallel('replication-websocket.test.ts', () => {
         };
     }
 
+    const { getPort } = require('../helper/graphql-server');
     function getPortAndUrl(path?: string) {
         const port = getPort();
         let url = 'ws://localhost:' + port;
@@ -109,6 +106,7 @@ config.parallel('replication-websocket.test.ts', () => {
             console.log(JSON.stringify(err, null, 4));
             throw err;
         });
+
         await replicationState.awaitInSync();
 
 
@@ -196,7 +194,6 @@ config.parallel('replication-websocket.test.ts', () => {
         const serverDocOnClient = await localCollection.findOne(serverDoc.primary).exec(true);
         assert.strictEqual(serverDocOnClient.name, 'server-edited');
 
-        console.log('destroy !!!');
         await localCollection.database.destroy();
         await remoteCollection.database.destroy();
     });
