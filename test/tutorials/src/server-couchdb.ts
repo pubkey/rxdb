@@ -89,7 +89,7 @@ async function run() {
     // and should see something like '{"express-pouchdb":"Welcome!","version":"4.1.0","pouchdb-adapters":["memory"],"vendor":{"name":"PouchDB authors","version":"4.1.0"},"uuid":"b2de36bf-7d4f-4ad1-89a4-da08ec0de227"}'
 
     // check if collection is there
-    const colUrl = 'http://localhost:3000/db/items';
+    const colUrl = 'http://0.0.0.0:3000/db/items';
     console.log('You can now open ' + colUrl);
 
     // check access to path
@@ -114,7 +114,7 @@ async function run() {
 
     // replicate with server
     clientDB.items.syncCouchDB({
-        remote: 'http://localhost:3000/db/items'
+        remote: 'http://0.0.0.0:3000/db/items'
     });
 
     await AsyncTestUtil.waitUntil(async () => {
