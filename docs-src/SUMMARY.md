@@ -127,6 +127,7 @@
 
 * [Replication](./replication.md)
     * [Replication GraphQL](./replication-graphql.md)
+    * [Replication Websocket](./replication-websocket.md)
     * [Replication CouchDB](./replication-couchdb.md)
 
 * [Cleanup](./cleanup.md)
@@ -152,7 +153,7 @@
 
 * Tutorials
     * [Use RxDB with Typescript](./tutorials/typescript.md)
-    * [Using the Server Plugin](./tutorials/server.md)
+    * [Using the CouchDB Server Plugin](./tutorials/server-couchdb.md)
 
 * Opinions
     * [About Offline First](./offline-first.md)
@@ -166,9 +167,9 @@
 * [Contribute](./contribute.md)
 
 * Major Release Notes
-    * [8.0.0](./releases/8.0.0.md)
-    * [9.0.0](./releases/9.0.0.md)
-    * [10.0.0](./releases/10.0.0.md)
-    * [11.0.0](./releases/11.0.0.md)
-    * [12.0.0](./releases/12.0.0.md)
     * [13.0.0](./releases/13.0.0.md)
+    * [12.0.0](./releases/12.0.0.md)
+    * [11.0.0](./releases/11.0.0.md)
+    * [10.0.0](./releases/10.0.0.md)
+    * [9.0.0](./releases/9.0.0.md)
+    * [8.0.0](./releases/8.0.0.md)

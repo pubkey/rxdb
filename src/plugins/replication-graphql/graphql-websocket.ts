@@ -42,10 +42,8 @@ export function getGraphQLWebSocket(
 export function removeGraphQLWebSocketRef(
     url: string
 ) {
-    console.log('removeGraphQLWebSocketRef: ' + url);
     const obj = getFromMapOrThrow(GRAPHQL_WEBSOCKET_BY_URL, url);
     obj.refCount = obj.refCount - 1;
-    console.log('obj.refCount: ' + obj.refCount);
     if (obj.refCount === 0) {
         GRAPHQL_WEBSOCKET_BY_URL.delete(url);
         obj.socket.close();

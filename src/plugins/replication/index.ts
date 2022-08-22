@@ -42,7 +42,11 @@ import {
     RX_REPLICATION_META_INSTANCE_SCHEMA
 } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
-import { DEFAULT_MODIFIER } from './replication-helper';
+import {
+    DEFAULT_MODIFIER,
+    swapDefaultDeletedTodeletedField,
+    swapdeletedFieldToDefaultDeleted
+} from './replication-helper';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
@@ -398,9 +402,9 @@ export function startReplicationOnLeaderShip(
     replicationState: RxReplicationState<any, any>
 ) {
     /**
-        * Always await this Promise to ensure that the current instance
-        * is leader when waitForLeadership=true
-        */
+     * Always await this Promise to ensure that the current instance
+     * is leader when waitForLeadership=true
+     */
     const mustWaitForLeadership = waitForLeadership && replicationState.collection.database.multiInstance;
     const waitTillRun: Promise<any> = mustWaitForLeadership ? replicationState.collection.database.waitForLeadership() : PROMISE_RESOLVE_TRUE;
     return waitTillRun.then(() => {
@@ -411,36 +415,4 @@ export function startReplicationOnLeaderShip(
             replicationState.start();
         }
     });
-}
-
-
-export function swapDefaultDeletedTodeletedField<RxDocType>(
-    deletedField: string,
-    doc: WithDeleted<RxDocType>
-): RxDocType {
-    if (deletedField === '_deleted') {
-        return doc;
-    } else {
-        doc = flatClone(doc);
-        const isDeleted = !!doc._deleted;
-        (doc as any)[deletedField] = isDeleted;
-        delete (doc as any)._deleted;
-        return doc;
-    }
-}
-
-
-export function swapdeletedFieldToDefaultDeleted<RxDocType>(
-    deletedField: string,
-    doc: RxDocType
-): WithDeleted<RxDocType> {
-    if (deletedField === '_deleted') {
-        return doc as any;
-    } else {
-        doc = flatClone(doc);
-        const isDeleted = !!(doc as any)[deletedField];
-        (doc as any)._deleted = isDeleted;
-        delete (doc as any)[deletedField];
-        return doc as any;
-    }
 }

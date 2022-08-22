@@ -2,7 +2,7 @@
   "name": "tutorials",
   "scripts": {
     "test:typescript": "ts-node src/typescript.ts",
-    "test:server": "ts-node src/server.ts",
+    "test:server": "ts-node src/server-couchdb.ts",
     "test": "npm run test:typescript && npm run test:server"
   },
   "dependencies": {

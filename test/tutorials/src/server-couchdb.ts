@@ -16,8 +16,8 @@ import {
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
 addPouchPlugin(MemoryAdapter);
 
-import { RxDBServerPlugin } from 'rxdb/plugins/server';
-addRxPlugin(RxDBServerPlugin);
+import { RxDBServerCouchDBPlugin } from 'rxdb/plugins/server-couchdb';
+addRxPlugin(RxDBServerCouchDBPlugin);
 
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
@@ -75,7 +75,7 @@ async function run() {
     });
 
     // spawn the server
-    const serverState = await db.server({
+    const serverState = await db.serverCouchDB({
         path: '/db',
         port: 3000,
         cors: true,

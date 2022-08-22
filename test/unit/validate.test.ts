@@ -125,11 +125,6 @@ validationImplementations.forEach(
                         console.dir(err);
                     }
 
-                    // writeRows.forEach(row => {
-                    //     console.log('ret:');
-                    //     console.dir(row.document._meta.lwt);
-                    // });
-
                     await instance.close();
                 });
 
@@ -148,8 +143,6 @@ validationImplementations.forEach(
                         }
                     };
                     const instance = await getRxStorageInstance(schema);
-                    const reg = /^[a-zA-ZöäüÖÄÜß0-9\\-_\\. ']{3,40}$/;
-                    console.log(reg.toString());
 
                     // valid
                     await instance.bulkWrite([{

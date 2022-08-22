@@ -19,7 +19,7 @@ import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 
-config.parallel('server.test.js', () => {
+config.parallel('server-couchdb.test.ts', () => {
     if (
         !config.platform.isNode() ||
         config.storage.name !== 'pouchdb'
@@ -34,8 +34,8 @@ config.parallel('server.test.js', () => {
 
     const NodeWebsqlAdapter = require('pouchdb-adapter-leveldb');
 
-    const { RxDBServerPlugin } = require('../../plugins/server');
-    addRxPlugin(RxDBServerPlugin);
+    const { RxDBServerCouchDBPlugin } = require('../../plugins/server-couchdb');
+    addRxPlugin(RxDBServerCouchDBPlugin);
 
     let lastPort = 3000;
     const nexPort = () => lastPort++;
@@ -44,7 +44,7 @@ config.parallel('server.test.js', () => {
         this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.create(0, 'human');
-        await serverCollection.database.server({
+        await serverCollection.database.serverCouchDB({
             path: '/db',
             port
         });
@@ -90,7 +90,7 @@ config.parallel('server.test.js', () => {
         this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.create(0);
-        const { app, server } = await serverCollection.database.server({
+        const { app, server } = await serverCollection.database.serverCouchDB({
             path: '/',
             port,
             cors: false,
@@ -144,7 +144,7 @@ config.parallel('server.test.js', () => {
         this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.create(0);
-        await serverCollection.database.server({
+        await serverCollection.database.serverCouchDB({
             path: '/db',
             port,
             cors: true
@@ -185,7 +185,7 @@ config.parallel('server.test.js', () => {
         this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.create(0);
-        await serverCollection.database.server({
+        await serverCollection.database.serverCouchDB({
             path: '/db',
             port,
             cors: true
@@ -229,13 +229,13 @@ config.parallel('server.test.js', () => {
     it('should free port when database is destroyed', async () => {
         const port = 5000;
         const col1 = await humansCollection.create(0);
-        await col1.database.server({
+        await col1.database.serverCouchDB({
             port
         });
         await col1.database.destroy();
 
         const col2 = await humansCollection.create(0);
-        await col2.database.server({
+        await col2.database.serverCouchDB({
             port
         });
         col2.database.destroy();
@@ -257,7 +257,7 @@ config.parallel('server.test.js', () => {
 
         await col1.insert(schemaObjects.human());
 
-        await db1.server({
+        await db1.serverCouchDB({
             port: nexPort()
         });
 
@@ -281,7 +281,7 @@ config.parallel('server.test.js', () => {
 
         await col1.insert(schemaObjects.human());
 
-        await db1.server({
+        await db1.serverCouchDB({
             port: nexPort()
         });
 
@@ -330,7 +330,7 @@ config.parallel('server.test.js', () => {
         });
         const col2 = cols2.human;
 
-        await db1.server({
+        await db1.serverCouchDB({
             port
         });
 
@@ -358,7 +358,7 @@ config.parallel('server.test.js', () => {
         this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.createMigrationCollection(0);
-        const serverResponse = await serverCollection.database.server({
+        const serverResponse = await serverCollection.database.serverCouchDB({
             path: '/db',
             port
         });
@@ -396,7 +396,7 @@ config.parallel('server.test.js', () => {
         const port = nexPort();
         const name = 'foobar';
         const serverCollection = await humansCollection.create(0, name);
-        await serverCollection.database.server({
+        await serverCollection.database.serverCouchDB({
             port
         });
         const clientCollection = await humansCollection.create(0, name);
@@ -427,7 +427,7 @@ config.parallel('server.test.js', () => {
             storage: getRxStoragePouch('memory'),
             multiInstance: false
         });
-        await db1.server({
+        await db1.serverCouchDB({
             port
         });
         await AsyncTestUtil.assertThrows(
@@ -449,7 +449,7 @@ config.parallel('server.test.js', () => {
             storage: getRxStoragePouch('memory'),
             multiInstance: false
         });
-        await db1.server({
+        await db1.serverCouchDB({
             port
         });
 
@@ -472,7 +472,7 @@ config.parallel('server.test.js', () => {
 
         let hasThrown = false;
         try {
-            await db2.server({ port });
+            await db2.serverCouchDB({ port });
         } catch (err) {
             hasThrown = true;
         }
@@ -488,7 +488,7 @@ config.parallel('server.test.js', () => {
                 const port = nexPort();
                 const path = '/db2';
                 const serverCollection = await humansCollection.create(0);
-                await serverCollection.database.server({
+                await serverCollection.database.serverCouchDB({
                     path,
                     port
                 });
@@ -505,7 +505,7 @@ config.parallel('server.test.js', () => {
                 const port = nexPort();
                 const path = '/db3/';
                 const serverCollection = await humansCollection.create(0);
-                await serverCollection.database.server({
+                await serverCollection.database.serverCouchDB({
                     path,
                     port
                 });
@@ -522,7 +522,7 @@ config.parallel('server.test.js', () => {
                 const port = nexPort();
                 const path = '/';
                 const serverCollection = await humansCollection.create(0);
-                await serverCollection.database.server({
+                await serverCollection.database.serverCouchDB({
                     path,
                     port
                 });
@@ -549,7 +549,7 @@ config.parallel('server.test.js', () => {
                 const col = cols.human;
 
                 const port = nexPort();
-                await db.server({
+                await db.serverCouchDB({
                     port
                 });
                 await AsyncTestUtil.waitUntil(async () => {

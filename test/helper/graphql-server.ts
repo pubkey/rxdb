@@ -313,8 +313,7 @@ export function spawn(
                     }, {
                     server: ws,
                     path: GRAPHQL_SUBSCRIPTION_PATH,
-                }
-                );
+                });
 
                 res({
                     port,

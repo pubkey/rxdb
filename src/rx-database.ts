@@ -8,11 +8,11 @@ import type {
     RxCollectionCreator,
     RxJsonSchema,
     RxCollection,
-    ServerOptions,
+    CouchDBServerOptions,
     RxDumpDatabase,
     RxDumpDatabaseAny,
     AllMigrationStates,
-    ServerResponse,
+    CouchDBServerResponse,
     BackupOptions,
     RxStorage,
     RxStorageInstance,
@@ -27,7 +27,8 @@ import type {
     InternalStoreCollectionDocType,
     RxTypeError,
     RxError,
-    HashFunction
+    HashFunction,
+    MaybePromise
 } from './types';
 
 import {
@@ -171,6 +172,13 @@ export class RxDatabaseBase<
      */
     public startupErrors: (RxError | RxTypeError)[] = [];
 
+    /**
+     * When the database is destroyed,
+     * these functions will be called an awaited.
+     * Used to automatically clean up stuff that
+     * belongs to this collection.
+     */
+    public onDestroy: (() => MaybePromise<any>)[] = [];
     public destroyed: boolean = false;
     public collections: Collections = {} as any;
     public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
@@ -436,11 +444,8 @@ export class RxDatabaseBase<
         throw pluginMissing('json-dump');
     }
 
-    /**
-     * spawn server
-     */
-    server(_options?: ServerOptions): Promise<ServerResponse> {
-        throw pluginMissing('server');
+    serverCouchDB(_options?: CouchDBServerOptions): Promise<CouchDBServerResponse> {
+        throw pluginMissing('server-couchdb');
     }
 
     backup(_options: BackupOptions): RxBackupState {
@@ -500,6 +505,7 @@ export class RxDatabaseBase<
          * First wait until the database is idle
          */
         return this.requestIdlePromise()
+            .then(() => Promise.all(this.onDestroy.map(fn => fn())))
             // destroy all collections
             .then(() => Promise.all(
                 Object.keys(this.collections)

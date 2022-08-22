@@ -338,13 +338,13 @@ export async function createPrimary(
 
 export async function createHumanWithTimestamp(
     amount = 0,
-    name = randomCouchString(10),
+    databaseName = randomCouchString(10),
     multiInstance = true,
     storage = config.storage.getStorage()
 ): Promise<RxCollection<schemaObjects.HumanWithTimestampDocumentType>> {
 
     const db = await createRxDatabase<{ humans: RxCollection<schemaObjects.HumanWithTimestampDocumentType> }>({
-        name,
+        name: databaseName,
         storage,
         multiInstance,
         eventReduce: true,
