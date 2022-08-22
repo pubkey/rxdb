@@ -167,6 +167,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.idleQueue = new IdleQueue();
     this._subs = [];
     this.startupErrors = [];
+    this.onDestroy = [];
     this.destroyed = false;
     this.collections = {};
     this.eventBulks$ = new Subject();
@@ -456,14 +457,10 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.importJSON = function importJSON(_exportedJSON) {
     throw pluginMissing('json-dump');
-  }
-  /**
-   * spawn server
-   */
-  ;
+  };
 
-  _proto.server = function server(_options) {
-    throw pluginMissing('server');
+  _proto.serverCouchDB = function serverCouchDB(_options) {
+    throw pluginMissing('server-couchdb');
   };
 
   _proto.backup = function backup(_options) {
@@ -524,7 +521,11 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
          */
 
 
-        return _this8.name === 'pseudoInstance' ? PROMISE_RESOLVE_FALSE : _this8.requestIdlePromise() // destroy all collections
+        return _this8.name === 'pseudoInstance' ? PROMISE_RESOLVE_FALSE : _this8.requestIdlePromise().then(function () {
+          return Promise.all(_this8.onDestroy.map(function (fn) {
+            return fn();
+          }));
+        }) // destroy all collections
         .then(function () {
           return Promise.all(Object.keys(_this8.collections).map(function (key) {
             return _this8.collections[key];

@@ -9,7 +9,7 @@ import {
 } from '../rx-database';
 import { Observable } from 'rxjs';
 import { RxStorage } from './rx-storage.interface';
-import { PouchDBExpressServerOptions } from './plugins/server';
+import { PouchDBExpressServerOptions } from './plugins/server-couchdb';
 import { RxLocalDocument } from './plugins/local-documents';
 import { RxCleanupPolicy } from './plugins/cleanup';
 import { HashFunction } from './util';
@@ -34,7 +34,7 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
 }
 
 // options for the server-plugin
-export interface ServerOptions {
+export interface CouchDBServerOptions {
     path?: string;
     port?: number;
     cors?: boolean;

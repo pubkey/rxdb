@@ -19,7 +19,7 @@ export { getDocumentOrmPrototype, getDocumentPrototype } from './rx-document-pro
 export { isInstanceOf as isRxQuery } from './rx-query';
 export * from './rx-query-helper';
 export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, getPreviousVersions, toTypedRxJsonSchema } from './rx-schema';
-export { getPseudoSchemaForVersion, getSchemaByObjectPath, fillPrimaryKey, getPrimaryFieldOfPrimaryKey, getComposedPrimaryKeyOfDocumentData, normalizeRxJsonSchema, fillWithDefaultSettings, RX_META_SCHEMA, getFinalFields } from './rx-schema-helper';
+export * from './rx-schema-helper';
 export * from './rx-storage-helper';
 export * from './replication-protocol/index';
 export * from './rx-storage-multiinstance';

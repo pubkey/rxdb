@@ -65,5 +65,3 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
 }
 export declare function replicateRxCollection<RxDocType, CheckpointType>({ replicationIdentifier, collection, deletedField, pull, push, live, retryTime, waitForLeadership, autoStart, }: ReplicationOptions<RxDocType, CheckpointType>): RxReplicationState<RxDocType, CheckpointType>;
 export declare function startReplicationOnLeaderShip(waitForLeadership: boolean, replicationState: RxReplicationState<any, any>): Promise<void>;
-export declare function swapDefaultDeletedTodeletedField<RxDocType>(deletedField: string, doc: WithDeleted<RxDocType>): RxDocType;
-export declare function swapdeletedFieldToDefaultDeleted<RxDocType>(deletedField: string, doc: RxDocType): WithDeleted<RxDocType>;

@@ -1,4 +1,4 @@
-import type { JsonSchema, PrimaryKey, RxDocumentData, RxJsonSchema, StringKeys } from './types';
+import type { DeepReadonly, JsonSchema, PrimaryKey, RxDocumentData, RxJsonSchema, RxStorageDefaultCheckpoint, StringKeys } from './types';
 /**
  * Helper function to create a valid RxJsonSchema
  * with a given version.
@@ -38,3 +38,4 @@ export declare const RX_META_SCHEMA: JsonSchema;
  * @return field-names of the final-fields
  */
 export declare function getFinalFields<T = any>(jsonSchema: RxJsonSchema<T>): string[];
+export declare const DEFAULT_CHECKPOINT_SCHEMA: DeepReadonly<JsonSchema<RxStorageDefaultCheckpoint>>;

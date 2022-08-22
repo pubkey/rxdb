@@ -4,6 +4,7 @@ import { createDexieStorageInstance } from './rx-storage-instance-dexie';
 import { newRxError } from '../../rx-error';
 import { getQueryPlan } from '../../query-planner';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
 export var RxStorageDexieStatics = {
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     if (!mutateableQuery.sort) {
@@ -46,7 +47,8 @@ export var RxStorageDexieStatics = {
     };
 
     return fun;
-  }
+  },
+  checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 };
 export var RxStorageDexie = /*#__PURE__*/function () {
   function RxStorageDexie(settings) {

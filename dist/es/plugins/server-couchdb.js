@@ -454,8 +454,8 @@ export function onDestroy(db) {
     });
   }
 }
-export var RxDBServerPlugin = {
-  name: 'server',
+export var RxDBServerCouchDBPlugin = {
+  name: 'server-couchdb',
   rxdb: true,
   init: function init() {
     addPouchPlugin(PouchAdapterHttp);
@@ -463,7 +463,7 @@ export var RxDBServerPlugin = {
   },
   prototypes: {
     RxDatabase: function RxDatabase(proto) {
-      proto.server = spawnServer;
+      proto.serverCouchDB = spawnServer;
     }
   },
   overwritable: {},
@@ -476,4 +476,4 @@ export var RxDBServerPlugin = {
     }
   }
 };
-//# sourceMappingURL=server.js.map
+//# sourceMappingURL=server-couchdb.js.map

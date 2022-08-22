@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBServerPlugin = void 0;
+exports.RxDBServerCouchDBPlugin = void 0;
 exports.onDestroy = onDestroy;
 exports.spawnServer = void 0;
 
@@ -483,8 +483,8 @@ function onDestroy(db) {
   }
 }
 
-var RxDBServerPlugin = {
-  name: 'server',
+var RxDBServerCouchDBPlugin = {
+  name: 'server-couchdb',
   rxdb: true,
   init: function init() {
     (0, _pouchdb.addPouchPlugin)(_pouchdbAdapterHttp["default"]);
@@ -492,7 +492,7 @@ var RxDBServerPlugin = {
   },
   prototypes: {
     RxDatabase: function RxDatabase(proto) {
-      proto.server = spawnServer;
+      proto.serverCouchDB = spawnServer;
     }
   },
   overwritable: {},
@@ -505,5 +505,5 @@ var RxDBServerPlugin = {
     }
   }
 };
-exports.RxDBServerPlugin = RxDBServerPlugin;
-//# sourceMappingURL=server.js.map
+exports.RxDBServerCouchDBPlugin = RxDBServerCouchDBPlugin;
+//# sourceMappingURL=server-couchdb.js.map

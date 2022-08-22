@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RX_STORAGE_NAME_POUCHDB = exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCH_INSTANCES = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
+exports.RX_STORAGE_NAME_POUCHDB = exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.POUCHDB_CHECKPOINT_SCHEMA = exports.OPEN_POUCH_INSTANCES = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
 exports.getPouchIndexDesignDocNameByIndex = getPouchIndexDesignDocNameByIndex;
 exports.openPouchId = openPouchId;
@@ -399,4 +399,15 @@ function getPouchIndexDesignDocNameByIndex(index) {
 
 var RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted';
 exports.RXDB_POUCH_DELETED_FLAG = RXDB_POUCH_DELETED_FLAG;
+var POUCHDB_CHECKPOINT_SCHEMA = {
+  type: 'object',
+  properties: {
+    sequence: {
+      type: 'number'
+    }
+  },
+  required: ['sequence'],
+  additionalProperties: false
+};
+exports.POUCHDB_CHECKPOINT_SCHEMA = POUCHDB_CHECKPOINT_SCHEMA;
 //# sourceMappingURL=pouchdb-helper.js.map

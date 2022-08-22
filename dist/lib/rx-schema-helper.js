@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RX_META_SCHEMA = void 0;
+exports.RX_META_SCHEMA = exports.DEFAULT_CHECKPOINT_SCHEMA = void 0;
 exports.fillPrimaryKey = fillPrimaryKey;
 exports.fillWithDefaultSettings = fillWithDefaultSettings;
 exports.getComposedPrimaryKeyOfDocumentData = getComposedPrimaryKeyOfDocumentData;
@@ -271,4 +271,19 @@ function getFinalFields(jsonSchema) {
 
   return ret;
 }
+
+var DEFAULT_CHECKPOINT_SCHEMA = {
+  type: 'object',
+  properties: {
+    id: {
+      type: 'string'
+    },
+    lwt: {
+      type: 'number'
+    }
+  },
+  required: ['id', 'lwt'],
+  additionalProperties: false
+};
+exports.DEFAULT_CHECKPOINT_SCHEMA = DEFAULT_CHECKPOINT_SCHEMA;
 //# sourceMappingURL=rx-schema-helper.js.map

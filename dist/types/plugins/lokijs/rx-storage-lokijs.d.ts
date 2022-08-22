@@ -10,6 +10,7 @@ export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, Lo
         prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
         getSortComparator<RxDocType_1>(schema: RxJsonSchema<RxDocumentData<RxDocType_1>>, preparedQuery: any): DeterministicSortComparator<RxDocType_1>;
         getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<RxDocumentData<RxDocType_2>>, preparedQuery: any): QueryMatcher<RxDocumentData<RxDocType_2>>;
+        checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema<any>>;
     }>;
     /**
      * Create one leader elector by db name.

@@ -424,10 +424,24 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFu
       var ret = {
         checkpoint: eventBulk.checkpoint,
         documents: eventBulk.events.map(function (event) {
+          /**
+           * TODO the event object should be properly redesigned
+           * to how RxDB does use it.
+           * This requires touching the event-reduce-js library
+           * and others. But it would remove much complexity
+           * from RxDBs event handling.
+           */
           if (event.change.doc) {
             return (0, _helper.writeDocToDocState)(event.change.doc);
           } else {
-            return (0, _helper.writeDocToDocState)(event.change.previous);
+            var useDoc = (0, _util.ensureNotFalsy)(event.change.previous);
+
+            if (event.change.operation === 'DELETE') {
+              useDoc = (0, _util.flatClone)(useDoc);
+              useDoc._deleted = true;
+            }
+
+            return (0, _helper.writeDocToDocState)(useDoc);
           }
         })
       };
