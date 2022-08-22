@@ -16,6 +16,10 @@ import {
 import { getPort } from '../helper/graphql-server';
 
 config.parallel('replication-websocket.test.ts', () => {
+    if (!config.platform.isNode()) {
+        // creating a server only works on node.js
+        return;
+    }
 
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
     async function getTestCollections(docsAmount: { local: number, remote: number }): Promise<{
