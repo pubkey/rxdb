@@ -7,7 +7,7 @@ addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 const heroesList = document.querySelector('#heroes-list');
 
-const syncURL = 'http://localhost:10102/db/heroes';
+const syncURL = 'http://0.0.0.0:10102/db/heroes';
 
 async function run() {
     /**
@@ -39,6 +39,13 @@ async function run() {
         console.error('# Got replication error:');
         console.dir(err);
         console.trace(err);
+
+        /**
+         * We have to throw here, otherwise
+         * something might not work but the CI will not fail
+         * and instead time out after a very long time.
+         */
+        throw err;
     });
 
     /**
