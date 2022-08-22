@@ -1,10 +1,10 @@
 const electron = require('electron');
 const path = require('path');
 const { addRxPlugin } = require('rxdb');
-const { RxDBServerPlugin } = require('rxdb/plugins/server');
-const database = require('./database');
+const { RxDBServerCouchDBPlugin } = require('rxdb/plugins/server-couchdb');
+addRxPlugin(RxDBServerCouchDBPlugin);
 
-addRxPlugin(RxDBServerPlugin);
+const database = require('./database');
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
@@ -48,7 +48,7 @@ app.on('ready', async function () {
      * which is used as sync-goal by page.js
      */
     console.log('start server');
-    await db.server({
+    await db.serverCouchDB({
         path: '/db',
         port: 10102,
         cors: true

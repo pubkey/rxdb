@@ -9,7 +9,7 @@
     "test": "mocha"
   },
   "dependencies": {
-    "electron": "^19.0.2",
+    "electron": "19.0.2",
     "pouchdb-adapter-http": "7.3.0",
     "pouchdb-adapter-websql": "7.0.0",
     "pouchdb-replication": "7.3.0",

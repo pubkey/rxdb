@@ -22,7 +22,7 @@ async function run() {
         'heroesdb' + dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
         'memory'
     );
-    
+
     console.log('starting sync with ' + syncURL);
     const syncState = await db.heroes.syncCouchDB({
         remote: syncURL,
@@ -35,7 +35,11 @@ async function run() {
             live: true
         },
     });
-    console.dir(syncState);
+    syncState.error$.subscribe(err => {
+        console.error('# Got replication error:');
+        console.dir(err);
+        console.trace(err);
+    });
 
     /**
      * map the result of the find-query to the heroes-list in the dom
