@@ -87,6 +87,10 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     const messages$ = new Subject<WebsocketMessageResponseType>();
     wsClient.on('message', (messageBuffer) => {
         const message: WebsocketMessageResponseType = JSON.parse(messageBuffer.toString());
+
+        console.log('ccc got message:');
+        console.log(JSON.stringify(message, null, 4));
+
         messages$.next(message);
     });
 
@@ -112,7 +116,11 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
             batchSize: options.batchSize,
             stream$: messages$.pipe(
                 filter(msg => msg.id === 'stream' && msg.collection === options.collection.name),
-                map(msg => msg.result)
+                map(msg => {
+                    console.log('ccc use message for stream$');
+                    console.log(JSON.stringify(msg.result, null, 4));
+                    return msg.result;
+                })
             ),
             async handler(lastPulledCheckpoint: CheckpointType, batchSize: number) {
                 const requestId = getRequestId();

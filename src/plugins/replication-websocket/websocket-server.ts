@@ -8,20 +8,42 @@ import {
 import type {
     WebsocketMessageResponseType,
     WebsocketMessageType,
-    WebsocketServerOptions
+    WebsocketServerOptions,
+    WebsocketServerState
 } from './websocket-types';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
 
 
-export function startWebsocketServer(options: WebsocketServerOptions) {
+export function startWebsocketServer(options: WebsocketServerOptions): WebsocketServerState {
     const wss = new WebSocketServer({
         port: options.port,
         path: options.path
     });
+    function closeServer() {
+        return new Promise<void>((res, rej) => {
+            /**
+             * We have to close all client connections,
+             * otherwise wss.close() will never call the callback.
+             * @link https://github.com/websockets/ws/issues/1288#issuecomment-360594458
+             */
+            for (const ws of wss.clients) {
+                ws.close();
+            }
+            wss.close((err) => {
+                console.log('--- close callback');
+                if (err) {
+                    rej(err);
+                } else {
+                    res();
+                }
+            });
+        });
+    }
+
     const database = options.database;
 
     // auto close when the database gets destroyed
-    database.onDestroy.push(() => wss.close());
+    database.onDestroy.push(() => closeServer());
 
     const replicationHandlerByCollection: Map<string, RxReplicationHandler<any, any>> = new Map();
     function getReplicationHandler(collectionName: string): RxReplicationHandler<any, any> {
@@ -60,6 +82,10 @@ export function startWebsocketServer(options: WebsocketServerOptions) {
                 if (!startedStreamCollections.has(message.collection)) {
                     startedStreamCollections.add(message.collection);
                     handler.masterChangeStream$.subscribe(ev => {
+
+                        console.log('sss - masterChangeStream$ emitted');
+                        console.log(JSON.stringify(ev, null, 4));
+
                         const streamResponse: WebsocketMessageResponseType = {
                             id: 'stream',
                             collection: message.collection,
@@ -83,5 +109,8 @@ export function startWebsocketServer(options: WebsocketServerOptions) {
         });
     });
 
-    return wss;
+    return {
+        server: wss,
+        close: closeServer
+    };
 }

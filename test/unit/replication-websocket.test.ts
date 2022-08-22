@@ -119,7 +119,6 @@ config.parallel('replication-websocket.test.ts', () => {
             name: 'server-edited'
         });
 
-        await wait(1000);
         await replicationState.awaitInSync();
 
         const clientDocOnServer = await remoteCollection.findOne(clientDoc.primary).exec(true);
@@ -128,18 +127,81 @@ config.parallel('replication-websocket.test.ts', () => {
         const serverDocOnClient = await localCollection.findOne(serverDoc.primary).exec(true);
         assert.strictEqual(serverDocOnClient.name, 'server-edited');
 
+
         // DELETE
-        await clientDoc.remove();
         await serverDoc.remove();
+        await clientDoc.remove();
         await replicationState.awaitInSync();
-
         const deletedServer = await remoteCollection.findOne().exec();
-        assert.ok(!deletedServer);
-
         const deletedClient = await localCollection.findOne().exec();
-        console.dir(deletedClient?.toJSON());
-
+        assert.ok(!deletedServer);
         assert.ok(!deletedClient);
+
+        localCollection.database.destroy();
+        remoteCollection.database.destroy();
+    });
+    it('should continue the replication when the connection is broken and established again', async () => {
+        const { localCollection, remoteCollection } = await getTestCollections({
+            local: 1,
+            remote: 1
+        });
+
+        const clientDoc = await localCollection.findOne().exec(true);
+        const serverDoc = await remoteCollection.findOne().exec(true);
+
+        const portAndUrl = getPortAndUrl();
+
+        const serverState = await startWebsocketServer({
+            database: remoteCollection.database,
+            port: portAndUrl.port
+        });
+
+        const replicationState = await replicateWithWebsocketServer({
+            collection: localCollection,
+            url: portAndUrl.url
+        });
+        replicationState.error$.subscribe(err => {
+            console.log('got error :');
+            console.log(JSON.stringify(err, null, 4));
+            throw err;
+        });
+
+        await replicationState.awaitInSync();
+        const serverDocs = await remoteCollection.find().exec();
+        assert.strictEqual(serverDocs.length, 2);
+
+
+        // go 'offline'
+        console.log('#### go OFFLINE');
+        await serverState.close();
+        console.log('#### go OFFLINE DONE');
+
+        // modify on both sides while offline
+        await clientDoc.atomicPatch({
+            name: 'client-edited'
+        });
+        await serverDoc.atomicPatch({
+            name: 'server-edited'
+        });
+        await wait(100);
+
+        // go 'online' again
+        console.log('########## got ONLINE again');
+        const serverState2 = await startWebsocketServer({
+            database: remoteCollection.database,
+            port: portAndUrl.port
+        });
+
+        console.log('### await in sync');
+        await replicationState.awaitInSync();
+        console.log('### await in sync DONE');
+        const clientDocOnServer = await remoteCollection.findOne(clientDoc.primary).exec(true);
+        assert.strictEqual(clientDocOnServer.name, 'client-edited');
+        const serverDocOnClient = await localCollection.findOne(serverDoc.primary).exec(true);
+        assert.strictEqual(serverDocOnClient.name, 'server-edited');
+
+
+        process.exit();
 
         localCollection.database.destroy();
         remoteCollection.database.destroy();
