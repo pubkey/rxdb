@@ -5,7 +5,7 @@
  */
 import { BehaviorSubject, combineLatest, filter, firstValueFrom, map, Subject } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from '../rx-schema-helper';
-import { ensureNotFalsy, PROMISE_RESOLVE_VOID } from '../util';
+import { ensureNotFalsy, flatClone, PROMISE_RESOLVE_VOID } from '../util';
 import { getCheckpointKey } from './checkpoint';
 import { startReplicationDownstream } from './downstream';
 import { docStateToWriteDoc, writeDocToDocState } from './helper';
@@ -319,10 +319,24 @@ export function rxStorageInstanceToReplicationHandler(instance, conflictHandler,
       var ret = {
         checkpoint: eventBulk.checkpoint,
         documents: eventBulk.events.map(function (event) {
+          /**
+           * TODO the event object should be properly redesigned
+           * to how RxDB does use it.
+           * This requires touching the event-reduce-js library
+           * and others. But it would remove much complexity
+           * from RxDBs event handling.
+           */
           if (event.change.doc) {
             return writeDocToDocState(event.change.doc);
           } else {
-            return writeDocToDocState(event.change.previous);
+            var useDoc = ensureNotFalsy(event.change.previous);
+
+            if (event.change.operation === 'DELETE') {
+              useDoc = flatClone(useDoc);
+              useDoc._deleted = true;
+            }
+
+            return writeDocToDocState(useDoc);
           }
         })
       };

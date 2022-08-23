@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.RxReplicationState = exports.REPLICATION_STATE_BY_COLLECTION = void 0;
 exports.replicateRxCollection = replicateRxCollection;
 exports.startReplicationOnLeaderShip = startReplicationOnLeaderShip;
-exports.swapDefaultDeletedTodeletedField = swapDefaultDeletedTodeletedField;
-exports.swapdeletedFieldToDefaultDeleted = swapdeletedFieldToDefaultDeleted;
 
 var _rxjs = require("rxjs");
 
@@ -343,7 +341,7 @@ var RxReplicationState = /*#__PURE__*/function () {
 
                 if (_this3.deletedField !== '_deleted') {
                   useEv.documents = useEv.documents.map(function (doc) {
-                    return swapdeletedFieldToDefaultDeleted(_this3.deletedField, doc);
+                    return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this3.deletedField, doc);
                   });
                 }
 
@@ -364,7 +362,7 @@ var RxReplicationState = /*#__PURE__*/function () {
 
                   if (_this3.deletedField !== '_deleted') {
                     useResult.documents = useResult.documents.map(function (doc) {
-                      return swapdeletedFieldToDefaultDeleted(_this3.deletedField, doc);
+                      return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this3.deletedField, doc);
                     });
                   }
 
@@ -432,10 +430,10 @@ var RxReplicationState = /*#__PURE__*/function () {
                     return Promise.resolve(pushModifier(row.newDocumentState)).then(function (_pushModifier) {
                       function _temp12() {
                         if (_this3.deletedField !== '_deleted') {
-                          row.newDocumentState = swapDefaultDeletedTodeletedField(_this3.deletedField, row.newDocumentState);
+                          row.newDocumentState = (0, _replicationHelper.swapDefaultDeletedTodeletedField)(_this3.deletedField, row.newDocumentState);
 
                           if (row.assumedMasterState) {
-                            row.assumedMasterState = swapDefaultDeletedTodeletedField(_this3.deletedField, row.assumedMasterState);
+                            row.assumedMasterState = (0, _replicationHelper.swapDefaultDeletedTodeletedField)(_this3.deletedField, row.assumedMasterState);
                           }
                         }
 
@@ -460,7 +458,7 @@ var RxReplicationState = /*#__PURE__*/function () {
                 }))).then(function (useRows) {
                   function _temp10() {
                     var conflicts = (0, _util.ensureNotFalsy)(result).map(function (doc) {
-                      return swapdeletedFieldToDefaultDeleted(_this3.deletedField, doc);
+                      return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this3.deletedField, doc);
                     });
                     return conflicts;
                   }
@@ -651,9 +649,9 @@ function replicateRxCollection(_ref) {
 
 function startReplicationOnLeaderShip(waitForLeadership, replicationState) {
   /**
-      * Always await this Promise to ensure that the current instance
-      * is leader when waitForLeadership=true
-      */
+   * Always await this Promise to ensure that the current instance
+   * is leader when waitForLeadership=true
+   */
   var mustWaitForLeadership = waitForLeadership && replicationState.collection.database.multiInstance;
   var waitTillRun = mustWaitForLeadership ? replicationState.collection.database.waitForLeadership() : _util.PROMISE_RESOLVE_TRUE;
   return waitTillRun.then(function () {
@@ -665,29 +663,5 @@ function startReplicationOnLeaderShip(waitForLeadership, replicationState) {
       replicationState.start();
     }
   });
-}
-
-function swapDefaultDeletedTodeletedField(deletedField, doc) {
-  if (deletedField === '_deleted') {
-    return doc;
-  } else {
-    doc = (0, _util.flatClone)(doc);
-    var isDeleted = !!doc._deleted;
-    doc[deletedField] = isDeleted;
-    delete doc._deleted;
-    return doc;
-  }
-}
-
-function swapdeletedFieldToDefaultDeleted(deletedField, doc) {
-  if (deletedField === '_deleted') {
-    return doc;
-  } else {
-    doc = (0, _util.flatClone)(doc);
-    var isDeleted = !!doc[deletedField];
-    doc._deleted = isDeleted;
-    delete doc[deletedField];
-    return doc;
-  }
 }
 //# sourceMappingURL=index.js.map

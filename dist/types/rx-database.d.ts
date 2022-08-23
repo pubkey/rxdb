@@ -1,6 +1,6 @@
 import { IdleQueue } from 'custom-idle-queue';
 import type { LeaderElector } from 'broadcast-channel';
-import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, ServerOptions, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, ServerResponse, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, InternalStoreCollectionDocType, RxTypeError, RxError, HashFunction } from './types';
+import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, CouchDBServerOptions, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, CouchDBServerResponse, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, InternalStoreCollectionDocType, RxTypeError, RxError, HashFunction, MaybePromise } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
 import type { RxBackupState } from './plugins/backup';
 import { ObliviousSet } from 'oblivious-set';
@@ -42,6 +42,13 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * so we can throw them later.
      */
     startupErrors: (RxError | RxTypeError)[];
+    /**
+     * When the database is destroyed,
+     * these functions will be called an awaited.
+     * Used to automatically clean up stuff that
+     * belongs to this collection.
+     */
+    onDestroy: (() => MaybePromise<any>)[];
     destroyed: boolean;
     collections: Collections;
     readonly eventBulks$: Subject<RxChangeEventBulk<any>>;
@@ -114,10 +121,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * since data could be encrypted.
      */
     importJSON(_exportedJSON: RxDumpDatabaseAny<Collections>): Promise<void>;
-    /**
-     * spawn server
-     */
-    server(_options?: ServerOptions): Promise<ServerResponse>;
+    serverCouchDB(_options?: CouchDBServerOptions): Promise<CouchDBServerResponse>;
     backup(_options: BackupOptions): RxBackupState;
     leaderElector(): LeaderElector;
     isLeader(): boolean;

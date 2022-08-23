@@ -18,6 +18,8 @@ var _lokijsHelper = require("./lokijs-helper");
 
 var _rxStorageHelper = require("../../rx-storage-helper");
 
+var _rxSchemaHelper = require("../../rx-schema-helper");
+
 var RxStorageLokiStatics = {
   prepareQuery: function prepareQuery(_schema, mutateableQuery) {
     if (Object.keys((0, _util.ensureNotFalsy)(mutateableQuery.selector)).length > 0) {
@@ -71,7 +73,8 @@ var RxStorageLokiStatics = {
     };
 
     return fun;
-  }
+  },
+  checkpointSchema: _rxSchemaHelper.DEFAULT_CHECKPOINT_SCHEMA
 };
 exports.RxStorageLokiStatics = RxStorageLokiStatics;
 

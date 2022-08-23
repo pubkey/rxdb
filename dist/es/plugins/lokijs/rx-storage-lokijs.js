@@ -3,6 +3,7 @@ import { ensureNotFalsy, flatClone } from '../../util';
 import { createLokiStorageInstance } from './rx-storage-instance-loki';
 import { getLokiSortComparator, RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
 export var RxStorageLokiStatics = {
   prepareQuery: function prepareQuery(_schema, mutateableQuery) {
     if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
@@ -56,7 +57,8 @@ export var RxStorageLokiStatics = {
     };
 
     return fun;
-  }
+  },
+  checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 };
 export var RxStorageLoki = /*#__PURE__*/function () {
   /**

@@ -277,15 +277,15 @@ Object.keys(_localDocuments).forEach(function (key) {
   });
 });
 
-var _server = require("./plugins/server");
+var _serverCouchdb = require("./plugins/server-couchdb");
 
-Object.keys(_server).forEach(function (key) {
+Object.keys(_serverCouchdb).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _server[key]) return;
+  if (key in exports && exports[key] === _serverCouchdb[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
-      return _server[key];
+      return _serverCouchdb[key];
     }
   });
 });

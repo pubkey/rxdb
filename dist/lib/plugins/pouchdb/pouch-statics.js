@@ -111,7 +111,8 @@ var RxStoragePouchStatics = {
    */
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     return preparePouchDbQuery(schema, mutateableQuery);
-  }
+  },
+  checkpointSchema: _pouchdbHelper.POUCHDB_CHECKPOINT_SCHEMA
 };
 /**
  * pouchdb has many bugs and strange behaviors

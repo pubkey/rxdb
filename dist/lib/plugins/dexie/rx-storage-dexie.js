@@ -18,6 +18,8 @@ var _queryPlanner = require("../../query-planner");
 
 var _rxStorageHelper = require("../../rx-storage-helper");
 
+var _rxSchemaHelper = require("../../rx-schema-helper");
+
 var RxStorageDexieStatics = {
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     if (!mutateableQuery.sort) {
@@ -60,7 +62,8 @@ var RxStorageDexieStatics = {
     };
 
     return fun;
-  }
+  },
+  checkpointSchema: _rxSchemaHelper.DEFAULT_CHECKPOINT_SCHEMA
 };
 exports.RxStorageDexieStatics = RxStorageDexieStatics;
 

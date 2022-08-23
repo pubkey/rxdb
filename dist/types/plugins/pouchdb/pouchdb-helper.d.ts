@@ -1,6 +1,6 @@
 /// <reference types="node" />
 /// <reference types="pouchdb-core" />
-import type { ChangeStreamEvent, MaybeReadonly, PouchChangeRow, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, RxLocalDocumentData, StringKeys, WithAttachments } from '../../types';
+import type { ChangeStreamEvent, DeepReadonly, JsonSchema, MaybeReadonly, PouchChangeRow, PouchCheckpoint, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, RxLocalDocumentData, StringKeys, WithAttachments } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import type { ChangeEvent } from 'event-reduce-js';
 export declare type PouchStorageInternals = {
@@ -78,3 +78,4 @@ export declare const RXDB_POUCH_DELETED_FLAG: "rxdb-pouch-deleted";
 export declare type RxLocalDocumentDataWithCustomDeletedField<D> = RxLocalDocumentData<D> & {
     [k in typeof RXDB_POUCH_DELETED_FLAG]?: boolean;
 };
+export declare const POUCHDB_CHECKPOINT_SCHEMA: DeepReadonly<JsonSchema<PouchCheckpoint>>;

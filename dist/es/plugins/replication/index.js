@@ -8,7 +8,7 @@ import { BehaviorSubject, mergeMap, Subject } from 'rxjs';
 import { ensureNotFalsy, fastUnsecureHash, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } from '../../util';
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, replicateRxStorageInstance, RX_REPLICATION_META_INSTANCE_SCHEMA } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
-import { DEFAULT_MODIFIER } from './replication-helper';
+import { DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, swapdeletedFieldToDefaultDeleted } from './replication-helper';
 
 function _catch(body, recover) {
   try {
@@ -630,9 +630,9 @@ export function replicateRxCollection(_ref) {
 }
 export function startReplicationOnLeaderShip(waitForLeadership, replicationState) {
   /**
-      * Always await this Promise to ensure that the current instance
-      * is leader when waitForLeadership=true
-      */
+   * Always await this Promise to ensure that the current instance
+   * is leader when waitForLeadership=true
+   */
   var mustWaitForLeadership = waitForLeadership && replicationState.collection.database.multiInstance;
   var waitTillRun = mustWaitForLeadership ? replicationState.collection.database.waitForLeadership() : PROMISE_RESOLVE_TRUE;
   return waitTillRun.then(function () {
@@ -644,27 +644,5 @@ export function startReplicationOnLeaderShip(waitForLeadership, replicationState
       replicationState.start();
     }
   });
-}
-export function swapDefaultDeletedTodeletedField(deletedField, doc) {
-  if (deletedField === '_deleted') {
-    return doc;
-  } else {
-    doc = flatClone(doc);
-    var isDeleted = !!doc._deleted;
-    doc[deletedField] = isDeleted;
-    delete doc._deleted;
-    return doc;
-  }
-}
-export function swapdeletedFieldToDefaultDeleted(deletedField, doc) {
-  if (deletedField === '_deleted') {
-    return doc;
-  } else {
-    doc = flatClone(doc);
-    var isDeleted = !!doc[deletedField];
-    doc._deleted = isDeleted;
-    delete doc[deletedField];
-    return doc;
-  }
 }
 //# sourceMappingURL=index.js.map

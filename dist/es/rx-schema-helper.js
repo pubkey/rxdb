@@ -241,4 +241,17 @@ export function getFinalFields(jsonSchema) {
 
   return ret;
 }
+export var DEFAULT_CHECKPOINT_SCHEMA = {
+  type: 'object',
+  properties: {
+    id: {
+      type: 'string'
+    },
+    lwt: {
+      type: 'number'
+    }
+  },
+  required: ['id', 'lwt'],
+  additionalProperties: false
+};
 //# sourceMappingURL=rx-schema-helper.js.map

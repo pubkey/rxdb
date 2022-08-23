@@ -1,6 +1,6 @@
 import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
 import { newRxError } from '../../rx-error';
-import { getPouchIndexDesignDocNameByIndex, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
+import { getPouchIndexDesignDocNameByIndex, POUCHDB_CHECKPOINT_SCHEMA, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import { overwritable } from '../../overwritable';
 import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
@@ -97,7 +97,8 @@ export var RxStoragePouchStatics = {
    */
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     return preparePouchDbQuery(schema, mutateableQuery);
-  }
+  },
+  checkpointSchema: POUCHDB_CHECKPOINT_SCHEMA
 };
 /**
  * pouchdb has many bugs and strange behaviors

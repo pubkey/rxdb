@@ -349,4 +349,14 @@ export function getPouchIndexDesignDocNameByIndex(index) {
  */
 
 export var RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted';
+export var POUCHDB_CHECKPOINT_SCHEMA = {
+  type: 'object',
+  properties: {
+    sequence: {
+      type: 'number'
+    }
+  },
+  required: ['sequence'],
+  additionalProperties: false
+};
 //# sourceMappingURL=pouchdb-helper.js.map

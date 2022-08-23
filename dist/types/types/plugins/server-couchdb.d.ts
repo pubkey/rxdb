@@ -1,4 +1,4 @@
-export type ServerResponse = {
+export type CouchDBServerResponse = {
     app: any;
     pouchApp: any;
     server: any;

@@ -696,23 +696,8 @@ var _exportNames = {
   getIndexes: true,
   getPreviousVersions: true,
   toTypedRxJsonSchema: true,
-  getPseudoSchemaForVersion: true,
-  getSchemaByObjectPath: true,
-  fillPrimaryKey: true,
-  getPrimaryFieldOfPrimaryKey: true,
-  getComposedPrimaryKeyOfDocumentData: true,
-  normalizeRxJsonSchema: true,
-  fillWithDefaultSettings: true,
-  RX_META_SCHEMA: true,
-  getFinalFields: true,
   _clearHook: true
 };
-Object.defineProperty(exports, "RX_META_SCHEMA", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.RX_META_SCHEMA;
-  }
-});
 Object.defineProperty(exports, "RxCollectionBase", {
   enumerable: true,
   get: function get() {
@@ -779,28 +764,10 @@ Object.defineProperty(exports, "fillObjectDataBeforeInsert", {
     return _rxCollectionHelper.fillObjectDataBeforeInsert;
   }
 });
-Object.defineProperty(exports, "fillPrimaryKey", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.fillPrimaryKey;
-  }
-});
-Object.defineProperty(exports, "fillWithDefaultSettings", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.fillWithDefaultSettings;
-  }
-});
 Object.defineProperty(exports, "flattenEvents", {
   enumerable: true,
   get: function get() {
     return _rxChangeEvent.flattenEvents;
-  }
-});
-Object.defineProperty(exports, "getComposedPrimaryKeyOfDocumentData", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData;
   }
 });
 Object.defineProperty(exports, "getDocumentOrmPrototype", {
@@ -815,12 +782,6 @@ Object.defineProperty(exports, "getDocumentPrototype", {
     return _rxDocumentPrototypeMerge.getDocumentPrototype;
   }
 });
-Object.defineProperty(exports, "getFinalFields", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.getFinalFields;
-  }
-});
 Object.defineProperty(exports, "getIndexes", {
   enumerable: true,
   get: function get() {
@@ -831,24 +792,6 @@ Object.defineProperty(exports, "getPreviousVersions", {
   enumerable: true,
   get: function get() {
     return _rxSchema.getPreviousVersions;
-  }
-});
-Object.defineProperty(exports, "getPrimaryFieldOfPrimaryKey", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.getPrimaryFieldOfPrimaryKey;
-  }
-});
-Object.defineProperty(exports, "getPseudoSchemaForVersion", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.getPseudoSchemaForVersion;
-  }
-});
-Object.defineProperty(exports, "getSchemaByObjectPath", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.getSchemaByObjectPath;
   }
 });
 Object.defineProperty(exports, "isRxCollection", {
@@ -885,12 +828,6 @@ Object.defineProperty(exports, "isRxSchema", {
   enumerable: true,
   get: function get() {
     return _rxSchema.isInstanceOf;
-  }
-});
-Object.defineProperty(exports, "normalizeRxJsonSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchemaHelper.normalizeRxJsonSchema;
   }
 });
 Object.defineProperty(exports, "overwritable", {
@@ -967,6 +904,18 @@ Object.keys(_rxQueryHelper).forEach(function (key) {
 var _rxSchema = require("./rx-schema");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
+
+Object.keys(_rxSchemaHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxSchemaHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxSchemaHelper[key];
+    }
+  });
+});
 
 var _rxStorageHelper = require("./rx-storage-helper");
 
@@ -2985,7 +2934,8 @@ var RxStoragePouchStatics = {
    */
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     return preparePouchDbQuery(schema, mutateableQuery);
-  }
+  },
+  checkpointSchema: _pouchdbHelper.POUCHDB_CHECKPOINT_SCHEMA
 };
 /**
  * pouchdb has many bugs and strange behaviors
@@ -3121,7 +3071,7 @@ function preparePouchDbQuery(schema, mutateableQuery) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RX_STORAGE_NAME_POUCHDB = exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.OPEN_POUCH_INSTANCES = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
+exports.RX_STORAGE_NAME_POUCHDB = exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.POUCHDB_CHECKPOINT_SCHEMA = exports.OPEN_POUCH_INSTANCES = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
 exports.getPouchIndexDesignDocNameByIndex = getPouchIndexDesignDocNameByIndex;
 exports.openPouchId = openPouchId;
@@ -3517,6 +3467,17 @@ function getPouchIndexDesignDocNameByIndex(index) {
 
 var RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted';
 exports.RXDB_POUCH_DELETED_FLAG = RXDB_POUCH_DELETED_FLAG;
+var POUCHDB_CHECKPOINT_SCHEMA = {
+  type: 'object',
+  properties: {
+    sequence: {
+      type: 'number'
+    }
+  },
+  required: ['sequence'],
+  additionalProperties: false
+};
+exports.POUCHDB_CHECKPOINT_SCHEMA = POUCHDB_CHECKPOINT_SCHEMA;
 
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"../../rx-error":36,"../../util":46,"../attachments":11,"buffer":94,"pouchdb-md5":438}],18:[function(require,module,exports){
@@ -6161,10 +6122,24 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFu
       var ret = {
         checkpoint: eventBulk.checkpoint,
         documents: eventBulk.events.map(function (event) {
+          /**
+           * TODO the event object should be properly redesigned
+           * to how RxDB does use it.
+           * This requires touching the event-reduce-js library
+           * and others. But it would remove much complexity
+           * from RxDBs event handling.
+           */
           if (event.change.doc) {
             return (0, _helper.writeDocToDocState)(event.change.doc);
           } else {
-            return (0, _helper.writeDocToDocState)(event.change.previous);
+            var useDoc = (0, _util.ensureNotFalsy)(event.change.previous);
+
+            if (event.change.operation === 'DELETE') {
+              useDoc = (0, _util.flatClone)(useDoc);
+              useDoc._deleted = true;
+            }
+
+            return (0, _helper.writeDocToDocState)(useDoc);
           }
         })
       };
@@ -8487,6 +8462,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     this.idleQueue = new _customIdleQueue.IdleQueue();
     this._subs = [];
     this.startupErrors = [];
+    this.onDestroy = [];
     this.destroyed = false;
     this.collections = {};
     this.eventBulks$ = new _rxjs.Subject();
@@ -8776,14 +8752,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.importJSON = function importJSON(_exportedJSON) {
     throw (0, _util.pluginMissing)('json-dump');
-  }
-  /**
-   * spawn server
-   */
-  ;
+  };
 
-  _proto.server = function server(_options) {
-    throw (0, _util.pluginMissing)('server');
+  _proto.serverCouchDB = function serverCouchDB(_options) {
+    throw (0, _util.pluginMissing)('server-couchdb');
   };
 
   _proto.backup = function backup(_options) {
@@ -8844,7 +8816,11 @@ var RxDatabaseBase = /*#__PURE__*/function () {
          */
 
 
-        return _this8.name === 'pseudoInstance' ? _util.PROMISE_RESOLVE_FALSE : _this8.requestIdlePromise() // destroy all collections
+        return _this8.name === 'pseudoInstance' ? _util.PROMISE_RESOLVE_FALSE : _this8.requestIdlePromise().then(function () {
+          return Promise.all(_this8.onDestroy.map(function (fn) {
+            return fn();
+          }));
+        }) // destroy all collections
         .then(function () {
           return Promise.all(Object.keys(_this8.collections).map(function (key) {
             return _this8.collections[key];
@@ -10788,7 +10764,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RX_META_SCHEMA = void 0;
+exports.RX_META_SCHEMA = exports.DEFAULT_CHECKPOINT_SCHEMA = void 0;
 exports.fillPrimaryKey = fillPrimaryKey;
 exports.fillWithDefaultSettings = fillWithDefaultSettings;
 exports.getComposedPrimaryKeyOfDocumentData = getComposedPrimaryKeyOfDocumentData;
@@ -11054,6 +11030,21 @@ function getFinalFields(jsonSchema) {
 
   return ret;
 }
+
+var DEFAULT_CHECKPOINT_SCHEMA = {
+  type: 'object',
+  properties: {
+    id: {
+      type: 'string'
+    },
+    lwt: {
+      type: 'number'
+    }
+  },
+  required: ['id', 'lwt'],
+  additionalProperties: false
+};
+exports.DEFAULT_CHECKPOINT_SCHEMA = DEFAULT_CHECKPOINT_SCHEMA;
 
 },{"./rx-error":36,"./util":46,"@babel/runtime/helpers/interopRequireDefault":53,"object-path":422}],40:[function(require,module,exports){
 "use strict";
