@@ -534,9 +534,7 @@ config.parallel('server-couchdb.test.ts', () => {
 
                 serverCollection.database.destroy();
             });
-            it('having a collection with leveldb and no doc, will not make sync working', async function () {
-                // TODO why does this test not work?
-                return;
+            it('having a collection with leveldb and no docs, will break the replication', async function () {
                 const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,

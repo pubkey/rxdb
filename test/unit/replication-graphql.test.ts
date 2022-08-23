@@ -980,7 +980,6 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
 
-                console.log('---------------------- 0');
                 await replicationState.awaitInitialReplication();
 
                 let docsOnServer = server.getDocuments();
@@ -989,8 +988,6 @@ describe('replication-graphql.test.ts', () => {
                 const docsOnDb = await c.find().exec();
                 assert.strictEqual(docsOnDb.length, amount * 2);
 
-
-                console.log('---------------------- 0.01');
                 // insert one on local and one on server
                 const doc: any = schemaObjects.humanWithTimestamp({
                     id: 'z-some-local'
@@ -999,35 +996,26 @@ describe('replication-graphql.test.ts', () => {
                 await server.setDocument(doc);
 
                 docsOnServer = server.getDocuments();
-                console.dir(docsOnServer.map(d => d.id));
-                console.log('---------------------- 0.02');
-
                 const insertData = schemaObjects.humanWithTimestamp({
                     id: 'z-some-server'
                 });
                 await c.insert(insertData);
-                console.log('---------------------- 0.03');
 
                 await replicationState.reSync();
-                console.log('---------------------- 0.1');
                 await replicationState.awaitInSync();
 
-                console.log('---------------------- 0.2');
                 await waitUntil(async () => {
                     await replicationState.reSync();
                     docsOnServer = server.getDocuments();
                     const shouldBe = (amount * 2) + 2;
-                    console.dir(docsOnServer.map(d => d.id));
                     return docsOnServer.length === shouldBe;
                 });
-                console.log('---------------------- 1');
                 await waitUntil(async () => {
                     await replicationState.reSync();
                     const docsOnClient = await c.find().exec();
                     console.log('docsOnClient.length: ' + docsOnClient.length);
                     return docsOnClient.length === (amount * 2) + 2;
                 });
-                console.log('---------------------- 2');
                 await replicationState.awaitInSync();
                 await server.close();
                 await c.database.destroy();

@@ -198,7 +198,7 @@ export async function spawnServer(
          */
         Promise.all(
             Object.values(db.collections).map(async (collection) => {
-                const url = 'http://localhost:' + port + collectionsPath + '/' + collection.name;
+                const url = 'http://0.0.0.0:' + port + collectionsPath + '/' + collection.name;
                 try {
                     const pingDb = new PouchDB(url);
                     await pingDb.info();
