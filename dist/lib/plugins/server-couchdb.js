@@ -342,7 +342,7 @@ var spawnServer = function spawnServer(_ref) {
 
       Promise.all(Object.values(db.collections).map(function (collection) {
         try {
-          var url = 'http://localhost:' + port + collectionsPath + '/' + collection.name;
+          var url = 'http://0.0.0.0:' + port + collectionsPath + '/' + collection.name;
 
           var _temp10 = _catch(function () {
             var pingDb = new _pouchdb.PouchDB(url);
