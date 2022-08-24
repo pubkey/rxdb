@@ -121,7 +121,6 @@ export async function spawnServer(
     );
 
     const pseudo = PouchDB.defaults(pouchDBOptions);
-
     const app = express();
     APP_OF_DB.set(db, app);
 
@@ -129,8 +128,6 @@ export async function spawnServer(
         // tunnel requests so collection-names can be used as paths
         tunnelCollectionPath(db, collectionsPath, app, colName);
     });
-
-
 
     // remember to throw error if collection is created after the server is already there
     DBS_WITH_SERVER.add(db);
@@ -163,7 +160,6 @@ export async function spawnServer(
     }
 
     const pouchApp = ExpressPouchDB(pseudo, usePouchExpressOptions);
-
     app.use(collectionsPath, pouchApp);
 
     let server = null;
@@ -201,15 +197,15 @@ export async function spawnServer(
                 const url = 'http://0.0.0.0:' + port + collectionsPath + '/' + collection.name;
                 try {
                     const pingDb = new PouchDB(url);
+                    pingDb.aaa = 'pingDB for ' + url;
                     await pingDb.info();
                     await pingDb.close();
                 } catch (_err) { }
             })
         );
     }
-
-
     await startupPromise;
+
     const response: CouchDBServerResponse = {
         app,
         pouchApp,

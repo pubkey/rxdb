@@ -2,8 +2,8 @@ import assert from 'assert';
 import {
     assertThrows,
     clone,
-     wait,
-      waitUntil
+    wait,
+    waitUntil
 } from 'async-test-util';
 import GraphQLClient from 'graphql-client';
 
@@ -217,7 +217,6 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn();
 
                 const endpointUrl = server.url.ws;
-                console.log('endpointUrlendpointUrlendpointUrl: ' + endpointUrl);
                 const client = new SubscriptionClient(
                     endpointUrl,
                     {
@@ -424,11 +423,6 @@ describe('replication-graphql.test.ts', () => {
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn([doc])
                 ]);
-
-                console.log('#######################');
-                console.log('#######################');
-                console.log('#######################');
-                console.log('#######################');
                 const replicationState = c.syncGraphQL({
                     url: server.url,
                     pull: {
@@ -713,9 +707,6 @@ describe('replication-graphql.test.ts', () => {
 
         config.parallel('push only', () => {
             it('should send all documents in one batch', async () => {
-                console.log('######################################');
-                console.log('######################################');
-                console.log('######################################');
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(batchSize),
                     SpawnServer.spawn()
@@ -818,27 +809,20 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // check for inserts
-                console.log('---- 0');
                 await c.insert(schemaObjects.humanWithTimestamp());
-                console.log('---- 1');
                 await waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     return docsOnServer2.length === amount + 1;
                 });
-                console.log('---- 2');
 
                 // check for deletes
-                console.log('---- 3');
                 await c.findOne().remove();
                 await replicationState.awaitInSync();
-                console.log('---- 4');
                 await waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
-                    console.log(JSON.stringify(docsOnServer2, null, 4));
                     const oneShouldBeDeleted = docsOnServer2.find((d: any) => d.deleted === true);
                     return !!oneShouldBeDeleted;
-                }, 1000, 200);
-                console.log('---- 5');
+                }, 1000, 100);
 
                 server.close();
                 c.database.destroy();
@@ -1013,7 +997,6 @@ describe('replication-graphql.test.ts', () => {
                 await waitUntil(async () => {
                     await replicationState.reSync();
                     const docsOnClient = await c.find().exec();
-                    console.log('docsOnClient.length: ' + docsOnClient.length);
                     return docsOnClient.length === (amount * 2) + 2;
                 });
                 await replicationState.awaitInSync();
@@ -1184,8 +1167,6 @@ describe('replication-graphql.test.ts', () => {
                     pull: {
                         batchSize: 20,
                         queryBuilder: (args, limit: number) => {
-                            console.log('pull query builder!');
-                            console.dir(args);
                             pullCount++;
                             return pullQueryBuilder(args, limit);
                         }
@@ -1194,19 +1175,11 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
 
-
-                console.log('.................... 0');
-
                 await replicationState.awaitInitialReplication();
-                console.log('.................... 1');
 
-                function getStats() {
-                    return ensureNotFalsy(replicationState.internalReplicationState).stats;
-                }
-
-
-                console.log('### stats:');
-                console.dir(getStats());
+                // function getStats() {
+                //     return ensureNotFalsy(replicationState.internalReplicationState).stats;
+                // }
 
                 // pullCount should be exactly 1 because pull was started on replication start
                 assert.strictEqual(pullCount, 1);
@@ -1220,13 +1193,8 @@ describe('replication-graphql.test.ts', () => {
                  * exactly one push must be triggered
                  * and then one pull should have happened afterwards
                  */
-                console.log('.................... 1 - a');
                 await waitUntil(() => pushCount === 1);
-                console.log('.................... 1 - b');
                 await waitUntil(() => pullCount === 1);
-
-                console.log('.................... 1 - c');
-
 
                 /**
                  * Even after some time,
@@ -1283,22 +1251,15 @@ describe('replication-graphql.test.ts', () => {
                     return doc.name === 'updated';
                 });
 
-                console.log('kkkkkkk 0');
 
                 // delete on remote
                 const deleteDocData: typeof testDocData = clone(updateDocData);
                 deleteDocData.deleted = true;
                 await server.setDocument(deleteDocData);
-                console.log('kkkkkkk 1');
                 await waitUntil(async () => {
                     const doc = await c.findOne().exec();
-                    if (doc) {
-                        console.dir(doc.toJSON());
-                    }
                     return !doc;
                 }, 1000, 200);
-
-                console.log('kkkkkkk 2');
 
                 await server.close();
                 await c.database.destroy();
@@ -1414,10 +1375,6 @@ describe('replication-graphql.test.ts', () => {
                         first()
                     ).toPromise()
                 );
-
-                console.log('error:');
-                console.dir(error);
-                console.log(JSON.stringify(error, null, 4));
                 const firstRow = (error as any).parameters.pushRows[0];
                 const newDocState = firstRow.newDocumentState;
 
@@ -1575,13 +1532,8 @@ describe('replication-graphql.test.ts', () => {
                     }
                 }]);
 
-
-                console.log(output.query);
-
                 const parsed = parseQuery(output.query);
                 const firstPushRowDoc: HumanWithTimestampDocumentType = output.variables.humanPushRow[0].newDocumentState;
-
-                console.dir(output.variables);
 
                 // should not have added internal properties
                 assert.ok(!firstPushRowDoc.hasOwnProperty('_rev'));
@@ -1627,9 +1579,6 @@ describe('replication-graphql.test.ts', () => {
                 const pushData = await ownPushQueryBuilder([{
                     newDocumentState: docData
                 }]);
-
-                console.log('-.------');
-                console.log(JSON.stringify(pushData.variables, null, 4));
                 const pushDoc = pushData.variables.humanPushRow[0].newDocumentState;
                 assert.ok(pushDoc.deleted);
             });
@@ -1871,15 +1820,7 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
                 const replicationError = await replicationState.error$.pipe(first()).toPromise();
-
-                console.log('---------------------');
-                console.dir(replicationError);
-                console.log(JSON.stringify(replicationError, null, 4));
-
-
                 assert.notStrictEqual(ensureNotFalsy(replicationError).message, '[object Object]');
-
-
                 server.close();
                 await c.database.destroy();
             });

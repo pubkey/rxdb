@@ -20,16 +20,12 @@ import { HumanDocumentType } from './schemas';
 
 export async function create(
     size: number = 20,
-    name: string = 'human',
+    collectionName: string = 'human',
     multiInstance: boolean = true,
     eventReduce: boolean = true,
     storage: RxStorage<any, any> = config.storage.getStorage()
 
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
-    if (!name) {
-        name = 'human';
-    }
-
     const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType> }>({
         name: randomCouchString(10),
         storage,
@@ -40,7 +36,7 @@ export async function create(
     });
 
     const collections = await db.addCollections({
-        [name]: {
+        [collectionName]: {
             schema: schemas.human,
             localDocuments: true
         }
@@ -51,9 +47,9 @@ export async function create(
         const docsData = new Array(size)
             .fill(0)
             .map(() => schemaObjects.human());
-        await collections[name].bulkInsert(docsData);
+        await collections[collectionName].bulkInsert(docsData);
     }
-    return collections[name];
+    return collections[collectionName];
 }
 
 export async function createBySchema<RxDocumentType = {}>(

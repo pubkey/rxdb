@@ -28,12 +28,7 @@ import { ensureNotFalsy, lastOfArray } from 'event-reduce-js';
 import { RxReplicationWriteToMasterRow } from '../../src';
 import { HumanWithTimestampDocumentType } from './schema-objects';
 import { GraphQLServerUrl } from '../../src/types';
-
-let lastPort = 16121;
-export function getPort() {
-    lastPort = lastPort + 1;
-    return lastPort;
-}
+import { nextPort } from './port-manager';
 
 function sortByUpdatedAtAndPrimary(
     a: any,
@@ -77,7 +72,7 @@ declare type Human = {
 
 export function spawn(
     documents: Human[] = [],
-    port = getPort()
+    port = nextPort()
 ): Promise<GraphqlServer<Human>> {
     const app = express();
     app.use(cors());

@@ -67,7 +67,7 @@ export function getCustomEventEmitterByPouch<RxDocType>(
     pouch: PouchDBInstance
 ): Emitter<RxDocType> {
     const key = [
-        pouch.name,
+        pouch.__opts.name,
         pouch.adapter
     ].join('|');
     let emitter = EVENT_EMITTER_BY_POUCH_INSTANCE.get(key);
@@ -144,7 +144,6 @@ export function addCustomEventsPluginToPouch() {
         options: PouchBulkDocOptions,
         callback: Function
     ) {
-
         const startTime = now();
         const runId = i++;
 

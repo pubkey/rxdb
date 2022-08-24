@@ -117,9 +117,6 @@ export function graphQLSchemaFromRxSchema(
             checkpointSchema.properties[key] = subSchema;
             checkpointSchema.required.push(key);
         });
-        console.log('checkpointSchema:');
-        console.log(JSON.stringify(checkpointSchema, null, 4));
-
         const checkpointInputGraphQL = getGraphqlSchemaFromJsonSchema({
             rootName: collectionNameInput + prefixes.checkpoint,
             schema: checkpointSchema as any,

@@ -1,13 +1,13 @@
 import assert from 'assert';
 import config from './config';
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 import request from 'request-promise-native';
 import requestR from 'request';
 
 import {
     createRxDatabase,
     addRxPlugin,
-    randomCouchString,
+    randomCouchString
 } from '../../';
 
 import {
@@ -15,9 +15,11 @@ import {
     getRxStoragePouch
 } from '../../plugins/pouchdb';
 
+
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
+import { nextPort } from '../helper/port-manager';
 
 config.parallel('server-couchdb.test.ts', () => {
     if (
@@ -30,6 +32,7 @@ config.parallel('server-couchdb.test.ts', () => {
     // below imports have to be conditionally imported (only for Node) that's why we use require here instead of import:
     const express = require('express');
     const fs = require('fs');
+    const path = require('path');
     const levelDown = require('leveldown');
 
     const NodeWebsqlAdapter = require('pouchdb-adapter-leveldb');
@@ -37,12 +40,9 @@ config.parallel('server-couchdb.test.ts', () => {
     const { RxDBServerCouchDBPlugin } = require('../../plugins/server-couchdb');
     addRxPlugin(RxDBServerCouchDBPlugin);
 
-    let lastPort = 3000;
-    const nexPort = () => lastPort++;
-
     it('should run and sync', async function () {
         this.timeout(12 * 1000);
-        const port = nexPort();
+        const port = nextPort();
         const serverCollection = await humansCollection.create(0, 'human');
         await serverCollection.database.serverCouchDB({
             path: '/db',
@@ -88,7 +88,7 @@ config.parallel('server-couchdb.test.ts', () => {
     });
     it('should run and sync as sub app for express', async function () {
         this.timeout(12 * 1000);
-        const port = nexPort();
+        const port = nextPort();
         const serverCollection = await humansCollection.create(0);
         const { app, server } = await serverCollection.database.serverCouchDB({
             path: '/',
@@ -142,7 +142,7 @@ config.parallel('server-couchdb.test.ts', () => {
     });
     it('should send cors when defined for missing origin', async function () {
         this.timeout(12 * 1000);
-        const port = nexPort();
+        const port = nextPort();
         const serverCollection = await humansCollection.create(0);
         await serverCollection.database.serverCouchDB({
             path: '/db',
@@ -183,7 +183,7 @@ config.parallel('server-couchdb.test.ts', () => {
     });
     it('should send cors when defined for present origin', async function () {
         this.timeout(12 * 1000);
-        const port = nexPort();
+        const port = nextPort();
         const serverCollection = await humansCollection.create(0);
         await serverCollection.database.serverCouchDB({
             path: '/db',
@@ -258,7 +258,7 @@ config.parallel('server-couchdb.test.ts', () => {
         await col1.insert(schemaObjects.human());
 
         await db1.serverCouchDB({
-            port: nexPort()
+            port: nextPort()
         });
 
         await col1.insert(schemaObjects.human());
@@ -282,7 +282,7 @@ config.parallel('server-couchdb.test.ts', () => {
         await col1.insert(schemaObjects.human());
 
         await db1.serverCouchDB({
-            port: nexPort()
+            port: nextPort()
         });
 
         await col1.insert(schemaObjects.human());
@@ -294,69 +294,102 @@ config.parallel('server-couchdb.test.ts', () => {
 
         db1.destroy();
     });
-    it('should work on filesystem-storage', async () => {
-        return; // TODO fix this test
 
+
+    it('should work on filesystem-storage', async function () {
         addPouchPlugin(NodeWebsqlAdapter);
 
-        const port = nexPort();
+        const port = nextPort();
 
-        const db1Name = config.rootPath + 'test_tmp/' + randomCouchString(10);
-        const db2Name = config.rootPath + 'test_tmp/' + randomCouchString(10);
-        fs.mkdirSync(db1Name, { recursive: true });
-        fs.mkdirSync(db2Name, { recursive: true });
+        const directoryName = 'couchdb-filesystem-test';
+        const testDir = path.join(
+            config.rootPath,
+            'test_tmp'
+        );
 
-        const db1 = await createRxDatabase({
-            name: db1Name,
+        // clean up from previous run
+        const dirs: string[] = fs.readdirSync(testDir);
+        dirs
+            .filter(dir => dir.startsWith(directoryName))
+            .forEach(dir => fs.rmdirSync(path.join(testDir, dir), { recursive: true, force: true }));
+
+        const clientDBName = path.join(testDir, directoryName + '-client');
+        const serverDBName = path.join(testDir, directoryName + '-server');
+        fs.mkdirSync(clientDBName, { recursive: true });
+        fs.mkdirSync(serverDBName, { recursive: true });
+
+        const clientDatabase = await createRxDatabase({
+            name: clientDBName,
             storage: getRxStoragePouch('leveldb'),
             multiInstance: false
         });
-        const cols1 = await db1.addCollections({
+        const cols1 = await clientDatabase.addCollections({
             human: {
                 schema: schemas.human
             }
         });
-        const col1 = cols1.human;
+        const clientCollection = cols1.human;
 
-        const db2 = await createRxDatabase({
-            name: db2Name,
+        const serverDatabase = await createRxDatabase({
+            name: serverDBName,
             storage: getRxStoragePouch('leveldb'),
             multiInstance: false
         });
-        const cols2 = await db2.addCollections({
+        const cols2 = await serverDatabase.addCollections({
             human: {
                 schema: schemas.human
             }
         });
-        const col2 = cols2.human;
+        const serverCollection = cols2.human;
+        const emitted: any[] = [];
+        serverCollection.$.subscribe(e => {
+            emitted.push(e);
+        });
 
-        await db1.serverCouchDB({
+        const couchdbServer = await serverDatabase.serverCouchDB({
             port
         });
+        assert.ok(couchdbServer.pouchApp);
 
-        await col2.syncCouchDB({
-            remote: 'http://0.0.0.0:' + port + '/db/human'
+        const replicationState = await clientCollection.syncCouchDB({
+            remote: 'http://0.0.0.0:' + port + '/db/human',
+            direction: {
+                push: true,
+                pull: true
+            },
+            options: {
+                live: true
+            }
         });
-
-        await col1.insert(schemaObjects.human());
-        await col2.insert(schemaObjects.human());
-
-        const findDoc = col1.findOne().exec();
-        assert.ok(findDoc);
+        replicationState.error$.subscribe(err => {
+            console.log('# replication error:');
+            console.dir(err);
+        });
 
         // both collections should have 2 documents
-        await AsyncTestUtil.waitUntil(async () => {
-            const serverDocs = await col1.find().exec();
-            const clientDocs = await col2.find().exec();
-            return (clientDocs.length === 2 && serverDocs.length === 2);
+        await serverCollection.insert(schemaObjects.human('server-doc'))
+        await waitUntil(() => serverCollection.find().exec().then(r => r.length === 1));
+        await waitUntil(() => clientCollection.find().exec().then(r => r.length === 1));
+
+        await clientCollection.insert(schemaObjects.human('client-doc'));
+        // both collections should have 2 docs
+        await waitUntil(() => clientCollection.find().exec().then(r => r.length === 2));
+        await waitUntil(async () => {
+            const docs = await serverCollection.find().exec();
+            if (docs.length > 2) {
+                throw new Error('too many documents');
+            }
+            return docs.length === 2;
         });
 
-        db1.destroy();
-        db2.destroy();
+        // must have emitted both events
+        assert.strictEqual(emitted.length, 2);
+        clientDatabase.destroy();
+        serverDatabase.destroy();
     });
     it('should work for collections with later schema versions', async function () {
         this.timeout(12 * 1000);
-        const port = nexPort();
+        const port = nextPort();
         const serverCollection = await humansCollection.createMigrationCollection(0);
         const serverResponse = await serverCollection.database.serverCouchDB({
             path: '/db',
@@ -393,7 +426,7 @@ config.parallel('server-couchdb.test.ts', () => {
         serverCollection.database.destroy();
     });
     it('should work for dynamic collection-names', async () => {
-        const port = nexPort();
+        const port = nextPort();
         const name = 'foobar';
         const serverCollection = await humansCollection.create(0, name);
         await serverCollection.database.serverCouchDB({
@@ -421,7 +454,7 @@ config.parallel('server-couchdb.test.ts', () => {
         serverCollection.database.destroy();
     });
     it('should throw if collections that created after server()', async () => {
-        const port = nexPort();
+        const port = nextPort();
         const db1 = await createRxDatabase({
             name: randomCouchString(10),
             storage: getRxStoragePouch('memory'),
@@ -443,7 +476,7 @@ config.parallel('server-couchdb.test.ts', () => {
         db1.destroy();
     });
     it('should throw on startup when port is already used', async () => {
-        const port = nexPort();
+        const port = nextPort();
         const db1 = await createRxDatabase({
             name: randomCouchString(10),
             storage: getRxStoragePouch('memory'),
@@ -485,7 +518,7 @@ config.parallel('server-couchdb.test.ts', () => {
         describe('#1447 server path not working', () => {
             it('use the path when given', async function () {
                 this.timeout(12 * 1000);
-                const port = nexPort();
+                const port = nextPort();
                 const path = '/db2';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
@@ -502,7 +535,7 @@ config.parallel('server-couchdb.test.ts', () => {
             });
             it('use the path with ending slash', async function () {
                 this.timeout(12 * 1000);
-                const port = nexPort();
+                const port = nextPort();
                 const path = '/db3/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
@@ -519,7 +552,7 @@ config.parallel('server-couchdb.test.ts', () => {
             });
             it('should be able to use the root /', async function () {
                 this.timeout(12 * 1000);
-                const port = nexPort();
+                const port = nextPort();
                 const path = '/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
@@ -548,7 +581,7 @@ config.parallel('server-couchdb.test.ts', () => {
                 });
                 const col = cols.human;
 
-                const port = nexPort();
+                const port = nextPort();
                 await db.serverCouchDB({
                     port
                 });

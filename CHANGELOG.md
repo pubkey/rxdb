@@ -46,6 +46,8 @@
 - RENAMED the `server` plugin is now called `server-couchdb` and `RxDatabase.server()` is now `RxDatabase.serverCouchDB()`
 - ADDED the [websocket replication plugin](../replication-websocket.md)
 
+- FIX `couchdb-server` plugin missed out events from the replication.
+
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->

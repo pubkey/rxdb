@@ -12,6 +12,7 @@ import {
 import {
     RxCollection
 } from '../../';
+import { nextPort } from '../helper/port-manager';
 
 config.parallel('replication-websocket.test.ts', () => {
     if (!config.platform.isNode()) {
@@ -34,9 +35,8 @@ config.parallel('replication-websocket.test.ts', () => {
         };
     }
 
-    const { getPort } = require('../helper/graphql-server');
-    function getPortAndUrl(path?: string) {
-        const port = getPort();
+    function nextPortAndUrl(path?: string) {
+        const port = nextPort();
         let url = 'ws://localhost:' + port;
         if (path) {
             url += '/' + path;
@@ -53,7 +53,7 @@ config.parallel('replication-websocket.test.ts', () => {
             remote: 1
         });
 
-        const portAndUrl = getPortAndUrl();
+        const portAndUrl = nextPortAndUrl();
 
         await startWebsocketServer({
             database: remoteCollection.database,
@@ -90,7 +90,7 @@ config.parallel('replication-websocket.test.ts', () => {
         const clientDoc = await localCollection.findOne().exec(true);
         const serverDoc = await remoteCollection.findOne().exec(true);
 
-        const portAndUrl = getPortAndUrl();
+        const portAndUrl = nextPortAndUrl();
 
         await startWebsocketServer({
             database: remoteCollection.database,
@@ -148,7 +148,7 @@ config.parallel('replication-websocket.test.ts', () => {
         const clientDoc = await localCollection.findOne().exec(true);
         const serverDoc = await remoteCollection.findOne().exec(true);
 
-        const portAndUrl = getPortAndUrl();
+        const portAndUrl = nextPortAndUrl();
 
         const serverState = await startWebsocketServer({
             database: remoteCollection.database,

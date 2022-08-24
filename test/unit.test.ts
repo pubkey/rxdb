@@ -12,6 +12,7 @@ import './unit/adapter-check.test';
 import './unit/custom-index.test';
 import './unit/query-planner.test';
 
+
 /**
  * Move these tests around so that
  * when you focus on one part of RxDB,
