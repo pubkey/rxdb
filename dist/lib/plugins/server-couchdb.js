@@ -346,6 +346,7 @@ var spawnServer = function spawnServer(_ref) {
 
           var _temp10 = _catch(function () {
             var pingDb = new _pouchdb.PouchDB(url);
+            pingDb.aaa = 'pingDB for ' + url;
             return Promise.resolve(pingDb.info()).then(function () {
               return Promise.resolve(pingDb.close()).then(function () {});
             });
