@@ -14,11 +14,10 @@ const PORT_MAX = 65535;
  * do not accidentiall use the same port.
  */
 export async function nextPort(): Promise<number> {
-    startPort++;
-
     const port = await getPort({
         port: makeRange(startPort, PORT_MAX),
         host: '0.0.0.0',
     });
+    startPort = port + 1;
     return port;
 }
