@@ -141,6 +141,9 @@ config.parallel('replication-websocket.test.ts', () => {
         remoteCollection.database.destroy();
     });
     it('should continue the replication when the connection is broken and established again', async () => {
+        if (config.isFastMode()) {
+            return;
+        }
         const { localCollection, remoteCollection } = await getTestCollections({
             local: 1,
             remote: 1
@@ -258,8 +261,12 @@ config.parallel('replication-websocket.test.ts', () => {
             console.log(JSON.stringify(err, null, 4));
         });
 
+
+        console.log('XX 1');
         await replicationState1.awaitInSync();
+        console.log('XX 2');
         await replicationState2.awaitInSync();
+        console.log('XX 3');
 
         assert.deepStrictEqual(
             await getDocIds(localCollection),
@@ -304,9 +311,12 @@ config.parallel('replication-websocket.test.ts', () => {
         await updateDoc(remoteCollection, 'remote1');
         await updateDoc(remoteDatabase.humans2, 'remote2');
 
+        console.log('-- AA1');
 
         await replicationState1.awaitInSync();
+        console.log('-- AA2');
         await replicationState2.awaitInSync();
+        console.log('-- AA3');
 
         async function ensureUpdated(
             collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType>

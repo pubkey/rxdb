@@ -176,22 +176,14 @@ export function syncGraphQL<RxDocType, CheckpointType>(
     const startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
     graphqlReplicationState.start = () => {
         if (mustUseSocket) {
-            console.log('# START WEBSOCKET CLIENT');
             const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws));
-
-            console.dir(pull);
-
             const clientRequest = wsClient.request(ensureNotFalsy(pull.streamQueryBuilder)(mutateableClientState.headers));
             clientRequest.subscribe({
                 next(data: any) {
                     const firstField = Object.keys(data.data)[0];
-                    console.log('client request emitted:');
-                    console.dir(data.data[firstField]);
                     pullStream$.next(data.data[firstField]);
                 },
                 error(error: any) {
-                    console.log('client request error:');
-                    console.dir(error);
                     pullStream$.error(error);
                 }
             });
