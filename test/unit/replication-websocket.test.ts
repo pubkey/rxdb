@@ -191,8 +191,9 @@ config.parallel('replication-websocket.test.ts', () => {
             database: remoteCollection.database,
             port: portAndUrl.port
         });
-
+        await wait(100);
         await replicationState.awaitInSync();
+        await wait(100);
         const clientDocOnServer = await remoteCollection.findOne(clientDoc.primary).exec(true);
         assert.strictEqual(clientDocOnServer.name, 'client-edited');
         const serverDocOnClient = await localCollection.findOne(serverDoc.primary).exec(true);
