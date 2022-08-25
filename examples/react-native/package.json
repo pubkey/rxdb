@@ -29,6 +29,7 @@
     "pouchdb-adapter-http": "7.3.0",
     "pouchdb-adapter-memory": "7.3.0",
     "pouchdb-replication": "7.3.0",
+    "pouchdb-adapter-asyncstorage": "6.4.1",
     "random-token": "0.0.8",
     "react": "17.0.2",
     "react-native": "0.67.4",
