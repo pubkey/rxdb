@@ -222,7 +222,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
 var addedToPouch = false;
 export var EVENT_EMITTER_BY_POUCH_INSTANCE = new Map();
 export function getCustomEventEmitterByPouch(pouch) {
-  var key = [pouch.name, pouch.adapter].join('|');
+  var key = [pouch.__opts.name, pouch.adapter].join('|');
   var emitter = EVENT_EMITTER_BY_POUCH_INSTANCE.get(key);
 
   if (!emitter) {

@@ -324,6 +324,7 @@ export var spawnServer = function spawnServer(_ref) {
 
           var _temp10 = _catch(function () {
             var pingDb = new PouchDB(url);
+            pingDb.aaa = 'pingDB for ' + url;
             return Promise.resolve(pingDb.info()).then(function () {
               return Promise.resolve(pingDb.close()).then(function () {});
             });

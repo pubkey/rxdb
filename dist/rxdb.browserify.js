@@ -2230,7 +2230,7 @@ var EVENT_EMITTER_BY_POUCH_INSTANCE = new Map();
 exports.EVENT_EMITTER_BY_POUCH_INSTANCE = EVENT_EMITTER_BY_POUCH_INSTANCE;
 
 function getCustomEventEmitterByPouch(pouch) {
-  var key = [pouch.name, pouch.adapter].join('|');
+  var key = [pouch.__opts.name, pouch.adapter].join('|');
   var emitter = EVENT_EMITTER_BY_POUCH_INSTANCE.get(key);
 
   if (!emitter) {
