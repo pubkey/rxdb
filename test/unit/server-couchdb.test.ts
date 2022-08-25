@@ -42,7 +42,7 @@ config.parallel('server-couchdb.test.ts', () => {
 
     it('should run and sync', async function () {
         this.timeout(12 * 1000);
-        const port = nextPort();
+        const port = await nextPort();
         const serverCollection = await humansCollection.create(0, 'human');
         await serverCollection.database.serverCouchDB({
             path: '/db',
@@ -88,7 +88,7 @@ config.parallel('server-couchdb.test.ts', () => {
     });
     it('should run and sync as sub app for express', async function () {
         this.timeout(12 * 1000);
-        const port = nextPort();
+        const port = await nextPort();
         const serverCollection = await humansCollection.create(0);
         const { app, server } = await serverCollection.database.serverCouchDB({
             path: '/',
@@ -142,7 +142,7 @@ config.parallel('server-couchdb.test.ts', () => {
     });
     it('should send cors when defined for missing origin', async function () {
         this.timeout(12 * 1000);
-        const port = nextPort();
+        const port = await nextPort();
         const serverCollection = await humansCollection.create(0);
         await serverCollection.database.serverCouchDB({
             path: '/db',
@@ -183,7 +183,7 @@ config.parallel('server-couchdb.test.ts', () => {
     });
     it('should send cors when defined for present origin', async function () {
         this.timeout(12 * 1000);
-        const port = nextPort();
+        const port = await nextPort();
         const serverCollection = await humansCollection.create(0);
         await serverCollection.database.serverCouchDB({
             path: '/db',
@@ -258,7 +258,7 @@ config.parallel('server-couchdb.test.ts', () => {
         await col1.insert(schemaObjects.human());
 
         await db1.serverCouchDB({
-            port: nextPort()
+            port: await nextPort()
         });
 
         await col1.insert(schemaObjects.human());
@@ -282,7 +282,7 @@ config.parallel('server-couchdb.test.ts', () => {
         await col1.insert(schemaObjects.human());
 
         await db1.serverCouchDB({
-            port: nextPort()
+            port: await nextPort()
         });
 
         await col1.insert(schemaObjects.human());
@@ -299,7 +299,7 @@ config.parallel('server-couchdb.test.ts', () => {
     it('should work on filesystem-storage', async function () {
         addPouchPlugin(NodeWebsqlAdapter);
 
-        const port = nextPort();
+        const port = await nextPort();
 
         const directoryName = 'couchdb-filesystem-test';
         const testDir = path.join(
@@ -389,7 +389,7 @@ config.parallel('server-couchdb.test.ts', () => {
     });
     it('should work for collections with later schema versions', async function () {
         this.timeout(12 * 1000);
-        const port = nextPort();
+        const port = await nextPort();
         const serverCollection = await humansCollection.createMigrationCollection(0);
         const serverResponse = await serverCollection.database.serverCouchDB({
             path: '/db',
@@ -426,7 +426,7 @@ config.parallel('server-couchdb.test.ts', () => {
         serverCollection.database.destroy();
     });
     it('should work for dynamic collection-names', async () => {
-        const port = nextPort();
+        const port = await nextPort();
         const name = 'foobar';
         const serverCollection = await humansCollection.create(0, name);
         await serverCollection.database.serverCouchDB({
@@ -454,7 +454,7 @@ config.parallel('server-couchdb.test.ts', () => {
         serverCollection.database.destroy();
     });
     it('should throw if collections that created after server()', async () => {
-        const port = nextPort();
+        const port = await nextPort();
         const db1 = await createRxDatabase({
             name: randomCouchString(10),
             storage: getRxStoragePouch('memory'),
@@ -476,7 +476,7 @@ config.parallel('server-couchdb.test.ts', () => {
         db1.destroy();
     });
     it('should throw on startup when port is already used', async () => {
-        const port = nextPort();
+        const port = await nextPort();
         const db1 = await createRxDatabase({
             name: randomCouchString(10),
             storage: getRxStoragePouch('memory'),
@@ -518,7 +518,7 @@ config.parallel('server-couchdb.test.ts', () => {
         describe('#1447 server path not working', () => {
             it('use the path when given', async function () {
                 this.timeout(12 * 1000);
-                const port = nextPort();
+                const port = await nextPort();
                 const path = '/db2';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
@@ -535,7 +535,7 @@ config.parallel('server-couchdb.test.ts', () => {
             });
             it('use the path with ending slash', async function () {
                 this.timeout(12 * 1000);
-                const port = nextPort();
+                const port = await nextPort();
                 const path = '/db3/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
@@ -552,7 +552,7 @@ config.parallel('server-couchdb.test.ts', () => {
             });
             it('should be able to use the root /', async function () {
                 this.timeout(12 * 1000);
-                const port = nextPort();
+                const port = await nextPort();
                 const path = '/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
@@ -581,7 +581,7 @@ config.parallel('server-couchdb.test.ts', () => {
                 });
                 const col = cols.human;
 
-                const port = nextPort();
+                const port = await nextPort();
                 await db.serverCouchDB({
                     port
                 });

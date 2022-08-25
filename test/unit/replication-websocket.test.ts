@@ -36,8 +36,8 @@ config.parallel('replication-websocket.test.ts', () => {
         };
     }
 
-    function nextPortAndUrl(path?: string) {
-        const port = nextPort();
+    async function nextPortAndUrl(path?: string) {
+        const port = await nextPort();
         let url = 'ws://localhost:' + port;
         if (path) {
             url += '/' + path;
@@ -54,7 +54,7 @@ config.parallel('replication-websocket.test.ts', () => {
             remote: 1
         });
 
-        const portAndUrl = nextPortAndUrl();
+        const portAndUrl = await nextPortAndUrl();
 
         await startWebsocketServer({
             database: remoteCollection.database,
@@ -91,7 +91,7 @@ config.parallel('replication-websocket.test.ts', () => {
         const clientDoc = await localCollection.findOne().exec(true);
         const serverDoc = await remoteCollection.findOne().exec(true);
 
-        const portAndUrl = nextPortAndUrl();
+        const portAndUrl = await nextPortAndUrl();
 
         await startWebsocketServer({
             database: remoteCollection.database,
@@ -152,7 +152,7 @@ config.parallel('replication-websocket.test.ts', () => {
         const clientDoc = await localCollection.findOne().exec(true);
         const serverDoc = await remoteCollection.findOne().exec(true);
 
-        const portAndUrl = nextPortAndUrl();
+        const portAndUrl = await nextPortAndUrl();
 
         const serverState = await startWebsocketServer({
             database: remoteCollection.database,
@@ -212,7 +212,7 @@ config.parallel('replication-websocket.test.ts', () => {
         }
         const localDatabase = localCollection.database;
         const remoteDatabase = remoteCollection.database;
-        const portAndUrl = nextPortAndUrl();
+        const portAndUrl = await nextPortAndUrl();
 
         await localDatabase.addCollections({
             humans2: {

@@ -70,10 +70,11 @@ declare type Human = {
     deleted: boolean;
 };
 
-export function spawn(
+export async function spawn(
     documents: Human[] = [],
-    port = nextPort()
+    portNumber?: number
 ): Promise<GraphqlServer<Human>> {
+    const port = portNumber ? portNumber : await nextPort();
     const app = express();
     app.use(cors());
 
@@ -225,7 +226,6 @@ export function spawn(
                 }
 
                 documents = documents.filter((d: Human) => d.id !== doc.id);
-
                 documents.push(doc);
 
                 last = doc;
