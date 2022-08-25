@@ -1,7 +1,12 @@
-import findFreePorts from 'find-free-ports';
-import { ensureNotFalsy } from '../../';
+import getPort, { makeRange } from 'get-port';
 
+/**
+ * For easier debugging, we increase the port each time
+ * to ensure that no port is reused in the tests.
+ */
 let startPort = 12000;
+
+const PORT_MAX = 65535;
 
 /**
  * Returns an unused port.
@@ -9,16 +14,11 @@ let startPort = 12000;
  * do not accidentiall use the same port.
  */
 export async function nextPort(): Promise<number> {
-    const freePorts = await findFreePorts(1, {
-        startPort
+    startPort++;
+
+    const port = await getPort({
+        port: makeRange(startPort, PORT_MAX),
+        host: '0.0.0.0',
     });
-    const port = freePorts[0];
-
-    /**
-     * Even if a port gets free again,
-     * do never reuse it to make debugging easier.
-     */
-    startPort = port + 1;
-
-    return ensureNotFalsy(port);
+    return port;
 }
