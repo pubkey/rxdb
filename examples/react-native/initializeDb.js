@@ -1,7 +1,5 @@
 import schema from './src/Schema';
 import { addRxPlugin, createRxDatabase } from 'rxdb';
-
-import { createRxDatabase } from 'rxdb';
 import { getRxStoragePouch, addPouchPlugin } from 'rxdb/plugins/pouchdb'
 addPouchPlugin(require('pouchdb-adapter-asyncstorage').default);
 addPouchPlugin(require('pouchdb-adapter-http'));
