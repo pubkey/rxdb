@@ -1,8 +1,12 @@
 import schema from './src/Schema';
 import { addRxPlugin, createRxDatabase } from 'rxdb';
-import { getRxStorageMemory } from 'rxdb/plugins/memory';
+
+import { createRxDatabase } from 'rxdb';
+import { getRxStoragePouch, addPouchPlugin } from 'rxdb/plugins/pouchdb'
+addPouchPlugin(require('pouchdb-adapter-asyncstorage').default);
+addPouchPlugin(require('pouchdb-adapter-http'));
+
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
-import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
 import PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import PouchdbReplication from 'pouchdb-replication';
 
@@ -30,7 +34,7 @@ const initialize = async () => {
         console.log('Initializing database...');
         db = await createRxDatabase({
             name: dbName,
-            storage: getRxStorageMemory(),
+            storage: getRxStoragePouch('asyncstorage'),
             multiInstance: false,
             ignoreDuplicate: true,
         });
@@ -45,19 +49,13 @@ const initialize = async () => {
                 schema: schema,
             },
         });
-
-        // TODO
-        // const rxReplicationState = db.collections[HeroesCollectionName].syncCouchDB({
-        //     remote: syncURL + dbName + '/',
-        //     options: {
-        //         live: true,
-        //         retry: true,
-        //     },
-        // });
-        //
-        // rxReplicationState.error$.subscribe(async error => {
-        //     console.error(error)
-        // })
+        heroCollection.sync({
+            remote: syncURL + dbName + '/',
+            options: {
+                live: true,
+                retry: true,
+            },
+        });
     } catch (err) {
         console.log('ERROR CREATING COLLECTION', err);
     }

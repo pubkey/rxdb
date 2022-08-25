@@ -11,7 +11,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { AppContext } from './context';
+import { AppContext } from './App';
 
 const { width, height } = Dimensions.get('window');
 
