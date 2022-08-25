@@ -1,4 +1,4 @@
-let lastPort = 6600;
+let lastPort = 12600;
 
 /**
  * Returns an unused port.
