@@ -131,6 +131,7 @@ var ERROR_MESSAGES = {
   RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication when live: true',
   RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication if multiInstance because the replication might run on another instance',
   RC_PULL: 'RxReplication pull handler throwed an error - see .errors for more details',
+  RC_STREAM: 'RxReplication pull stream$ throwed an error - see .errors for more details',
   RC_PUSH: 'RxReplication push handler throwed an error - see .errors for more details',
   // plugins/dev-mode/check-schema.js
   SC1: 'fieldnames do not match the regex',

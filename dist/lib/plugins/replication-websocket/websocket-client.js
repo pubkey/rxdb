@@ -19,17 +19,13 @@ var _util = require("../../util");
 
 var _rxjs = require("rxjs");
 
+var _rxError = require("../../rx-error");
+
 var replicateWithWebsocketServer = function replicateWithWebsocketServer(options) {
   try {
     return Promise.resolve(getWebSocket(options.url)).then(function (socketState) {
       var wsClient = socketState.socket;
-      var messages$ = new _rxjs.Subject();
-
-      wsClient.onmessage = function (messageObj) {
-        var message = JSON.parse(messageObj.data);
-        messages$.next(message);
-      };
-
+      var messages$ = socketState.message$;
       var requestCounter = 0;
 
       function getRequestId() {
@@ -94,6 +90,9 @@ var replicateWithWebsocketServer = function replicateWithWebsocketServer(options
           }
         }
       });
+      socketState.error$.subscribe(function (err) {
+        return replicationState.subjects.error.next(err);
+      });
       /**
        * When the client goes offline and online again,
        * we have to send a 'RESYNC' signal because the client
@@ -101,7 +100,7 @@ var replicateWithWebsocketServer = function replicateWithWebsocketServer(options
        */
 
       socketState.connect$.subscribe(function () {
-        replicationState.reSync();
+        return replicationState.reSync();
       });
       return replicationState;
     });
@@ -127,12 +126,31 @@ var getWebSocket = function getWebSocket(url) {
           res();
         };
       });
+      var message$ = new _rxjs.Subject();
+
+      wsClient.onmessage = function (messageObj) {
+        var message = JSON.parse(messageObj.data);
+        message$.next(message);
+      };
+
+      var error$ = new _rxjs.Subject();
+
+      wsClient.onerror = function (err) {
+        var emitError = (0, _rxError.newRxError)('RC_STREAM', {
+          errors: Array.isArray(err) ? err : [err],
+          direction: 'pull'
+        });
+        error$.next(emitError);
+      };
+
       has = {
         url: url,
         socket: wsClient,
         openPromise: openPromise,
         refCount: 1,
-        connect$: connect$
+        connect$: connect$,
+        message$: message$,
+        error$: error$
       };
       WEBSOCKET_BY_URL.set(url, has);
     } else {

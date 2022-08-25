@@ -140,20 +140,14 @@ export function syncGraphQL(_ref) {
 
   graphqlReplicationState.start = function () {
     if (mustUseSocket) {
-      console.log('# START WEBSOCKET CLIENT');
       var wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws));
-      console.dir(pull);
       var clientRequest = wsClient.request(ensureNotFalsy(pull.streamQueryBuilder)(mutateableClientState.headers));
       clientRequest.subscribe({
         next: function next(data) {
           var firstField = Object.keys(data.data)[0];
-          console.log('client request emitted:');
-          console.dir(data.data[firstField]);
           pullStream$.next(data.data[firstField]);
         },
         error: function error(_error) {
-          console.log('client request error:');
-          console.dir(_error);
           pullStream$.error(_error);
         }
       });

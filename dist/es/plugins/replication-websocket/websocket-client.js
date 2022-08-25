@@ -3,17 +3,12 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import { WebSocket as IsomorphicWebSocket } from 'isomorphic-ws';
 import { getFromMapOrThrow, randomCouchString } from '../../util';
 import { filter, map, Subject, firstValueFrom } from 'rxjs';
+import { newRxError } from '../../rx-error';
 export var replicateWithWebsocketServer = function replicateWithWebsocketServer(options) {
   try {
     return Promise.resolve(getWebSocket(options.url)).then(function (socketState) {
       var wsClient = socketState.socket;
-      var messages$ = new Subject();
-
-      wsClient.onmessage = function (messageObj) {
-        var message = JSON.parse(messageObj.data);
-        messages$.next(message);
-      };
-
+      var messages$ = socketState.message$;
       var requestCounter = 0;
 
       function getRequestId() {
@@ -78,6 +73,9 @@ export var replicateWithWebsocketServer = function replicateWithWebsocketServer(
           }
         }
       });
+      socketState.error$.subscribe(function (err) {
+        return replicationState.subjects.error.next(err);
+      });
       /**
        * When the client goes offline and online again,
        * we have to send a 'RESYNC' signal because the client
@@ -85,7 +83,7 @@ export var replicateWithWebsocketServer = function replicateWithWebsocketServer(
        */
 
       socketState.connect$.subscribe(function () {
-        replicationState.reSync();
+        return replicationState.reSync();
       });
       return replicationState;
     });
@@ -108,12 +106,31 @@ export var getWebSocket = function getWebSocket(url) {
           res();
         };
       });
+      var message$ = new Subject();
+
+      wsClient.onmessage = function (messageObj) {
+        var message = JSON.parse(messageObj.data);
+        message$.next(message);
+      };
+
+      var error$ = new Subject();
+
+      wsClient.onerror = function (err) {
+        var emitError = newRxError('RC_STREAM', {
+          errors: Array.isArray(err) ? err : [err],
+          direction: 'pull'
+        });
+        error$.next(emitError);
+      };
+
       has = {
         url: url,
         socket: wsClient,
         openPromise: openPromise,
         refCount: 1,
-        connect$: connect$
+        connect$: connect$,
+        message$: message$,
+        error$: error$
       };
       WEBSOCKET_BY_URL.set(url, has);
     } else {
