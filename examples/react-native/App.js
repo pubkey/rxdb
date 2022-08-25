@@ -1,9 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
-import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
 import Heroes from './Heroes';
 import initializeDb from './initializeDb';
-addPouchPlugin(require('pouchdb-adapter-asyncstorage').default);
-addPouchPlugin(require('pouchdb-adapter-http'));
+
 
 export const AppContext = createContext();
 

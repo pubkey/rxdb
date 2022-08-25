@@ -4,7 +4,7 @@ import getPort, { makeRange } from 'get-port';
  * For easier debugging, we increase the port each time
  * to ensure that no port is reused in the tests.
  */
-let startPort = 12000;
+let startPort = 16666;
 
 const PORT_MAX = 65535;
 
