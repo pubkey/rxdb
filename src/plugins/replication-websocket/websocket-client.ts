@@ -1,4 +1,4 @@
-import { replicateRxCollection } from '../replication';
+import { replicateRxCollection, RxReplicationState } from '../replication';
 import {
     WebsocketClientOptions,
     WebsocketMessageResponseType,
@@ -19,7 +19,8 @@ import {
     Subject,
     firstValueFrom
 } from 'rxjs';
-import { RxReplicationWriteToMasterRow } from '../../types';
+import { RxError, RxReplicationWriteToMasterRow } from '../../types';
+import { newRxError } from '../../rx-error';
 
 export type WebsocketWithRefCount = {
     url: string;
@@ -27,6 +28,8 @@ export type WebsocketWithRefCount = {
     refCount: number;
     openPromise: Promise<void>;
     connect$: Subject<void>;
+    message$: Subject<WebsocketMessageResponseType>;
+    error$: Subject<RxError>
 };
 
 /**
@@ -56,12 +59,30 @@ export async function getWebSocket(
             };
         });
 
+        const message$ = new Subject<WebsocketMessageResponseType>();
+        wsClient.onmessage = (messageObj) => {
+            const message: WebsocketMessageResponseType = JSON.parse(messageObj.data);
+            message$.next(message);
+        };
+
+        const error$ = new Subject<any>();
+        wsClient.onerror = (err) => {
+            const emitError = newRxError('RC_STREAM', {
+                errors: Array.isArray(err) ? err as any : [err],
+                direction: 'pull'
+            });
+            error$.next(emitError);
+        }
+
+
         has = {
             url,
             socket: wsClient,
             openPromise,
             refCount: 1,
-            connect$
+            connect$,
+            message$,
+            error$
         };
         WEBSOCKET_BY_URL.set(url, has);
     } else {
@@ -89,16 +110,11 @@ export function removeWebSocketRef(
 
 export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     options: WebsocketClientOptions<RxDocType>
-) {
+): Promise<RxReplicationState<RxDocType, CheckpointType>> {
     const socketState = await getWebSocket(options.url);
     const wsClient = socketState.socket;
-    const messages$ = new Subject<WebsocketMessageResponseType>();
 
-    wsClient.onmessage = (messageObj) => {
-        const message: WebsocketMessageResponseType = JSON.parse(messageObj.data);
-        messages$.next(message);
-    };
-
+    const messages$ = socketState.message$;
 
     let requestCounter = 0;
     const requestFlag = randomCouchString(10);
@@ -163,14 +179,14 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
         }
     });
 
+    socketState.error$.subscribe(err => replicationState.subjects.error.next(err));
+
     /**
      * When the client goes offline and online again,
      * we have to send a 'RESYNC' signal because the client
      * might have missed out events while being offline.
      */
-    socketState.connect$.subscribe(() => {
-        replicationState.reSync();
-    });
+    socketState.connect$.subscribe(() => replicationState.reSync());
 
 
     return replicationState;

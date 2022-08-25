@@ -13,6 +13,7 @@ import {
     RxCollection
 } from '../../';
 import { nextPort } from '../helper/port-manager';
+import { humanWithTimestamp } from '../helper/schemas';
 
 config.parallel('replication-websocket.test.ts', () => {
     if (!config.platform.isNode()) {
@@ -196,5 +197,130 @@ config.parallel('replication-websocket.test.ts', () => {
 
         await localCollection.database.destroy();
         await remoteCollection.database.destroy();
+    });
+    it('should be able to replicate multiple collections at once', async () => {
+        const { localCollection, remoteCollection } = await getTestCollections({
+            local: 0,
+            remote: 0
+        });
+        async function getDocIds(collection: RxCollection): Promise<string[]> {
+            const docs = await collection.find().exec();
+            return docs.map(d => d.primary);
+        }
+        const localDatabase = localCollection.database;
+        const remoteDatabase = remoteCollection.database;
+        const portAndUrl = nextPortAndUrl();
+
+        await localDatabase.addCollections({
+            humans2: {
+                schema: humanWithTimestamp
+            }
+        });
+        await remoteDatabase.addCollections({
+            humans2: {
+                schema: humanWithTimestamp
+            }
+        });
+
+        // add one initial doc to each collection
+        await localCollection.insert(schemaObjects.humanWithTimestamp({
+            id: 'local1'
+        }));
+        await localDatabase.humans2.insert(schemaObjects.humanWithTimestamp({
+            id: 'local2'
+        }));
+        await remoteCollection.insert(schemaObjects.humanWithTimestamp({
+            id: 'remote1'
+        }));
+        await remoteDatabase.humans2.insert(schemaObjects.humanWithTimestamp({
+            id: 'remote2'
+        }));
+
+        await startWebsocketServer({
+            database: remoteCollection.database,
+            port: portAndUrl.port
+        });
+
+        const replicationState1 = await replicateWithWebsocketServer({
+            collection: localDatabase.humans,
+            url: portAndUrl.url
+        });
+        replicationState1.error$.subscribe(err => {
+            console.log('got error1 :');
+            console.log(JSON.stringify(err, null, 4));
+        });
+        const replicationState2 = await replicateWithWebsocketServer({
+            collection: localDatabase.humans2,
+            url: portAndUrl.url
+        });
+        replicationState2.error$.subscribe(err => {
+            console.log('got error2 :');
+            console.log(JSON.stringify(err, null, 4));
+        });
+
+        await replicationState1.awaitInSync();
+        await replicationState2.awaitInSync();
+
+        assert.deepStrictEqual(
+            await getDocIds(localCollection),
+            [
+                'local1',
+                'remote1'
+            ]
+        );
+        assert.deepStrictEqual(
+            await getDocIds(remoteCollection),
+            [
+                'local1',
+                'remote1'
+            ]
+        );
+        assert.deepStrictEqual(
+            await getDocIds(localDatabase.humans2),
+            [
+                'local2',
+                'remote2'
+            ]
+        );
+        assert.deepStrictEqual(
+            await getDocIds(remoteDatabase.humans2),
+            [
+                'local2',
+                'remote2'
+            ]
+        );
+
+
+        // make an ongoing change
+        async function updateDoc(
+            collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType>,
+            id: string
+        ) {
+            const doc = await collection.findOne(id).exec(true);
+            await doc.atomicPatch({ name: 'updated' });
+        }
+        await updateDoc(localCollection, 'local1');
+        await updateDoc(localDatabase.humans2, 'local2');
+        await updateDoc(remoteCollection, 'remote1');
+        await updateDoc(remoteDatabase.humans2, 'remote2');
+
+
+        await replicationState1.awaitInSync();
+        await replicationState2.awaitInSync();
+
+        async function ensureUpdated(
+            collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType>
+        ) {
+            const docs = await collection.find().exec();
+            docs.forEach(doc => assert.strictEqual(doc.name, 'updated'))
+        }
+        await ensureUpdated(localCollection);
+        await ensureUpdated(localDatabase.humans2);
+        await ensureUpdated(remoteCollection);
+        await ensureUpdated(remoteDatabase.humans2);
+
+
+        localDatabase.destroy();
+        remoteDatabase.destroy();
     });
 });
