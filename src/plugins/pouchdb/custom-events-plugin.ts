@@ -121,6 +121,52 @@ export function addCustomEventsPluginToPouch() {
         options: PouchBulkDocOptions,
         callback: Function
     ) {
+
+        /**
+         * Normalize inputs
+         * because there are many ways to call pouchdb.bulkDocs()
+         */
+        if (typeof options === 'function') {
+            callback = options;
+            options = {};
+        }
+        if (!options) {
+            options = {};
+        }
+
+
+        /**
+         * PouchDB internal requests
+         * must still be handled normally
+         * to decrease the likelyness of bugs.
+         */
+        const internalPouches = [
+            '_replicator',
+            '_users',
+            'pouch__all_dbs__'
+        ];
+        if (
+            (
+                internalPouches.includes(this.name) ||
+                this.name.includes('-mrview-')
+            )
+        ) {
+            return oldBulkDocs.call(
+                this,
+                body,
+                options,
+                (err: any, result: (PouchBulkDocResultRow | PouchWriteError)[]) => {
+                    if (err) {
+                        callback ? callback(err, null) : 0;
+                    } else {
+                        if (callback) {
+                            callback(null, result);
+                        }
+                    }
+                });
+        }
+
+
         let queue = BULK_DOC_RUN_QUEUE.get(this);
         if (!queue) {
             queue = PROMISE_RESOLVE_VOID;
