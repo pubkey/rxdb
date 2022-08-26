@@ -8,6 +8,7 @@ import corsFn from 'cors';
 import {
     addPouchPlugin,
     PouchDB,
+    PouchDBInstance,
     RxStoragePouch
 } from '../plugins/pouchdb';
 import {
@@ -54,6 +55,7 @@ const normalizeDbName = function (db: RxDatabase) {
 };
 
 const getPrefix = function (db: RxDatabase) {
+    console.log('getPrefix ' + db.name);
     const splitted = db.name.split('/').filter((str: string) => str !== '');
     splitted.pop(); // last was the name
     if (splitted.length === 0) {
@@ -115,12 +117,16 @@ export async function spawnServer(
     }
 
     const adapterObj = adapterObject(storage.adapter);
-    const pouchDBOptions = Object.assign(
-        { prefix: getPrefix(db), log: false },
-        adapterObj,
-    );
+    // const pouchDBOptions = Object.assign(
+    //     {
+    //         prefix: getPrefix(db),
+    //         log: false
+    //     },
+    //     adapterObj,
+    // );
 
-    const pseudo = PouchDB.defaults(pouchDBOptions);
+    console.log('preifx: ' + getPrefix(db));
+
     const app = express();
     APP_OF_DB.set(db, app);
 
@@ -159,7 +165,17 @@ export async function spawnServer(
         );
     }
 
-    const pouchApp = ExpressPouchDB(pseudo, usePouchExpressOptions);
+    usePouchExpressOptions.mode = 'minimumForPouchDB';
+    // usePouchExpressOptions.overrideMode = {
+    //     exclude: [
+    //         'routes/authentication',
+    //         'routes/authorization',
+    //         'routes/session',
+    //         'routes/vhosts'
+    //     ]
+    // };
+
+    const pouchApp = ExpressPouchDB(PouchDB, usePouchExpressOptions);
     app.use(collectionsPath, pouchApp);
 
     let server = null;
@@ -192,17 +208,30 @@ export async function spawnServer(
          * This is a hack which ensures that the couchdb instance exists
          * and we can replicate even if there is no document in the beginning.
          */
-        Promise.all(
+        console.log('000000000000');
+        await Promise.all(
             Object.values(db.collections).map(async (collection) => {
+                console.log('fix db file ' + collection.name);
                 const url = 'http://0.0.0.0:' + port + collectionsPath + '/' + collection.name;
                 try {
+                    console.log('-- 1');
                     const pingDb = new PouchDB(url);
+                    console.log('-- 2');
                     pingDb.aaa = 'pingDB for ' + url;
-                    await pingDb.info();
+                    console.log('-- 3');
+                    const info = await pingDb.info();
+                    console.log('-- 3.5');
+                    console.dir(info);
+                    console.log('-- 4');
                     await pingDb.close();
-                } catch (_err) { }
+                    console.log('-- 5');
+                } catch (err) {
+                    console.log('EEEEEE');
+                    console.dir(err);
+                }
             })
         );
+        console.log('000000000000 -1');
     }
     await startupPromise;
 

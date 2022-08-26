@@ -53,9 +53,10 @@ config.parallel('server-couchdb.test.ts', () => {
     addRxPlugin(RxDBServerCouchDBPlugin);
 
     it('should run and sync', async function () {
-        this.timeout(12 * 1000);
+        this.timeout(120 * 1000);
         const port = await nextPort();
         const serverCollection = await humansCollection.create(0, 'human');
+        console.log('------------------------');
         await serverCollection.database.serverCouchDB({
             path: '/db',
             port
@@ -63,40 +64,60 @@ config.parallel('server-couchdb.test.ts', () => {
 
         // check access to path
         const colUrl = 'http://0.0.0.0:' + port + '/db/human';
+        console.log('colUrl: ' + colUrl);
         const gotJson = await request(colUrl);
         const got = JSON.parse(gotJson);
 
-        assert.strictEqual(got.doc_count, 1);
+        assert.strictEqual(got.doc_count, 0);
 
         const clientCollection = await humansCollection.create(0, 'humanclient');
 
         // sync
-        clientCollection.syncCouchDB({
+        console.log('------------------------2');
+        const replicationState = clientCollection.syncCouchDB({
             remote: colUrl,
             direction: {
                 pull: true,
                 push: true
+            },
+            options: {
+                live: true
             }
         });
+        replicationState.error$.subscribe(err => {
+            console.log('replication error:');
+            console.dir(err);
+            throw err;
+        });
+        console.log('------------------------2.1');
 
         // insert one doc on each side
-        const insertServer = schemaObjects.human();
-        insertServer.firstName = 'server';
-        await serverCollection.insert(insertServer);
+        await serverCollection.insert(schemaObjects.human('server-doc'));
+        console.log('------------------------2.2');
 
         await wait(200);
 
-        const insertClient = schemaObjects.human();
-        insertClient.firstName = 'client';
-        await clientCollection.insert(insertClient);
+        await clientCollection.insert(schemaObjects.human('client-doc'));
 
+        console.log('------------------------2.3');
         await AsyncTestUtil.waitUntil(async () => {
-            const serverDocs = await serverCollection.find().exec();
+            const serverDocs = await serverCollection.find({
+                selector: {
+                    firstName: {
+                        $ne: randomCouchString()
+                    }
+                }
+            }).exec();
+            console.dir(serverDocs.map(d => d.toJSON()));
             return serverDocs.length === 2;
-        });
+        }, 200000, 500);
+        console.log('------------------------2.4');
 
-        clientCollection.database.destroy();
-        serverCollection.database.destroy();
+        process.exit();
+
+
+        await clientCollection.database.destroy();
+        await serverCollection.database.destroy();
     });
     it('should run and sync as sub app for express', async function () {
         this.timeout(12 * 1000);

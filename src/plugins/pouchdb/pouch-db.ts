@@ -18,6 +18,7 @@ import {
     newRxError,
     newRxTypeError
 } from '../../rx-error';
+import type { PouchDBInstance } from '../../types';
 
 
 /**
@@ -68,4 +69,23 @@ export function addPouchPlugin(plugin: any) {
 }
 
 
-export const PouchDB: any = PouchDBCore as any;
+const getPrefix = function (db: PouchDBInstance) {
+    const splitted = db.name.split('/').filter((str: string) => str !== '');
+    splitted.pop(); // last was the name
+    if (splitted.length === 0) {
+        return '';
+    }
+    let ret = splitted.join('/') + '/';
+    if (db.name.startsWith('/')) {
+        ret = '/' + ret;
+    }
+    return ret;
+};
+
+const pouchDBOptions = Object.assign(
+    {
+        log: false
+    }
+);
+
+export const PouchDB: any = PouchDBCore;
