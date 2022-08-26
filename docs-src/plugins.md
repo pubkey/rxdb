@@ -7,7 +7,7 @@ A basic plugin:
 ```javascript
 
 const myPlugin = {
-        rxdb: true, // this must be true so rxdb knows that this is a rxdb-plugin and not a pouchdb-plugin
+        rxdb: true, // this must be true so rxdb knows that this is a rxdb-plugin
         /**
          * (optional) init() method
          * that is called when the plugin is added to RxDB for the first time.

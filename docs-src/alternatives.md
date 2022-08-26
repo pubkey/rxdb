@@ -137,7 +137,7 @@ CouchDB has a changestream and a query syntax similar to MongoDB.
 
 PouchDB is a JavaScript database that is compatible with most of the CouchDB API. It has an adapter system that allows you to switch out the underlaying storage layer. There are many adapters like for IndexedDB, SQLite, the Filesystem and so on. The main benefit is to be able to replicate data with any CouchDB compatible endpoint.
 Because of the CouchDB compatibility, PouchDB has to do a lot of overhead in handling the revision tree of document, which is why it can show bad performance for bigger datasets.
-RxDB was originally build around PouchDB until the storage layer was abstracted out in version [10.0.0](https://github.com/pubkey/rxdb/blob/master/orga/releases/10.0.0.md) so it now allows to use different `RxStorage` implementations.
+RxDB was originally build around PouchDB until the storage layer was abstracted out in version [10.0.0](https://github.com/pubkey/rxdb/blob/master/orga/releases/10.0.0.md) so it now allows to use different `RxStorage` implementations. PouchDB has some performance issues because of how it has to store the document revision tree to stay compatible with the CouchDB API.
 
 ### Couchbase
 

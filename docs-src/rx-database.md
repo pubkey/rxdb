@@ -8,14 +8,11 @@ The database is created by the asynchronous `.createRxDatabase()` function of th
 
 ```javascript
 import { createRxDatabase } from 'rxdb';
-
-// because we use the PouchDB RxStorage, we have to add the indexeddb adapter first.
-import { getRxStoragePouch, addPouchPlugin } from 'rxdb/plugins/pouchdb';
-addPouchPlugin(require('pouchdb-adapter-idb'));
+import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 const db = await createRxDatabase({
   name: 'heroesdb',                   // <- name
-  storage: getRxStoragePouch('idb'),  // <- RxStorage
+  storage: getRxStorageDexie(),       // <- RxStorage
   password: 'myPassword',             // <- password (optional)
   multiInstance: true,                // <- multiInstance (optional, default: true)
   eventReduce: true                   // <- eventReduce (optional, default: true)
