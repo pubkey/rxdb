@@ -7,13 +7,23 @@ import requestR from 'request';
 import {
     createRxDatabase,
     addRxPlugin,
-    randomCouchString
+    randomCouchString,
+    RxCollection
 } from '../../';
 
 import {
     addPouchPlugin,
     getRxStoragePouch
 } from '../../plugins/pouchdb';
+
+import {
+    replicateWithWebsocketServer,
+    startWebsocketServer
+} from '../../plugins/replication-websocket';
+
+import {
+    wrappedValidateAjvStorage
+} from '../../plugins/validate-ajv';
 
 
 import * as humansCollection from '../helper/humans-collection';
@@ -238,7 +248,7 @@ config.parallel('server-couchdb.test.ts', () => {
         await col2.database.serverCouchDB({
             port
         });
-        col2.database.destroy();
+        await col2.database.destroy();
     });
     it('using node-websql with an absolute path should work', async () => {
         addPouchPlugin(NodeWebsqlAdapter);
@@ -263,7 +273,7 @@ config.parallel('server-couchdb.test.ts', () => {
 
         await col1.insert(schemaObjects.human());
 
-        db1.destroy();
+        await db1.destroy();
     });
     it('using full leveldown-module should work', async () => {
         addPouchPlugin(NodeWebsqlAdapter);
@@ -281,8 +291,9 @@ config.parallel('server-couchdb.test.ts', () => {
 
         await col1.insert(schemaObjects.human());
 
+        const port = await nextPort();
         await db1.serverCouchDB({
-            port: await nextPort()
+            port
         });
 
         await col1.insert(schemaObjects.human());
@@ -292,7 +303,8 @@ config.parallel('server-couchdb.test.ts', () => {
             return (serverDocs.length === 2);
         });
 
-        db1.destroy();
+
+        await db1.destroy();
     });
 
 
@@ -300,6 +312,7 @@ config.parallel('server-couchdb.test.ts', () => {
         addPouchPlugin(NodeWebsqlAdapter);
 
         const port = await nextPort();
+        console.log('should work on filesystem-storage port: ' + port);
 
         const directoryName = 'couchdb-filesystem-test';
         const testDir = path.join(
@@ -384,8 +397,8 @@ config.parallel('server-couchdb.test.ts', () => {
 
         // must have emitted both events
         assert.strictEqual(emitted.length, 2);
-        clientDatabase.destroy();
-        serverDatabase.destroy();
+        await clientDatabase.destroy();
+        await serverDatabase.destroy();
     });
     it('should work for collections with later schema versions', async function () {
         this.timeout(12 * 1000);
@@ -422,8 +435,8 @@ config.parallel('server-couchdb.test.ts', () => {
             return (clientDocs.length === 2 && serverDocs.length === 2);
         });
 
-        clientCollection.database.destroy();
-        serverCollection.database.destroy();
+        await clientCollection.database.destroy();
+        await serverCollection.database.destroy();
     });
     it('should work for dynamic collection-names', async () => {
         const port = await nextPort();
@@ -450,8 +463,8 @@ config.parallel('server-couchdb.test.ts', () => {
             return (clientDocs.length === 2 && serverDocs.length === 2);
         });
 
-        clientCollection.database.destroy();
-        serverCollection.database.destroy();
+        await clientCollection.database.destroy();
+        await serverCollection.database.destroy();
     });
     it('should throw if collections that created after server()', async () => {
         const port = await nextPort();
@@ -472,8 +485,7 @@ config.parallel('server-couchdb.test.ts', () => {
             'RxError',
             'after'
         );
-
-        db1.destroy();
+        await db1.destroy();
     });
     it('should throw on startup when port is already used', async () => {
         const port = await nextPort();
@@ -513,6 +525,116 @@ config.parallel('server-couchdb.test.ts', () => {
 
         db1.destroy();
         db2.destroy();
+    });
+    it('using couchdb AND websocket replication must work correctly', async () => {
+        const couchPort = await nextPort();
+        const couchUrl = 'http://0.0.0.0:' + couchPort + '/db/human';
+        const websocketPort = await nextPort();
+        const websocketUrl = 'ws://localhost:' + websocketPort;
+
+        const datastoreDBName = config.rootPath + 'test_tmp/' + randomCouchString(10);
+        type Collections = {
+            human: RxCollection<schemas.HumanDocumentType>
+        }
+
+        const datastoreDB = await createRxDatabase<Collections>({
+            name: datastoreDBName,
+            storage: wrappedValidateAjvStorage({
+                storage: getRxStoragePouch('leveldb')
+            }),
+            multiInstance: false
+        });
+        await datastoreDB.addCollections({
+            human: {
+                schema: schemas.human
+            }
+        });
+
+        await datastoreDB.serverCouchDB({
+            port: couchPort
+        });
+        await startWebsocketServer({
+            database: datastoreDB,
+            port: websocketPort
+        });
+
+
+        const couchClientDBName = config.rootPath + 'test_tmp/' + randomCouchString(10);
+        const couchClientDB = await createRxDatabase<Collections>({
+            name: couchClientDBName,
+            storage: wrappedValidateAjvStorage({
+                storage: getRxStoragePouch('leveldb')
+            }),
+            multiInstance: false
+        });
+        await couchClientDB.addCollections({
+            human: {
+                schema: schemas.human
+            }
+        });
+        await couchClientDB.human.syncCouchDB({
+            remote: couchUrl,
+            direction: {
+                push: true,
+                pull: true
+            },
+            options: {
+                live: true
+            }
+        });
+
+        const websocketClientDB = await createRxDatabase<Collections>({
+            name: randomCouchString(10),
+            storage: getRxStoragePouch('memory'),
+            multiInstance: false
+        });
+        await websocketClientDB.addCollections({
+            human: {
+                schema: schemas.human
+            }
+        });
+
+        const websocketReplicationState = await replicateWithWebsocketServer({
+            collection: websocketClientDB.human,
+            url: websocketUrl
+        });
+        await websocketReplicationState.awaitInSync();
+
+        async function waitUntilDocExists(
+            collection: RxCollection,
+            docId: string
+        ) {
+            await waitUntil(() => {
+                const doc = collection.findOne(docId).exec();
+                return !!doc;
+            });
+        }
+
+        let runCount = 0;
+        while (runCount < 5) {
+            runCount++;
+
+            // insert datastore
+            await datastoreDB.human.insert(schemaObjects.human('doc-datastore' + runCount));
+            await waitUntilDocExists(websocketClientDB.human, 'doc-datastore' + runCount);
+            await waitUntilDocExists(couchClientDB.human, 'doc-datastore' + runCount);
+
+            // insert websocket
+            await websocketClientDB.human.insert(schemaObjects.human('doc-websocket' + runCount));
+            await waitUntilDocExists(datastoreDB.human, 'doc-websocket' + runCount);
+            await waitUntilDocExists(couchClientDB.human, 'doc-websocket' + runCount);
+
+            // insert couch client
+            await couchClientDB.human.insert(schemaObjects.human('doc-couch' + runCount));
+            await waitUntilDocExists(datastoreDB.human, 'doc-couch' + runCount);
+            await waitUntilDocExists(websocketClientDB.human, 'doc-couch' + runCount);
+        }
+
+        await Promise.all([
+            datastoreDB.destroy(),
+            couchClientDB.destroy(),
+            websocketClientDB.destroy()
+        ]);
     });
     describe('issues', () => {
         describe('#1447 server path not working', () => {

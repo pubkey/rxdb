@@ -11,7 +11,7 @@ import type {
 } from '../../types';
 
 export type WebsocketServerOptions = {
-    database: RxDatabase;
+    database: RxDatabase<any, any, any>;
 } & ServerOptions;
 
 export type WebsocketServerState = {
