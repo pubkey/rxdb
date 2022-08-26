@@ -126,8 +126,6 @@ export class RxCouchDBReplicationStateBase {
             ret = new Promise<true>(res => {
                 ensureNotFalsy(this._pouchEventEmitterObject)
                     .on('complete', (info) => {
-                        console.log('replication was canceled!');
-                        console.dir(info);
                         res(true);
                     });
             });

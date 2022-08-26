@@ -25,9 +25,6 @@ export type WebsocketClientOptions<RxDocType> = {
     batchSize?: number;
 } & ClientOptions;
 
-
-
-
 export type WebsocketMessageType = {
     id: string;
     collection: string;

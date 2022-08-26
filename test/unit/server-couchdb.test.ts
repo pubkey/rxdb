@@ -8,7 +8,8 @@ import {
     createRxDatabase,
     addRxPlugin,
     randomCouchString,
-    RxCollection
+    RxCollection,
+    RxChangeEvent
 } from '../../';
 
 import {
@@ -30,6 +31,7 @@ import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import { nextPort } from '../helper/port-manager';
+import { filter, firstValueFrom } from 'rxjs';
 
 config.parallel('server-couchdb.test.ts', () => {
     if (
@@ -532,7 +534,7 @@ config.parallel('server-couchdb.test.ts', () => {
         const websocketPort = await nextPort();
         const websocketUrl = 'ws://localhost:' + websocketPort;
 
-        const datastoreDBName = config.rootPath + 'test_tmp/' + randomCouchString(10);
+        const datastoreDBName = config.rootPath + 'test_tmp/datastore-' + randomCouchString(10);
         type Collections = {
             human: RxCollection<schemas.HumanDocumentType>
         }
@@ -559,7 +561,7 @@ config.parallel('server-couchdb.test.ts', () => {
         });
 
 
-        const couchClientDBName = config.rootPath + 'test_tmp/' + randomCouchString(10);
+        const couchClientDBName = config.rootPath + 'test_tmp/couchclient-' + randomCouchString(10);
         const couchClientDB = await createRxDatabase<Collections>({
             name: couchClientDBName,
             storage: wrappedValidateAjvStorage({
@@ -582,6 +584,47 @@ config.parallel('server-couchdb.test.ts', () => {
                 live: true
             }
         });
+
+
+        /**
+         * We also create an instance that replicates via non-live one-time couchdb replication.
+         */
+        const couchOnceClientDBName = config.rootPath + 'test_tmp/couchonceclient-' + randomCouchString(10);
+        const couchOnceClientDB = await createRxDatabase<Collections>({
+            name: couchOnceClientDBName,
+            storage: wrappedValidateAjvStorage({
+                storage: getRxStoragePouch('leveldb')
+            }),
+            multiInstance: false
+        });
+        await couchOnceClientDB.addCollections({
+            human: {
+                schema: schemas.human
+            }
+        });
+        async function syncCouchOnce() {
+            const state = await couchOnceClientDB.human.syncCouchDB({
+                remote: couchUrl,
+                direction: {
+                    push: true,
+                    pull: true
+                },
+                options: {
+                    live: false,
+                    retry: true,
+                    batch_size: 10,
+                    batches_limit: 1
+                }
+            });
+            await firstValueFrom(
+                state.complete$.pipe(
+                    filter(x => !!x),
+                )
+            );
+        }
+        await syncCouchOnce();
+
+
 
         const websocketClientDB = await createRxDatabase<Collections>({
             name: randomCouchString(10),
@@ -610,29 +653,58 @@ config.parallel('server-couchdb.test.ts', () => {
             });
         }
 
-        let runCount = 0;
-        while (runCount < 5) {
-            runCount++;
+        const emittedDatastore: RxChangeEvent<schemas.HumanDocumentType>[] = [];
+        datastoreDB.$.subscribe(ev => {
+            console.log('datastore emitted:');
+            emittedDatastore.push(ev);
+        });
+        const emittedCouchClient: RxChangeEvent<schemas.HumanDocumentType>[] = [];
+        couchClientDB.$.subscribe(ev => emittedCouchClient.push(ev));
+        const emittedWebsocketClient: RxChangeEvent<schemas.HumanDocumentType>[] = [];
+        websocketClientDB.$.subscribe(ev => emittedWebsocketClient.push(ev));
 
-            // insert datastore
-            await datastoreDB.human.insert(schemaObjects.human('doc-datastore' + runCount));
-            await waitUntilDocExists(websocketClientDB.human, 'doc-datastore' + runCount);
-            await waitUntilDocExists(couchClientDB.human, 'doc-datastore' + runCount);
 
-            // insert websocket
-            await websocketClientDB.human.insert(schemaObjects.human('doc-websocket' + runCount));
-            await waitUntilDocExists(datastoreDB.human, 'doc-websocket' + runCount);
-            await waitUntilDocExists(couchClientDB.human, 'doc-websocket' + runCount);
+        // insert datastore
+        await datastoreDB.human.insert(schemaObjects.human('doc-datastore'));
+        await waitUntilDocExists(websocketClientDB.human, 'doc-datastore');
+        await waitUntilDocExists(couchClientDB.human, 'doc-datastore');
+        await syncCouchOnce();
+        await waitUntilDocExists(couchOnceClientDB.human, 'doc-datastore');
 
-            // insert couch client
-            await couchClientDB.human.insert(schemaObjects.human('doc-couch' + runCount));
-            await waitUntilDocExists(datastoreDB.human, 'doc-couch' + runCount);
-            await waitUntilDocExists(websocketClientDB.human, 'doc-couch' + runCount);
+        // insert websocket
+        await websocketClientDB.human.insert(schemaObjects.human('doc-websocket'));
+        await waitUntilDocExists(datastoreDB.human, 'doc-websocket');
+        await waitUntilDocExists(couchClientDB.human, 'doc-websocket');
+        await syncCouchOnce();
+        await waitUntilDocExists(couchOnceClientDB.human, 'doc-websocket');
+
+        // insert couch client
+        await couchClientDB.human.insert(schemaObjects.human('doc-couch'));
+        await waitUntilDocExists(datastoreDB.human, 'doc-couch');
+        await waitUntilDocExists(websocketClientDB.human, 'doc-couch');
+        await syncCouchOnce();
+        await waitUntilDocExists(couchOnceClientDB.human, 'doc-couch');
+
+        // insert couch once client
+        await couchOnceClientDB.human.insert(schemaObjects.human('doc-couch-once'));
+        await syncCouchOnce();
+        await waitUntilDocExists(datastoreDB.human, 'doc-couch-once');
+        await waitUntilDocExists(couchClientDB.human, 'doc-couch-once');
+        await waitUntilDocExists(websocketClientDB.human, 'doc-couch-once');
+
+
+        // check events
+        async function ensureCorrectEmits(ar: RxChangeEvent<schemas.HumanDocumentType>[]) {
+            await waitUntil(() => ar.length === 4);
         }
+        await ensureCorrectEmits(emittedDatastore);
+        await ensureCorrectEmits(emittedCouchClient);
+        await ensureCorrectEmits(emittedWebsocketClient);
 
         await Promise.all([
             datastoreDB.destroy(),
             couchClientDB.destroy(),
+            couchOnceClientDB.destroy(),
             websocketClientDB.destroy()
         ]);
     });
