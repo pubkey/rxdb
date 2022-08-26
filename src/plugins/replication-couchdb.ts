@@ -23,7 +23,8 @@ import {
     promiseWait,
     flatClone,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_TRUE
+    PROMISE_RESOLVE_TRUE,
+    ensureNotFalsy
 } from '../util';
 import {
     newRxError
@@ -115,12 +116,25 @@ export class RxCouchDBReplicationStateBase {
             return PROMISE_RESOLVE_FALSE;
         }
         this.canceled = true;
+        let ret = PROMISE_RESOLVE_TRUE;
         if (this._pouchEventEmitterObject) {
+            /**
+             * Calling cancel() does not return a promise,
+             * so we have to await the complete event
+             * to know that everything is cleaned up properly.
+             */
+            ret = new Promise<true>(res => {
+                ensureNotFalsy(this._pouchEventEmitterObject)
+                    .on('complete', (info) => {
+                        console.log('replication was canceled!');
+                        console.dir(info);
+                        res(true);
+                    });
+            });
             this._pouchEventEmitterObject.cancel();
         }
         this._subs.forEach(sub => sub.unsubscribe());
-
-        return PROMISE_RESOLVE_TRUE;
+        return ret;
     }
 }
 
