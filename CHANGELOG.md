@@ -48,6 +48,8 @@
 
 - FIX `couchdb-server` plugin missed out events from the replication.
 
+- ADD Support JsonSchema for nested additionalProperties [#3952](https://github.com/pubkey/rxdb/pull/3952) Thanks [@swnf](https://github.com/swnf)
+
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
