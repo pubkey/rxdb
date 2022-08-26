@@ -125,7 +125,7 @@ export class RxCouchDBReplicationStateBase {
              */
             ret = new Promise<true>(res => {
                 ensureNotFalsy(this._pouchEventEmitterObject)
-                    .on('complete', (info) => {
+                    .on('complete', () => {
                         res(true);
                     });
             });
