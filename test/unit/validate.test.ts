@@ -163,7 +163,44 @@ validationImplementations.forEach(
                     );
                     await instance.close();
                 });
+                it('should work with a schema as nested additionalProperties', async () => {
+                    const jsonSchema: any = clone(schemas.heroArray);
+                    jsonSchema.properties.skills.items['additionalProperties'] = {type: 'number'};
+                    const instance = await getRxStorageInstance(jsonSchema);
 
+                    // valid
+                    await instance.bulkWrite([{
+                        document: toRxDocumentData({
+                            name: 'foobar',
+                            skills: [
+                                {
+                                    name: 'foo',
+                                    damage: 10,
+                                    nonDefinedField: 42
+                                }
+                            ],
+                        })
+                    }], testContext);
+
+                    // non valid
+                    await assertThrows(
+                        () => instance.bulkWrite([{
+                            document: toRxDocumentData({
+                                name: 'foobar',
+                                skills: [
+                                    {
+                                        name: 'foo',
+                                        damage: 10,
+                                        nonDefinedField: 'foobar'
+                                    }
+                                ],
+                            })
+                        }], testContext),
+                        'RxError',
+                        'VD2'
+                    );
+                    await instance.close();
+                });
             });
             describe('negative', () => {
                 it('not validate other object', async () => {
