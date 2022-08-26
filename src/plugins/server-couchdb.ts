@@ -192,7 +192,7 @@ export async function spawnServer(
          * This is a hack which ensures that the couchdb instance exists
          * and we can replicate even if there is no document in the beginning.
          */
-        Promise.all(
+        await Promise.all(
             Object.values(db.collections).map(async (collection) => {
                 const url = 'http://0.0.0.0:' + port + collectionsPath + '/' + collection.name;
                 try {
