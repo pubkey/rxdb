@@ -17,7 +17,8 @@ import {
     filter,
     map,
     Subject,
-    firstValueFrom
+    firstValueFrom,
+    BehaviorSubject
 } from 'rxjs';
 import {
     RxDatabase,
@@ -31,7 +32,7 @@ export type WebsocketWithRefCount = {
     socket: ReconnectingWebSocket;
     refCount: number;
     openPromise: Promise<void>;
-    connect$: Subject<void>;
+    connected$: BehaviorSubject<boolean>;
     message$: Subject<WebsocketMessageResponseType>;
     error$: Subject<RxError>
 };
@@ -62,13 +63,16 @@ export async function getWebSocket(
             }
         );
 
-        const connect$ = new Subject<void>();
+        const connected$ = new BehaviorSubject<boolean>(false);
         const openPromise = new Promise<void>(res => {
             wsClient.onopen = () => {
-                connect$.next();
+                connected$.next(true);
                 res();
             };
         });
+        wsClient.onclose = () => {
+            connected$.next(false);
+        };
 
         const message$ = new Subject<WebsocketMessageResponseType>();
         wsClient.onmessage = (messageObj) => {
@@ -91,7 +95,7 @@ export async function getWebSocket(
             socket: wsClient,
             openPromise,
             refCount: 1,
-            connect$,
+            connected$,
             message$,
             error$
         };
@@ -114,7 +118,7 @@ export function removeWebSocketRef(
     obj.refCount = obj.refCount - 1;
     if (obj.refCount === 0) {
         WEBSOCKET_BY_CACHE_KEY.delete(cacheKey);
-        obj.connect$.complete();
+        obj.connected$.complete();
         obj.socket.close();
     }
 }
@@ -135,15 +139,6 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
         const count = requestCounter++;
         return options.collection.database.token + '|' + requestFlag + '|' + count;
     }
-
-    const streamRequest: WebsocketMessageType = {
-        id: 'stream',
-        collection: options.collection.name,
-        method: 'masterChangeStream$',
-        params: []
-    }
-    wsClient.send(JSON.stringify(streamRequest));
-
     const replicationState = replicateRxCollection<RxDocType, CheckpointType>({
         collection: options.collection,
         replicationIdentifier: 'websocket-' + options.url,
@@ -194,12 +189,29 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
 
     socketState.error$.subscribe(err => replicationState.subjects.error.next(err));
 
-    /**
-     * When the client goes offline and online again,
-     * we have to send a 'RESYNC' signal because the client
-     * might have missed out events while being offline.
-     */
-    socketState.connect$.subscribe(() => replicationState.reSync());
+    socketState.connected$.subscribe(isConnected => {
+        if (isConnected) {
+            /**
+             * When the client goes offline and online again,
+             * we have to send a 'RESYNC' signal because the client
+             * might have missed out events while being offline.
+             */
+            replicationState.reSync();
+
+            /**
+             * Because reconnecting creates a new websocket-instance,
+             * we have to start the changestream from the remote again
+             * each time.
+             */
+            const streamRequest: WebsocketMessageType = {
+                id: 'stream',
+                collection: options.collection.name,
+                method: 'masterChangeStream$',
+                params: []
+            }
+            wsClient.send(JSON.stringify(streamRequest));
+        }
+    });
 
     options.collection.onDestroy.push(() => removeWebSocketRef(options.url, options.collection.database));
     return replicationState;

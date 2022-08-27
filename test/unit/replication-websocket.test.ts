@@ -1,6 +1,6 @@
 import assert from 'assert';
 import {
-    wait
+    wait, waitUntil
 } from 'async-test-util';
 import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
@@ -173,7 +173,6 @@ config.parallel('replication-websocket.test.ts', () => {
         const serverDocs = await remoteCollection.find().exec();
         assert.strictEqual(serverDocs.length, 2);
 
-
         // go 'offline' by closing the server
         await serverState.close();
 
@@ -198,6 +197,15 @@ config.parallel('replication-websocket.test.ts', () => {
         assert.strictEqual(clientDocOnServer.name, 'client-edited');
         const serverDocOnClient = await localCollection.findOne(serverDoc.primary).exec(true);
         assert.strictEqual(serverDocOnClient.name, 'server-edited');
+
+        // should still stream the events after the reconnect
+        await remoteCollection.insert(schemaObjects.humanWithTimestamp({
+            id: 'server-doc-after-reconnect'
+        }));
+        await waitUntil(async () => {
+            const doc = await localCollection.findOne('server-doc-after-reconnect').exec();
+            return !!doc;
+        });
 
         await localCollection.database.destroy();
         await remoteCollection.database.destroy();
