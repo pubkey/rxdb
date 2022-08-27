@@ -19,7 +19,11 @@ import {
     Subject,
     firstValueFrom
 } from 'rxjs';
-import { RxError, RxReplicationWriteToMasterRow } from '../../types';
+import {
+    RxDatabase,
+    RxError,
+    RxReplicationWriteToMasterRow
+} from '../../types';
 import { newRxError } from '../../rx-error';
 
 export type WebsocketWithRefCount = {
@@ -36,11 +40,19 @@ export type WebsocketWithRefCount = {
  * Reuse the same socket even when multiple
  * collection replicate with the same server at once.
  */
-export const WEBSOCKET_BY_URL: Map<string, WebsocketWithRefCount> = new Map();
+export const WEBSOCKET_BY_CACHE_KEY: Map<string, WebsocketWithRefCount> = new Map();
 export async function getWebSocket(
-    url: string
+    url: string,
+    database: RxDatabase<any, any, any>
 ): Promise<WebsocketWithRefCount> {
-    let has = WEBSOCKET_BY_URL.get(url);
+    /**
+     * Also use the database token as cache-key
+     * to make it easier to test and debug
+     * multi-instance setups.
+     */
+    const cacheKey = url + '|||' + database.token;
+
+    let has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
     if (!has) {
         const wsClient = new ReconnectingWebSocket(
             url,
@@ -49,7 +61,6 @@ export async function getWebSocket(
                 WebSocket: IsomorphicWebSocket
             }
         );
-
 
         const connect$ = new Subject<void>();
         const openPromise = new Promise<void>(res => {
@@ -84,7 +95,7 @@ export async function getWebSocket(
             message$,
             error$
         };
-        WEBSOCKET_BY_URL.set(url, has);
+        WEBSOCKET_BY_CACHE_KEY.set(cacheKey, has);
     } else {
         has.refCount = has.refCount + 1;
     }
@@ -95,12 +106,14 @@ export async function getWebSocket(
 }
 
 export function removeWebSocketRef(
-    url: string
+    url: string,
+    database: RxDatabase
 ) {
-    const obj = getFromMapOrThrow(WEBSOCKET_BY_URL, url);
+    const cacheKey = url + '|||' + database.token;
+    const obj = getFromMapOrThrow(WEBSOCKET_BY_CACHE_KEY, cacheKey);
     obj.refCount = obj.refCount - 1;
     if (obj.refCount === 0) {
-        WEBSOCKET_BY_URL.delete(url);
+        WEBSOCKET_BY_CACHE_KEY.delete(cacheKey);
         obj.connect$.complete();
         obj.socket.close();
     }
@@ -111,7 +124,7 @@ export function removeWebSocketRef(
 export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     options: WebsocketClientOptions<RxDocType>
 ): Promise<RxReplicationState<RxDocType, CheckpointType>> {
-    const socketState = await getWebSocket(options.url);
+    const socketState = await getWebSocket(options.url, options.collection.database);
     const wsClient = socketState.socket;
 
     const messages$ = socketState.message$;
@@ -188,6 +201,6 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
      */
     socketState.connect$.subscribe(() => replicationState.reSync());
 
-
+    options.collection.onDestroy.push(() => removeWebSocketRef(options.url, options.collection.database));
     return replicationState;
 }

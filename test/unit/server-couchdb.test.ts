@@ -655,7 +655,6 @@ config.parallel('server-couchdb.test.ts', () => {
 
         const emittedDatastore: RxChangeEvent<schemas.HumanDocumentType>[] = [];
         datastoreDB.$.subscribe(ev => {
-            console.log('datastore emitted:');
             emittedDatastore.push(ev);
         });
         const emittedCouchClient: RxChangeEvent<schemas.HumanDocumentType>[] = [];

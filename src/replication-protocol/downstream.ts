@@ -177,7 +177,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             docsOfAllTasks = docsOfAllTasks.concat(task.documents);
             lastCheckpoint = stackCheckpoints([lastCheckpoint, task.checkpoint]);
         });
-
         return persistFromMaster(
             docsOfAllTasks,
             ensureNotFalsy(lastCheckpoint)

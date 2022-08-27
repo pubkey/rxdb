@@ -262,12 +262,8 @@ config.parallel('replication-websocket.test.ts', () => {
             console.log(JSON.stringify(err, null, 4));
         });
 
-
-        console.log('XX 1');
         await replicationState1.awaitInSync();
-        console.log('XX 2');
         await replicationState2.awaitInSync();
-        console.log('XX 3');
 
         assert.deepStrictEqual(
             await getDocIds(localCollection),
@@ -298,7 +294,6 @@ config.parallel('replication-websocket.test.ts', () => {
             ]
         );
 
-
         // make an ongoing change
         async function updateDoc(
             collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType>,
@@ -312,12 +307,8 @@ config.parallel('replication-websocket.test.ts', () => {
         await updateDoc(remoteCollection, 'remote1');
         await updateDoc(remoteDatabase.humans2, 'remote2');
 
-        console.log('-- AA1');
-
         await replicationState1.awaitInSync();
-        console.log('-- AA2');
         await replicationState2.awaitInSync();
-        console.log('-- AA3');
 
         async function ensureUpdated(
             collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType>
@@ -330,8 +321,57 @@ config.parallel('replication-websocket.test.ts', () => {
         await ensureUpdated(remoteCollection);
         await ensureUpdated(remoteDatabase.humans2);
 
-
         localDatabase.destroy();
         remoteDatabase.destroy();
+    });
+
+    it('should be able to replicate multiple clients at once', async () => {
+        const portAndUrl = await nextPortAndUrl();
+        const [
+            serverCollection,
+            clientOneCollection,
+            clientTwoCollection
+        ] = await Promise.all([
+            humansCollection.createHumanWithTimestamp(0, undefined, false),
+            humansCollection.createHumanWithTimestamp(0, undefined, false),
+            humansCollection.createHumanWithTimestamp(0, undefined, false)
+        ]);
+
+        await startWebsocketServer({
+            database: serverCollection.database,
+            port: portAndUrl.port
+        });
+
+        const replicationState1 = await replicateWithWebsocketServer({
+            collection: clientOneCollection,
+            url: portAndUrl.url
+        });
+
+        const replicationState2 = await replicateWithWebsocketServer({
+            collection: clientTwoCollection,
+            url: portAndUrl.url
+        });
+        const awaitInSync = async () => {
+            await replicationState1.awaitInSync();
+            await replicationState2.awaitInSync();
+        };
+        await awaitInSync();
+
+
+        await serverCollection.insert(schemaObjects.humanWithTimestamp({
+            id: 'server-doc'
+        }));
+
+        await wait(100);
+        await awaitInSync();
+
+        await clientOneCollection.findOne('server-doc').exec(true);
+        await clientTwoCollection.findOne('server-doc').exec(true);
+
+        await Promise.all([
+            serverCollection.database.destroy(),
+            clientOneCollection.database.destroy(),
+            clientTwoCollection.database.destroy()
+        ]);
     });
 });

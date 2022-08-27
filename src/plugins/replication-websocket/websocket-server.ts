@@ -69,10 +69,12 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
         return handler;
     }
 
-
-    const startedStreamCollections: Set<string> = new Set();
-
     wss.on('connection', function connection(ws) {
+        const onCloseHandlers: Function[] = [];
+        ws.onclose = () => {
+            onCloseHandlers.map(fn => fn())
+        }
+
         ws.on('message', async (messageString: string) => {
             const message: WebsocketMessageType = JSON.parse(messageString);
             const handler = getReplicationHandler(message.collection);
@@ -83,17 +85,15 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
              * it means that the client requested the masterChangeStream$
              */
             if (typeof method !== 'function') {
-                if (!startedStreamCollections.has(message.collection)) {
-                    startedStreamCollections.add(message.collection);
-                    handler.masterChangeStream$.subscribe(ev => {
-                        const streamResponse: WebsocketMessageResponseType = {
-                            id: 'stream',
-                            collection: message.collection,
-                            result: ev
-                        };
-                        ws.send(JSON.stringify(streamResponse));
-                    });
-                }
+                const sub = handler.masterChangeStream$.subscribe(ev => {
+                    const streamResponse: WebsocketMessageResponseType = {
+                        id: 'stream',
+                        collection: message.collection,
+                        result: ev
+                    };
+                    ws.send(JSON.stringify(streamResponse));
+                });
+                onCloseHandlers.push(() => sub.unsubscribe());
                 return;
             }
             const result = await (method as any)(...message.params);
