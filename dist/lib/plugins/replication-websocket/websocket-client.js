@@ -34,13 +34,6 @@ var replicateWithWebsocketServer = function replicateWithWebsocketServer(options
       }
 
       var requestFlag = (0, _util.randomCouchString)(10);
-      var streamRequest = {
-        id: 'stream',
-        collection: options.collection.name,
-        method: 'masterChangeStream$',
-        params: []
-      };
-      wsClient.send(JSON.stringify(streamRequest));
       var replicationState = (0, _replication.replicateRxCollection)({
         collection: options.collection,
         replicationIdentifier: 'websocket-' + options.url,
@@ -93,14 +86,28 @@ var replicateWithWebsocketServer = function replicateWithWebsocketServer(options
       socketState.error$.subscribe(function (err) {
         return replicationState.subjects.error.next(err);
       });
-      /**
-       * When the client goes offline and online again,
-       * we have to send a 'RESYNC' signal because the client
-       * might have missed out events while being offline.
-       */
+      socketState.connected$.subscribe(function (isConnected) {
+        if (isConnected) {
+          /**
+           * When the client goes offline and online again,
+           * we have to send a 'RESYNC' signal because the client
+           * might have missed out events while being offline.
+           */
+          replicationState.reSync();
+          /**
+           * Because reconnecting creates a new websocket-instance,
+           * we have to start the changestream from the remote again
+           * each time.
+           */
 
-      socketState.connect$.subscribe(function () {
-        return replicationState.reSync();
+          var streamRequest = {
+            id: 'stream',
+            collection: options.collection.name,
+            method: 'masterChangeStream$',
+            params: []
+          };
+          wsClient.send(JSON.stringify(streamRequest));
+        }
       });
       options.collection.onDestroy.push(function () {
         return removeWebSocketRef(options.url, options.collection.database);
@@ -128,13 +135,18 @@ var getWebSocket = function getWebSocket(url, database) {
       var wsClient = new _reconnectingWebsocket["default"](url, undefined, {
         WebSocket: _isomorphicWs.WebSocket
       });
-      var connect$ = new _rxjs.Subject();
+      var connected$ = new _rxjs.BehaviorSubject(false);
       var openPromise = new Promise(function (res) {
         wsClient.onopen = function () {
-          connect$.next();
+          connected$.next(true);
           res();
         };
       });
+
+      wsClient.onclose = function () {
+        connected$.next(false);
+      };
+
       var message$ = new _rxjs.Subject();
 
       wsClient.onmessage = function (messageObj) {
@@ -157,7 +169,7 @@ var getWebSocket = function getWebSocket(url, database) {
         socket: wsClient,
         openPromise: openPromise,
         refCount: 1,
-        connect$: connect$,
+        connected$: connected$,
         message$: message$,
         error$: error$
       };
@@ -190,7 +202,7 @@ function removeWebSocketRef(url, database) {
 
   if (obj.refCount === 0) {
     WEBSOCKET_BY_CACHE_KEY["delete"](cacheKey);
-    obj.connect$.complete();
+    obj.connected$.complete();
     obj.socket.close();
   }
 }

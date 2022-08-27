@@ -1,14 +1,14 @@
 import { RxReplicationState } from '../replication';
 import { WebsocketClientOptions, WebsocketMessageResponseType } from './websocket-types';
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import { Subject } from 'rxjs';
+import { Subject, BehaviorSubject } from 'rxjs';
 import { RxDatabase, RxError } from '../../types';
 export declare type WebsocketWithRefCount = {
     url: string;
     socket: ReconnectingWebSocket;
     refCount: number;
     openPromise: Promise<void>;
-    connect$: Subject<void>;
+    connected$: BehaviorSubject<boolean>;
     message$: Subject<WebsocketMessageResponseType>;
     error$: Subject<RxError>;
 };
