@@ -218,6 +218,17 @@ function _catch(body, recover) {
 
 export var spawnServer = function spawnServer(_ref) {
   try {
+    var _temp11 = function _temp11() {
+      return Promise.resolve(startupPromise).then(function () {
+        var response = {
+          app: app,
+          pouchApp: pouchApp,
+          server: server
+        };
+        return response;
+      });
+    };
+
     var _this2 = this;
 
     var _ref$path = _ref.path,
@@ -290,61 +301,56 @@ export var spawnServer = function spawnServer(_ref) {
     var server = null;
     var startupPromise = PROMISE_RESOLVE_VOID;
 
-    if (startServer) {
-      /**
-       * Listen for errors on server startup.
-       * and properly handle the error instead of returning a startupPromise
-       */
-      startupPromise = new Promise(function (res, rej) {
-        var answered = false;
-        server = app.listen(port, function () {
-          if (!answered) {
-            answered = true;
-            res();
-          }
+    var _temp12 = function () {
+      if (startServer) {
+        /**
+         * Listen for errors on server startup.
+         * and properly handle the error instead of returning a startupPromise
+         */
+        startupPromise = new Promise(function (res, rej) {
+          var answered = false;
+          server = app.listen(port, function () {
+            if (!answered) {
+              answered = true;
+              res();
+            }
+          });
+          server.on('error', function (err) {
+            if (!answered) {
+              answered = true;
+              rej(err);
+            }
+          });
         });
-        server.on('error', function (err) {
-          if (!answered) {
-            answered = true;
-            rej(err);
+        SERVERS_OF_DB.get(db).push(server);
+        /**
+         * When the database has no documents, there is no db file
+         * and so the replication would not work.
+         * This is a hack which ensures that the couchdb instance exists
+         * and we can replicate even if there is no document in the beginning.
+         */
+
+        return Promise.resolve(Promise.all(Object.values(db.collections).map(function (collection) {
+          try {
+            var url = 'http://0.0.0.0:' + port + collectionsPath + '/' + collection.name;
+
+            var _temp14 = _catch(function () {
+              var pingDb = new PouchDB(url);
+              pingDb.aaa = 'pingDB for ' + url;
+              return Promise.resolve(pingDb.info()).then(function () {
+                return Promise.resolve(pingDb.close()).then(function () {});
+              });
+            }, function () {});
+
+            return Promise.resolve(_temp14 && _temp14.then ? _temp14.then(function () {}) : void 0);
+          } catch (e) {
+            return Promise.reject(e);
           }
-        });
-      });
-      SERVERS_OF_DB.get(db).push(server);
-      /**
-       * When the database has no documents, there is no db file
-       * and so the replication would not work.
-       * This is a hack which ensures that the couchdb instance exists
-       * and we can replicate even if there is no document in the beginning.
-       */
+        }))).then(function () {});
+      }
+    }();
 
-      Promise.all(Object.values(db.collections).map(function (collection) {
-        try {
-          var url = 'http://0.0.0.0:' + port + collectionsPath + '/' + collection.name;
-
-          var _temp10 = _catch(function () {
-            var pingDb = new PouchDB(url);
-            pingDb.aaa = 'pingDB for ' + url;
-            return Promise.resolve(pingDb.info()).then(function () {
-              return Promise.resolve(pingDb.close()).then(function () {});
-            });
-          }, function () {});
-
-          return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(function () {}) : void 0);
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      }));
-    }
-
-    return Promise.resolve(startupPromise).then(function () {
-      var response = {
-        app: app,
-        pouchApp: pouchApp,
-        server: server
-      };
-      return response;
-    });
+    return Promise.resolve(_temp12 && _temp12.then ? _temp12.then(_temp11) : _temp11(_temp12));
   } catch (e) {
     return Promise.reject(e);
   }

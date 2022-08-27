@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getWebSocket = exports.WEBSOCKET_BY_URL = void 0;
+exports.getWebSocket = exports.WEBSOCKET_BY_CACHE_KEY = void 0;
 exports.removeWebSocketRef = removeWebSocketRef;
 exports.replicateWithWebsocketServer = void 0;
 
@@ -23,7 +23,7 @@ var _rxError = require("../../rx-error");
 
 var replicateWithWebsocketServer = function replicateWithWebsocketServer(options) {
   try {
-    return Promise.resolve(getWebSocket(options.url)).then(function (socketState) {
+    return Promise.resolve(getWebSocket(options.url, options.collection.database)).then(function (socketState) {
       var wsClient = socketState.socket;
       var messages$ = socketState.message$;
       var requestCounter = 0;
@@ -102,6 +102,9 @@ var replicateWithWebsocketServer = function replicateWithWebsocketServer(options
       socketState.connect$.subscribe(function () {
         return replicationState.reSync();
       });
+      options.collection.onDestroy.push(function () {
+        return removeWebSocketRef(options.url, options.collection.database);
+      });
       return replicationState;
     });
   } catch (e) {
@@ -111,9 +114,15 @@ var replicateWithWebsocketServer = function replicateWithWebsocketServer(options
 
 exports.replicateWithWebsocketServer = replicateWithWebsocketServer;
 
-var getWebSocket = function getWebSocket(url) {
+var getWebSocket = function getWebSocket(url, database) {
   try {
-    var has = WEBSOCKET_BY_URL.get(url);
+    /**
+     * Also use the database token as cache-key
+     * to make it easier to test and debug
+     * multi-instance setups.
+     */
+    var cacheKey = url + '|||' + database.token;
+    var has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
 
     if (!has) {
       var wsClient = new _reconnectingWebsocket["default"](url, undefined, {
@@ -152,7 +161,7 @@ var getWebSocket = function getWebSocket(url) {
         message$: message$,
         error$: error$
       };
-      WEBSOCKET_BY_URL.set(url, has);
+      WEBSOCKET_BY_CACHE_KEY.set(cacheKey, has);
     } else {
       has.refCount = has.refCount + 1;
     }
@@ -171,15 +180,16 @@ exports.getWebSocket = getWebSocket;
  * Reuse the same socket even when multiple
  * collection replicate with the same server at once.
  */
-var WEBSOCKET_BY_URL = new Map();
-exports.WEBSOCKET_BY_URL = WEBSOCKET_BY_URL;
+var WEBSOCKET_BY_CACHE_KEY = new Map();
+exports.WEBSOCKET_BY_CACHE_KEY = WEBSOCKET_BY_CACHE_KEY;
 
-function removeWebSocketRef(url) {
-  var obj = (0, _util.getFromMapOrThrow)(WEBSOCKET_BY_URL, url);
+function removeWebSocketRef(url, database) {
+  var cacheKey = url + '|||' + database.token;
+  var obj = (0, _util.getFromMapOrThrow)(WEBSOCKET_BY_CACHE_KEY, cacheKey);
   obj.refCount = obj.refCount - 1;
 
   if (obj.refCount === 0) {
-    WEBSOCKET_BY_URL["delete"](url);
+    WEBSOCKET_BY_CACHE_KEY["delete"](cacheKey);
     obj.connect$.complete();
     obj.socket.close();
   }

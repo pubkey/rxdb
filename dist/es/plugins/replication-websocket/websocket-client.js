@@ -6,7 +6,7 @@ import { filter, map, Subject, firstValueFrom } from 'rxjs';
 import { newRxError } from '../../rx-error';
 export var replicateWithWebsocketServer = function replicateWithWebsocketServer(options) {
   try {
-    return Promise.resolve(getWebSocket(options.url)).then(function (socketState) {
+    return Promise.resolve(getWebSocket(options.url, options.collection.database)).then(function (socketState) {
       var wsClient = socketState.socket;
       var messages$ = socketState.message$;
       var requestCounter = 0;
@@ -85,15 +85,24 @@ export var replicateWithWebsocketServer = function replicateWithWebsocketServer(
       socketState.connect$.subscribe(function () {
         return replicationState.reSync();
       });
+      options.collection.onDestroy.push(function () {
+        return removeWebSocketRef(options.url, options.collection.database);
+      });
       return replicationState;
     });
   } catch (e) {
     return Promise.reject(e);
   }
 };
-export var getWebSocket = function getWebSocket(url) {
+export var getWebSocket = function getWebSocket(url, database) {
   try {
-    var has = WEBSOCKET_BY_URL.get(url);
+    /**
+     * Also use the database token as cache-key
+     * to make it easier to test and debug
+     * multi-instance setups.
+     */
+    var cacheKey = url + '|||' + database.token;
+    var has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
 
     if (!has) {
       var wsClient = new ReconnectingWebSocket(url, undefined, {
@@ -132,7 +141,7 @@ export var getWebSocket = function getWebSocket(url) {
         message$: message$,
         error$: error$
       };
-      WEBSOCKET_BY_URL.set(url, has);
+      WEBSOCKET_BY_CACHE_KEY.set(cacheKey, has);
     } else {
       has.refCount = has.refCount + 1;
     }
@@ -149,13 +158,14 @@ export var getWebSocket = function getWebSocket(url) {
  * Reuse the same socket even when multiple
  * collection replicate with the same server at once.
  */
-export var WEBSOCKET_BY_URL = new Map();
-export function removeWebSocketRef(url) {
-  var obj = getFromMapOrThrow(WEBSOCKET_BY_URL, url);
+export var WEBSOCKET_BY_CACHE_KEY = new Map();
+export function removeWebSocketRef(url, database) {
+  var cacheKey = url + '|||' + database.token;
+  var obj = getFromMapOrThrow(WEBSOCKET_BY_CACHE_KEY, cacheKey);
   obj.refCount = obj.refCount - 1;
 
   if (obj.refCount === 0) {
-    WEBSOCKET_BY_URL["delete"](url);
+    WEBSOCKET_BY_CACHE_KEY["delete"](cacheKey);
     obj.connect$.complete();
     obj.socket.close();
   }

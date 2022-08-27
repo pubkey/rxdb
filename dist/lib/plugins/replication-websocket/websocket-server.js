@@ -74,8 +74,15 @@ function startWebsocketServer(options) {
     return handler;
   }
 
-  var startedStreamCollections = new Set();
   wss.on('connection', function connection(ws) {
+    var onCloseHandlers = [];
+
+    ws.onclose = function () {
+      onCloseHandlers.map(function (fn) {
+        return fn();
+      });
+    };
+
     ws.on('message', function (messageString) {
       try {
         var message = JSON.parse(messageString);
@@ -87,18 +94,17 @@ function startWebsocketServer(options) {
          */
 
         if (typeof method !== 'function') {
-          if (!startedStreamCollections.has(message.collection)) {
-            startedStreamCollections.add(message.collection);
-            handler.masterChangeStream$.subscribe(function (ev) {
-              var streamResponse = {
-                id: 'stream',
-                collection: message.collection,
-                result: ev
-              };
-              ws.send(JSON.stringify(streamResponse));
-            });
-          }
-
+          var sub = handler.masterChangeStream$.subscribe(function (ev) {
+            var streamResponse = {
+              id: 'stream',
+              collection: message.collection,
+              result: ev
+            };
+            ws.send(JSON.stringify(streamResponse));
+          });
+          onCloseHandlers.push(function () {
+            return sub.unsubscribe();
+          });
           return Promise.resolve();
         }
 
