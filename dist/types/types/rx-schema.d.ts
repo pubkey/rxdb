@@ -36,7 +36,7 @@ export type JsonSchema<RxDocType = any> = {
     anyOf?: JsonSchema[];
     oneOf?: JsonSchema[];
     additionalItems?: boolean | JsonSchema;
-    additionalProperties?: boolean;
+    additionalProperties?: boolean | JsonSchema;
     type?: JsonSchemaTypes | JsonSchemaTypes[];
     description?: string;
     dependencies?: {

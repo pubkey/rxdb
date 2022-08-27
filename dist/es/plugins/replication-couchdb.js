@@ -5,7 +5,7 @@
 import PouchReplicationPlugin from 'pouchdb-replication';
 import { BehaviorSubject, Subject, fromEvent, firstValueFrom } from 'rxjs';
 import { skipUntil, filter, first, mergeMap } from 'rxjs/operators';
-import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } from '../util';
+import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, ensureNotFalsy } from '../util';
 import { newRxError } from '../rx-error';
 import { isInstanceOf as isInstanceOfPouchDB, addPouchPlugin, getPouchDBOfRxCollection } from '../plugins/pouchdb';
 import { isRxCollection } from '../rx-collection';
@@ -71,13 +71,27 @@ export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
   ;
 
   _proto.cancel = function cancel() {
+    var _this2 = this;
+
     if (this.canceled) {
       return PROMISE_RESOLVE_FALSE;
     }
 
     this.canceled = true;
+    var ret = PROMISE_RESOLVE_TRUE;
 
     if (this._pouchEventEmitterObject) {
+      /**
+       * Calling cancel() does not return a promise,
+       * so we have to await the complete event
+       * to know that everything is cleaned up properly.
+       */
+      ret = new Promise(function (res) {
+        ensureNotFalsy(_this2._pouchEventEmitterObject).on('complete', function () {
+          res(true);
+        });
+      });
+
       this._pouchEventEmitterObject.cancel();
     }
 
@@ -85,7 +99,7 @@ export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
       return sub.unsubscribe();
     });
 
-    return PROMISE_RESOLVE_TRUE;
+    return ret;
   };
 
   return RxCouchDBReplicationStateBase;
@@ -222,7 +236,7 @@ export function pouchReplicationFunction(pouch, _ref) {
   }
 }
 export function syncCouchDB(_ref2) {
-  var _this2 = this;
+  var _this3 = this;
 
   var remote = _ref2.remote,
       _ref2$waitForLeadersh = _ref2.waitForLeadership,
@@ -276,14 +290,14 @@ export function syncCouchDB(_ref2) {
   var waitTillRun = waitForLeadership && this.database.multiInstance // do not await leadership if not multiInstance
   ? this.database.waitForLeadership() : promiseWait(0);
   waitTillRun.then(function () {
-    if (_this2.destroyed || repState.canceled) {
+    if (_this3.destroyed || repState.canceled) {
       return;
     }
 
     var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
-    _this2.onDestroy.push(function () {
+    _this3.onDestroy.push(function () {
       return repState.cancel();
     });
   });
