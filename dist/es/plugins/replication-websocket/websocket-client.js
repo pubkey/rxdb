@@ -112,7 +112,7 @@ export var getWebSocket = function getWebSocket(url, database) {
     var has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
 
     if (!has) {
-      var wsClient = new ReconnectingWebSocket(url, undefined, {
+      var wsClient = new ReconnectingWebSocket(url, [], {
         WebSocket: IsomorphicWebSocket
       });
       var connected$ = new BehaviorSubject(false);
