@@ -37,6 +37,21 @@ export type WebsocketWithRefCount = {
     error$: Subject<RxError>
 };
 
+
+/**
+ * Copied and adapter from the 'reconnecting-websocket' npm module.
+ * Some bundlers have problems with bundling the isomorphic-ws plugin
+ * so we directly check the correctness in RxDB to ensure that we can
+ * throw a helpfull error.
+ */
+function ensureIsWebsocket(w: typeof IsomorphicWebSocket) {
+    const is = typeof w !== 'undefined' && !!w && w.CLOSING === 2;
+    if (!is) {
+        console.dir(w);
+        throw new Error('websocket not valid');
+    }
+}
+
 /**
  * Reuse the same socket even when multiple
  * collection replicate with the same server at once.
@@ -55,6 +70,7 @@ export async function getWebSocket(
 
     let has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
     if (!has) {
+        ensureIsWebsocket(IsomorphicWebSocket);
         const wsClient = new ReconnectingWebSocket(
             url,
             [],
