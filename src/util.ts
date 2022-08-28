@@ -518,7 +518,7 @@ export function isFolderPath(name: string) {
 
 export function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K): V {
     const val = map.get(key);
-    if (!val) {
+    if (typeof val === 'undefined') {
         throw new Error('missing value from map ' + key);
     }
     return val;
