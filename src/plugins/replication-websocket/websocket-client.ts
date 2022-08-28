@@ -57,7 +57,7 @@ export async function getWebSocket(
     if (!has) {
         const wsClient = new ReconnectingWebSocket(
             url,
-            undefined,
+            [],
             {
                 WebSocket: IsomorphicWebSocket
             }
