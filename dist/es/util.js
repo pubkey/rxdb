@@ -473,7 +473,7 @@ export function isFolderPath(name) {
 export function getFromMapOrThrow(map, key) {
   var val = map.get(key);
 
-  if (!val) {
+  if (typeof val === 'undefined') {
     throw new Error('missing value from map ' + key);
   }
 
