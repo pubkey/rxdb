@@ -6,9 +6,7 @@ import {
 } from './websocket-types';
 
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import {
-    WebSocket as IsomorphicWebSocket
-} from 'isomorphic-ws';
+import IsomorphicWebSocket from 'isomorphic-ws';
 import {
     getFromMapOrThrow,
     randomCouchString
