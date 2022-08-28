@@ -13,13 +13,33 @@ var _replication = require("../replication");
 
 var _reconnectingWebsocket = _interopRequireDefault(require("reconnecting-websocket"));
 
-var _isomorphicWs = require("isomorphic-ws");
+var _isomorphicWs = _interopRequireDefault(require("isomorphic-ws"));
 
 var _util = require("../../util");
 
 var _rxjs = require("rxjs");
 
 var _rxError = require("../../rx-error");
+
+/**
+ * Copied and adapter from the 'reconnecting-websocket' npm module.
+ * Some bundlers have problems with bundling the isomorphic-ws plugin
+ * so we directly check the correctness in RxDB to ensure that we can
+ * throw a helpfull error.
+ */
+function ensureIsWebsocket(w) {
+  var is = typeof w !== 'undefined' && !!w && w.CLOSING === 2;
+
+  if (!is) {
+    console.dir(w);
+    throw new Error('websocket not valid');
+  }
+}
+/**
+ * Reuse the same socket even when multiple
+ * collection replicate with the same server at once.
+ */
+
 
 var replicateWithWebsocketServer = function replicateWithWebsocketServer(options) {
   try {
@@ -132,8 +152,9 @@ var getWebSocket = function getWebSocket(url, database) {
     var has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
 
     if (!has) {
+      ensureIsWebsocket(_isomorphicWs["default"]);
       var wsClient = new _reconnectingWebsocket["default"](url, [], {
-        WebSocket: _isomorphicWs.WebSocket
+        WebSocket: _isomorphicWs["default"]
       });
       var connected$ = new _rxjs.BehaviorSubject(false);
       var openPromise = new Promise(function (res) {
@@ -187,11 +208,6 @@ var getWebSocket = function getWebSocket(url, database) {
 };
 
 exports.getWebSocket = getWebSocket;
-
-/**
- * Reuse the same socket even when multiple
- * collection replicate with the same server at once.
- */
 var WEBSOCKET_BY_CACHE_KEY = new Map();
 exports.WEBSOCKET_BY_CACHE_KEY = WEBSOCKET_BY_CACHE_KEY;
 
