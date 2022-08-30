@@ -75,13 +75,7 @@ export async function queryFoundationDB<RxDocType>(
                 done = true;
                 break;
             }
-            console.log('nextVAL:');
-            console.dir(next.value);
-            console.log('nextVAL:/');
             const docIds = next.value.map(row => row[1]);
-            console.log('docsIDS');
-            console.dir(docIds);
-
             const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map(docId => mainTx.get(docId)));
             docsData.forEach((docData) => {
                 if (!done) {
@@ -96,6 +90,7 @@ export async function queryFoundationDB<RxDocType>(
                     result.length === skipPlusLimit
                 ) {
                     done = true;
+                    range.return();
                 }
             });
         }

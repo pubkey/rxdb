@@ -1701,7 +1701,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             });
         });
         describe('.getChangedDocumentsSince()', () => {
-            it('should get the latests change', async () => {
+            it('should get the latest change', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{ key: string }>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -1780,6 +1780,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }
                 ], testContext);
                 const docsAfterDelete = await getChanges();
+                console.dir(docsAfterDelete);
                 assert.strictEqual(docsAfterDelete.length, 1);
                 assert.strictEqual(docsAfterDelete[0].key, 'foobar');
                 assert.strictEqual(docsAfterDelete[0]._deleted, true);

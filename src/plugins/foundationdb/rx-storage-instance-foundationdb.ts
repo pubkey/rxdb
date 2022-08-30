@@ -28,14 +28,20 @@ import type {
 import {
     open as foundationDBOpen,
     directory as foundationDBDirectory,
-    encoders as foundationDBEncoders
+    encoders as foundationDBEncoders,
+    keySelector as foundationDBKeySelector,
+    StreamingMode as foundationDBStreamingMode
 } from 'foundationdb';
 import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
-import { getDocumentsByKey, getFoundationDBIndexName } from './foundationdb-helpers';
+import { CLEANUP_INDEX, getDocumentsByKey, getFoundationDBIndexName } from './foundationdb-helpers';
 import { newRxError } from '../../rx-error';
-import { getIndexableStringMonad } from '../../custom-index';
-import { ensureNotFalsy } from '../../util';
+import { getIndexableStringMonad, getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
+import {
+    ensureNotFalsy, lastOfArray, now
+    , PROMISE_RESOLVE_VOID
+} from '../../util';
 import { queryFoundationDB } from './foundationdb-query';
+import { INDEX_MAX } from '../../query-planner';
 
 export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -115,16 +121,23 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                 });
             });
             // UPDATES
-            categorized.bulkUpdateDocs.forEach(writeRow => {
+            categorized.bulkUpdateDocs.forEach((writeRow: BulkWriteRow<RxDocType>) => {
                 const docId: string = writeRow.document[this.primaryPath] as any;
 
                 // overwrite document data
                 mainTx.set(docId, writeRow.document);
 
                 // update secondary indexes
+                console.dir(writeRow.previous);
+                console.dir(writeRow.document);
                 Object.values(dbs.indexes).forEach(indexMeta => {
                     const oldIndexString = indexMeta.getIndexableString(ensureNotFalsy(writeRow.previous));
                     const newIndexString = indexMeta.getIndexableString(writeRow.document);
+
+                    console.log('# bulkWriteUPDATE ' + indexMeta.indexName);
+                    console.log('oldIndexString: ' + oldIndexString);
+                    console.log('newIndexString: ' + newIndexString);
+
                     if (oldIndexString !== newIndexString) {
                         const indexTx = tx.at(indexMeta.db.subspace);
                         indexTx.delete(oldIndexString);
@@ -180,29 +193,132 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
     getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{ documents: RxDocumentData<RxDocType>[]; checkpoint: RxStorageDefaultCheckpoint; }> {
-        throw new Error('Method not implemented.');
+    async getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{ documents: RxDocumentData<RxDocType>[]; checkpoint: RxStorageDefaultCheckpoint; }> {
+        const dbs = await this.internals.dbsPromise;
+        const index = [
+            '_meta.lwt',
+            this.primaryPath as any
+        ];
+        const indexName = getFoundationDBIndexName(index);
+        const indexMeta = dbs.indexes[indexName];
+        let lowerBoundString = '';
+        if (checkpoint) {
+            const checkpointPartialDoc: any = {
+                [this.primaryPath]: checkpoint.id,
+                _meta: {
+                    lwt: checkpoint.lwt
+                }
+            };
+            lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
+        }
+        let result: RxDocumentData<RxDocType>[] = [];
+        await dbs.root.doTransaction(async tx => {
+            const indexTx = tx.at(indexMeta.db.subspace);
+            const mainTx = tx.at(dbs.main.subspace);
+            const range = await indexTx.getRangeAll(
+                foundationDBKeySelector.firstGreaterThan(lowerBoundString),
+                INDEX_MAX,
+                {
+                    limit,
+                    streamingMode: foundationDBStreamingMode.Exact
+                }
+            );
+            const docIds = range.map(row => row[1]);
+            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map(docId => mainTx.get(docId)));
+            result = result.concat(docsData);
+        });
+        const lastDoc = lastOfArray(result);
+        return {
+            documents: result,
+            checkpoint: lastDoc ? {
+                id: lastDoc[this.primaryPath] as any,
+                lwt: lastDoc._meta.lwt
+            } : checkpoint ? checkpoint : {
+                id: '',
+                lwt: 0
+            }
+        };
     }
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocType>, RxStorageDefaultCheckpoint>> {
         return this.changes$.asObservable();
     }
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        throw new Error('Method not implemented.');
-    }
-    resolveConflictResultionTask(taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
-
 
     async remove(): Promise<void> {
-        const db = await this.internals.dbPromise;
-        // TODO find way to delete all docs
-        //    db.clear();
+        const dbs = await this.internals.dbsPromise;
+        await dbs.root.doTransaction(tx => {
+            tx.clearRange('', INDEX_MAX);
+            return PROMISE_RESOLVE_VOID;
+        });
         return this.close();
     }
-    cleanup(minimumDeletedTime: number): Promise<boolean> {
-        throw new Error('Method not implemented.');
+    async cleanup(minimumDeletedTime: number): Promise<boolean> {
+        const maxDeletionTime = now() - minimumDeletedTime;
+        const dbs = await this.internals.dbsPromise;
+        const index = CLEANUP_INDEX;
+        const indexName = getFoundationDBIndexName(index);
+        const indexMeta = dbs.indexes[indexName];
+        const lowerBoundString = getStartIndexStringFromLowerBound(
+            this.schema,
+            index,
+            [
+                true,
+                /**
+                 * Do not use 0 here,
+                 * because 1 is the minimum value for _meta.lwt
+                 */
+                1
+            ]
+        );
+        const upperBoundString = getStartIndexStringFromUpperBound(
+            this.schema,
+            index,
+            [
+                true,
+                maxDeletionTime
+            ]
+        );
+        let noMoreUndeleted: boolean = true;
+        await dbs.root.doTransaction(async tx => {
+            const batchSize = ensureNotFalsy(this.settings.batchSize);
+            const indexTx = tx.at(indexMeta.db.subspace);
+            const mainTx = tx.at(dbs.main.subspace);
+            const range = await indexTx.getRangeAll(
+                foundationDBKeySelector.firstGreaterThan(lowerBoundString),
+                upperBoundString,
+                {
+                    limit: batchSize + 1, // get one more extra to detect what to return from cleanup()
+                    streamingMode: foundationDBStreamingMode.Exact
+                }
+            );
+            if (range.length > batchSize) {
+                noMoreUndeleted = false;
+                range.pop();
+            }
+            const docIds = range.map(row => row[1]);
+            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map(docId => mainTx.get(docId)));
+
+            Object
+                .values(dbs.indexes)
+                .forEach(indexMeta => {
+                    const subIndexDB = tx.at(indexMeta.db.subspace);
+                    docsData.forEach(docData => {
+                        const indexString = indexMeta.getIndexableString(docData);
+                        subIndexDB.delete(indexString);
+                    });
+                });
+            docIds.forEach(id => mainTx.delete(id));
+        });
+
+        return noMoreUndeleted;
     }
+
+    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
+        return new Subject<any>().asObservable();
+    }
+    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
+        return PROMISE_RESOLVE_VOID;
+    }
+
     async close() {
         if (this.closed) {
             return Promise.reject(newRxError('SNH', {
@@ -261,14 +377,24 @@ export async function createFoundationDBStorageInstance<RxDocType>(
         const indexDBs: { [indexName: string]: FoundationDBIndexMeta<RxDocType> } = {};
         const useIndexes = params.schema.indexes ? params.schema.indexes.slice(0) : [];
         useIndexes.push([primaryPath]);
-        useIndexes.forEach(index => {
+        const useIndexesFinal = useIndexes.map(index => {
             const indexAr = Array.isArray(index) ? index.slice(0) : [index];
             indexAr.unshift('_deleted');
+            return indexAr;
+        })
+        // used for `getChangedDocumentsSince()`
+        useIndexesFinal.push([
+            '_meta.lwt',
+            primaryPath
+        ]);
+        useIndexesFinal.push(CLEANUP_INDEX);
+        useIndexesFinal.forEach(indexAr => {
             const indexName = getFoundationDBIndexName(indexAr);
             const indexDB = root.at(indexName + '.')
                 .withKeyEncoding(foundationDBEncoders.string)
                 .withValueEncoding(foundationDBEncoders.string);
             indexDBs[indexName] = {
+                indexName,
                 db: indexDB,
                 getIndexableString: getIndexableStringMonad(params.schema, indexAr),
                 index: indexAr

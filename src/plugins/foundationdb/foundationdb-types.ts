@@ -28,6 +28,7 @@ import {
 } from 'foundationdb';
 
 export type FoundationDBIndexMeta<RxDocType> = {
+    indexName: string;
     index: string[];
     getIndexableString: (doc: RxDocumentData<RxDocType>) => string;
     db: FoundationDBDatabase<string>;
