@@ -94,7 +94,7 @@ async function loadRxDBPlugins(): Promise<void> {
             // add dev-mode plugin
             // which does many checks and add full error-messages
             import('rxdb/plugins/dev-mode').then(
-                module => addRxPlugin(module as any)
+                module => addRxPlugin(module.RxDBDevModePlugin)
             )
         ]);
     } else { }
