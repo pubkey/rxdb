@@ -13,7 +13,8 @@ export const HERO_SCHEMA_LITERAL = {
     properties: {
         name: {
             type: 'string',
-            default: ''
+            default: '',
+            maxLength: 100
         },
         color: {
             type: 'string',
