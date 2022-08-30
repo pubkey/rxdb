@@ -199,6 +199,7 @@ config.parallel('local-documents.test.js', () => {
             // insert
             await c.insertLocal(id, { foo: 'bar' });
             await waitUntil(() => cEmits.length === 2);
+
             assert.strictEqual(cEmits[1].data.foo, 'bar');
 
             // update

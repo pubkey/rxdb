@@ -2,6 +2,7 @@ import { Observable, Subject } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import type {
     BulkWriteRow,
+    CategorizeBulkWriteRowsOutput,
     EventBulk,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
@@ -81,17 +82,15 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const dbs = await this.internals.dbsPromise;
-        return dbs.root.doTransaction(async tx => {
+        let categorized: CategorizeBulkWriteRowsOutput<RxDocType> | undefined = null as any;
+        const result = await dbs.root.doTransaction(async tx => {
             const ret: RxStorageBulkWriteResponse<RxDocType> = {
                 success: {},
                 error: {}
             };
 
-
             const ids = documentWrites.map(row => (row.document as any)[this.primaryPath]);
-
             const mainTx = tx.at(dbs.main.subspace);
-
             const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
             /**
              * TODO this might be faster if fdb
@@ -105,7 +104,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             );
 
 
-            const categorized = categorizeBulkWriteRows<RxDocType>(
+            categorized = categorizeBulkWriteRows<RxDocType>(
                 this,
                 this.primaryPath as any,
                 docsInDB,
@@ -140,16 +139,9 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                 mainTx.set(docId, writeRow.document);
 
                 // update secondary indexes
-                console.dir(writeRow.previous);
-                console.dir(writeRow.document);
                 Object.values(dbs.indexes).forEach(indexMeta => {
                     const oldIndexString = indexMeta.getIndexableString(ensureNotFalsy(writeRow.previous));
                     const newIndexString = indexMeta.getIndexableString(writeRow.document);
-
-                    console.log('# bulkWriteUPDATE ' + indexMeta.indexName);
-                    console.log('oldIndexString: ' + oldIndexString);
-                    console.log('newIndexString: ' + newIndexString);
-
                     if (oldIndexString !== newIndexString) {
                         const indexTx = tx.at(indexMeta.db.subspace);
                         indexTx.delete(oldIndexString);
@@ -158,21 +150,26 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                 });
                 ret.success[docId as any] = writeRow.document;
             });
-
-            if (categorized.eventBulk.events.length > 0) {
-                const lastState = getNewestOfDocumentStates(
-                    this.primaryPath as any,
-                    Object.values(ret.success)
-                );
-                categorized.eventBulk.checkpoint = {
-                    id: lastState[this.primaryPath],
-                    lwt: lastState._meta.lwt
-                };
-                this.changes$.next(categorized.eventBulk);
-            }
-
             return ret;
         });
+        /**
+         * The events must be emitted AFTER the transaction
+         * has finished.
+         * Otherwise an observable changestream might cause a read
+         * to a document that does not already exist outside of the transaction.
+         */
+        if (ensureNotFalsy(categorized).eventBulk.events.length > 0) {
+            const lastState = getNewestOfDocumentStates(
+                this.primaryPath as any,
+                Object.values(result.success)
+            );
+            ensureNotFalsy(categorized).eventBulk.checkpoint = {
+                id: lastState[this.primaryPath],
+                lwt: lastState._meta.lwt
+            };
+            this.changes$.next(ensureNotFalsy(categorized).eventBulk);
+        }
+        return result;
     }
 
     async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
@@ -197,7 +194,6 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         });
     }
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {
-        console.dir(preparedQuery);
         return queryFoundationDB(this, preparedQuery);
     }
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {

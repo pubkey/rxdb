@@ -301,11 +301,11 @@ config.parallel('import-export.test.js', () => {
                 }
             };
             const db = await createRxDatabase({
-                name: 'aaa',
+                name: randomCouchString(10),
                 storage: config.storage.getStorage(),
             });
             const db2 = await createRxDatabase({
-                name: 'aaa1',
+                name: randomCouchString(10),
                 storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({

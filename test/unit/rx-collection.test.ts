@@ -50,7 +50,7 @@ import { firstValueFrom } from 'rxjs';
 import { enableKeyCompression, HumanDocumentType } from '../helper/schemas';
 import { RxDocumentData } from '../../src/types';
 
-describe('rx-collection.test.js', () => {
+describe('rx-collection.test.ts', () => {
     addPouchPlugin(require('pouchdb-adapter-memory'));
     async function getDb(): Promise<RxDatabase> {
         return await createRxDatabase({
@@ -905,11 +905,9 @@ describe('rx-collection.test.js', () => {
                         const docs = await c.find(query).exec();
                         const noFirstQuery = c.find(query).skip(1);
                         const noFirst = await noFirstQuery.exec();
-
                         assert.strictEqual(noFirst.length, 1);
                         assert.strictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
-
                     });
                     it('skip first in order', async () => {
                         /**

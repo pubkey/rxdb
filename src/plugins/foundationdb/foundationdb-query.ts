@@ -1,4 +1,7 @@
-import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
+import {
+    getStartIndexStringFromLowerBound,
+    getStartIndexStringFromUpperBound
+} from '../../custom-index';
 import type {
     RxDocumentData,
     RxStorageQueryResult
@@ -10,10 +13,6 @@ import type {
     FoundationDBPreparedQuery
 } from './foundationdb-types';
 import { RxStorageInstanceFoundationDB } from './rx-storage-instance-foundationdb';
-
-import {
-    StreamingMode
-} from 'foundationdb'
 
 export async function queryFoundationDB<RxDocType>(
     instance: RxStorageInstanceFoundationDB<RxDocType>,
@@ -37,8 +36,6 @@ export async function queryFoundationDB<RxDocType>(
 
     const indexForName = queryPlanFields.slice(0);
     indexForName.unshift('_deleted');
-    console.log('indexForName:');
-    console.dir(indexForName);
     const indexName = getFoundationDBIndexName(indexForName);
     const indexDB = ensureNotFalsy(dbs.indexes[indexName]).db;
 
@@ -57,17 +54,20 @@ export async function queryFoundationDB<RxDocType>(
         indexForName,
         upperBound
     );
-
-
     let result = await dbs.root.doTransaction(async tx => {
         const innerResult: RxDocumentData<RxDocType>[] = [];
         const indexTx = tx.at(indexDB.subspace);
         const mainTx = tx.at(dbs.main.subspace);
 
-        const range = indexTx.getRangeBatch(lowerBoundString, upperBoundString, {
-            limit: instance.settings.batchSize,
-            streamingMode: StreamingMode.Exact
-        });
+        const range = indexTx.getRangeBatch(
+            lowerBoundString,
+            upperBoundString,
+            {
+                // TODO these options seem to be broken in the foundationdb node bindings
+                // limit: instance.settings.batchSize,
+                // streamingMode: StreamingMode.Exact
+            }
+        );
         let done = false;
         while (!done) {
             const next = await range.next();
@@ -99,6 +99,9 @@ export async function queryFoundationDB<RxDocType>(
     if (mustManuallyResort) {
         result = result.sort(sortComparator);
     }
+
+    // apply skip and limit boundaries.
+    result = result.slice(skip, skipPlusLimit);
 
     return {
         documents: result

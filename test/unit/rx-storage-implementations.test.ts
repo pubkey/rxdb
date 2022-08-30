@@ -1541,6 +1541,52 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
+            /**
+             * This failed on some storages when there are more
+             * documents then the batchSize of the RxStorage
+             */
+            it('querying many documents should work', async () => {
+                const schema = getTestDataSchema();
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
+
+                const amount = 100;
+
+                await storageInstance.bulkWrite(
+                    new Array(amount)
+                        .fill(0)
+                        .map((_v, idx) => ({
+                            document: getWriteData({
+                                key: idx.toString().padStart(5, '0') + '-' + randomString(10),
+                                value: idx + ''
+                            })
+                        })),
+                    testContext
+                );
+
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+                    schema,
+                    {
+                        selector: {},
+                        skip: 0,
+                        sort: [
+                            { key: 'asc' }
+                        ]
+                    }
+                );
+                const results = await storageInstance.query(preparedQuery);
+                assert.strictEqual(results.documents.length, amount);
+
+                storageInstance.close();
+            });
         });
         describe('.findDocumentsById()', () => {
             it('should find the documents', async () => {
@@ -1780,7 +1826,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }
                 ], testContext);
                 const docsAfterDelete = await getChanges();
-                console.dir(docsAfterDelete);
                 assert.strictEqual(docsAfterDelete.length, 1);
                 assert.strictEqual(docsAfterDelete[0].key, 'foobar');
                 assert.strictEqual(docsAfterDelete[0]._deleted, true);
