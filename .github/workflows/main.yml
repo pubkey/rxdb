@@ -279,6 +279,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-storage-foundationdb-x7-
 
+      - name: install FoundationDB client and server
+        working-directory: ./scripts
+        run: sh install-foundationdb.sh
+
       - name: install npm dependencies
         run: npm install
 
