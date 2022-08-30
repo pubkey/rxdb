@@ -43,6 +43,7 @@
     "test:fast:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:fast:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:fast:dexie-worker": "npm run transpile && npm run build:workers && rimraf -rf pouch__all_dbs__ && cross-env DEFAULT_STORAGE=dexie-worker NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:fast:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "// test:fast:loop": "runs tests in the fast-mode in a loop. Use this to debug tests that only fail sometimes",
     "test:fast:loop": "npm run test:fast && npm run test:fast:loop",
     "test:fast:loop:pouchdb": "npm run test:fast:pouchdb && npm run test:fast:loop:pouchdb",
