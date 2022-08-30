@@ -121,6 +121,7 @@
     * [RxStorage Memory](./rx-storage-memory.md)
     * [RxStorage IndexedDB](./rx-storage-indexeddb.md)
     * [RxStorage SQLite](./rx-storage-sqlite.md)
+    * [RxStorage FoundationDB](./rx-storage-foundationdb.md)
     * [RxStorage Worker](./rx-storage-worker.md)
     * [RxStorage Memory Synced](./rx-storage-memory-synced.md)
     * [RxStorage Sharding](./rx-storage-sharding.md)

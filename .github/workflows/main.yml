@@ -258,6 +258,39 @@ jobs:
         with:
           run: npm run test:browser:ci:dexie
 
+  storage-foundationdb:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-storage-foundationdb-x7-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-storage-foundationdb-x7-
+
+      - name: install npm dependencies
+        run: npm install
+
+      - run: npm install foundationdb@1.1.3
+      
+      - name: build
+        run: npm run build
+
+      - run: npm run test:node:foundationdb
+      - run: npm run test:fast:foundationdb
+
+
   angular:
     runs-on: ubuntu-20.04
     steps:

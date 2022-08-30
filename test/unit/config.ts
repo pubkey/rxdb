@@ -259,7 +259,7 @@ export function setDefaultStorage(storageKey: string) {
                     }
                 },
                 hasPersistence: true,
-                hasMultiInstance: true,
+                hasMultiInstance: false,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true

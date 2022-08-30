@@ -57,10 +57,10 @@ export async function queryFoundationDB<RxDocType>(
         indexForName,
         upperBound
     );
-    let result: RxDocumentData<RxDocType>[] = [];
 
 
-    await dbs.root.doTransaction(async tx => {
+    let result = await dbs.root.doTransaction(async tx => {
+        const innerResult: RxDocumentData<RxDocType>[] = [];
         const indexTx = tx.at(indexDB.subspace);
         const mainTx = tx.at(dbs.main.subspace);
 
@@ -82,23 +82,23 @@ export async function queryFoundationDB<RxDocType>(
                     if (
                         queryMatcher(docData)
                     ) {
-                        result.push(docData);
+                        innerResult.push(docData);
                     }
                 }
                 if (
                     !mustManuallyResort &&
-                    result.length === skipPlusLimit
+                    innerResult.length === skipPlusLimit
                 ) {
                     done = true;
                     range.return();
                 }
             });
         }
-
-        if (mustManuallyResort) {
-            result = result.sort(sortComparator);
-        }
+        return innerResult;
     });
+    if (mustManuallyResort) {
+        result = result.sort(sortComparator);
+    }
 
     return {
         documents: result

@@ -1,7 +1,10 @@
 import type {
     DexiePreparedQuery,
+    EventBulk,
     RxDocumentData,
-    RxStorage
+    RxStorage,
+    RxStorageChangeEvent,
+    RxStorageDefaultCheckpoint
 } from '../../types';
 export type RxStorageFoundationDBSettings = {
     /**
@@ -42,6 +45,7 @@ export type FoundationDBStorageInternals<RxDocType> = {
     dbsPromise: Promise<{
         root: FoundationDBDatabase<any>;
         main: FoundationDBDatabase<RxDocType>;
+        events: FoundationDBDatabase<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
         indexes: {
             [indexName: string]: FoundationDBIndexMeta<RxDocType>;
         };

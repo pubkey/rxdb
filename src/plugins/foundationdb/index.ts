@@ -2,7 +2,6 @@ import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper
 import type {
     RxStorageInstanceCreationParams
 } from '../../types';
-import { flatClone } from '../../util';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
 import type {
     RxStorageFoundationDB,
