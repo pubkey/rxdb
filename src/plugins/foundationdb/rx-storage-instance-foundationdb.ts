@@ -17,7 +17,6 @@ import type {
     StringKeys
 } from '../../types';
 import type {
-    FoundationDBConnection,
     FoundationDBDatabase,
     FoundationDBIndexMeta,
     FoundationDBStorageInternals,
@@ -32,10 +31,21 @@ import {
     keySelector as foundationDBKeySelector,
     StreamingMode as foundationDBStreamingMode
 } from 'foundationdb';
-import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
-import { CLEANUP_INDEX, getDocumentsByKey, getFoundationDBIndexName } from './foundationdb-helpers';
+import {
+    categorizeBulkWriteRows,
+    getNewestOfDocumentStates
+} from '../../rx-storage-helper';
+import {
+
+    CLEANUP_INDEX,
+    getFoundationDBIndexName
+} from './foundationdb-helpers';
 import { newRxError } from '../../rx-error';
-import { getIndexableStringMonad, getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
+import {
+    getIndexableStringMonad,
+    getStartIndexStringFromLowerBound,
+    getStartIndexStringFromUpperBound
+} from '../../custom-index';
 import {
     ensureNotFalsy, lastOfArray, now
     , PROMISE_RESOLVE_VOID
@@ -189,10 +199,8 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {
         console.dir(preparedQuery);
         return queryFoundationDB(this, preparedQuery);
-        throw new Error('Method not implemented.');
-
     }
-    getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
+    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
     async getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{ documents: RxDocumentData<RxDocType>[]; checkpoint: RxStorageDefaultCheckpoint; }> {
@@ -333,7 +341,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         this.changes$.complete();
 
         const dbs = await this.internals.dbsPromise;
-        dbs.main.close();
+        dbs.root.close();
 
         // TODO shouldnt we close the index databases?
         // Object.values(dbs.indexes).forEach(db => db.close());
