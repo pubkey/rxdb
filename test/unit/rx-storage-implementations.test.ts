@@ -1271,6 +1271,24 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
 
+
+                const writeData2 = {
+                    key: 'foobar2',
+                    value: 'barfoo2',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+                await storageInstance.bulkWrite(
+                    [{
+                        document: writeData2
+                    }],
+                    testContext
+                );
+
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     {

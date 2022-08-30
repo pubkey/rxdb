@@ -11,6 +11,7 @@ import type { RxTestStorage } from '../../';
 import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
 import { getRxStorageLoki } from '../../plugins/lokijs';
 import { getRxStorageDexie, RxStorageDexieStatics } from '../../plugins/dexie';
+import { getRxStorageFoundationDB } from '../../plugins/foundationdb';
 import { getRxStorageWorker } from '../../plugins/worker';
 import { getRxStorageMemory } from '../../plugins/memory';
 import { CUSTOM_STORAGE } from './custom-storage';
@@ -234,6 +235,31 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: false,
+                hasCouchDBReplication: false,
+                hasAttachments: false,
+                hasRegexSupport: true
+            };
+            break;
+
+        case 'foundationdb':
+            const foundationDBAPIVersion = 620;
+            config.storage = {
+                name: 'foundationdb',
+                getStorage: () => {
+                    return getRxStorageFoundationDB({
+                        apiVersion: foundationDBAPIVersion
+                    });
+                },
+                getPerformanceStorage() {
+                    return {
+                        description: 'foundationdb-native',
+                        storage: getRxStorageFoundationDB({
+                            apiVersion: foundationDBAPIVersion
+                        })
+                    }
+                },
+                hasPersistence: true,
+                hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true

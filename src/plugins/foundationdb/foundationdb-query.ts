@@ -1,0 +1,111 @@
+import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
+import type {
+    RxDocumentData,
+    RxStorageQueryResult
+} from '../../types';
+import { ensureNotFalsy } from '../../util';
+import { RxStorageDexieStatics } from '../dexie';
+import { getFoundationDBIndexName } from './foundationdb-helpers';
+import type {
+    FoundationDBPreparedQuery
+} from './foundationdb-types';
+import { RxStorageInstanceFoundationDB } from './rx-storage-instance-foundationdb';
+
+import {
+    StreamingMode
+} from 'foundationdb'
+
+export async function queryFoundationDB<RxDocType>(
+    instance: RxStorageInstanceFoundationDB<RxDocType>,
+    preparedQuery: FoundationDBPreparedQuery<RxDocType>
+): Promise<RxStorageQueryResult<RxDocType>> {
+    const queryPlan = preparedQuery.queryPlan;
+    const query = preparedQuery.query;
+    const skip = query.skip ? query.skip : 0;
+    const limit = query.limit ? query.limit : Infinity;
+    const skipPlusLimit = skip + limit;
+    const queryPlanFields: string[] = queryPlan.index;
+    const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
+
+    const queryMatcher = RxStorageDexieStatics.getQueryMatcher(
+        instance.schema,
+        preparedQuery
+    );
+    const sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
+    const dbs = await instance.internals.dbsPromise;
+
+
+    const indexForName = queryPlanFields.slice(0);
+    indexForName.unshift('_deleted');
+    console.log('indexForName:');
+    console.dir(indexForName);
+    const indexName = getFoundationDBIndexName(indexForName);
+    const indexDB = ensureNotFalsy(dbs.indexes[indexName]).db;
+
+    let lowerBound: any[] = queryPlan.startKeys;
+    lowerBound = [false].concat(lowerBound);
+    const lowerBoundString = getStartIndexStringFromLowerBound(
+        instance.schema,
+        indexForName,
+        lowerBound
+    );
+
+    let upperBound: any[] = queryPlan.endKeys;
+    upperBound = [false].concat(upperBound);
+    const upperBoundString = getStartIndexStringFromUpperBound(
+        instance.schema,
+        indexForName,
+        upperBound
+    );
+    let result: RxDocumentData<RxDocType>[] = [];
+
+
+    await dbs.root.doTransaction(async tx => {
+        const indexTx = tx.at(indexDB.subspace);
+        const mainTx = tx.at(dbs.main.subspace);
+
+        const range = indexTx.getRangeBatch(lowerBoundString, upperBoundString, {
+            limit: instance.settings.batchSize,
+            streamingMode: StreamingMode.Exact
+        });
+        let done = false;
+        while (!done) {
+            const next = await range.next();
+            if (next.done) {
+                done = true;
+                break;
+            }
+            console.log('nextVAL:');
+            console.dir(next.value);
+            console.log('nextVAL:/');
+            const docIds = next.value.map(row => row[1]);
+            console.log('docsIDS');
+            console.dir(docIds);
+
+            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map(docId => mainTx.get(docId)));
+            docsData.forEach((docData) => {
+                if (!done) {
+                    if (
+                        queryMatcher(docData)
+                    ) {
+                        result.push(docData);
+                    }
+                }
+                if (
+                    !mustManuallyResort &&
+                    result.length === skipPlusLimit
+                ) {
+                    done = true;
+                }
+            });
+        }
+
+        if (mustManuallyResort) {
+            result = result.sort(sortComparator);
+        }
+    });
+
+    return {
+        documents: result
+    };
+}
