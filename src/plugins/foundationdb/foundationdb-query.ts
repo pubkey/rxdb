@@ -54,7 +54,7 @@ export async function queryFoundationDB<RxDocType>(
         indexForName,
         upperBound
     );
-    let result = await dbs.root.doTransaction(async tx => {
+    let result = await dbs.root.doTransaction(async (tx: any) => {
         const innerResult: RxDocumentData<RxDocType>[] = [];
         const indexTx = tx.at(indexDB.subspace);
         const mainTx = tx.at(dbs.main.subspace);
@@ -75,8 +75,8 @@ export async function queryFoundationDB<RxDocType>(
                 done = true;
                 break;
             }
-            const docIds = next.value.map(row => row[1]);
-            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map(docId => mainTx.get(docId)));
+            const docIds = next.value.map((row: string[]) => row[1]);
+            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map((docId: string) => mainTx.get(docId)));
             docsData.forEach((docData) => {
                 if (!done) {
                     if (

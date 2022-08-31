@@ -26,13 +26,13 @@ import type {
     RxStorageFoundationDBInstanceCreationOptions,
     RxStorageFoundationDBSettings
 } from './foundationdb-types';
-import {
-    open as foundationDBOpen,
-    directory as foundationDBDirectory,
-    encoders as foundationDBEncoders,
-    keySelector as foundationDBKeySelector,
-    StreamingMode as foundationDBStreamingMode
-} from 'foundationdb';
+// import {
+//     open as foundationDBOpen,
+//     directory as foundationDBDirectory,
+//     encoders as foundationDBEncoders,
+//     keySelector as foundationDBKeySelector,
+//     StreamingMode as foundationDBStreamingMode
+// } from 'foundationdb';
 import {
     categorizeBulkWriteRows,
     getNewestOfDocumentStates
@@ -85,7 +85,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const dbs = await this.internals.dbsPromise;
         let categorized: CategorizeBulkWriteRowsOutput<RxDocType> | undefined = null as any;
-        const result = await dbs.root.doTransaction(async tx => {
+        const result = await dbs.root.doTransaction(async (tx: any) => {
             const ret: RxStorageBulkWriteResponse<RxDocType> = {
                 success: {},
                 error: {}
@@ -122,7 +122,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             // INSERTS
             categorized.bulkInsertDocs.forEach(writeRow => {
                 const docId: string = writeRow.document[this.primaryPath] as any;
-                ret.success[docId as any] = writeRow.document;
+                ret.success[docId] = writeRow.document;
 
                 // insert document data
                 mainTx.set(docId, writeRow.document);
@@ -151,7 +151,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                         indexTx.set(newIndexString, docId);
                     }
                 });
-                ret.success[docId as any] = writeRow.document;
+                ret.success[docId] = writeRow.document;
             });
 
             // attachments
@@ -182,7 +182,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
          * to a document that does not already exist outside of the transaction.
          */
         if (ensureNotFalsy(categorized).eventBulk.events.length > 0) {
-            const lastState = getNewestOfDocumentStates(
+            const lastState = getNewestOfDocumentStates<any>(
                 this.primaryPath as any,
                 Object.values(result.success)
             );
@@ -197,7 +197,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 
     async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
         const dbs = await this.internals.dbsPromise;
-        return dbs.main.doTransaction(async tx => {
+        return dbs.main.doTransaction(async (tx: any) => {
             const ret: RxDocumentDataById<RxDocType> = {};
             await Promise.all(
                 ids.map(async (docId) => {
@@ -225,6 +225,10 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         return attachment.data;
     }
     async getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{ documents: RxDocumentData<RxDocType>[]; checkpoint: RxStorageDefaultCheckpoint; }> {
+        const {
+            keySelector,
+            StreamingMode
+        } = require('foundationdb');
         const dbs = await this.internals.dbsPromise;
         const index = [
             '_meta.lwt',
@@ -242,20 +246,22 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             };
             lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
         }
-        const result = await dbs.root.doTransaction(async tx => {
+        const result: RxDocumentData<RxDocType>[] = await dbs.root.doTransaction(async (tx: any) => {
             let innerResult: RxDocumentData<RxDocType>[] = [];
             const indexTx = tx.at(indexMeta.db.subspace);
             const mainTx = tx.at(dbs.main.subspace);
             const range = await indexTx.getRangeAll(
-                foundationDBKeySelector.firstGreaterThan(lowerBoundString),
+                keySelector.firstGreaterThan(lowerBoundString),
                 INDEX_MAX,
                 {
                     limit,
-                    streamingMode: foundationDBStreamingMode.Exact
+                    streamingMode: StreamingMode.Exact
                 }
             );
-            const docIds = range.map(row => row[1]);
-            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map(docId => mainTx.get(docId)));
+            const docIds = range.map((row: string[]) => row[1]);
+            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(
+                docIds.map((docId: string) => mainTx.get(docId))
+            );
             innerResult = innerResult.concat(docsData);
             return innerResult;
         });
@@ -277,13 +283,17 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 
     async remove(): Promise<void> {
         const dbs = await this.internals.dbsPromise;
-        await dbs.root.doTransaction(tx => {
+        await dbs.root.doTransaction((tx: any) => {
             tx.clearRange('', INDEX_MAX);
             return PROMISE_RESOLVE_VOID;
         });
         return this.close();
     }
     async cleanup(minimumDeletedTime: number): Promise<boolean> {
+        const {
+            keySelector,
+            StreamingMode
+        } = require('foundationdb');
         const maxDeletionTime = now() - minimumDeletedTime;
         const dbs = await this.internals.dbsPromise;
         const index = CLEANUP_INDEX;
@@ -310,24 +320,24 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             ]
         );
         let noMoreUndeleted: boolean = true;
-        await dbs.root.doTransaction(async tx => {
+        await dbs.root.doTransaction(async (tx: any) => {
             const batchSize = ensureNotFalsy(this.settings.batchSize);
             const indexTx = tx.at(indexMeta.db.subspace);
             const mainTx = tx.at(dbs.main.subspace);
             const range = await indexTx.getRangeAll(
-                foundationDBKeySelector.firstGreaterThan(lowerBoundString),
+                keySelector.firstGreaterThan(lowerBoundString),
                 upperBoundString,
                 {
                     limit: batchSize + 1, // get one more extra to detect what to return from cleanup()
-                    streamingMode: foundationDBStreamingMode.Exact
+                    streamingMode: StreamingMode.Exact
                 }
             );
             if (range.length > batchSize) {
                 noMoreUndeleted = false;
                 range.pop();
             }
-            const docIds = range.map(row => row[1]);
-            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map(docId => mainTx.get(docId)));
+            const docIds = range.map((row: string[]) => row[1]);
+            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map((docId: string) => mainTx.get(docId)));
 
             Object
                 .values(dbs.indexes)
@@ -338,7 +348,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                         subIndexDB.delete(indexString);
                     });
                 });
-            docIds.forEach(id => mainTx.delete(id));
+            docIds.forEach((id: string) => mainTx.delete(id));
         });
 
         return noMoreUndeleted;
@@ -376,30 +386,37 @@ export function createFoundationDBStorageInstance<RxDocType>(
     settings: RxStorageFoundationDBSettings
 ): Promise<RxStorageInstanceFoundationDB<RxDocType>> {
     const primaryPath = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
-    const connection = foundationDBOpen(settings.clusterFile);
+
+    const {
+        open,
+        directory,
+        encoders
+    } = require('foundationdb');
+
+    const connection = open(settings.clusterFile);
     const dbsPromise = (async () => {
-        const directory = await foundationDBDirectory.createOrOpen(connection, 'rxdb');
+        const dir = await directory.createOrOpen(connection, 'rxdb');
 
         const root = connection
-            .at(directory)
+            .at(dir)
             .at(params.databaseName + '.')
             .at(params.collectionName + '.')
             .at(params.schema.version + '.');
         const main: FoundationDBDatabase<RxDocType> = root
             .at('main.')
-            .withKeyEncoding(foundationDBEncoders.string) // automatically encode & decode keys using tuples
-            .withValueEncoding(foundationDBEncoders.json) as any; // and values using JSON
+            .withKeyEncoding(encoders.string) // automatically encode & decode keys using tuples
+            .withValueEncoding(encoders.json) as any; // and values using JSON
 
 
         const events: FoundationDBDatabase<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = root
             .at('events.')
-            .withKeyEncoding(foundationDBEncoders.string)
-            .withValueEncoding(foundationDBEncoders.json) as any;
+            .withKeyEncoding(encoders.string)
+            .withValueEncoding(encoders.json) as any;
 
         const attachments: FoundationDBDatabase<RxAttachmentWriteData> = root
             .at('attachments.')
-            .withKeyEncoding(foundationDBEncoders.string)
-            .withValueEncoding(foundationDBEncoders.json) as any;
+            .withKeyEncoding(encoders.string)
+            .withValueEncoding(encoders.json) as any;
 
 
         const indexDBs: { [indexName: string]: FoundationDBIndexMeta<RxDocType> } = {};
@@ -419,8 +436,8 @@ export function createFoundationDBStorageInstance<RxDocType>(
         useIndexesFinal.forEach(indexAr => {
             const indexName = getFoundationDBIndexName(indexAr);
             const indexDB = root.at(indexName + '.')
-                .withKeyEncoding(foundationDBEncoders.string)
-                .withValueEncoding(foundationDBEncoders.string);
+                .withKeyEncoding(encoders.string)
+                .withValueEncoding(encoders.string);
             indexDBs[indexName] = {
                 indexName,
                 db: indexDB,

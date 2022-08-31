@@ -9,10 +9,6 @@ import type {
     RxStorageFoundationDBSettings
 } from './foundationdb-types';
 
-
-import {
-    setAPIVersion
-} from 'foundationdb';
 import {
     createFoundationDBStorageInstance,
     RxStorageInstanceFoundationDB
@@ -28,6 +24,7 @@ export function getRxStorageFoundationDB(
         throw new Error('foundationdb already initialized with api version ' + versionSet);
     } else if (!versionSet) {
         versionSet = settings.apiVersion;
+        const { setAPIVersion } = require('foundationdb');
         setAPIVersion(settings.apiVersion);
     }
 

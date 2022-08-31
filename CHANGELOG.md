@@ -9,14 +9,14 @@
 
 - RENAMED the `ajv-validate` plugin to `validate-ajv` to be in equal with the other validation plugins.
 - The `is-my-json-valid` validation is no longer supported until [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) is fixed.
-- REFACTORED the [schema validation plugins](https://rxdb.info/schema-validation.html), they are no longer plugins but now they get wrapped around any other RxStorage.
-  - It allows us to run the validation inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
+- REFACTORED the [schema validation plugins](./docs-src/schema-validation.md), they are no longer plugins but now they get wrapped around any other RxStorage.
+  - It allows us to run the validation inside of a [Worker RxStorage](./docs-src/rx-storage-worker.md) instead of running it in the main JavaScript process.
   - It allows us to configure which `RxDatabase` instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
-- REFACTORED the [key compression plugin](https://rxdb.info/key-compression.html), it is no longer a plugin but now a wrapper around any other RxStorage.
-  - It allows to run the key-comresion inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
+- REFACTORED the [key compression plugin](./docs-src/key-compression.md), it is no longer a plugin but now a wrapper around any other RxStorage.
+  - It allows to run the key-comresion inside of a [Worker RxStorage](./docs-src/rx-storage-worker.md) instead of running it in the main JavaScript process.
 
 - REFACTORED the encryption plugin, it is no longer a plugin but now a wrapper around any other RxStorage.
-  - It allows to run the encryption inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
+  - It allows to run the encryption inside of a [Worker RxStorage](./docs-src/rx-storage-worker.md) instead of running it in the main JavaScript process.
   - It allows do use asynchronous crypto function like [WebCrypto](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
 - Store the password hash in the same write request as the database token to improve performance.
 
@@ -44,7 +44,8 @@
 - FIXED multiple problems with encoding attachments data. We now use the `js-base64` library which properly handles utf-8/binary/ascii transformations.
 
 - RENAMED the `server` plugin is now called `server-couchdb` and `RxDatabase.server()` is now `RxDatabase.serverCouchDB()`
-- ADDED the [websocket replication plugin](../replication-websocket.md)
+- ADDED the [websocket replication plugin](./docs-src/replication-websocket.md)
+- ADDED the [FoundationDB RxStorage](./docs-src/rx-storage-foundationdb.md)
 
 - FIX `couchdb-server` plugin missed out events from the replication.
 

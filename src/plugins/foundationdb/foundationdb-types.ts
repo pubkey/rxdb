@@ -1,3 +1,6 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import type {
     DexiePreparedQuery,
     EventBulk,
@@ -25,11 +28,18 @@ export type RxStorageFoundationDBInstanceCreationOptions = {
     batchSize?: number;
 };
 
-import {
-    open as foundationDBOpen,
-    Database,
-    Transaction
-} from 'foundationdb';
+/**
+ * TODO atm we cannot import types from 'foundationdb'
+ * because 'foundationdb' is an optional peer dependency
+ * this is NOT also in the devDependencies.
+ * This is because it requires to install the foundationdb client cli
+ * which would mean everyone that wants to develop RxDB must have this installed manually.
+ */
+// import {
+//     open as foundationDBOpen,
+//     Database,
+//     Transaction
+// } from 'foundationdb';
 
 export type FoundationDBIndexMeta<RxDocType> = {
     indexName: string;
@@ -38,9 +48,9 @@ export type FoundationDBIndexMeta<RxDocType> = {
     db: FoundationDBDatabase<string>;
 };
 
-export type FoundationDBConnection = ReturnType<typeof foundationDBOpen>;
-export type FoundationDBDatabase<RxDocType> = Database<string, any, RxDocType, any>;
-export type FoundationDBTransaction<RxDocType> = Transaction<string, any, RxDocumentData<RxDocType>, any>;
+export type FoundationDBConnection = any; // ReturnType<typeof foundationDBOpen>;
+export type FoundationDBDatabase<RxDocType> = any; // Database<string, any, RxDocType, any>;
+export type FoundationDBTransaction<RxDocType> = any; // Transaction<string, any, RxDocumentData<RxDocType>, any>;
 export type FoundationDBStorageInternals<RxDocType> = {
     connection: FoundationDBConnection;
     dbsPromise: Promise<{

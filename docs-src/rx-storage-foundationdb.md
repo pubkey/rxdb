@@ -5,7 +5,7 @@ To use RxDB on the server side, the [FoundationDB](https://www.foundationdb.org/
 ## Installation
 
 - Install the [FoundationDB client cli](https://apple.github.io/foundationdb/getting-started-linux.html) which is used to communicate with the FoundationDB cluster.
-- Install the [FoundationDB node bindings npm module](https://www.npmjs.com/package/foundationdb) via `npm install foundationdb --save`. If the latest version does not work for you, you should use the same version as stated in the `peerDependencies` of the RxDB `package.json`.
+- Install the [FoundationDB node bindings npm module](https://www.npmjs.com/package/foundationdb) via `npm install foundationdb --save`. If the latest version does not work for you, you should use the same version as stated in the `storage-foundationdb` job of the RxDB CI `main.yml`.
 
 
 ## Usage
