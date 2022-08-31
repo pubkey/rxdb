@@ -127,7 +127,6 @@ export class RxAttachment {
             this.doc.primary,
             this.id
         );
-        console.dir(plainDataBase64);
         const ret = await blobBufferUtil.createBlobBufferFromBase64(
             plainDataBase64,
             this.type as any

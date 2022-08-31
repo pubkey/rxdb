@@ -30,6 +30,10 @@ The IndexedDB `RxStorage` is based on plain IndexedDB. This has the best perform
 
 The SQLite storage has the best performance when RxDB is used on **Node.js**, **Electron**, **React Native**, **Cordova** or **Capacitor**. [Read more](./rx-storage-sqlite.md)
 
+### FoundationDB
+
+To use RxDB on the server side, the FoundationDB RxStorage provides a way of having a secure, fault-tolerant and performant storage. [Read more](./rx-storage-foundationdb.md)
+
 ### Worker
 
 The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the percieved performance of your application. [Read more](./rx-storage-worker.md)

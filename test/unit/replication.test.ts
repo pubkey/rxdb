@@ -199,7 +199,6 @@ describe('replication.test.js', () => {
              * to provoke validation errors.
              */
             const otherSchema = clone(schemas.humanWithTimestamp);
-            console.dir(otherSchema);
             otherSchema.properties.age.maximum = 0;
             const otherSchemaCollection = await humansCollection.createBySchema(
                 otherSchema,

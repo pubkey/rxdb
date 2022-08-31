@@ -22,7 +22,7 @@ import {
 
 import { firstValueFrom } from 'rxjs';
 
-describe('rx-query.test.js', () => {
+describe('rx-query.test.ts', () => {
     config.parallel('.constructor', () => {
         it('should throw dev-mode error on wrong query object', async () => {
             const col = await humansCollection.create(0);
@@ -835,17 +835,18 @@ describe('rx-query.test.js', () => {
 
             const c = await humansCollection.createPrimary(0);
 
-            // insert 100
+            // insert some docs
+            const insertAmount = 100;
             await c.bulkInsert(
-                new Array(100)
+                new Array(insertAmount)
                     .fill(0)
-                    .map(() => schemaObjects.human())
+                    .map((_v, idx) => schemaObjects.human(undefined, idx))
             );
 
             // make and exec query
             const query = c.find();
             const docs = await query.exec();
-            assert.strictEqual(docs.length, 100);
+            assert.strictEqual(docs.length, insertAmount);
 
             // produces changeEvents
             await c.bulkInsert(

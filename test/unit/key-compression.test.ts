@@ -25,8 +25,6 @@ import { HumanDocumentType, human, enableKeyCompression } from '../helper/schema
 
 
 config.parallel('key-compression.test.js', () => {
-
-
     async function getCollection() {
         const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType> }>({
             name: randomCouchString(10),
@@ -53,7 +51,6 @@ config.parallel('key-compression.test.js', () => {
             const query: any = c.find()
                 .where('firstName').eq('myFirstName')
                 .getPreparedQuery();
-            console.log(JSON.stringify(query, null, 4));
             const jsonString = JSON.stringify(query);
             assert.ok(!jsonString.includes('firstName'));
             assert.ok(jsonString.includes('myFirstName'));

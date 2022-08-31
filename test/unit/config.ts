@@ -239,6 +239,35 @@ export function setDefaultStorage(storageKey: string) {
                 hasRegexSupport: true
             };
             break;
+
+        case 'foundationdb':
+            const foundationDBAPIVersion = 620;
+
+            // use a dynamic import so it does not break browser bundling
+            const { getRxStorageFoundationDB } = require('../../plugins/foundationdb' + '');
+
+            config.storage = {
+                name: 'foundationdb',
+                getStorage: () => {
+                    return getRxStorageFoundationDB({
+                        apiVersion: foundationDBAPIVersion
+                    });
+                },
+                getPerformanceStorage() {
+                    return {
+                        description: 'foundationdb-native',
+                        storage: getRxStorageFoundationDB({
+                            apiVersion: foundationDBAPIVersion
+                        })
+                    }
+                },
+                hasPersistence: true,
+                hasMultiInstance: false,
+                hasCouchDBReplication: false,
+                hasAttachments: true,
+                hasRegexSupport: true
+            };
+            break;
         default:
             throw new Error('no DEFAULT_STORAGE set');
     }
