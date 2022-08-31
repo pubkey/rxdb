@@ -11,7 +11,6 @@ import type { RxTestStorage } from '../../';
 import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
 import { getRxStorageLoki } from '../../plugins/lokijs';
 import { getRxStorageDexie, RxStorageDexieStatics } from '../../plugins/dexie';
-import { getRxStorageFoundationDB } from '../../plugins/foundationdb';
 import { getRxStorageWorker } from '../../plugins/worker';
 import { getRxStorageMemory } from '../../plugins/memory';
 import { CUSTOM_STORAGE } from './custom-storage';
@@ -243,6 +242,10 @@ export function setDefaultStorage(storageKey: string) {
 
         case 'foundationdb':
             const foundationDBAPIVersion = 620;
+
+            // use a dynamic import so it does not break browser bundling
+            const { getRxStorageFoundationDB } = require('../../plugins/foundationdb');
+
             config.storage = {
                 name: 'foundationdb',
                 getStorage: () => {
