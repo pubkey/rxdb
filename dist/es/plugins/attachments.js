@@ -206,7 +206,6 @@ export var RxAttachment = /*#__PURE__*/function () {
       var _this3 = this;
 
       return Promise.resolve(_this3.doc.collection.storageInstance.getAttachmentData(_this3.doc.primary, _this3.id)).then(function (plainDataBase64) {
-        console.dir(plainDataBase64);
         return Promise.resolve(blobBufferUtil.createBlobBufferFromBase64(plainDataBase64, _this3.type));
       });
     } catch (e) {
