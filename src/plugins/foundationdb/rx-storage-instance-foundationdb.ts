@@ -4,6 +4,7 @@ import type {
     BulkWriteRow,
     CategorizeBulkWriteRowsOutput,
     EventBulk,
+    RxAttachmentWriteData,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
@@ -53,6 +54,7 @@ import {
 } from '../../util';
 import { queryFoundationDB } from './foundationdb-query';
 import { INDEX_MAX } from '../../query-planner';
+import { attachmentMapKey } from '../memory';
 
 export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -91,6 +93,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 
             const ids = documentWrites.map(row => (row.document as any)[this.primaryPath]);
             const mainTx = tx.at(dbs.main.subspace);
+            const attachmentTx = tx.at(dbs.attachments.subspace);
             const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
             /**
              * TODO this might be faster if fdb
@@ -150,6 +153,26 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                 });
                 ret.success[docId as any] = writeRow.document;
             });
+
+            // attachments
+            categorized.attachmentsAdd.forEach(attachment => {
+                attachmentTx.set(
+                    attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                    attachment.attachmentData
+                );
+            });
+            categorized.attachmentsUpdate.forEach(attachment => {
+                attachmentTx.set(
+                    attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                    attachment.attachmentData
+                );
+            });
+            categorized.attachmentsRemove.forEach(attachment => {
+                attachmentTx.delete(
+                    attachmentMapKey(attachment.documentId, attachment.attachmentId)
+                );
+            });
+
             return ret;
         });
         /**
@@ -196,8 +219,10 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {
         return queryFoundationDB(this, preparedQuery);
     }
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
-        throw new Error('Method not implemented.');
+    async getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
+        const dbs = await this.internals.dbsPromise;
+        const attachment = await dbs.attachments.get(attachmentMapKey(documentId, attachmentId));
+        return attachment.data;
     }
     async getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{ documents: RxDocumentData<RxDocType>[]; checkpoint: RxStorageDefaultCheckpoint; }> {
         const dbs = await this.internals.dbsPromise;
@@ -371,6 +396,11 @@ export function createFoundationDBStorageInstance<RxDocType>(
             .withKeyEncoding(foundationDBEncoders.string)
             .withValueEncoding(foundationDBEncoders.json) as any;
 
+        const attachments: FoundationDBDatabase<RxAttachmentWriteData> = root
+            .at('attachments.')
+            .withKeyEncoding(foundationDBEncoders.string)
+            .withValueEncoding(foundationDBEncoders.json) as any;
+
 
         const indexDBs: { [indexName: string]: FoundationDBIndexMeta<RxDocType> } = {};
         const useIndexes = params.schema.indexes ? params.schema.indexes.slice(0) : [];
@@ -403,6 +433,7 @@ export function createFoundationDBStorageInstance<RxDocType>(
             root,
             main,
             events,
+            attachments,
             indexes: indexDBs
         };
     })();

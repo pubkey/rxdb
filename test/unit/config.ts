@@ -261,7 +261,7 @@ export function setDefaultStorage(storageKey: string) {
                 hasPersistence: true,
                 hasMultiInstance: false,
                 hasCouchDBReplication: false,
-                hasAttachments: false,
+                hasAttachments: true,
                 hasRegexSupport: true
             };
             break;

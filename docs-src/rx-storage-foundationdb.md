@@ -49,8 +49,3 @@ const db = await createRxDatabase({
 ## Multi Instance
 
 Because FoundationDB does not offer a [changestream](https://forums.foundationdb.org/t/streaming-data-out-of-foundationdb/683/2), it is not possible to use the same cluster from more then one Node.js process at the same time. For example you cannot spin up multiple servers with RxDB databases that all use the same cluster. There might be workarounds to create something like a FoundationDB changestream and you can make a Pull Request if you need that feature.
-
-
-## Attachments
-
-There is currently no support for [Attachments](./rx-attachment.md), you can make a pull request if you need that feature.
