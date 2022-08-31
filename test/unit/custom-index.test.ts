@@ -164,6 +164,58 @@ config.parallel('custom-index.test.ts', () => {
                 });
                 assert.strictEqual(sorted[0].num, 10.02);
             });
+            it('should work correctly on big numbers', () => {
+                type DocType = {
+                    id: string;
+                    bigNum: number;
+                };
+                const schema: RxJsonSchema<RxDocumentData<DocType>> = fillWithDefaultSettings({
+                    primaryKey: 'id',
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 10
+                        },
+                        bigNum: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 1000000000000000,
+                            multipleOf: 0.01
+                        }
+                    },
+                    additionalProperties: false,
+                    required: [
+                        'bigNum'
+                    ]
+                });
+                const index = [
+                    'bigNum',
+                    'id'
+                ];
+                const doc: RxDocumentData<DocType> = {
+                    id: 'foobar',
+                    bigNum: 1661946016806.01,
+                    _attachments: {},
+                    _deleted: false,
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+                const indexString = getIndexableStringMonad(
+                    schema,
+                    index
+                )(doc);
+                const mustBeStart = '000166194601680601';
+                if (!indexString.startsWith(mustBeStart)) {
+                    throw new Error(
+                        'indexString does not startWith ' + mustBeStart +
+                        '  indexString: ' + indexString
+                    );
+                }
+            });
         });
         describe('special cases', () => {
             it('indexing a optional field must work', () => {
