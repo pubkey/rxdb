@@ -1,3 +1,6 @@
+import './shim';
+import 'react-native-get-random-values';
+
 import React, {useEffect, useState} from 'react';
 import Heroes from './Heroes';
 import initializeDb from './initializeDb';

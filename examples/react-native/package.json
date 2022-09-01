@@ -23,15 +23,19 @@
   },
   "main": "node_modules/expo/AppEntry.js",
   "dependencies": {
-    "expo": "45.0.6",
+    "buffer": "6.0.3",
+    "expo": "46.0.9",
     "global": "4.4.0",
     "pouchdb-adapter-http": "7.3.0",
     "pouchdb-adapter-memory": "7.3.0",
     "pouchdb-replication": "7.3.0",
     "random-token": "0.0.8",
-    "react": "17.0.2",
-    "react-native": "0.68.2",
+    "react": "18.2.0",
+    "react-native": "0.69.2",
+    "react-native-get-random-values": "1.8.0",
+    "react-native-quick-base64": "2.0.5",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.5.6"
+    "rxjs": "7.5.6",
+    "stream": "0.0.2"
   }
 }
