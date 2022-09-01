@@ -24,6 +24,9 @@ import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 import { getRxStoragePouch } from '../../plugins/pouchdb';
 import { HumanDocumentType } from './../helper/schemas';
+import {
+    wrappedKeyEncryptionStorage
+} from '../../plugins/encryption';
 
 config.parallel('cross-instance.test.js', () => {
     if (!config.storage.hasMultiInstance) {
@@ -193,14 +196,18 @@ config.parallel('cross-instance.test.js', () => {
             const password = randomCouchString(10);
             const db1 = await createRxDatabase({
                 name,
-                storage: config.storage.getStorage(),
+                storage: wrappedKeyEncryptionStorage({
+                    storage: config.storage.getStorage(),
+                }),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: config.storage.getStorage(),
+                storage: wrappedKeyEncryptionStorage({
+                    storage: config.storage.getStorage(),
+                }),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
@@ -253,14 +260,18 @@ config.parallel('cross-instance.test.js', () => {
             const password = randomCouchString(10);
             const db1 = await createRxDatabase({
                 name,
-                storage: config.storage.getStorage(),
+                storage: wrappedKeyEncryptionStorage({
+                    storage: config.storage.getStorage(),
+                }),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: config.storage.getStorage(),
+                storage: wrappedKeyEncryptionStorage({
+                    storage: config.storage.getStorage(),
+                }),
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true

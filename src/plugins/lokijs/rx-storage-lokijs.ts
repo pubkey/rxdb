@@ -23,21 +23,13 @@ import {
     createLokiStorageInstance,
     RxStorageInstanceLoki
 } from './rx-storage-instance-loki';
-import { getLokiSortComparator } from './lokijs-helper';
+import { getLokiSortComparator, RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
 import type { LeaderElector } from 'broadcast-channel';
 
-import { binaryMd5 } from 'pouchdb-md5';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
 
 export const RxStorageLokiStatics: RxStorageStatics = {
-
-    hash(data: Buffer | Blob | string): Promise<string> {
-        return new Promise(res => {
-            binaryMd5(data, (digest: string) => {
-                res(digest);
-            });
-        });
-    },
-    hashKey: 'md5',
     prepareQuery<RxDocType>(
         _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: MangoQuery<RxDocType>
@@ -104,12 +96,13 @@ export const RxStorageLokiStatics: RxStorageStatics = {
             return ret;
         }
         return fun;
-    }
+    },
 
+    checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 }
 
 export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
-    public name = 'lokijs';
+    public name = RX_STORAGE_NAME_LOKIJS;
     public statics = RxStorageLokiStatics;
 
     /**
@@ -133,6 +126,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
     public createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
     ): Promise<RxStorageInstanceLoki<RxDocType>> {
+        ensureRxStorageInstanceParamsAreCorrect(params);
         return createLokiStorageInstance(this, params, this.databaseSettings);
     }
 }

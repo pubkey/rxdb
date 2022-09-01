@@ -8,14 +8,11 @@ The database is created by the asynchronous `.createRxDatabase()` function of th
 
 ```javascript
 import { createRxDatabase } from 'rxdb';
-
-// because we use the PouchDB RxStorage, we have to add the indexeddb adapter first.
-import { getRxStoragePouch, addPouchPlugin } from 'rxdb/plugins/pouchdb';
-addPouchPlugin(require('pouchdb-adapter-idb'));
+import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 const db = await createRxDatabase({
   name: 'heroesdb',                   // <- name
-  storage: getRxStoragePouch('idb'),  // <- RxStorage
+  storage: getRxStorageDexie(),       // <- RxStorage
   password: 'myPassword',             // <- password (optional)
   multiInstance: true,                // <- multiInstance (optional, default: true)
   eventReduce: true                   // <- eventReduce (optional, default: true)
@@ -75,6 +72,8 @@ const dbLoki = await createRxDatabase({
 ### password
 `(optional)`
 If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
+
+[Read more about encryption here](./encryption.md).
 
 ### multiInstance
 `(optional=true)`

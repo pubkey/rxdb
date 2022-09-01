@@ -1,10 +1,5 @@
 import './style.css';
 import {
-    SubscriptionClient
-} from 'subscriptions-transport-ws';
-
-
-import {
     addRxPlugin,
     createRxDatabase
 } from 'rxdb';
@@ -23,6 +18,9 @@ import {
     getRxStorageDexie
 } from 'rxdb/plugins/dexie';
 
+import {
+    getRxStorageMemory
+} from 'rxdb/plugins/memory';
 
 import {
     filter
@@ -32,11 +30,9 @@ addPouchPlugin(require('pouchdb-adapter-idb'));
 import {
     RxDBReplicationGraphQLPlugin,
     pullQueryBuilderFromRxSchema,
-    pushQueryBuilderFromRxSchema
+    pushQueryBuilderFromRxSchema,
+    pullStreamBuilderFromRxSchema
 } from 'rxdb/plugins/replication-graphql';
-import {
-    getLastPushCheckpoint
-} from 'rxdb/plugins/replication';
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 
@@ -44,8 +40,7 @@ addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
-import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
@@ -71,10 +66,15 @@ const storageField = document.querySelector('#storage-key');
 const databaseNameField = document.querySelector('#database-name');
 
 console.log('hostname: ' + window.location.hostname);
-const syncURL = 'http://' + window.location.hostname + ':' + GRAPHQL_PORT + GRAPHQL_PATH;
 
 
-const batchSize = 5;
+const syncUrls = {
+    http: 'http://' + window.location.hostname + ':' + GRAPHQL_PORT + GRAPHQL_PATH,
+    ws: 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH
+};
+
+
+const batchSize = 50;
 
 const pullQueryBuilder = pullQueryBuilderFromRxSchema(
     'hero',
@@ -82,6 +82,11 @@ const pullQueryBuilder = pullQueryBuilderFromRxSchema(
     batchSize
 );
 const pushQueryBuilder = pushQueryBuilderFromRxSchema(
+    'hero',
+    graphQLGenerationInput.hero
+);
+
+const pullStreamBuilder = pullStreamBuilderFromRxSchema(
     'hero',
     graphQLGenerationInput.hero
 );
@@ -120,7 +125,7 @@ function getStorageKey() {
     const url = new URL(url_string);
     let storageKey = url.searchParams.get('storage');
     if (!storageKey) {
-        storageKey = 'pouchdb';
+        storageKey = 'dexie';
     }
     return storageKey;
 }
@@ -147,6 +152,8 @@ function getStorage() {
         });
     } else if (storageKey === 'dexie') {
         return getRxStorageDexie();
+    } else if (storageKey === 'memory') {
+        return getRxStorageMemory();
     } else {
         throw new Error('storage key not defined ' + storageKey);
     }
@@ -159,10 +166,11 @@ async function run() {
     heroesList.innerHTML = 'Create database..';
     const db = await createRxDatabase({
         name: getDatabaseName(),
-        storage: getStorage()
+        storage: wrappedValidateAjvStorage({
+            storage: getStorage()
+        }),
+        multiInstance: getStorageKey() !== 'memory'
     });
-    console.log('db.token: ' + db.token);
-    console.log('db.storageToken: ' + db.storageToken);
     window.db = db;
 
     // display crown when tab is leader
@@ -178,12 +186,16 @@ async function run() {
         }
     });
 
+    db.hero.preSave(function (docData) {
+        docData.updatedAt = new Date().getTime();
+        
+    });
 
     // set up replication
     if (doSync()) {
         heroesList.innerHTML = 'Start replication..';
         const replicationState = db.hero.syncGraphQL({
-            url: syncURL,
+            url: syncUrls,
             headers: {
                 /* optional, set an auth header */
                 Authorization: 'Bearer ' + JWT_BEARER_TOKEN
@@ -194,25 +206,12 @@ async function run() {
             },
             pull: {
                 batchSize,
-                queryBuilder: pullQueryBuilder
+                queryBuilder: pullQueryBuilder,
+                streamQueryBuilder: pullStreamBuilder
             },
             live: true,
-            /**
-             * Because the websocket is used to inform the client
-             * when something has changed,
-             * we can set the liveIntervall to a high value
-             */
-            liveInterval: 1000 * 60 * 10, // 10 minutes
-            deletedFlag: 'deleted'
+            deletedField: 'deleted'
         });
-
-        setInterval(async () => {
-            var last = await getLastPushCheckpoint(
-                db.hero,
-                replicationState.endpointHash
-            );
-            console.log('last endpoint hash: ' + last);
-        }, 1000);
 
 
         // show replication-errors in logs
@@ -220,61 +219,6 @@ async function run() {
         replicationState.error$.subscribe(err => {
             console.error('replication error:');
             console.dir(err);
-        });
-
-
-        // setup graphql-subscriptions for pull-trigger
-        db.waitForLeadership().then(() => {
-            // heroesList.innerHTML = 'Create SubscriptionClient..';
-            const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
-            const wsClient = new SubscriptionClient(
-                endpointUrl,
-                {
-                    reconnect: true,
-                    timeout: 1000 * 60,
-                    onConnect: () => {
-                        console.log('SubscriptionClient.onConnect()');
-                    },
-                    connectionCallback: () => {
-                        console.log('SubscriptionClient.connectionCallback:');
-                    },
-                    reconnectionAttempts: 10000,
-                    inactivityTimeout: 10 * 1000,
-                    lazy: true
-                });
-            // heroesList.innerHTML = 'Subscribe to GraphQL Subscriptions..';
-            const query = `
-        subscription onChangedHero($token: String!) {
-            changedHero(token: $token) {
-                id
-            }
-        }
-        `;
-            const ret = wsClient.request(
-                {
-                    query,
-                    /**
-                     * there is no method in javascript to set custom auth headers
-                     * at websockets. So we send the auth header directly as variable
-                     * @link https://stackoverflow.com/a/4361358/3443137
-                     */
-                    variables: {
-                        token: JWT_BEARER_TOKEN
-                    }
-                }
-            );
-            ret.subscribe({
-                next: async (data) => {
-                    console.log('subscription emitted => trigger notifyAboutRemoteChange()');
-                    console.dir(data);
-                    await replicationState.notifyAboutRemoteChange();
-                    console.log('notifyAboutRemoteChange() done');
-                },
-                error(error) {
-                    console.log('notifyAboutRemoteChange() got error:');
-                    console.dir(error);
-                }
-            });
         });
     }
 
@@ -305,12 +249,14 @@ async function run() {
             name: 'asc'
         })
         .$.subscribe(function (heroes) {
+            console.log('emitted heroes:');
+            console.dir(heroes.map(d => d.toJSON()));
             let html = '';
             heroes.forEach(function (hero) {
                 html += `
                     <li class="hero-item">
                         <div class="color-box" style="background:${hero.color}"></div>
-                        <div class="name">${hero.name} (revision: ${hero._rev})</div>
+                        <div class="name">${hero.name} (updatedAt: ${hero.updatedAt})</div>
                         <div class="delete-icon" onclick="window.deleteHero('${hero.primary}')">DELETE</div>
                     </li>
                 `;
@@ -339,7 +285,8 @@ async function run() {
         const obj = {
             id: name,
             name: name,
-            color: color
+            color: color,
+            updatedAt: new Date().getTime()
         };
         console.log('inserting hero:');
         console.dir(obj);

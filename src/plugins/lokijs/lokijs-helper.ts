@@ -12,7 +12,8 @@ import type {
     RxJsonSchema
 } from '../../types';
 import {
-    add as unloadAdd, AddReturn
+    add as unloadAdd,
+    AddReturn
 } from 'unload';
 import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../../util';
 import { LokiSaveQueue } from './loki-save-queue';
@@ -28,7 +29,7 @@ import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
 export const LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
-
+export const RX_STORAGE_NAME_LOKIJS = 'lokijs';
 
 /**
  * Loki attaches a $loki property to all data
@@ -44,6 +45,7 @@ export function stripLokiKey<T>(docData: RxDocumentData<T> & { $loki?: number; }
      * In RxDB version 12.0.0,
      * we introduced the _meta field that already contains the last write time.
      * To be backwards compatible, we have to move the $lastWriteAt to the _meta field.
+     * TODO remove this in the next major version.
      */
     if ((cloned as any).$lastWriteAt) {
         cloned._meta = {
@@ -377,6 +379,7 @@ export async function handleRemoteRequest(
         try {
             result = await (instance as any)[operation](...params);
         } catch (err) {
+            console.dir(err);
             isError = true;
             result = err;
         }

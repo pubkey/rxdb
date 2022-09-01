@@ -67,12 +67,12 @@ const storage = getMemorySyncedRxStorage({
 
     /**
      * Defines how many document
-     * get replicated in a single bulk.
+     * get replicated in a single batch.
      * [default=50]
      * 
      * (optional)
      */
-    bulkSize: 50,
+    batchSize: 50,
 
     /**
      * By default, the parent storage will be created without indexes for a faster page load.

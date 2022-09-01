@@ -160,15 +160,15 @@ Object.keys(_rxStorage2).forEach(function (key) {
   });
 });
 
-var _rxStorageReplication = require("./rx-storage-replication");
+var _replicationProtocol = require("./replication-protocol");
 
-Object.keys(_rxStorageReplication).forEach(function (key) {
+Object.keys(_replicationProtocol).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _rxStorageReplication[key]) return;
+  if (key in exports && exports[key] === _replicationProtocol[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
-      return _rxStorageReplication[key];
+      return _replicationProtocol[key];
     }
   });
 });
@@ -277,15 +277,15 @@ Object.keys(_localDocuments).forEach(function (key) {
   });
 });
 
-var _server = require("./plugins/server");
+var _serverCouchdb = require("./plugins/server-couchdb");
 
-Object.keys(_server).forEach(function (key) {
+Object.keys(_serverCouchdb).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _server[key]) return;
+  if (key in exports && exports[key] === _serverCouchdb[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
-      return _server[key];
+      return _serverCouchdb[key];
     }
   });
 });

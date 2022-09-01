@@ -10,15 +10,16 @@
  */
 import { Subject } from 'rxjs';
 import deepEqual from 'fast-deep-equal';
-import { clone, toPromise, flatClone, getHeightOfRevision, createRevision, PROMISE_RESOLVE_VOID, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_NULL, getDefaultRxDocumentMeta } from '../../util';
+import { clone, toPromise, flatClone, getHeightOfRevision, createRevision, PROMISE_RESOLVE_VOID, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_NULL, getDefaultRxDocumentMeta, now } from '../../util';
 import { createRxSchema } from '../../rx-schema';
 import { newRxError } from '../../rx-error';
 import { runAsyncPluginHooks, runPluginHooks } from '../../hooks';
 import { getPreviousVersions } from '../../rx-schema';
 import { getMigrationStateByDatabase } from './migration-state';
 import { map } from 'rxjs/operators';
-import { getAllDocuments, getWrappedStorageInstance } from '../../rx-storage-helper';
+import { getWrappedStorageInstance } from '../../rx-storage-helper';
 import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_COLLECTION } from '../../rx-database-internal-store';
+import { normalizeMangoQuery } from '../../rx-query-helper';
 
 /**
  * transform documents data and save them to the new collection
@@ -47,7 +48,6 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
               var writeDeleted = flatClone(docData);
               writeDeleted._deleted = true;
               writeDeleted._attachments = {};
-              writeDeleted._rev = createRevision(writeDeleted, docData);
               return {
                 previous: docData,
                 document: writeDeleted
@@ -98,7 +98,7 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
              * so replicating instances use our new document data
              */
             var newHeight = getHeightOfRevision(docData._rev) + 1;
-            var newRevision = newHeight + '-' + createRevision(migratedDocData);
+            var newRevision = newHeight + '-' + createRevision(oldCollection.newestCollection.database.hashFunction, migratedDocData);
             migratedDocData._rev = newRevision;
           }
 
@@ -110,6 +110,7 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
             var attachmentsBefore = migratedDocData._attachments;
             var saveData = migratedDocData;
             saveData._attachments = attachmentsBefore;
+            saveData._meta.lwt = now();
             bulkWriteToStorageInput.push(saveData);
             action.res = saveData;
             action.type = 'success';
@@ -132,7 +133,13 @@ export var _migrateDocuments = function _migrateDocuments(oldCollection, documen
 
         var _temp2 = function () {
           if (bulkWriteToStorageInput.length) {
-            return Promise.resolve(oldCollection.newestCollection.storageInstance.bulkWrite(bulkWriteToStorageInput.map(function (document) {
+            /**
+             * To ensure that we really keep that revision, we
+             * hackly insert this document via the RxStorageInstance.originalStorageInstance
+             * so that getWrappedStorageInstance() does not overwrite its own revision.
+             */
+            var originalStorageInstance = oldCollection.newestCollection.storageInstance.originalStorageInstance;
+            return Promise.resolve(originalStorageInstance.bulkWrite(bulkWriteToStorageInput.map(function (document) {
               return {
                 document: document
               };
@@ -262,8 +269,22 @@ export var DataMigrator = /*#__PURE__*/function () {
       return _getOldCollections(_this).then(function (ret) {
         _this.nonMigratedOldCollections = ret;
         _this.allOldCollections = _this.nonMigratedOldCollections.slice(0);
+
+        var getAllDocuments = function getAllDocuments(storageInstance, schema) {
+          try {
+            var storage = _this.database.storage;
+            var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, normalizeMangoQuery(schema, {}));
+            return Promise.resolve(storageInstance.query(getAllQueryPrepared)).then(function (queryResult) {
+              var allDocs = queryResult.documents;
+              return allDocs;
+            });
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        };
+
         var countAll = Promise.all(_this.nonMigratedOldCollections.map(function (oldCol) {
-          return getAllDocuments(oldCol.schema.primaryPath, oldCol.storageInstance).then(function (allDocs) {
+          return getAllDocuments(oldCol.storageInstance, oldCol.schema.jsonSchema).then(function (allDocs) {
             return allDocs.length;
           });
         }));
@@ -469,26 +490,6 @@ export function migrateDocumentData(oldCollection, docData) {
 
     if (!doc._meta) {
       doc._meta = getDefaultRxDocumentMeta();
-    } // check final schema
-
-
-    try {
-      oldCollection.newestCollection.schema.validate(doc);
-    } catch (err) {
-      var asRxError = err;
-      throw newRxError('DM2', {
-        fromVersion: oldCollection.version,
-        toVersion: oldCollection.newestCollection.schema.version,
-        originalDoc: docData,
-        finalDoc: doc,
-
-        /**
-         * pass down data from parent error,
-         * to make it better understandable what did not work
-         */
-        errors: asRxError.parameters.errors,
-        schema: asRxError.parameters.schema
-      });
     }
 
     return doc;

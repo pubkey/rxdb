@@ -222,7 +222,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
 var addedToPouch = false;
 export var EVENT_EMITTER_BY_POUCH_INSTANCE = new Map();
 export function getCustomEventEmitterByPouch(pouch) {
-  var key = [pouch.name, pouch.adapter].join('|');
+  var key = [pouch.__opts.name, pouch.adapter].join('|');
   var emitter = EVENT_EMITTER_BY_POUCH_INSTANCE.get(key);
 
   if (!emitter) {
@@ -270,6 +270,39 @@ export function addCustomEventsPluginToPouch() {
 
   var newBulkDocs = function newBulkDocs(body, options, callback) {
     var _this = this;
+
+    /**
+     * Normalize inputs
+     * because there are many ways to call pouchdb.bulkDocs()
+     */
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
+
+    if (!options) {
+      options = {};
+    }
+    /**
+     * PouchDB internal requests
+     * must still be handled normally
+     * to decrease the likelyness of bugs.
+     */
+
+
+    var internalPouches = ['_replicator', '_users', 'pouch__all_dbs__'];
+
+    if (internalPouches.includes(this.name) || this.name.includes('-mrview-')) {
+      return oldBulkDocs.call(this, body, options, function (err, result) {
+        if (err) {
+          callback ? callback(err, null) : 0;
+        } else {
+          if (callback) {
+            callback(null, result);
+          }
+        }
+      });
+    }
 
     var queue = BULK_DOC_RUN_QUEUE.get(this);
 
@@ -394,7 +427,16 @@ export function addCustomEventsPluginToPouch() {
               }
             });
           });
-          callReturn = oldBulkDocs.call(_this3, docs, deeperOptions, function (err, result) {
+          /**
+           * We cannot send the custom here,
+           * because when a migration between different major RxDB versions is done,
+           * multiple versions of the RxDB PouchDB RxStorage might have added their
+           * custom method via PouchDBCore.plugin()
+           */
+
+          var useOptsForOldBulkDocs = flatClone(deeperOptions);
+          delete useOptsForOldBulkDocs.custom;
+          callReturn = oldBulkDocs.call(_this3, docs, useOptsForOldBulkDocs, function (err, result) {
             if (err) {
               callback ? callback(err) : rej(err);
             } else {

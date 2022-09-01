@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.overwritable = void 0;
 
-var _util = require("./util");
-
 /**
  * functions that can or should be overwritten by plugins
  * IMPORTANT: Do not import any big stuff from RxDB here!
@@ -31,15 +29,6 @@ var overwritable = {
    */
   deepFreezeWhenDevMode: function deepFreezeWhenDevMode(obj) {
     return obj;
-  },
-
-  /**
-   * validates if a password can be used
-   * @overwritten by plugin (optional)
-   * @throws if password not valid
-   */
-  validatePassword: function validatePassword(_password) {
-    throw (0, _util.pluginMissing)('encryption');
   },
 
   /**

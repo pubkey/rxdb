@@ -12,7 +12,7 @@ exports.metaFileLocation = metaFileLocation;
 exports.prepareFolders = prepareFolders;
 exports.setMeta = setMeta;
 exports.writeJsonToFile = writeJsonToFile;
-exports.writeToFile = writeToFile;
+exports.writeToFile = void 0;
 
 var fs = _interopRequireWildcard(require("fs"));
 
@@ -23,6 +23,36 @@ var _util = require("../../util");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+var writeToFile = function writeToFile(location, data) {
+  try {
+    var _temp3 = function _temp3() {
+      return new Promise(function (res, rej) {
+        fs.writeFile(location, data, 'utf-8', function (err) {
+          if (err) {
+            rej(err);
+          } else {
+            res();
+          }
+        });
+      });
+    };
+
+    var _temp4 = function () {
+      if (typeof data !== 'string') {
+        return Promise.resolve(_util.blobBufferUtil.toString(data)).then(function (_blobBufferUtil$toStr) {
+          data = _blobBufferUtil$toStr;
+        });
+      }
+    }();
+
+    return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.writeToFile = writeToFile;
 
 /**
  * ensure that the given folder exists
@@ -69,18 +99,6 @@ function prepareFolders(database, options) {
 
   Object.keys(database.collections).forEach(function (collectionName) {
     ensureFolderExists(path.join(options.directory, collectionName));
-  });
-}
-
-function writeToFile(location, data) {
-  return new Promise(function (res, rej) {
-    fs.writeFile(location, data, 'utf-8', function (err) {
-      if (err) {
-        rej(err);
-      } else {
-        res();
-      }
-    });
   });
 }
 

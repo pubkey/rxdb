@@ -14,8 +14,7 @@ import type {
 import {
     Query as MingoQuery
 } from 'mingo';
-import { binaryMd5 } from 'pouchdb-md5';
-import { getDexieSortComparator } from './dexie-helper';
+import { getDexieSortComparator, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
 import type {
     DexieSettings,
     DexieStorageInternals
@@ -26,17 +25,11 @@ import {
 } from './rx-storage-instance-dexie';
 import { newRxError } from '../../rx-error';
 import { getQueryPlan } from '../../query-planner';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
 
 
 export const RxStorageDexieStatics: RxStorageStatics = {
-    hash(data: Buffer | Blob | string): Promise<string> {
-        return new Promise(res => {
-            binaryMd5(data, (digest: string) => {
-                res(digest);
-            });
-        });
-    },
-    hashKey: 'md5',
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: FilledMangoQuery<RxDocType>
@@ -89,13 +82,15 @@ export const RxStorageDexieStatics: RxStorageStatics = {
             }
         }
         return fun;
-    }
+    },
+
+    checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 
 }
 
 
 export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSettings> {
-    public name = 'dexie';
+    public name = RX_STORAGE_NAME_DEXIE;
     public statics = RxStorageDexieStatics;
 
     constructor(
@@ -105,6 +100,7 @@ export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSet
     public createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>
     ): Promise<RxStorageInstanceDexie<RxDocType>> {
+        ensureRxStorageInstanceParamsAreCorrect(params);
         return createDexieStorageInstance(this, params, this.settings);
     }
 }

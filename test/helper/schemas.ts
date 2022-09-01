@@ -4,7 +4,8 @@ import {
     RxJsonSchema,
     toTypedRxJsonSchema,
     ExtractDocumentTypeFromTypedRxJsonSchema,
-    overwritable
+    overwritable,
+    flatClone
 } from '../../';
 import {
     SimpleHumanV3DocumentType,
@@ -34,7 +35,7 @@ export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -68,7 +69,7 @@ export const humanDefault: RxJsonSchema<HumanDocumentType> = overwritable.deepFr
     title: 'human schema',
     version: 0,
     description: 'describes a human being',
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -97,7 +98,7 @@ export const humanDefault: RxJsonSchema<HumanDocumentType> = overwritable.deepFr
 export const humanFinal: RxJsonSchema<HumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema with age set final',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     type: 'object',
     primaryKey: 'passportId',
     properties: {
@@ -126,7 +127,7 @@ export const humanFinal: RxJsonSchema<HumanDocumentType> = overwritable.deepFree
 export const simpleHuman: RxJsonSchema<SimpleHumanV3DocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     description: 'describes a simple human being',
     primaryKey: 'passportId',
     type: 'object',
@@ -150,7 +151,7 @@ export const simpleHuman: RxJsonSchema<SimpleHumanV3DocumentType> = overwritable
 export const simpleHumanV3: RxJsonSchema<SimpleHumanV3DocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 3,
-    keyCompression: true,
+    keyCompression: false,
     description: 'describes a simple human being',
     type: 'object',
     primaryKey: 'passportId',
@@ -176,7 +177,7 @@ export const simpleHumanV3: RxJsonSchema<SimpleHumanV3DocumentType> = overwritab
 export const humanAgeIndex: RxJsonSchema<HumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     description: 'describes a human being',
     primaryKey: 'passportId',
     type: 'object',
@@ -207,7 +208,7 @@ export const humanSubIndex: RxJsonSchema<HumanWithSubOtherDocumentType> = overwr
     title: 'human schema',
     version: 0,
     description: 'describes a human being where other.age is index',
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -242,7 +243,7 @@ export const humanWithAllIndex: RxJsonSchema<HumanDocumentType> = overwritable.d
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -274,7 +275,7 @@ export const nestedHuman: RxJsonSchema<NestedHumanDocumentType> = {
     title: 'human nested',
     version: 0,
     description: 'describes a human being with a nested field',
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -308,7 +309,7 @@ export const nestedHuman: RxJsonSchema<NestedHumanDocumentType> = {
 export const deepNestedHuman: RxJsonSchema<DeepNestedHumanDocumentType> = {
     title: 'deep human nested',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     description: 'describes a human being with a nested field',
     primaryKey: 'passportId',
     type: 'object',
@@ -346,7 +347,7 @@ export const noIndexHuman: RxJsonSchema<NoIndexHumanDocumentType> = overwritable
     title: 'human schema',
     version: 0,
     description: 'this schema has no index',
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'firstName',
     type: 'object',
     properties: {
@@ -364,7 +365,7 @@ export const noIndexHuman: RxJsonSchema<NoIndexHumanDocumentType> = overwritable
 export const noStringIndex: RxJsonSchema<NostringIndexDocumentType> = overwritable.deepFreezeWhenDevMode({
     description: 'the index has no type:string',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -385,7 +386,7 @@ export const bigHuman: RxJsonSchema<BigHumanDocumentType> = overwritable.deepFre
     title: 'human schema',
     version: 0,
     description: 'describes a human being with 2 indexes',
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -420,7 +421,7 @@ export const encryptedHuman: RxJsonSchema<EncryptedHumanDocumentType> = {
     description: 'uses an encrypted field',
     primaryKey: 'passportId',
     type: 'object',
-    keyCompression: true,
+    keyCompression: false,
     properties: {
         passportId: {
             type: 'string',
@@ -442,7 +443,7 @@ export const encryptedHuman: RxJsonSchema<EncryptedHumanDocumentType> = {
 export const encryptedObjectHuman: RxJsonSchema<EncryptedObjectHumanDocumentType> = {
     title: 'human encrypted',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     description: 'uses an encrypted field',
     primaryKey: 'passportId',
     type: 'object',
@@ -474,7 +475,7 @@ export const encryptedObjectHuman: RxJsonSchema<EncryptedObjectHumanDocumentType
 export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = {
     title: 'human encrypted',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     description: 'uses an encrypted field',
     primaryKey: 'passportId',
     type: 'object',
@@ -541,7 +542,7 @@ export const notExistingIndex: RxJsonSchema<{ passportId: string; address: { str
     description: 'this schema has a specified index which does not exists',
     primaryKey: 'passportId',
     type: 'object',
-    keyCompression: true,
+    keyCompression: false,
     properties: {
         passportId: {
             type: 'string',
@@ -566,7 +567,7 @@ export const compoundIndex: RxJsonSchema<CompoundIndexDocumentType> = overwritab
     description: 'this schema has a compoundIndex',
     primaryKey: 'passportId',
     type: 'object',
-    keyCompression: true,
+    keyCompression: false,
     properties: {
         passportId: {
             type: 'string',
@@ -596,7 +597,7 @@ export const compoundIndexNoString: RxJsonSchema<CompoundIndexNoStringDocumentTy
     version: 0,
     description: 'this schema has a compoundIndex',
     primaryKey: 'passportId',
-    keyCompression: true,
+    keyCompression: false,
     type: 'object',
     properties: {
         passportId: {
@@ -619,7 +620,7 @@ export const wrongCompoundFormat: RxJsonSchema<CompoundIndexDocumentType> = {
     title: 'compund index',
     version: 0,
     description: 'this schema has a compoundIndex',
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -659,7 +660,7 @@ export const empty: RxJsonSchema<any> = {
 export const heroArray: RxJsonSchema<HeroArrayDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'hero schema',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     description: 'describes a hero with an array-field',
     primaryKey: 'name',
     type: 'object',
@@ -694,7 +695,7 @@ export const simpleArrayHero: RxJsonSchema<SimpleHeroArrayDocumentType> = overwr
     title: 'hero schema',
     version: 0,
     description: 'describes a hero with a string-array-field',
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'name',
     type: 'object',
     properties: {
@@ -720,7 +721,7 @@ export const primaryHumanLiteral = overwritable.deepFreezeWhenDevMode({
     title: 'human schema with primary',
     version: 0,
     description: 'describes a human being with passsportID as primary',
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -752,7 +753,7 @@ export const primaryHuman: RxJsonSchema<PrimaryHumanDocType> = primaryHumanLiter
 export const humanNormalizeSchema1Literal = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     description: 'describes a human being',
     primaryKey: 'passportId',
     type: 'object',
@@ -779,7 +780,7 @@ export const humanNormalizeSchema1: RxJsonSchema<AgeHumanDocumentType> = humanNo
 export const humanNormalizeSchema2: RxJsonSchema<AgeHumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human schema',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -803,7 +804,7 @@ export const humanNormalizeSchema2: RxJsonSchema<AgeHumanDocumentType> = overwri
 export const refHuman: RxJsonSchema<RefHumanDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human related to other human',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'name',
     type: 'object',
     properties: {
@@ -825,7 +826,7 @@ export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: {
         key: 'id',
         fields: [
@@ -872,7 +873,7 @@ export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = {
 export const refHumanNested: RxJsonSchema<RefHumanNestedDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human related to other human',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'name',
     type: 'object',
     properties: {
@@ -904,7 +905,7 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
         version: 0,
         primaryKey: 'id',
         type: 'object',
-        keyCompression: true,
+        keyCompression: false,
         properties: {
             id: {
                 type: 'string',
@@ -988,7 +989,7 @@ export const humanMinimal: RxJsonSchema<SimpleHumanV3DocumentType> = overwritabl
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -1011,7 +1012,7 @@ export const humanMinimalBroken: RxJsonSchema<{ passportId: string; broken: numb
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
-    keyCompression: true,
+    keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',
     properties: {
@@ -1226,3 +1227,12 @@ export const humanIdAndAgeIndex: RxJsonSchema<{ id: string; name: string; age: n
         ['age', 'id']
     ]
 });
+
+
+export function enableKeyCompression<RxDocType>(
+    schema: RxJsonSchema<RxDocType>
+): RxJsonSchema<RxDocType> {
+    const ret = flatClone(schema);
+    ret.keyCompression = true;
+    return ret;
+}

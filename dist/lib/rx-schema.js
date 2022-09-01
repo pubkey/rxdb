@@ -28,8 +28,6 @@ var _rxSchemaHelper = require("./rx-schema-helper");
 
 var _overwritable = require("./overwritable");
 
-var _rxCollectionHelper = require("./rx-collection-helper");
-
 var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonSchema) {
     this.jsonSchema = jsonSchema;
@@ -60,35 +58,6 @@ var RxSchema = /*#__PURE__*/function () {
         });
       }
     });
-  }
-  /**
-   * validate if the given document data matches the schema
-   * @param schemaPath if given, validates against deep-path of schema
-   * @throws {Error} if not valid
-   * @param obj equal to input-obj
-   *
-   */
-  ;
-
-  _proto.validate = function validate(obj, schemaPath) {
-    if (!this.validateFullDocumentData) {
-      return;
-    } else {
-      var fullDocData = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this, obj);
-      return this.validateFullDocumentData(fullDocData, schemaPath);
-    }
-  }
-  /**
-   * @overwritten by the given validation plugin
-   */
-  ;
-
-  _proto.validateFullDocumentData = function validateFullDocumentData(_docData, _schemaPath) {
-    /**
-     * This method might be overwritten by a validation plugin,
-     * otherwise do nothing, because if not validation plugin
-     * was added to RxDB, we assume all given data is valid.
-     */
   }
   /**
    * fills all unset fields with default-values if set
@@ -146,26 +115,13 @@ var RxSchema = /*#__PURE__*/function () {
       return (0, _util.overwriteGetterForCaching)(this, 'defaultValues', values);
     }
     /**
-        * true if schema contains at least one encrypted path
-        */
-
-  }, {
-    key: "crypt",
-    get: function get() {
-      if (!!this.jsonSchema.encrypted && this.jsonSchema.encrypted.length > 0 || this.jsonSchema.attachments && this.jsonSchema.attachments.encrypted) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-    /**
      * @overrides itself on the first call
      */
 
   }, {
     key: "hash",
     get: function get() {
-      return (0, _util.overwriteGetterForCaching)(this, 'hash', (0, _util.hash)(this.jsonSchema));
+      return (0, _util.overwriteGetterForCaching)(this, 'hash', (0, _util.fastUnsecureHash)(JSON.stringify(this.jsonSchema)));
     }
   }]);
   return RxSchema;

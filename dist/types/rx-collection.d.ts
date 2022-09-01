@@ -3,7 +3,7 @@ import { DocCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
 import { Subscription, Observable } from 'rxjs';
-import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler } from './types';
+import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise } from './types';
 import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
 export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = {
@@ -32,8 +32,6 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
     get remove$(): Observable<RxChangeEventDelete<RxDocumentType>>;
-    get onDestroy(): Promise<void>;
-    destroyed: boolean;
     _atomicUpsertQueues: Map<string, Promise<any>>;
     synced: boolean;
     hooks: any;
@@ -43,10 +41,13 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     $: Observable<RxChangeEvent<RxDocumentType>>;
     _changeEventBuffer: ChangeEventBuffer;
     /**
-     * returns a promise that is resolved when the collection gets destroyed
+     * When the collection is destroyed,
+     * these functions will be called an awaited.
+     * Used to automatically clean up stuff that
+     * belongs to this collection.
      */
-    private _onDestroy?;
-    private _onDestroyCall?;
+    onDestroy: (() => MaybePromise<any>)[];
+    destroyed: boolean;
     prepare(): Promise<void>;
     migrationNeeded(): Promise<boolean>;
     getDataMigrator(): DataMigrator;
@@ -87,10 +88,6 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     findByIds$(ids: string[]): Observable<Map<string, RxDocument<RxDocumentType, OrmMethods>>>;
     /**
      * Export collection to a JSON friendly format.
-     * @param _decrypted
-     * When true, all encrypted values will be decrypted.
-     * When false or omitted and an interface or type is loaded in this collection,
-     * all base properties of the type are typed as `any` since data could be encrypted.
      */
     exportJSON(): Promise<RxDumpCollection<RxDocumentType>>;
     exportJSON(): Promise<RxDumpCollectionAny<RxDocumentType>>;
@@ -106,7 +103,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     /**
      * sync with a GraphQL endpoint
      */
-    syncGraphQL(_options: SyncOptionsGraphQL<RxDocumentType>): RxGraphQLReplicationState<RxDocumentType>;
+    syncGraphQL<CheckpointType = any>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType, CheckpointType>;
     /**
      * HOOKS
      */
@@ -117,10 +114,6 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * does the same as ._runHooks() but with non-async-functions
      */
     _runHooksSync(when: string, key: string, data: any, instance: any): void;
-    /**
-     * creates a temporaryDocument which can be saved later
-     */
-    newDocument(docData?: Partial<RxDocumentType>): RxDocument<RxDocumentType, OrmMethods>;
     /**
      * Returns a promise that resolves after the given time.
      * Ensures that is properly cleans up when the collection is destroyed

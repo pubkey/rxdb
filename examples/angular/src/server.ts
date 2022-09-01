@@ -14,10 +14,9 @@ import {
 } from 'rxdb/plugins/pouchdb';
 
 // rxdb plugins
-import { RxDBServerPlugin } from 'rxdb/plugins/server';
-addRxPlugin(RxDBServerPlugin);
-import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
+import { RxDBServerCouchDBPlugin } from 'rxdb/plugins/server-couchdb';
+addRxPlugin(RxDBServerCouchDBPlugin);
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 
 
 // add the memory-adapter
@@ -38,7 +37,9 @@ async function run() {
     console.log('# create database');
     const db = await createRxDatabase<RxHeroesDatabase>({
         name: DATABASE_NAME,
-        storage: getRxStoragePouch('memory')
+        storage: wrappedValidateAjvStorage({
+            storage: getRxStoragePouch('memory')
+        })
     });
 
     await db.addCollections({
@@ -71,7 +72,7 @@ async function run() {
 
 
     // start server
-    const { app, server } = await db.server({
+    const { app, server } = await db.serverCouchDB({
         path: '/' + DATABASE_NAME, // (optional)
         port: COUCHDB_PORT,  // (optional)
         cors: true,   // (optional), enable CORS-headers

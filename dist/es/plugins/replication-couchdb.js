@@ -5,17 +5,16 @@
 import PouchReplicationPlugin from 'pouchdb-replication';
 import { BehaviorSubject, Subject, fromEvent, firstValueFrom } from 'rxjs';
 import { skipUntil, filter, first, mergeMap } from 'rxjs/operators';
-import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } from '../util';
+import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, ensureNotFalsy } from '../util';
 import { newRxError } from '../rx-error';
 import { isInstanceOf as isInstanceOfPouchDB, addPouchPlugin, getPouchDBOfRxCollection } from '../plugins/pouchdb';
 import { isRxCollection } from '../rx-collection';
-import { runPluginHooks } from '../hooks';
+
 /**
  * Contains all pouchdb instances that
  * are used inside of RxDB by collections or databases.
  * Used to ensure the remote of a replication cannot be an internal pouchdb.
  */
-
 var INTERNAL_POUCHDBS = new WeakSet();
 export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
   function RxCouchDBReplicationStateBase(collection, syncOptions) {
@@ -72,13 +71,27 @@ export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
   ;
 
   _proto.cancel = function cancel() {
+    var _this2 = this;
+
     if (this.canceled) {
       return PROMISE_RESOLVE_FALSE;
     }
 
     this.canceled = true;
+    var ret = PROMISE_RESOLVE_TRUE;
 
     if (this._pouchEventEmitterObject) {
+      /**
+       * Calling cancel() does not return a promise,
+       * so we have to await the complete event
+       * to know that everything is cleaned up properly.
+       */
+      ret = new Promise(function (res) {
+        ensureNotFalsy(_this2._pouchEventEmitterObject).on('complete', function () {
+          res(true);
+        });
+      });
+
       this._pouchEventEmitterObject.cancel();
     }
 
@@ -86,7 +99,7 @@ export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
       return sub.unsubscribe();
     });
 
-    return PROMISE_RESOLVE_TRUE;
+    return ret;
   };
 
   return RxCouchDBReplicationStateBase;
@@ -113,16 +126,7 @@ export function setPouchEventEmitter(rxRepState, evEmitter) {
     ev.change.docs.filter(function (doc) {
       return doc.language !== 'query';
     }) // remove internal docs
-    .map(function (doc) {
-      var hookParams = {
-        database: rxRepState.collection.database,
-        primaryPath: rxRepState.collection.schema.primaryPath,
-        schema: rxRepState.collection.schema.jsonSchema,
-        doc: doc
-      };
-      runPluginHooks('postReadFromInstance', hookParams);
-      return hookParams.doc;
-    }) // do primary-swap and keycompression
+    // do primary-swap and keycompression
     .forEach(function (doc) {
       return rxRepState._subjects.docs.next(doc);
     });
@@ -232,7 +236,7 @@ export function pouchReplicationFunction(pouch, _ref) {
   }
 }
 export function syncCouchDB(_ref2) {
-  var _this2 = this;
+  var _this3 = this;
 
   var remote = _ref2.remote,
       _ref2$waitForLeadersh = _ref2.waitForLeadership,
@@ -286,14 +290,14 @@ export function syncCouchDB(_ref2) {
   var waitTillRun = waitForLeadership && this.database.multiInstance // do not await leadership if not multiInstance
   ? this.database.waitForLeadership() : promiseWait(0);
   waitTillRun.then(function () {
-    if (_this2.destroyed || repState.canceled) {
+    if (_this3.destroyed || repState.canceled) {
       return;
     }
 
     var pouchSync = syncFun(remote, useOptions);
     setPouchEventEmitter(repState, pouchSync);
 
-    _this2.onDestroy.then(function () {
+    _this3.onDestroy.push(function () {
       return repState.cancel();
     });
   });

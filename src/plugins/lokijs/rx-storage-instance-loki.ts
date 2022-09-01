@@ -45,7 +45,8 @@ import {
     getLokiLeaderElector,
     requestRemoteInstance,
     mustUseLocalState,
-    handleRemoteRequest
+    handleRemoteRequest,
+    RX_STORAGE_NAME_LOKIJS
 } from './lokijs-helper';
 import type {
     Collection
@@ -83,10 +84,37 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
         if (this.internals.leaderElector) {
+
+
+            /**
+             * To run handleRemoteRequest(),
+             * the instance will call its own methods.
+             * But these methods could have already been swapped out by a RxStorageWrapper
+             * so we must store the original methods here and use them instead.
+             */
+            const copiedSelf: RxStorageInstance<RxDocType, any, any> = {
+                bulkWrite: this.bulkWrite.bind(this),
+                changeStream: this.changeStream.bind(this),
+                cleanup: this.cleanup.bind(this),
+                close: this.close.bind(this),
+                query: this.query.bind(this),
+                findDocumentsById: this.findDocumentsById.bind(this),
+                collectionName: this.collectionName,
+                databaseName: this.databaseName,
+                conflictResultionTasks: this.conflictResultionTasks.bind(this),
+                getAttachmentData: this.getAttachmentData.bind(this),
+                getChangedDocumentsSince: this.getChangedDocumentsSince.bind(this),
+                internals: this.internals,
+                options: this.options,
+                remove: this.remove.bind(this),
+                resolveConflictResultionTask: this.resolveConflictResultionTask.bind(this),
+                schema: this.schema
+            }
+
             this.internals.leaderElector.awaitLeadership().then(() => {
                 // this instance is leader now, so it has to reply to queries from other instances
                 ensureNotFalsy(this.internals.leaderElector).broadcastChannel
-                    .addEventListener('message', (msg) => handleRemoteRequest(this, msg));
+                    .addEventListener('message', (msg) => handleRemoteRequest(copiedSelf as any, msg));
             });
         }
     }
@@ -430,6 +458,7 @@ export async function createLokiStorageInstance<RxDocType>(
     );
 
     addRxStorageMultiInstanceSupport(
+        RX_STORAGE_NAME_LOKIJS,
         params,
         instance,
         internals.leaderElector ? internals.leaderElector.broadcastChannel : undefined

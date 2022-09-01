@@ -6,12 +6,18 @@ import { newRxError } from '../../rx-error';
 
 import {
     getPouchIndexDesignDocNameByIndex,
-    pouchHash,
+    POUCHDB_CHECKPOINT_SCHEMA,
     pouchSwapPrimaryToId,
     primarySwapPouchDbQuerySelector
 } from './pouchdb-helper';
-import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
+import type {
+    DeterministicSortComparator,
+    QueryMatcher
+} from 'event-reduce-js';
+import {
+    getPrimaryFieldOfPrimaryKey,
+    getSchemaByObjectPath
+} from '../../rx-schema-helper';
 import type {
     MangoQuery,
     MangoQuerySortDirection,
@@ -27,15 +33,6 @@ import { overwritable } from '../../overwritable';
 import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
 
 export const RxStoragePouchStatics: RxStorageStatics = {
-
-    /**
-     * create the same diggest as an attachment with that data
-     * would have created by pouchdb internally.
-     */
-    hash(data: Buffer | Blob | string): Promise<string> {
-        return pouchHash(data);
-    },
-    hashKey: 'md5',
     getSortComparator<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         query: MangoQuery<RxDocType>
@@ -133,14 +130,15 @@ export const RxStoragePouchStatics: RxStorageStatics = {
             schema,
             mutateableQuery
         );
-    }
+    },
+    checkpointSchema: POUCHDB_CHECKPOINT_SCHEMA
 };
 
 /**
-     * pouchdb has many bugs and strange behaviors
-     * this functions takes a normal mango query
-     * and transforms it to one that fits for pouchdb
-     */
+ * pouchdb has many bugs and strange behaviors
+ * this functions takes a normal mango query
+ * and transforms it to one that fits for pouchdb
+ */
 export function preparePouchDbQuery<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     mutateableQuery: MangoQuery<RxDocType>

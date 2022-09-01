@@ -5,7 +5,7 @@ import { overwritable } from '../../overwritable';
 import { basePrototype, createRxDocumentConstructor } from '../../rx-document';
 import { isBulkWriteConflictError, newRxError, newRxTypeError } from '../../rx-error';
 import { writeSingle } from '../../rx-storage-helper';
-import { clone, createRevision, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
+import { clone, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow } from '../../util';
 import { getLocalDocStateByParent } from './local-documents-helper';
 
 function _catch(body, recover) {
@@ -355,10 +355,7 @@ var RxLocalDocumentPrototype = {
                  */
                 var isConflict = isBulkWriteConflictError(err);
 
-                if (isConflict) {
-                  // conflict error -> retrying
-                  newData._rev = createRevision(newData, isConflict.documentInDb);
-                } else {
+                if (isConflict) {} else {
                   rej(err);
                   _exit2 = true;
                 }
@@ -393,7 +390,6 @@ var RxLocalDocumentPrototype = {
         var oldData = _this4._dataSync$.getValue();
 
         newData.id = _this4.id;
-        newData._rev = createRevision(newData, oldData);
         return state.storageInstance.bulkWrite([{
           previous: oldData,
           document: newData
@@ -425,7 +421,6 @@ var RxLocalDocumentPrototype = {
           _rev: getDefaultRevision(),
           _attachments: {}
         };
-        writeData._rev = createRevision(writeData, _this6._data);
         return writeSingle(state.storageInstance, {
           previous: _this6._data,
           document: writeData

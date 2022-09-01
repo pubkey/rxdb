@@ -5,89 +5,42 @@
  */
 import ZSchema from 'z-schema';
 import { newRxError } from '../rx-error';
-import { requestIdleCallbackIfAvailable } from '../util';
+import { wrappedValidateStorageFactory } from '../plugin-helpers';
+export function getValidator(schema) {
+  var validatorInstance = new ZSchema();
 
-/**
- * cache the validators by the schema-hash
- * so we can reuse them when multiple collections have the same schema
- */
-var VALIDATOR_CACHE = new Map();
-/**
- * returns the parsed validator from z-schema
- * @param schemaPath if given, the schema for the sub-path is used
- * @
- */
+  var validator = function validator(obj) {
+    validatorInstance.validate(obj, schema);
+    return validatorInstance;
+  };
 
-function _getValidator(rxSchema) {
-  var hash = rxSchema.hash;
+  return function (docData) {
+    var useValidator = validator(docData);
 
-  if (!VALIDATOR_CACHE.has(hash)) {
-    var validator = new ZSchema();
-
-    var validatorFun = function validatorFun(obj) {
-      validator.validate(obj, rxSchema.jsonSchema);
-      return validator;
-    };
-
-    VALIDATOR_CACHE.set(hash, validatorFun);
-  }
-
-  return VALIDATOR_CACHE.get(hash);
-}
-/**
- * validates the given object against the schema
- * @param  schemaPath if given, the sub-schema will be validated
- * @throws {RxError} if not valid
- */
-
-
-function validateFullDocumentData(obj) {
-  var validator = _getValidator(this);
-
-  var useValidator = validator(obj);
-  var errors = useValidator.getLastErrors();
-  if (!errors) return obj;else {
-    var formattedZSchemaErrors = errors.map(function (_ref) {
-      var title = _ref.title,
-          description = _ref.description,
-          message = _ref.message;
-      return {
-        title: title,
-        description: description,
-        message: message
-      };
-    });
-    throw newRxError('VD2', {
-      errors: formattedZSchemaErrors,
-      obj: obj,
-      schema: this.jsonSchema
-    });
-  }
-}
-
-var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
-  // pre-generate the validator-z-schema from the schema
-  requestIdleCallbackIfAvailable(function () {
-    return _getValidator.bind(rxSchema, rxSchema);
-  });
-};
-
-export var RxDBValidateZSchemaPlugin = {
-  name: 'validate-z-schema',
-  rxdb: true,
-  prototypes: {
-    /**
-     * set validate-function for the RxSchema.prototype
-     */
-    RxSchema: function RxSchema(proto) {
-      proto._getValidator = _getValidator;
-      proto.validateFullDocumentData = validateFullDocumentData;
+    if (useValidator === true) {
+      return;
     }
-  },
-  hooks: {
-    createRxSchema: {
-      after: runAfterSchemaCreated
+
+    var errors = useValidator.getLastErrors();
+
+    if (errors) {
+      var formattedZSchemaErrors = errors.map(function (_ref) {
+        var title = _ref.title,
+            description = _ref.description,
+            message = _ref.message;
+        return {
+          title: title,
+          description: description,
+          message: message
+        };
+      });
+      throw newRxError('VD2', {
+        errors: formattedZSchemaErrors,
+        document: docData,
+        schema: schema
+      });
     }
-  }
-};
+  };
+}
+export var wrappedValidateZSchemaStorage = wrappedValidateStorageFactory(getValidator, 'z-schema');
 //# sourceMappingURL=validate-z-schema.js.map

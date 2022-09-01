@@ -1,14 +1,9 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, CategorizeBulkWriteRowsOutput, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageStatics, StringKeys } from './types';
+import type { BulkWriteRow, CategorizeBulkWriteRowsOutput, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys } from './types';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
-/**
- * Returns all non-deleted documents
- * of the storage.
- */
-export declare function getAllDocuments<RxDocType>(primaryKey: keyof RxDocType, storageInstance: RxStorageInstance<RxDocType, any, any>): Promise<RxDocumentData<RxDocType>[]>;
 export declare function getSingleDocument<RxDocType>(storageInstance: RxStorageInstance<RxDocType, any, any>, documentId: string): Promise<RxDocumentData<RxDocType> | null>;
 /**
  * Writes a single document,
@@ -58,8 +53,6 @@ export declare function flatCloneDocWithMeta<RxDocType>(doc: RxDocumentData<RxDo
  * to make it easy to filter out duplicates.
  */
 export declare function getUniqueDeterministicEventKey(storageInstance: RxStorageInstance<any, any, any>, primaryPath: string, writeRow: BulkWriteRow<any>): string;
-export declare function hashAttachmentData(attachmentBase64String: string, storageStatics: RxStorageStatics): Promise<string>;
-export declare function getAttachmentSize(attachmentBase64String: string): number;
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -72,3 +65,10 @@ export declare function getWrappedStorageInstance<RxDocType, Internals, Instance
  * before it was mutated by hooks.
  */
 rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>;
+/**
+ * Each RxStorage implementation should
+ * run this method at the first step of createStorageInstance()
+ * to ensure that the configuration is correct.
+ */
+export declare function ensureRxStorageInstanceParamsAreCorrect(params: RxStorageInstanceCreationParams<any, any>): void;
+export declare function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean;

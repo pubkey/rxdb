@@ -621,11 +621,12 @@ config.parallel('pouch-db-integration.test.js', () => {
             const docId = 'foobar';
             const attachmentId = 'myattachment';
             const putRes = await pouch1.put({ _id: docId });
+            const attachmentDataAsBase64 = await blobBufferUtil.toBase64String(blobBuffer);
             await pouch1.putAttachment(
                 docId,
                 attachmentId,
                 putRes.rev,
-                blobBuffer,
+                attachmentDataAsBase64,
                 mimeType
             );
 

@@ -1,12 +1,13 @@
-/// <reference types="pouchdb-core" />
 /// <reference types="node" />
-import type { ChangeStreamEvent, MaybeReadonly, PouchChangeRow, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, RxLocalDocumentData, StringKeys, WithAttachments } from '../../types';
+/// <reference types="pouchdb-core" />
+import type { ChangeStreamEvent, DeepReadonly, JsonSchema, MaybeReadonly, PouchChangeRow, PouchCheckpoint, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, RxLocalDocumentData, StringKeys, WithAttachments } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import type { ChangeEvent } from 'event-reduce-js';
 export declare type PouchStorageInternals = {
     pouchInstanceId: string;
     pouch: PouchDBInstance;
 };
+export declare const RX_STORAGE_NAME_POUCHDB = "pouchdb";
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
@@ -74,6 +75,7 @@ export declare function getPouchIndexDesignDocNameByIndex(index: MaybeReadonly<s
  * So instead of deleting them, we set a custom deleted flag.
  */
 export declare const RXDB_POUCH_DELETED_FLAG: "rxdb-pouch-deleted";
-export declare type RxLocalDocumentDataWithCustomDeletedFlag<D> = RxLocalDocumentData<D> & {
+export declare type RxLocalDocumentDataWithCustomDeletedField<D> = RxLocalDocumentData<D> & {
     [k in typeof RXDB_POUCH_DELETED_FLAG]?: boolean;
 };
+export declare const POUCHDB_CHECKPOINT_SCHEMA: DeepReadonly<JsonSchema<PouchCheckpoint>>;

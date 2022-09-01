@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-server",
-  "main": "../../dist/lib/plugins/server.js",
-  "jsnext:main": "../../dist/es/plugins/server.js",
-  "module": "../../dist/es/plugins/server.js",
-  "types": "../../dist/types/plugins/server.d.ts",
-  "sideEffects": false
-}

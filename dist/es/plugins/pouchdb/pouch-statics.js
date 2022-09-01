@@ -1,18 +1,10 @@
 import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
 import { newRxError } from '../../rx-error';
-import { getPouchIndexDesignDocNameByIndex, pouchHash, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
+import { getPouchIndexDesignDocNameByIndex, POUCHDB_CHECKPOINT_SCHEMA, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import { overwritable } from '../../overwritable';
 import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
 export var RxStoragePouchStatics = {
-  /**
-   * create the same diggest as an attachment with that data
-   * would have created by pouchdb internally.
-   */
-  hash: function hash(data) {
-    return pouchHash(data);
-  },
-  hashKey: 'md5',
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
 
@@ -105,13 +97,14 @@ export var RxStoragePouchStatics = {
    */
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     return preparePouchDbQuery(schema, mutateableQuery);
-  }
+  },
+  checkpointSchema: POUCHDB_CHECKPOINT_SCHEMA
 };
 /**
-     * pouchdb has many bugs and strange behaviors
-     * this functions takes a normal mango query
-     * and transforms it to one that fits for pouchdb
-     */
+ * pouchdb has many bugs and strange behaviors
+ * this functions takes a normal mango query
+ * and transforms it to one that fits for pouchdb
+ */
 
 export function preparePouchDbQuery(schema, mutateableQuery) {
   var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);

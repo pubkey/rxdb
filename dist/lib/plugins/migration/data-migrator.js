@@ -36,6 +36,8 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 
+var _rxQueryHelper = require("../../rx-query-helper");
+
 /**
  * The DataMigrator handles the documents from collections with older schemas
  * and transforms/saves them into the newest collection
@@ -74,7 +76,6 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
               var writeDeleted = (0, _util.flatClone)(docData);
               writeDeleted._deleted = true;
               writeDeleted._attachments = {};
-              writeDeleted._rev = (0, _util.createRevision)(writeDeleted, docData);
               return {
                 previous: docData,
                 document: writeDeleted
@@ -125,7 +126,7 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
              * so replicating instances use our new document data
              */
             var newHeight = (0, _util.getHeightOfRevision)(docData._rev) + 1;
-            var newRevision = newHeight + '-' + (0, _util.createRevision)(migratedDocData);
+            var newRevision = newHeight + '-' + (0, _util.createRevision)(oldCollection.newestCollection.database.hashFunction, migratedDocData);
             migratedDocData._rev = newRevision;
           }
 
@@ -137,6 +138,7 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
             var attachmentsBefore = migratedDocData._attachments;
             var saveData = migratedDocData;
             saveData._attachments = attachmentsBefore;
+            saveData._meta.lwt = (0, _util.now)();
             bulkWriteToStorageInput.push(saveData);
             action.res = saveData;
             action.type = 'success';
@@ -159,7 +161,13 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
 
         var _temp2 = function () {
           if (bulkWriteToStorageInput.length) {
-            return Promise.resolve(oldCollection.newestCollection.storageInstance.bulkWrite(bulkWriteToStorageInput.map(function (document) {
+            /**
+             * To ensure that we really keep that revision, we
+             * hackly insert this document via the RxStorageInstance.originalStorageInstance
+             * so that getWrappedStorageInstance() does not overwrite its own revision.
+             */
+            var originalStorageInstance = oldCollection.newestCollection.storageInstance.originalStorageInstance;
+            return Promise.resolve(originalStorageInstance.bulkWrite(bulkWriteToStorageInput.map(function (document) {
               return {
                 document: document
               };
@@ -298,8 +306,22 @@ var DataMigrator = /*#__PURE__*/function () {
       return _getOldCollections(_this).then(function (ret) {
         _this.nonMigratedOldCollections = ret;
         _this.allOldCollections = _this.nonMigratedOldCollections.slice(0);
+
+        var getAllDocuments = function getAllDocuments(storageInstance, schema) {
+          try {
+            var storage = _this.database.storage;
+            var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, (0, _rxQueryHelper.normalizeMangoQuery)(schema, {}));
+            return Promise.resolve(storageInstance.query(getAllQueryPrepared)).then(function (queryResult) {
+              var allDocs = queryResult.documents;
+              return allDocs;
+            });
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        };
+
         var countAll = Promise.all(_this.nonMigratedOldCollections.map(function (oldCol) {
-          return (0, _rxStorageHelper.getAllDocuments)(oldCol.schema.primaryPath, oldCol.storageInstance).then(function (allDocs) {
+          return getAllDocuments(oldCol.storageInstance, oldCol.schema.jsonSchema).then(function (allDocs) {
             return allDocs.length;
           });
         }));
@@ -512,26 +534,6 @@ function migrateDocumentData(oldCollection, docData) {
 
     if (!doc._meta) {
       doc._meta = (0, _util.getDefaultRxDocumentMeta)();
-    } // check final schema
-
-
-    try {
-      oldCollection.newestCollection.schema.validate(doc);
-    } catch (err) {
-      var asRxError = err;
-      throw (0, _rxError.newRxError)('DM2', {
-        fromVersion: oldCollection.version,
-        toVersion: oldCollection.newestCollection.schema.version,
-        originalDoc: docData,
-        finalDoc: doc,
-
-        /**
-         * pass down data from parent error,
-         * to make it better understandable what did not work
-         */
-        errors: asRxError.parameters.errors,
-        schema: asRxError.parameters.schema
-      });
     }
 
     return doc;

@@ -3,8 +3,6 @@
  */
 
 import type { ChangeEvent } from 'event-reduce-js';
-import { map } from 'rxjs/operators';
-import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import {
@@ -20,14 +18,12 @@ import type {
     RxCollection,
     RxDatabase,
     RxDocumentData,
-    RxDocumentDataById,
     RxDocumentWriteData,
     RxJsonSchema,
     RxStorageBulkWriteError,
-    RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
-    RxStorageStatics,
+    RxStorageInstanceCreationParams,
     StringKeys
 } from './types';
 import {
@@ -38,34 +34,11 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now,
-    parseRevision,
     randomCouchString
 } from './util';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
-
-/**
- * Returns all non-deleted documents
- * of the storage.
- */
-export async function getAllDocuments<RxDocType>(
-    primaryKey: keyof RxDocType,
-    storageInstance: RxStorageInstance<RxDocType, any, any>
-): Promise<RxDocumentData<RxDocType>[]> {
-    const storage = storageInstance.storage;
-    const getAllQueryPrepared = storage.statics.prepareQuery(
-        storageInstance.schema,
-        {
-            selector: {},
-            sort: [{ [primaryKey]: 'asc' } as any],
-            skip: 0
-        }
-    );
-    const queryResult = await storageInstance.query(getAllQueryPrepared);
-    const allDocs = queryResult.documents;
-    return allDocs;
-}
 
 export async function getSingleDocument<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any>,
@@ -93,7 +66,6 @@ export async function writeSingle<RxDocType>(
         [writeRow],
         context
     );
-
     if (Object.keys(writeResult.error).length > 0) {
         const error = firstPropertyValueOfObject(writeResult.error);
         throw error;
@@ -507,17 +479,6 @@ export function getUniqueDeterministicEventKey(
     return eventKey;
 }
 
-export function hashAttachmentData(
-    attachmentBase64String: string,
-    storageStatics: RxStorageStatics
-): Promise<string> {
-    return storageStatics.hash(atob(attachmentBase64String));
-}
-export function getAttachmentSize(
-    attachmentBase64String: string
-): number {
-    return atob(attachmentBase64String).length;
-}
 
 /**
  * Wraps the normal storageInstance of a RxCollection
@@ -566,18 +527,19 @@ export function getWrappedStorageInstance<
              * then the previous one
              */
             if (writeRow.previous) {
-                const prev = parseRevision(writeRow.previous._rev);
-                const current = parseRevision(writeRow.document._rev);
-                if (current.height <= prev.height) {
-                    throw newRxError('SNH', {
-                        dataBefore: writeRow.previous,
-                        dataAfter: writeRow.document,
-                        args: {
-                            prev,
-                            current
-                        }
-                    });
-                }
+                // TODO run this in the dev-mode plugin
+                // const prev = parseRevision(writeRow.previous._rev);
+                // const current = parseRevision(writeRow.document._rev);
+                // if (current.height <= prev.height) {
+                //     throw newRxError('SNH', {
+                //         dataBefore: writeRow.previous,
+                //         dataAfter: writeRow.document,
+                //         args: {
+                //             prev,
+                //             current
+                //         }
+                //     });
+                // }
             }
 
             /**
@@ -602,81 +564,24 @@ export function getWrappedStorageInstance<
         }
         data._meta.lwt = now();
 
-        const hookParams = {
-            database,
-            primaryPath,
-            schema: rxJsonSchema,
-            doc: data
-        };
-
         /**
-         * Run the hooks once for the previous doc,
-         * once for the new write data
+         * Yes we really want to set the revision here.
+         * If you make a plugin that relies on having it's own revision
+         * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
          */
-        let previous = writeRow.previous;
-        if (previous) {
-            hookParams.doc = previous;
-            runPluginHooks('preWriteToStorageInstance', hookParams);
-            previous = hookParams.doc;
-        }
-
-        hookParams.doc = data;
-        runPluginHooks('preWriteToStorageInstance', hookParams);
-        data = hookParams.doc;
-
-        /**
-         * Do not update the revision here.
-         * The caller of bulkWrite() must be able to set
-         * the revision and to be sure that the given revision
-         * is used when storing the document.
-         * The revision must be provided by the caller of bulkWrite().
-         */
-        if (!data._rev) {
-            throw newRxError('SNH', {
-                data
-            });
-        }
+        data._rev = createRevision(
+            database.hashFunction,
+            data,
+            writeRow.previous
+        );
 
         return {
             document: data,
-            previous
+            previous: writeRow.previous
         };
-    }
-
-    function transformDocumentDataFromRxStorageToRxDB(
-        data: any
-    ): any {
-        const hookParams = {
-            database,
-            primaryPath,
-            schema: rxJsonSchema,
-            doc: data
-        };
-
-        runPluginHooks('postReadFromInstance', hookParams);
-        return hookParams.doc;
-    }
-
-    function transformErrorDataFromRxStorageToRxDB<RxDocType>(
-        error: RxStorageBulkWriteError<RxDocType>
-    ): RxStorageBulkWriteError<RxDocType> {
-        const ret = flatClone(error);
-        ret.writeRow = flatClone(ret.writeRow);
-
-        if (ret.documentInDb) {
-            ret.documentInDb = transformDocumentDataFromRxStorageToRxDB(ret.documentInDb);
-        }
-
-        ret.writeRow.document = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.document);
-        if (ret.writeRow.previous) {
-            ret.writeRow.previous = transformDocumentDataFromRxStorageToRxDB(ret.writeRow.previous);
-        }
-
-        return ret;
     }
 
     const ret: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
-        storage: storageInstance.storage,
         schema: storageInstance.schema,
         internals: storageInstance.internals,
         collectionName: storageInstance.collectionName,
@@ -732,7 +637,11 @@ export function getWrappedStorageInstance<
                                         {},
                                         error.writeRow.document,
                                         {
-                                            _rev: createRevision(error.writeRow.document, error.documentInDb)
+                                            _rev: createRevision(
+                                                database.hashFunction,
+                                                error.writeRow.document,
+                                                error.documentInDb
+                                            )
                                         }
                                     )
                                 };
@@ -757,40 +666,17 @@ export function getWrappedStorageInstance<
                     }
 
                     return writeResult;
-                })
-                .then(writeResult => {
-                    const ret: RxStorageBulkWriteResponse<RxDocType> = {
-                        success: {},
-                        error: {}
-                    };
-                    Object.entries(writeResult.success).forEach(([k, v]) => {
-                        ret.success[k] = transformDocumentDataFromRxStorageToRxDB(v);
-                    });
-                    Object.entries(writeResult.error).forEach(([k, error]) => {
-                        ret.error[k] = transformErrorDataFromRxStorageToRxDB(error);
-                    });
-                    return ret;
                 });
         },
         query(preparedQuery) {
             return database.lockedRun(
                 () => storageInstance.query(preparedQuery)
-            ).then(queryResult => {
-                return {
-                    documents: queryResult.documents.map(doc => transformDocumentDataFromRxStorageToRxDB(doc))
-                };
-            });
+            );
         },
         findDocumentsById(ids, deleted) {
             return database.lockedRun(
                 () => storageInstance.findDocumentsById(ids, deleted)
-            ).then(findResult => {
-                const ret: RxDocumentDataById<RxDocType> = {};
-                Object.entries(findResult).forEach(([key, doc]) => {
-                    ret[key] = transformDocumentDataFromRxStorageToRxDB(doc);
-                });
-                return ret;
-            });
+            );
         },
         getAttachmentData(
             documentId: string,
@@ -803,13 +689,7 @@ export function getWrappedStorageInstance<
         getChangedDocumentsSince(limit: number, checkpoint?: any) {
             return database.lockedRun(
                 () => storageInstance.getChangedDocumentsSince(limit, checkpoint)
-            ).then(result => {
-                return {
-                    checkpoint: result.checkpoint,
-                    documents: result.documents
-                        .map(d => transformDocumentDataFromRxStorageToRxDB(d))
-                };
-            });
+            );
         },
         cleanup(minDeletedTime: number) {
             return database.lockedRun(
@@ -827,75 +707,27 @@ export function getWrappedStorageInstance<
             );
         },
         changeStream() {
-            return storageInstance.changeStream().pipe(
-                map(eventBulk => {
-                    const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, CheckpointType> = {
-                        id: eventBulk.id,
-                        events: eventBulk.events.map(event => {
-                            return {
-                                eventId: event.eventId,
-                                documentId: event.documentId,
-                                endTime: event.endTime,
-                                startTime: event.startTime,
-                                change: {
-                                    id: event.change.id,
-                                    operation: event.change.operation,
-                                    doc: event.change.doc ? transformDocumentDataFromRxStorageToRxDB(event.change.doc) : undefined,
-                                    previous: event.change.previous ? transformDocumentDataFromRxStorageToRxDB(event.change.previous) : undefined
-                                }
-                            }
-                        }),
-                        checkpoint: eventBulk.checkpoint,
-                        context: eventBulk.context
-                    };
-                    return ret;
-                })
-            )
+            return storageInstance.changeStream();
         },
         conflictResultionTasks() {
-            return storageInstance.conflictResultionTasks().pipe(
-                map(task => {
-                    const assumedMasterState = task.input.assumedMasterState ? transformDocumentDataFromRxStorageToRxDB(task.input.assumedMasterState) : undefined;
-                    const newDocumentState = transformDocumentDataFromRxStorageToRxDB(task.input.newDocumentState);
-                    const realMasterState = transformDocumentDataFromRxStorageToRxDB(task.input.realMasterState);
-                    return {
-                        id: task.id,
-                        context: task.context,
-                        input: {
-                            assumedMasterState,
-                            realMasterState,
-                            newDocumentState
-                        }
-                    };
-                })
-            );
+            return storageInstance.conflictResultionTasks();
         },
         resolveConflictResultionTask(taskSolution) {
-
             if (taskSolution.output.isEqual) {
                 return storageInstance.resolveConflictResultionTask(taskSolution);
             }
 
-            const hookParams = {
-                database,
-                primaryPath,
-                schema: rxJsonSchema,
-                doc: Object.assign(
-                    {},
-                    taskSolution.output.documentData,
-                    {
-                        _meta: getDefaultRxDocumentMeta(),
-                        _rev: getDefaultRevision(),
-                        _attachments: {}
-                    }
-                )
-            };
-            hookParams.doc._rev = createRevision(hookParams.doc);
+            const doc = Object.assign(
+                {},
+                taskSolution.output.documentData,
+                {
+                    _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
+                    _attachments: {}
+                }
+            );
 
-            runPluginHooks('preWriteToStorageInstance', hookParams);
-            const postHookDocData = hookParams.doc;
-
-            const documentData = flatClone(postHookDocData);
+            const documentData = flatClone(doc);
             delete (documentData as any)._meta;
             delete (documentData as any)._rev;
             delete (documentData as any)._attachments;
@@ -909,5 +741,35 @@ export function getWrappedStorageInstance<
             });
         }
     };
+
+    (ret as any).originalStorageInstance = storageInstance;
+
     return ret;
+}
+
+/**
+ * Each RxStorage implementation should
+ * run this method at the first step of createStorageInstance()
+ * to ensure that the configuration is correct.
+ */
+export function ensureRxStorageInstanceParamsAreCorrect(
+    params: RxStorageInstanceCreationParams<any, any>
+) {
+    if (params.schema.keyCompression) {
+        throw newRxError('UT5', { args: { params } });
+    }
+    if (hasEncryption(params.schema)) {
+        throw newRxError('UT6', { args: { params } });
+    }
+}
+
+export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
+    if (
+        (!!jsonSchema.encrypted && jsonSchema.encrypted.length > 0) ||
+        (jsonSchema.attachments && jsonSchema.attachments.encrypted)
+    ) {
+        return true;
+    } else {
+        return false;
+    }
 }

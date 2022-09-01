@@ -316,6 +316,7 @@ export var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
             _result = _operation;
           });
         }, function (err) {
+          console.dir(err);
           _isError = true;
           _result = err;
         });
@@ -457,6 +458,7 @@ export var closeLokiCollections = function closeLokiCollections(databaseName, co
 export var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
 export var LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
+export var RX_STORAGE_NAME_LOKIJS = 'lokijs';
 /**
  * Loki attaches a $loki property to all data
  * which must be removed before returning the data back to RxDB.
@@ -472,6 +474,7 @@ export function stripLokiKey(docData) {
    * In RxDB version 12.0.0,
    * we introduced the _meta field that already contains the last write time.
    * To be backwards compatible, we have to move the $lastWriteAt to the _meta field.
+   * TODO remove this in the next major version.
    */
 
   if (cloned.$lastWriteAt) {

@@ -16,7 +16,8 @@ export {
     isRxDatabase,
     dbCount,
     _collectionNamePrimary, // used in tests
-    isRxDatabaseFirstTimeInstantiated
+    isRxDatabaseFirstTimeInstantiated,
+    ensureNoStartupErrors
 } from './rx-database';
 
 export * from './rx-database-internal-store';
@@ -61,25 +62,14 @@ export {
     getPreviousVersions,
     toTypedRxJsonSchema
 } from './rx-schema';
-export {
-    getPseudoSchemaForVersion,
-    getSchemaByObjectPath,
-    fillPrimaryKey,
-    getPrimaryFieldOfPrimaryKey,
-    getComposedPrimaryKeyOfDocumentData,
-    normalizeRxJsonSchema,
-    fillWithDefaultSettings,
-    RX_META_SCHEMA,
-    getFinalFields
-} from './rx-schema-helper';
+export * from './rx-schema-helper';
 
 export * from './rx-storage-helper';
-
-export * from './replication/index';
+export * from './replication-protocol/index';
 export * from './rx-storage-multiinstance';
-
 export * from './custom-index';
 export * from './query-planner';
+export * from './plugin-helpers';
 
 export {
     _clearHook // used in tests
@@ -168,12 +158,14 @@ export type {
     RxConflictHandlerOutput,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
+    RxReplicationWriteToMasterRow,
 
     // stuff from the RxStorage replication
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
     RxStorageReplicationDirection,
     RxStorageReplicationMeta,
+    DocumentsWithCheckpoint,
 
     // other stuff
     RxDumpCollectionBase,
@@ -193,7 +185,7 @@ export type {
     RxQueryOptions,
     RxCouchDBReplicationState,
     RxTypeError,
-    ServerOptions,
+    CouchDBServerOptions,
     SyncOptions,
     SyncOptionsGraphQL,
     MigrationStrategy,

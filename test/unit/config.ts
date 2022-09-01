@@ -14,7 +14,7 @@ import { getRxStorageDexie, RxStorageDexieStatics } from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
 import { getRxStorageMemory } from '../../plugins/memory';
 import { CUSTOM_STORAGE } from './custom-storage';
-
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 
 const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
 
@@ -101,6 +101,31 @@ export function setDefaultStorage(storageKey: string) {
                     return {
                         description: 'memory',
                         storage: getRxStorageMemory()
+                    }
+                },
+                hasPersistence: false,
+                hasMultiInstance: false,
+                hasCouchDBReplication: false,
+                hasAttachments: true,
+                hasRegexSupport: true
+            };
+            break;
+        /**
+         * We run the tests once together
+         * with a validation plugin
+         * to ensure we do not accidentially use non-valid data
+         * in the tests.
+         */
+        case 'memory-validation':
+            config.storage = {
+                name: 'memory-validation',
+                getStorage: () => getRxStorageMemory(),
+                getPerformanceStorage() {
+                    return {
+                        description: 'memory',
+                        storage: wrappedValidateAjvStorage({
+                            storage: getRxStorageMemory()
+                        })
                     }
                 },
                 hasPersistence: false,
@@ -211,6 +236,35 @@ export function setDefaultStorage(storageKey: string) {
                 hasMultiInstance: false,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
+                hasRegexSupport: true
+            };
+            break;
+
+        case 'foundationdb':
+            const foundationDBAPIVersion = 620;
+
+            // use a dynamic import so it does not break browser bundling
+            const { getRxStorageFoundationDB } = require('../../plugins/foundationdb' + '');
+
+            config.storage = {
+                name: 'foundationdb',
+                getStorage: () => {
+                    return getRxStorageFoundationDB({
+                        apiVersion: foundationDBAPIVersion
+                    });
+                },
+                getPerformanceStorage() {
+                    return {
+                        description: 'foundationdb-native',
+                        storage: getRxStorageFoundationDB({
+                            apiVersion: foundationDBAPIVersion
+                        })
+                    }
+                },
+                hasPersistence: true,
+                hasMultiInstance: false,
+                hasCouchDBReplication: false,
+                hasAttachments: true,
                 hasRegexSupport: true
             };
             break;

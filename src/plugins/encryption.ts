@@ -3,39 +3,30 @@
  * It's using crypto-js/aes for password-encryption
  * @link https://github.com/brix/crypto-js
  */
-
 import AES from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
-
-import {
-    newRxTypeError,
-    newRxError
-} from '../rx-error';
-
 import objectPath from 'object-path';
+import { wrapRxStorageInstance } from '../plugin-helpers';
+import {
+    INTERNAL_STORE_SCHEMA_TITLE
+} from '../rx-database-internal-store';
+import { newRxError, newRxTypeError } from '../rx-error';
+import { hasEncryption } from '../rx-storage-helper';
 import type {
-    RxPlugin,
-    RxDatabase,
+    InternalStoreDocType,
+    RxAttachmentWriteData,
     RxDocumentData,
-    RxDocumentWriteData,
-    RxStorageBulkWriteError,
-    InternalStoreDocType
+    RxJsonSchema,
+    RxStorage,
+    RxStorageInstanceCreationParams
 } from '../types';
 import {
+    b64DecodeUnicode,
+    b64EncodeUnicode,
     clone,
-    createRevision,
     ensureNotFalsy,
-    flatClone,
-    getDefaultRevision,
-    getDefaultRxDocumentMeta,
-    hash,
-    PROMISE_RESOLVE_FALSE
+    flatClone
 } from '../util';
-import { writeSingle } from '../rx-storage-helper';
-import {
-    getPrimaryKeyOfInternalDocument,
-    INTERNAL_CONTEXT_ENCRYPTION
-} from '../rx-database-internal-store';
 
 export const MINIMUM_PASSWORD_LENGTH: 8 = 8;
 
@@ -64,74 +55,139 @@ export function decryptString(cipherText: string, password: any): string {
     return ret;
 }
 
-
 export type InternalStorePasswordDocType = InternalStoreDocType<{
     hash: string;
 }>;
 
-/**
- * validates and inserts the password hash into the internal collection
- * to ensure there is/was no other instance with a different password
- * which would cause strange side effects when both instances save into the same db
- */
-export async function storePasswordHashIntoDatabase(
-    rxDatabase: RxDatabase
-): Promise<boolean> {
-    if (!rxDatabase.password) {
-        return PROMISE_RESOLVE_FALSE;
+export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
+    args: {
+        storage: RxStorage<Internals, InstanceCreationOptions>
     }
-    const pwHash = hash(rxDatabase.password);
-    const pwHashDocumentKey = 'pwHash';
-    const pwHashDocumentId = getPrimaryKeyOfInternalDocument(
-        pwHashDocumentKey,
-        INTERNAL_CONTEXT_ENCRYPTION
-    );
+): RxStorage<Internals, InstanceCreationOptions> {
+    return Object.assign(
+        {},
+        args.storage,
+        {
+            async createStorageInstance<RxDocType>(
+                params: RxStorageInstanceCreationParams<RxDocType, any>
+            ) {
+                if (!hasEncryption(params.schema)) {
+                    const retInstance = await args.storage.createStorageInstance(params);
+                    if (
+                        params.schema.title === INTERNAL_STORE_SCHEMA_TITLE &&
+                        params.password
+                    ) {
+                        try {
+                            validatePassword(params.password);
+                        } catch (err) {
+                            /**
+                             * Even if the checks fail,
+                             * we have to clean up.
+                             */
+                            await retInstance.close();
+                            throw err;
+                        }
+                    }
+                    return retInstance;
+                }
 
-    const docData: RxDocumentWriteData<InternalStorePasswordDocType> = {
-        id: pwHashDocumentId,
-        key: pwHashDocumentKey,
-        context: INTERNAL_CONTEXT_ENCRYPTION,
-        data: {
-            hash: pwHash
-        },
-        _deleted: false,
-        _attachments: {},
-        _meta: getDefaultRxDocumentMeta(),
-        _rev: getDefaultRevision()
-    };
-    docData._rev = createRevision(docData);
+                if (!params.password) {
+                    throw newRxError('EN3', {
+                        database: params.databaseName,
+                        collection: params.collectionName,
+                        schema: params.schema
+                    });
+                }
+                const password = params.password;
 
-    let pwHashDoc;
-    try {
-        pwHashDoc = await writeSingle(
-            rxDatabase.internalStore,
-            {
-                document: docData
-            },
-            'encryption-password-hash'
-        );
-    } catch (err) {
-        if (
-            (err as any).isError &&
-            (err as RxStorageBulkWriteError<InternalStorePasswordDocType>).status === 409
-        ) {
-            pwHashDoc = ensureNotFalsy((err as RxStorageBulkWriteError<InternalStorePasswordDocType>).documentInDb);
-        } else {
-            throw err;
+                const schemaWithoutEncrypted: RxJsonSchema<RxDocumentData<RxDocType>> = clone(params.schema);
+                delete schemaWithoutEncrypted.encrypted;
+                if (schemaWithoutEncrypted.attachments) {
+                    schemaWithoutEncrypted.attachments.encrypted = false;
+                }
+
+                const instance = await args.storage.createStorageInstance(
+                    Object.assign(
+                        {},
+                        params,
+                        {
+                            schema: schemaWithoutEncrypted
+                        }
+                    )
+                );
+
+                function modifyToStorage(docData: RxDocumentData<RxDocType>) {
+                    docData = cloneWithoutAttachments(docData);
+                    ensureNotFalsy(params.schema.encrypted)
+                        .forEach(path => {
+                            const value = objectPath.get(docData, path);
+                            if (typeof value === 'undefined') {
+                                return;
+                            }
+
+                            const stringValue = JSON.stringify(value);
+                            const encrypted = encryptString(stringValue, password);
+                            objectPath.set(docData, path, encrypted);
+                        });
+
+                    // handle attachments
+                    if (
+                        params.schema.attachments &&
+                        params.schema.attachments.encrypted
+                    ) {
+                        const newAttachments: typeof docData._attachments = {};
+                        Object.entries(docData._attachments).forEach(([id, attachment]) => {
+                            const useAttachment: RxAttachmentWriteData = flatClone(attachment) as any;
+                            if (useAttachment.data) {
+                                const dataString = useAttachment.data;
+                                useAttachment.data = b64EncodeUnicode(encryptString(dataString, password));
+                            }
+                            newAttachments[id] = useAttachment;
+                        });
+                        docData._attachments = newAttachments;
+                    }
+                    return docData;
+                }
+                function modifyFromStorage(docData: RxDocumentData<any>): Promise<RxDocumentData<RxDocType>> {
+                    docData = cloneWithoutAttachments(docData);
+                    ensureNotFalsy(params.schema.encrypted)
+                        .forEach(path => {
+                            const value = objectPath.get(docData, path);
+                            if (typeof value === 'undefined') {
+                                return;
+                            }
+                            const decrypted = decryptString(value, password);
+                            const decryptedParsed = JSON.parse(decrypted);
+                            objectPath.set(docData, path, decryptedParsed);
+                        });
+                    return docData;
+                }
+
+                function modifyAttachmentFromStorage(attachmentData: string): string {
+                    if (
+                        params.schema.attachments &&
+                        params.schema.attachments.encrypted
+                    ) {
+                        const decrypted = decryptString(b64DecodeUnicode(attachmentData), password);
+                        return decrypted;
+                    } else {
+                        return attachmentData;
+                    }
+                }
+
+                return wrapRxStorageInstance(
+                    instance,
+                    modifyToStorage,
+                    modifyFromStorage,
+                    modifyAttachmentFromStorage
+                );
+            }
         }
-    }
-
-    if (pwHash !== pwHashDoc.data.hash) {
-        // different hash was already set by other instance
-        await rxDatabase.destroy();
-        throw newRxError('DB1', {
-            passwordHash: hash(rxDatabase.password),
-            existingPasswordHash: pwHashDoc.data.hash
-        });
-    } else {
-        return true;
-    }
+    );
 }
+
+
+
 
 
 function cloneWithoutAttachments<T>(data: RxDocumentData<T>): RxDocumentData<T> {
@@ -143,112 +199,16 @@ function cloneWithoutAttachments<T>(data: RxDocumentData<T>): RxDocumentData<T> 
     return data;
 }
 
-export const RxDBEncryptionPlugin: RxPlugin = {
-    name: 'encryption',
-    rxdb: true,
-    prototypes: {},
-    overwritable: {
-        validatePassword: function (password: any) {
-            if (password && typeof password !== 'string') {
-                throw newRxTypeError('EN1', {
-                    password
-                });
-            }
-            if (password && password.length < MINIMUM_PASSWORD_LENGTH) {
-                throw newRxError('EN2', {
-                    minPassLength: MINIMUM_PASSWORD_LENGTH,
-                    password
-                });
-            }
-        }
-    },
-    hooks: {
-        createRxDatabase: {
-            after: args => {
-                return storePasswordHashIntoDatabase(args.database);
-            }
-        },
-        preWriteToStorageInstance: {
-            before: (args) => {
-                const password = args.database.password;
-                const schema = args.schema
-                if (
-                    !password ||
-                    !schema.encrypted ||
-                    schema.encrypted.length === 0
-                ) {
-                    return;
-                }
-
-                const docData = cloneWithoutAttachments(args.doc);
-                schema.encrypted
-                    .forEach(path => {
-                        const value = objectPath.get(docData, path);
-                        if (typeof value === 'undefined') {
-                            return;
-                        }
-
-                        const stringValue = JSON.stringify(value);
-                        const encrypted = encryptString(stringValue, password);
-                        objectPath.set(docData, path, encrypted);
-                    });
-                args.doc = docData;
-            }
-        },
-        postReadFromInstance: {
-            after: (args) => {
-                const password = args.database.password;
-                const schema = args.schema
-                if (
-                    !password ||
-                    !schema.encrypted ||
-                    schema.encrypted.length === 0
-                ) {
-                    return;
-                }
-                const docData = cloneWithoutAttachments(args.doc);
-                schema.encrypted
-                    .forEach(path => {
-                        const value = objectPath.get(docData, path);
-                        if (typeof value === 'undefined') {
-                            return;
-                        }
-                        const decrypted = decryptString(value, password);
-                        const decryptedParsed = JSON.parse(decrypted);
-                        objectPath.set(docData, path, decryptedParsed);
-                    });
-                args.doc = docData;
-            }
-        },
-        preWriteAttachment: {
-            after: (args) => {
-                const password = args.database.password;
-                const schema = args.schema
-                if (
-                    password &&
-                    schema.attachments &&
-                    schema.attachments.encrypted
-                ) {
-                    const dataString = args.attachmentData.data;
-                    const encrypted = encryptString(dataString, password);
-                    args.attachmentData.data = encrypted;
-                }
-            }
-        },
-        postReadAttachment: {
-            after: (args) => {
-                const password = args.database.password;
-                const schema = args.schema
-                if (
-                    password &&
-                    schema.attachments &&
-                    schema.attachments.encrypted
-                ) {
-                    const dataString = args.plainData;
-                    const decrypted = decryptString(dataString, password);
-                    args.plainData = decrypted;
-                }
-            }
-        }
+function validatePassword(password: any) {
+    if (password && typeof password !== 'string') {
+        throw newRxTypeError('EN1', {
+            password
+        });
     }
-};
+    if (password && password.length < MINIMUM_PASSWORD_LENGTH) {
+        throw newRxError('EN2', {
+            minPassLength: MINIMUM_PASSWORD_LENGTH,
+            password
+        });
+    }
+}

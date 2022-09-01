@@ -1,12 +1,11 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'fast-deep-equal';
-import { hash, overwriteGetterForCaching, flatClone, isMaybeReadonlyArray } from './util';
+import { overwriteGetterForCaching, flatClone, isMaybeReadonlyArray, fastUnsecureHash } from './util';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData, getFinalFields, getPrimaryFieldOfPrimaryKey, normalizeRxJsonSchema } from './rx-schema-helper';
 import { overwritable } from './overwritable';
-import { fillObjectDataBeforeInsert } from './rx-collection-helper';
 export var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonSchema) {
     this.jsonSchema = jsonSchema;
@@ -37,35 +36,6 @@ export var RxSchema = /*#__PURE__*/function () {
         });
       }
     });
-  }
-  /**
-   * validate if the given document data matches the schema
-   * @param schemaPath if given, validates against deep-path of schema
-   * @throws {Error} if not valid
-   * @param obj equal to input-obj
-   *
-   */
-  ;
-
-  _proto.validate = function validate(obj, schemaPath) {
-    if (!this.validateFullDocumentData) {
-      return;
-    } else {
-      var fullDocData = fillObjectDataBeforeInsert(this, obj);
-      return this.validateFullDocumentData(fullDocData, schemaPath);
-    }
-  }
-  /**
-   * @overwritten by the given validation plugin
-   */
-  ;
-
-  _proto.validateFullDocumentData = function validateFullDocumentData(_docData, _schemaPath) {
-    /**
-     * This method might be overwritten by a validation plugin,
-     * otherwise do nothing, because if not validation plugin
-     * was added to RxDB, we assume all given data is valid.
-     */
   }
   /**
    * fills all unset fields with default-values if set
@@ -123,26 +93,13 @@ export var RxSchema = /*#__PURE__*/function () {
       return overwriteGetterForCaching(this, 'defaultValues', values);
     }
     /**
-        * true if schema contains at least one encrypted path
-        */
-
-  }, {
-    key: "crypt",
-    get: function get() {
-      if (!!this.jsonSchema.encrypted && this.jsonSchema.encrypted.length > 0 || this.jsonSchema.attachments && this.jsonSchema.attachments.encrypted) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-    /**
      * @overrides itself on the first call
      */
 
   }, {
     key: "hash",
     get: function get() {
-      return overwriteGetterForCaching(this, 'hash', hash(this.jsonSchema));
+      return overwriteGetterForCaching(this, 'hash', fastUnsecureHash(JSON.stringify(this.jsonSchema)));
     }
   }]);
 

@@ -46,11 +46,6 @@ export declare const basePrototype: {
         _meta: import("./types").RxDocumentMeta;
     };
     /**
-     * set data by objectPath
-     * This can only be called on temporary documents
-     */
-    set(this: import("./types").RxDocumentBase<{}, {}>, objPath: string, value: any): import("./types").RxDocumentBase<{}, {}> | undefined;
-    /**
      * updates document
      * @overwritten by plugin (optinal)
      * @param updateObj mongodb-like syntax
@@ -74,12 +69,6 @@ export declare const basePrototype: {
      * and handles the events
      */
     _saveData<RxDocumentType_1>(this: RxDocument<RxDocumentType_1, {}>, newData: RxDocumentWriteData<RxDocumentType_1>, oldData: RxDocumentData<RxDocumentType_1>): Promise<void>;
-    /**
-     * saves the temporary document and makes a non-temporary out of it
-     * Saving a temporary doc is basically the same as RxCollection.insert()
-     * @return false if nothing to save
-     */
-    save(this: import("./types").RxDocumentBase<{}, {}>): Promise<boolean>;
     /**
      * remove the document,
      * this not not equal to a pouchdb.remove(),
@@ -134,11 +123,6 @@ export declare function createRxDocumentConstructor(proto?: {
         _meta: import("./types").RxDocumentMeta;
     };
     /**
-     * set data by objectPath
-     * This can only be called on temporary documents
-     */
-    set(this: import("./types").RxDocumentBase<{}, {}>, objPath: string, value: any): import("./types").RxDocumentBase<{}, {}> | undefined;
-    /**
      * updates document
      * @overwritten by plugin (optinal)
      * @param updateObj mongodb-like syntax
@@ -162,12 +146,6 @@ export declare function createRxDocumentConstructor(proto?: {
      * and handles the events
      */
     _saveData<RxDocumentType_1>(this: RxDocument<RxDocumentType_1, {}>, newData: RxDocumentWriteData<RxDocumentType_1>, oldData: RxDocumentData<RxDocumentType_1>): Promise<void>;
-    /**
-     * saves the temporary document and makes a non-temporary out of it
-     * Saving a temporary doc is basically the same as RxCollection.insert()
-     * @return false if nothing to save
-     */
-    save(this: import("./types").RxDocumentBase<{}, {}>): Promise<boolean>;
     /**
      * remove the document,
      * this not not equal to a pouchdb.remove(),
@@ -223,11 +201,6 @@ export declare function createRxDocumentConstructor(proto?: {
             _meta: import("./types").RxDocumentMeta;
         };
         /**
-         * set data by objectPath
-         * This can only be called on temporary documents
-         */
-        set(this: import("./types").RxDocumentBase<{}, {}>, objPath: string, value: any): import("./types").RxDocumentBase<{}, {}> | undefined;
-        /**
          * updates document
          * @overwritten by plugin (optinal)
          * @param updateObj mongodb-like syntax
@@ -251,12 +224,6 @@ export declare function createRxDocumentConstructor(proto?: {
          * and handles the events
          */
         _saveData<RxDocumentType_1>(this: RxDocument<RxDocumentType_1, {}>, newData: RxDocumentWriteData<RxDocumentType_1>, oldData: RxDocumentData<RxDocumentType_1>): Promise<void>;
-        /**
-         * saves the temporary document and makes a non-temporary out of it
-         * Saving a temporary doc is basically the same as RxCollection.insert()
-         * @return false if nothing to save
-         */
-        save(this: import("./types").RxDocumentBase<{}, {}>): Promise<boolean>;
         /**
          * remove the document,
          * this not not equal to a pouchdb.remove(),

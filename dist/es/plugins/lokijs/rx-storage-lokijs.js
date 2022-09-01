@@ -1,17 +1,10 @@
 import lokijs from 'lokijs';
 import { ensureNotFalsy, flatClone } from '../../util';
 import { createLokiStorageInstance } from './rx-storage-instance-loki';
-import { getLokiSortComparator } from './lokijs-helper';
-import { binaryMd5 } from 'pouchdb-md5';
+import { getLokiSortComparator, RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
 export var RxStorageLokiStatics = {
-  hash: function hash(data) {
-    return new Promise(function (res) {
-      binaryMd5(data, function (digest) {
-        res(digest);
-      });
-    });
-  },
-  hashKey: 'md5',
   prepareQuery: function prepareQuery(_schema, mutateableQuery) {
     if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
       mutateableQuery.selector = {
@@ -64,7 +57,8 @@ export var RxStorageLokiStatics = {
     };
 
     return fun;
-  }
+  },
+  checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 };
 export var RxStorageLoki = /*#__PURE__*/function () {
   /**
@@ -73,7 +67,7 @@ export var RxStorageLoki = /*#__PURE__*/function () {
    * to make it easier to test multi-tab behavior.
    */
   function RxStorageLoki(databaseSettings) {
-    this.name = 'lokijs';
+    this.name = RX_STORAGE_NAME_LOKIJS;
     this.statics = RxStorageLokiStatics;
     this.leaderElectorByLokiDbName = new Map();
     this.databaseSettings = databaseSettings;
@@ -82,6 +76,7 @@ export var RxStorageLoki = /*#__PURE__*/function () {
   var _proto = RxStorageLoki.prototype;
 
   _proto.createStorageInstance = function createStorageInstance(params) {
+    ensureRxStorageInstanceParamsAreCorrect(params);
     return createLokiStorageInstance(this, params, this.databaseSettings);
   };
 

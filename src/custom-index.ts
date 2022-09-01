@@ -10,7 +10,11 @@ import type {
     RxDocumentData,
     RxJsonSchema
 } from './types';
-import { ensureNotFalsy, objectPathMonad, ObjectPathMonadFunction } from './util';
+import {
+    ensureNotFalsy,
+    objectPathMonad,
+    ObjectPathMonadFunction
+} from './util';
 import { INDEX_MAX } from './query-planner';
 
 

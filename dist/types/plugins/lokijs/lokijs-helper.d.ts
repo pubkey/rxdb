@@ -6,6 +6,7 @@ import { LeaderElector } from 'broadcast-channel';
 export declare const CHANGES_COLLECTION_SUFFIX = "-rxdb-changes";
 export declare const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = "rxdb-lokijs-remote-request";
 export declare const LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = "rxdb-lokijs-remote-request-key-object";
+export declare const RX_STORAGE_NAME_LOKIJS = "lokijs";
 /**
  * Loki attaches a $loki property to all data
  * which must be removed before returning the data back to RxDB.

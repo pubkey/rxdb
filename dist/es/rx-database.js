@@ -1,9 +1,8 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { IdleQueue } from 'custom-idle-queue';
-import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, PROMISE_RESOLVE_VOID, getDefaultRevision, createRevision, getDefaultRxDocumentMeta } from './util';
+import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, PROMISE_RESOLVE_VOID, getDefaultRevision, getDefaultRxDocumentMeta, defaultHashFunction } from './util';
 import { newRxError } from './rx-error';
 import { createRxSchema } from './rx-schema';
-import { overwritable } from './overwritable';
 import { runPluginHooks, runAsyncPluginHooks } from './hooks';
 import { Subject } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
@@ -12,11 +11,28 @@ import { flatCloneDocWithMeta, getSingleDocument, getWrappedStorageInstance, INT
 import { createRxCollectionStorageInstance } from './rx-collection-helper';
 import { ObliviousSet } from 'oblivious-set';
 import { ensureStorageTokenDocumentExists, getAllCollectionDocuments, getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_COLLECTION, INTERNAL_STORE_SCHEMA } from './rx-database-internal-store';
-import { BROADCAST_CHANNEL_BY_TOKEN } from './rx-storage-multiinstance';
 /**
  * stores the used database names
  * so we can throw when the same database is created more then once.
  */
+
+/**
+ * For better performance some tasks run async
+ * and are awaited later.
+ * But we still have to ensure that there have been no errors
+ * on database creation.
+ */
+export var ensureNoStartupErrors = function ensureNoStartupErrors(rxDatabase) {
+  try {
+    return Promise.resolve(rxDatabase.storageToken).then(function () {
+      if (rxDatabase.startupErrors[0]) {
+        throw rxDatabase.startupErrors[0];
+      }
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 
 /**
  * Returns true if the given RxDatabase was the first
@@ -45,7 +61,7 @@ export var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
   try {
     var databaseInstanceToken = randomCouchString(10);
     return Promise.resolve(createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
-      return Promise.resolve(getAllCollectionDocuments(dbInternalsStorageInstance)).then(function (collectionDocs) {
+      return Promise.resolve(getAllCollectionDocuments(storage, dbInternalsStorageInstance)).then(function (collectionDocs) {
         var removedCollectionNames = [];
         return Promise.resolve(Promise.all(collectionDocs.map(function (colDoc) {
           try {
@@ -86,7 +102,7 @@ export var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.
  */
-export var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, options, multiInstance) {
+export var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, options, multiInstance, password) {
   try {
     return Promise.resolve(storage.createStorageInstance({
       databaseInstanceToken: databaseInstanceToken,
@@ -94,7 +110,8 @@ export var createRxDatabaseStorageInstance = function createRxDatabaseStorageIns
       collectionName: INTERNAL_STORAGE_NAME,
       schema: INTERNAL_STORE_SCHEMA,
       options: options,
-      multiInstance: multiInstance
+      multiInstance: multiInstance,
+      password: password
     }));
   } catch (e) {
     return Promise.reject(e);
@@ -107,14 +124,13 @@ export var createRxDatabaseStorageInstance = function createRxDatabaseStorageIns
  */
 export var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collectionName) {
   try {
-    return Promise.resolve(getAllCollectionDocuments(rxDatabase.internalStore)).then(function (docs) {
+    return Promise.resolve(getAllCollectionDocuments(rxDatabase.storage, rxDatabase.internalStore)).then(function (docs) {
       var relevantDocs = docs.filter(function (colDoc) {
         return colDoc.data.name === collectionName;
       });
       var writeRows = relevantDocs.map(function (doc) {
         var writeDoc = flatCloneDocWithMeta(doc);
         writeDoc._deleted = true;
-        writeDoc._rev = createRevision(writeDoc, doc);
         return {
           previous: doc,
           document: writeDoc
@@ -137,6 +153,8 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
    * of this RxDatabase.
    */
   token, storage, instanceCreationOptions, password, multiInstance) {
+    var _this = this;
+
     var eventReduce = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
     var options = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
     var
@@ -144,9 +162,12 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
      * Stores information documents about the collections of the database
      */
     internalStore = arguments.length > 8 ? arguments[8] : undefined;
-    var cleanupPolicy = arguments.length > 9 ? arguments[9] : undefined;
+    var hashFunction = arguments.length > 9 ? arguments[9] : undefined;
+    var cleanupPolicy = arguments.length > 10 ? arguments[10] : undefined;
     this.idleQueue = new IdleQueue();
     this._subs = [];
+    this.startupErrors = [];
+    this.onDestroy = [];
     this.destroyed = false;
     this.collections = {};
     this.eventBulks$ = new Subject();
@@ -165,6 +186,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.eventReduce = eventReduce;
     this.options = options;
     this.internalStore = internalStore;
+    this.hashFunction = hashFunction;
     this.cleanupPolicy = cleanupPolicy;
     DB_COUNT++;
     /**
@@ -189,11 +211,18 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
        * Start writing the storage token.
        * Do not await the creation because it would run
        * in a critical path that increases startup time.
+       * 
+       * Writing the token takes about 20 milliseconds
+       * even on a fast adapter, so this is worth it.
        */
 
-      this.storageTokenDocument = ensureStorageTokenDocumentExists(this.asRxDatabase);
+      this.storageTokenDocument = ensureStorageTokenDocumentExists(this.asRxDatabase)["catch"](function (err) {
+        return _this.startupErrors.push(err);
+      });
       this.storageToken = this.storageTokenDocument.then(function (doc) {
         return doc.data.token;
+      })["catch"](function (err) {
+        return _this.startupErrors.push(err);
       });
     }
   }
@@ -223,9 +252,9 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.removeCollectionDoc = function removeCollectionDoc(name, schema) {
     try {
-      var _this2 = this;
+      var _this3 = this;
 
-      return Promise.resolve(getSingleDocument(_this2.internalStore, getPrimaryKeyOfInternalDocument(_collectionNamePrimary(name, schema), INTERNAL_CONTEXT_COLLECTION))).then(function (doc) {
+      return Promise.resolve(getSingleDocument(_this3.internalStore, getPrimaryKeyOfInternalDocument(_collectionNamePrimary(name, schema), INTERNAL_CONTEXT_COLLECTION))).then(function (doc) {
         if (!doc) {
           throw newRxError('SNH', {
             name: name,
@@ -235,8 +264,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
         var writeDoc = flatCloneDocWithMeta(doc);
         writeDoc._deleted = true;
-        writeDoc._rev = createRevision(writeDoc, doc);
-        return Promise.resolve(_this2.internalStore.bulkWrite([{
+        return Promise.resolve(_this3.internalStore.bulkWrite([{
           document: writeDoc,
           previous: doc
         }], 'rx-database-remove-collection')).then(function () {});
@@ -255,7 +283,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.addCollections = function addCollections(collectionCreators) {
     try {
-      var _this4 = this;
+      var _this5 = this;
 
       var jsonSchemas = {};
       var schemas = {};
@@ -268,16 +296,9 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
         var rxJsonSchema = args.schema;
         jsonSchemas[collectionName] = rxJsonSchema;
         var schema = createRxSchema(rxJsonSchema);
-        schemas[collectionName] = schema; // crypt=true but no password given
+        schemas[collectionName] = schema; // collection already exists
 
-        if (schema.crypt && !_this4.password) {
-          throw newRxError('DB7', {
-            name: name
-          });
-        } // collection already exists
-
-
-        if (_this4.collections[name]) {
+        if (_this5.collections[name]) {
           throw newRxError('DB3', {
             name: name
           });
@@ -300,63 +321,64 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
           _rev: getDefaultRevision(),
           _attachments: {}
         };
-        collectionDocData._rev = createRevision(collectionDocData);
         bulkPutDocs.push({
           document: collectionDocData
         });
         var useArgs = Object.assign({}, args, {
           name: collectionName,
           schema: schema,
-          database: _this4
+          database: _this5
         }); // run hooks
 
         var hookData = flatClone(args);
-        hookData.database = _this4;
+        hookData.database = _this5;
         hookData.name = name;
         runPluginHooks('preCreateRxCollection', hookData);
         useArgsByCollectionName[collectionName] = useArgs;
       });
-      return Promise.resolve(_this4.internalStore.bulkWrite(bulkPutDocs, 'rx-database-add-collection')).then(function (putDocsResult) {
-        Object.entries(putDocsResult.error).forEach(function (_ref2) {
-          var _id = _ref2[0],
-              error = _ref2[1];
-          var docInDb = ensureNotFalsy(error.documentInDb);
-          var collectionName = docInDb.data.name;
-          var schema = schemas[collectionName]; // collection already exists but has different schema
+      return Promise.resolve(_this5.internalStore.bulkWrite(bulkPutDocs, 'rx-database-add-collection')).then(function (putDocsResult) {
+        return Promise.resolve(ensureNoStartupErrors(_this5)).then(function () {
+          Object.entries(putDocsResult.error).forEach(function (_ref2) {
+            var _id = _ref2[0],
+                error = _ref2[1];
+            var docInDb = ensureNotFalsy(error.documentInDb);
+            var collectionName = docInDb.data.name;
+            var schema = schemas[collectionName]; // collection already exists but has different schema
 
-          if (docInDb.data.schemaHash !== schema.hash) {
-            throw newRxError('DB6', {
-              database: _this4.name,
-              collection: collectionName,
-              previousSchemaHash: docInDb.data.schemaHash,
-              schemaHash: schema.hash,
-              previousSchema: docInDb.data.schema,
-              schema: ensureNotFalsy(jsonSchemas[collectionName])
-            });
-          }
-        });
-        var ret = {};
-        return Promise.resolve(Promise.all(Object.keys(collectionCreators).map(function (collectionName) {
-          try {
-            var useArgs = useArgsByCollectionName[collectionName];
-            return Promise.resolve(createRxCollection(useArgs)).then(function (collection) {
-              ret[collectionName] = collection; // set as getter to the database
+            if (docInDb.data.schemaHash !== schema.hash) {
+              throw newRxError('DB6', {
+                database: _this5.name,
+                collection: collectionName,
+                previousSchemaHash: docInDb.data.schemaHash,
+                schemaHash: schema.hash,
+                previousSchema: docInDb.data.schema,
+                schema: ensureNotFalsy(jsonSchemas[collectionName])
+              });
+            }
+          });
+          var ret = {};
+          return Promise.resolve(Promise.all(Object.keys(collectionCreators).map(function (collectionName) {
+            try {
+              var useArgs = useArgsByCollectionName[collectionName];
+              return Promise.resolve(createRxCollection(useArgs)).then(function (collection) {
+                ret[collectionName] = collection; // set as getter to the database
 
-              _this4.collections[collectionName] = collection;
+                _this5.collections[collectionName] = collection;
 
-              if (!_this4[collectionName]) {
-                Object.defineProperty(_this4, collectionName, {
-                  get: function get() {
-                    return _this4.collections[collectionName];
-                  }
-                });
-              }
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
-        }))).then(function () {
-          return ret;
+                if (!_this5[collectionName]) {
+                  Object.defineProperty(_this5, collectionName, {
+                    get: function get() {
+                      return _this5.collections[collectionName];
+                    }
+                  });
+                }
+              });
+            } catch (e) {
+              return Promise.reject(e);
+            }
+          }))).then(function () {
+            return ret;
+          });
         });
       });
     } catch (e) {
@@ -369,7 +391,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
   ;
 
   _proto.removeCollection = function removeCollection(collectionName) {
-    var _this5 = this;
+    var _this6 = this;
 
     var destroyPromise = PROMISE_RESOLVE_VOID;
 
@@ -379,17 +401,17 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
 
     return destroyPromise.then(function () {
-      return _removeAllOfCollection(_this5, collectionName);
+      return _removeAllOfCollection(_this6, collectionName);
     }) // get all relevant pouchdb-instances
     .then(function (knownVersions) {
       return Promise.all(knownVersions.map(function (knownVersionDoc) {
-        return createRxCollectionStorageInstance(_this5.asRxDatabase, {
-          databaseInstanceToken: _this5.token,
-          databaseName: _this5.name,
+        return createRxCollectionStorageInstance(_this6.asRxDatabase, {
+          databaseInstanceToken: _this6.token,
+          databaseName: _this6.name,
           collectionName: collectionName,
           schema: knownVersionDoc.data.schema,
-          options: _this5.instanceCreationOptions,
-          multiInstance: _this5.multiInstance
+          options: _this6.instanceCreationOptions,
+          multiInstance: _this6.multiInstance
         });
       }));
     }) // remove the storage instance
@@ -399,8 +421,8 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
       }));
     }).then(function () {
       return runAsyncPluginHooks('postRemoveRxCollection', {
-        storage: _this5.storage,
-        databaseName: _this5.name,
+        storage: _this6.storage,
+        databaseName: _this6.name,
         collectionName: collectionName
       });
     }).then(function () {});
@@ -419,8 +441,6 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
   }
   /**
    * Export database to a JSON friendly format.
-   * @param _decrypted
-   * When true, all encrypted values will be decrypted.
    */
   ;
 
@@ -437,14 +457,10 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.importJSON = function importJSON(_exportedJSON) {
     throw pluginMissing('json-dump');
-  }
-  /**
-   * spawn server
-   */
-  ;
+  };
 
-  _proto.server = function server(_options) {
-    throw pluginMissing('server');
+  _proto.serverCouchDB = function serverCouchDB(_options) {
+    throw pluginMissing('server-couchdb');
   };
 
   _proto.backup = function backup(_options) {
@@ -477,24 +493,24 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.destroy = function destroy() {
     try {
-      var _this7 = this;
+      var _this8 = this;
 
-      if (_this7.destroyed) {
+      if (_this8.destroyed) {
         return Promise.resolve(PROMISE_RESOLVE_FALSE);
       } // settings destroyed = true must be the first thing to do.
 
 
-      _this7.destroyed = true;
-      return Promise.resolve(runAsyncPluginHooks('preDestroyRxDatabase', _this7)).then(function () {
+      _this8.destroyed = true;
+      return Promise.resolve(runAsyncPluginHooks('preDestroyRxDatabase', _this8)).then(function () {
         /**
          * Complete the event stream
          * to stop all subscribers who forgot to unsubscribe.
          */
-        _this7.eventBulks$.complete();
+        _this8.eventBulks$.complete();
 
         DB_COUNT--;
 
-        _this7._subs.map(function (sub) {
+        _this8._subs.map(function (sub) {
           return sub.unsubscribe();
         });
         /**
@@ -505,22 +521,23 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
          */
 
 
-        return _this7.name === 'pseudoInstance' ? PROMISE_RESOLVE_FALSE : _this7.requestIdlePromise() // destroy all collections
+        return _this8.name === 'pseudoInstance' ? PROMISE_RESOLVE_FALSE : _this8.requestIdlePromise().then(function () {
+          return Promise.all(_this8.onDestroy.map(function (fn) {
+            return fn();
+          }));
+        }) // destroy all collections
         .then(function () {
-          return Promise.all(Object.keys(_this7.collections).map(function (key) {
-            return _this7.collections[key];
+          return Promise.all(Object.keys(_this8.collections).map(function (key) {
+            return _this8.collections[key];
           }).map(function (col) {
             return col.destroy();
           }));
         }) // destroy internal storage instances
         .then(function () {
-          return _this7.internalStore.close();
-        }) // close broadcastChannel if exists
-        .then(function () {
-          return _this7.broadcastChannel ? _this7.broadcastChannel.close() : null;
+          return _this8.internalStore.close();
         }) // remove combination from USED_COMBINATIONS-map
         .then(function () {
-          return USED_DATABASE_NAMES["delete"](_this7.name);
+          return USED_DATABASE_NAMES["delete"](_this8.name);
         }).then(function () {
           return true;
         });
@@ -536,10 +553,10 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
   ;
 
   _proto.remove = function remove() {
-    var _this8 = this;
+    var _this9 = this;
 
     return this.destroy().then(function () {
-      return removeRxDatabase(_this8.name, _this8.storage);
+      return removeRxDatabase(_this9.name, _this9.storage);
     });
   };
 
@@ -547,28 +564,6 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     key: "$",
     get: function get() {
       return this.observable$;
-    }
-    /**
-     * Set if multiInstance: true
-     * This broadcast channel is used to send events to other instances like
-     * other browser tabs or nodejs processes.
-     * We transfer everything in EventBulks because sending many small events has been shown
-     * to be performance expensive.
-     * 
-     * @deprecated The broadcast channel has been moved out of the RxDatabase and is part of the
-     * RxStorage but only if it is needed there.
-     * @see ./rx-storage-multiinstance.ts
-     * 
-     */
-
-  }, {
-    key: "broadcastChannel",
-    get: function get() {
-      var bcState = BROADCAST_CHANNEL_BY_TOKEN.get(this.token);
-
-      if (bcState) {
-        return bcState.bc;
-      }
     }
   }, {
     key: "asRxDatabase",
@@ -618,7 +613,9 @@ export function createRxDatabase(_ref3) {
       options = _ref3$options === void 0 ? {} : _ref3$options,
       cleanupPolicy = _ref3.cleanupPolicy,
       _ref3$localDocuments = _ref3.localDocuments,
-      localDocuments = _ref3$localDocuments === void 0 ? false : _ref3$localDocuments;
+      localDocuments = _ref3$localDocuments === void 0 ? false : _ref3$localDocuments,
+      _ref3$hashFunction = _ref3.hashFunction,
+      hashFunction = _ref3$hashFunction === void 0 ? defaultHashFunction : _ref3$hashFunction;
   runPluginHooks('preCreateRxDatabase', {
     storage: storage,
     instanceCreationOptions: instanceCreationOptions,
@@ -629,12 +626,7 @@ export function createRxDatabase(_ref3) {
     ignoreDuplicate: ignoreDuplicate,
     options: options,
     localDocuments: localDocuments
-  });
-
-  if (password) {
-    overwritable.validatePassword(password);
-  } // check if combination already used
-
+  }); // check if combination already used
 
   if (!ignoreDuplicate) {
     throwIfDatabaseNameUsed(name);
@@ -642,8 +634,18 @@ export function createRxDatabase(_ref3) {
 
   USED_DATABASE_NAMES.add(name);
   var databaseInstanceToken = randomCouchString(10);
-  return createRxDatabaseStorageInstance(databaseInstanceToken, storage, name, instanceCreationOptions, multiInstance).then(function (storageInstance) {
-    var rxDatabase = new RxDatabaseBase(name, databaseInstanceToken, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, storageInstance, cleanupPolicy);
+  return createRxDatabaseStorageInstance(databaseInstanceToken, storage, name, instanceCreationOptions, multiInstance, password)
+  /**
+   * Creating the internal store might fail
+   * if some RxStorage wrapper is used that does some checks
+   * and then throw.
+   * In that case we have to properly clean up the database.
+   */
+  ["catch"](function (err) {
+    USED_DATABASE_NAMES["delete"](name);
+    throw err;
+  }).then(function (storageInstance) {
+    var rxDatabase = new RxDatabaseBase(name, databaseInstanceToken, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, storageInstance, hashFunction, cleanupPolicy);
     return runAsyncPluginHooks('createRxDatabase', {
       database: rxDatabase,
       creator: {

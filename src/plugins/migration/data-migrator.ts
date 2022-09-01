@@ -21,13 +21,13 @@ import {
     PROMISE_RESOLVE_VOID,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_NULL,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    now
 } from '../../util';
 import {
     createRxSchema
 } from '../../rx-schema';
 import {
-    RxError,
     newRxError
 } from '../../rx-error';
 import {
@@ -44,7 +44,8 @@ import type {
     RxJsonSchema,
     RxDocumentData,
     RxStorageInstanceCreationParams,
-    InternalStoreCollectionDocType
+    InternalStoreCollectionDocType,
+    RxStorageInstance
 } from '../../types';
 import {
     RxSchema,
@@ -56,13 +57,13 @@ import {
 } from './migration-state';
 import { map } from 'rxjs/operators';
 import {
-    getAllDocuments,
     getWrappedStorageInstance
 } from '../../rx-storage-helper';
 import {
     getPrimaryKeyOfInternalDocument,
     INTERNAL_CONTEXT_COLLECTION
 } from '../../rx-database-internal-store';
+import { normalizeMangoQuery } from '../../rx-query-helper';
 
 export class DataMigrator {
 
@@ -121,11 +122,29 @@ export class DataMigrator {
                 .then(ret => {
                     this.nonMigratedOldCollections = ret;
                     this.allOldCollections = this.nonMigratedOldCollections.slice(0);
+
+                    const getAllDocuments = async (
+                        storageInstance: RxStorageInstance<any, any, any>,
+                        schema: RxJsonSchema<any>
+                    ): Promise<RxDocumentData<any>[]> => {
+                        const storage = this.database.storage;
+                        const getAllQueryPrepared = storage.statics.prepareQuery(
+                            storageInstance.schema,
+                            normalizeMangoQuery(
+                                schema,
+                                {}
+                            )
+                        );
+                        const queryResult = await storageInstance.query(getAllQueryPrepared);
+                        const allDocs = queryResult.documents;
+                        return allDocs;
+                    }
+
                     const countAll: Promise<number[]> = Promise.all(
                         this.nonMigratedOldCollections
                             .map(oldCol => getAllDocuments(
-                                oldCol.schema.primaryPath,
-                                oldCol.storageInstance
+                                oldCol.storageInstance,
+                                oldCol.schema.jsonSchema
                             ).then(allDocs => allDocs.length))
                     );
                     return countAll;
@@ -404,25 +423,6 @@ export function migrateDocumentData(
         if (!doc._meta) {
             doc._meta = getDefaultRxDocumentMeta();
         }
-
-        // check final schema
-        try {
-            oldCollection.newestCollection.schema.validate(doc);
-        } catch (err) {
-            const asRxError: RxError = err as any;
-            throw newRxError('DM2', {
-                fromVersion: oldCollection.version,
-                toVersion: oldCollection.newestCollection.schema.version,
-                originalDoc: docData,
-                finalDoc: doc,
-                /**
-                 * pass down data from parent error,
-                 * to make it better understandable what did not work
-                 */
-                errors: asRxError.parameters.errors,
-                schema: asRxError.parameters.schema
-            });
-        }
         return doc;
     });
 }
@@ -498,7 +498,10 @@ export async function _migrateDocuments(
              * so replicating instances use our new document data
              */
             const newHeight = getHeightOfRevision(docData._rev) + 1;
-            const newRevision = newHeight + '-' + createRevision(migratedDocData);
+            const newRevision = newHeight + '-' + createRevision(
+                oldCollection.newestCollection.database.hashFunction,
+                migratedDocData
+            );
             migratedDocData._rev = newRevision;
         }
 
@@ -511,6 +514,7 @@ export async function _migrateDocuments(
             const attachmentsBefore = migratedDocData._attachments;
             const saveData: WithAttachmentsData<any> = migratedDocData;
             saveData._attachments = attachmentsBefore;
+            saveData._meta.lwt = now();
             bulkWriteToStorageInput.push(saveData);
             action.res = saveData;
             action.type = 'success';
@@ -532,7 +536,13 @@ export async function _migrateDocuments(
      * runs on multiple nodes which must lead to the equal storage state.
      */
     if (bulkWriteToStorageInput.length) {
-        await oldCollection.newestCollection.storageInstance.bulkWrite(
+        /**
+         * To ensure that we really keep that revision, we
+         * hackly insert this document via the RxStorageInstance.originalStorageInstance
+         * so that getWrappedStorageInstance() does not overwrite its own revision.
+         */
+        const originalStorageInstance: RxStorageInstance<any, any, any> = (oldCollection.newestCollection.storageInstance as any).originalStorageInstance;
+        await originalStorageInstance.bulkWrite(
             bulkWriteToStorageInput.map(document => ({ document })),
             'data-migrator-import'
         );
@@ -551,7 +561,6 @@ export async function _migrateDocuments(
         const writeDeleted = flatClone(docData);
         writeDeleted._deleted = true;
         writeDeleted._attachments = {};
-        writeDeleted._rev = createRevision(writeDeleted, docData);
         return {
             previous: docData,
             document: writeDeleted

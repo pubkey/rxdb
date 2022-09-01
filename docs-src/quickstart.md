@@ -131,8 +131,3 @@ await myDocument.atomicPatch({
 ```ts
 await myDocument.remove();
 ```
-
-
-
----------
-To read the full documentation, continue [here](./install.md)

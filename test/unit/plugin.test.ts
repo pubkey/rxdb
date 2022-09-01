@@ -116,98 +116,8 @@ config.parallel('plugin.test.js', () => {
             }
         });
     });
-    describe('ajv-validate.node.ts', () => {
-        it('ajv-validate.node.ts: should allow everything', async () => {
-            if (!config.platform.isNode())
-                return;
-
-            const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout: any[] = [];
-            const stderr: any[] = [];
-            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/ajv-validate.node.js']);
-            const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', (data: any) => {
-                // comment in to debug
-                // console.log(':: ' + data.toString());
-                stdout.push(data.toString());
-            });
-            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
-            try {
-                await promise;
-            } catch (err) {
-                console.error('errrrr');
-                console.dir(stdout);
-                throw new Error(`could not run ajv-validate.node.js.
-                            # Error: ${err}
-                            # Output: ${stdout}
-                            # ErrOut: ${stderr}
-                            `);
-            }
-        });
-    });
-    describe('validate-z-schema.node.tes', () => {
-        it('validate-z-schema.node.ts: should allow everything', async () => {
-            if (!config.platform.isNode())
-                return;
-
-            const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout: any[] = [];
-            const stderr: any[] = [];
-            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/validate-z-schema.node.js']);
-            const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', (data: any) => {
-                // comment in to debug
-                // console.log(':: ' + data.toString());
-                stdout.push(data.toString());
-            });
-            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
-            try {
-                await promise;
-            } catch (err) {
-                console.error('errrrr');
-                console.dir(stdout);
-                throw new Error(`could not run validate-z-schema.node.js.
-                            # Error: ${err}
-                            # Output: ${stdout}
-                            # ErrOut: ${stderr}
-                            `);
-            }
-        });
-    });
-    describe('no-validate.node.ts', () => {
-        it('no-validate.node.ts: should allow everything', async () => {
-            if (!config.platform.isNode())
-                return;
-
-            const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout: any[] = [];
-            const stderr: any[] = [];
-            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/no-validate.node.js']);
-            const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', (data: any) => {
-                // comment in to debug
-                // console.log(':: ' + data.toString());
-                stdout.push(data.toString());
-            });
-            childProcess.stderr.on('data', (data: any) => {
-                stderr.push(data.toString());
-            });
-            try {
-                await promise;
-            } catch (err) {
-                console.error('errrrr');
-                console.dir(stdout);
-                throw new Error(`could not run no-validate.node.js.
-                            # Error: ${err}
-                            # Output: ${stdout}
-                            # ErrOut: ${stderr}
-                            `);
-            }
-        });
-    });
     describe('hooks', () => {
         it('createRxDatabase', async () => {
-
             const createRxDatabase = (args: any) => {
                 args.database.foo = 'bar_createRxDatabase';
             };
@@ -264,26 +174,6 @@ config.parallel('plugin.test.js', () => {
             assert.strictEqual(col.schema['foo'], 'bar_createRxSchema');
             col.database.destroy();
             _clearHook('createRxSchema', createRxSchema);
-        });
-        it('createRxQuery', async () => {
-            const createRxQuery = (c: any) => {
-                c.foo = 'bar_createRxQuery';
-            };
-            const plugin: RxPlugin = {
-                rxdb: true,
-                name: randomCouchString(12),
-                hooks: {
-                    createRxQuery: {
-                        after: createRxQuery
-                    }
-                }
-            };
-            addRxPlugin(plugin);
-            const col = await humansCollection.create();
-            const query: any = col.find();
-            assert.strictEqual(query['foo'], 'bar_createRxQuery');
-            col.database.destroy();
-            _clearHook('createRxQuery', createRxQuery);
         });
         it('createRxDocument', async () => {
             const createRxDocument = (c: any) => {

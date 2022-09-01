@@ -5,7 +5,6 @@ import assert from 'assert';
 import config from './config';
 
 import * as schemaObjects from './../helper/schema-objects';
-import * as humansCollection from './../helper/humans-collection';
 
 import {
     createRxDatabase,
@@ -18,13 +17,37 @@ import {
 import {
     pouchDocumentDataToRxDocumentData
 } from '../../plugins/pouchdb';
+import {
+    wrappedKeyCompressionStorage
+} from '../../plugins/key-compression';
 import { SimpleHumanDocumentType } from './../helper/schema-objects';
+import { HumanDocumentType, human, enableKeyCompression } from '../helper/schemas';
 
 
 config.parallel('key-compression.test.js', () => {
-    describe('RxQuery().keyCompress()', () => {
+    async function getCollection() {
+        const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType> }>({
+            name: randomCouchString(10),
+            storage: wrappedKeyCompressionStorage({
+                storage: config.storage.getStorage()
+            }),
+            multiInstance: false,
+            ignoreDuplicate: true,
+            localDocuments: true
+        });
+
+        const collections = await db.addCollections({
+            human: {
+                schema: enableKeyCompression(human),
+                localDocuments: true
+            }
+        });
+        return collections.human;
+    }
+
+    describe('.getPreparedQuery()', () => {
         it('transform basic search keys', async () => {
-            const c = await humansCollection.create(0);
+            const c = await getCollection();
             const query: any = c.find()
                 .where('firstName').eq('myFirstName')
                 .getPreparedQuery();
@@ -33,26 +56,11 @@ config.parallel('key-compression.test.js', () => {
             assert.ok(jsonString.includes('myFirstName'));
             c.database.destroy();
         });
-        it('primary', async () => {
-            if (config.storage.name !== 'pouchdb') {
-                return;
-            }
-            const c = await humansCollection.createPrimary(0);
-            const query: any = c.find()
-                .where('passportId').eq('myPassportId')
-                .getPreparedQuery();
-            const jsonString = JSON.stringify(query);
-
-            assert.ok(!jsonString.includes('passportId'));
-            assert.ok(jsonString.includes('myPassportId'));
-            assert.deepStrictEqual(query.selector._id, { $eq: 'myPassportId' });
-            c.database.destroy();
-        });
         it('additional attribute', async () => {
             if (config.storage.name !== 'pouchdb') {
                 return;
             }
-            const c = await humansCollection.create(0);
+            const c = await getCollection();
             const query: any = c.find()
                 .where('age').eq(5)
                 .getPreparedQuery();
@@ -67,12 +75,12 @@ config.parallel('key-compression.test.js', () => {
                 return;
             }
 
-            const c = await humansCollection.createPrimary(0);
+            const c = await getCollection();
             const docData = schemaObjects.simpleHuman();
             await c.insert(docData);
 
             const pouchDoc = await c.internalStorageInstance.internals.pouch.get(docData.passportId);
-            const doc = pouchDocumentDataToRxDocumentData<SimpleHumanDocumentType>(c.schema.primaryPath, pouchDoc);
+            const doc = pouchDocumentDataToRxDocumentData<SimpleHumanDocumentType>(c.schema.primaryPath as any, pouchDoc);
             Object.keys(doc)
                 .filter(key => !key.startsWith('_'))
                 .filter(key => key !== c.schema.primaryPath)
@@ -80,14 +88,14 @@ config.parallel('key-compression.test.js', () => {
                     assert.ok(key.length <= 3);
                     assert.strictEqual(typeof (doc as any)[key], 'string');
                 });
-            assert.strictEqual(doc[c.schema.primaryPath], docData.passportId);
+            assert.strictEqual((doc as any)[c.schema.primaryPath], docData.passportId);
             assert.strictEqual((doc as any)['|a'], docData.firstName);
             c.database.destroy();
         });
     });
     describe('query', () => {
         it('should properly run the compressed query', async () => {
-            const col = await humansCollection.create(0);
+            const col = await getCollection();
             assert.ok(col.schema.jsonSchema.keyCompression);
 
             // add one matching and one non-matching doc
@@ -275,7 +283,9 @@ config.parallel('key-compression.test.js', () => {
 
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: config.storage.getStorage()
+                storage: wrappedKeyCompressionStorage({
+                    storage: config.storage.getStorage()
+                })
             });
 
             const collections = await db.addCollections({
@@ -314,8 +324,6 @@ config.parallel('key-compression.test.js', () => {
 
             const result = await query.exec(true);
             assert.strictEqual(result.id, 'xxx');
-
-
             db.destroy();
         });
     });

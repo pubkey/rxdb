@@ -10,20 +10,26 @@ import {
     randomCouchString,
     promiseWait,
     _collectionNamePrimary,
-    RxError,
     clone,
     getHeightOfRevision,
     blobBufferUtil,
     lastOfArray,
-    getAllDocuments,
     RxCollection,
     createRevision,
+    normalizeMangoQuery,
+    RxStorageInstance,
+    now,
+    defaultHashFunction
 } from '../../';
 
 import {
     PouchDB,
     PouchDBInstance
 } from '../../plugins/pouchdb';
+
+import {
+    hashAttachmentData
+} from '../../plugins/attachments';
 
 
 import {
@@ -40,6 +46,7 @@ import {
     simpleHumanV3
 } from '../helper/schema-objects';
 import { HumanDocumentType } from '../helper/schemas';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 config.parallel('data-migration.test.js', () => {
 
@@ -354,10 +361,13 @@ config.parallel('data-migration.test.js', () => {
                             );
                     }
 
-                    const undeleted = await getAllDocuments(
-                        old.schema.primaryPath,
-                        old.storageInstance
+                    const undeletedResult = await old.storageInstance.query(
+                        col.database.storage.statics.prepareQuery(
+                            col.schema.jsonSchema,
+                            normalizeMangoQuery(col.schema.jsonSchema, {})
+                        )
                     );
+                    const undeleted = undeletedResult.documents;
                     const amount = undeleted.length;
                     assert.strictEqual(amount, 10);
 
@@ -649,31 +659,6 @@ config.parallel('data-migration.test.js', () => {
                     assert.ok(failed);
                     await col.database.destroy();
                 });
-                it('should contain the schema validation error in the thrown object', async () => {
-                    const col = await humansCollection.createMigrationCollection(5, {
-                        3: (docData: SimpleHumanV3DocumentType) => {
-                            /**
-                             * Delete required age-field
-                             * to provoke schema validation error
-                             */
-                            delete (docData as any).age;
-                            return docData;
-                        }
-                    });
-
-                    let hasThrown = false;
-                    try {
-                        await col.migratePromise();
-                    } catch (err) {
-                        hasThrown = true;
-                        /**
-                         * Should contain the validation errors
-                         */
-                        assert.ok(JSON.stringify((err as RxError).parameters.errors).includes('data.age'));
-                    }
-                    assert.ok(hasThrown);
-                    await col.database.destroy();
-                });
             });
         });
     });
@@ -797,6 +782,8 @@ config.parallel('data-migration.test.js', () => {
                         schema: schemas.humanFinal
                     }
                 });
+
+
                 const col = cols.humans;
                 await col.bulkInsert([
                     {
@@ -804,16 +791,29 @@ config.parallel('data-migration.test.js', () => {
                         firstName: 'foo',
                         lastName: 'bar',
                         age: 20
-                    },
-                    {
-                        passportId: nonChangedKey,
-                        firstName: 'foo',
-                        lastName: 'bar',
-                        age: 21
                     }
                 ]);
 
-                const revBeforeMigration = (await col.findOne(nonChangedKey).exec(true)).toJSON(true)._rev;
+                /**
+                 * To ensure that we really keep that revision, we
+                 * hackly insert this document via the RxStorageInstance.
+                 */
+                const originalStorageInstance: RxStorageInstance<HumanDocumentType, any, any> = (col.storageInstance as any).originalStorageInstance;
+                await originalStorageInstance.bulkWrite([{
+                    document: {
+                        passportId: nonChangedKey,
+                        firstName: 'foo',
+                        lastName: 'bar',
+                        age: 21,
+                        _meta: {
+                            lwt: now()
+                        },
+                        _rev: EXAMPLE_REVISION_1,
+                        _attachments: {},
+                        _deleted: false
+                    }
+                }], 'test-data-migration');
+
                 await db.destroy();
 
                 const db2 = await createRxDatabase({
@@ -842,7 +842,7 @@ config.parallel('data-migration.test.js', () => {
                  * If document data was not changed by migration, it should have kept the same revision
                  */
                 const revAfterMigration = (await col2.findOne(nonChangedKey).exec(true)).toJSON(true)._rev;
-                assert.strictEqual(revBeforeMigration, revAfterMigration);
+                assert.strictEqual(EXAMPLE_REVISION_1, revAfterMigration);
 
                 /**
                  * If document was changed, we should have an increased revision height
@@ -970,7 +970,7 @@ config.parallel('data-migration.test.js', () => {
                         // }
                     } as any
                 );
-                insertDocData._rev = createRevision(insertDocData);
+                insertDocData._rev = createRevision(defaultHashFunction, insertDocData);
                 await collection.storageInstance.bulkWrite([{
                     document: insertDocData
                 }], 'data-migration-test');
@@ -1096,8 +1096,8 @@ config.parallel('data-migration.test.js', () => {
                 'text/plain'
             );
 
-            const statics = config.storage.getStorage().statics;
-            const attachmentHash = await statics.hash(dataBlobBuffer);
+            const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
+            const attachmentHash = await hashAttachmentData(dataStringBase64);
 
             const col = await humansCollection.createMigrationCollection(10, {
                 3: (doc: any) => {
@@ -1121,7 +1121,7 @@ config.parallel('data-migration.test.js', () => {
             const attachment = docs[0].getAttachment('foo');
             assert.ok(attachment);
             assert.strictEqual(attachment.type, 'text/plain');
-            assert.strictEqual(attachment.digest, statics.hashKey + '-' + attachmentHash);
+            assert.strictEqual(attachment.digest, 'md5-' + attachmentHash);
             assert.strictEqual(attachment.length, attachmentData.length);
 
             olds.forEach(oldCol => oldCol.storageInstance.close().catch(() => { }));

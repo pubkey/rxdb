@@ -74,7 +74,7 @@ export async function backupSingleDocument(
                         attachmentsFolder,
                         attachment.id
                     );
-                    await writeToFile(attachmentFileLocation, content as Buffer);
+                    await writeToFile(attachmentFileLocation, content);
                     writtenFiles.push(attachmentFileLocation);
                 })
         );

@@ -323,7 +323,7 @@ config.parallel('rx-schema.test.js', () => {
                         primaryKey: 'collection',
                         type: 'object',
                         properties: {
-                            'collection': {
+                            collection: {
                                 type: 'string',
                                 maxLength: 100
                             }
@@ -334,11 +334,11 @@ config.parallel('rx-schema.test.js', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',
                         version: 0,
-                        description: 'save as fieldname',
-                        primaryKey: 'save',
+                        description: 'populate as fieldname',
+                        primaryKey: 'populate',
                         type: 'object',
                         properties: {
-                            'save': {
+                            populate: {
                                 type: 'string',
                                 maxLength: 100
                             }
@@ -348,7 +348,7 @@ config.parallel('rx-schema.test.js', () => {
                 it('throw when no version', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',
-                        description: 'save as fieldname',
+                        description: 'schema without version',
                         type: 'object',
                         properties: {
                             'foobar': {
@@ -361,7 +361,7 @@ config.parallel('rx-schema.test.js', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',
                         version: -10,
-                        description: 'save as fieldname',
+                        description: 'schema with negative version',
                         primaryKey: 'foobar',
                         type: 'object',
                         properties: {
@@ -604,7 +604,7 @@ config.parallel('rx-schema.test.js', () => {
                     const schema = createRxSchema(schemas.human);
                     const hash = schema.hash;
                     assert.strictEqual(typeof hash, 'string');
-                    assert.ok(hash.length > 10);
+                    assert.ok(hash.length > 5);
                 });
                 it('should normalize one schema with two different orders and generate for each the same hash', () => {
                     const schema1 = createRxSchema(schemas.humanNormalizeSchema1);
@@ -612,132 +612,6 @@ config.parallel('rx-schema.test.js', () => {
                     const hash1 = schema1.hash;
                     const hash2 = schema2.hash;
                     assert.strictEqual(hash1, hash2);
-                });
-            });
-        });
-        describe('.validate()', () => {
-            describe('positive', () => {
-                it('validate one human', () => {
-                    const schema = createRxSchema(schemas.human);
-                    const obj: any = schemaObjects.human();
-                    schema.validate(obj);
-                });
-                it('validate one point', () => {
-                    const schema = createRxSchema(schemas.point);
-                    const obj: any = schemaObjects.point();
-                    schema.validate(obj);
-                });
-                it('validate without non-required', () => {
-                    const schema = createRxSchema(schemas.human);
-                    const obj: any = schemaObjects.human();
-                    delete obj.age;
-                    schema.validate(obj);
-                });
-                it('validate nested', () => {
-                    const schema = createRxSchema(schemas.nestedHuman);
-                    const obj: any = schemaObjects.nestedHuman();
-                    schema.validate(obj);
-                });
-            });
-            describe('negative', () => {
-                it('required field not given', () => {
-                    const schema = createRxSchema(schemas.human);
-                    const obj: any = schemaObjects.human();
-                    obj['_id'] = randomCouchString(10);
-                    delete obj.lastName;
-                    assert.throws(() => schema.validate(obj), Error);
-                });
-                it('overflow maximum int', () => {
-                    const schema = createRxSchema(schemas.human);
-                    const obj: any = schemaObjects.human();
-                    obj['_id'] = randomCouchString(10);
-                    obj.age = 1000;
-                    assert.throws(() => schema.validate(obj), Error);
-                });
-                it('overadditional property', () => {
-                    const schema = createRxSchema(schemas.human);
-                    const obj: any = schemaObjects.human();
-                    obj['_id'] = randomCouchString(10);
-                    obj['token'] = randomCouchString(5);
-                    assert.throws(() => schema.validate(obj), Error);
-                });
-                it('::after', () => {
-                    const schema = createRxSchema(schemas.human);
-                    const obj: any = schemaObjects.human();
-                    schema.validate(obj);
-                });
-                it('accessible error-parameters', () => {
-                    const schema = createRxSchema(schemas.human);
-                    const obj = schemaObjects.human();
-                    (obj as any)['foobar'] = 'barfoo';
-                    let hasThrown = false;
-                    try {
-                        schema.validate(obj);
-                    } catch (err) {
-                        const message = (err as any).parameters.errors[0].message;
-                        assert.ok(message.includes('additional'));
-                        hasThrown = true;
-                    }
-                    assert.ok(hasThrown);
-                });
-                it('should respect nested additionalProperties: false', () => {
-                    const jsonSchema: any = clone(schemas.heroArray);
-                    jsonSchema.properties.skills.items['additionalProperties'] = false;
-                    const schema = createRxSchema(jsonSchema);
-                    const obj = {
-                        name: 'foobar',
-                        skills: [
-                            {
-                                name: 'foo',
-                                damage: 10,
-                                nonDefinedField: 'foobar'
-                            }
-                        ],
-                    };
-
-                    let hasThrown = false;
-                    try {
-                        schema.validate(obj);
-                    } catch (err) {
-                        const message = (err as any).parameters.errors[0].message;
-                        assert.strictEqual(message, 'has additional properties');
-                        hasThrown = true;
-                    }
-                    assert.ok(hasThrown);
-                });
-                it('final fields should be required', () => {
-                    const schema = createRxSchema(schemas.humanFinal);
-                    let hasThrown = false;
-                    const obj = {
-                        passportId: 'foobar',
-                        firstName: 'foo',
-                        lastName: 'bar'
-                    };
-                    try {
-                        schema.validate(obj);
-                    } catch (err) {
-                        const deepParam = (err as any).parameters.errors[0].field;
-                        assert.strictEqual(deepParam, 'data.age');
-                        hasThrown = true;
-                    }
-                    assert.ok(hasThrown);
-                });
-                it('should show fields with undefined in the error-params', () => {
-                    const schema = createRxSchema(schemas.humanFinal);
-                    let error = null;
-                    try {
-                        schema.validate({
-                            foo: 'bar',
-                            noval: undefined,
-                            nr: 7
-                        });
-                    } catch (err) {
-                        error = err;
-                    }
-                    assert.ok(error);
-                    assert.deepStrictEqual((error as any).parameters.obj.noval, undefined);
-                    const text = (error as any).toString();
-                    assert.ok(text.includes('noval'));
                 });
             });
         });

@@ -24,7 +24,7 @@
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.5.6",
     "vue": "3.2.37",
-    "vue-router": "4.0.16"
+    "vue-router": "4.1.3"
   },
   "devDependencies": {
     "@types/node": "17.0.36",
@@ -46,7 +46,7 @@
     "local-web-server": "5.2.1",
     "node-sass": "6.0.1",
     "sass-loader": "12.6.0",
-    "testcafe": "1.19.0",
+    "testcafe": "1.20.1",
     "typescript": "4.6.4"
   },
   "eslintConfig": {

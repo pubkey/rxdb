@@ -10,8 +10,6 @@ exports.getSortFieldsOfQuery = getSortFieldsOfQuery;
 
 var _eventReduceJs = require("event-reduce-js");
 
-var _hooks = require("./hooks");
-
 var _rxChangeEvent = require("./rx-change-event");
 
 var _util = require("./util");
@@ -43,7 +41,7 @@ function getQueryParams(rxQuery) {
      * we send for example compressed documents to be sorted by compressed queries.
      */
 
-    var sortComparator = collection.database.storage.statics.getSortComparator(collection.storageInstance.schema, preparedQuery);
+    var sortComparator = collection.database.storage.statics.getSortComparator(collection.schema.jsonSchema, preparedQuery);
 
     var useSortComparator = function useSortComparator(docA, docB) {
       var sortComparatorData = {
@@ -51,7 +49,6 @@ function getQueryParams(rxQuery) {
         docB: docB,
         rxQuery: rxQuery
       };
-      (0, _hooks.runPluginHooks)('preSortComparator', sortComparatorData);
       return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
     };
     /**
@@ -61,14 +58,13 @@ function getQueryParams(rxQuery) {
      */
 
 
-    var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.storageInstance.schema, preparedQuery);
+    var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.schema.jsonSchema, preparedQuery);
 
     var useQueryMatcher = function useQueryMatcher(doc) {
       var queryMatcherData = {
         doc: doc,
         rxQuery: rxQuery
       };
-      (0, _hooks.runPluginHooks)('preQueryMatcher', queryMatcherData);
       return queryMatcher(queryMatcherData.doc);
     };
 

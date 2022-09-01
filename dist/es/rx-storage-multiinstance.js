@@ -63,7 +63,7 @@ export function removeBroadcastChannelReference(databaseInstanceToken, refObject
     return state.bc.close();
   }
 }
-export function addRxStorageMultiInstanceSupport(instanceCreationParams, instance,
+export function addRxStorageMultiInstanceSupport(storageName, instanceCreationParams, instance,
 /**
  * If provided, that channel will be used
  * instead of an own one.
@@ -73,12 +73,11 @@ providedBroadcastChannel) {
     return;
   }
 
-  var storage = instance.storage;
   var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
   var changesFromOtherInstances$ = new Subject();
 
   var eventListener = function eventListener(msg) {
-    if (msg.storageName === storage.name && msg.databaseName === instanceCreationParams.databaseName && msg.collectionName === instanceCreationParams.collectionName && msg.version === instanceCreationParams.schema.version) {
+    if (msg.storageName === storageName && msg.databaseName === instanceCreationParams.databaseName && msg.collectionName === instanceCreationParams.collectionName && msg.version === instanceCreationParams.schema.version) {
       changesFromOtherInstances$.next(msg.eventBulk);
     }
   };
@@ -92,7 +91,7 @@ providedBroadcastChannel) {
     }
 
     broadcastChannel.postMessage({
-      storageName: storage.name,
+      storageName: storageName,
       databaseName: instanceCreationParams.databaseName,
       collectionName: instanceCreationParams.collectionName,
       version: instanceCreationParams.schema.version,

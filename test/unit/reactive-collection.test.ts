@@ -46,35 +46,6 @@ config.parallel('reactive-collection.test.js', () => {
                 db.destroy();
             });
         });
-        describe('negative', () => {
-            it('should get no event on non-succes-insert', async () => {
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                });
-                const cols = await db.addCollections({
-                    foobar: {
-                        schema: schemas.human
-                    }
-                });
-                const c = cols.foobar;
-
-                let calls = 0;
-                const sub = db.$.subscribe(() => {
-                    calls++;
-                });
-                await AsyncTestUtil.assertThrows(
-                    () => c.insert({
-                        foo: 'baar'
-                    }),
-                    'RxError',
-                    'schema'
-                );
-                assert.strictEqual(calls, 0);
-                sub.unsubscribe();
-                db.destroy();
-            });
-        });
     });
     describe('.bulkInsert()', () => {
         describe('positive', () => {

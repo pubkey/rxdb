@@ -26,18 +26,20 @@ import {
     getPouchIndexDesignDocNameByIndex,
     openPouchId,
     OPEN_POUCH_INSTANCES,
-    PouchStorageInternals
+    PouchStorageInternals,
+    RX_STORAGE_NAME_POUCHDB
 } from './pouchdb-helper';
 import PouchDBFind from 'pouchdb-find';
 import { RxStoragePouchStatics } from './pouch-statics';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { addCustomEventsPluginToPouch } from './custom-events-plugin';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 
 
 
 export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSettings> {
-    public name: string = 'pouchdb';
+    public name: string = RX_STORAGE_NAME_POUCHDB;
     public statics = RxStoragePouchStatics;
 
     constructor(
@@ -81,6 +83,9 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
     public async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, PouchSettings>
     ): Promise<RxStorageInstancePouch<RxDocType>> {
+
+        ensureRxStorageInstanceParamsAreCorrect(params);
+
         const pouchLocation = getPouchLocation(
             params.databaseName,
             params.collectionName,
@@ -114,6 +119,7 @@ export class RxStoragePouch implements RxStorage<PouchStorageInternals, PouchSet
         );
 
         addRxStorageMultiInstanceSupport(
+            RX_STORAGE_NAME_POUCHDB,
             params,
             instance
         );

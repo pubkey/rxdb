@@ -14,6 +14,7 @@ export type InternalStoreDocType<Data = any> = {
 export type InternalStoreStorageTokenDocType = InternalStoreDocType<{
     token: string;
     instanceToken: string;
+    passwordHash?: string;
 }>;
 
 /**

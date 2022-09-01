@@ -3,8 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAllCollectionDocuments = exports.ensureStorageTokenDocumentExists = exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_ID = exports.INTERNAL_STORE_SCHEMA_TITLE = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = exports.INTERNAL_CONTEXT_ENCRYPTION = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
+exports.getAllCollectionDocuments = exports.ensureStorageTokenDocumentExists = exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_ID = exports.INTERNAL_STORE_SCHEMA_TITLE = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
 exports.getPrimaryKeyOfInternalDocument = getPrimaryKeyOfInternalDocument;
+
+var _rxError = require("./rx-error");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
 
@@ -18,6 +20,7 @@ var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists
      * and only fetch the existing one if a conflict happened.
      */
     var storageToken = (0, _util.randomCouchString)(10);
+    var passwordHash = rxDatabase.password ? (0, _util.fastUnsecureHash)(rxDatabase.password) : undefined;
     var docData = {
       id: STORAGE_TOKEN_DOCUMENT_ID,
       context: INTERNAL_CONTEXT_STORAGE_TOKEN,
@@ -32,14 +35,14 @@ var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists
          * or if databases have existed earlier on that storage
          * with the same database name.
          */
-        instanceToken: rxDatabase.token
+        instanceToken: rxDatabase.token,
+        passwordHash: passwordHash
       },
       _deleted: false,
       _meta: (0, _util.getDefaultRxDocumentMeta)(),
       _rev: (0, _util.getDefaultRevision)(),
       _attachments: {}
     };
-    docData._rev = (0, _util.createRevision)(docData);
     return Promise.resolve(rxDatabase.internalStore.bulkWrite([{
       document: docData
     }], 'internal-add-storage-token')).then(function (writeResult) {
@@ -56,7 +59,16 @@ var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists
       var error = (0, _util.ensureNotFalsy)(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
 
       if (error.isError && error.status === 409) {
-        var storageTokenDocInDb = error.documentInDb;
+        var conflictError = error;
+
+        if (passwordHash && passwordHash !== (0, _util.ensureNotFalsy)(conflictError.documentInDb).data.passwordHash) {
+          throw (0, _rxError.newRxError)('DB1', {
+            passwordHash: passwordHash,
+            existingPasswordHash: (0, _util.ensureNotFalsy)(conflictError.documentInDb).data.passwordHash
+          });
+        }
+
+        var storageTokenDocInDb = conflictError.documentInDb;
         return (0, _util.ensureNotFalsy)(storageTokenDocInDb);
       }
 
@@ -73,9 +85,9 @@ exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
  * Returns all internal documents
  * with context 'collection'
  */
-var getAllCollectionDocuments = function getAllCollectionDocuments(storageInstance) {
+var getAllCollectionDocuments = function getAllCollectionDocuments(storage, storageInstance) {
   try {
-    var getAllQueryPrepared = storageInstance.storage.statics.prepareQuery(storageInstance.schema, {
+    var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
       selector: {
         context: INTERNAL_CONTEXT_COLLECTION
       },
@@ -104,8 +116,6 @@ var INTERNAL_CONTEXT_COLLECTION = 'collection';
 exports.INTERNAL_CONTEXT_COLLECTION = INTERNAL_CONTEXT_COLLECTION;
 var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 exports.INTERNAL_CONTEXT_STORAGE_TOKEN = INTERNAL_CONTEXT_STORAGE_TOKEN;
-var INTERNAL_CONTEXT_ENCRYPTION = 'plugin-encryption';
-exports.INTERNAL_CONTEXT_ENCRYPTION = INTERNAL_CONTEXT_ENCRYPTION;
 var INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 /**
  * Do not change the title,
@@ -138,7 +148,7 @@ var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
     },
     context: {
       type: 'string',
-      "enum": [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_ENCRYPTION, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES, 'OTHER']
+      "enum": [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES, 'OTHER']
     },
     data: {
       type: 'object',

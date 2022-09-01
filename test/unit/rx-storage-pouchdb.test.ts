@@ -10,10 +10,13 @@ import {
     MangoQuery,
     ensureNotFalsy,
     now,
-    blobBufferUtil,
+    blobBufferUtil
+} from '../../';
+
+import {
     hashAttachmentData,
     getAttachmentSize
-} from '../../';
+} from '../../plugins/attachments';
 
 import {
     addCustomEventsPluginToPouch,
@@ -23,12 +26,6 @@ import {
     PouchDB
 } from '../../plugins/pouchdb';
 import * as schemaObjects from '../helper/schema-objects';
-
-
-import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
-import { RxDBValidatePlugin } from '../../plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import { clone, waitUntil } from 'async-test-util';
@@ -47,7 +44,6 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
     }
     describe('utils', () => {
         it('.hashAttachmentData() must return the same hash as pouchdb creates for an attachment', async () => {
-            const storage = getRxStoragePouch('memory');
             const pouch: PouchDBInstance = new PouchDB(
                 randomCouchString(12),
                 {
@@ -64,10 +60,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             const attachmentId = 'myText';
             const docId = 'myDoc';
 
-            const rxdbHash = await hashAttachmentData(
-                attachmentDataBBase64,
-                storage.statics
-            );
+            const rxdbHash = await hashAttachmentData(attachmentDataBBase64);
 
             await pouch.put({
                 _id: docId,
@@ -81,7 +74,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             const pouchDoc = await pouch.get(docId);
             assert.strictEqual(
                 pouchDoc._attachments[attachmentId].digest,
-                storage.statics.hashKey + '-' + rxdbHash
+                'md5-' + rxdbHash
             );
 
             const size = getAttachmentSize(attachmentDataBBase64);
@@ -122,7 +115,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
             await waitUntil(() => flattenEvents(emitted).length === 1);
 
-            const first = flattenEvents(emitted)[0];
+            const first: any = flattenEvents(emitted)[0];
             assert.deepStrictEqual(
                 first.change.operation,
                 'INSERT'

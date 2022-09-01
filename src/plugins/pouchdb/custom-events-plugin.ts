@@ -67,7 +67,7 @@ export function getCustomEventEmitterByPouch<RxDocType>(
     pouch: PouchDBInstance
 ): Emitter<RxDocType> {
     const key = [
-        pouch.name,
+        pouch.__opts.name,
         pouch.adapter
     ].join('|');
     let emitter = EVENT_EMITTER_BY_POUCH_INSTANCE.get(key);
@@ -121,6 +121,52 @@ export function addCustomEventsPluginToPouch() {
         options: PouchBulkDocOptions,
         callback: Function
     ) {
+
+        /**
+         * Normalize inputs
+         * because there are many ways to call pouchdb.bulkDocs()
+         */
+        if (typeof options === 'function') {
+            callback = options;
+            options = {};
+        }
+        if (!options) {
+            options = {};
+        }
+
+
+        /**
+         * PouchDB internal requests
+         * must still be handled normally
+         * to decrease the likelyness of bugs.
+         */
+        const internalPouches = [
+            '_replicator',
+            '_users',
+            'pouch__all_dbs__'
+        ];
+        if (
+            (
+                internalPouches.includes(this.name) ||
+                this.name.includes('-mrview-')
+            )
+        ) {
+            return oldBulkDocs.call(
+                this,
+                body,
+                options,
+                (err: any, result: (PouchBulkDocResultRow | PouchWriteError)[]) => {
+                    if (err) {
+                        callback ? callback(err, null) : 0;
+                    } else {
+                        if (callback) {
+                            callback(null, result);
+                        }
+                    }
+                });
+        }
+
+
         let queue = BULK_DOC_RUN_QUEUE.get(this);
         if (!queue) {
             queue = PROMISE_RESOLVE_VOID;
@@ -144,7 +190,6 @@ export function addCustomEventsPluginToPouch() {
         options: PouchBulkDocOptions,
         callback: Function
     ) {
-
         const startTime = now();
         const runId = i++;
 
@@ -363,10 +408,20 @@ export function addCustomEventsPluginToPouch() {
                 }) as any;
             });
 
+
+            /**
+             * We cannot send the custom here,
+             * because when a migration between different major RxDB versions is done,
+             * multiple versions of the RxDB PouchDB RxStorage might have added their
+             * custom method via PouchDBCore.plugin()
+             */
+            const useOptsForOldBulkDocs = flatClone(deeperOptions);
+            delete useOptsForOldBulkDocs.custom;
+
             callReturn = oldBulkDocs.call(
                 this,
                 docs,
-                deeperOptions,
+                useOptsForOldBulkDocs,
                 (err: any, result: (PouchBulkDocResultRow | PouchWriteError)[]) => {
                     if (err) {
                         callback ? callback(err) : rej(err);

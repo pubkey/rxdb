@@ -22,7 +22,7 @@ import {
 
 import { firstValueFrom } from 'rxjs';
 
-describe('rx-query.test.js', () => {
+describe('rx-query.test.ts', () => {
     config.parallel('.constructor', () => {
         it('should throw dev-mode error on wrong query object', async () => {
             const col = await humansCollection.create(0);
@@ -807,153 +807,8 @@ describe('rx-query.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('negative', () => {
-            it('should throw if schema does not match', async () => {
-                const schema: RxJsonSchema<{ id: string; childProperty: 'A' | 'B' | 'C' }> = {
-                    version: 0,
-                    primaryKey: 'id',
-                    type: 'object',
-                    properties: {
-                        id: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        childProperty: {
-                            type: 'string',
-                            enum: ['A', 'B', 'C']
-                        }
-                    }
-                };
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                });
-                const cols = await db.addCollections({
-                    humans: {
-                        schema
-                    }
-                });
-                const col = cols.humans;
-                await col.insert({
-                    id: randomCouchString(12),
-                    childProperty: 'A'
-                });
-                await AsyncTestUtil.assertThrows(
-                    () => col.find().update({
-                        $set: {
-                            childProperty: 'Z'
-                        }
-                    }),
-                    'RxError',
-                    'schema'
-                );
-                db.destroy();
-            });
-        });
     });
     config.parallel('issues', () => {
-        describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {
-            it('schema example 1', async () => {
-                const schema: RxJsonSchema<{ user_id: string; user_pwd: string; last_login: number; status: string; }> = {
-                    keyCompression: false,
-                    version: 0,
-                    primaryKey: 'user_id',
-                    type: 'object',
-                    properties: {
-                        user_id: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        user_pwd: {
-                            type: 'string',
-                        },
-                        last_login: {
-                            type: 'number'
-                        },
-                        status: {
-                            type: 'string'
-                        }
-                    },
-                    required: ['user_pwd', 'last_login', 'status'],
-                    encrypted: [
-                        'user_pwd'
-                    ]
-                };
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                    password: randomCouchString(20)
-                });
-                const colName = randomCouchString(10);
-                const collections = await db.addCollections({
-                    [colName]: {
-                        schema
-                    }
-                });
-                const collection = collections[colName];
-
-                const query = collection
-                    .findOne()
-                    .where('status')
-                    .eq('foobar');
-
-                const resultDoc = await query.exec();
-                assert.strictEqual(resultDoc, null);
-
-                const queryAll = collection
-                    .find()
-                    .where('status')
-                    .eq('foobar');
-
-                const resultsAll = await queryAll.exec();
-                assert.strictEqual(resultsAll.length, 0);
-                db.destroy();
-            });
-            it('schema example 2', async () => {
-                const schema: RxJsonSchema<{ id: string; value: number; }> = {
-                    keyCompression: false,
-                    version: 0,
-                    primaryKey: 'id',
-                    type: 'object',
-                    properties: {
-                        id: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        value: {
-                            type: 'number',
-                            minimum: 0,
-                            maximum: 1000000,
-                            multipleOf: 1
-                        }
-                    },
-                    indexes: ['value']
-                };
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                    password: randomCouchString(20)
-                });
-
-                const colName = randomCouchString(10);
-                const collections = await db.addCollections({
-                    [colName]: {
-                        schema
-                    }
-                });
-                const collection = collections[colName];
-
-                const queryAll = collection
-                    .find()
-                    .sort({
-                        value: 'desc'
-                    });
-
-                const resultsAll = await queryAll.exec();
-                assert.strictEqual(resultsAll.length, 0);
-                db.destroy();
-            });
-        });
         it('#267 query for null-fields', async () => {
             if (config.storage.name !== 'pouchdb') {
                 /**
@@ -980,17 +835,18 @@ describe('rx-query.test.js', () => {
 
             const c = await humansCollection.createPrimary(0);
 
-            // insert 100
+            // insert some docs
+            const insertAmount = 100;
             await c.bulkInsert(
-                new Array(100)
+                new Array(insertAmount)
                     .fill(0)
-                    .map(() => schemaObjects.human())
+                    .map((_v, idx) => schemaObjects.human(undefined, idx))
             );
 
             // make and exec query
             const query = c.find();
             const docs = await query.exec();
-            assert.strictEqual(docs.length, 100);
+            assert.strictEqual(docs.length, insertAmount);
 
             // produces changeEvents
             await c.bulkInsert(

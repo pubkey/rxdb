@@ -2,7 +2,6 @@ import assert from 'assert';
 
 import config from './config';
 import {
-    addRxPlugin,
     clone,
     ensureNotFalsy,
     fillWithDefaultSettings,
@@ -10,7 +9,8 @@ import {
     normalizeMangoQuery,
     randomCouchString,
     now,
-    createRevision
+    createRevision,
+    defaultHashFunction
 } from '../../';
 
 import {
@@ -19,11 +19,6 @@ import {
 } from '../../plugins/dexie';
 
 import * as schemaObjects from '../helper/schema-objects';
-
-import { RxDBKeyCompressionPlugin } from '../../plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
-import { RxDBValidatePlugin } from '../../plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
 import {
     HumanDocumentType,
     humanMinimal,
@@ -178,7 +173,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     data._meta = {
                         lwt: now()
                     };
-                    data._rev = createRevision(data);
+                    data._rev = createRevision(defaultHashFunction, data);
                     return {
                         document: data
                     }

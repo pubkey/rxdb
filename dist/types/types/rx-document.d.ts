@@ -50,7 +50,6 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     readonly allAttachments$: Observable<RxAttachment<RxDocumentType, OrmMethods>[]>;
 
     // internal things
-    _isTemporary: boolean;
     _dataSync$: BehaviorSubject<DeepReadonly<RxDocumentType>>;
     _data: RxDocumentData<RxDocumentType>;
     _isDeleted$: BehaviorSubject<boolean>;

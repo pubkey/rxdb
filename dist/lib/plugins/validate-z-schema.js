@@ -5,102 +5,57 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDBValidateZSchemaPlugin = void 0;
+exports.getValidator = getValidator;
+exports.wrappedValidateZSchemaStorage = void 0;
 
 var _zSchema = _interopRequireDefault(require("z-schema"));
 
 var _rxError = require("../rx-error");
 
-var _util = require("../util");
+var _pluginHelpers = require("../plugin-helpers");
 
 /**
  * this plugin validates documents before they can be inserted into the RxCollection.
  * It's using z-schema as jsonschema-validator
  * @link https://github.com/zaggino/z-schema
  */
+function getValidator(schema) {
+  var validatorInstance = new _zSchema["default"]();
 
-/**
- * cache the validators by the schema-hash
- * so we can reuse them when multiple collections have the same schema
- */
-var VALIDATOR_CACHE = new Map();
-/**
- * returns the parsed validator from z-schema
- * @param schemaPath if given, the schema for the sub-path is used
- * @
- */
+  var validator = function validator(obj) {
+    validatorInstance.validate(obj, schema);
+    return validatorInstance;
+  };
 
-function _getValidator(rxSchema) {
-  var hash = rxSchema.hash;
+  return function (docData) {
+    var useValidator = validator(docData);
 
-  if (!VALIDATOR_CACHE.has(hash)) {
-    var validator = new _zSchema["default"]();
+    if (useValidator === true) {
+      return;
+    }
 
-    var validatorFun = function validatorFun(obj) {
-      validator.validate(obj, rxSchema.jsonSchema);
-      return validator;
-    };
+    var errors = useValidator.getLastErrors();
 
-    VALIDATOR_CACHE.set(hash, validatorFun);
-  }
-
-  return VALIDATOR_CACHE.get(hash);
-}
-/**
- * validates the given object against the schema
- * @param  schemaPath if given, the sub-schema will be validated
- * @throws {RxError} if not valid
- */
-
-
-function validateFullDocumentData(obj) {
-  var validator = _getValidator(this);
-
-  var useValidator = validator(obj);
-  var errors = useValidator.getLastErrors();
-  if (!errors) return obj;else {
-    var formattedZSchemaErrors = errors.map(function (_ref) {
-      var title = _ref.title,
-          description = _ref.description,
-          message = _ref.message;
-      return {
-        title: title,
-        description: description,
-        message: message
-      };
-    });
-    throw (0, _rxError.newRxError)('VD2', {
-      errors: formattedZSchemaErrors,
-      obj: obj,
-      schema: this.jsonSchema
-    });
-  }
+    if (errors) {
+      var formattedZSchemaErrors = errors.map(function (_ref) {
+        var title = _ref.title,
+            description = _ref.description,
+            message = _ref.message;
+        return {
+          title: title,
+          description: description,
+          message: message
+        };
+      });
+      throw (0, _rxError.newRxError)('VD2', {
+        errors: formattedZSchemaErrors,
+        document: docData,
+        schema: schema
+      });
+    }
+  };
 }
 
-var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
-  // pre-generate the validator-z-schema from the schema
-  (0, _util.requestIdleCallbackIfAvailable)(function () {
-    return _getValidator.bind(rxSchema, rxSchema);
-  });
-};
-
-var RxDBValidateZSchemaPlugin = {
-  name: 'validate-z-schema',
-  rxdb: true,
-  prototypes: {
-    /**
-     * set validate-function for the RxSchema.prototype
-     */
-    RxSchema: function RxSchema(proto) {
-      proto._getValidator = _getValidator;
-      proto.validateFullDocumentData = validateFullDocumentData;
-    }
-  },
-  hooks: {
-    createRxSchema: {
-      after: runAfterSchemaCreated
-    }
-  }
-};
-exports.RxDBValidateZSchemaPlugin = RxDBValidateZSchemaPlugin;
+var wrappedValidateZSchemaStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(getValidator, 'z-schema');
+exports.wrappedValidateZSchemaStorage = wrappedValidateZSchemaStorage;
 //# sourceMappingURL=validate-z-schema.js.map

@@ -7,7 +7,7 @@ addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 const heroesList = document.querySelector('#heroes-list');
 
-const syncURL = 'http://localhost:10102/db/heroes';
+const syncURL = 'http://0.0.0.0:10102/db/heroes';
 
 async function run() {
     /**
@@ -22,7 +22,7 @@ async function run() {
         'heroesdb' + dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
         'memory'
     );
-    
+
     console.log('starting sync with ' + syncURL);
     const syncState = await db.heroes.syncCouchDB({
         remote: syncURL,
@@ -35,7 +35,18 @@ async function run() {
             live: true
         },
     });
-    console.dir(syncState);
+    syncState.error$.subscribe(err => {
+        console.error('# Got replication error:');
+        console.dir(err);
+        console.trace(err);
+
+        /**
+         * We have to throw here, otherwise
+         * something might not work but the CI will not fail
+         * and instead time out after a very long time.
+         */
+        throw err;
+    });
 
     /**
      * map the result of the find-query to the heroes-list in the dom

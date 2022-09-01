@@ -16,7 +16,8 @@ export class HeroInsertComponent {
 
     @ViewChild('input', { static: false }) inputfield: any;
 
-    tempDoc: any;
+    name = '';
+    color = '';
 
     constructor(
         private dbService: DatabaseService
@@ -25,18 +26,23 @@ export class HeroInsertComponent {
     }
 
     reset() {
-        this.tempDoc = this.dbService.db.hero.newDocument({
-            maxHP: getRandomArbitrary(100, 1000)
-        });
+        this.name = '';
+        this.color = '';
     }
 
     async submit() {
         console.log('HeroInsertComponent.submit():');
-        console.log('name: ' + this.tempDoc.name);
-        console.log('color: ' + this.tempDoc.color);
+        console.log('name: ' + this.name);
+        console.log('color: ' + this.color);
 
         try {
-            await this.tempDoc.save();
+            await this.dbService.db.hero.insert({
+                name: this.name,
+                color: this.color,
+                maxHP: getRandomArbitrary(100, 1000),
+                hp: 100,
+                skills: []
+            });
             this.reset();
         } catch (err) {
             alert('Error: Please check console');

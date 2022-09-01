@@ -1,5 +1,3 @@
-/// <reference types="pouchdb-core" />
-/// <reference types="node" />
 import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
 import type { LokiDatabaseSettings, LokiSettings, LokiStorageInternals, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
 import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
@@ -9,11 +7,10 @@ export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, Lo
     databaseSettings: LokiDatabaseSettings;
     name: string;
     statics: Readonly<{
-        hash(data: string | Blob | Buffer): Promise<string>;
-        hashKey: string;
         prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
         getSortComparator<RxDocType_1>(schema: RxJsonSchema<RxDocumentData<RxDocType_1>>, preparedQuery: any): DeterministicSortComparator<RxDocType_1>;
         getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<RxDocumentData<RxDocType_2>>, preparedQuery: any): QueryMatcher<RxDocumentData<RxDocType_2>>;
+        checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema<any>>;
     }>;
     /**
      * Create one leader elector by db name.

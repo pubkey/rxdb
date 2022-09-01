@@ -1,5 +1,3 @@
-/// <reference types="pouchdb-core" />
-/// <reference types="node" />
 import type { PouchDBInstance, PouchSettings, RxJsonSchema, RxStorageInstanceCreationParams, RxStorage, RxCollection } from '../../types';
 import { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import { PouchStorageInternals } from './pouchdb-helper';
@@ -8,11 +6,10 @@ export declare class RxStoragePouch implements RxStorage<PouchStorageInternals, 
     pouchSettings: PouchSettings;
     name: string;
     statics: Readonly<{
-        hash(data: string | Blob | Buffer): Promise<string>;
-        hashKey: string;
         prepareQuery<RxDocType>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
         getSortComparator<RxDocType_1>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType_1>>, preparedQuery: any): import("event-reduce-js").DeterministicSortComparator<RxDocType_1>;
         getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<import("../../types").RxDocumentData<RxDocType_2>>, preparedQuery: any): import("event-reduce-js").QueryMatcher<import("../../types").RxDocumentData<RxDocType_2>>;
+        checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema<any>>;
     }>;
     constructor(adapter: any, pouchSettings?: PouchSettings);
     private createPouch;

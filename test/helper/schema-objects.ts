@@ -317,13 +317,12 @@ export interface HumanWithTimestampDocumentType {
     deletedAt?: number;
 }
 export function humanWithTimestamp(givenData: Partial<HumanWithTimestampDocumentType> = {}): HumanWithTimestampDocumentType {
-    const now = new Date().getTime() / 1000;
     let ret = {
         id: randomString(12),
         name: faker.name.firstName(),
         age: randomNumber(1, 100),
         // use some time in the past week
-        updatedAt: Math.round(randomNumber(now - 60 * 60 * 24 * 7, now))
+        updatedAt: new Date().getTime()
     };
     ret = Object.assign({}, ret, givenData);
     return ret;

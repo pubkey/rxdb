@@ -27,8 +27,6 @@ import {
     getRxStorageLoki, RxStorageLokiStatics
 } from '../plugins/lokijs';
 
-import { RxDBKeyCompressionPlugin } from '../plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
 import { RxDBMigrationPlugin } from '../plugins/migration';
 import { getRxStorageWorker } from '../plugins/worker';
 addRxPlugin(RxDBMigrationPlugin);

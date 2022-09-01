@@ -4,7 +4,7 @@ export const GRAPHQL_PATH = '/graphql';
 export const GRAPHQL_SUBSCRIPTION_PATH = '/subscriptions';
 
 export async function getDocsOnServer<RxDocType>(
-    replicationState: RxGraphQLReplicationState<RxDocType>
+    replicationState: RxGraphQLReplicationState<RxDocType, any>
 ): Promise<RxDocType[]> {
     const response = await replicationState.clientState.client.query(`{
         getAll {

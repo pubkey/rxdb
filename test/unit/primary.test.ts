@@ -55,35 +55,6 @@ config.parallel('primary.test.js', () => {
                 });
             });
         });
-        describe('.validate()', () => {
-            describe('positive', () => {
-                it('should validate the human', () => {
-                    const schema = createRxSchema(schemas.primaryHuman);
-                    const obj = schemaObjects.simpleHuman();
-                    assert.ok(schema.validate(obj));
-                });
-            });
-
-            describe('negative', () => {
-                it('should not validate the human without primary', () => {
-                    const schema = createRxSchema(schemas.primaryHuman);
-                    const obj = {
-                        firstName: randomCouchString(10),
-                        lastName: randomCouchString(10)
-                    };
-                    assert.throws(() => schema.validate(obj), Error);
-                });
-                it('should not validate with primary object', () => {
-                    const schema = createRxSchema(schemas.primaryHuman);
-                    const obj = {
-                        passportId: {},
-                        firstName: randomCouchString(10),
-                        lastName: randomCouchString(10)
-                    };
-                    assert.throws(() => schema.validate(obj), Error);
-                });
-            });
-        });
     });
     describe('Collection', () => {
         describe('.insert()', () => {
@@ -109,17 +80,6 @@ config.parallel('primary.test.js', () => {
                         () => c.insert(obj2),
                         'RxError',
                         'conflict'
-                    );
-                    c.database.destroy();
-                });
-                it('do not allow primary==null', async () => {
-                    const c = await humansCollection.createPrimary(0);
-                    const obj: any = schemaObjects.simpleHuman();
-                    obj.passportId = null;
-                    await AsyncTestUtil.assertThrows(
-                        () => c.insert(obj),
-                        'RxError',
-                        'not match'
                     );
                     c.database.destroy();
                 });

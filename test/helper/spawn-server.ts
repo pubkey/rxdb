@@ -24,7 +24,7 @@ export function spawn(): Promise<{
     lastPort++;
     const path = '/db';
     app.use(path, expressPouch);
-    const ret = 'http://localhost:' + lastPort + path;
+    const ret = 'http://0.0.0.0:' + lastPort + path;
 
     return new Promise(res => {
         const server = app.listen(lastPort, function () {

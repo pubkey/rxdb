@@ -9,7 +9,7 @@ To make RxDB a sustainable Project, some plugins are not part of the RxDB open s
 - [RxStorage IndexedDB](./rx-storage-indexeddb.md) a really fast [RxStorage](./rx-storage.md) implementation based on **IndexedDB**. Made to be used in browsers.
 - [RxStorage SQLite](./rx-storage-sqlite.md) a really fast [RxStorage](./rx-storage.md) implementation based on **SQLite**. Made to be used on **Node.js**, **Electron**, **React Native**, **Cordova** or **Capacitor**.
 - [RxStorage Sharding](./rx-storage-sharding.md) a wrapper around any other [RxStorage](./rx-storage.md) that improves performance by applying the sharding technique.
-- **migrateRxDBV11ToV12** A plugins that migrates data from any RxDB v11 storage to a new RxDB v12 database. Use this when you upgrade from RxDB 11->12 and you have to keep your database state.
+- [Storage migration](./storage-migration.md) A plugins that migrates data from one storage to another. Use this when you want to change the used RxStorage or to migrate data from an older RxDB major version.
 - [RxStorage Memory Synced](./rx-storage-memory-synced.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlaying storage for persistence.
 The main reason to use this is to improve initial page load and query/write times. This is mostly usefull in browser based applications.
 

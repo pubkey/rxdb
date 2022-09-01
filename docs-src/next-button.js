@@ -1,12 +1,20 @@
 
-function addNextButton() {
+function runAddingNextButtons() {
 
-    var block = document.querySelector('.normal.markdown-section');
-    var currentNext = document.querySelector('a.navigation.navigation-next');
-    console.dir(currentNext);
-    console.dir(block);
 
-    if (currentNext) {
+    function addNextButton() {
+        var id = 'rxdb-custon-next-button';
+
+        var alreadyThere = document.querySelector('#' + id);
+        if (alreadyThere) {
+            return;
+        }
+        console.log('custom next button NOT already there.');
+
+
+        var block = document.querySelector('.normal.markdown-section');
+        console.dir(block);
+
         var path = window.location.pathname;
         var page = path.split('/').pop();
         console.log('page: ' + page);
@@ -15,10 +23,14 @@ function addNextButton() {
         var dataPaths = [];
         chapters.forEach(function (chapter) {
             var dataPath = chapter.dataset.path;
-            dataPaths.push(dataPath);
+            if (dataPath) {
+                dataPaths.push(dataPath);
+            }
         });
 
         var lastIndex = dataPaths.lastIndexOf(page);
+        console.dir('dataPaths:');
+        console.dir(dataPaths);
         var nextPath = dataPaths[lastIndex + 1];
         console.log('nexdtPath: ' + nextPath);
         if (!nextPath) {
@@ -30,6 +42,7 @@ function addNextButton() {
 
         console.log('# Add next button');
         var span = document.createElement('p');
+        span.id = id;
         span.innerHTML = 'If you are new to RxDB, you should continue ';
         var link = document.createElement('a');
         link.href = nextPath;
@@ -37,6 +50,17 @@ function addNextButton() {
         span.appendChild(link);
         block.appendChild(span);
     }
-}
 
-addNextButton();
+    addNextButton();
+
+    /**
+     * Gitbook does a strange page change handling,
+     * so we have to re-run the function
+     * because listening to history changes did not work.
+     */
+    setInterval(function () {
+        addNextButton();
+    }, 100);
+
+}
+runAddingNextButtons();

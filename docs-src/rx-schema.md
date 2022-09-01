@@ -158,50 +158,6 @@ const myRxDocument = myRxCollection.findOne(id).exec();
 ```
 
 
-## keyCompression
-
-If set to true (disabled by default), the documents will be stored in a compressed format which saves up to 40% disc space.
-For compression the npm module [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) is used.
-
-`keyCompression` can only be set on the **top-level** of a schema.
-
-**Notice:** When you use `keyCompression` together with the graphql replication or replication primitives, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable `keyCompression` for that use case.
-
-
-```javascript
-
-// add the key-compression plugin
-import { addRxPlugin } from 'rxdb';
-import { RxDBKeyCompressionPlugin } from 'rxdb/plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
-
-const mySchema = {
-  keyCompression: true, // set this to true, to enable the keyCompression
-  version: 0,
-  title: 'human schema with compression',
-  primaryKey: 'id',
-  type: 'object',
-  properties: {
-      id: {
-          type: 'string',
-          maxLength: 100 // <- the primary key must have set maxLength
-      },
-      firstName: {
-          type: 'string'
-      },
-      lastName: {
-          type: 'string'
-      }
-  },
-  required: [
-    'id', 
-    'firstName',
-    'lastName'
-  ]
-};
-```
-
-
 ## Indexes
 RxDB supports secondary indexes which are defined at the schema-level of the collection.
 
@@ -276,7 +232,7 @@ To use attachments in the collection, you have to add the `attachments`-attribut
 
 ## default
 Default values can only be defined for first-level fields.
-Whenever you insert a document or create a temporary-document, unset fields will be filled with default-values.
+Whenever you insert a document unset fields will be filled with default-values.
 
 ```javascript
 const schemaWithDefaultAge = {
@@ -336,44 +292,6 @@ const schemaWithFinalAge = {
   required: ['id']
 };
 ```
-
-
-## encryption
-
-By adding a field to the `encrypted` list, it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the `RxDocument`, you can access the unencrypted value.
-You can set all fields to be encrypted, even nested objects. You can not run queries over encrypted fields.
-The password used for encryption is set during database creation. [See RxDatabase](./rx-database.md#password).
-
-To use encryption, you first have to add the `encryption` plugin.
-
-```javascript
-import { addRxPlugin } from 'rxdb';
-import { RxDBEncryptionPlugin } from 'rxdb/plugins/encryption';
-addRxPlugin(RxDBEncryptionPlugin);
-```
-
-The encryption-module is using `crypto-js` and is only needed when you create your RxDB-Database with a [password](./rx-database.md#password-optional).
-
-
-```javascript
-const schemaWithDefaultAge = {
-  version: 0,
-  primaryKey: 'id',
-  type: 'object',
-  properties: {
-      id: {
-          type: 'string',
-          maxLength: 100 // <- the primary key must have set maxLength
-      },
-      secret: {
-          type: 'string'
-      },
-  },
-  required: ['id']
-  encrypted: ['secret']
-};
-```
-
 
 ## NOTICE: Not everything within the jsonschema-spec is allowed
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).

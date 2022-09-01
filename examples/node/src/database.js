@@ -17,9 +17,6 @@ addPouchPlugin(require('pouchdb-adapter-http'));
 const { RxDBQueryBuilderPlugin } = require('../../../plugins/query-builder');
 addRxPlugin(RxDBQueryBuilderPlugin);
 
-const { RxDBEncryptionPlugin } = require('../../../plugins/encryption');
-addRxPlugin(RxDBEncryptionPlugin);
-
 const { RxDBLeaderElectionPlugin } = require('../../../plugins/leader-election');
 addRxPlugin(RxDBLeaderElectionPlugin);
 

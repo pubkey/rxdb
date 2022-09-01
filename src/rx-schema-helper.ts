@@ -2,10 +2,12 @@ import objectPath from 'object-path';
 import { newRxError } from './rx-error';
 import type {
     CompositePrimaryKey,
+    DeepReadonly,
     JsonSchema,
     PrimaryKey,
     RxDocumentData,
     RxJsonSchema,
+    RxStorageDefaultCheckpoint,
     StringKeys
 } from './types';
 import { clone, flatClone, isMaybeReadonlyArray, RX_META_LWT_MINIMUM, sortObject, trimDots } from './util';
@@ -250,7 +252,7 @@ export const RX_META_SCHEMA: JsonSchema = {
              */
             minimum: RX_META_LWT_MINIMUM,
             maximum: 1000000000000000,
-            multipleOf: 1
+            multipleOf: 0.01
         }
     },
     /**
@@ -286,3 +288,21 @@ export function getFinalFields<T = any>(
 
     return ret;
 }
+
+
+export const DEFAULT_CHECKPOINT_SCHEMA: DeepReadonly<JsonSchema<RxStorageDefaultCheckpoint>> = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string'
+        },
+        lwt: {
+            type: 'number'
+        }
+    },
+    required: [
+        'id',
+        'lwt'
+    ],
+    additionalProperties: false
+} as const;

@@ -58,12 +58,12 @@ const configuration = {
         'karma-mocha',
         'karma-browserify',
         'karma-chrome-launcher',
-        'karma-edge-launcher',
         'karma-safari-launcher',
         'karma-firefox-launcher',
         'karma-ie-launcher',
         'karma-opera-launcher',
-        'karma-detect-browsers'
+        'karma-detect-browsers',
+        'karma-spec-reporter'
     ],
 
     // Source files that you wanna generate coverage for.
@@ -86,7 +86,15 @@ const configuration = {
     },
     browserDisconnectTimeout: 12000,
     processKillTimeout: 12000,
-    singleRun: true
+    singleRun: true,
+
+
+    /**
+     * Use this reported to fully log all test names
+     * which makes it easier to debug.
+     * @link https://github.com/tmcgee123/karma-spec-reporter
+     */
+    reporters: ['spec']
 };
 
 if (process.env.CI) {

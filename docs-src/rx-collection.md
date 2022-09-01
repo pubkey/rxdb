@@ -117,25 +117,6 @@ const result = await myCollection.bulkRemove([
 // }
 ```
 
-### newDocument()
-Sometimes it can be helpful to spawn and use documents before saving them into the database.
-This is useful especially when you want to use the ORM methods or prefill values from form data.
-You can create temporary documents by calling `RxCollection.newDocument(initalData)`.
-
-```js
-const tempDoc = myCollection.newDocument({
-    firstName: 'Bob'
-});
-
-// fill in data later
-tempDoc.lastName = 'Kelso';
-tempDoc.age = 77;
-
-// saving a temporary document will transform it to a standard RxDocument
-await tempDoc.save();
-```
-
-
 ### upsert()
 Inserts the document if it does not exist within the collection, otherwise it will overwrite it. Returns the new or overwritten RxDocument.
 ```js

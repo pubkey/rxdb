@@ -17,23 +17,18 @@ import {
     shuffleArray,
     now,
     getSingleDocument,
-    hashAttachmentData,
     parseRevision,
-    getAttachmentSize,
     fillWithDefaultSettings,
     createRevision,
     flatCloneDocWithMeta,
     ById,
-    stackCheckpoints
+    stackCheckpoints,
+    defaultHashFunction
 } from '../../';
-
+import Ajv from 'ajv';
 import {
-    getCompressionStateByRxJsonSchema,
-    RxDBKeyCompressionPlugin
+    getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression';
-addRxPlugin(RxDBKeyCompressionPlugin);
-import { RxDBValidatePlugin } from '../../plugins/validate';
-addRxPlugin(RxDBValidatePlugin);
 import * as schemas from '../helper/schemas';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
@@ -61,6 +56,11 @@ import {
     EXAMPLE_REVISION_4
 } from '../helper/revisions';
 import { compressObject } from 'jsonschema-key-compression';
+
+import {
+    hashAttachmentData,
+    getAttachmentSize
+} from '../../plugins/attachments';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -166,11 +166,6 @@ const testContext = 'rx-storage-implementations.test.ts'
 
 config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.storage.name + ')', () => {
     describe('statics', () => {
-        it('.hashKey', () => {
-            const statics = config.storage.getStorage().statics;
-            assert.strictEqual(typeof statics.hashKey, 'string');
-            assert.ok(statics.hashKey.length > 0);
-        });
     });
     describe('RxStorageInstance', () => {
         describe('creation', () => {
@@ -200,6 +195,58 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }))
                 );
                 await Promise.all(instances.map(instance => instance.close()));
+            });
+            /**
+             * This test ensures that people do not accidentially set
+             * keyCompression: true in the schema but then forget to use
+             * the key-compression RxStorage wrapper.
+             */
+            it('must throw if keyCompression is set but no key-compression plugin is used', async () => {
+                const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
+                schema.keyCompression = true;
+                let hasThrown = false;
+                try {
+                    await config.storage.getStorage().createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
+                } catch (error: any) {
+                    const errorString = error.toString();
+                    assert.ok(errorString.includes('UT5'));
+                    hasThrown = true;
+                }
+                assert.ok(hasThrown);
+            });
+            /**
+             * This test ensures that people do not accidentially set
+             * encrypted stuff in the schema but then forget to use
+             * the encryption RxStorage wrapper.
+             */
+            it('must throw if encryption is defined in schema is set but no encryption plugin is used', async () => {
+                const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
+                schema.attachments = {
+                    encrypted: true
+                };
+                let hasThrown = false;
+                try {
+                    await config.storage.getStorage().createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
+                } catch (error: any) {
+                    const errorString = error.toString();
+                    assert.ok(errorString.includes('UT6'));
+                    hasThrown = true;
+                }
+                assert.ok(hasThrown);
             });
         });
         describe('.bulkWrite()', () => {
@@ -726,7 +773,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foobar: 0
                     }
                 };
-                docData._rev = createRevision(docData);
+                docData._rev = createRevision(defaultHashFunction, docData);
 
                 const res1 = await storageInstance.bulkWrite(
                     [{
@@ -740,7 +787,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 let newDocData: RxDocumentWriteData<TestDocType> = clone(docData);
                 newDocData._meta.foobar = 1;
                 newDocData._meta.lwt = now();
-                newDocData._rev = createRevision(newDocData, docData);
+                newDocData._rev = createRevision(defaultHashFunction, newDocData, docData);
 
                 const res2 = await storageInstance.bulkWrite(
                     [{
@@ -756,7 +803,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 newDocData = clone(docData);
                 newDocData._meta.foobar = 2;
                 newDocData._meta.lwt = now();
-                newDocData._rev = createRevision(newDocData, docData);
+                newDocData._rev = createRevision(defaultHashFunction, newDocData, docData);
                 assert.strictEqual(parseRevision(newDocData._rev).height, 3);
 
                 const res3 = await storageInstance.bulkWrite(
@@ -1224,6 +1271,24 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
 
+
+                const writeData2 = {
+                    key: 'foobar2',
+                    value: 'barfoo2',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+                await storageInstance.bulkWrite(
+                    [{
+                        document: writeData2
+                    }],
+                    testContext
+                );
+
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     {
@@ -1476,6 +1541,52 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
+            /**
+             * This failed on some storages when there are more
+             * documents then the batchSize of the RxStorage
+             */
+            it('querying many documents should work', async () => {
+                const schema = getTestDataSchema();
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
+
+                const amount = 100;
+
+                await storageInstance.bulkWrite(
+                    new Array(amount)
+                        .fill(0)
+                        .map((_v, idx) => ({
+                            document: getWriteData({
+                                key: idx.toString().padStart(5, '0') + '-' + randomString(10),
+                                value: idx + ''
+                            })
+                        })),
+                    testContext
+                );
+
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+                    schema,
+                    {
+                        selector: {},
+                        skip: 0,
+                        sort: [
+                            { key: 'asc' }
+                        ]
+                    }
+                );
+                const results = await storageInstance.query(preparedQuery);
+                assert.strictEqual(results.documents.length, amount);
+
+                storageInstance.close();
+            });
         });
         describe('.findDocumentsById()', () => {
             it('should find the documents', async () => {
@@ -1636,7 +1747,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             });
         });
         describe('.getChangedDocumentsSince()', () => {
-            it('should get the latests change', async () => {
+            it('should get the latest change', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{ key: string }>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -1688,6 +1799,16 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const emptyResult = await storageInstance.getChangedDocumentsSince(10, checkpointTest);
                 assert.strictEqual(emptyResult.documents.length, 0);
                 assert.deepStrictEqual(emptyResult.checkpoint, checkpointTest);
+
+                // the checkpoint must match the checkpoint-schema of the RxStorage.statics
+                const checkpointSchema = config.storage.getStorage().statics.checkpointSchema;
+                const ajv = new Ajv({
+                    strict: false
+                });
+                const validator = ajv.compile(checkpointSchema);
+                const isValid = validator(checkpointTest);
+                assert.ok(isValid);
+
 
                 // delete one
                 await storageInstance.bulkWrite([
@@ -1746,7 +1867,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     t++;
                     const newDoc = clone(previous);
                     newDoc.value = t + '';
-                    const newRev = createRevision(newDoc, previous);
+                    const newRev = createRevision(defaultHashFunction, newDoc, previous);
                     newDoc._rev = newRev;
                     newDoc._meta.lwt = now();
                     const updateResult = await storageInstance.bulkWrite([
@@ -1794,7 +1915,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 newDoc.value = t + '';
                 newDoc._deleted = true;
                 newDoc._meta.lwt = now();
-                const newRev = createRevision(newDoc, previous);
+                const newRev = createRevision(defaultHashFunction, newDoc, previous);
                 newDoc._rev = newRev;
                 const deleteResult = await storageInstance.bulkWrite([
                     {
@@ -2105,20 +2226,15 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
-                const statics = config.storage.getStorage().statics;
-
-
                 const attachmentData = new Array(20).fill('a').join('');
+
+
                 const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
                     attachmentData,
                     'text/plain'
                 );
-
                 const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
-                const attachmentHash = await hashAttachmentData(
-                    dataStringBase64,
-                    statics
-                );
+                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const dataLength = getAttachmentSize(dataStringBase64);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -2131,7 +2247,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: statics.hashKey + '-' + attachmentHash,
+                            digest: 'md5-' + attachmentHash,
                             length: dataLength,
                             data: dataStringBase64,
                             type: 'text/plain'
@@ -2149,7 +2265,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const attachmentDataAfter = await storageInstance.getAttachmentData('foobar', 'foo');
                 assert.strictEqual(attachmentDataAfter, dataStringBase64);
 
-
                 storageInstance.close();
             });
             it('should return the correct attachment object on all document fetch methods', async () => {
@@ -2166,8 +2281,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     options: {},
                     multiInstance: false
                 });
-                const statics = config.storage.getStorage().statics;
-
                 const emitted: EventBulk<RxStorageChangeEvent<any>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
@@ -2180,10 +2293,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
-                const attachmentHash = await hashAttachmentData(
-                    dataStringBase64,
-                    statics
-                );
+                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const dataLength = getAttachmentSize(dataStringBase64);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -2196,7 +2306,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: statics.hashKey + '-' + attachmentHash,
+                            digest: 'md5-' + attachmentHash,
                             length: dataLength,
                             data: dataStringBase64,
                             type: 'text/plain'
@@ -2215,7 +2325,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 await waitUntil(() => flattenEvents(emitted).length === 1);
 
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
-                assert.strictEqual(writeResult._attachments.foo.digest, statics.hashKey + '-' + attachmentHash);
+                assert.strictEqual(writeResult._attachments.foo.digest, 'md5-' + attachmentHash);
 
                 /**
                  * When getting the document from the storage again,
@@ -2290,9 +2400,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 let previous: RxDocumentData<TestDocType> | undefined;
 
-                const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const attachmentHash = await config.storage.getStorage().statics.hash(data);
-                const dataString = await blobBufferUtil.toBase64String(data);
+                const dataBlobBuffer = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
+                const dataString = await blobBufferUtil.toBase64String(dataBlobBuffer);
+                const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
+                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
@@ -2303,8 +2414,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: config.storage.getStorage().statics.hashKey + '-' + attachmentHash,
-                            length: blobBufferUtil.size(data),
+                            digest: 'md5-' + attachmentHash,
+                            length: blobBufferUtil.size(dataBlobBuffer),
                             data: dataString,
                             type: 'text/plain'
                         }
@@ -2331,11 +2442,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 writeData._attachments = flatClone(previous._attachments) as any;
 
                 const data2 = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const attachmentHash2 = await config.storage.getStorage().statics.hash(data2);
+                const dataStringBase642 = await blobBufferUtil.toBase64String(data2);
+                const attachmentHash2 = await hashAttachmentData(dataStringBase642);
                 const dataString2 = await blobBufferUtil.toBase64String(data2);
                 writeData._attachments.bar = {
                     data: dataString2,
-                    digest: config.storage.getStorage().statics.hashKey + '-' + attachmentHash2,
+                    digest: 'md5-' + attachmentHash2,
                     length: blobBufferUtil.size(data2),
                     type: 'text/plain'
                 };
@@ -2376,7 +2488,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
 
                 const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const attachmentHash = await config.storage.getStorage().statics.hash(data);
+                const dataStringBase64 = await blobBufferUtil.toBase64String(data);
+                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const dataString = await blobBufferUtil.toBase64String(data);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -2388,7 +2501,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: config.storage.getStorage().statics.hashKey + '-' + attachmentHash,
+                            digest: 'md5-' + attachmentHash,
                             length: blobBufferUtil.size(data),
                             data: dataString,
                             type: 'text/plain'

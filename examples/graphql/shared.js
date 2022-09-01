@@ -38,19 +38,17 @@ export const heroSchema = {
         }
     },
     indexes: ['name', 'color', 'updatedAt'],
-    required: ['id', 'color']
+    required: ['id', 'color', 'updatedAt']
 };
 
 export const graphQLGenerationInput = {
     hero: {
         schema: heroSchema,
-        feedKeys: [
+        checkpointFields: [
             'id',
             'updatedAt'
         ],
-        deletedFlag: 'deleted',
-        subscriptionParams: {
-            token: 'String!'
-        }
+        deletedField: 'deleted',
+        headerFields: ['Authorization']
     }
 };

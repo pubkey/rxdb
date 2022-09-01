@@ -23,7 +23,8 @@ import {
     promiseWait,
     flatClone,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_TRUE
+    PROMISE_RESOLVE_TRUE,
+    ensureNotFalsy
 } from '../util';
 import {
     newRxError
@@ -45,7 +46,6 @@ import type {
     SyncOptions,
     PouchDBInstance
 } from '../types';
-import { runPluginHooks } from '../hooks';
 
 /**
  * Contains all pouchdb instances that
@@ -116,12 +116,23 @@ export class RxCouchDBReplicationStateBase {
             return PROMISE_RESOLVE_FALSE;
         }
         this.canceled = true;
+        let ret = PROMISE_RESOLVE_TRUE;
         if (this._pouchEventEmitterObject) {
+            /**
+             * Calling cancel() does not return a promise,
+             * so we have to await the complete event
+             * to know that everything is cleaned up properly.
+             */
+            ret = new Promise<true>(res => {
+                ensureNotFalsy(this._pouchEventEmitterObject)
+                    .on('complete', () => {
+                        res(true);
+                    });
+            });
             this._pouchEventEmitterObject.cancel();
         }
         this._subs.forEach(sub => sub.unsubscribe());
-
-        return PROMISE_RESOLVE_TRUE;
+        return ret;
     }
 }
 
@@ -169,17 +180,7 @@ export function setPouchEventEmitter(
 
                 (ev as any).change.docs
                     .filter((doc: any) => doc.language !== 'query') // remove internal docs
-                    .map((doc: any) => {
-                        const hookParams = {
-                            database: rxRepState.collection.database,
-                            primaryPath: rxRepState.collection.schema.primaryPath,
-                            schema: rxRepState.collection.schema.jsonSchema,
-                            doc
-                        };
-
-                        runPluginHooks('postReadFromInstance', hookParams);
-                        return hookParams.doc;
-                    }) // do primary-swap and keycompression
+                    // do primary-swap and keycompression
                     .forEach((doc: any) => rxRepState._subjects.docs.next(doc));
             }));
 
@@ -368,7 +369,7 @@ export function syncCouchDB(
         const pouchSync = syncFun(remote, useOptions);
         setPouchEventEmitter(repState, pouchSync);
 
-        this.onDestroy.then(() => repState.cancel());
+        this.onDestroy.push(() => repState.cancel());
     });
 
     return repState;

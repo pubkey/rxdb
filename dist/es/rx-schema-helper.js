@@ -209,7 +209,7 @@ export var RX_META_SCHEMA = {
        */
       minimum: RX_META_LWT_MINIMUM,
       maximum: 1000000000000000,
-      multipleOf: 1
+      multipleOf: 0.01
     }
   },
 
@@ -241,4 +241,17 @@ export function getFinalFields(jsonSchema) {
 
   return ret;
 }
+export var DEFAULT_CHECKPOINT_SCHEMA = {
+  type: 'object',
+  properties: {
+    id: {
+      type: 'string'
+    },
+    lwt: {
+      type: 'number'
+    }
+  },
+  required: ['id', 'lwt'],
+  additionalProperties: false
+};
 //# sourceMappingURL=rx-schema-helper.js.map

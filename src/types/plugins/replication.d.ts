@@ -1,11 +1,12 @@
-import type { Observable } from 'rxjs';
-import type { RxReplicationStateBase } from '../../plugins/replication';
-import { RxReplicationError } from '../../plugins/replication/rx-replication-error';
+import { Observable } from 'rxjs';
 import type {
-    DeepReadonlyObject,
     InternalStoreDocType,
+    MaybePromise,
     RxCollection,
-    RxDocumentData
+    RxDocumentData,
+    RxReplicationPullStreamItem,
+    RxReplicationWriteToMasterRow,
+    WithDeleted
 } from '../../types';
 
 
@@ -16,33 +17,54 @@ export type InternalStoreReplicationPullDocType<RxDocType> = InternalStoreDocTyp
     lastPulledDoc: RxDocumentData<RxDocType>;
 }>;
 
-export type PullRunResult =
-    'ok' |      // pull was sucessfull 
-    'error' |   // pull errored and must be retried
-    'drop';     // pulled document where dropped because a local write happened in between -> re-run the whole run() cycle
-
 export type ReplicationPullHandlerResult<RxDocType> = {
-    /**
-     * The documents that got pulled from the remote actor.
-     */
-    documents: (RxDocumentData<RxDocType> | DeepReadonlyObject<RxDocumentData<RxDocType>>)[];
-    /**
-     * True if there can be more changes on the remote,
-     * so the pulling will run again.
-     */
-    hasMoreDocuments: boolean;
+    checkpoint: any;
+    documents: WithDeleted<RxDocType>[];
 };
 
-export type ReplicationPullHandler<RxDocType> = (latestPulledDocument: RxDocumentData<RxDocType> | null) => Promise<ReplicationPullHandlerResult<RxDocType>>;
-export type ReplicationPullOptions<RxDocType> = {
+export type ReplicationPullHandler<RxDocType, CheckpointType> = (lastPulledCheckpoint: CheckpointType, batchSize: number) => Promise<ReplicationPullHandlerResult<RxDocType>>;
+export type ReplicationPullOptions<RxDocType, CheckpointType> = {
     /**
      * A handler that pulls the new remote changes
      * from the remote actor.
      */
-    handler: ReplicationPullHandler<RxDocType>;
+    handler: ReplicationPullHandler<RxDocType, CheckpointType>;
+
+
+    /**
+     * An observable that streams all document changes
+     * that are happening on the backend.
+     * Emits an document bulk together with the latest checkpoint of these documents.
+     * Also can emit a 'RESYNC' event when the client was offline and is online again.
+     * 
+     * Not required for non-live replication.
+     */
+    stream$?: Observable<RxReplicationPullStreamItem<RxDocType, CheckpointType>>;
+
+    /**
+     * Amount of documents that the remote will send in one request.
+     * If the response contains less then [batchSize] documents,
+     * RxDB will assume there are no more changes on the backend
+     * that are not replicated.
+     * [default=100]
+     */
+    batchSize?: number;
+
+    /**
+     * A modifier that runs on all documents that are pulled,
+     * before they are used by RxDB.
+     * - the ones from the pull handler
+     * - the ones from the pull stream
+     */
+    modifier?: (docData: any) => MaybePromise<WithDeleted<RxDocType>>;
 };
 
-export type ReplicationPushHandler<RxDocType> = (docs: RxDocumentData<RxDocType>[]) => Promise<void>;
+/**
+ * Gets the new write rows.
+ * Returns the current master state of all conflicting writes,
+ * so that they can be resolved on the client.
+ */
+export type ReplicationPushHandler<RxDocType> = (docs: RxReplicationWriteToMasterRow<RxDocType>[]) => Promise<WithDeleted<RxDocType>[]>;
 export type ReplicationPushOptions<RxDocType> = {
     /**
      * A handler that sends the new local changes
@@ -50,21 +72,22 @@ export type ReplicationPushOptions<RxDocType> = {
      * On error, all documents are send again at later time.
      */
     handler: ReplicationPushHandler<RxDocType>;
+
+
+    /**
+     * A modifier that runs on all pushed documents before
+     * they are send into the push handler.
+     */
+    modifier?: (docData: WithDeleted<RxDocType>) => MaybePromise<any>;
+
     /**
      * How many local changes to process at once.
      */
     batchSize?: number;
 }
 
-export type RxReplicationState<RxDocType> = RxReplicationStateBase<RxDocType> & {
-    readonly received$: Observable<RxDocumentData<RxDocType>>;
-    readonly send$: Observable<any>;
-    readonly error$: Observable<RxReplicationError<RxDocType>>;
-    readonly canceled$: Observable<any>;
-    readonly active$: Observable<boolean>;
-}
 
-export type ReplicationOptions<RxDocType> = {
+export type ReplicationOptions<RxDocType, CheckpointType> = {
     /**
      * An id for the replication to identify it
      * and so that RxDB is able to resume the replication on app reload.
@@ -79,19 +102,13 @@ export type ReplicationOptions<RxDocType> = {
      * to flag a document as being deleted.
      * [default='_deleted']
      */
-    deletedFlag?: '_deleted' | string;
-    pull?: ReplicationPullOptions<RxDocType>;
+    deletedField?: '_deleted' | string;
+    pull?: ReplicationPullOptions<RxDocType, CheckpointType>;
     push?: ReplicationPushOptions<RxDocType>;
     /**
      * default=false
      */
     live?: boolean;
-    /**
-     * Interval in milliseconds on when to run() again,
-     * Set this to 0 when you have a back-channel from your server
-     * that like a websocket that tells the client when to pull.
-     */
-    liveInterval?: number;
     /**
      * Time in milliseconds
      */

@@ -38,7 +38,6 @@
     * [attachments](./rx-schema.md#attachments)
     * [default](./rx-schema.md#default)
     * [final](./rx-schema.md#final)
-    * [encryption](./rx-schema.md#encryption)
 
 * [Schema Validation](./schema-validation.md)
 
@@ -54,7 +53,6 @@
         * [insert()](./rx-collection.md#insert)
         * [bulkInsert()](./rx-collection.md#bulkinsert)
         * [bulkRemove()](./rx-collection.md#bulkremove)
-        * [newDocument()](./rx-collection.md#newdocument)
         * [upsert()](./rx-collection.md#upsert)
         * [atomicUpsert()](./rx-collection.md#atomicupsert)
         * [find()](./rx-collection.md#find)
@@ -107,6 +105,10 @@
 
 * [Population](./population.md)
 
+* [Encryption](./encryption.md)
+
+* [Key Compression](./key-compression.md)
+
 * [DataMigration](./data-migration.md)
 
 * [LeaderElection](./leader-election.md)
@@ -119,13 +121,15 @@
     * [RxStorage Memory](./rx-storage-memory.md)
     * [RxStorage IndexedDB](./rx-storage-indexeddb.md)
     * [RxStorage SQLite](./rx-storage-sqlite.md)
+    * [RxStorage FoundationDB](./rx-storage-foundationdb.md)
     * [RxStorage Worker](./rx-storage-worker.md)
     * [RxStorage Memory Synced](./rx-storage-memory-synced.md)
     * [RxStorage Sharding](./rx-storage-sharding.md)
 
-* [Replication CouchDB](./replication-couchdb.md)
-* [Replication GraphQL](./replication-graphql.md)
-* [Replication Primitives](./replication.md)
+* [Replication](./replication.md)
+    * [Replication GraphQL](./replication-graphql.md)
+    * [Replication Websocket](./replication-websocket.md)
+    * [Replication CouchDB](./replication-couchdb.md)
 
 * [Cleanup](./cleanup.md)
 
@@ -141,6 +145,8 @@
 
 * [Query Optimizer](./query-optimizer.md)
 
+* [Storage Migration](./storage-migration.md)
+
 * [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md)
 
 * [RxDB Premium](./premium.md)
@@ -148,7 +154,7 @@
 
 * Tutorials
     * [Use RxDB with Typescript](./tutorials/typescript.md)
-    * [Using the Server Plugin](./tutorials/server.md)
+    * [Using the CouchDB Server Plugin](./tutorials/server-couchdb.md)
 
 * Opinions
     * [About Offline First](./offline-first.md)
@@ -160,3 +166,11 @@
 * [Questions & Answers](./questions-answers.md)
 
 * [Contribute](./contribute.md)
+
+* Major Release Notes
+    * [13.0.0](./releases/13.0.0.md)
+    * [12.0.0](./releases/12.0.0.md)
+    * [11.0.0](./releases/11.0.0.md)
+    * [10.0.0](./releases/10.0.0.md)
+    * [9.0.0](./releases/9.0.0.md)
+    * [8.0.0](./releases/8.0.0.md)

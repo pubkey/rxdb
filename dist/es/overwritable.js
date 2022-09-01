@@ -4,7 +4,6 @@
  * An 'overwritable' can be used inside WebWorkers for RxStorage only,
  * and we do not want to have the full RxDB lib bundled in them.
  */
-import { pluginMissing } from './util';
 export var overwritable = {
   /**
    * if this method is overwritten with one
@@ -23,15 +22,6 @@ export var overwritable = {
    */
   deepFreezeWhenDevMode: function deepFreezeWhenDevMode(obj) {
     return obj;
-  },
-
-  /**
-   * validates if a password can be used
-   * @overwritten by plugin (optional)
-   * @throws if password not valid
-   */
-  validatePassword: function validatePassword(_password) {
-    throw pluginMissing('encryption');
   },
 
   /**
