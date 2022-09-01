@@ -5,6 +5,7 @@ import { addPouchPlugin, getRxStoragePouch } from 'rxdb/plugins/pouchdb';
 import PouchdbAdapterMemory from 'pouchdb-adapter-memory';
 import PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import PouchdbReplication from 'pouchdb-replication';
+// import PouchdbAdapterAsync from 'pouchdb-adapter-asyncstorage';
 
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
@@ -14,6 +15,7 @@ import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb'
 addPouchPlugin(PouchdbAdapterMemory);
 addPouchPlugin(PouchdbAdapterHttp);
 addPouchPlugin(PouchdbReplication);
+// addPouchPlugin(PouchdbAdapterAsync);
 
 addRxPlugin(RxDBMigrationPlugin)
 addRxPlugin(RxDBUpdatePlugin)

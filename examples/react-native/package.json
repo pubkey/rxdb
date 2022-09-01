@@ -17,7 +17,7 @@
     "jest": "28.1.3",
     "jest-expo": "43",
     "react-native-gesture-handler": "2.5.0",
-    "react-test-renderer": "17.0.2",
+    "react-test-renderer": "18.2.0",
     "rimraf": "3.0.2",
     "schedule": "0.5.0"
   },
