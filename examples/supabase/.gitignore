@@ -1,0 +1,4 @@
+node_modules/
+log.txt
+dist/
+rxdb-local.tgz

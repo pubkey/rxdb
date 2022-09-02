@@ -188,7 +188,6 @@ async function run() {
 
     db.hero.preSave(function (docData) {
         docData.updatedAt = new Date().getTime();
-        
     });
 
     // set up replication
