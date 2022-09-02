@@ -560,7 +560,7 @@ jobs:
         run: |
           sh init-supabase.sh
       - name: start supabase
-        working-directory: ./examples/supabase
+        working-directory: ./examples/supabase/docker
         run: docker-compose up -d
       - name: import database dump
         working-directory: ./examples/supabase
