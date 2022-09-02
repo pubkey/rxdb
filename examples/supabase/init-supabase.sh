@@ -13,5 +13,5 @@ git checkout $COMMIT_HASH
 cd ./docker
 cp .env.example .env
 
-# Start
-docker-compose up
+
+docker-compose build
