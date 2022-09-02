@@ -170,6 +170,10 @@ async function run() {
         },
         push: {
             batchSize: 1,
+            /**
+             * TODO all these ifs and elses could be a
+             * supabase rpc() call instead.
+             */
             async handler(rows: RxReplicationWriteToMasterRow<RxHeroDocumentType>[]) {
                 if (rows.length !== 1) {
                     throw new Error('too many push documents');
@@ -179,7 +183,7 @@ async function run() {
 
                 // insert
                 if (!row.assumedMasterState) {
-                    const { data, error } = await supabase
+                    const { error } = await supabase
                         .from('heroes')
                         .insert([doc]);
                     if (error) {
@@ -201,6 +205,9 @@ async function run() {
                         name: doc.name,
                         replicationRevision: doc.replicationRevision
                     });
+                if (error) {
+                    throw error;
+                }
                 console.log('update response:');
                 console.dir(data);
                 if (data.length === 0) {

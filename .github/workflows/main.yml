@@ -521,6 +521,45 @@ jobs:
           sudo sysctl -p
           npm run test:bundle
 
+
+  supabase:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+            ./examples/supabase/node_modules
+          # invalidate cache when any package-lock.json changes
+          key: ${{ runner.os }}-npm-supabase-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-supabase-
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx
+      - name: prepare core
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          rm -r node_modules
+      - name: start supabase docker-compose
+        working-directory: ./examples/supabase
+        run: |
+          sh start-supabase.sh
+
   vue:
     runs-on: ubuntu-20.04
     steps:
