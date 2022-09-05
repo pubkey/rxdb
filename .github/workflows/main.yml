@@ -501,6 +501,7 @@ jobs:
       - name: react-native
         run: |
           cd ./examples/react-native
+          yarn --update-checksums
           npx yarn install
           yarn test
           echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
