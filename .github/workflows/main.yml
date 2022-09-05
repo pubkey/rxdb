@@ -501,11 +501,11 @@ jobs:
       - name: react-native
         run: |
           cd ./examples/react-native
-          npx yarn@1.13.0 install
-          npm run test
+          npx yarn install
+          yarn test
           echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
           sudo sysctl -p
-          npm run test:bundle
+          yarn test:bundle
 
   vue:
     runs-on: ubuntu-20.04
