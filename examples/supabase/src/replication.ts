@@ -20,7 +20,7 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
 
     console.dir(supabase);
 
-    const { data, error } = await supabase.from('heroes').select()
+    const { data, error } = await supabase.from('heroes').select();
     console.dir(data);
     console.dir(error);
 
