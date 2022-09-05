@@ -493,20 +493,6 @@ jobs:
         # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
           node-version: 16.16.0
 
-      - name: Reuse npm cache folder
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-            ./examples/react-native/node_modules
-          # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-react-native-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-react-native-
-
       - name: prepare core
         run: |
           npm install
