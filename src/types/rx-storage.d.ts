@@ -2,7 +2,7 @@ import type { ChangeEvent } from 'event-reduce-js';
 import { RxDocumentMeta } from './rx-document';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
-import { StringKeys } from './util';
+import { Override, StringKeys } from './util';
 
 /**
  * The document data how it comes out of the storage instance.
@@ -57,7 +57,8 @@ export type RxDocumentDataById<RxDocType> = {
  * The document data how it is send to the
  * storage instance to save it.
  */
-export type RxDocumentWriteData<T> = RxDocumentData<T> & {
+// We & T here instead of in RxDocumentData to preserver indexability by keyof T which the Override breaks
+export type RxDocumentWriteData<T> = T & Override<RxDocumentData<{}>, {
     _attachments: {
         /**
          * To create a new attachment, set the write data
@@ -68,7 +69,7 @@ export type RxDocumentWriteData<T> = RxDocumentData<T> & {
          */
         [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
     }
-};
+}>;
 
 export type WithDeleted<DocType> = DocType & {
     _deleted: boolean;

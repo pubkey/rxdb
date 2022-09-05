@@ -32,7 +32,7 @@ import { getSingleDocument, writeSingle } from '../../rx-storage-helper';
  * save the local-document-data
  * throws if already exists
  */
-export async function insertLocal<DocData = any>(
+export async function insertLocal<DocData extends Record<string, any> = any>(
     this: RxDatabase | RxCollection,
     id: string,
     data: DocData
@@ -67,7 +67,7 @@ export async function insertLocal<DocData = any>(
  * save the local-document-data
  * overwrites existing if exists
  */
-export function upsertLocal<DocData = any>(
+export function upsertLocal<DocData extends Record<string,any> = any>(
     this: any,
     id: string,
     data: DocData

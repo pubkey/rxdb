@@ -113,7 +113,7 @@ let hooksApplied = false;
 
 export class RxCollectionBase<
     InstanceCreationOptions,
-    RxDocumentType = { [prop: string]: any },
+    RxDocumentType extends Record<string, any> = { [prop: string]: any },
     OrmMethods = {},
     StaticMethods = { [key: string]: any }
     > {
@@ -310,7 +310,7 @@ export class RxCollectionBase<
             const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
             return useDocData;
         });
-        const docs = await Promise.all(
+        const docs: RxDocumentType[] = await Promise.all(
             useDocs.map(doc => {
                 return this._runHooks('pre', 'insert', doc)
                     .then(() => {

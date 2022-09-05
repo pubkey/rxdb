@@ -4,6 +4,7 @@ import {
     getComposedPrimaryKeyOfDocumentData
 } from './rx-schema-helper';
 import type {
+    CollectionsOfDatabase,
     InternalStoreCollectionDocType,
     InternalStoreDocType,
     InternalStoreStorageTokenDocType,
@@ -139,7 +140,7 @@ export const STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(
     INTERNAL_CONTEXT_STORAGE_TOKEN
 );
 
-export async function ensureStorageTokenDocumentExists<Collections = any>(
+export async function ensureStorageTokenDocumentExists<Collections extends CollectionsOfDatabase = any>(
     rxDatabase: RxDatabase<Collections>
 ): Promise<RxDocumentData<InternalStoreStorageTokenDocType>> {
 

@@ -94,7 +94,7 @@ let DB_COUNT = 0;
 export class RxDatabaseBase<
     Internals,
     InstanceCreationOptions,
-    Collections = CollectionsOfDatabase,
+    Collections extends CollectionsOfDatabase = CollectionsOfDatabase,
     > {
 
     public readonly idleQueue: IdleQueue = new IdleQueue();
@@ -620,7 +620,7 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
 }
 
 export function createRxDatabase<
-    Collections = { [key: string]: RxCollection },
+    Collections extends CollectionsOfDatabase = { [key: string]: RxCollection },
     Internals = any,
     InstanceCreationOptions = any
 >(
