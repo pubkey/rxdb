@@ -5,6 +5,10 @@ export const conflictHandler: RxConflictHandler<RxHeroDocumentType> = function (
     i: RxConflictHandlerInput<RxHeroDocumentType>,
     _context: string
 ) {
+
+    console.log('conflictHandler called!');
+    console.dir(i);
+
     if (
         i.newDocumentState.replicationRevision === i.realMasterState.replicationRevision
     ) {

@@ -38,4 +38,5 @@ async function run() {
     startReplication(database);
     addClickHandlers(database);
 }
-run();
+
+document.addEventListener('DOMContentLoaded', () => run(), false);

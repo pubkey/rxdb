@@ -91,9 +91,13 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
              * supabase rpc() call instead.
              */
             async handler(rows: RxReplicationWriteToMasterRow<RxHeroDocumentType>[]) {
+                console.log('# pushHandler() called');
+                console.dir(rows);
+
                 if (rows.length !== 1) {
-                    throw new Error('too many push documents');
+                    throw new Error('# pushHandler(): too many push documents');
                 }
+
                 const row = rows[0];
                 const oldDoc = row.assumedMasterState;
                 const doc = row.newDocumentState;
@@ -115,7 +119,7 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
                     }
                 }
                 // update
-                console.log('pushHandler(): is update');
+                console.log('# pushHandler(): is update');
                 const { data, error } = await supabase
                     .from('heroes')
                     .update(doc)
@@ -124,12 +128,12 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
                         replicationRevision: oldDoc.replicationRevision
                     });
                 if (error) {
-                    console.log('pushHandler(): error:');
+                    console.log('# pushHandler(): error:');
                     console.dir(error);
                     console.dir(data);
                     throw error;
                 }
-                console.log('update response:');
+                console.log('# update response:');
                 console.dir(data);
                 if (data.length === 0) {
                     // we have an updated conflict
@@ -144,7 +148,7 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
         }
     });
     replicationState.error$.subscribe(err => {
-        console.error('replicationState.error$:');
+        console.error('## replicationState.error$:');
         console.dir(err);
     });
 

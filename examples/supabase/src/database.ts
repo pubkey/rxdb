@@ -1,4 +1,10 @@
-import { addRxPlugin, createRevision, createRxDatabase, parseRevision, RxStorage } from 'rxdb';
+import {
+    addRxPlugin,
+    createRevision,
+    createRxDatabase,
+    parseRevision,
+    RxStorage
+} from 'rxdb';
 
 import {
     getRxStorageDexie
@@ -48,8 +54,11 @@ export async function createDatabase() {
         return docData;
     }, false);
     database.heroes.preRemove((docData) => {
+        console.log(' PRE REMOVE !!');
+        console.log(JSON.stringify(docData, null ,4));
         const oldRevHeight = parseRevision(docData.replicationRevision).height;
         docData.replicationRevision = (oldRevHeight + 1) + '-' + database.hashFunction(JSON.stringify(docData));
+        console.log(JSON.stringify(docData, null ,4));
         return docData;
     }, false);
     database.heroes.preSave((docData) => {
@@ -79,6 +88,7 @@ function getStorageKey(): string {
  */
 function getStorage(): RxStorage<any, any> {
     const storageKey = getStorageKey();
+    console.log('storageKey: ' + storageKey);
 
     if (storageKey === 'memory') {
         return getRxStorageMemory();

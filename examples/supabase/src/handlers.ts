@@ -1,4 +1,4 @@
-import { createRevision, RxDatabase } from 'rxdb';
+import { RxDatabase } from 'rxdb';
 import { RxHeroesCollections } from './types';
 
 
