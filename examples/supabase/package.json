@@ -9,24 +9,27 @@
     "build": "webpack",
     "build:serve": "ws -p 8888 -d dist/",
     "test:e2e": "testcafe chrome -e test/ --hostname localhost",
-    "test:dexie": "STORAGE=dexie concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
+    "test:dexie": "STORAGE=dexie concurrently \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
   },
   "private": true,
   "author": "pubkey",
   "license": "MIT",
   "dependencies": {
     "@supabase/supabase-js": "1.35.6",
+    "html-webpack-plugin": "5.5.0",
+    "mini-css-extract-plugin": "2.6.1",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.5.6"
   },
   "devDependencies": {
     "async-test-util": "2.0.0",
+    "css-loader": "6.7.1",
+    "testcafe": "1.20.1",
+    "testcafe-hammerhead": "24.7.3",
     "ts-loader": "9.3.1",
     "typescript": "4.8.2",
     "webpack": "5.74.0",
     "webpack-cli": "4.10.0",
-    "webpack-dev-server": "4.10.1",
-    "testcafe": "1.20.1",
-    "testcafe-hammerhead": "24.7.3"
+    "webpack-dev-server": "4.10.1"
   }
 }

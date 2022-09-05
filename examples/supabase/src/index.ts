@@ -6,6 +6,9 @@ import {
     RxStorage
 } from 'rxdb';
 
+
+import '../public/style.css';
+
 import {
     RxDBDevModePlugin
 } from 'rxdb/plugins/dev-mode';
@@ -57,13 +60,29 @@ function getStorage(): RxStorage<any, any> {
     }
 }
 
+/**
+ * In the e2e-test we get the database-name from the get-parameter
+ * In normal mode, the database name is 'heroesdb'
+ */
+function getDatabaseName() {
+    const url_string = window.location.href;
+    const url = new URL(url_string);
+    const dbNameFromUrl = url.searchParams.get('database');
+
+    let ret = 'supabase-heroesdb';
+    if (dbNameFromUrl) {
+        console.log('databaseName from url: ' + dbNameFromUrl);
+        ret += dbNameFromUrl;
+    }
+    return ret;
+}
 
 async function run() {
     console.log('run()');
 
     heroesList.innerHTML = 'Create database..';
     const database = await createRxDatabase<RxHeroesCollections>({
-        name: 'supabase-example-db',
+        name: getDatabaseName(),
         storage: wrappedValidateAjvStorage({
             storage: getStorage()
         }),

@@ -141,7 +141,7 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
         }
     });
     replicationState.error$.subscribe(err => {
-        console.error('replicationState.error$:');
+        console.log('replicationState.error$:');
         console.dir(err);
     });
 

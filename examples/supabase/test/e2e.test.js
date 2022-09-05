@@ -3,9 +3,6 @@ import {
 } from 'testcafe';
 import AsyncTestUtil from 'async-test-util';
 import GraphQLClient from 'graphql-client';
-import {
-    GRAPHQL_PORT
-} from '../shared';
 
 const storage = process.env.STORAGE;
 if (!storage) {
@@ -65,34 +62,8 @@ async function deleteAll(t) {
     }
 }
 
-async function waitUntilServerIsOnline() {
-    console.log('waitUntilServerIsOnline()');
-    const client = GraphQLClient({
-        url: 'http://localhost:' + GRAPHQL_PORT + '/graphql'
-    });
-    const query = `{
-        feedForRxDBReplication(lastId: "", minUpdatedAt: 0 limit: 1) {
-            id
-            name
-            color
-            updatedAt
-            deleted
-        }
-    }`;
-    await AsyncTestUtil.waitUntil(async () => {
-        try {
-            await client.query(query);
-            return true;
-        } catch (err) {
-            return false;
-        }
-    });
-    console.log('waitUntilServerIsOnline(): done');
-}
-
 test('insert/remove a hero', async t => {
     console.log('start test insert/remove a hero');
-    await waitUntilServerIsOnline();
     await waitUntilPageIsLoaded(t);
     await assertNoErrors(t);
     await deleteAll(t);
@@ -134,7 +105,7 @@ test('insert/remove a hero', async t => {
 
 
 test.page(
-    'http://localhost:' + GRAPHQL_PORT + '/static/multitab.html?frames=2&storage=' + storage
+    'http://localhost:8888/static/multitab.html?frames=2&storage=' + storage
 )(
     'replication: insert/delete hero and check other tab',
     async t => {
