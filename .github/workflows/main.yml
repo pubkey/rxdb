@@ -565,6 +565,14 @@ jobs:
       - name: import database dump
         working-directory: ./examples/supabase
         run: sh import-dump.sh
+      - name: build
+        working-directory: ./examples/supabase
+        run: npm run build
+      - name: test test:pouchdb
+        uses: GabrielBB/xvfb-action@v1.6
+        with:
+          working-directory: ./examples/supabase
+          run: npm run test:dexie
 
   vue:
     runs-on: ubuntu-20.04
