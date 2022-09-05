@@ -28,13 +28,6 @@ export function addClickHandlers(database: RxDatabase<RxHeroesCollections>) {
             updatedAt: new Date().getTime(),
             replicationRevision: '1'
         };
-        obj.replicationRevision = createRevision(
-            database.hashFunction,
-            obj as any
-        );
-        console.log('inserting hero:');
-        console.dir(obj);
-
         await database.heroes.insert(obj);
         (document.querySelector('input[name="name"]') as any).value = '';
         (document.querySelector('input[name="color"]') as any).value = '';

@@ -25,7 +25,8 @@ export const heroSchemaLiteral = {
             multipleOf: 1
         },
         replicationRevision: {
-            type: 'string'
+            type: 'string',
+            minLength: 3
         }
     },
     indexes: ['color', 'updatedAt'],
