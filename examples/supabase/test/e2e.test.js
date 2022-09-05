@@ -104,7 +104,7 @@ test('insert/remove a hero', async t => {
 
 
 test.page(
-    'http://localhost:8888/static/multitab.html?frames=2&storage=' + storage
+    'http://localhost:8888/multitab.html?frames=2&storage=' + storage
 )(
     'replication: insert/delete hero and check other tab',
     async t => {
