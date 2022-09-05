@@ -1,7 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
-import { lastOfArray, RxDatabase, RxReplicationPullStreamItem, RxReplicationWriteToMasterRow } from 'rxdb';
+import {
+    lastOfArray,
+    RxDatabase,
+    RxReplicationPullStreamItem,
+    RxReplicationWriteToMasterRow
+} from 'rxdb';
 import { Subject } from 'rxjs';
-import { CheckpointType, RxHeroDocument, RxHeroesCollections } from './types';
+import {
+    CheckpointType,
+    RxHeroDocument,
+    RxHeroesCollections
+} from './types';
 import {
     replicateRxCollection
 } from 'rxdb/plugins/replication';
@@ -17,13 +26,6 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
         {
         }
     );
-
-    console.dir(supabase);
-
-    const { data, error } = await supabase.from('heroes').select();
-    console.dir(data);
-    console.dir(error);
-
     const pullStream$ = new Subject<RxReplicationPullStreamItem<RxHeroDocument, CheckpointType>>();
     supabase
         .from('heroes')
@@ -46,8 +48,6 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
             }
         });
 
-
-
     const replicationState = await replicateRxCollection<RxHeroDocumentType, CheckpointType>({
         collection: database.heroes,
         replicationIdentifier: 'supabase-replication-to-' + SUPABASE_URL,
@@ -60,8 +60,6 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
                 // const all = await supabase.from('heroes');
                 // console.log('all:');
                 // console.dir(all.data);
-
-
 
                 const { data, error } = await supabase.from('heroes')
                     .select()
@@ -97,6 +95,7 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
                     throw new Error('too many push documents');
                 }
                 const row = rows[0];
+                const oldDoc = row.assumedMasterState;
                 const doc = row.newDocumentState;
 
                 // insert
@@ -116,14 +115,18 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
                     }
                 }
                 // update
+                console.log('pushHandler(): is update');
                 const { data, error } = await supabase
                     .from('heroes')
                     .update(doc)
                     .match({
                         name: doc.name,
-                        replicationRevision: doc.replicationRevision
+                        replicationRevision: oldDoc.replicationRevision
                     });
                 if (error) {
+                    console.log('pushHandler(): error:');
+                    console.dir(error);
+                    console.dir(data);
                     throw error;
                 }
                 console.log('update response:');
@@ -141,7 +144,7 @@ export async function startReplication(database: RxDatabase<RxHeroesCollections>
         }
     });
     replicationState.error$.subscribe(err => {
-        console.log('replicationState.error$:');
+        console.error('replicationState.error$:');
         console.dir(err);
     });
 

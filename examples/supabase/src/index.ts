@@ -1,99 +1,17 @@
 
-import {
-
-    createRxDatabase,
-    addRxPlugin,
-    RxStorage
-} from 'rxdb';
-
-
 import '../public/style.css';
 
-import {
-    RxDBDevModePlugin
-} from 'rxdb/plugins/dev-mode';
-addRxPlugin(RxDBDevModePlugin); // TODO only add this in dev mode
-
-import {
-    getRxStorageDexie
-} from 'rxdb/plugins/dexie';
-import {
-    getRxStorageMemory
-} from 'rxdb/plugins/memory';
-import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
-
-import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
-addRxPlugin(RxDBLeaderElectionPlugin);
-
-
-
-import { heroSchema } from './hero.schema';
-import { RxHeroesCollections } from './types';
-import { addClickHandlers } from './handlers';
 import { startReplication } from './replication';
-
-
+import { createDatabase } from './database';
+import { addClickHandlers } from './handlers';
 
 const heroesList = document.querySelector('#heroes-list');
-function getStorageKey(): string {
-    const url_string = window.location.href;
-    const url = new URL(url_string);
-    let storageKey = url.searchParams.get('storage');
-    if (!storageKey) {
-        storageKey = 'dexie';
-    }
-    return storageKey;
-}
-
-/**
- * Easy toggle of the storage engine via query parameter.
- */
-function getStorage(): RxStorage<any, any> {
-    const storageKey = getStorageKey();
-
-    if (storageKey === 'memory') {
-        return getRxStorageMemory();
-    } else if (storageKey === 'dexie') {
-        return getRxStorageDexie();
-    } else {
-        throw new Error('storage key not defined ' + storageKey);
-    }
-}
-
-/**
- * In the e2e-test we get the database-name from the get-parameter
- * In normal mode, the database name is 'heroesdb'
- */
-function getDatabaseName() {
-    const url_string = window.location.href;
-    const url = new URL(url_string);
-    const dbNameFromUrl = url.searchParams.get('database');
-
-    let ret = 'supabase-heroesdb';
-    if (dbNameFromUrl) {
-        console.log('databaseName from url: ' + dbNameFromUrl);
-        ret += dbNameFromUrl;
-    }
-    return ret;
-}
 
 async function run() {
     console.log('run()');
 
     heroesList.innerHTML = 'Create database..';
-    const database = await createRxDatabase<RxHeroesCollections>({
-        name: getDatabaseName(),
-        storage: wrappedValidateAjvStorage({
-            storage: getStorage()
-        }),
-        multiInstance: true
-    });
-    heroesList.innerHTML = 'Create collection..';
-    await database.addCollections({
-        heroes: {
-            schema: heroSchema
-        }
-    });
+    const database = await createDatabase();
 
     heroesList.innerHTML = 'Subscribe to query..';
     database.heroes
@@ -101,8 +19,8 @@ async function run() {
             sort: [{ name: 'asc' }]
         }).$
         .subscribe(heroes => {
-            // console.log('emitted heroes:');
-            // console.dir(heroes.map(d => d.toJSON()));
+            console.log('emitted heroes:');
+            console.dir(heroes.map(d => d.toJSON(true)));
             let html = '';
             heroes.forEach(hero => {
                 html += `
