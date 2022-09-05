@@ -555,6 +555,8 @@ jobs:
           npm install --legacy-peer-deps
           npm run build
           rm -r node_modules
+      - run: npm install --legacy-peer-deps
+        working-directory: ./examples/supabase
       - name: init supabase docker-compose
         working-directory: ./examples/supabase
         run: |
@@ -568,7 +570,7 @@ jobs:
       - name: build
         working-directory: ./examples/supabase
         run: npm run build
-      - name: test test:pouchdb
+      - name: test
         uses: GabrielBB/xvfb-action@v1.6
         with:
           working-directory: ./examples/supabase
