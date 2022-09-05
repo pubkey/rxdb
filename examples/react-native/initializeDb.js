@@ -45,6 +45,7 @@ const initialize = async () => {
             name: dbName,
             // storage: getRxStorageMemory(), // RxStorageMemory
             storage: getRxStoragePouch('memory'), // PouchDbAdapted
+            // storage: getRxStoragePouch('asyncstorage'), // PouchDbAdapted
             multiInstance: false,
             ignoreDuplicate: true,
         });
