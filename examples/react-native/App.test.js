@@ -1,8 +1,23 @@
-import React from 'react';
-import App from './App';
-import renderer from 'react-test-renderer';
+import React from 'react'
+import { isRxDatabase } from 'rxdb'
+import initializeDb, { HeroesCollectionName } from "./initializeDb"
 
-it('renders without crashing', () => {
-  const rendered = renderer.create(<App />).toJSON();
-  expect(rendered).toBeTruthy();
+const testDocument = {
+    name: 'test',
+    color: '#A47706'
+}
+
+let db
+
+it('Database initialization', async () => {
+    db = await initializeDb()
+    expect(isRxDatabase(db)).toBeTruthy()
+});
+
+
+it(`Add to and fetch from ${HeroesCollectionName} collection`, async () => {
+    await db.collections[HeroesCollectionName].upsert(testDocument)
+    const docs = await db.collections[HeroesCollectionName].find({ selector: { name: 'test' }}).exec()
+    db.destroy()
+    expect(docs.length).toBe(1);
 });

@@ -8,7 +8,7 @@
     "eject": "expo eject",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "test": "jest --debug --maxWorkers=1 --detectOpenHandles",
+    "test": "jest",
     "test:bundle": "rimraf -f ./dist && rimraf -f ./expo && EXPO_DEBUG=true expo export --public-url https://example.com/"
   },
   "devDependencies": {
