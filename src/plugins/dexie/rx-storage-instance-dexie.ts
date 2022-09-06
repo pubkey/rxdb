@@ -1,26 +1,21 @@
-import type {
-    ChangeEvent
-} from 'event-reduce-js';
 import {
     Subject,
     Observable
 } from 'rxjs';
 import {
     now,
-    randomCouchString,
     PROMISE_RESOLVE_VOID,
     RX_META_LWT_MINIMUM,
     sortDocumentsByLastWriteTime,
-    lastOfArray
+    lastOfArray,
+    ensureNotFalsy
 } from '../../util';
-import { newRxError } from '../../rx-error';
 import type {
     RxStorageInstance,
     RxStorageChangeEvent,
     RxDocumentData,
     BulkWriteRow,
     RxStorageBulkWriteResponse,
-    RxStorageBulkWriteError,
     RxStorageQueryResult,
     RxJsonSchema,
     RxStorageInstanceCreationParams,
@@ -29,7 +24,8 @@ import type {
     RxDocumentDataById,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
-    RxStorageDefaultCheckpoint
+    RxStorageDefaultCheckpoint,
+    CategorizeBulkWriteRowsOutput
 } from '../../types';
 import {
     DexiePreparedQuery,
@@ -47,8 +43,9 @@ import {
 } from './dexie-helper';
 import { dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { getNewestOfDocumentStates, getUniqueDeterministicEventKey } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
+import { newRxError } from '../../rx-error';
 
 let instanceId = now();
 
@@ -85,21 +82,34 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             success: {},
             error: {}
         };
-        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint> = {
-            id: randomCouchString(10),
-            events: [],
-            checkpoint: null as any,
-            context
-        };
 
         const documentKeys: string[] = documentWrites.map(writeRow => writeRow.document[this.primaryPath] as any);
+        let categorized: CategorizeBulkWriteRowsOutput<RxDocType> | undefined = null as any;
         await state.dexieDb.transaction(
             'rw',
             state.dexieTable,
             state.dexieDeletedTable,
             async () => {
-                let docsInDb = await getDocsInDb<RxDocType>(this.internals, documentKeys);
-                docsInDb = docsInDb.map(d => d ? fromDexieToStorage(d) : d);
+                const docsInDbMap = new Map<string, RxDocumentData<RxDocType>>();
+                const docsInDbWithInternals = await getDocsInDb<RxDocType>(this.internals, documentKeys);
+                docsInDbWithInternals.forEach(docWithDexieInternals => {
+                    const doc = docWithDexieInternals ? fromDexieToStorage(docWithDexieInternals) : docWithDexieInternals;
+                    if (doc) {
+                        docsInDbMap.set(doc[this.primaryPath], doc);
+                    }
+                    return doc;
+                });
+
+                categorized = categorizeBulkWriteRows<RxDocType>(
+                    this,
+                    this.primaryPath as any,
+                    docsInDbMap,
+                    documentWrites,
+                    context
+                );
+                categorized.errors.forEach(err => {
+                    ret.error[err.documentId] = err;
+                });
 
                 /**
                  * Batch up the database operations
@@ -109,147 +119,33 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 const bulkRemoveDocs: string[] = [];
                 const bulkPutDeletedDocs: any[] = [];
                 const bulkRemoveDeletedDocs: string[] = [];
-                const changesIds: string[] = [];
 
-                documentWrites.forEach((writeRow, docIndex) => {
-                    const id: string = writeRow.document[this.primaryPath] as any;
-                    const startTime = now();
-                    const documentInDb = docsInDb[docIndex];
-                    if (!documentInDb) {
-                        /**
-                         * It is possible to insert already deleted documents,
-                         * this can happen on replication.
-                         */
-                        const insertedIsDeleted = writeRow.document._deleted ? true : false;
-                        const writeDoc = Object.assign(
-                            {},
-                            writeRow.document,
-                            {
-                                _deleted: insertedIsDeleted,
-                                // TODO attachments are currently not working with dexie.js
-                                _attachments: {} as any
-                            }
-                        );
-                        changesIds.push(id);
-                        if (insertedIsDeleted) {
-                            bulkPutDeletedDocs.push(writeDoc);
-                        } else {
-                            bulkPutDocs.push(writeDoc);
-                            eventBulk.events.push({
-                                eventId: getUniqueDeterministicEventKey(this, this.primaryPath as any, writeRow),
-                                documentId: id,
-                                change: {
-                                    doc: writeDoc,
-                                    id,
-                                    operation: 'INSERT',
-                                    previous: null
-                                },
-                                startTime,
-                                // will be filled up before the event is pushed into the changestream
-                                endTime: startTime
-                            });
-                        }
-
-                        ret.success[id] = writeDoc;
+                categorized.bulkInsertDocs.forEach(row => {
+                    const docId: string = (row.document as any)[this.primaryPath];
+                    ret.success[docId] = row.document;
+                    bulkPutDocs.push(row.document);
+                });
+                categorized.bulkUpdateDocs.forEach(row => {
+                    const docId: string = (row.document as any)[this.primaryPath];
+                    ret.success[docId] = row.document;
+                    if (
+                        row.document._deleted &&
+                        (row.previous && !row.previous._deleted)
+                    ) {
+                        // newly deleted
+                        bulkRemoveDocs.push(docId);
+                        bulkPutDeletedDocs.push(row.document);
+                    } else if (
+                        row.document._deleted &&
+                        row.previous && row.previous._deleted
+                    ) {
+                        // deleted was modified but is still deleted
+                        bulkPutDeletedDocs.push(row.document);
+                    } else if (!row.document._deleted) {
+                        // non-deleted was changed
+                        bulkPutDocs.push(row.document);
                     } else {
-                        // update existing document
-                        const revInDb: string = documentInDb._rev;
-
-                        if (
-                            (
-                                !writeRow.previous
-                            ) ||
-                            (
-                                !!writeRow.previous &&
-                                revInDb !== writeRow.previous._rev
-                            )
-                        ) {
-                            // conflict error
-                            const err: RxStorageBulkWriteError<RxDocType> = {
-                                isError: true,
-                                status: 409,
-                                documentId: id,
-                                writeRow: writeRow,
-                                documentInDb
-                            };
-                            ret.error[id] = err;
-                        } else {
-                            const isDeleted = !!writeRow.document._deleted;
-                            const writeDoc: any = Object.assign(
-                                {},
-                                writeRow.document,
-                                {
-                                    _deleted: isDeleted,
-                                    // TODO attachments are currently not working with lokijs
-                                    _attachments: {}
-                                }
-                            );
-                            changesIds.push(id);
-                            let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
-                            if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
-                                /**
-                                 * Insert document that was deleted before.
-                                 */
-                                bulkPutDocs.push(writeDoc);
-                                bulkRemoveDeletedDocs.push(id);
-                                change = {
-                                    id,
-                                    operation: 'INSERT',
-                                    previous: null,
-                                    doc: writeDoc
-                                };
-                            } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
-                                /**
-                                 * Update existing non-deleted document
-                                 */
-                                bulkPutDocs.push(writeDoc);
-                                change = {
-                                    id,
-                                    operation: 'UPDATE',
-                                    previous: writeRow.previous,
-                                    doc: writeDoc
-                                };
-                            } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
-                                /**
-                                 * Set non-deleted document to deleted.
-                                 */
-                                bulkPutDeletedDocs.push(writeDoc);
-                                bulkRemoveDocs.push(id);
-
-                                change = {
-                                    id,
-                                    operation: 'DELETE',
-                                    previous: writeRow.previous,
-                                    doc: null
-                                };
-                            } else if (
-                                writeRow.previous && writeRow.previous._deleted &&
-                                writeRow.document._deleted
-                            ) {
-                                // deleted doc was overwritten with other deleted doc
-                                bulkPutDeletedDocs.push(writeDoc);
-                            }
-                            if (!change) {
-                                if (
-                                    writeRow.previous && writeRow.previous._deleted &&
-                                    writeRow.document._deleted
-                                ) {
-                                    // deleted doc got overwritten with other deleted doc -> do not send an event
-                                } else {
-                                    throw newRxError('SNH', { args: { writeRow } });
-                                }
-                            } else {
-                                eventBulk.events.push({
-                                    eventId: getUniqueDeterministicEventKey(this, this.primaryPath as any, writeRow),
-                                    documentId: id,
-                                    change,
-                                    startTime,
-                                    // will be filled up before the event is pushed into the changestream
-                                    endTime: startTime
-                                });
-                            }
-                            ret.success[id] = writeDoc;
-                        }
+                        throw newRxError('SNH', { args: { row } });
                     }
                 });
 
@@ -261,19 +157,18 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 ]);
             });
 
-        if (eventBulk.events.length > 0) {
+        if (ensureNotFalsy(categorized).eventBulk.events.length > 0) {
             const lastState = getNewestOfDocumentStates(
                 this.primaryPath as any,
                 Object.values(ret.success)
             );
-            eventBulk.checkpoint = {
-                id: (lastState as any)[this.primaryPath],
+            ensureNotFalsy(categorized).eventBulk.checkpoint = {
+                id: lastState[this.primaryPath],
                 lwt: lastState._meta.lwt
             };
-
             const endTime = now();
-            eventBulk.events.forEach(event => event.endTime = endTime);
-            this.changes$.next(eventBulk);
+            ensureNotFalsy(categorized).eventBulk.events.forEach(event => (event as any).endTime = endTime);
+            this.changes$.next(ensureNotFalsy(categorized).eventBulk);
         }
 
         return ret;

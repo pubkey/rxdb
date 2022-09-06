@@ -10,7 +10,10 @@ import {
     MangoQuery,
     ensureNotFalsy,
     now,
-    blobBufferUtil
+    blobBufferUtil,
+    EventBulk,
+    RxStorageChangeEvent,
+    RxDocumentData
 } from '../../';
 
 import {
@@ -29,7 +32,10 @@ import * as schemaObjects from '../helper/schema-objects';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import { clone, waitUntil } from 'async-test-util';
-import { HumanDocumentType, humanSchemaLiteral } from '../helper/schemas';
+import {
+    HumanDocumentType,
+    humanSchemaLiteral
+} from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
@@ -97,11 +103,10 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
             await pouch.info();
             (pouch as any).primaryPath = '_id';
 
-            const emitted: any[] = [];
+            const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<any>>, any>[] = [];
             const sub = getCustomEventEmitterByPouch(pouch).subject.subscribe(ev => {
                 emitted.push(ev);
             });
-
 
             await pouch.bulkDocs([{
                 _id: 'foo',
@@ -115,9 +120,9 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
 
             await waitUntil(() => flattenEvents(emitted).length === 1);
 
-            const first: any = flattenEvents(emitted)[0];
+            const first = flattenEvents(emitted)[0];
             assert.deepStrictEqual(
-                first.change.operation,
+                first.operation,
                 'INSERT'
             );
 

@@ -579,7 +579,7 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     previousDoc._rev = writeDoc._rev;
                     event = {
                         operation: 'DELETE',
-                        doc: null,
+                        doc: writeDoc,
                         id: id,
                         previous: previousDoc
                     };
@@ -690,10 +690,10 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
 
                     event = {
                         operation: 'DELETE',
-                        doc: null,
+                        doc: writeRow.document,
                         id: resultRow.id,
                         previous: previousDoc
-                    };
+                    } as any;
                 } else {
                     // was update
                     event = {
@@ -744,7 +744,9 @@ export function changeEventToNormal<RxDocType>(
     const storageChangeEvent: RxStorageChangeEvent<RxDocumentData<RxDocType>> = {
         eventId: getEventKey(pouchDBInstance, primary, change),
         documentId: primary,
-        change,
+        documentData: change.doc as any,
+        previousDocumentData: change.previous as any,
+        operation: change.operation,
         startTime,
         endTime
     };

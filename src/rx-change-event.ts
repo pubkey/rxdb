@@ -3,7 +3,7 @@
  * they can be grabbed by the observables of database, collection and document
  */
 
-import {
+import type {
     ChangeEvent as EventReduceChangeEvent,
 } from 'event-reduce-js';
 import { overwritable } from './overwritable';
@@ -22,12 +22,17 @@ export function getDocumentDataOfRxChangeEvent<T>(
     } else {
         return (rxChangeEvent as any).previousDocumentData;
     }
-
 }
 
+/**
+ * Might return null which means an
+ * already deleted document got modified but still is deleted.
+ * Theses kind of events are not relevant for the event-reduce algorithm
+ * and must be filtered out.
+ */
 export function rxChangeEventToEventReduceChangeEvent<DocType>(
     rxChangeEvent: RxChangeEvent<DocType>
-): EventReduceChangeEvent<DocType> {
+): EventReduceChangeEvent<DocType> | null {
     switch (rxChangeEvent.operation) {
         case 'INSERT':
             return {

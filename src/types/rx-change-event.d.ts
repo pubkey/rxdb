@@ -1,7 +1,16 @@
-import { EventBulk, RxDocumentData } from './rx-storage';
-import { DeepReadonly } from './util';
+import {
+    EventBulk,
+    RxDocumentData
+} from './rx-storage';
 
-export type RxChangeEventBase = {
+
+export type RxChangeEventBase<RxDocType> = {
+    operation: 'INSERT' | 'UPDATE' | 'DELETE';
+
+    /**
+     * Unique identifier for the event.
+     * When another event with the same id appears, it will be skipped.
+     */
     readonly eventId: string;
     readonly documentId: string;
 
@@ -16,30 +25,30 @@ export type RxChangeEventBase = {
      * and when it was finished.
      * This is optional because we do not have this time
      * for events that come from the internal storage instance changestream.
+     * TODO do we even need this values?
      */
     readonly startTime?: number;
     readonly endTime?: number;
+
+    documentData: RxDocumentData<RxDocType>;
 }
 
-export type RxChangeEventInsert<DocType> = RxChangeEventBase & {
+export type RxChangeEventInsert<RxDocType> = RxChangeEventBase<RxDocType> & {
     operation: 'INSERT';
-    documentData: DeepReadonly<RxDocumentData<DocType>>;
-    previousDocumentData: null;
+    previousDocumentData: undefined;
 }
 
-export type RxChangeEventUpdate<DocType> = RxChangeEventBase & {
+export type RxChangeEventUpdate<RxDocType> = RxChangeEventBase<RxDocType> & {
     operation: 'UPDATE';
-    documentData: DeepReadonly<RxDocumentData<DocType>>;
-    previousDocumentData: DeepReadonly<RxDocumentData<DocType>> | 'UNKNOWN';
+    previousDocumentData: RxDocumentData<RxDocType>;
 }
 
-export type RxChangeEventDelete<DocType> = RxChangeEventBase & {
+export type RxChangeEventDelete<RxDocType> = RxChangeEventBase<RxDocType> & {
     operation: 'DELETE';
-    documentData: null;
-    previousDocumentData: DeepReadonly<RxDocumentData<DocType>> | 'UNKNOWN';
+    previousDocumentData: RxDocumentData<RxDocType>;
 }
 
-export type RxChangeEvent<DocType> = RxChangeEventInsert<DocType> | RxChangeEventUpdate<DocType> | RxChangeEventDelete<DocType>;
+export type RxChangeEvent<RxDocType> = RxChangeEventInsert<RxDocType> | RxChangeEventUpdate<RxDocType> | RxChangeEventDelete<RxDocType>;
 
 /**
  * Internally, all events are processed via bulks

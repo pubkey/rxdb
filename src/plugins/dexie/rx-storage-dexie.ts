@@ -14,7 +14,10 @@ import type {
 import {
     Query as MingoQuery
 } from 'mingo';
-import { getDexieSortComparator, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
+import {
+    getDexieSortComparator,
+    RX_STORAGE_NAME_DEXIE
+} from './dexie-helper';
 import type {
     DexieSettings,
     DexieStorageInternals

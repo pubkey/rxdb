@@ -1062,8 +1062,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             );
 
             cleanUp(replicationState, masterInstance);
-
-            // process.exit();
         });
     });
     describe('issues', () => {

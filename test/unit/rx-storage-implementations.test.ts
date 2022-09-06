@@ -2036,7 +2036,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(emitted[0].events.length, 1);
 
                 // should contain the _meta data
-                assert.ok((emitted as any)[0].events[0].change.doc._meta.lwt);
+                assert.ok((emitted)[0].events[0].documentData._meta.lwt);
 
                 /**
                  * Using the checkpoint from the event must not return any newer documents.
@@ -2154,11 +2154,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                  * This changed because in the past we increased the rev height
                  * to be compliant with strange PouchDB behavior.
                  */
-                const lastRevision = parseRevision((lastEvent as any).change.previous._rev);
+                const lastRevision = parseRevision(ensureNotFalsy(lastEvent.previousDocumentData)._rev);
                 assert.strictEqual(lastRevision.height, 2);
 
-                assert.strictEqual(lastEvent.change.operation, 'DELETE');
-                assert.ok(lastEvent.change.previous);
+                assert.strictEqual(lastEvent.operation, 'DELETE');
+                assert.ok(lastEvent.previousDocumentData);
 
                 sub.unsubscribe();
                 storageInstance.close();
@@ -2368,7 +2368,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.ok(!(byIdDoc._attachments.foo as any).data);
 
                 // test the emitted event
-                const firstEventAttachment = flattenEvents(emitted)[0].change.doc._attachments.foo;
+                const firstEventAttachment = flattenEvents(emitted)[0].documentData._attachments.foo;
                 assert.strictEqual(firstEventAttachment.type, 'text/plain');
                 assert.strictEqual(firstEventAttachment.length, dataLength);
                 assert.ok(!(firstEventAttachment as any).data);

@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'event-reduce-js';
+import { RxChangeEvent } from './rx-change-event';
 import { RxDocumentMeta } from './rx-document';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
@@ -303,28 +304,7 @@ export type ChangeStreamEvent<DocType> = ChangeEvent<RxDocumentData<DocType>> & 
     id: string;
 };
 
-export type RxStorageChangeEvent<DocType> = {
-    /**
-     * Unique identifier for the event.
-     * When another event with the same id appears, it will be skipped.
-     */
-    eventId: string;
-    documentId: string;
-    change: ChangeEvent<RxDocumentData<DocType>>;
-
-    /**
-     * Unix time in milliseconds of when the operation was triggered
-     * and when it was finished.
-     * This is optional because we do not have this time
-     * for events that come from inside of the storage instance.
-     * 
-     * TODO do we even need this values?
-     */
-    startTime?: number;
-    endTime?: number;
-}
-
-
+export type RxStorageChangeEvent<RxDocType> = Omit<RxChangeEvent<RxDocType>, 'isLocal' | 'collectionName'>;
 
 /**
  * An example for how a RxStorage checkpoint can look like.

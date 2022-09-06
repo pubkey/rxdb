@@ -14,7 +14,6 @@ import type {
 } from '../types';
 import {
     ensureNotFalsy,
-    flatClone,
     PROMISE_RESOLVE_FALSE
 } from '../util';
 import {
@@ -158,13 +157,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
                 docs = docs.concat(
                     taskWithTime.task.events.map(r => {
-                        if (r.change.operation === 'DELETE') {
-                            const ret: any = flatClone(r.change.previous);
-                            ret._deleted = true;
-                            return ret;
-                        } else {
-                            return r.change.doc;
-                        }
+                        return r.documentData as any;
                     })
                 );
                 checkpoint = stackCheckpoints([checkpoint, taskWithTime.task.checkpoint]);

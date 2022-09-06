@@ -291,12 +291,4 @@ config.parallel('query-planner.test.js', () => {
             assert.strictEqual(queryPlan.sortFieldsSameAsIndexFields, false);
         });
     });
-
-
-    // // TODO
-    // describe('TODO', () => {
-    //     it('TODO', () => {
-    //         process.exit();
-    //     });
-    // });
 });
