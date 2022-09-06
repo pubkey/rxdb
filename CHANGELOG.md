@@ -51,6 +51,8 @@
 
 - ADD Support JsonSchema for nested additionalProperties [#3952](https://github.com/pubkey/rxdb/pull/3952) Thanks [@swnf](https://github.com/swnf)
 
+- REFACTORED the layout of `RxChangeEvent` to better match the RxDB requirements and to fix the 'deleted-document-is-modified-but-still-deleted' bug.
+
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->

@@ -5,7 +5,8 @@ import {
     QueryParams,
     QueryMatcher,
     DeterministicSortComparator,
-    StateResolveFunctionInput
+    StateResolveFunctionInput,
+    ChangeEvent
 } from 'event-reduce-js';
 import type {
     RxQuery,
@@ -17,7 +18,7 @@ import type {
     RxDocumentData
 } from './types';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
-import { clone, ensureNotFalsy } from './util';
+import { arrayFilterNotEmpty, clone, ensureNotFalsy } from './util';
 import { normalizeMangoQuery } from './rx-query-helper';
 
 export type EventReduceResultNeg = {
@@ -124,9 +125,10 @@ export function calculateNewResults<RxDocumentType>(
     const previousResultsMap: Map<string, RxDocumentType> = ensureNotFalsy(rxQuery._result).docsDataMap;
     let changed: boolean = false;
 
-    const foundNonOptimizeable = rxChangeEvents.find(cE => {
-        const eventReduceEvent = rxChangeEventToEventReduceChangeEvent(cE);
-
+    const eventReduceEvents: ChangeEvent<RxDocumentType>[] = rxChangeEvents
+        .map(cE => rxChangeEventToEventReduceChangeEvent(cE))
+        .filter(arrayFilterNotEmpty);
+    const foundNonOptimizeable = eventReduceEvents.find(eventReduceEvent => {
         const stateResolveFunctionInput: StateResolveFunctionInput<RxDocumentType> = {
             queryParams,
             changeEvent: eventReduceEvent,

@@ -31,7 +31,6 @@ import type {
 } from '../types';
 import {
     ensureNotFalsy,
-    flatClone,
     PROMISE_RESOLVE_VOID
 } from '../util';
 import {
@@ -168,23 +167,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                 const ret: DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> = {
                     checkpoint: eventBulk.checkpoint,
                     documents: eventBulk.events.map(event => {
-                        /**
-                         * TODO the event object should be properly redesigned
-                         * to how RxDB does use it.
-                         * This requires touching the event-reduce-js library
-                         * and others. But it would remove much complexity
-                         * from RxDBs event handling.
-                         */
-                        if (event.change.doc) {
-                            return writeDocToDocState(event.change.doc as any);
-                        } else {
-                            let useDoc = ensureNotFalsy(event.change.previous);
-                            if (event.change.operation === 'DELETE') {
-                                useDoc = flatClone(useDoc);
-                                (useDoc as any)._deleted = true;
-                            }
-                            return writeDocToDocState(useDoc as any);
-                        }
+                        return writeDocToDocState(ensureNotFalsy(event.documentData) as any);
                     })
                 };
                 return ret;

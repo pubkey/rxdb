@@ -8,7 +8,10 @@ import {
 } from '../../custom-index';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
+import {
+    categorizeBulkWriteRows,
+    getNewestOfDocumentStates
+} from '../../rx-storage-helper';
 import type {
     BulkWriteRow,
     EventBulk,
@@ -153,7 +156,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 attachmentMapKey(attachment.documentId, attachment.attachmentId)
             );
         });
-
         if (categorized.eventBulk.events.length > 0) {
             const lastState = getNewestOfDocumentStates(
                 this.primaryPath as any,

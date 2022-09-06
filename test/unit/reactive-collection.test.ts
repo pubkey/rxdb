@@ -85,7 +85,6 @@ config.parallel('reactive-collection.test.js', () => {
         describe('positive', () => {
             it('should fire on bulk remove', async () => {
                 const c = await humansCollection.create(10);
-
                 const emittedCollection: RxChangeEvent<HumanDocumentType>[] = [];
                 const colSub = c.remove$.subscribe((ce) => {
                     emittedCollection.push(ce);
@@ -95,13 +94,12 @@ config.parallel('reactive-collection.test.js', () => {
                 const primaryList = docList.map(doc => doc.primary);
 
                 await c.bulkRemove(primaryList);
-
                 const changeEvent = emittedCollection[0];
 
                 assert.strictEqual(changeEvent.operation, 'DELETE');
                 assert.strictEqual(changeEvent.collectionName, 'human');
                 assert.strictEqual(changeEvent.documentId, docList[0].primary);
-                assert.ok(!changeEvent.documentData);
+                assert.ok(changeEvent.documentData);
                 assert.ok(changeEvent.previousDocumentData);
 
                 colSub.unsubscribe();

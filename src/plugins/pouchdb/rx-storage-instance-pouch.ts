@@ -110,20 +110,19 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
             // rewrite primaryPath of all events
             eventBulk.events.forEach(event => {
-                if (event.change.doc) {
-                    event.change.doc = pouchSwapIdToPrimary(
+                if (event.documentData) {
+                    event.documentData = pouchSwapIdToPrimary(
                         this.primaryPath,
-                        event.change.doc as any
+                        event.documentData as any
                     );
                 }
-                if (event.change.previous) {
-                    event.change.previous = pouchSwapIdToPrimary(
+                if (event.previousDocumentData) {
+                    event.previousDocumentData = pouchSwapIdToPrimary(
                         this.primaryPath,
-                        event.change.previous as any
+                        event.previousDocumentData as any
                     );
                 }
             });
-
             this.changes$.next(eventBulk);
         });
         this.subs.push(eventSub);
