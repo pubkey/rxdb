@@ -15,9 +15,13 @@ it('Database initialization', async () => {
 });
 
 
-it(`Add to and fetch from ${HeroesCollectionName} collection`, async () => {
+it(`Add test doc and fetch it from ${HeroesCollectionName} collection`, async () => {
     await db.collections[HeroesCollectionName].upsert(testDocument)
-    const docs = await db.collections[HeroesCollectionName].find({ selector: { name: 'test' }}).exec()
-    db.destroy()
+    const docs = await db.collections[HeroesCollectionName].find({ selector: { name: testDocument.name }}).exec()
     expect(docs.length).toBe(1);
+});
+
+it(`Destroy db`, async () => {
+    await db.destroy()
+    expect(true).toBeTruthy();
 });
