@@ -44,7 +44,7 @@ export interface CouchDBServerOptions {
 
 export type CollectionsOfDatabase = { [key: string]: RxCollection };
 export type RxDatabase<
-    Collections extends CollectionsOfDatabase = CollectionsOfDatabase,
+    Collections = CollectionsOfDatabase,
     Internals = any,
     InstanceCreationOptions = any,
     > = RxDatabaseBase<
@@ -74,7 +74,7 @@ export interface RxLocalDocumentMutation<StorageType> {
     >;
 }
 
-export interface RxDatabaseGenerated<Collections extends CollectionsOfDatabase> extends RxLocalDocumentMutation<RxDatabase<Collections>> { }
+export interface RxDatabaseGenerated<Collections> extends RxLocalDocumentMutation<RxDatabase<Collections>> { }
 
 /**
  * Extract the **DocumentType** of a collection.

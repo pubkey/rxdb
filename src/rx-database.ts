@@ -94,7 +94,7 @@ let DB_COUNT = 0;
 export class RxDatabaseBase<
     Internals,
     InstanceCreationOptions,
-    Collections extends CollectionsOfDatabase = CollectionsOfDatabase,
+    Collections = CollectionsOfDatabase,
     > {
 
     public readonly idleQueue: IdleQueue = new IdleQueue();
@@ -508,7 +508,7 @@ export class RxDatabaseBase<
             .then(() => Promise.all(this.onDestroy.map(fn => fn())))
             // destroy all collections
             .then(() => Promise.all(
-                Object.keys(this.collections)
+                Object.keys(this.collections as any)
                     .map(key => (this.collections as any)[key])
                     .map(col => col.destroy())
             ))
