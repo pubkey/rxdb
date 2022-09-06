@@ -620,7 +620,7 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
 }
 
 export function createRxDatabase<
-    Collections extends CollectionsOfDatabase = { [key: string]: RxCollection },
+    Collections = { [key: string]: RxCollection },
     Internals = any,
     InstanceCreationOptions = any
 >(
