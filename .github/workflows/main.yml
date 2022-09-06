@@ -490,7 +490,8 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+            # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
+            node-version: 16.16.0
 
       - name: prepare core
         run: |
