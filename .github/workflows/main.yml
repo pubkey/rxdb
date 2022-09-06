@@ -483,8 +483,8 @@ jobs:
           working-directory: ./examples/react
           run: npm run test:build
 
-  react-native:
-    runs-on: ubuntu-latest
+  react-native-expo:
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
