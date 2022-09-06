@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RX_META_LWT_MINIMUM = exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
 exports.adapterObject = adapterObject;
+exports.arrayFilterNotEmpty = arrayFilterNotEmpty;
 exports.b64DecodeUnicode = b64DecodeUnicode;
 exports.b64EncodeUnicode = b64EncodeUnicode;
 exports.batchArray = batchArray;
@@ -601,6 +602,20 @@ function isMaybeReadonlyArray(x) {
   // The type predicate here allows for both `Array<T>` and `Readonly<Array<T>>` to pass a type check while
   // still performing runtime type inspection.
   return Array.isArray(x);
+}
+/**
+ * Use this in array.filter() to remove all empty slots
+ * and have the correct typings afterwards.
+ * @link https://stackoverflow.com/a/46700791/3443137
+ */
+
+
+function arrayFilterNotEmpty(value) {
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  return true;
 }
 /**
  * NO! We cannot just use btoa() and atob()

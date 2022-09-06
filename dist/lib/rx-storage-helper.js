@@ -87,25 +87,8 @@ function stackCheckpoints(checkpoints) {
 }
 
 function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
-  var documentData;
-  /**
-   * TODO
-   * this data design is shit,
-   * instead of having the documentData depending on the operation,
-   * we should always have a current doc data, that might or might not
-   * have set _deleted to true.
-   */
-
-  if (rxStorageChangeEvent.change.operation !== 'DELETE') {
-    documentData = rxStorageChangeEvent.change.doc;
-  }
-
-  var previousDocumentData;
-
-  if (rxStorageChangeEvent.change.operation !== 'INSERT') {
-    previousDocumentData = rxStorageChangeEvent.change.previous;
-  }
-
+  var documentData = rxStorageChangeEvent.documentData;
+  var previousDocumentData = rxStorageChangeEvent.previousDocumentData;
   var ret = {
     eventId: rxStorageChangeEvent.eventId,
     documentId: rxStorageChangeEvent.documentId,
@@ -113,7 +96,7 @@ function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxColl
     startTime: rxStorageChangeEvent.startTime,
     endTime: rxStorageChangeEvent.endTime,
     isLocal: isLocal,
-    operation: rxStorageChangeEvent.change.operation,
+    operation: rxStorageChangeEvent.operation,
     documentData: _overwritable.overwritable.deepFreezeWhenDevMode(documentData),
     previousDocumentData: _overwritable.overwritable.deepFreezeWhenDevMode(previousDocumentData)
   };
@@ -225,12 +208,9 @@ bulkWriteRows, context) {
         eventBulk.events.push({
           eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
           documentId: id,
-          change: {
-            doc: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document,
-            id: id,
-            operation: 'INSERT',
-            previous: null
-          },
+          operation: 'INSERT',
+          documentData: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document,
+          previousDocumentData: hasAttachments && writeRow.previous ? stripAttachmentsDataFromDocument(writeRow.previous) : writeRow.previous,
           startTime: startTime,
           endTime: (0, _util.now)()
         });
@@ -321,51 +301,40 @@ bulkWriteRows, context) {
         }
       }
 
-      var change = null;
       var writeDoc = writeRow.document;
+      var eventDocumentData = null;
+      var previousEventDocumentData = null;
+      var operation = null;
 
       if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
-        change = {
-          id: id,
-          operation: 'INSERT',
-          previous: null,
-          doc: hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc
-        };
+        operation = 'INSERT';
+        eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc;
       } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
-        change = {
-          id: id,
-          operation: 'UPDATE',
-          previous: writeRow.previous,
-          doc: hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc
-        };
-      } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
-        change = {
-          id: id,
-          operation: 'DELETE',
-          previous: writeRow.previous,
-          doc: null
-        };
-      }
-
-      if (!change) {
-        if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {// deleted doc got overwritten with other deleted doc -> do not send an event
-        } else {
-          throw (0, _rxError.newRxError)('SNH', {
-            args: {
-              writeRow: writeRow
-            }
-          });
-        }
+        operation = 'UPDATE';
+        eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc;
+        previousEventDocumentData = writeRow.previous;
+      } else if (writeDoc._deleted) {
+        operation = 'DELETE';
+        eventDocumentData = (0, _util.ensureNotFalsy)(writeRow.document);
+        previousEventDocumentData = writeRow.previous;
       } else {
-        changedDocumentIds.push(id);
-        eventBulk.events.push({
-          eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
-          documentId: id,
-          change: change,
-          startTime: startTime,
-          endTime: (0, _util.now)()
+        throw (0, _rxError.newRxError)('SNH', {
+          args: {
+            writeRow: writeRow
+          }
         });
       }
+
+      changedDocumentIds.push(id);
+      eventBulk.events.push({
+        eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
+        documentId: id,
+        documentData: (0, _util.ensureNotFalsy)(eventDocumentData),
+        previousDocumentData: previousEventDocumentData,
+        operation: operation,
+        startTime: startTime,
+        endTime: (0, _util.now)()
+      });
     }
   });
   return {

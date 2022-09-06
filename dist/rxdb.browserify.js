@@ -497,8 +497,10 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
   var previousResults = (0, _util.ensureNotFalsy)(rxQuery._result).docsData.slice(0);
   var previousResultsMap = (0, _util.ensureNotFalsy)(rxQuery._result).docsDataMap;
   var changed = false;
-  var foundNonOptimizeable = rxChangeEvents.find(function (cE) {
-    var eventReduceEvent = (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
+  var eventReduceEvents = rxChangeEvents.map(function (cE) {
+    return (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
+  }).filter(_util.arrayFilterNotEmpty);
+  var foundNonOptimizeable = eventReduceEvents.find(function (eventReduceEvent) {
     var stateResolveFunctionInput = {
       queryParams: queryParams,
       changeEvent: eventReduceEvent,
@@ -1171,37 +1173,37 @@ validatorKey) {
 function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
   var errorFromStorage = function errorFromStorage(error) {
     try {
-      var _temp6 = function _temp6() {
-        function _temp3() {
-          return Promise.resolve(fromStorage(ret.writeRow.document)).then(function (_fromStorage6) {
-            ret.writeRow.document = _fromStorage6;
+      var _temp5 = function _temp5() {
+        function _temp2() {
+          return Promise.resolve(fromStorage(ret.writeRow.document)).then(function (_fromStorage4) {
+            ret.writeRow.document = _fromStorage4;
             return ret;
           });
         }
 
-        var _temp2 = function () {
+        var _temp = function () {
           if (ret.writeRow.previous) {
-            return Promise.resolve(fromStorage(ret.writeRow.previous)).then(function (_fromStorage5) {
-              ret.writeRow.previous = _fromStorage5;
+            return Promise.resolve(fromStorage(ret.writeRow.previous)).then(function (_fromStorage3) {
+              ret.writeRow.previous = _fromStorage3;
             });
           }
         }();
 
-        return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
+        return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
       };
 
       var ret = (0, _util.flatClone)(error);
       ret.writeRow = (0, _util.flatClone)(ret.writeRow);
 
-      var _temp7 = function () {
+      var _temp6 = function () {
         if (ret.documentInDb) {
-          return Promise.resolve(fromStorage(ret.documentInDb)).then(function (_fromStorage4) {
-            ret.documentInDb = _fromStorage4;
+          return Promise.resolve(fromStorage(ret.documentInDb)).then(function (_fromStorage2) {
+            ret.documentInDb = _fromStorage2;
           });
         }
       }();
 
-      return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
+      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -1360,28 +1362,20 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
       try {
         return Promise.resolve(Promise.all(eventBulk.events.map(function (event) {
           try {
-            var _event$startTime2 = event.startTime,
-                _event$endTime2 = event.endTime,
-                _event$documentId2 = event.documentId,
-                _event$eventId2 = event.eventId,
-                _event$change$operati2 = event.change.operation,
-                _event$change$id2 = event.change.id;
-            return Promise.resolve(fromStorage(event.change.doc)).then(function (_fromStorage2) {
-              var _temp = _fromStorage2;
-              return Promise.resolve(fromStorage(event.change.previous)).then(function (_fromStorage3) {
-                return {
-                  eventId: _event$eventId2,
-                  documentId: _event$documentId2,
-                  endTime: _event$endTime2,
-                  startTime: _event$startTime2,
-                  change: {
-                    id: _event$change$id2,
-                    operation: _event$change$operati2,
-                    doc: _temp,
-                    previous: _fromStorage3
-                  }
-                };
-              });
+            return Promise.resolve(Promise.all([fromStorage(event.documentData), fromStorage(event.previousDocumentData)])).then(function (_ref5) {
+              var documentData = _ref5[0],
+                  previousDocumentData = _ref5[1];
+              var ev = {
+                operation: event.operation,
+                eventId: event.eventId,
+                documentId: event.documentId,
+                endTime: event.endTime,
+                startTime: event.startTime,
+                documentData: documentData,
+                previousDocumentData: previousDocumentData,
+                isLocal: false
+              };
+              return ev;
             });
           } catch (e) {
             return Promise.reject(e);
@@ -2079,7 +2073,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                 previousDoc._rev = writeDoc._rev;
                 event = {
                   operation: 'DELETE',
-                  doc: null,
+                  doc: writeDoc,
                   id: id,
                   previous: previousDoc
                 };
@@ -2181,7 +2175,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                             });
                             event = {
                               operation: 'DELETE',
-                              doc: null,
+                              doc: writeRow.document,
                               id: resultRow.id,
                               previous: previousDoc
                             };
@@ -2662,7 +2656,9 @@ function changeEventToNormal(pouchDBInstance, primaryPath, change, startTime, en
   var storageChangeEvent = {
     eventId: (0, _pouchdbHelper.getEventKey)(pouchDBInstance, primary, change),
     documentId: primary,
-    change: change,
+    documentData: change.doc,
+    previousDocumentData: change.previous,
+    operation: change.operation,
     startTime: startTime,
     endTime: endTime
   };
@@ -3850,12 +3846,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       emittedEventBulkIds.add(eventBulk.id); // rewrite primaryPath of all events
 
       eventBulk.events.forEach(function (event) {
-        if (event.change.doc) {
-          event.change.doc = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this.primaryPath, event.change.doc);
+        if (event.documentData) {
+          event.documentData = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this.primaryPath, event.documentData);
         }
 
-        if (event.change.previous) {
-          event.change.previous = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this.primaryPath, event.change.previous);
+        if (event.previousDocumentData) {
+          event.previousDocumentData = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this.primaryPath, event.previousDocumentData);
         }
       });
 
@@ -6154,25 +6150,7 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFu
       var ret = {
         checkpoint: eventBulk.checkpoint,
         documents: eventBulk.events.map(function (event) {
-          /**
-           * TODO the event object should be properly redesigned
-           * to how RxDB does use it.
-           * This requires touching the event-reduce-js library
-           * and others. But it would remove much complexity
-           * from RxDBs event handling.
-           */
-          if (event.change.doc) {
-            return (0, _helper.writeDocToDocState)(event.change.doc);
-          } else {
-            var useDoc = (0, _util.ensureNotFalsy)(event.change.previous);
-
-            if (event.change.operation === 'DELETE') {
-              useDoc = (0, _util.flatClone)(useDoc);
-              useDoc._deleted = true;
-            }
-
-            return (0, _helper.writeDocToDocState)(useDoc);
-          }
+          return (0, _helper.writeDocToDocState)((0, _util.ensureNotFalsy)(event.documentData));
         })
       };
       return ret;
@@ -6715,13 +6693,7 @@ function startReplicationUpstream(state) {
         }
 
         docs = docs.concat(taskWithTime.task.events.map(function (r) {
-          if (r.change.operation === 'DELETE') {
-            var ret = (0, _util.flatClone)(r.change.previous);
-            ret._deleted = true;
-            return ret;
-          } else {
-            return r.change.doc;
-          }
+          return r.documentData;
         }));
         checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);
       }
@@ -6960,6 +6932,13 @@ function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
     return rxChangeEvent.previousDocumentData;
   }
 }
+/**
+ * Might return null which means an
+ * already deleted document got modified but still is deleted.
+ * Theses kind of events are not relevant for the event-reduce algorithm
+ * and must be filtered out.
+ */
+
 
 function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
   switch (rxChangeEvent.operation) {
@@ -11348,25 +11327,8 @@ function stackCheckpoints(checkpoints) {
 }
 
 function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
-  var documentData;
-  /**
-   * TODO
-   * this data design is shit,
-   * instead of having the documentData depending on the operation,
-   * we should always have a current doc data, that might or might not
-   * have set _deleted to true.
-   */
-
-  if (rxStorageChangeEvent.change.operation !== 'DELETE') {
-    documentData = rxStorageChangeEvent.change.doc;
-  }
-
-  var previousDocumentData;
-
-  if (rxStorageChangeEvent.change.operation !== 'INSERT') {
-    previousDocumentData = rxStorageChangeEvent.change.previous;
-  }
-
+  var documentData = rxStorageChangeEvent.documentData;
+  var previousDocumentData = rxStorageChangeEvent.previousDocumentData;
   var ret = {
     eventId: rxStorageChangeEvent.eventId,
     documentId: rxStorageChangeEvent.documentId,
@@ -11374,7 +11336,7 @@ function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxColl
     startTime: rxStorageChangeEvent.startTime,
     endTime: rxStorageChangeEvent.endTime,
     isLocal: isLocal,
-    operation: rxStorageChangeEvent.change.operation,
+    operation: rxStorageChangeEvent.operation,
     documentData: _overwritable.overwritable.deepFreezeWhenDevMode(documentData),
     previousDocumentData: _overwritable.overwritable.deepFreezeWhenDevMode(previousDocumentData)
   };
@@ -11486,12 +11448,9 @@ bulkWriteRows, context) {
         eventBulk.events.push({
           eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
           documentId: id,
-          change: {
-            doc: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document,
-            id: id,
-            operation: 'INSERT',
-            previous: null
-          },
+          operation: 'INSERT',
+          documentData: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document,
+          previousDocumentData: hasAttachments && writeRow.previous ? stripAttachmentsDataFromDocument(writeRow.previous) : writeRow.previous,
           startTime: startTime,
           endTime: (0, _util.now)()
         });
@@ -11582,51 +11541,40 @@ bulkWriteRows, context) {
         }
       }
 
-      var change = null;
       var writeDoc = writeRow.document;
+      var eventDocumentData = null;
+      var previousEventDocumentData = null;
+      var operation = null;
 
       if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
-        change = {
-          id: id,
-          operation: 'INSERT',
-          previous: null,
-          doc: hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc
-        };
+        operation = 'INSERT';
+        eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc;
       } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
-        change = {
-          id: id,
-          operation: 'UPDATE',
-          previous: writeRow.previous,
-          doc: hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc
-        };
-      } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
-        change = {
-          id: id,
-          operation: 'DELETE',
-          previous: writeRow.previous,
-          doc: null
-        };
-      }
-
-      if (!change) {
-        if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {// deleted doc got overwritten with other deleted doc -> do not send an event
-        } else {
-          throw (0, _rxError.newRxError)('SNH', {
-            args: {
-              writeRow: writeRow
-            }
-          });
-        }
+        operation = 'UPDATE';
+        eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc;
+        previousEventDocumentData = writeRow.previous;
+      } else if (writeDoc._deleted) {
+        operation = 'DELETE';
+        eventDocumentData = (0, _util.ensureNotFalsy)(writeRow.document);
+        previousEventDocumentData = writeRow.previous;
       } else {
-        changedDocumentIds.push(id);
-        eventBulk.events.push({
-          eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
-          documentId: id,
-          change: change,
-          startTime: startTime,
-          endTime: (0, _util.now)()
+        throw (0, _rxError.newRxError)('SNH', {
+          args: {
+            writeRow: writeRow
+          }
         });
       }
+
+      changedDocumentIds.push(id);
+      eventBulk.events.push({
+        eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
+        documentId: id,
+        documentData: (0, _util.ensureNotFalsy)(eventDocumentData),
+        previousDocumentData: previousEventDocumentData,
+        operation: operation,
+        startTime: startTime,
+        endTime: (0, _util.now)()
+      });
     }
   });
   return {
@@ -12119,6 +12067,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RX_META_LWT_MINIMUM = exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
 exports.adapterObject = adapterObject;
+exports.arrayFilterNotEmpty = arrayFilterNotEmpty;
 exports.b64DecodeUnicode = b64DecodeUnicode;
 exports.b64EncodeUnicode = b64EncodeUnicode;
 exports.batchArray = batchArray;
@@ -12713,6 +12662,20 @@ function isMaybeReadonlyArray(x) {
   // The type predicate here allows for both `Array<T>` and `Readonly<Array<T>>` to pass a type check while
   // still performing runtime type inspection.
   return Array.isArray(x);
+}
+/**
+ * Use this in array.filter() to remove all empty slots
+ * and have the correct typings afterwards.
+ * @link https://stackoverflow.com/a/46700791/3443137
+ */
+
+
+function arrayFilterNotEmpty(value) {
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  return true;
 }
 /**
  * NO! We cannot just use btoa() and atob()

@@ -84,37 +84,37 @@ validatorKey) {
 export function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
   var errorFromStorage = function errorFromStorage(error) {
     try {
-      var _temp6 = function _temp6() {
-        function _temp3() {
-          return Promise.resolve(fromStorage(ret.writeRow.document)).then(function (_fromStorage6) {
-            ret.writeRow.document = _fromStorage6;
+      var _temp5 = function _temp5() {
+        function _temp2() {
+          return Promise.resolve(fromStorage(ret.writeRow.document)).then(function (_fromStorage4) {
+            ret.writeRow.document = _fromStorage4;
             return ret;
           });
         }
 
-        var _temp2 = function () {
+        var _temp = function () {
           if (ret.writeRow.previous) {
-            return Promise.resolve(fromStorage(ret.writeRow.previous)).then(function (_fromStorage5) {
-              ret.writeRow.previous = _fromStorage5;
+            return Promise.resolve(fromStorage(ret.writeRow.previous)).then(function (_fromStorage3) {
+              ret.writeRow.previous = _fromStorage3;
             });
           }
         }();
 
-        return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
+        return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
       };
 
       var ret = flatClone(error);
       ret.writeRow = flatClone(ret.writeRow);
 
-      var _temp7 = function () {
+      var _temp6 = function () {
         if (ret.documentInDb) {
-          return Promise.resolve(fromStorage(ret.documentInDb)).then(function (_fromStorage4) {
-            ret.documentInDb = _fromStorage4;
+          return Promise.resolve(fromStorage(ret.documentInDb)).then(function (_fromStorage2) {
+            ret.documentInDb = _fromStorage2;
           });
         }
       }();
 
-      return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
+      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -273,28 +273,20 @@ export function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStora
       try {
         return Promise.resolve(Promise.all(eventBulk.events.map(function (event) {
           try {
-            var _event$startTime2 = event.startTime,
-                _event$endTime2 = event.endTime,
-                _event$documentId2 = event.documentId,
-                _event$eventId2 = event.eventId,
-                _event$change$operati2 = event.change.operation,
-                _event$change$id2 = event.change.id;
-            return Promise.resolve(fromStorage(event.change.doc)).then(function (_fromStorage2) {
-              var _temp = _fromStorage2;
-              return Promise.resolve(fromStorage(event.change.previous)).then(function (_fromStorage3) {
-                return {
-                  eventId: _event$eventId2,
-                  documentId: _event$documentId2,
-                  endTime: _event$endTime2,
-                  startTime: _event$startTime2,
-                  change: {
-                    id: _event$change$id2,
-                    operation: _event$change$operati2,
-                    doc: _temp,
-                    previous: _fromStorage3
-                  }
-                };
-              });
+            return Promise.resolve(Promise.all([fromStorage(event.documentData), fromStorage(event.previousDocumentData)])).then(function (_ref5) {
+              var documentData = _ref5[0],
+                  previousDocumentData = _ref5[1];
+              var ev = {
+                operation: event.operation,
+                eventId: event.eventId,
+                documentId: event.documentId,
+                endTime: event.endTime,
+                startTime: event.startTime,
+                documentData: documentData,
+                previousDocumentData: previousDocumentData,
+                isLocal: false
+              };
+              return ev;
             });
           } catch (e) {
             return Promise.reject(e);

@@ -1,6 +1,6 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { ensureNotFalsy, flatClone, PROMISE_RESOLVE_FALSE } from '../util';
+import { ensureNotFalsy, PROMISE_RESOLVE_FALSE } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { resolveConflictError } from './conflicts';
 import { writeDocToDocState } from './helper';
@@ -330,13 +330,7 @@ export function startReplicationUpstream(state) {
         }
 
         docs = docs.concat(taskWithTime.task.events.map(function (r) {
-          if (r.change.operation === 'DELETE') {
-            var ret = flatClone(r.change.previous);
-            ret._deleted = true;
-            return ret;
-          } else {
-            return r.change.doc;
-          }
+          return r.documentData;
         }));
         checkpoint = stackCheckpoints([checkpoint, taskWithTime.task.checkpoint]);
       }

@@ -20,6 +20,13 @@ function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
     return rxChangeEvent.previousDocumentData;
   }
 }
+/**
+ * Might return null which means an
+ * already deleted document got modified but still is deleted.
+ * Theses kind of events are not relevant for the event-reduce algorithm
+ * and must be filtered out.
+ */
+
 
 function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
   switch (rxChangeEvent.operation) {

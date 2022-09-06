@@ -151,6 +151,12 @@ export declare function getFromObjectOrThrow<V>(obj: {
  */
 export declare function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]>;
 /**
+ * Use this in array.filter() to remove all empty slots
+ * and have the correct typings afterwards.
+ * @link https://stackoverflow.com/a/46700791/3443137
+ */
+export declare function arrayFilterNotEmpty<TValue>(value: TValue | null | undefined): value is TValue;
+/**
  * atob() and btoa() do not work well with non ascii chars,
  * so we have to use these helper methods instead.
  * @link https://stackoverflow.com/a/30106551/3443137

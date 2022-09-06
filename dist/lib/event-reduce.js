@@ -94,8 +94,10 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
   var previousResults = (0, _util.ensureNotFalsy)(rxQuery._result).docsData.slice(0);
   var previousResultsMap = (0, _util.ensureNotFalsy)(rxQuery._result).docsDataMap;
   var changed = false;
-  var foundNonOptimizeable = rxChangeEvents.find(function (cE) {
-    var eventReduceEvent = (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
+  var eventReduceEvents = rxChangeEvents.map(function (cE) {
+    return (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
+  }).filter(_util.arrayFilterNotEmpty);
+  var foundNonOptimizeable = eventReduceEvents.find(function (eventReduceEvent) {
     var stateResolveFunctionInput = {
       queryParams: queryParams,
       changeEvent: eventReduceEvent,

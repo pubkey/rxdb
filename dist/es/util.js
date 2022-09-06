@@ -503,6 +503,19 @@ export function isMaybeReadonlyArray(x) {
   return Array.isArray(x);
 }
 /**
+ * Use this in array.filter() to remove all empty slots
+ * and have the correct typings afterwards.
+ * @link https://stackoverflow.com/a/46700791/3443137
+ */
+
+export function arrayFilterNotEmpty(value) {
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  return true;
+}
+/**
  * NO! We cannot just use btoa() and atob()
  * because they do not work correctly with binary data.
  * @link https://stackoverflow.com/q/30106476/3443137

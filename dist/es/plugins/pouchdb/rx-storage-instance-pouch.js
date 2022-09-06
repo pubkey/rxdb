@@ -318,12 +318,12 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
       emittedEventBulkIds.add(eventBulk.id); // rewrite primaryPath of all events
 
       eventBulk.events.forEach(function (event) {
-        if (event.change.doc) {
-          event.change.doc = pouchSwapIdToPrimary(_this.primaryPath, event.change.doc);
+        if (event.documentData) {
+          event.documentData = pouchSwapIdToPrimary(_this.primaryPath, event.documentData);
         }
 
-        if (event.change.previous) {
-          event.change.previous = pouchSwapIdToPrimary(_this.primaryPath, event.change.previous);
+        if (event.previousDocumentData) {
+          event.previousDocumentData = pouchSwapIdToPrimary(_this.primaryPath, event.previousDocumentData);
         }
       });
 

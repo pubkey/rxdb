@@ -1,4 +1,4 @@
-import type { InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType, RxDatabase, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstance } from './types';
+import type { CollectionsOfDatabase, InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType, RxDatabase, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstance } from './types';
 export declare const INTERNAL_CONTEXT_COLLECTION = "collection";
 export declare const INTERNAL_CONTEXT_STORAGE_TOKEN = "storage-token";
 export declare const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = "plugin-replication-primitives";
@@ -25,4 +25,4 @@ export declare function getAllCollectionDocuments(storage: RxStorage<any, any>, 
  */
 export declare const STORAGE_TOKEN_DOCUMENT_KEY = "storageToken";
 export declare const STORAGE_TOKEN_DOCUMENT_ID: string;
-export declare function ensureStorageTokenDocumentExists<Collections = any>(rxDatabase: RxDatabase<Collections>): Promise<RxDocumentData<InternalStoreStorageTokenDocType>>;
+export declare function ensureStorageTokenDocumentExists<Collections extends CollectionsOfDatabase = any>(rxDatabase: RxDatabase<Collections>): Promise<RxDocumentData<InternalStoreStorageTokenDocType>>;

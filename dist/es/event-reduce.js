@@ -1,6 +1,6 @@
 import { calculateActionName, runAction } from 'event-reduce-js';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
-import { clone, ensureNotFalsy } from './util';
+import { arrayFilterNotEmpty, clone, ensureNotFalsy } from './util';
 import { normalizeMangoQuery } from './rx-query-helper';
 export function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
@@ -76,8 +76,10 @@ export function calculateNewResults(rxQuery, rxChangeEvents) {
   var previousResults = ensureNotFalsy(rxQuery._result).docsData.slice(0);
   var previousResultsMap = ensureNotFalsy(rxQuery._result).docsDataMap;
   var changed = false;
-  var foundNonOptimizeable = rxChangeEvents.find(function (cE) {
-    var eventReduceEvent = rxChangeEventToEventReduceChangeEvent(cE);
+  var eventReduceEvents = rxChangeEvents.map(function (cE) {
+    return rxChangeEventToEventReduceChangeEvent(cE);
+  }).filter(arrayFilterNotEmpty);
+  var foundNonOptimizeable = eventReduceEvents.find(function (eventReduceEvent) {
     var stateResolveFunctionInput = {
       queryParams: queryParams,
       changeEvent: eventReduceEvent,

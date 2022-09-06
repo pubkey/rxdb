@@ -10,8 +10,6 @@ var _rxjs = require("rxjs");
 
 var _util = require("../../util");
 
-var _rxError = require("../../rx-error");
-
 var _dexieHelper = require("./dexie-helper");
 
 var _dexieQuery = require("./dexie-query");
@@ -21,6 +19,8 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
+
+var _rxError = require("../../rx-error");
 
 var instanceId = (0, _util.now)();
 
@@ -51,20 +51,26 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
           success: {},
           error: {}
         };
-        var eventBulk = {
-          id: (0, _util.randomCouchString)(10),
-          events: [],
-          checkpoint: null,
-          context: context
-        };
         var documentKeys = documentWrites.map(function (writeRow) {
           return writeRow.document[_this2.primaryPath];
         });
+        var categorized = null;
         return Promise.resolve(state.dexieDb.transaction('rw', state.dexieTable, state.dexieDeletedTable, function () {
           try {
-            return Promise.resolve((0, _dexieHelper.getDocsInDb)(_this2.internals, documentKeys)).then(function (docsInDb) {
-              docsInDb = docsInDb.map(function (d) {
-                return d ? (0, _dexieHelper.fromDexieToStorage)(d) : d;
+            var docsInDbMap = new Map();
+            return Promise.resolve((0, _dexieHelper.getDocsInDb)(_this2.internals, documentKeys)).then(function (docsInDbWithInternals) {
+              docsInDbWithInternals.forEach(function (docWithDexieInternals) {
+                var doc = docWithDexieInternals ? (0, _dexieHelper.fromDexieToStorage)(docWithDexieInternals) : docWithDexieInternals;
+
+                if (doc) {
+                  docsInDbMap.set(doc[_this2.primaryPath], doc);
+                }
+
+                return doc;
+              });
+              categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(_this2, _this2.primaryPath, docsInDbMap, documentWrites, context);
+              categorized.errors.forEach(function (err) {
+                ret.error[err.documentId] = err;
               });
               /**
                * Batch up the database operations
@@ -75,133 +81,31 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
               var bulkRemoveDocs = [];
               var bulkPutDeletedDocs = [];
               var bulkRemoveDeletedDocs = [];
-              var changesIds = [];
-              documentWrites.forEach(function (writeRow, docIndex) {
-                var id = writeRow.document[_this2.primaryPath];
-                var startTime = (0, _util.now)();
-                var documentInDb = docsInDb[docIndex];
+              categorized.bulkInsertDocs.forEach(function (row) {
+                var docId = row.document[_this2.primaryPath];
+                ret.success[docId] = row.document;
+                bulkPutDocs.push(row.document);
+              });
+              categorized.bulkUpdateDocs.forEach(function (row) {
+                var docId = row.document[_this2.primaryPath];
+                ret.success[docId] = row.document;
 
-                if (!documentInDb) {
-                  /**
-                   * It is possible to insert already deleted documents,
-                   * this can happen on replication.
-                   */
-                  var insertedIsDeleted = writeRow.document._deleted ? true : false;
-                  var writeDoc = Object.assign({}, writeRow.document, {
-                    _deleted: insertedIsDeleted,
-                    // TODO attachments are currently not working with dexie.js
-                    _attachments: {}
-                  });
-                  changesIds.push(id);
-
-                  if (insertedIsDeleted) {
-                    bulkPutDeletedDocs.push(writeDoc);
-                  } else {
-                    bulkPutDocs.push(writeDoc);
-                    eventBulk.events.push({
-                      eventId: (0, _rxStorageHelper.getUniqueDeterministicEventKey)(_this2, _this2.primaryPath, writeRow),
-                      documentId: id,
-                      change: {
-                        doc: writeDoc,
-                        id: id,
-                        operation: 'INSERT',
-                        previous: null
-                      },
-                      startTime: startTime,
-                      // will be filled up before the event is pushed into the changestream
-                      endTime: startTime
-                    });
-                  }
-
-                  ret.success[id] = writeDoc;
+                if (row.document._deleted && row.previous && !row.previous._deleted) {
+                  // newly deleted
+                  bulkRemoveDocs.push(docId);
+                  bulkPutDeletedDocs.push(row.document);
+                } else if (row.document._deleted && row.previous && row.previous._deleted) {
+                  // deleted was modified but is still deleted
+                  bulkPutDeletedDocs.push(row.document);
+                } else if (!row.document._deleted) {
+                  // non-deleted was changed
+                  bulkPutDocs.push(row.document);
                 } else {
-                  // update existing document
-                  var revInDb = documentInDb._rev;
-
-                  if (!writeRow.previous || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
-                    // conflict error
-                    var err = {
-                      isError: true,
-                      status: 409,
-                      documentId: id,
-                      writeRow: writeRow,
-                      documentInDb: documentInDb
-                    };
-                    ret.error[id] = err;
-                  } else {
-                    var isDeleted = !!writeRow.document._deleted;
-
-                    var _writeDoc = Object.assign({}, writeRow.document, {
-                      _deleted: isDeleted,
-                      // TODO attachments are currently not working with lokijs
-                      _attachments: {}
-                    });
-
-                    changesIds.push(id);
-                    var change = null;
-
-                    if (writeRow.previous && writeRow.previous._deleted && !_writeDoc._deleted) {
-                      /**
-                       * Insert document that was deleted before.
-                       */
-                      bulkPutDocs.push(_writeDoc);
-                      bulkRemoveDeletedDocs.push(id);
-                      change = {
-                        id: id,
-                        operation: 'INSERT',
-                        previous: null,
-                        doc: _writeDoc
-                      };
-                    } else if (writeRow.previous && !writeRow.previous._deleted && !_writeDoc._deleted) {
-                      /**
-                       * Update existing non-deleted document
-                       */
-                      bulkPutDocs.push(_writeDoc);
-                      change = {
-                        id: id,
-                        operation: 'UPDATE',
-                        previous: writeRow.previous,
-                        doc: _writeDoc
-                      };
-                    } else if (writeRow.previous && !writeRow.previous._deleted && _writeDoc._deleted) {
-                      /**
-                       * Set non-deleted document to deleted.
-                       */
-                      bulkPutDeletedDocs.push(_writeDoc);
-                      bulkRemoveDocs.push(id);
-                      change = {
-                        id: id,
-                        operation: 'DELETE',
-                        previous: writeRow.previous,
-                        doc: null
-                      };
-                    } else if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {
-                      // deleted doc was overwritten with other deleted doc
-                      bulkPutDeletedDocs.push(_writeDoc);
+                  throw (0, _rxError.newRxError)('SNH', {
+                    args: {
+                      row: row
                     }
-
-                    if (!change) {
-                      if (writeRow.previous && writeRow.previous._deleted && writeRow.document._deleted) {// deleted doc got overwritten with other deleted doc -> do not send an event
-                      } else {
-                        throw (0, _rxError.newRxError)('SNH', {
-                          args: {
-                            writeRow: writeRow
-                          }
-                        });
-                      }
-                    } else {
-                      eventBulk.events.push({
-                        eventId: (0, _rxStorageHelper.getUniqueDeterministicEventKey)(_this2, _this2.primaryPath, writeRow),
-                        documentId: id,
-                        change: change,
-                        startTime: startTime,
-                        // will be filled up before the event is pushed into the changestream
-                        endTime: startTime
-                      });
-                    }
-
-                    ret.success[id] = _writeDoc;
-                  }
+                  });
                 }
               });
               return Promise.resolve(Promise.all([bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs.map(function (d) {
@@ -214,18 +118,18 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
             return Promise.reject(e);
           }
         })).then(function () {
-          if (eventBulk.events.length > 0) {
+          if ((0, _util.ensureNotFalsy)(categorized).eventBulk.events.length > 0) {
             var lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(_this2.primaryPath, Object.values(ret.success));
-            eventBulk.checkpoint = {
+            (0, _util.ensureNotFalsy)(categorized).eventBulk.checkpoint = {
               id: lastState[_this2.primaryPath],
               lwt: lastState._meta.lwt
             };
             var endTime = (0, _util.now)();
-            eventBulk.events.forEach(function (event) {
+            (0, _util.ensureNotFalsy)(categorized).eventBulk.events.forEach(function (event) {
               return event.endTime = endTime;
             });
 
-            _this2.changes$.next(eventBulk);
+            _this2.changes$.next((0, _util.ensureNotFalsy)(categorized).eventBulk);
           }
 
           return ret;

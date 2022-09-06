@@ -94,7 +94,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                 previousDoc._rev = writeDoc._rev;
                 event = {
                   operation: 'DELETE',
-                  doc: null,
+                  doc: writeDoc,
                   id: id,
                   previous: previousDoc
                 };
@@ -196,7 +196,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                             });
                             event = {
                               operation: 'DELETE',
-                              doc: null,
+                              doc: writeRow.document,
                               id: resultRow.id,
                               previous: previousDoc
                             };
@@ -677,7 +677,9 @@ function changeEventToNormal(pouchDBInstance, primaryPath, change, startTime, en
   var storageChangeEvent = {
     eventId: (0, _pouchdbHelper.getEventKey)(pouchDBInstance, primary, change),
     documentId: primary,
-    change: change,
+    documentData: change.doc,
+    previousDocumentData: change.previous,
+    operation: change.operation,
     startTime: startTime,
     endTime: endTime
   };

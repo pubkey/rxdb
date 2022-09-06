@@ -343,13 +343,7 @@ function startReplicationUpstream(state) {
         }
 
         docs = docs.concat(taskWithTime.task.events.map(function (r) {
-          if (r.change.operation === 'DELETE') {
-            var ret = (0, _util.flatClone)(r.change.previous);
-            ret._deleted = true;
-            return ret;
-          } else {
-            return r.change.doc;
-          }
+          return r.documentData;
         }));
         checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);
       }
