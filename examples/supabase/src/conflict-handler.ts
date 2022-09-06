@@ -5,16 +5,12 @@ export const conflictHandler: RxConflictHandler<RxHeroDocumentType> = function (
     i: RxConflictHandlerInput<RxHeroDocumentType>,
     _context: string
 ) {
-
-    console.log('conflictHandler called!');
-    console.dir(i);
-
     if (
         i.newDocumentState.replicationRevision === i.realMasterState.replicationRevision
     ) {
         /**
-         * If the documents are deep equal (== have the same replicationRevision)
-         * we have no conflict.
+         * If the documents are equal (== have the same replicationRevision)
+         * -> we have no conflict.
          */
         return Promise.resolve({
             isEqual: true
@@ -22,7 +18,7 @@ export const conflictHandler: RxConflictHandler<RxHeroDocumentType> = function (
     }
 
     /**
-     * Like the RxDB default conflict handler we will always
+     * Like the RxDB default conflict handler, we will always
      * drop the fork state and use the master state instead.
      */
     return Promise.resolve({
