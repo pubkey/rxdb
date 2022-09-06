@@ -4,7 +4,7 @@ import { StringKeys } from './util';
 /**
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
-export type JsonSchemaTypes = 'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string';
+export type JsonSchemaTypes = 'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string' | (string & {});
 
 export type CompositePrimaryKey<RxDocType> = {
     /**
