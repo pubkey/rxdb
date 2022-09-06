@@ -2,7 +2,6 @@
  * Helper functions for accessing the RxStorage instances.
  */
 
-import type { ChangeEvent } from 'event-reduce-js';
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import {
@@ -96,21 +95,8 @@ export function storageChangeEventToRxChangeEvent<DocType>(
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
     rxCollection?: RxCollection,
 ): RxChangeEvent<DocType> {
-    let documentData;
-    /**
-     * TODO
-     * this data design is shit,
-     * instead of having the documentData depending on the operation,
-     * we should always have a current doc data, that might or might not
-     * have set _deleted to true.
-     */
-    if (rxStorageChangeEvent.change.operation !== 'DELETE') {
-        documentData = rxStorageChangeEvent.change.doc;
-    }
-    let previousDocumentData;
-    if (rxStorageChangeEvent.change.operation !== 'INSERT') {
-        previousDocumentData = rxStorageChangeEvent.change.previous;
-    }
+    const documentData = rxStorageChangeEvent.documentData;
+    const previousDocumentData = rxStorageChangeEvent.previousDocumentData;
     const ret: RxChangeEvent<DocType> = {
         eventId: rxStorageChangeEvent.eventId,
         documentId: rxStorageChangeEvent.documentId,
@@ -118,7 +104,7 @@ export function storageChangeEventToRxChangeEvent<DocType>(
         startTime: rxStorageChangeEvent.startTime,
         endTime: rxStorageChangeEvent.endTime,
         isLocal,
-        operation: rxStorageChangeEvent.change.operation,
+        operation: rxStorageChangeEvent.operation,
         documentData: overwritable.deepFreezeWhenDevMode(documentData as any),
         previousDocumentData: overwritable.deepFreezeWhenDevMode(previousDocumentData as any)
     };
@@ -262,12 +248,9 @@ export function categorizeBulkWriteRows<RxDocType>(
                 eventBulk.events.push({
                     eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath as any, writeRow),
                     documentId: id as any,
-                    change: {
-                        doc: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document,
-                        id: id as any,
-                        operation: 'INSERT',
-                        previous: null
-                    },
+                    operation: 'INSERT',
+                    documentData: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document as any,
+                    previousDocumentData: hasAttachments && writeRow.previous ? stripAttachmentsDataFromDocument(writeRow.previous) : writeRow.previous as any,
                     startTime,
                     endTime: now()
                 });
@@ -366,49 +349,37 @@ export function categorizeBulkWriteRows<RxDocType>(
                 }
             }
 
-            let change: ChangeEvent<RxDocumentData<RxDocType>> | null = null;
             const writeDoc = writeRow.document;
+
+            let eventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
+            let previousEventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
+            let operation: 'INSERT' | 'UPDATE' | 'DELETE' = null as any;
+
             if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
-                change = {
-                    id: id as any,
-                    operation: 'INSERT',
-                    previous: null,
-                    doc: hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc
-                };
+                operation = 'INSERT';
+                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc;
             } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
-                change = {
-                    id: id as any,
-                    operation: 'UPDATE',
-                    previous: writeRow.previous,
-                    doc: hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc
-                };
-            } else if (writeRow.previous && !writeRow.previous._deleted && writeDoc._deleted) {
-                change = {
-                    id: id as any,
-                    operation: 'DELETE',
-                    previous: writeRow.previous,
-                    doc: null
-                };
-            }
-            if (!change) {
-                if (
-                    writeRow.previous && writeRow.previous._deleted &&
-                    writeRow.document._deleted
-                ) {
-                    // deleted doc got overwritten with other deleted doc -> do not send an event
-                } else {
-                    throw newRxError('SNH', { args: { writeRow } });
-                }
+                operation = 'UPDATE';
+                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc;
+                previousEventDocumentData = writeRow.previous;
+            } else if (writeDoc._deleted) {
+                operation = 'DELETE';
+                eventDocumentData = ensureNotFalsy(writeRow.document);
+                previousEventDocumentData = writeRow.previous;
             } else {
-                changedDocumentIds.push(id);
-                eventBulk.events.push({
-                    eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath as any, writeRow),
-                    documentId: id as any,
-                    change,
-                    startTime,
-                    endTime: now()
-                });
+                throw newRxError('SNH', { args: { writeRow } });
             }
+
+            changedDocumentIds.push(id);
+            eventBulk.events.push({
+                eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath as any, writeRow),
+                documentId: id as any,
+                documentData: ensureNotFalsy(eventDocumentData),
+                previousDocumentData: previousEventDocumentData,
+                operation: operation,
+                startTime,
+                endTime: now()
+            });
         }
     });
 

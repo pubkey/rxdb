@@ -2,6 +2,7 @@ import { mergeMap } from 'rxjs/operators';
 import type {
     BulkWriteRow,
     EventBulk,
+    RxChangeEvent,
     RxDocumentData,
     RxDocumentDataById,
     RxJsonSchema,
@@ -124,7 +125,7 @@ export function wrapRxStorageInstance<RxDocType>(
         }
         return await modifyToStorage(docData);
     }
-    async function fromStorage(docData: RxDocumentData<any>): Promise<RxDocumentData<RxDocType>> {
+    async function fromStorage(docData: RxDocumentData<any> | null): Promise<RxDocumentData<RxDocType>> {
         if (!docData) {
             return docData;
         }
@@ -233,18 +234,24 @@ export function wrapRxStorageInstance<RxDocType>(
             mergeMap(async (eventBulk) => {
                 const useEvents = await Promise.all(
                     eventBulk.events.map(async (event) => {
-                        return {
+                        const [
+                            documentData,
+                            previousDocumentData
+                        ] = await Promise.all([
+                            fromStorage(event.documentData),
+                            fromStorage(event.previousDocumentData)
+                        ]);
+                        const ev: RxChangeEvent<RxDocType> = {
+                            operation: event.operation,
                             eventId: event.eventId,
                             documentId: event.documentId,
                             endTime: event.endTime,
                             startTime: event.startTime,
-                            change: {
-                                id: event.change.id,
-                                operation: event.change.operation,
-                                doc: await fromStorage(event.change.doc) as any,
-                                previous: await fromStorage(event.change.previous) as any
-                            }
-                        }
+                            documentData: documentData as any,
+                            previousDocumentData: previousDocumentData as any,
+                            isLocal: false
+                        };
+                        return ev;
                     })
                 );
                 const ret: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {

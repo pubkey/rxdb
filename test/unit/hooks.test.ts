@@ -12,7 +12,8 @@ import {
     createRxDatabase,
     isRxDocument,
     promiseWait,
-    randomCouchString
+    randomCouchString,
+    RxChangeEvent
 } from '../../';
 
 
@@ -364,6 +365,29 @@ config.parallel('hooks.test.js', () => {
 
                     await c.bulkRemove(primaryList);
                     assert.strictEqual(count, 5);
+
+                    c.database.destroy();
+                });
+                it('should keep the field value that was added by the hook', async () => {
+                    const c = await humansCollection.create(5);
+                    const firstDoc = await c.findOne().exec(true);
+
+                    const emitted: RxChangeEvent<any>[] = [];
+                    c.$.subscribe(event => emitted.push(event));
+
+                    c.preRemove((data) => {
+                        data.lastName = 'by-hook';
+                        return data;
+                    }, true);
+                    await firstDoc.remove();
+
+                    // check in storage
+                    const docInStorage = await c.storageInstance.findDocumentsById([firstDoc.primary], true);
+                    assert.strictEqual(docInStorage[firstDoc.primary].lastName, 'by-hook');
+
+                    // check the emitted event
+                    const ev = emitted[0];
+                    assert.strictEqual(ev.documentData.lastName, 'by-hook');
 
                     c.database.destroy();
                 });
