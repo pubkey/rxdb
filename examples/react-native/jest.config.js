@@ -1,5 +1,8 @@
 module.exports = {
-    preset: 'jest-expo',
+    "projects": [
+       { "preset": "jest-expo/ios" },
+       { "preset": "jest-expo/android" }
+    ],
     transform: {},
     globals: {
         'ts-jest': {
