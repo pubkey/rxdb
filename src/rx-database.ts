@@ -508,7 +508,7 @@ export class RxDatabaseBase<
             .then(() => Promise.all(this.onDestroy.map(fn => fn())))
             // destroy all collections
             .then(() => Promise.all(
-                Object.keys(this.collections)
+                Object.keys(this.collections as any)
                     .map(key => (this.collections as any)[key])
                     .map(col => col.destroy())
             ))

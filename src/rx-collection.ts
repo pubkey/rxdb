@@ -306,7 +306,7 @@ export class RxCollectionBase<
             };
         }
 
-        const useDocs: RxDocumentType[] = docsData.map(docData => {
+        const useDocs = docsData.map(docData => {
             const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
             return useDocData;
         });
