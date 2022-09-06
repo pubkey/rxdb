@@ -51,8 +51,6 @@ Instead of handling local conflicts, in most cases it is easier to ensure that t
 
 A replication conflict appears when mutliple clients write to the same documents at once and these documents are then replicated to the backend server. 
 
-When you replicate with the [Graphql replication](./replication-graphql.md) and the [replication primitives](./replication.md), RxDB assumes that the backend server is able to **detect** and **resolve** replication conflicts. 
+When you replicate with the [Graphql replication](./replication-graphql.md) and the [replication primitives](./replication.md), RxDB assumes that conflicts are **detected** and **resolved** at the client side.
 
-So when two conflicting documents are send to the backend server, the backend server must detect the conflict which can be implemented by adding own revision flags, appending the document history, relying on the last update time and other solutions.
-
-To resolve the conflict, the backend must compare the conflicting document states and calculate a new state that might have a merge of the document versions or just drop one of them. Documents of solved conflicts will be then replicated to the clients again so that they can become in sync with the server state.
+When a document is send to the backend and the backend detected a conflict (by comparing revisions or other properties), the backend will respond with the actual document state so that the client can compare this with the local document state and create a new, resolved document state that is then pushed to the server again. [read more about the replication protocol here](./replication.md#conflict-handling)
