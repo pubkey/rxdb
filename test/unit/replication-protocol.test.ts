@@ -1048,14 +1048,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 });
             await Promise.all(promises);
 
-
-
-
             await awaitRxStorageReplicationIdle(replicationState);
-
             await ensureEqualState(masterInstance, forkInstance);
-
-
             assert.strictEqual(
                 replicationState.stats.down.downstreamResyncOnce,
                 1

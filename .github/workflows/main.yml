@@ -521,6 +521,64 @@ jobs:
           sudo sysctl -p
           npm run test:bundle
 
+
+  supabase:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+            ./examples/supabase/node_modules
+          # invalidate cache when any package-lock.json changes
+          key: ${{ runner.os }}-npm-supabase-x1-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-supabase-x1
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-supabase-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx
+      - name: prepare core
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          rm -r node_modules
+      - name: Install
+        working-directory: ./examples/supabase
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
+      - name: init supabase docker-compose
+        working-directory: ./examples/supabase
+        run: |
+          sh init-supabase.sh
+      - name: start supabase
+        working-directory: ./examples/supabase/supabase/docker
+        run: docker-compose up -d
+      - name: import database dump
+        working-directory: ./examples/supabase
+        run: sh import-dump.sh
+      - name: build
+        working-directory: ./examples/supabase
+        run: npm run build
+      - name: test
+        uses: GabrielBB/xvfb-action@v1.6
+        with:
+          working-directory: ./examples/supabase
+          run: npm run test:dexie
+
   vue:
     runs-on: ubuntu-20.04
     steps:
