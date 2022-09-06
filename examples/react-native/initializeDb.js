@@ -7,6 +7,7 @@ import PouchdbAdapterHttp from 'pouchdb-adapter-http';
 import PouchdbReplication from 'pouchdb-replication';
 // import PouchdbAdapterAsync from 'pouchdb-adapter-asyncstorage';
 
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
@@ -33,7 +34,6 @@ const isDevelopment = process.env.NODE_ENV !== 'production' || process.env.DEBUG
 
 const initialize = async () => {
     if (isDevelopment) {
-        const { RxDBDevModePlugin } = await import('rxdb/plugins/dev-mode');
         await addRxPlugin(RxDBDevModePlugin);
     }
 

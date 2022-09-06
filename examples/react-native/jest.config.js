@@ -1,7 +1,7 @@
 module.exports = {
     "projects": [
        { "preset": "jest-expo/ios" },
-       // { "preset": "jest-expo/android" } // TODO crashes when run first time
+       { "preset": "jest-expo/android" }
     ],
     transform: {},
     globals: {
