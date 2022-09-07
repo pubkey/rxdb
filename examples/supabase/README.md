@@ -7,8 +7,9 @@ This is an example of how to use RxDB on the client and replicate with a [Supaba
 1. Clone the whole [RxDB-repo](https://github.com/pubkey/rxdb) via `git clone https://github.com/pubkey/rxdb.git`
 2. Build the RxDB base project `cd rxdb && npm install && npm run build`
 3. Go into this folder `cd examples/supabase`
-    - Fetch the supabase docker containers via `sh init-supabase.sh`. This will also import the default table that is used for this example.
+    - Fetch the supabase docker containers via `sh init-supabase.sh`.
     - Run supabase via `sh start-supabase.sh` (leave this terminal open)
+    - Run `sh import-dump.sh` to import the default table that is used for this example.
 4. Install the frontend libraries via `npm run preinstall && npm install`
 5. Run the frontend via `npm run dev`
 
@@ -31,6 +32,8 @@ Conflicts are resolved on the client side which makes it easier to have a plain,
 
 To be able to **detect** and **resolve** conflicts, an additional field `replicationRevision` is added to each document/row.
 To ensure this field is updated on each write, we add the `preInsert`, `preRemove`, `preSave` hooks [when creating the database](./src/database.ts). These hooks automatically increase the revision `height` and `hash`. This works simliar to RxDB's internal [revision handling](../../docs-src/transactions-conflicts-revisions.md).
+
+![Supabase Table](./images/supabase-table.png)
 
 In the [conflictHandler](./src/conflict-handler.ts) we can compare the `replicationRevision` of two documents to detect if there is a conflict. The current `conflictHandler` drops the local state on conflict and uses the master/server state of the document. You can change the handler to project any additional logic like merging fields or cherry picking the new document state depending on some conditions.
 
