@@ -66,7 +66,7 @@ const database = await createRxDatabase({
 });
 ```
 
-## IndexedDB (new, beta)
+## IndexedDB
 
 A reimplementation of the indexeddb adapter which uses native secondary indexes. Should have a much better performance but can behave [different on some edge cases](https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules/pouchdb-adapter-indexeddb#differences-between-couchdb-and-pouchdbs-find-implementations-under-indexeddb).
 

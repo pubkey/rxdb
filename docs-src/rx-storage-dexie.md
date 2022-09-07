@@ -5,8 +5,6 @@ To store the data inside of IndexedDB in the browser, you can also use the [Dexi
 Dexie.js is a minimal wrapper around IndexedDB that has a good performance.
 For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/mingo) query handler.
 
-**IMPORTANT:** The Dexie.js `RxStorage` is in **beta** mode. It may get breaking changes in any minor new RxDB version. Use at your own risk.
-
 ## Pros 
   - Smaller bundle size then with the PouchDB storage.
   - Fast inital load even on big datasets.
