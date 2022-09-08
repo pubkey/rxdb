@@ -20,22 +20,47 @@
   <a href="https://rxdb.info/">
     <img src="./docs-src/files/logo/logo_text.svg" width="380px" />
   </a>
+  <br />
+  <br />
+  <h3 align="center">A fast, offline-first, reactive database for JavaScript Applications</h3>
 </p>
 
-<h1 align="center">RxDB</h1>
-<p align="center">
-  <strong>A realtime Database for JavaScript Applications</strong>
-</p>
+<br />
+<br />
+
+
+<h2>
+  <img height="24" width="24" src="./docs-src/files/logo/logo.svg">&nbsp;&nbsp;What is RxDB?
+</h2>
+
 
 <p align="justify">
   RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js.
   Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
-  This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits.<br />
-  To <b>replicate</b> data between your clients and server, RxDB provides modules for realtime replication with any <b>CouchDB</b> compliant endpoint and also with custom <b>GraphQL</b> endpoints. Also you can use the replication primitives plugin to create custom replications over any protocol like <b>REST</b>, <b>Websocket</b> or <b>p2p</b>.<br />
-
-
-
+  This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits but can also be used to create fast backends in Node.js.<br />
+  To <b>replicate</b> data between your clients and server, RxDB provides modules for realtime replication with any <b>CouchDB</b> compliant endpoint and also with custom <b>GraphQL</b> endpoints. Also you can use the replication to easily create custom replications over any protocol like <b>REST</b>, <b>Websocket</b> or <b>p2p</b>, compatible with your <b>existing infrastructure</b>.<br />
+  RxDB is based on a storage interface that enables you to swap out the underlaying storage engine. This increases <b>code reuse</b> because you can use the same database code for different JavaScript environments like browsers, hybrid apps, electron, node.js and others.
 </p>
+
+
+<p align="center">
+    <a href="https://github.com/pubkey/rxdb/releases"><img src="https://img.shields.io/github/v/release/pubkey/rxdb?color=%23ff00a0&include_prereleases&label=version&sort=semver&style=flat-square"></a>
+    &nbsp;
+    <a href="https://github.com/pubkey/rxdb"><img src="https://img.shields.io/npm/types/rxdb?style=flat-square"></a>
+    &nbsp;
+    <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt"><img src="https://img.shields.io/github/license/pubkey/rxdb?style=flat-square"></a>
+</p>
+
+<p align="center">
+	<a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
+	&nbsp;
+    <a href="https://twitter.com/rxdbjs"><img src="https://img.shields.io/twitter/follow/rxdbjs?color=1DA1F2&label=twitter&style=flat-square"></a>
+    &nbsp;
+    <a href="https://www.npmjs.com/package/rxdb"><img src="https://img.shields.io/npm/dm/rxdb?color=c63a3b&style=flat-square"></a>
+    &nbsp;
+    <a href="https://github.com/pubkey/rxdb/stargazers"><img src="https://img.shields.io/github/stars/pubkey/rxdb?color=f6f8fa&style=flat-square"></a>
+</p>
+
 
 
 <div align="center">
@@ -46,18 +71,6 @@
   </h3>
 </div>
 
-<p align="center">
-  <a href="https://discord.gg/tqt9ZttJfD">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/discord.svg" width="80" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=rxdbjs">
-      <img src="https://img.shields.io/twitter/follow/rxdbjs.svg?style=social&logo=twitter"
-          alt="follow on Twitter"></a>
-  </a>
-<!--  <a href="https://www.patreon.com/rxdb">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/icons/patreon.png" width="111px" />
-  </a> -->
-</p>
 
 <br/>
 
@@ -521,7 +534,3 @@ Before you decide to use RxDB, or even before you decide to create an offline fi
 -   Join the chat on [discord](https://discord.gg/tqt9ZttJfD) for discussion.
 -   Subscribe to the [newsletter](https://www.getrevue.co/profile/rxdbjs/)
 
-
-## License
-
-[Apache-2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt) 
