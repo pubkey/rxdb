@@ -26,8 +26,6 @@
 </p>
 
 <br />
-<br />
-
 
 <h2>
   <img height="24" width="24" src="./docs-src/files/logo/logo.svg">&nbsp;&nbsp;What is RxDB?
@@ -49,11 +47,8 @@
     <a href="https://github.com/pubkey/rxdb"><img src="https://img.shields.io/npm/types/rxdb?style=flat-square"></a>
     &nbsp;
     <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt"><img src="https://img.shields.io/github/license/pubkey/rxdb?style=flat-square"></a>
-</p>
-
-<p align="center">
-	<a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
-	&nbsp;
+  	<a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
+	  &nbsp;
     <a href="https://twitter.com/rxdbjs"><img src="https://img.shields.io/twitter/follow/rxdbjs?color=1DA1F2&label=twitter&style=flat-square"></a>
     &nbsp;
     <a href="https://www.npmjs.com/package/rxdb"><img src="https://img.shields.io/npm/dm/rxdb?color=c63a3b&style=flat-square"></a>
