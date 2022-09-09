@@ -32,6 +32,7 @@
     <a href="https://github.com/pubkey/rxdb"><img src="https://img.shields.io/npm/types/rxdb?style=flat-square"></a>
     &nbsp;
     <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt"><img src="https://img.shields.io/github/license/pubkey/rxdb?style=flat-square"></a>
+    &nbsp;
   	<a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
 	  &nbsp;
     <a href="https://twitter.com/rxdbjs"><img src="https://img.shields.io/twitter/follow/rxdbjs?color=1DA1F2&label=twitter&style=flat-square"></a>
