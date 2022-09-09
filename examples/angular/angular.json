@@ -141,6 +141,6 @@
           }
         }
       }
-    }},
-  "defaultProject": "angular"
+    }
+  }
 }
