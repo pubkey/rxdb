@@ -14,7 +14,7 @@ test.page('http://0.0.0.0:8888/')('insert/edit/remove a hero', async t => {
     const heroElements = Selector('.hero-list-component .mat-list-item');
     const amount = heroElements.count;
     for (let i = 0; i < amount; i++) {
-        await t.click('.fa-trash-o');
+        await t.click('.delete-button');
     }
 
     // input name
@@ -40,7 +40,7 @@ test.page('http://0.0.0.0:8888/')('insert/edit/remove a hero', async t => {
 
 
     // open edit form
-    await t.click('.fa-pencil-square-o');
+    await t.click('.edit-button');
 
     // set value
     await t
@@ -56,7 +56,7 @@ test.page('http://0.0.0.0:8888/')('insert/edit/remove a hero', async t => {
     }
 
     // remove again
-    await t.click('.fa-trash-o');
+    await t.click('.delete-button');
 });
 
 
