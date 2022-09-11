@@ -1,5 +1,5 @@
 <mat-card
-    *ngIf="hero"
+    *ngIf="data.hero"
     class="hero-edit-component"
 >
     <mat-card-subtitle>Edit</mat-card-subtitle>
@@ -19,7 +19,7 @@
 
     <div
         class="alert deleted"
-        *ngIf="(hero.deleted$ | async)"
+        *ngIf="(data.hero.deleted$ | async)"
     >
         <h4>Error:</h4>
         <p>Someone else has <b>deleted</b> this document. You can not save anymore.</p>
@@ -28,9 +28,9 @@
     <h5>
         <div
             class="color-box"
-            [style.background-color]="hero.color"
+            [style.background-color]="data.hero.color"
         ></div>
-        {{hero.name}}
+        {{data.hero.name}}
     </h5>
 
 
@@ -40,7 +40,7 @@
             type="number"
             [(ngModel)]="formValue"
             min="0"
-            [max]="hero.maxHP"
+            [max]="data.hero.maxHP"
             name="hp"
         />
     </mat-form-field>
@@ -52,7 +52,7 @@
         (click)="cancel()"
     >cancel</button>
     <button
-        *ngIf="!(hero.deleted$ | async)"
+        *ngIf="!(data.hero.deleted$ | async)"
         class="submitButton"
         mat-raised-button
         color="primary"
