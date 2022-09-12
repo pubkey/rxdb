@@ -53,20 +53,11 @@ async function run() {
         {
             name: 'Frodo',
             color: '#032c33',
-            hp: 30,
-            maxHP: 50,
-            skills: [
-                {
-                    name: 'use the ring',
-                    damage: 0
-                }
-            ]
+            hp: 30
         }, {
             name: 'Gandalf',
             color: '#5d686c',
-            hp: 100,
-            maxHP: 100,
-            skills: []
+            hp: 100
         }
     ]);
 
