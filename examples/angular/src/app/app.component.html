@@ -4,13 +4,6 @@
     <img src="/assets/logo.svg" class="rxdb-logo" />
         RxDB Heroes
     </h3>
-
-    <hero-edit
-        *ngIf="editedHero"
-        [(hero)]="editedHero"
-        (done)="editedHero = undefined"
-    ></hero-edit>
-
     <mat-card>
         <mat-card-subtitle>Heroes</mat-card-subtitle>
         <heroes-list (edit)="editHero($event)"></heroes-list>
