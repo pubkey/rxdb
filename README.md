@@ -57,7 +57,7 @@
 Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Multiplayer realtime applications <b style="color: #e6008d;">made easy</b>
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications <b style="color: #e6008d;">made easy</b>
 </h2>
 
 ![realtime.gif](docs-src/files/animations/realtime.gif)
@@ -74,7 +74,7 @@ There are also plugins to replicate with any CouchDB endpoint or over GraphQL an
 
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;<b style="color: #8D2089;">Flexible</b> storage layer
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/storage-layer.svg">&nbsp;&nbsp;<b style="color: #8D2089;">Flexible</b> storage layer
 </h2>
 
 RxDB is based on a [storage interface](https://rxdb.info/rx-storage.html) that enables you to swap out the underlaying storage engine. This increases **code reuse** because the same database code can be used in different JavaScript environments by just switching out the storage settings.
@@ -83,31 +83,29 @@ You can use RxDB on top of IndexedDB, PouchDB, LokiJS, Dexie.js, In-memory, SQLi
 
 No matter what kind of runtime you have, as long as it runs JavaScript, it can run RxDB:
 
-<h3>
-  <img height="15" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png" />
-  <img height="15" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png" />
-  <img height="15" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png" />
-  <img height="15" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" />
-  <img height="15" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png" />
+<h4>
+  <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png" />
+  <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png" />
+  <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png" />
+  <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" />
+  <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png" />
   Browsers
-  <img height="15" src="docs-src/files/icons/nodejs.png" />
+  <img height="13" src="docs-src/files/icons/nodejs.png" />
   Node.js
-  <img height="15" src="docs-src/files/icons/electron.png" />
+  <img height="13" src="docs-src/files/icons/electron.png" />
   Electron
-  <img height="15" src="docs-src/files/icons/react-native.png" />
+  <img height="13" src="docs-src/files/icons/react-native.png" />
   React Native
-  <img height="15" src="docs-src/files/icons/cordova.png" />
+  <img height="13" src="docs-src/files/icons/cordova.png" />
   Cordova/Phonegap
-  <img height="15" src="docs-src/files/icons/capacitor.svg" />
+  <img height="13" src="docs-src/files/icons/capacitor.svg" />
   Capacitor
-</h3>
-
-
+</h4>
 
 
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Quick start
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Quick start
 </h2>
 
 
@@ -169,7 +167,7 @@ Continue with the [quickstart here](https://rxdb.info/quickstart.html).
 
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;More Features (click to toggle)
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/checklist.svg">&nbsp;&nbsp;More Features (click to toggle)
 </h2>
 
 
@@ -426,15 +424,22 @@ console.log(myDoc.firstName);
 
 </details>
 
-And for any other use case, there are [many more plugins and addons](https://rxdb.info/quickstart.html)
+And for any other use case, there are [many more plugins and addons](https://rxdb.info/quickstart.html).
 
-## Getting started
+
+<h2>
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Get started
+</h2>
+
 
 Get started now by [reading the docs](https://rxdb.info/quickstart.html) or exploring the [example-projects](./examples).
 
 
-## Support and Contribute
+<h2>
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/contribute.svg">&nbsp;&nbsp;Support and Contribute
+</h2>
 
 - [Check out how you can contribute to this project](./docs-src/contribute.md).
 - [Read this when you have found a bug](./orga/bug-checklist.md)
 - [Buy access to the premium plugins](https://rxdb.info/premium.html)
+- [Join us at discord to get help](https://discord.gg/tqt9ZttJfD)
