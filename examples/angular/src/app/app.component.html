@@ -1,13 +1,9 @@
 <div id="top-line"></div>
 <div class="content">
-    <h3>RxDB Heroes Angular2</h3>
-
-    <hero-edit
-        *ngIf="editedHero"
-        [(hero)]="editedHero"
-        (done)="editedHero = undefined"
-    ></hero-edit>
-
+    <h3>
+    <img src="/assets/logo.svg" class="rxdb-logo" />
+        RxDB Heroes
+    </h3>
     <mat-card>
         <mat-card-subtitle>Heroes</mat-card-subtitle>
         <heroes-list (edit)="editHero($event)"></heroes-list>

@@ -1,19 +1,12 @@
 <!--
 | Announcement                                                        |
 | :--: |
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **12.0.0** is now released, read the [ANNOUNCEMENT](./orga/releases/12.0.0.md) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
--->
-
-
-<br />
-<br />
-<br />
-
-<!--
-| Announcement                                                        |
-| :--: |
 | Please take part in the [RxDB user survey 2022](https://forms.gle/oxVToPJb6yGHkkMi7). This will help me to better plan the steps for the next major release. (takes about 2 minutes)
 -->
+
+
+<br />
+
 
 
 <p align="center">
@@ -33,13 +26,15 @@
     &nbsp;
     <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt"><img src="https://img.shields.io/github/license/pubkey/rxdb?style=flat-square"></a>
     &nbsp;
-  	<a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
-	  &nbsp;
-    <a href="https://twitter.com/rxdbjs"><img src="https://img.shields.io/twitter/follow/rxdbjs?color=1DA1F2&label=twitter&style=flat-square"></a>
+    <a href="https://github.com/pubkey/rxdb/stargazers"><img src="https://img.shields.io/github/stars/pubkey/rxdb?color=f6f8fa&style=flat-square"></a>
     &nbsp;
     <a href="https://www.npmjs.com/package/rxdb"><img src="https://img.shields.io/npm/dm/rxdb?color=c63a3b&style=flat-square"></a>
     &nbsp;
-    <a href="https://github.com/pubkey/rxdb/stargazers"><img src="https://img.shields.io/github/stars/pubkey/rxdb?color=f6f8fa&style=flat-square"></a>
+ 	  <a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
+	  &nbsp;
+    <a href="https://twitter.com/intent/follow?screen_name=rxdbjs"><img src="https://img.shields.io/twitter/follow/rxdbjs?color=1DA1F2&label=twitter&style=flat-square"></a>
+    &nbsp;
+    <a href="https://www.getrevue.co/profile/rxdbjs/"><img src="https://img.shields.io/badge/newsletter-subscribe-e05b29?style=flat-square"></a>
 </p>
 
 
@@ -51,27 +46,16 @@
 
 
 <p align="justify">
-  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js.
+  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is an <a href="https://rxdb.info/offline-first.html">offline-first</a>, NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js.
   Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
   This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits but can also be used to create fast backends in Node.js.<br />
   RxDB provides an easy to implement <a href="https://rxdb.info/replication.html">protocol</a> for realtime <b>replication</b> with your existing infrastructure or any compliant CouchDB endpoint.<br />
   RxDB is based on a storage interface that enables you to swap out the underlaying storage engine. This increases <b>code reuse</b> because you can use the same database code for different JavaScript environments by just switching out the storage settings.
 </p>
 
-
-
-
-<div align="center">
-  <h3>
-    <a href="https://rxdb.info/quickstart.html">Documentation</a>
-    <span> | </span>
-    <a href="https://github.com/pubkey/rxdb/tree/master/examples">Example-Projects</a>
-  </h3>
-</div>
-
+Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
 <br/>
-
 
 ![reactive.gif](docs-src/files/realtime.gif)
 
@@ -114,24 +98,20 @@ We optimized, double-checked and made boilerplates so you can directly start to 
    ![react](docs-src/files/icons/react.png) [React](https://github.com/pubkey/rxdb/tree/master/examples/react),
    ![ionic](docs-src/files/icons/ionic.png) [Ionic2](https://github.com/pubkey/rxdb/tree/master/examples/ionic2) and all other modern JavaScript frameworks.
 
-## Quickstart
+## Quick overview
 
-### Installation:
+#### Install
 
 ```sh
-npm install rxdb --save
-
-# peerDependencies
-npm install rxjs --save
+npm install rxdb rxjs --save
 ```
 
-### Import:
+#### Store data
 
 ```javascript
 import { 
   createRxDatabase
 } from 'rxdb';
-
 
 /**
  * For browsers, we use the dexie.js based storage
@@ -143,14 +123,11 @@ import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 // create a database
 const db = await createRxDatabase({
-    // the name of the database
-    name: 'heroesdb',
-    storage: getRxStorageDexie(),
-    // optional password, used to encrypt fields when defined in the schema
-    password: 'myLongAndStupidPassword'
+    name: 'heroesdb', // the name of the database
+    storage: getRxStorageDexie()
 });
 
-// create collections
+// add collections
 await db.addCollections({
   heroes: {
     schema: mySchema
@@ -158,10 +135,25 @@ await db.addCollections({
 });
 
 // insert a document
-await db.heroes.insert({ name: 'Bob' });                          
+await db.heroes.insert({
+  name: 'Bob',
+  healthpoints: 100
+});
 ```
 
-You can continue with the [quickstart here](https://rxdb.info/quickstart.html).
+#### Query data
+```javascript
+const aliveHeroes = await db.heroes.find({
+  selector: {
+    healthpoints: {
+      $gt: 0
+    }
+  }
+}).exec();
+```
+
+
+Continue with the [quickstart here](https://rxdb.info/quickstart.html).
 
 
 ## Features (click to toggle)
@@ -512,23 +504,9 @@ console.log(myDoc.firstName);
 
 Get started now by [reading the docs](https://rxdb.info/quickstart.html) or exploring the [example-projects](./examples).
 
-## Pros and cons
 
-Before you decide to use RxDB, or even before you decide to create an offline first application, read this:
-
-- [About Offline First](https://rxdb.info/offline-first.html)
-- [Downsides of Offline First](https://rxdb.info/downsides-of-offline-first.html)
-- [RxDB vs XY](https://rxdb.info/alternatives.html)
-
-## Contribute
+## Support and Contribute
 
 - [Check out how you can contribute to this project](./docs-src/contribute.md).
 - [Read this when you have found a bug](./orga/bug-checklist.md)
 - [Buy access to the premium plugins](https://rxdb.info/premium.html)
-
-## Follow up
-
--   Follow RxDB on [twitter](https://twitter.com/intent/follow?screen_name=rxdbjs) to not miss the latest enhancements.
--   Join the chat on [discord](https://discord.gg/tqt9ZttJfD) for discussion.
--   Subscribe to the [newsletter](https://www.getrevue.co/profile/rxdbjs/)
-

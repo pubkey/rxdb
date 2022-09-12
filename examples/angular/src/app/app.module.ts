@@ -10,7 +10,7 @@ import { environment } from '../environments/environment';
  */
 import { HeroesListComponent } from './components/heroes-list/heroes-list.component';
 import { HeroInsertComponent } from './components/hero-insert/hero-insert.component';
-import { HeroEditComponent } from './components/hero-edit/hero-edit.component';
+import { HeroEditDialogComponent } from './components/hero-edit/hero-edit.component';
 import { AppComponent } from './app.component';
 
 // Material
@@ -19,6 +19,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 /**
  * SERVICES
@@ -33,7 +36,7 @@ import {
     AppComponent,
     HeroesListComponent,
     HeroInsertComponent,
-    HeroEditComponent
+    HeroEditDialogComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),
@@ -44,7 +47,10 @@ import {
     MatListModule,
     MatFormFieldModule,
     MatInputModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDialogModule
   ],
   providers: [
     {
@@ -53,7 +59,12 @@ import {
       multi: true,
       deps: [/* your dependencies */]
     },
-    DatabaseService
+    DatabaseService,
+    {
+      provide: MatDialogRef,
+      useValue: {}
+    },
+    { provide: MAT_DIALOG_DATA, useValue: {} }
   ],
   exports: [],
   bootstrap: [AppComponent]

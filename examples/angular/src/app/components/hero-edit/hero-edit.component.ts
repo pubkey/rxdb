@@ -4,8 +4,10 @@ import {
     Output,
     EventEmitter,
     OnInit,
-    ChangeDetectorRef
+    ChangeDetectorRef,
+    Inject
 } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
     Subscription
 } from 'rxjs';
@@ -13,6 +15,10 @@ import {
     skip
 } from 'rxjs/operators';
 import { RxHeroDocument } from 'src/app/RxDB';
+import {
+    ensureNotFalsy,
+    RxError
+} from 'rxdb';
 
 @Component({
     selector: 'hero-edit',
@@ -20,58 +26,67 @@ import { RxHeroDocument } from 'src/app/RxDB';
     styleUrls: ['./hero-edit.component.less'],
     providers: [],
 })
-export class HeroEditComponent implements OnInit {
-
-    @Input('hero') hero?: RxHeroDocument;
-    @Output('done') done = new EventEmitter();
-
-    public synced: Boolean = true;
+export class HeroEditDialogComponent implements OnInit {
+    public synced: boolean = true;
     public formValue = 0;
     private subs: Subscription[] = [];
+    public error?: string;
 
     constructor(
-        private _cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        public dialogRef: MatDialogRef<HeroEditDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: {
+            hero: RxHeroDocument
+        }
     ) {
         this.synced = true;
     }
 
     ngOnInit() {
-        if (!this.hero) {
-            throw new Error('should never happen');
+        if (!this.data.hero) {
+            console.dir(this.data);
+            throw new Error('hero is missing');
         }
-        this.formValue = this.hero.hp;
+        this.formValue = this.data.hero.hp;
         this.subs.push(
-            this.hero.$
+            this.data.hero.$
                 .pipe(
                     skip(1)
                 )
                 .subscribe(() => {
                     this.synced = false;
-                    this._cdr.detectChanges();
+                    this.cdr.detectChanges();
                 })
         );
     }
 
     async submit() {
-        if (!this.hero) {
+        if (!this.data.hero) {
             throw new Error('should never happen');
         }
-
-        await this.hero.atomicPatch({ hp: this.formValue });
-        this.done.emit(true);
+        try {
+            await this.data.hero.atomicPatch({ hp: this.formValue });
+            this.dialogRef.close();
+        } catch (err) {
+            const errorMessage = ensureNotFalsy((err as RxError).parameters.errors)[0].message;
+            console.log('error: ' + errorMessage);
+            console.dir(err);
+            this.error = errorMessage;
+            this.cdr.detectChanges();
+        }
     }
 
     resync() {
-        if (!this.hero) {
+        if (!this.data.hero) {
             throw new Error('should never happen');
         }
-        this.formValue = this.hero.hp;
+        this.formValue = this.data.hero.hp;
         this.synced = true;
-        this._cdr.detectChanges();
+        this.cdr.detectChanges();
     }
 
     async cancel() {
-        this.done.emit(false);
+        this.dialogRef.close();
     }
 
     ngOnDestroy() {

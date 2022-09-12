@@ -3,7 +3,8 @@ import {
     Output,
     EventEmitter,
     ChangeDetectionStrategy,
-    NgZone
+    NgZone,
+    Inject
 } from '@angular/core';
 import type {
     Observable
@@ -17,6 +18,9 @@ import type {
     RxHeroDocument
 } from '../../RxDB.d';
 
+
+import { MatDialog } from '@angular/material/dialog';
+import { HeroEditDialogComponent } from '../hero-edit/hero-edit.component';
 @Component({
     selector: 'heroes-list',
     templateUrl: './heroes-list.component.html',
@@ -31,7 +35,8 @@ export class HeroesListComponent {
     @Output('edit') editChange: EventEmitter<RxHeroDocument> = new EventEmitter();
 
     constructor(
-        private dbService: DatabaseService
+        private dbService: DatabaseService,
+        private dialog: MatDialog
     ) {
         this.heroes$ = this.dbService
             .db.hero                // collection
@@ -57,12 +62,14 @@ export class HeroesListComponent {
             );
     }
 
-    set edit(hero: RxHeroDocument) {
-        console.log('editHero: ' + hero.name);
-        this.editChange.emit(hero);
-    }
     editHero(hero: RxHeroDocument) {
-        this.edit = hero;
+        let dialogRef = this.dialog.open(HeroEditDialogComponent, {
+            height: '400px',
+            width: '600px',
+            data: {
+                hero
+            }
+        });
     }
     deleteHero(hero: RxHeroDocument) {
         hero.remove();

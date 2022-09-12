@@ -53,20 +53,11 @@ async function run() {
         {
             name: 'Frodo',
             color: '#032c33',
-            hp: 30,
-            maxHP: 50,
-            skills: [
-                {
-                    name: 'use the ring',
-                    damage: 0
-                }
-            ]
+            hp: 30
         }, {
             name: 'Gandalf',
             color: '#5d686c',
-            hp: 100,
-            maxHP: 100,
-            skills: []
+            hp: 100
         }
     ]);
 
@@ -87,6 +78,21 @@ async function run() {
     console.log(
         '# Started server on http://localhost:' + COUCHDB_PORT + '/' + DATABASE_NAME + '/' + HERO_COLLECTION_NAME
     );
+
+
+    db.hero.find().$.subscribe(heroes => {
+        const tableData: any = {};
+        heroes.forEach((hero, idx) => {
+            tableData[idx] = {
+                name: hero.name,
+                color: hero.color,
+                hp: hero.hp
+            };
+        });
+        console.clear();
+        console.table(tableData);
+    });
+
 }
 
 run();

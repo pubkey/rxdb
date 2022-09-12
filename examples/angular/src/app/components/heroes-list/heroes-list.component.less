@@ -1,5 +1,6 @@
 .listHero {
     width: 100%;
+    height: 70px !important;
 
     .color-box {
         width: 20px;
@@ -17,10 +18,14 @@
 
         .life {
             width: 85%;
-            height: 2px;
+            max-width: 400px;
+            height: 4px;
             background-color: red;
 
+            border-radius: 4px;
+
             .currentPercent {
+                border-radius: 4px;
                 height: 100%;
                 background-color: green;
             }
@@ -31,5 +36,10 @@
         cursor: pointer;
     }
 
-    .actions {}
+    .actions {
+        button {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+    }
 }

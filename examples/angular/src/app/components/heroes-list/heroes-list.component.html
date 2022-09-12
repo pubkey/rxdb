@@ -5,12 +5,12 @@
 >
   <mat-spinner class="app-spinner"></mat-spinner>
 </div>
-
 <mat-list class="hero-list-component">
   <mat-list-item
-    *ngFor="let hero of heroes$ | async as heroes; index as i"
+    *ngFor="let hero of heroes$ | async as heroes; index as i; let last = last"
     class="listHero"
   >
+    <mat-divider *ngIf="!last"></mat-divider>
     <div
       class="color-box"
       [style.background-color]="hero.color"
@@ -25,16 +25,24 @@
       </div>
     </div>
     <div class="actions">
-      <i
-        class="fa fa-pencil-square-o"
-        aria-hidden="true"
+      <button
+        mat-mini-fab
+        color="primary"
+        aria-label="edit hero"
+        class="edit-button"
         (click)="editHero(hero)"
-      ></i>
-      <i
-        class="fa fa-trash-o"
-        aria-hidden="true"
+      >
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button
+        mat-mini-fab
+        color="primary"
+        aria-label="delete hero"
+        class="delete-button"
         (click)="deleteHero(hero)"
-      ></i>
+      >
+        <mat-icon>delete</mat-icon>
+      </button>
     </div>
   </mat-list-item>
 </mat-list>
