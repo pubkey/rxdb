@@ -18,14 +18,14 @@ test.page('http://0.0.0.0:8888/')('insert/edit/remove a hero', async t => {
     }
 
     // input name
-    const heroNameInput = Selector('.hero-insert-component input[name=name]');
+    const heroNameInput = Selector('.hero-insert-component #insert-name');
     await t
         .expect(heroNameInput.value).eql('', 'input is empty')
         .typeText(heroNameInput, 'BobKelso')
         .expect(heroNameInput.value).contains('Kelso', 'input contains name');
 
     // input color
-    const heroColorInput = Selector('.hero-insert-component input[name=color]');
+    const heroColorInput = Selector('.hero-insert-component #insert-color');
     await t
         .expect(heroColorInput.value).eql('', 'input is empty')
         .typeText(heroColorInput, 'black')
@@ -68,8 +68,8 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero a
     await Selector('.hero-insert-component button');
 
     await t
-        .typeText('.hero-insert-component input[name=name]', 'SteveIrwin')
-        .typeText('.hero-insert-component input[name=color]', 'red')
+        .typeText('.hero-insert-component #insert-name', 'SteveIrwin')
+        .typeText('.hero-insert-component #insert-color', 'red')
         .click('.hero-insert-component button');
 
     await t.switchToMainWindow();
@@ -90,7 +90,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=' + tabsAmount)('leader-elec
     // wait until last tab loaded
     await t.switchToIframe('#frame_' + (tabsAmount - 1));
     await AsyncTestUtil.wait(1000);
-    const heroNameInput = Selector('.hero-insert-component input[name=name]');
+    const heroNameInput = Selector('.hero-insert-component #insert-name');
     await t.typeText(heroNameInput, 'foobar');
     await t.switchToMainWindow();
 

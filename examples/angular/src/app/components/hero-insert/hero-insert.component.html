@@ -2,6 +2,7 @@
     <mat-form-field>
         <input
             matInput
+            id="insert-name"
             #input
             [(ngModel)]="name"
             [autofocus]="true"
@@ -17,6 +18,7 @@
     <mat-form-field>
         <input
             matInput
+            id="insert-color"
             [(ngModel)]="color"
             [name]="'color_' + randomString()"
             placeholder="Color"
