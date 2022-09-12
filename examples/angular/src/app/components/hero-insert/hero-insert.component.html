@@ -1,5 +1,4 @@
-<form
-    autocomplete="off"
+<div
     class="hero-insert-component"
 >
     <mat-form-field>
@@ -12,6 +11,7 @@
             placeholder="Name"
         />
     </mat-form-field>
+    <div class="error" *ngIf="errors.name">{{errors.name}}</div>
     <br />
     <mat-form-field>
         <input
@@ -21,10 +21,11 @@
             placeholder="Color"
         />
     </mat-form-field>
+    <div class="error" *ngIf="errors.color">{{errors.color}}</div>
     <br />
     <button
         mat-raised-button
         color="primary"
         (click)=submit()
     >insert</button>
-</form>
+</div>

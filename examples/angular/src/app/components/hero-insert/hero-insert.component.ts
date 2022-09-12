@@ -1,8 +1,10 @@
 import {
     Component,
     ViewChild,
-    ChangeDetectionStrategy
+    ChangeDetectionStrategy,
+    ChangeDetectorRef
 } from '@angular/core';
+import { ensureNotFalsy, RxError } from 'rxdb';
 import { DatabaseService } from '../../services/database.service';
 
 @Component({
@@ -19,15 +21,21 @@ export class HeroInsertComponent {
     name = '';
     color = '';
 
+    public errors: {
+        name?: string;
+        color?: string;
+    } = {};
+
     constructor(
-        private dbService: DatabaseService
+        private dbService: DatabaseService,
+        private cdr: ChangeDetectorRef
     ) {
-        this.reset();
     }
 
     reset() {
         this.name = '';
         this.color = '';
+        this.errors = {};
     }
 
     async submit() {
@@ -39,14 +47,20 @@ export class HeroInsertComponent {
             await this.dbService.db.hero.insert({
                 name: this.name,
                 color: this.color,
-                maxHP: getRandomArbitrary(100, 1000),
-                hp: 100,
-                skills: []
+                hp: 100
             });
             this.reset();
-        } catch (err) {
+        } catch (err: any) {
             alert('Error: Please check console');
             console.error('hero-insert.submit(): error:');
+            console.dir(err);
+
+            const innerError = ensureNotFalsy((err as RxError).parameters.errors)[0];
+            const errorField = (innerError as any).instancePath.substring(1);
+            console.log('errorField ' + errorField);
+            (this.errors as any)[errorField] = innerError.message;
+            console.dir(this.errors);
+            this.cdr.detectChanges();
             throw err;
         }
 

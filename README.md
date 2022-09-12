@@ -33,13 +33,15 @@
     &nbsp;
     <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt"><img src="https://img.shields.io/github/license/pubkey/rxdb?style=flat-square"></a>
     &nbsp;
-  	<a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
-	  &nbsp;
-    <a href="https://twitter.com/rxdbjs"><img src="https://img.shields.io/twitter/follow/rxdbjs?color=1DA1F2&label=twitter&style=flat-square"></a>
+    <a href="https://github.com/pubkey/rxdb/stargazers"><img src="https://img.shields.io/github/stars/pubkey/rxdb?color=f6f8fa&style=flat-square"></a>
     &nbsp;
     <a href="https://www.npmjs.com/package/rxdb"><img src="https://img.shields.io/npm/dm/rxdb?color=c63a3b&style=flat-square"></a>
     &nbsp;
-    <a href="https://github.com/pubkey/rxdb/stargazers"><img src="https://img.shields.io/github/stars/pubkey/rxdb?color=f6f8fa&style=flat-square"></a>
+ 	  <a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
+	  &nbsp;
+    <a href="https://twitter.com/intent/follow?screen_name=rxdbjs"><img src="https://img.shields.io/twitter/follow/rxdbjs?color=1DA1F2&label=twitter&style=flat-square"></a>
+    &nbsp;
+    <a href="https://www.getrevue.co/profile/rxdbjs/"><img src="https://img.shields.io/badge/newsletter-subscribe-e05b29?style=flat-square"></a>
 </p>
 
 
@@ -51,23 +53,14 @@
 
 
 <p align="justify">
-  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js.
+  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is an <a href="https://rxdb.info/offline-first.html">offline-first</a>, NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js.
   Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
   This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits but can also be used to create fast backends in Node.js.<br />
   RxDB provides an easy to implement <a href="https://rxdb.info/replication.html">protocol</a> for realtime <b>replication</b> with your existing infrastructure or any compliant CouchDB endpoint.<br />
   RxDB is based on a storage interface that enables you to swap out the underlaying storage engine. This increases <b>code reuse</b> because you can use the same database code for different JavaScript environments by just switching out the storage settings.
 </p>
 
-
-
-
-<div align="center">
-  <h3>
-    <a href="https://rxdb.info/quickstart.html">Documentation</a>
-    <span> | </span>
-    <a href="https://github.com/pubkey/rxdb/tree/master/examples">Example-Projects</a>
-  </h3>
-</div>
+Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
 
 <br/>
@@ -512,23 +505,9 @@ console.log(myDoc.firstName);
 
 Get started now by [reading the docs](https://rxdb.info/quickstart.html) or exploring the [example-projects](./examples).
 
-## Pros and cons
 
-Before you decide to use RxDB, or even before you decide to create an offline first application, read this:
-
-- [About Offline First](https://rxdb.info/offline-first.html)
-- [Downsides of Offline First](https://rxdb.info/downsides-of-offline-first.html)
-- [RxDB vs XY](https://rxdb.info/alternatives.html)
-
-## Contribute
+## Support and Contribute
 
 - [Check out how you can contribute to this project](./docs-src/contribute.md).
 - [Read this when you have found a bug](./orga/bug-checklist.md)
 - [Buy access to the premium plugins](https://rxdb.info/premium.html)
-
-## Follow up
-
--   Follow RxDB on [twitter](https://twitter.com/intent/follow?screen_name=rxdbjs) to not miss the latest enhancements.
--   Join the chat on [discord](https://discord.gg/tqt9ZttJfD) for discussion.
--   Subscribe to the [newsletter](https://www.getrevue.co/profile/rxdbjs/)
-

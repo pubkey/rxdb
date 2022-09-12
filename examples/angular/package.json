@@ -5,7 +5,9 @@
     "preinstall": "npm run preinstall:rxdb && npm run preinstall:versions",
     "preinstall:rxdb": "(cd ../../ && npx yarn@1.22.10 pack ../../ --filename ./examples/angular/rxdb-local.tgz)",
     "preinstall:versions": "node ./scripts/ensure-equal-versions.js",
-    "postinstall": "ngcc",
+    "postinstall": "npm run postinstall:ngcc && npm run postinstall:logo",
+    "postinstall:ngcc": "ngcc",
+    "postinstall:logo": "copyfiles ../../docs-src/files/logo/logo.svg src/assets/ --flat --up",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "ts-node ./src/server.ts",
     "ng": "ng",
@@ -63,6 +65,7 @@
     "zone.js": "0.11.8"
   },
   "devDependencies": {
+    "copyfiles": "2.4.1",
     "@angular-devkit/build-angular": "14.2.2",
     "@angular/cli": "14.2.2",
     "@angular/compiler-cli": "14.2.1",

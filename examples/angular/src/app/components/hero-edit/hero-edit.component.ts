@@ -15,6 +15,10 @@ import {
     skip
 } from 'rxjs/operators';
 import { RxHeroDocument } from 'src/app/RxDB';
+import {
+    ensureNotFalsy,
+    RxError
+} from 'rxdb';
 
 @Component({
     selector: 'hero-edit',
@@ -26,6 +30,7 @@ export class HeroEditDialogComponent implements OnInit {
     public synced: boolean = true;
     public formValue = 0;
     private subs: Subscription[] = [];
+    public error?: string;
 
     constructor(
         private cdr: ChangeDetectorRef,
@@ -59,9 +64,16 @@ export class HeroEditDialogComponent implements OnInit {
         if (!this.data.hero) {
             throw new Error('should never happen');
         }
-
-        await this.data.hero.atomicPatch({ hp: this.formValue });
-        this.dialogRef.close();
+        try {
+            await this.data.hero.atomicPatch({ hp: this.formValue });
+            this.dialogRef.close();
+        } catch (err) {
+            const errorMessage = ensureNotFalsy((err as RxError).parameters.errors)[0].message;
+            console.log('error: ' + errorMessage);
+            console.dir(err);
+            this.error = errorMessage;
+            this.cdr.detectChanges();
+        }
     }
 
     resync() {

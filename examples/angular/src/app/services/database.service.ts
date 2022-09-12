@@ -39,7 +39,7 @@ const collectionSettings = {
         schema: HERO_SCHEMA,
         methods: {
             hpPercent(this: RxHeroDocument): number {
-                return this.hp / this.maxHP * 100;
+                return this.hp / 100 * 100;
             }
         },
         sync: true
