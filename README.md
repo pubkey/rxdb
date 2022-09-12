@@ -1,19 +1,12 @@
 <!--
 | Announcement                                                        |
 | :--: |
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **12.0.0** is now released, read the [ANNOUNCEMENT](./orga/releases/12.0.0.md) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
--->
-
-
-<br />
-<br />
-<br />
-
-<!--
-| Announcement                                                        |
-| :--: |
 | Please take part in the [RxDB user survey 2022](https://forms.gle/oxVToPJb6yGHkkMi7). This will help me to better plan the steps for the next major release. (takes about 2 minutes)
 -->
+
+
+<br />
+
 
 
 <p align="center">
@@ -62,9 +55,7 @@
 
 Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
-
 <br/>
-
 
 ![reactive.gif](docs-src/files/realtime.gif)
 
@@ -107,24 +98,20 @@ We optimized, double-checked and made boilerplates so you can directly start to 
    ![react](docs-src/files/icons/react.png) [React](https://github.com/pubkey/rxdb/tree/master/examples/react),
    ![ionic](docs-src/files/icons/ionic.png) [Ionic2](https://github.com/pubkey/rxdb/tree/master/examples/ionic2) and all other modern JavaScript frameworks.
 
-## Quickstart
+## Quick overview
 
-### Installation:
+#### Install
 
 ```sh
-npm install rxdb --save
-
-# peerDependencies
-npm install rxjs --save
+npm install rxdb rxjs --save
 ```
 
-### Import:
+#### Store data
 
 ```javascript
 import { 
   createRxDatabase
 } from 'rxdb';
-
 
 /**
  * For browsers, we use the dexie.js based storage
@@ -136,14 +123,11 @@ import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 // create a database
 const db = await createRxDatabase({
-    // the name of the database
-    name: 'heroesdb',
-    storage: getRxStorageDexie(),
-    // optional password, used to encrypt fields when defined in the schema
-    password: 'myLongAndStupidPassword'
+    name: 'heroesdb', // the name of the database
+    storage: getRxStorageDexie()
 });
 
-// create collections
+// add collections
 await db.addCollections({
   heroes: {
     schema: mySchema
@@ -151,10 +135,25 @@ await db.addCollections({
 });
 
 // insert a document
-await db.heroes.insert({ name: 'Bob' });                          
+await db.heroes.insert({
+  name: 'Bob',
+  healthpoints: 100
+});
 ```
 
-You can continue with the [quickstart here](https://rxdb.info/quickstart.html).
+#### Query data
+```javascript
+const aliveHeroes = await db.heroes.find({
+  selector: {
+    healthpoints: {
+      $gt: 0
+    }
+  }
+}).exec();
+```
+
+
+Continue with the [quickstart here](https://rxdb.info/quickstart.html).
 
 
 ## Features (click to toggle)

@@ -78,6 +78,21 @@ async function run() {
     console.log(
         '# Started server on http://localhost:' + COUCHDB_PORT + '/' + DATABASE_NAME + '/' + HERO_COLLECTION_NAME
     );
+
+
+    db.hero.find().$.subscribe(heroes => {
+        const tableData: any = {};
+        heroes.forEach((hero, idx) => {
+            tableData[idx] = {
+                name: hero.name,
+                color: hero.color,
+                hp: hero.hp
+            };
+        });
+        console.clear();
+        console.table(tableData);
+    });
+
 }
 
 run();

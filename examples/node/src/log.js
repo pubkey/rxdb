@@ -1,5 +1,4 @@
 const chalk = require('chalk');
-const random = require('random-name');
 
 const intro = () => {
     console.log(chalk.green('########################################################'));
