@@ -43,7 +43,7 @@
 <br />
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/logo/logo.svg">&nbsp;&nbsp;What is RxDB?
+  <img height="16" width="16" src="./docs-src/files/logo/logo.svg">&nbsp;&nbsp;What is RxDB?
 </h2>
 
 <p align="justify">
@@ -57,14 +57,17 @@
 Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications <b style="color: #e6008d;">made easy</b>
+  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications
+  <img height="26" src="./docs-src/files/icons/with-gradient/text/made-easy.svg">
 </h2>
+
+
 
 ![realtime.gif](docs-src/files/animations/realtime.gif)
 
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Replicate with your <b style="color: #e6008d;">existing infrastructure</b>
+  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Replicate with your <b style="color: #e6008d;">existing infrastructure</b>
 </h2>
 
 RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html"> replication protocol</a> for realtime sync with your existing infrastructure.<br />
@@ -74,7 +77,7 @@ There are also plugins to replicate with any CouchDB endpoint or over GraphQL an
 
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/storage-layer.svg">&nbsp;&nbsp;<b style="color: #8D2089;">Flexible</b> storage layer
+  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/storage-layer.svg">&nbsp;&nbsp;<b style="color: #8D2089;">Flexible</b> storage layer
 </h2>
 
 RxDB is based on a [storage interface](https://rxdb.info/rx-storage.html) that enables you to swap out the underlaying storage engine. This increases **code reuse** because the same database code can be used in different JavaScript environments by just switching out the storage settings.
@@ -105,7 +108,7 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
 
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Quick start
+  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Quick start
 </h2>
 
 
@@ -167,7 +170,7 @@ Continue with the [quickstart here](https://rxdb.info/quickstart.html).
 
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/checklist.svg">&nbsp;&nbsp;More Features (click to toggle)
+  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/checklist.svg">&nbsp;&nbsp;More Features (click to toggle)
 </h2>
 
 
@@ -428,7 +431,7 @@ And for any other use case, there are [many more plugins and addons](https://rxd
 
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Get started
+  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Get started
 </h2>
 
 
@@ -436,7 +439,7 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 
 
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/contribute.svg">&nbsp;&nbsp;Support and Contribute
+  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/contribute.svg">&nbsp;&nbsp;Support and Contribute
 </h2>
 
 - [Check out how you can contribute to this project](./docs-src/contribute.md).
