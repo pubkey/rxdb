@@ -32,6 +32,10 @@ export class HeroInsertComponent {
     ) {
     }
 
+    public randomString() {
+        return getRandomArbitrary(1, 1000000) + '_' + new Date().getTime() + '_random_string_to_disable_autocomplete';
+    }
+
     reset() {
         this.name = '';
         this.color = '';

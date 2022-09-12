@@ -62,7 +62,7 @@ Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation
 </h2>
 
 
-![reactive.gif](docs-src/files/realtime.gif)
+![realtime.gif](docs-src/files/animations/realtime.gif)
 
 
 * * *

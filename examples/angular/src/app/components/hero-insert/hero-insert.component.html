@@ -5,7 +5,7 @@
             #input
             [(ngModel)]="name"
             [autofocus]="true"
-            name="name_dlsfgjldsfg_random_string_to_disable_autocomplete"
+            [name]="'name_' + randomString()"
             placeholder="Name"
         />
     </mat-form-field>
@@ -18,7 +18,7 @@
         <input
             matInput
             [(ngModel)]="color"
-            name="color_dlsfgjldsfg_random_string_to_disable_autocomplete"
+            [name]="'color_' + randomString()"
             placeholder="Color"
             autocomplete="off"
         />

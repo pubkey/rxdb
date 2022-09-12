@@ -51,7 +51,7 @@ To overcome this, you could build a realtime website where you create a websocke
 With offline first applications, you already have a realtime replication with the backend. Most offline first databases provide some concept of changestream or data subscriptions and with [RxDB](https://github.com/pubkey/rxdb) you can even directly subscribe to query results or single fields of documents. This makes it easy to have an always updated UI whenever data on the backend changes.
 
 <p align="center">
-  <img src="./files/realtime.gif" alt="loading spinner not needed" width="700" />
+  <img src="./files/animations/realtime.gif" alt="loading spinner not needed" width="700" />
 </p>
 
 
