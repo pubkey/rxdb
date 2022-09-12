@@ -22,14 +22,16 @@
 <p align="center">
     <a href="https://github.com/pubkey/rxdb/releases"><img src="https://img.shields.io/github/v/release/pubkey/rxdb?color=%23ff00a0&include_prereleases&label=version&sort=semver&style=flat-square"></a>
     &nbsp;
-    <a href="https://github.com/pubkey/rxdb"><img src="https://img.shields.io/npm/types/rxdb?style=flat-square"></a>
+    <img src="https://img.shields.io/npm/types/rxdb?style=flat-square">
     &nbsp;
     <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt"><img src="https://img.shields.io/github/license/pubkey/rxdb?style=flat-square"></a>
     &nbsp;
     <a href="https://github.com/pubkey/rxdb/stargazers"><img src="https://img.shields.io/github/stars/pubkey/rxdb?color=f6f8fa&style=flat-square"></a>
     &nbsp;
-    <a href="https://www.npmjs.com/package/rxdb"><img src="https://img.shields.io/npm/dm/rxdb?color=c63a3b&style=flat-square"></a>
-    &nbsp;
+    <a href="https://www.npmjs.com/package/rxdb"><img src="https://img.shields.io/npm/dm/rxdb?color=c63a3b&style=flat-square"></a>   
+</p>
+
+<p align="center">
  	  <a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
 	  &nbsp;
     <a href="https://twitter.com/intent/follow?screen_name=rxdbjs"><img src="https://img.shields.io/twitter/follow/rxdbjs?color=1DA1F2&label=twitter&style=flat-square"></a>
@@ -44,7 +46,6 @@
   <img height="24" width="24" src="./docs-src/files/logo/logo.svg">&nbsp;&nbsp;What is RxDB?
 </h2>
 
-
 <p align="justify">
   RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is an <a href="https://rxdb.info/offline-first.html">offline-first</a>, NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js.
   Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
@@ -55,7 +56,11 @@
 
 Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
-<br/>
+
+<h2>
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Create multiplayer realtime applications
+</h2>
+
 
 ![reactive.gif](docs-src/files/realtime.gif)
 

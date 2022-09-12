@@ -90,7 +90,15 @@ async function run() {
             };
         });
         console.clear();
+        console.log('');
+        console.log('##                                ##');
+        console.log('##   RxDB Heroes Node.js Server   ##');
+        console.log('##                                ##');
+        console.log('');
+        console.log('');
         console.table(tableData);
+        console.log('');
+        console.log('');
     });
 
 }

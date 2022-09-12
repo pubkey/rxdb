@@ -1,31 +1,37 @@
-<div
-    class="hero-insert-component"
->
+<div class="hero-insert-component">
     <mat-form-field>
         <input
             matInput
             #input
             [(ngModel)]="name"
             [autofocus]="true"
-            name="name"
+            name="name_dlsfgjldsfg_random_string_to_disable_autocomplete"
             placeholder="Name"
         />
     </mat-form-field>
-    <div class="error" *ngIf="errors.name">{{errors.name}}</div>
+    <div
+        class="error"
+        *ngIf="errors.name"
+    >{{errors.name}}</div>
     <br />
     <mat-form-field>
         <input
             matInput
             [(ngModel)]="color"
-            name="color"
+            name="color_dlsfgjldsfg_random_string_to_disable_autocomplete"
             placeholder="Color"
+            autocomplete="off"
         />
     </mat-form-field>
-    <div class="error" *ngIf="errors.color">{{errors.color}}</div>
+    <div
+        class="error"
+        *ngIf="errors.color"
+    >{{errors.color}}</div>
     <br />
     <button
         mat-raised-button
         color="primary"
         (click)=submit()
+        autocomplete="off"
     >insert</button>
 </div>
