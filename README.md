@@ -57,8 +57,7 @@
 Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications
-  <img height="26" src="./docs-src/files/icons/with-gradient/text/made-easy.svg">
+  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications <b style="color: #e6008d;">made easy</b>
 </h2>
 
 
