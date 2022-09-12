@@ -81,46 +81,35 @@ RxDB is based on a [storage interface](https://rxdb.info/rx-storage.html) that e
 
 You can use RxDB on top of IndexedDB, PouchDB, LokiJS, Dexie.js, In-memory, SQLite, in a WebWorker thread and even on top of FoundationDB.
 
+No matter what kind of runtime you have, as long as it runs JavaScript, it can run RxDB:
 
-* * *
+<h3>
+  <img height="15" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png" />
+  <img height="15" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png" />
+  <img height="15" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png" />
+  <img height="15" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" />
+  <img height="15" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png" />
+  Browsers
+  <img height="15" src="docs-src/files/icons/nodejs.png" />
+  Node.js
+  <img height="15" src="docs-src/files/icons/electron.png" />
+  Electron
+  <img height="15" src="docs-src/files/icons/react-native.png" />
+  React Native
+  <img height="15" src="docs-src/files/icons/cordova.png" />
+  Cordova/Phonegap
+  <img height="15" src="docs-src/files/icons/capacitor.svg" />
+  Capacitor
+</h3>
 
 
-|     | **Features**                                                                                                                                                                                                                            |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 💻📱  | **Multiplatform support** for browsers, nodejs, electron, cordova, react-native and every other JavaScript-runtime                                                                                                                      |
-| 📨 | **Reactive** data-handling based on [RxJS](https://github.com/ReactiveX/rxjs)                                                                                                                                                           |
-| 🚣 | Follows the [offline first paradigm](https://rxdb.info/offline-first.html) which lets your app still work when users are offline                                          
-| 🔄  | Realtime **replication** between client and server-data with a protocol that is easy to implement with your existing infrastructure. |
-| 📄  | **Schema-based** with the easy-to-learn standard of [json-schema](https://json-schema.org/)                                                                                                                                                                        |
-| 🍊  | **Mango-Query** exactly like you know from mongoDB and other NoSQL databases  <!-- IMPORTANT: It is really called 'mango' query, do not make a PR to fix this 'typo' https://github.com/cloudant/mango -->                                                                                                                    |
-| 🔐  | **Encryption** of single data-fields to protect your users data                                                                                                                                                                         |
-| 📤📥  | **Import/Export** of the database-state (json), awesome for coding with [TDD](https://en.wikipedia.org/wiki/Test-driven_development)                                                                                                    |
-| 📡  | **Multi-Window** to synchronise data between different browser-tabs or nodejs-processes                                                                                                                                              |
-| 💅 | **ORM-capabilities** to easily handle data-code-relations and customize functions of documents and collections                                                                                                                                                                               |
-| 🔷  | Full **TypeScript** support for fast and secure coding (Requires Typescript v3.8 or higher)                                                                                                                                             |
 
-## Flexible Storage layer
 
-RxDB is based on the [RxStorage layer](https://rxdb.info/rx-storage.html), so that you can use **reuse the same code** at different JavaScript runtimes like:
 
-![Chrome](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png) ![Firefox](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png)
-    ![Safari](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png)
-    ![Edge](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png)
-    ![Internet Explorer 11](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png) Browsers,
-![NodeJS](docs-src/files/icons/nodejs.png) [NodeJS](https://github.com/pubkey/rxdb/tree/master/examples/node),
-![electron](docs-src/files/icons/electron.png) [Electron](https://github.com/pubkey/rxdb/tree/master/examples/electron),
-![react-native](docs-src/files/icons/react-native.png) [React-Native](https://github.com/pubkey/rxdb/tree/master/examples/react-native),
-![cordova](docs-src/files/icons/cordova.png) [Cordova / Phonegap](https://cordova.apache.org/)
-or [Capacitor](https://capacitorjs.com/)
+<h2>
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Quick start
+</h2>
 
-We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like
-
-   ![angular](docs-src/files/icons/angular.png) [Angular](https://github.com/pubkey/rxdb/tree/master/examples/angular),
-   ![vuejs](docs-src/files/icons/vuejs.png) [Vuejs](https://github.com/pubkey/rxdb/tree/master/examples/vue),
-   ![react](docs-src/files/icons/react.png) [React](https://github.com/pubkey/rxdb/tree/master/examples/react),
-   ![ionic](docs-src/files/icons/ionic.png) [Ionic2](https://github.com/pubkey/rxdb/tree/master/examples/ionic2) and all other modern JavaScript frameworks.
-
-## Quick overview
 
 #### Install
 
@@ -178,7 +167,12 @@ const aliveHeroes = await db.heroes.find({
 Continue with the [quickstart here](https://rxdb.info/quickstart.html).
 
 
-## Features (click to toggle)
+
+<h2>
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;More Features (click to toggle)
+</h2>
+
+
 
 <details>
 <summary>
@@ -217,18 +211,6 @@ RxDB supports multi tab/window usage out of the box. When data is changed at one
 </summary>
 
 ![multiwindow.gif](docs-src/files/multiwindow.gif)
-
-</details>
-
-<details>
-<summary>
-  <b>Replication</b>
-  <p>
-    RxDB supports realtime replication with CouchDB compatible endpoints, or via GraphQL with custom endpoints. Also there is the replication primitives plugin that lets you implement replication via REST, Websockets, P2P or any other layer that can transmit data.
-  </p>
-</summary>
-
-![sync.gif](docs-src/files/sync.gif)
 
 </details>
 
@@ -382,60 +364,7 @@ By setting a schema-field to `encrypted`, the value of this field will be stored
 
 </details>
 
-<details>
-<summary>
-  <b>Adapters and Storage</b>
-  <p>
-    RxDB is not a self contained database. It is a wrapper arround another database that implements the `RxStorage` interface. At the moment you can either use PouchDB or <a href="https://rxdb.info/rx-storage-dexie.html">Dexie.js</a> or <a href="https://rxdb.info/rx-storage-lokijs.html">LokiJS</a> as underlaying storage. Each of them respectively has it's own adapters that can be swapped out, depending on your needs. For example you can use and IndexedDB based storage in the browser, and an SQLite storage in your hybrid app.
-  </p>
 
-</summary>
-
-```ts
-
-import { 
-  createRxDatabase
-} from 'rxdb';
-
-
-/**
- * Create a PouchDB based RxDB instance
- * that stores data in IndexedDB
- */
-
-import { 
-  addPouchPlugin,
-  getRxStoragePouch
-} from 'rxdb/plugins/pouchdb';
-addPouchPlugin(require('pouchdb-adapter-idb'));
-const pouchBasedRxDB = await createRxDatabase({
-    name: 'mydatabase',
-    storage: getRxStoragePouch('idb')
-});
-
-/**
- * Create a LokiJS based RxDB instance
- * that stores data in IndexedDB
- */
-
-import { 
-  getRxStorageLoki
-} from 'rxdb/plugins/lokijs';
-const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
-const lokiBasedRxDB = await createRxDatabase({
-    name: 'mydatabase',
-    storage: getRxStorageLoki({
-        adapter: new LokiIncrementalIndexedDBAdapter(),
-        autoload: true,
-        autosave: true,
-        autosaveInterval: 500
-    })
-});
-
-```
-
-There is a [big ecosystem](https://rxdb.info/adapters.html) of adapters you can use.
-    </details>
 
 <details>
 <summary>
@@ -460,31 +389,6 @@ await emptyCollection.importDump(json);
 // import the dump to the database
 await emptyDatabase.importDump(json);
 ```
-
-</details>
-
-<details>
-<summary>
-  <b>Leader-Election</b>
-  <p>
-
-Imagine your website needs to get a piece of data from the server once every minute. To accomplish this task
-you create a websocket or pull-interval. If your user now opens the site in 5 tabs parallel, it will run the interval
-or create the socket 5 times. This is a waste of resources which can be solved by RxDB's LeaderElection.</p>
-
-</summary>
-
-```js
-myRxDatabase.waitForLeadership()
-  .then(() => {
-      // this will only run when the instance becomes leader.
-      mySocket = createWebSocket();
-  });
-```
-
-In this example the leader is marked with the crown ♛
-
-![reactive.gif](docs-src/files/leader-election.gif)
 
 </details>
 
@@ -521,6 +425,8 @@ console.log(myDoc.firstName);
 ```
 
 </details>
+
+And for any other use case, there are [many more plugins and addons](https://rxdb.info/quickstart.html)
 
 ## Getting started
 
