@@ -49,20 +49,37 @@
 <p align="justify">
   RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is an <a href="https://rxdb.info/offline-first.html">offline-first</a>, NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js.
   Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
-  This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits but can also be used to create fast backends in Node.js.<br />
+  This is great for UI-based <b>realtime</b> applications in a way that makes it easy to develop and also has great performance benefits but can also be used to create fast backends in Node.js.<br />
   RxDB provides an easy to implement <a href="https://rxdb.info/replication.html">protocol</a> for realtime <b>replication</b> with your existing infrastructure or any compliant CouchDB endpoint.<br />
   RxDB is based on a storage interface that enables you to swap out the underlaying storage engine. This increases <b>code reuse</b> because you can use the same database code for different JavaScript environments by just switching out the storage settings.
 </p>
 
 Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
-
 <h2>
-  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Create multiplayer realtime applications
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Multiplayer realtime applications <b style="color: #e6008d;">made easy</b>
 </h2>
 
-
 ![realtime.gif](docs-src/files/animations/realtime.gif)
+
+
+<h2>
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Replicate with your <b style="color: #e6008d;">existing infrastructure</b>
+</h2>
+
+RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html"> replication protocol</a> for realtime sync with your existing infrastructure.<br />
+There are also plugins to replicate with any CouchDB endpoint or over GraphQL and REST.
+
+
+
+
+<h2>
+  <img height="24" width="24" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;<b style="color: #8D2089;">Flexible</b> storage layer
+</h2>
+
+RxDB is based on a [storage interface](https://rxdb.info/rx-storage.html) that enables you to swap out the underlaying storage engine. This increases **code reuse** because the same database code can be used in different JavaScript environments by just switching out the storage settings.
+
+You can use RxDB on top of IndexedDB, PouchDB, LokiJS, Dexie.js, In-memory, SQLite, in a WebWorker thread and even on top of FoundationDB.
 
 
 * * *
