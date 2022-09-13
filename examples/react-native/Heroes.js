@@ -11,9 +11,10 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { AppContext } from './App';
+import { AppContext } from './context';
+import { HeroesCollectionName } from "./initializeDb";
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const getRandomColor = () => {
     const letters = '0123456789ABCDEF';
@@ -29,8 +30,8 @@ export const Heroes = () => {
 
     useEffect(() => {
         let sub;
-        if (db && db.heroes) {
-            sub = db.heroes
+        if (db && db[HeroesCollectionName]) {
+            sub = db[HeroesCollectionName]
                 .find()
                 .sort({ name: 1 })
                 .$.subscribe((rxdbHeroes) => {
@@ -46,7 +47,7 @@ export const Heroes = () => {
         console.log('addHero: ' + name);
         const color = getRandomColor();
         console.log('color: ' + color);
-        await db.heroes.insert({ name, color });
+        await db[HeroesCollectionName].insert({ name, color });
         setName('');
     };
 
@@ -62,7 +63,7 @@ export const Heroes = () => {
                 {
                     text: 'OK',
                     onPress: async () => {
-                        const doc = db.heroes.findOne({
+                        const doc = db[HeroesCollectionName].findOne({
                             selector: {
                                 name: hero.get('name'),
                             },

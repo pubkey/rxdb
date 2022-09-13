@@ -1,9 +1,10 @@
-import React, { createContext, useEffect, useState } from 'react';
+import './shim';
+import 'react-native-get-random-values';
+
+import React, {useEffect, useState} from 'react';
 import Heroes from './Heroes';
 import initializeDb from './initializeDb';
-
-
-export const AppContext = createContext();
+import { AppContext } from "./context";
 
 export const App = () => {
     const [db, setDb] = useState(null);
@@ -13,7 +14,7 @@ export const App = () => {
             const _db = await initializeDb();
             setDb(_db);
         };
-        initDB();
+        initDB().then();
     }, []);
 
     return (

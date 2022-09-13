@@ -483,29 +483,15 @@ jobs:
           working-directory: ./examples/react
           run: npm run test:build
 
-  react-native:
+  react-native-expo:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-        # TODO using latest node version does not work with react native
-          node-version: 16.15.0
-
-      - name: Reuse npm cache folder
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-            ./examples/react-native/node_modules
-          # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-react-native-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-react-native-
+            # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
+            node-version: 16.16.0
 
       - name: prepare core
         run: |
@@ -515,11 +501,12 @@ jobs:
       - name: react-native
         run: |
           cd ./examples/react-native
-          npx yarn@1.13.0 install
-          npm run test
+          yarn --update-checksums
+          npx yarn install
+          yarn test
           echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
           sudo sysctl -p
-          npm run test:bundle
+          yarn test:bundle
 
 
   supabase:
