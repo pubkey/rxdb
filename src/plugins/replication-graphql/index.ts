@@ -43,7 +43,7 @@ import { Subject } from 'rxjs';
 export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxReplicationState<RxDocType, CheckpointType> {
     constructor(
         public readonly url: GraphQLServerUrl,
-        public readonly clientState: { headers: any; client: any },
+        public readonly clientState: { headers: any; client: any, credentials: string | undefined },
         public readonly replicationIdentifierHash: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly deletedField: string,
@@ -69,7 +69,17 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
         this.clientState.headers = headers;
         this.clientState.client = GraphQLClient({
             url: this.url.http,
-            headers
+            headers,
+            credentials: this.clientState.credentials
+        });
+    }
+
+    setCredentials(credentials: string | undefined) {
+        this.clientState.credentials = credentials
+        this.clientState.client = GraphQLClient({
+            url: this.url.http,
+            headers: this.clientState.headers,
+            credentials
         });
     }
 }
@@ -79,6 +89,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
     {
         url,
         headers = {},
+        credentials,
         deletedField = '_deleted',
         waitForLeadership = true,
         pull,
@@ -96,9 +107,11 @@ export function syncGraphQL<RxDocType, CheckpointType>(
      */
     const mutateableClientState = {
         headers,
+        credentials,
         client: GraphQLClient({
             url: url.http,
-            headers
+            headers,
+            credentials
         })
     };
 

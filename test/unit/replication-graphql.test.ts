@@ -1730,6 +1730,36 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 db.destroy();
             });
+            it('should pass and change credentials in GraphQL client', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(1))
+                ]);
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder
+                    },
+                    headers: {
+                        originalHeader: '1'
+
+                    },
+                    credentials: 'none',
+                    live: true,
+                    deletedField: 'deleted'
+                });
+                assert.strictEqual(replicationState.clientState.credentials, 'none')
+
+                replicationState.setCredentials('same-origin')
+
+                assert.deepStrictEqual(replicationState.clientState.headers, {originalHeader: '1'})
+                assert.strictEqual(replicationState.clientState.credentials, 'same-origin')
+
+                server.close();
+                await c.database.destroy();
+            });
             it('should work with headers', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
