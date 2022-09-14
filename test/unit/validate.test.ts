@@ -123,6 +123,7 @@ validationImplementations.forEach(
                     } catch (err) {
                         console.dir('errored:');
                         console.dir(err);
+                        throw err;
                     }
 
                     await instance.close();
