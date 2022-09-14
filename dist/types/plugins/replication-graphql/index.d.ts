@@ -10,6 +10,7 @@ export declare class RxGraphQLReplicationState<RxDocType, CheckpointType> extend
     readonly clientState: {
         headers: any;
         client: any;
+        credentials: string | undefined;
     };
     readonly replicationIdentifierHash: string;
     readonly collection: RxCollection<RxDocType>;
@@ -22,12 +23,14 @@ export declare class RxGraphQLReplicationState<RxDocType, CheckpointType> extend
     constructor(url: GraphQLServerUrl, clientState: {
         headers: any;
         client: any;
+        credentials: string | undefined;
     }, replicationIdentifierHash: string, collection: RxCollection<RxDocType>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined);
     setHeaders(headers: {
         [k: string]: string;
     }): void;
+    setCredentials(credentials: string | undefined): void;
 }
-export declare function syncGraphQL<RxDocType, CheckpointType>(this: RxCollection, { url, headers, deletedField, waitForLeadership, pull, push, live, retryTime, // in ms
+export declare function syncGraphQL<RxDocType, CheckpointType>(this: RxCollection, { url, headers, credentials, deletedField, waitForLeadership, pull, push, live, retryTime, // in ms
 autoStart, }: SyncOptionsGraphQL<RxDocType, CheckpointType>): RxGraphQLReplicationState<RxDocType, CheckpointType>;
 export * from './helper';
 export * from './graphql-schema-from-rx-schema';

@@ -115,7 +115,17 @@ var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
     this.clientState.headers = headers;
     this.clientState.client = (0, _graphqlClient["default"])({
       url: this.url.http,
-      headers: headers
+      headers: headers,
+      credentials: this.clientState.credentials
+    });
+  };
+
+  _proto.setCredentials = function setCredentials(credentials) {
+    this.clientState.credentials = credentials;
+    this.clientState.client = (0, _graphqlClient["default"])({
+      url: this.url.http,
+      headers: this.clientState.headers,
+      credentials: credentials
     });
   };
 
@@ -128,6 +138,7 @@ function syncGraphQL(_ref) {
   var url = _ref.url,
       _ref$headers = _ref.headers,
       headers = _ref$headers === void 0 ? {} : _ref$headers,
+      credentials = _ref.credentials,
       _ref$deletedField = _ref.deletedField,
       deletedField = _ref$deletedField === void 0 ? '_deleted' : _ref$deletedField,
       _ref$waitForLeadershi = _ref.waitForLeadership,
@@ -148,9 +159,11 @@ function syncGraphQL(_ref) {
 
   var mutateableClientState = {
     headers: headers,
+    credentials: credentials,
     client: (0, _graphqlClient["default"])({
       url: url.http,
-      headers: headers
+      headers: headers,
+      credentials: credentials
     })
   };
   var pullStream$ = new _rxjs.Subject();
