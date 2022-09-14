@@ -48,6 +48,7 @@ export type SyncOptionsGraphQL<RxDocType, CheckpointType> = Omit<
 > & {
     url: GraphQLServerUrl;
     headers?: { [k: string]: string }; // send with all requests to the endpoint
+    credentials?: string;
     pull?: GraphQLSyncPullOptions<RxDocType, CheckpointType>;
     push?: GraphQLSyncPushOptions<RxDocType>;
 }
