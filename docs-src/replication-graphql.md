@@ -372,6 +372,18 @@ replicationState.setHeaders({
 });
 ```
 
+#### Sending Cookies
+
+The underlying fetch framework uses a `same-origin` policy for credentials per default. That means, cookies and session data is only shared if you backend and frontend run on the same domain and port. Pass the credential parameter to `include` cookies in requests to servers from different origins via:
+
+```js
+replicationState.setHeaders({
+    // ...
+}, `include`);
+```
+
+See [the fetch spec](https://fetch.spec.whatwg.org/#concept-request-credentials-mode) form more information.
+
 
 **NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
 
