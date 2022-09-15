@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 13.0.0-beta.31 (14 September 2022)
+### 13.0.0 (15 September 2022) BREAKING [read the announcement](./docs-src/releases/12.0.0.md)
 
 - ADD credentials settings to the GraphQL replication plugin [#3976](https://github.com/pubkey/rxdb/pull/3976) Thanks [@marcoklein](https://github.com/marcoklein)
 
@@ -234,7 +234,7 @@
 - Added `autoStart` option to the replication plugins [#3775](https://github.com/pubkey/rxdb/pull/3775) Thanks [@mmouterde](https://github.com/mmouterde)
 - Fix [#778](https://github.com/pubkey/rxdb/pull/3778) Storing string array was broken in the dexie storage. Thanks [@mmouterde](https://github.com/mmouterde)
 
-### 12.0.0 (26 April 2022) BREAKING [read the announcement](./orga/releases/12.0.0.md)
+### 12.0.0 (26 April 2022) BREAKING [read the announcement](./docs-src/releases/12.0.0.md)
 
 - All indexes that do not contain the primaryKey, get the primary key added.
 - You can now set a custom index when doing a query.
@@ -315,7 +315,7 @@ Bugfixes:
 Features:
   - Added `toTypedRxJsonSchema` and `ExtractDocumentTypeFromTypedRxJsonSchema` to generate the document types from the schema.
 
-### 11.0.0 (3 January 2022) BREAKING [read the announcement](./orga/releases/11.0.0.md)
+### 11.0.0 (3 January 2022) BREAKING [read the announcement](./docs-src/releases/11.0.0.md)
 
 BREAKING:
   - RxStorage: The non async functions `prepareQuery`, `getSortComparator` and `getQueryMatcher` have been moved out of `RxStorageInstance` into `RxStorage`. This was needed to have better WebWorker support. This will not affect you do not use a custom `RxStorage` implementation.
@@ -479,7 +479,7 @@ Bugfixes:
   - Calling bulk-methods with an empty array must not throw an error.
   - `RxCollection.remove()` does not delete local documents [#3319](https://github.com/pubkey/rxdb/issues/3319)
 
-### 10.0.0 (20 July 2021) BREAKING [read the announcement](./orga/releases/10.0.0.md)
+### 10.0.0 (20 July 2021) BREAKING [read the announcement](./docs-src/releases/10.0.0.md)
 
 Breaking:
   - Setting a `primaryKey` for a schema is now required.
@@ -746,7 +746,7 @@ Bugfixes:
 Other:
   - Added webpack [tree shaking optimization](https://webpack.js.org/guides/tree-shaking/#clarifying-tree-shaking-and-sideeffects) via `sideEffects: false`
 
-### 9.0.0 (16 May 2020) BREAKING [read the announcement](./orga/releases/9.0.0.md)
+### 9.0.0 (16 May 2020) BREAKING [read the announcement](./docs-src/releases/9.0.0.md)
 
 Features:
   - Added `RxQuery.exec(throwIfMissing: true)`
@@ -970,7 +970,7 @@ Bugfixes:
 Bugfixes:
   - Does not compile in TypeScript with strict flag enabled [#448](https://github.com/pubkey/rxdb/issues/448)
 
-### 8.0.0 (18. September 2018) BREAKING [read the announcement](./orga/releases/8.0.0.md)
+### 8.0.0 (18. September 2018) BREAKING [read the announcement](./docs-src/releases/8.0.0.md)
 
 Breaking:
   - Upgraded to [pouchdb 7.0.0](https://pouchdb.com/2018/06/21/pouchdb-7.0.0.html)
