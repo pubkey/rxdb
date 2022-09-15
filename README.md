@@ -258,8 +258,7 @@ As you may detect, the query can take very long time to run, because you have th
 When a user now logs off, the whole query will re-run over the database which takes again very long.
 
 ```js
-anyUser.loggedIn = false;
-await anyUser.save();
+await anyUser.atomicPatch({loggedIn: false});
 ```
 
 But not with the EventReduce.
