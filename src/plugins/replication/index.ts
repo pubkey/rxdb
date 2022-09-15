@@ -126,6 +126,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
 
         const database = this.collection.database;
+        
         this.metaInstance = await this.collection.database.storage.createStorageInstance({
             databaseName: database.name,
             collectionName: this.collection.name + '-rx-replication-' + this.replicationIdentifierHash,

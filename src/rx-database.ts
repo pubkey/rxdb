@@ -293,7 +293,16 @@ export class RxDatabaseBase<
                     name: collectionName as any,
                     schemaHash: schema.hash,
                     schema: schema.jsonSchema,
-                    version: schema.version
+                    version: schema.version,
+                    /**
+                     * Storages that are connected to thsi collection
+                     * so that when the collection is removed,
+                     * these storages must also be removed.
+                     * For example the replication meta storage
+                     * must be resetted when the collection is removed.
+                     */
+                    connectedStorages: [
+                    ]
                 },
                 _deleted: false,
                 _meta: getDefaultRxDocumentMeta(),

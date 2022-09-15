@@ -24,7 +24,8 @@ import {
     RxCollection,
     ensureNotFalsy,
     randomCouchString,
-    rxStorageInstanceToReplicationHandler
+    rxStorageInstanceToReplicationHandler,
+    normalizeMangoQuery
 } from '../../';
 
 import {
@@ -48,10 +49,8 @@ describe('replication.test.js', () => {
         localCollection: RxCollection<TestDocType, {}, {}, {}>,
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>
     }> {
-        const [localCollection, remoteCollection] = await Promise.all([
-            humansCollection.createHumanWithTimestamp(docsAmount.local, randomCouchString(10), false),
-            humansCollection.createHumanWithTimestamp(docsAmount.remote, randomCouchString(10), false)
-        ]);
+        const localCollection = await humansCollection.createHumanWithTimestamp(docsAmount.local, randomCouchString(10), false);
+        const remoteCollection = await humansCollection.createHumanWithTimestamp(docsAmount.remote, randomCouchString(10), false);
         return {
             localCollection,
             remoteCollection
@@ -379,6 +378,77 @@ describe('replication.test.js', () => {
                 localCollection.database.destroy();
                 remoteCollection.database.destroy();
             });
+        });
+        it('should clean up the replication meta storage the get collection gets removed', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+            const localDbName = localCollection.database.name;
+
+            const replicationState1 = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            await replicationState1.awaitInitialReplication();
+
+            async function docsInMeta(repState: typeof replicationState1): Promise<number> {
+                const metaInstance = ensureNotFalsy(repState.metaInstance);
+                console.log('metaInstance ' + metaInstance.databaseName + ' -- ' + metaInstance.collectionName);
+                const prepared = repState.collection.database.storage.statics.prepareQuery(
+                    metaInstance.schema,
+                    normalizeMangoQuery(
+                        metaInstance.schema,
+                        {}
+                    )
+                );
+                const result = await metaInstance.query(prepared);
+                return result.documents.length;
+            }
+
+            const docsInMetaBefore = await docsInMeta(replicationState1);
+            console.log('docsInMetaBefore: ' + docsInMetaBefore);
+
+            await localCollection.remove();
+            await localCollection.database.destroy();
+            await remoteCollection.database.destroy();
+
+
+            const localCollection2 = await humansCollection.createHumanWithTimestamp(0, localDbName, false);
+            const remoteCollection2 = await humansCollection.createHumanWithTimestamp(0, localDbName, false);
+
+            const replicationState2 = replicateRxCollection({
+                collection: localCollection2,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection2)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection2)
+                }
+            });
+            await replicationState2.awaitInitialReplication();
+
+            const docsInMetaAfter = await docsInMeta(replicationState2);
+            console.log('docsInMetaAfter: ' + docsInMetaAfter);
+
+            /**
+             * Because in the localCollection2 we do not insert any documents,
+             * there must be less documents in the meta collection
+             * becaues it only contains the checkpoints.
+             */
+
+            assert.strictEqual(docsInMetaAfter, 2);
+
+            process.exit();
+
+            localCollection2.database.destroy();
+            remoteCollection2.database.destroy();
         });
     });
     config.parallel('issues', () => {
