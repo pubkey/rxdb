@@ -8,11 +8,11 @@ window.onload = function () {
      * So now it is disabled but can be turned on by passing the correct url parameter '?beating=true'
      * @link https://github.com/pubkey/rxdb/pull/3800
      */
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const urlParams = Object.fromEntries(urlSearchParams.entries());
-    if (!urlParams.beating) {
-        return;
-    }
+    // const urlSearchParams = new URLSearchParams(window.location.search);
+    // const urlParams = Object.fromEntries(urlSearchParams.entries());
+    // if (!urlParams.beating) {
+    //     return;
+    // }
 
 
     /**
