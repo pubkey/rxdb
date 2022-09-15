@@ -155,7 +155,7 @@ await db.heroes.insert({
 });
 ```
 
-#### Query data
+#### Query data once
 ```javascript
 const aliveHeroes = await db.heroes.find({
   selector: {
@@ -163,8 +163,22 @@ const aliveHeroes = await db.heroes.find({
       $gt: 0
     }
   }
-}).exec();
+}).exec(); // the exec() returns the result once
 ```
+
+#### Observe a Query
+```javascript
+await db.heroes.find({
+  selector: {
+    healthpoints: {
+      $gt: 0
+    }
+  }
+})
+.$ // the $ returns an observable that emits each time the result set of the query changes
+.subscribe(aliveHeroes => console.dir(aliveHeroes));
+```
+
 
 
 Continue with the [quickstart here](https://rxdb.info/quickstart.html).
