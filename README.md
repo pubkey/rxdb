@@ -15,7 +15,7 @@
   </a>
   <br />
   <br />
-  <h3 align="center">A fast, offline-first, reactive database for JavaScript Applications</h3>
+  <h3 align="center">A fast, offline-first, reactive Database for JavaScript Applications</h3>
 </p>
 
 
