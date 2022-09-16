@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX `event-reduce` did not work when `key-compression` plugin was used.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.0.2 (16 September 2022)
+
+- FIX `event-reduce` did not work when `key-compression` plugin was used.
 
 ### 13.0.1 (16 September 2022)
 
