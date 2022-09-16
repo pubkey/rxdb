@@ -3,10 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX `graphQLSchemaFromRxSchema()` must not create broken schema when there are no `headerFields`
 <!-- ADD new changes here! -->
 
-### 13.0.0 (15 September 2022) BREAKING [read the announcement](./docs-src/releases/12.0.0.md)
+<!-- /CHANGELOG NEWEST -->
+
+<!-- RELEASE BELOW -->
+
+### 13.0.1 (16 September 2022)
+
+- FIX `graphQLSchemaFromRxSchema()` must not create broken schema when there are no `headerFields`
 
 - ADD credentials settings to the GraphQL replication plugin [#3976](https://github.com/pubkey/rxdb/pull/3976) Thanks [@marcoklein](https://github.com/marcoklein)
 
@@ -55,10 +60,6 @@
 - ADD Support JsonSchema for nested additionalProperties [#3952](https://github.com/pubkey/rxdb/pull/3952) Thanks [@swnf](https://github.com/swnf)
 
 - REFACTORED the layout of `RxChangeEvent` to better match the RxDB requirements and to fix the 'deleted-document-is-modified-but-still-deleted' bug.
-
-<!-- /CHANGELOG NEWEST -->
-
-<!-- RELEASE BELOW -->
 
 ### 12.7.16 (18 July 2022)
 

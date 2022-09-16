@@ -60,6 +60,13 @@ export function graphQLSchemaFromRxSchema(input) {
       schema: checkpointSchema,
       direction: 'input'
     });
+    ret.inputs = ret.inputs.concat(inputGraphQL.typeDefinitions.map(function (str) {
+      return replaceTopLevelTypeName(str, collectionNameInput);
+    })).concat(pushRowGraphQL.typeDefinitions.map(function (str) {
+      return replaceTopLevelTypeName(str, collectionNameInput + prefixes.pushRow);
+    })).concat(checkpointInputGraphQL.typeDefinitions.map(function (str) {
+      return replaceTopLevelTypeName(str, collectionNameInput + prefixes.checkpoint);
+    }));
     var headersSchema = {
       type: 'object',
       additionalProperties: false,
@@ -78,15 +85,13 @@ export function graphQLSchemaFromRxSchema(input) {
       schema: headersSchema,
       direction: 'input'
     });
-    ret.inputs = ret.inputs.concat(inputGraphQL.typeDefinitions.map(function (str) {
-      return replaceTopLevelTypeName(str, collectionNameInput);
-    })).concat(pushRowGraphQL.typeDefinitions.map(function (str) {
-      return replaceTopLevelTypeName(str, collectionNameInput + prefixes.pushRow);
-    })).concat(checkpointInputGraphQL.typeDefinitions.map(function (str) {
-      return replaceTopLevelTypeName(str, collectionNameInput + prefixes.checkpoint);
-    })).concat(headersInputGraphQL.typeDefinitions.map(function (str) {
-      return replaceTopLevelTypeName(str, headersInputName);
-    })); // output
+
+    if (ensureNotFalsy(collectionSettings.headerFields).length > 0) {
+      ret.inputs = ret.inputs.concat(headersInputGraphQL.typeDefinitions.map(function (str) {
+        return replaceTopLevelTypeName(str, headersInputName);
+      }));
+    } // output
+
 
     var outputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreOutputKeys));
     var outputGraphQL = getGraphqlSchemaFromJsonSchema({
