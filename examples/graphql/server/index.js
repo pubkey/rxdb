@@ -3,12 +3,10 @@ import * as path from 'path';
 const { graphqlHTTP } = require('express-graphql');
 const cors = require('cors');
 import { PubSub } from 'graphql-subscriptions';
-import {
-    buildSchema,
-    execute,
-    subscribe
-} from 'graphql';
-import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { buildSchema, execute, subscribe } from 'graphql';
+
+import * as ws from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 import { createServer } from 'http';
 
 import {
@@ -17,16 +15,12 @@ import {
     GRAPHQL_SUBSCRIPTION_PORT,
     GRAPHQL_SUBSCRIPTION_PATH,
     graphQLGenerationInput,
-    JWT_BEARER_TOKEN
+    JWT_BEARER_TOKEN,
 } from '../shared';
 
-import {
-    graphQLSchemaFromRxSchema
-} from 'rxdb/plugins/replication-graphql';
+import { graphQLSchemaFromRxSchema } from 'rxdb/plugins/replication-graphql';
 
-import {
-    lastOfArray
-} from 'rxdb';
+import { lastOfArray } from 'rxdb';
 
 function log(msg) {
     const prefix = '# GraphQL Server: ';
@@ -47,7 +41,6 @@ function sortByUpdatedAtAndPrimary(a, b) {
         else return 0;
     }
 }
-
 
 /**
  * Returns true if the request is authenticated
@@ -96,15 +89,16 @@ export async function run() {
             log(args);
             authenticateRequest(request);
 
-
             const lastId = args.checkpoint ? args.checkpoint.id : '';
-            const minUpdatedAt = args.checkpoint ? args.checkpoint.updatedAt : 0;
+            const minUpdatedAt = args.checkpoint
+                ? args.checkpoint.updatedAt
+                : 0;
 
             // sorted by updatedAt and primary
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
 
             // only return where updatedAt >= minUpdatedAt
-            const filterForMinUpdatedAtAndId = sortedDocuments.filter(doc => {
+            const filterForMinUpdatedAtAndId = sortedDocuments.filter((doc) => {
                 if (!args.checkpoint) {
                     return true;
                 }
@@ -129,13 +123,15 @@ export async function run() {
             const last = lastOfArray(limitedDocs);
             const ret = {
                 documents: limitedDocs,
-                checkpoint: last ? {
-                    id: last.id,
-                    updatedAt: last.updatedAt
-                } : {
-                    id: lastId,
-                    updatedAt: minUpdatedAt
-                }
+                checkpoint: last
+                    ? {
+                          id: last.id,
+                          updatedAt: last.updatedAt,
+                      }
+                    : {
+                          id: lastId,
+                          updatedAt: minUpdatedAt,
+                      },
             };
             console.log('pullHero() ret:');
             console.log(JSON.stringify(ret, null, 4));
@@ -149,16 +145,15 @@ export async function run() {
             const rows = args.heroPushRow;
             let lastCheckpoint = {
                 id: '',
-                updatedAt: 0
+                updatedAt: 0,
             };
 
             const conflicts = [];
 
-
             const writtenDocs = [];
-            rows.forEach(row => {
+            rows.forEach((row) => {
                 const docId = row.newDocumentState.id;
-                const docCurrentMaster = documents.find(d => d.id === docId);
+                const docCurrentMaster = documents.find((d) => d.id === docId);
 
                 /**
                  * Detect conflicts.
@@ -166,14 +161,15 @@ export async function run() {
                 if (
                     docCurrentMaster &&
                     row.assumedMasterState &&
-                    docCurrentMaster.updatedAt !== row.assumedMasterState.updatedAt
+                    docCurrentMaster.updatedAt !==
+                        row.assumedMasterState.updatedAt
                 ) {
                     conflicts.push(docCurrentMaster);
                     return;
                 }
 
                 const doc = row.newDocumentState;
-                documents = documents.filter(d => d.id !== doc.id);
+                documents = documents.filter((d) => d.id !== doc.id);
                 documents.push(doc);
 
                 lastCheckpoint.id = doc.id;
@@ -181,16 +177,12 @@ export async function run() {
                 writtenDocs.push(doc);
             });
 
-            pubsub.publish(
-                'streamHero',
-                {
-                    streamHero: {
-                        documents: writtenDocs,
-                        checkpoint: lastCheckpoint
-                    }
-                }
-            );
-
+            pubsub.publish('streamHero', {
+                streamHero: {
+                    documents: writtenDocs,
+                    checkpoint: lastCheckpoint,
+                },
+            });
 
             console.log('## current documents:');
             console.log(JSON.stringify(documents, null, 4));
@@ -206,18 +198,18 @@ export async function run() {
             const authHeaderValue = args.headers.Authorization;
             const bearerToken = authHeaderValue.split(' ')[1];
 
-
             validateBearerToken(bearerToken);
 
             return pubsub.asyncIterator('streamHero');
-        }
+        },
     };
 
     // server multitab.html - used in the e2e test
     app.use('/static', express.static(path.join(__dirname, '/static')));
 
     // server graphql-endpoint
-    app.use(GRAPHQL_PATH,
+    app.use(
+        GRAPHQL_PATH,
         graphqlHTTP({
             schema: schema,
             rootValue: root,
@@ -225,14 +217,13 @@ export async function run() {
         })
     );
 
-
     app.listen(GRAPHQL_PORT, function () {
-        log('Started graphql-endpoint at http://localhost:' +
-            GRAPHQL_PORT + GRAPHQL_PATH
+        log(
+            'Started graphql-endpoint at http://localhost:' +
+                GRAPHQL_PORT +
+                GRAPHQL_PATH
         );
     });
-
-
 
     const appSubscription = express();
     appSubscription.use(cors);
@@ -240,39 +231,48 @@ export async function run() {
     serverSubscription.listen(GRAPHQL_SUBSCRIPTION_PORT, () => {
         log(
             'Started graphql-subscription endpoint at http://localhost:' +
-            GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH
+                GRAPHQL_SUBSCRIPTION_PORT +
+                GRAPHQL_SUBSCRIPTION_PATH
         );
-        const subServer = new SubscriptionServer(
+        const wsServer = new ws.Server({
+            server: serverSubscription,
+            path: GRAPHQL_SUBSCRIPTION_PATH,
+        });
+
+        const subServer = useServer(
             {
+                schema,
                 execute,
                 subscribe,
-                schema,
-                rootValue: root
+                roots: {
+                    subscription: {
+                        streamHero: root.streamHero,
+                    }
+                }
             },
-            {
-                server: serverSubscription,
-                path: GRAPHQL_SUBSCRIPTION_PATH,
-            }
+            wsServer
         );
         return subServer;
     });
 
-
     // comment this in for testing of the subscriptions
-    /*
-    setInterval(() => {
+    /* setInterval(() => {
         const flag = new Date().getTime();
-        pubsub.publish(
-            'humanChanged',
-            {
-                humanChanged: {
+        pubsub.publish('streamHero', {
+            streamHero: {
+                documents: [{
                     id: 'foobar-' + flag,
-                    name: 'name-' + flag
-                }
-            }
-        );
-        console.log('published humanChanged ' + flag);
-    }, 1000);*/
+                    name: 'name-' + flag,
+                    color: 'green'
+                }],
+                checkpoint: {
+                    id: 'foobar-' + flag,
+                    updatedAt: flag
+                },
+            },
+        });
+        console.log('published streamHero ' + flag);
+    }, 1000); */
 }
 
 run();

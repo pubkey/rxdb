@@ -1,13 +1,11 @@
-import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { Client, createClient } from 'graphql-ws';
 import { getFromMapOrThrow } from '../../util';
+import { WebSocket as IsomorphicWebSocket } from 'isomorphic-ws';
 
-import {
-    WebSocket as IsomorphicWebSocket
-} from 'isomorphic-ws';
 
 export type WebsocketWithRefCount = {
     url: string;
-    socket: SubscriptionClient;
+    socket: Client;
     refCount: number;
 };
 
@@ -16,16 +14,14 @@ export const GRAPHQL_WEBSOCKET_BY_URL: Map<string, WebsocketWithRefCount> = new 
 
 export function getGraphQLWebSocket(
     url: string
-): SubscriptionClient {
+): Client {
     let has = GRAPHQL_WEBSOCKET_BY_URL.get(url);
     if (!has) {
-        const wsClient = new SubscriptionClient(
+        const wsClient = createClient({
             url,
-            {
-                reconnect: true,
-            },
-            IsomorphicWebSocket
-        );
+            shouldRetry: () => true,
+            webSocketImpl: IsomorphicWebSocket,
+        });
         has = {
             url,
             socket: wsClient,
@@ -46,6 +42,6 @@ export function removeGraphQLWebSocketRef(
     obj.refCount = obj.refCount - 1;
     if (obj.refCount === 0) {
         GRAPHQL_WEBSOCKET_BY_URL.delete(url);
-        obj.socket.close();
+        obj.socket.dispose();
     }
 }
