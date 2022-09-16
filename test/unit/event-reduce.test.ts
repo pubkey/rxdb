@@ -11,18 +11,28 @@ import {
     MangoQuery,
 } from '../../';
 
+import {
+    wrappedKeyCompressionStorage
+} from '../../plugins/key-compression';
+
+
+
 import config from './config';
 
 
 describe('event-reduce.test.js', () => {
-    async function createCollection(eventReduce: boolean): Promise<RxCollection> {
+    async function createCollection(
+        eventReduce: boolean,
+        storage = config.storage.getStorage(),
+        keyCompression = false
+    ): Promise<RxCollection> {
         const db = await createRxDatabase({
             name: randomCouchString(10),
-            storage: config.storage.getStorage(),
+            storage,
             eventReduce
         });
         const schema = clone(schemas.primaryHuman);
-        schema.keyCompression = false;
+        schema.keyCompression = keyCompression;
         schema.indexes = ['age', 'lastName'];
         const collectionName = eventReduce ? 'with-event-reduce' : 'without-event-reduce';
         const collections = await db.addCollections({
@@ -81,6 +91,12 @@ describe('event-reduce.test.js', () => {
         const colNoEventReduce = await createCollection(false);
         const colWithEventReduce = await createCollection(true);
 
+        await testQueryResultForEqualness(
+            colNoEventReduce,
+            colWithEventReduce,
+            queries
+        );
+
         await Promise.all(
             writeData
                 .map(async (docData) => {
@@ -113,6 +129,59 @@ describe('event-reduce.test.js', () => {
             colWithEventReduce,
             queries
         );
+
+        colNoEventReduce.database.destroy();
+        colWithEventReduce.database.destroy();
+    });
+
+    it('should work with the key-compression plugin', async () => {
+        const storage = wrappedKeyCompressionStorage({
+            storage: config.storage.getStorage()
+        });
+
+
+        const queries: MangoQuery<any>[] = [
+            { selector: { age: { '$gt': 10 } }, sort: [{ passportId: 'asc' }] },
+            { selector: { firstName: { $eq: 'Freeman' } }, sort: [{ passportId: 'asc' }] }
+        ];
+
+
+        const colNoEventReduce = await createCollection(false, storage, true);
+        const colWithEventReduce = await createCollection(true, storage, true);
+
+        await testQueryResultForEqualness(
+            colNoEventReduce,
+            colWithEventReduce,
+            queries
+        );
+
+        const writeData = [
+            {
+                passportId: 's90j6hhznefj',
+                firstName: 'Freeman',
+                lastName: 'Rogahn',
+                age: 25
+            },
+            {
+                passportId: '6eu7byz49iq9',
+                firstName: 'Eugenia',
+                lastName: 'Dare',
+                age: 16
+            }
+        ];
+        await Promise.all(
+            writeData
+                .map(async (docData) => {
+                    await colNoEventReduce.insert(docData);
+                    await colWithEventReduce.insert(docData);
+                })
+        );
+        await testQueryResultForEqualness(
+            colNoEventReduce,
+            colWithEventReduce,
+            queries
+        );
+
 
         colNoEventReduce.database.destroy();
         colWithEventReduce.database.destroy();
