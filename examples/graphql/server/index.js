@@ -247,8 +247,8 @@ export async function run() {
                 roots: {
                     subscription: {
                         streamHero: root.streamHero,
-                    }
-                }
+                    },
+                },
             },
             wsServer
         );

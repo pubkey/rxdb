@@ -12,7 +12,8 @@ import {
     subscribe
 } from 'graphql';
 import { createServer } from 'http';
-import { SubscriptionServer } from 'subscriptions-transport-ws';
+import * as WebSocket from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 import { Request, Response, NextFunction } from 'express';
 
 const express = require('express');
@@ -295,20 +296,28 @@ export async function spawn(
 
             const wsPort = port + 500;
             const ws = createServer(server);
+            const wsServer = new WebSocket.Server({
+                server: ws,
+                path: GRAPHQL_SUBSCRIPTION_PATH,
+            });
             const websocketUrl = 'ws://localhost:' + wsPort + GRAPHQL_SUBSCRIPTION_PATH;
+
             ws.listen(wsPort, () => {
                 // console.log(`GraphQL Server is now running on http://localhost:${wsPort}`);
                 // Set up the WebSocket for handling GraphQL subscriptions
-                const subServer = new SubscriptionServer(
+                const subServer = useServer(
                     {
+                        schema,
                         execute,
                         subscribe,
-                        schema,
-                        rootValue: root
-                    }, {
-                    server: ws,
-                    path: GRAPHQL_SUBSCRIPTION_PATH,
-                });
+                        roots: {
+                            subscription: {
+                                humanChanged: root.humanChanged,
+                            },
+                        },
+                    }, 
+                    wsServer    
+                );
 
                 res({
                     port,

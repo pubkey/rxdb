@@ -172,7 +172,7 @@ describe('replication-graphql.test.ts', () => {
         addPouchPlugin(REQUIRE_FUN('pouchdb-adapter-http'));
         const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
         const ws = REQUIRE_FUN('ws');
-        const { SubscriptionClient } = REQUIRE_FUN('subscriptions-transport-ws');
+        const { createClient } = REQUIRE_FUN('graphql-ws');
         const ERROR_URL = 'http://localhost:15898/foobar';
         function getTestData(amount: number): WithDeleted<HumanWithTimestampDocumentType>[] {
             return new Array(amount).fill(0)
@@ -217,13 +217,11 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn();
 
                 const endpointUrl = server.url.ws;
-                const client = new SubscriptionClient(
+                const client = createClient({
                     endpointUrl,
-                    {
-                        reconnect: true,
-                    },
-                    ws
-                );
+                    shouldRetry: () => true,
+                    webSocketImpl: ws,
+                });
 
                 const query = `subscription onHumanChanged {
                     humanChanged {
@@ -241,17 +239,22 @@ describe('replication-graphql.test.ts', () => {
                     }
                 }`;
 
-                const ret = client.request({ query });
                 const emitted: any[] = [];
                 const emittedError = [];
-                ret.subscribe({
-                    next(data: any) {
-                        emitted.push(data);
-                    },
-                    error(error: any) {
-                        emittedError.push(error);
-                    }
-                });
+
+                client.subscribe(
+                    query,
+                    {
+                        next: (data: any) => {
+                            emitted.push(data);
+                        },
+                        error: (error: any) => {
+                            emittedError.push(error);
+                        },
+                        complete: () => {
+                            return;
+                        }
+                    });
 
                 // we have to wait here until the connection is established
                 await wait(300);
@@ -1754,7 +1757,7 @@ describe('replication-graphql.test.ts', () => {
 
                 replicationState.setCredentials('same-origin')
 
-                assert.deepStrictEqual(replicationState.clientState.headers, {originalHeader: '1'})
+                assert.deepStrictEqual(replicationState.clientState.headers, { originalHeader: '1' })
                 assert.strictEqual(replicationState.clientState.credentials, 'same-origin')
 
                 server.close();
