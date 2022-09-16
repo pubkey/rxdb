@@ -31,7 +31,6 @@
     "local-web-server": "5.2.1",
     "normalize.css": "8.0.1",
     "pouchdb-adapter-idb": "7.2.2",
-    "preinstall": "^0.0.1-security",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.5.6",
     "ws": "8.8.1"
