@@ -26,10 +26,8 @@ config.parallel('replication-websocket.test.ts', () => {
         localCollection: RxCollection<TestDocType, {}, {}, {}>,
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>
     }> {
-        const [localCollection, remoteCollection] = await Promise.all([
-            humansCollection.createHumanWithTimestamp(docsAmount.local, undefined, false),
-            humansCollection.createHumanWithTimestamp(docsAmount.remote, undefined, false)
-        ]);
+        const localCollection = await humansCollection.createHumanWithTimestamp(docsAmount.local, undefined, false);
+        const remoteCollection = await humansCollection.createHumanWithTimestamp(docsAmount.remote, undefined, false);
         return {
             localCollection,
             remoteCollection
