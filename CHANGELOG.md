@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX `graphQLSchemaFromRxSchema()` must not create broken schema when there are no `headerFields`
 <!-- ADD new changes here! -->
 
 ### 13.0.0 (15 September 2022) BREAKING [read the announcement](./docs-src/releases/12.0.0.md)
