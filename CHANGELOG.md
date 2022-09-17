@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX sorting via `event-reduce` did not work when `key-compression` plugin was used.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

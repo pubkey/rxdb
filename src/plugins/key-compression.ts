@@ -168,7 +168,19 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                     return args.storage.statics.getSortComparator(schema, preparedQuery);
                 } else {
                     const compressionState = getCompressionStateByRxJsonSchema(schema);
-                    return args.storage.statics.getSortComparator(compressionState.schema, preparedQuery);
+                    const comparator = args.storage.statics.getSortComparator(compressionState.schema, preparedQuery);
+                    return (a, b) => {
+                        const compressedDocDataA = compressObject(
+                            compressionState.table,
+                            a
+                        );
+                        const compressedDocDataB = compressObject(
+                            compressionState.table,
+                            b
+                        );
+                        const res = comparator(compressedDocDataA, compressedDocDataB);
+                        return res;
+                    }
                 }
             },
             getQueryMatcher<RxDocType>(
