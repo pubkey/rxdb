@@ -1,13 +1,16 @@
-import { newRxError } from './rx-error';
+import { _collectionNamePrimary } from './rx-database';
+import { isBulkWriteConflictError, newRxError } from './rx-error';
 import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData
 } from './rx-schema-helper';
+import { getSingleDocument, writeSingle } from './rx-storage-helper';
 import type {
     CollectionsOfDatabase,
     InternalStoreCollectionDocType,
     InternalStoreDocType,
     InternalStoreStorageTokenDocType,
+    RxCollection,
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
@@ -16,6 +19,7 @@ import type {
     RxStorageInstance
 } from './types';
 import {
+    clone,
     ensureNotFalsy,
     fastUnsecureHash,
     getDefaultRevision,
@@ -25,7 +29,6 @@ import {
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
-export const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 
 /**
  * Do not change the title,
@@ -62,7 +65,6 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDoc
             enum: [
                 INTERNAL_CONTEXT_COLLECTION,
                 INTERNAL_CONTEXT_STORAGE_TOKEN,
-                INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
                 'OTHER'
             ]
         },
@@ -210,4 +212,64 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         return ensureNotFalsy(storageTokenDocInDb);
     }
     throw error;
+}
+
+
+
+
+
+export async function addConnectedStorageToCollection(
+    collection: RxCollection<any>,
+    storageCollectionName: string,
+    schema: RxJsonSchema<any>
+) {
+    const collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
+    const collectionDocId = getPrimaryKeyOfInternalDocument(
+        collectionNameWithVersion,
+        INTERNAL_CONTEXT_COLLECTION
+    );
+
+    while (true) {
+        console.log('addConnectedStorageToCollection() AAAAAAAAAAAAAAA');
+        const collectionDoc = await getSingleDocument(
+            collection.database.internalStore,
+            collectionDocId
+        );
+        const saveData: RxDocumentData<InternalStoreCollectionDocType> = clone(ensureNotFalsy(collectionDoc));
+        /**
+         * Add array if not exist for backwards compatibility
+         * TODO remove this in 2023
+         */
+        if (!saveData.data.connectedStorages) {
+            saveData.data.connectedStorages = [];
+        }
+
+        // do nothing if already in array
+        const alreadyThere = saveData.data.connectedStorages
+            .find(row => row.collectionName === storageCollectionName && row.schema.version === schema.version);
+        if (alreadyThere) {
+            return;
+        }
+
+        // otherwise add to array and save
+        saveData.data.connectedStorages.push({
+            collectionName: storageCollectionName,
+            schema
+        });
+        try {
+            await writeSingle(
+                collection.database.internalStore,
+                {
+                    previous: ensureNotFalsy(collectionDoc),
+                    document: saveData
+                },
+                'add-connected-storage-to-collection'
+            );
+        } catch (err) {
+            if (!isBulkWriteConflictError(err)) {
+                throw err;
+            }
+            // retry on conflict
+        }
+    }
 }
