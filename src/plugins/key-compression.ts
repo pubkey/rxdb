@@ -172,11 +172,11 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                     return (a, b) => {
                         const compressedDocDataA = compressObject(
                             compressionState.table,
-                            a
+                            a as any
                         );
                         const compressedDocDataB = compressObject(
                             compressionState.table,
-                            b
+                            b as any
                         );
                         const res = comparator(compressedDocDataA, compressedDocDataB);
                         return res;
