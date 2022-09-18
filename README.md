@@ -15,7 +15,7 @@
   </a>
   <br />
   <br />
-  <h3 align="center">A fast, offline-first, reactive database for JavaScript Applications</h3>
+  <h3 align="center">A fast, offline-first, reactive Database for JavaScript Applications</h3>
 </p>
 
 
@@ -82,7 +82,7 @@ There are also plugins to replicate with any CouchDB endpoint or over GraphQL an
 
 RxDB is based on a [storage interface](https://rxdb.info/rx-storage.html) that enables you to swap out the underlaying storage engine. This increases **code reuse** because the same database code can be used in different JavaScript environments by just switching out the storage settings.
 
-You can use RxDB on top of [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html), [PouchDB](https://rxdb.info/rx-storage-pouchdb.html), [LokiJS](https://rxdb.info/rx-storage-lokijs.html), [Dexie.js](https://rxdb.info/rx-storage-dexie.html), [In-memory](https://rxdb.info/rx-storage-memory.html), [SQLite](https://rxdb.info/rx-storage-sqlite.html), in a [WebWorker](https://rxdb.info/rx-storage-worker.html) thread and even on top of [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html).
+You can use RxDB on top of [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html), [PouchDB](https://rxdb.info/rx-storage-pouchdb.html), [LokiJS](https://rxdb.info/rx-storage-lokijs.html), [Dexie.js](https://rxdb.info/rx-storage-dexie.html), [in-memory](https://rxdb.info/rx-storage-memory.html), [SQLite](https://rxdb.info/rx-storage-sqlite.html), in a [WebWorker](https://rxdb.info/rx-storage-worker.html) thread and even on top of [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html).
 
 No matter what kind of runtime you have, as long as it runs JavaScript, it can run RxDB:
 
@@ -155,7 +155,7 @@ await db.heroes.insert({
 });
 ```
 
-#### Query data
+#### Query data once
 ```javascript
 const aliveHeroes = await db.heroes.find({
   selector: {
@@ -163,8 +163,22 @@ const aliveHeroes = await db.heroes.find({
       $gt: 0
     }
   }
-}).exec();
+}).exec(); // the exec() returns the result once
 ```
+
+#### Observe a Query
+```javascript
+await db.heroes.find({
+  selector: {
+    healthpoints: {
+      $gt: 0
+    }
+  }
+})
+.$ // the $ returns an observable that emits each time the result set of the query changes
+.subscribe(aliveHeroes => console.dir(aliveHeroes));
+```
+
 
 
 Continue with the [quickstart here](https://rxdb.info/quickstart.html).
@@ -244,8 +258,7 @@ As you may detect, the query can take very long time to run, because you have th
 When a user now logs off, the whole query will re-run over the database which takes again very long.
 
 ```js
-anyUser.loggedIn = false;
-await anyUser.save();
+await anyUser.atomicPatch({loggedIn: false});
 ```
 
 But not with the EventReduce.

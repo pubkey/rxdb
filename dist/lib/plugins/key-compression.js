@@ -120,7 +120,12 @@ function wrappedKeyCompressionStorage(args) {
         return args.storage.statics.getQueryMatcher(schema, preparedQuery);
       } else {
         var compressionState = getCompressionStateByRxJsonSchema(schema);
-        return args.storage.statics.getQueryMatcher(compressionState.schema, preparedQuery);
+        var matcher = args.storage.statics.getQueryMatcher(compressionState.schema, preparedQuery);
+        return function (docData) {
+          var compressedDocData = (0, _jsonschemaKeyCompression.compressObject)(compressionState.table, docData);
+          var ret = matcher(compressedDocData);
+          return ret;
+        };
       }
     }
   });

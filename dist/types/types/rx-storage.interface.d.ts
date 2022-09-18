@@ -79,7 +79,6 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
 export type FilledMangoQuery<RxDocType> = Override<
     MangoQuery<RxDocType>,
     {
-
         /**
          * The selector is required here.
          */
@@ -155,7 +154,6 @@ export type RxStorageStatics = Readonly<{
      * Returns a function
      * that can be used to check if a document
      * matches the query.
-     *  
      */
     getQueryMatcher<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
@@ -170,7 +168,6 @@ export type RxStorageStatics = Readonly<{
      */
     checkpointSchema: DeepReadonly<JsonSchema>;
 }>;
-
 
 
 export interface RxStorageInstance<
@@ -263,7 +260,6 @@ export interface RxStorageInstance<
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>>;
 
-
     /**
      * Returns the plain data of a single attachment.
      */
@@ -271,7 +267,6 @@ export interface RxStorageInstance<
         documentId: string,
         attachmentId: string
     ): Promise<string>;
-
 
     /**
      * Returns the current (not the old!) data of all documents that have been changed AFTER the given checkpoint.

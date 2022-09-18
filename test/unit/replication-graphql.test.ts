@@ -1418,6 +1418,9 @@ describe('replication-graphql.test.ts', () => {
                         checkpointFields: [
                             'id',
                             'updatedAt'
+                        ],
+                        headerFields: [
+                            'lol'
                         ]
                     },
                     deepNestedHuman: {
@@ -1428,8 +1431,24 @@ describe('replication-graphql.test.ts', () => {
                         headerFields: [
                             'foo'
                         ]
-                    }
+                    },
+                    /**
+                     * A schema without header fields must
+                     * not create a broken schema.
+                     */
+                    noHeader: {
+                        schema: schemas.humanWithTimestamp,
+                        checkpointFields: [
+                            'id',
+                            'updatedAt'
+                        ]
+                    },
                 });
+                assert.strictEqual(
+                    output.asString.includes('NoHeaderInputHeaders'),
+                    false
+                );
+
                 const build = buildSchema(output.asString);
                 assert.ok(build);
             });
@@ -1754,7 +1773,7 @@ describe('replication-graphql.test.ts', () => {
 
                 replicationState.setCredentials('same-origin')
 
-                assert.deepStrictEqual(replicationState.clientState.headers, {originalHeader: '1'})
+                assert.deepStrictEqual(replicationState.clientState.headers, { originalHeader: '1' })
                 assert.strictEqual(replicationState.clientState.credentials, 'same-origin')
 
                 server.close();

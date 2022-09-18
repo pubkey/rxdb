@@ -75,7 +75,6 @@ export function graphQLSchemaFromRxSchema(
         types: []
     };
 
-
     Object.entries(input).forEach(([collectionName, collectionSettings]) => {
         collectionSettings = fillUpOptionals(collectionSettings);
 
@@ -123,6 +122,20 @@ export function graphQLSchemaFromRxSchema(
             direction: 'input'
         });
 
+        ret.inputs = ret.inputs.concat(
+            inputGraphQL
+                .typeDefinitions
+                .map(str => replaceTopLevelTypeName(str, collectionNameInput))
+        ).concat(
+            pushRowGraphQL
+                .typeDefinitions
+                .map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.pushRow))
+        ).concat(
+            checkpointInputGraphQL
+                .typeDefinitions
+                .map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.checkpoint))
+        );
+
         const headersSchema: any = {
             type: 'object',
             additionalProperties: false,
@@ -141,25 +154,13 @@ export function graphQLSchemaFromRxSchema(
             schema: headersSchema,
             direction: 'input'
         });
-
-
-        ret.inputs = ret.inputs.concat(
-            inputGraphQL
-                .typeDefinitions
-                .map(str => replaceTopLevelTypeName(str, collectionNameInput))
-        ).concat(
-            pushRowGraphQL
-                .typeDefinitions
-                .map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.pushRow))
-        ).concat(
-            checkpointInputGraphQL
-                .typeDefinitions
-                .map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.checkpoint))
-        ).concat(
-            headersInputGraphQL
-                .typeDefinitions
-                .map(str => replaceTopLevelTypeName(str, headersInputName))
-        );
+        if (ensureNotFalsy(collectionSettings.headerFields).length > 0) {
+            ret.inputs = ret.inputs.concat(
+                headersInputGraphQL
+                    .typeDefinitions
+                    .map(str => replaceTopLevelTypeName(str, headersInputName))
+            );
+        }
 
         // output
         const outputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreOutputKeys));

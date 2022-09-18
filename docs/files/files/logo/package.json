@@ -1,7 +1,8 @@
 {
   "name": "logo",
   "version": "1.0.0",
-  "description": "",
+  "description": "The RxDB logo, rendered via JavaScript because I have no svg editor.",
+  "private": true,
   "main": "index.js",
   "scripts": {
     "start": "browserify js.js > js.build.js",

@@ -246,7 +246,6 @@ header .logo .text {
 }
 
 header .logo img {
-    height: 100%;
     float : left;
 }
 
@@ -356,7 +355,8 @@ header .logo img {
 }
 
 .block.first img {
-    margin-left: 13px;
+    width: 307px;
+    margin-left: 35px;
     margin-top : 8px;
 }
 
@@ -382,7 +382,7 @@ header .logo img {
 }
 
 .block.second .logo {
-    width: 190px;
+    width: 144px;
 }
 
 @media (max-width: 530px) {
@@ -437,9 +437,9 @@ header .logo img {
 
 .block.replication .replicate-logo {
     position   : absolute;
-    width      : 150px;
+    width      : 120px;
     margin-left: 50%;
-    left       : -75px;
+    left       : -60px;
     top        : 50%;
     margin-top : -75px;
 }
