@@ -16,7 +16,8 @@ import type {
     RxJsonSchema,
     RxStorage,
     RxStorageBulkWriteError,
-    RxStorageInstance
+    RxStorageInstance,
+    RxStorageStatics
 } from './types';
 import {
     clone,
@@ -112,10 +113,10 @@ export function getPrimaryKeyOfInternalDocument(
  * with context 'collection'
  */
 export async function getAllCollectionDocuments(
-    storage: RxStorage<any, any>,
+    storageStatics: RxStorageStatics,
     storageInstance: RxStorageInstance<InternalStoreDocType<any>, any, any>
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
-    const getAllQueryPrepared = storage.statics.prepareQuery(
+    const getAllQueryPrepared = storageStatics.prepareQuery(
         storageInstance.schema,
         {
             selector: {

@@ -37,7 +37,6 @@ import {
     PROMISE_RESOLVE_FALSE,
     randomCouchString,
     ensureNotFalsy,
-    PROMISE_RESOLVE_VOID,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     defaultHashFunction
@@ -71,9 +70,6 @@ import {
     INTERNAL_STORAGE_NAME
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
-import {
-    createRxCollectionStorageInstance
-} from './rx-collection-helper';
 import { ObliviousSet } from 'oblivious-set';
 import {
     ensureStorageTokenDocumentExists,
@@ -370,55 +366,6 @@ export class RxDatabaseBase<
     }
 
     /**
-     * delete all data of the collection and its previous versions
-     */
-    removeCollection(collectionName: string): Promise<void> {
-        let destroyPromise = PROMISE_RESOLVE_VOID;
-        if ((this.collections as any)[collectionName]) {
-            destroyPromise = (this.collections as any)[collectionName].destroy();
-        }
-        // remove schemas from internal db
-        // TODO first remove the storage instance, then delete the meta docs
-        // to ensure that if the javascript process is shut down in between,
-        // we do not end up in a dangerous state!
-        return destroyPromise
-            .then(() => _removeAllOfCollection(this as any, collectionName))
-            // get all relevant storage-instances
-            .then(knownVersions => {
-                return Promise.all(
-                    knownVersions
-                        .map(knownVersionDoc => {
-                            return createRxCollectionStorageInstance(
-                                this.asRxDatabase,
-                                {
-                                    databaseInstanceToken: this.token,
-                                    databaseName: this.name,
-                                    collectionName,
-                                    schema: knownVersionDoc.data.schema,
-                                    options: this.instanceCreationOptions,
-                                    multiInstance: this.multiInstance
-                                }
-                            );
-                        })
-                );
-            })
-            // remove the storage instance
-            .then(storageInstances => {
-                return Promise.all(
-                    storageInstances.map(
-                        instance => instance.remove()
-                    )
-                );
-            })
-            .then(() => runAsyncPluginHooks('postRemoveRxCollection', {
-                storage: this.storage,
-                databaseName: this.name,
-                collectionName
-            }))
-            .then(() => { });
-    }
-
-    /**
      * runs the given function between idleQueue-locking
      */
     lockedRun<T>(fn: (...args: any[]) => T): T extends Promise<any> ? T : Promise<T> {
@@ -568,36 +515,6 @@ export function _collectionNamePrimary(name: string, schema: RxJsonSchema<any>) 
 }
 
 /**
- * removes all internal docs of a given collection
- * @return resolves all known collection-versions
- */
-export async function _removeAllOfCollection(
-    rxDatabase: RxDatabaseBase<any, any, any>,
-    collectionName: string
-): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
-    const docs = await getAllCollectionDocuments(
-        rxDatabase.storage,
-        rxDatabase.internalStore
-    );
-    const relevantDocs = docs
-        .filter((colDoc) => colDoc.data.name === collectionName);
-    const writeRows = relevantDocs.map(doc => {
-        const writeDoc = flatCloneDocWithMeta(doc);
-        writeDoc._deleted = true;
-        return {
-            previous: doc,
-            document: writeDoc
-        };
-    });
-    return rxDatabase.internalStore
-        .bulkWrite(
-            writeRows,
-            'rx-database-remove-collection-all'
-        )
-        .then(() => relevantDocs);
-}
-
-/**
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.
  */
@@ -736,7 +653,7 @@ export async function removeRxDatabase(
     );
 
     const collectionDocs = await getAllCollectionDocuments(
-        storage,
+        storage.statics,
         dbInternalsStorageInstance
     );
 

@@ -415,24 +415,34 @@ describe('replication.test.js', () => {
 
             await localCollection.remove();
             await localCollection.database.destroy();
-            await remoteCollection.database.destroy();
 
 
             const localCollection2 = await humansCollection.createHumanWithTimestamp(0, localDbName, false);
-            const remoteCollection2 = await humansCollection.createHumanWithTimestamp(0, localDbName, false);
+
+            let continueReplication: Function | null = undefined as any;
+            const continues = new Promise(res => {
+                continueReplication = res;
+            });
 
             const replicationState2 = replicateRxCollection({
                 collection: localCollection2,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: true,
                 pull: {
-                    handler: getPullHandler(remoteCollection2)
+                    handler: async (chkpt, bSize) => {
+                        await continues;
+                        return getPullHandler(remoteCollection)(chkpt, bSize);
+                    }
                 },
                 push: {
-                    handler: getPushHandler(remoteCollection2)
-                }
+                    handler: async (docs) => {
+                        await continues;
+                        return getPushHandler(remoteCollection)(docs);
+                    }
+                },
+                autoStart: false
             });
-            await replicationState2.awaitInitialReplication();
+            await replicationState2.start();
 
             const docsInMetaAfter = await docsInMeta(replicationState2);
             console.log('docsInMetaAfter: ' + docsInMetaAfter);
@@ -442,13 +452,24 @@ describe('replication.test.js', () => {
              * there must be less documents in the meta collection
              * becaues it only contains the checkpoints.
              */
+            assert.strictEqual(docsInMetaAfter, 0);
+            ensureNotFalsy(continueReplication)();
 
-            assert.strictEqual(docsInMetaAfter, 2);
+            /**
+             * the re-created collection should have re-run the replication
+             * and contain all documents from the remove.
+             */
+            await replicationState2.awaitInitialReplication();
+            const localDocs = await localCollection2.find().exec();
+            const remoteDocs = await remoteCollection.find().exec();
 
-            process.exit();
+            assert.deepStrictEqual(
+                localDocs.map(d => d.toJSON()),
+                remoteDocs.map(d => d.toJSON())
+            );
 
             localCollection2.database.destroy();
-            remoteCollection2.database.destroy();
+            remoteCollection.database.destroy();
         });
     });
     config.parallel('issues', () => {
