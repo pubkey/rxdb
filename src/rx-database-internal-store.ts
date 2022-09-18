@@ -14,7 +14,6 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
-    RxStorage,
     RxStorageBulkWriteError,
     RxStorageInstance,
     RxStorageStatics
@@ -231,7 +230,6 @@ export async function addConnectedStorageToCollection(
     );
 
     while (true) {
-        console.log('addConnectedStorageToCollection() AAAAAAAAAAAAAAA');
         const collectionDoc = await getSingleDocument(
             collection.database.internalStore,
             collectionDocId
