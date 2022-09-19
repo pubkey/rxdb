@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@electron/remote": "2.0.8",
-    "electron": "19.0.15",
+    "electron": "19.0.17",
     "pouchdb-adapter-http": "7.3.0",
     "pouchdb-adapter-websql": "7.0.0",
     "pouchdb-replication": "7.3.0",

@@ -93,7 +93,13 @@ export function wrappedKeyCompressionStorage(args) {
         return args.storage.statics.getSortComparator(schema, preparedQuery);
       } else {
         var compressionState = getCompressionStateByRxJsonSchema(schema);
-        return args.storage.statics.getSortComparator(compressionState.schema, preparedQuery);
+        var comparator = args.storage.statics.getSortComparator(compressionState.schema, preparedQuery);
+        return function (a, b) {
+          var compressedDocDataA = compressObject(compressionState.table, a);
+          var compressedDocDataB = compressObject(compressionState.table, b);
+          var res = comparator(compressedDocDataA, compressedDocDataB);
+          return res;
+        };
       }
     },
     getQueryMatcher: function getQueryMatcher(schema, preparedQuery) {

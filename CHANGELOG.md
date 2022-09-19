@@ -2,14 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+
 - FIX on `RxCollection.remove()` the related storages like the meta of replications, must also be removed.
-- FIX sorting via `event-reduce` did not work when `key-compression` plugin was used.
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.0.3 (17 September 2022)
+
+- FIX sorting via `event-reduce` did not work when `key-compression` plugin was used.
 
 ### 13.0.2 (16 September 2022)
 
