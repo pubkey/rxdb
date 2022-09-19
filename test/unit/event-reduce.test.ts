@@ -72,7 +72,6 @@ describe('event-reduce.test.js', () => {
                 col1.find(query).exec(),
                 col2.find(query).exec()
             ]);
-            console.dir(query);
             ensureResultsEqual(res1, res2);
         }
     }

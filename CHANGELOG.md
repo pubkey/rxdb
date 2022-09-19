@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX saving multiple attachments broke previously stored attachments on some storages.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

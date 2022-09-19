@@ -330,11 +330,16 @@ export function categorizeBulkWriteRows<RxDocType>(
                                     attachmentData: attachmentData as any
                                 });
                             } else {
-                                attachmentsUpdate.push({
-                                    documentId: id as any,
-                                    attachmentId,
-                                    attachmentData: attachmentData as any
-                                });
+                                if (
+                                    (attachmentData as RxAttachmentWriteData).data &&
+                                    attachmentData.digest !== previousAttachmentData.digest
+                                ) {
+                                    attachmentsUpdate.push({
+                                        documentId: id as any,
+                                        attachmentId,
+                                        attachmentData: attachmentData as RxAttachmentWriteData
+                                    });
+                                }
                             }
                         });
                 }
