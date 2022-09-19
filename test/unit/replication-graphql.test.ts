@@ -6,6 +6,7 @@ import {
     waitUntil
 } from 'async-test-util';
 import GraphQLClient from 'graphql-client';
+import { WebSocket as IsomorphicWebSocket } from 'isomorphic-ws';
 
 import {
     first
@@ -171,8 +172,7 @@ describe('replication-graphql.test.ts', () => {
         const REQUIRE_FUN = require;
         addPouchPlugin(REQUIRE_FUN('pouchdb-adapter-http'));
         const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
-        const ws = REQUIRE_FUN('ws');
-        const { SubscriptionClient } = REQUIRE_FUN('subscriptions-transport-ws');
+        const { createClient } = REQUIRE_FUN('graphql-ws');
         const ERROR_URL = 'http://localhost:15898/foobar';
         function getTestData(amount: number): WithDeleted<HumanWithTimestampDocumentType>[] {
             return new Array(amount).fill(0)
@@ -217,13 +217,12 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn();
 
                 const endpointUrl = server.url.ws;
-                const client = new SubscriptionClient(
-                    endpointUrl,
-                    {
-                        reconnect: true,
-                    },
-                    ws
-                );
+
+                const client = createClient({
+                    url: endpointUrl,
+                    shouldRetry: () => false,
+                    webSocketImpl: IsomorphicWebSocket,
+                });
 
                 const query = `subscription onHumanChanged {
                     humanChanged {
@@ -241,17 +240,20 @@ describe('replication-graphql.test.ts', () => {
                     }
                 }`;
 
-                const ret = client.request({ query });
                 const emitted: any[] = [];
                 const emittedError = [];
-                ret.subscribe({
-                    next(data: any) {
-                        emitted.push(data);
-                    },
-                    error(error: any) {
-                        emittedError.push(error);
-                    }
-                });
+
+                client.subscribe({ query: query },
+                    {
+                        next: (data: any) => {
+                            emitted.push(data);
+                        },
+                        error: (error: any) => {
+                            emittedError.push(error);
+                        },
+                        complete: () => {
+                        }
+                    });
 
                 // we have to wait here until the connection is established
                 await wait(300);
@@ -1241,7 +1243,6 @@ describe('replication-graphql.test.ts', () => {
                     const docs = await c.find().exec();
                     return docs.length === 1;
                 });
-
                 // update on remote
                 const updateDocData: typeof testDocData = clone(testDocData);
                 updateDocData.name = 'updated';
@@ -1250,8 +1251,6 @@ describe('replication-graphql.test.ts', () => {
                     const doc = await c.findOne().exec(true);
                     return doc.name === 'updated';
                 });
-
-
                 // delete on remote
                 const deleteDocData: typeof testDocData = clone(updateDocData);
                 deleteDocData.deleted = true;

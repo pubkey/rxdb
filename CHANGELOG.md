@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - FIX saving multiple attachments broke previously stored attachments on some storages.
+- UPDATE graphql websocket dependencies [#3980](https://github.com/pubkey/rxdb/pull/3980) Thanks [@herefishyfish](https://github.com/herefishyfish)
 - FIX on `RxCollection.remove()` the related storages like the meta of replications, must also be removed.
 
 <!-- ADD new changes here! -->

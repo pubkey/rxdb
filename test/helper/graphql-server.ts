@@ -12,7 +12,8 @@ import {
     subscribe
 } from 'graphql';
 import { createServer } from 'http';
-import { SubscriptionServer } from 'subscriptions-transport-ws';
+import * as ws from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 import { Request, Response, NextFunction } from 'express';
 
 const express = require('express');
@@ -154,7 +155,7 @@ export async function spawn(
             const result = root.feedForRxDBReplication(args);
 
             // console.log('collection');
-            // console.dir(collection);
+            // console.dir(result);
 
             return {
                 collection: result,
@@ -294,21 +295,29 @@ export async function spawn(
         const server = app.listen(port, function () {
 
             const wsPort = port + 500;
-            const ws = createServer(server);
+            const wss = createServer(server);
+            const wsServer = new ws.Server({
+                server: wss,
+                path: GRAPHQL_SUBSCRIPTION_PATH,
+            });
             const websocketUrl = 'ws://localhost:' + wsPort + GRAPHQL_SUBSCRIPTION_PATH;
-            ws.listen(wsPort, () => {
+
+            wss.listen(wsPort, () => {
                 // console.log(`GraphQL Server is now running on http://localhost:${wsPort}`);
                 // Set up the WebSocket for handling GraphQL subscriptions
-                const subServer = new SubscriptionServer(
+                const subServer = useServer(
                     {
+                        schema,
                         execute,
                         subscribe,
-                        schema,
-                        rootValue: root
-                    }, {
-                    server: ws,
-                    path: GRAPHQL_SUBSCRIPTION_PATH,
-                });
+                        roots: {
+                            subscription: {
+                                humanChanged: root.humanChanged,
+                            },
+                        },
+                    }, 
+                    wsServer    
+                );
 
                 res({
                     port,
@@ -369,19 +378,21 @@ export async function spawn(
                     close(now = false) {
                         if (now) {
                             server.close();
-                            //                            subServer.close();
+                            subServer.dispose();
                             return Promise.resolve();
                         } else {
                             return new Promise(res2 => {
                                 setTimeout(() => {
                                     server.close();
-                                    //subServer.close();
+                                    subServer.dispose();
                                     res2();
                                 }, 1000);
                             });
                         }
                     }
                 });
+
+                return subServer;
             });
         });
     });
