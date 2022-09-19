@@ -15,7 +15,6 @@ export {
     removeRxDatabase,
     isRxDatabase,
     dbCount,
-    _collectionNamePrimary, // used in tests
     isRxDatabaseFirstTimeInstantiated,
     ensureNoStartupErrors
 } from './rx-database';

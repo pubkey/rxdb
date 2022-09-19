@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - FIX saving multiple attachments broke previously stored attachments on some storages.
+- FIX on `RxCollection.remove()` the related storages like the meta of replications, must also be removed.
 
 <!-- ADD new changes here! -->
 

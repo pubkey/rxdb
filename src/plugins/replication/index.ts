@@ -47,6 +47,7 @@ import {
     swapDefaultDeletedTodeletedField,
     swapdeletedFieldToDefaultDeleted
 } from './replication-helper';
+import { addConnectedStorageToCollection } from '../../rx-database-internal-store';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
@@ -126,14 +127,26 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
 
         const database = this.collection.database;
-        this.metaInstance = await this.collection.database.storage.createStorageInstance({
-            databaseName: database.name,
-            collectionName: this.collection.name + '-rx-replication-' + this.replicationIdentifierHash,
-            databaseInstanceToken: database.token,
-            multiInstance: database.multiInstance, // TODO is this always false?
-            options: {},
-            schema: RX_REPLICATION_META_INSTANCE_SCHEMA
-        });
+
+        const metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
+
+        const [metaInstance] = await Promise.all([
+            this.collection.database.storage.createStorageInstance({
+                databaseName: database.name,
+                collectionName: metaInstanceCollectionName,
+                databaseInstanceToken: database.token,
+                multiInstance: database.multiInstance, // TODO is this always false?
+                options: {},
+                schema: RX_REPLICATION_META_INSTANCE_SCHEMA
+            }),
+            addConnectedStorageToCollection(
+                this.collection,
+                metaInstanceCollectionName,
+                RX_REPLICATION_META_INSTANCE_SCHEMA
+            )
+        ]);
+        this.metaInstance = metaInstance;
+
 
         this.internalReplicationState = replicateRxStorageInstance({
             pushBatchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,

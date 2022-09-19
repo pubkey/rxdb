@@ -1,21 +1,24 @@
-import { newRxError } from './rx-error';
+import { isBulkWriteConflictError, newRxError } from './rx-error';
 import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData
 } from './rx-schema-helper';
+import { getSingleDocument, writeSingle } from './rx-storage-helper';
 import type {
     CollectionsOfDatabase,
     InternalStoreCollectionDocType,
     InternalStoreDocType,
     InternalStoreStorageTokenDocType,
+    RxCollection,
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
-    RxStorage,
     RxStorageBulkWriteError,
-    RxStorageInstance
+    RxStorageInstance,
+    RxStorageStatics
 } from './types';
 import {
+    clone,
     ensureNotFalsy,
     fastUnsecureHash,
     getDefaultRevision,
@@ -25,7 +28,6 @@ import {
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
-export const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 
 /**
  * Do not change the title,
@@ -62,7 +64,6 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDoc
             enum: [
                 INTERNAL_CONTEXT_COLLECTION,
                 INTERNAL_CONTEXT_STORAGE_TOKEN,
-                INTERNAL_CONTEXT_REPLICATION_PRIMITIVES,
                 'OTHER'
             ]
         },
@@ -110,10 +111,10 @@ export function getPrimaryKeyOfInternalDocument(
  * with context 'collection'
  */
 export async function getAllCollectionDocuments(
-    storage: RxStorage<any, any>,
+    storageStatics: RxStorageStatics,
     storageInstance: RxStorageInstance<InternalStoreDocType<any>, any, any>
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
-    const getAllQueryPrepared = storage.statics.prepareQuery(
+    const getAllQueryPrepared = storageStatics.prepareQuery(
         storageInstance.schema,
         {
             selector: {
@@ -210,4 +211,72 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         return ensureNotFalsy(storageTokenDocInDb);
     }
     throw error;
+}
+
+
+
+
+
+export async function addConnectedStorageToCollection(
+    collection: RxCollection<any>,
+    storageCollectionName: string,
+    schema: RxJsonSchema<any>
+) {
+    const collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
+    const collectionDocId = getPrimaryKeyOfInternalDocument(
+        collectionNameWithVersion,
+        INTERNAL_CONTEXT_COLLECTION
+    );
+
+    while (true) {
+        const collectionDoc = await getSingleDocument(
+            collection.database.internalStore,
+            collectionDocId
+        );
+        const saveData: RxDocumentData<InternalStoreCollectionDocType> = clone(ensureNotFalsy(collectionDoc));
+        /**
+         * Add array if not exist for backwards compatibility
+         * TODO remove this in 2023
+         */
+        if (!saveData.data.connectedStorages) {
+            saveData.data.connectedStorages = [];
+        }
+
+        // do nothing if already in array
+        const alreadyThere = saveData.data.connectedStorages
+            .find(row => row.collectionName === storageCollectionName && row.schema.version === schema.version);
+        if (alreadyThere) {
+            return;
+        }
+
+        // otherwise add to array and save
+        saveData.data.connectedStorages.push({
+            collectionName: storageCollectionName,
+            schema
+        });
+        try {
+            await writeSingle(
+                collection.database.internalStore,
+                {
+                    previous: ensureNotFalsy(collectionDoc),
+                    document: saveData
+                },
+                'add-connected-storage-to-collection'
+            );
+        } catch (err) {
+            if (!isBulkWriteConflictError(err)) {
+                throw err;
+            }
+            // retry on conflict
+        }
+    }
+}
+
+
+/**
+ * returns the primary for a given collection-data
+ * used in the internal store of a RxDatabase
+ */
+export function _collectionNamePrimary(name: string, schema: RxJsonSchema<any>) {
+    return name + '-' + schema.version;
 }

@@ -29,4 +29,15 @@ export type InternalStoreCollectionDocType = InternalStoreDocType<{
     schema: RxJsonSchema<any>;
     schemaHash: string;
     version: number;
+    /**
+     * Storages that are connected to this collection
+     * so that when the collection is removed,
+     * these storages must also be removed.
+     * For example the replication meta storage
+     * must be resetted when the collection is removed.
+     */
+    connectedStorages: {
+        collectionName: string;
+        schema: RxJsonSchema<any>;
+    }[]
 }>;
