@@ -1,4 +1,3 @@
-import { _collectionNamePrimary } from './rx-database';
 import { isBulkWriteConflictError, newRxError } from './rx-error';
 import {
     fillWithDefaultSettings,
@@ -271,4 +270,13 @@ export async function addConnectedStorageToCollection(
             // retry on conflict
         }
     }
+}
+
+
+/**
+ * returns the primary for a given collection-data
+ * used in the internal store of a RxDatabase
+ */
+export function _collectionNamePrimary(name: string, schema: RxJsonSchema<any>) {
+    return name + '-' + schema.version;
 }

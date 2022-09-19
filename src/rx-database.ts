@@ -507,14 +507,6 @@ function throwIfDatabaseNameUsed(
 }
 
 /**
- * returns the primary for a given collection-data
- * used in the internal pouchdb-instances
- */
-export function _collectionNamePrimary(name: string, schema: RxJsonSchema<any>) {
-    return name + '-' + schema.version;
-}
-
-/**
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.
  */
