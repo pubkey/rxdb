@@ -14,7 +14,8 @@ import {
     blobBufferUtil,
     MigrationStrategies,
     WithAttachmentsData,
-    RxCollection
+    RxCollection,
+    ensureNotFalsy
 } from '../../';
 import { HumanDocumentType } from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
@@ -94,6 +95,15 @@ config.parallel('attachments.test.ts', () => {
                 data: blobBufferUtil.createBlobBuffer('meowmeow', 'text/plain'),
                 type: 'text/plain'
             });
+
+            const catAttachment = doc.getAttachment('cat.txt');
+            const stringCat = await ensureNotFalsy(catAttachment).getStringData();
+            assert.strictEqual(stringCat, 'meow');
+
+            const cat2Attachment = doc.getAttachment('cat2.txt');
+            const stringCat2 = await ensureNotFalsy(cat2Attachment).getStringData();
+            assert.strictEqual(stringCat2, 'meowmeow');
+
             c.database.destroy();
         });
         it('should insert 4 attachments in parallel', async () => {
