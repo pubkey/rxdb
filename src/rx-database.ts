@@ -76,7 +76,8 @@ import {
     getAllCollectionDocuments,
     getPrimaryKeyOfInternalDocument,
     INTERNAL_CONTEXT_COLLECTION,
-    INTERNAL_STORE_SCHEMA
+    INTERNAL_STORE_SCHEMA,
+    _collectionNamePrimary
 } from './rx-database-internal-store';
 
 /**
