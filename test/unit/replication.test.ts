@@ -48,10 +48,8 @@ describe('replication.test.js', () => {
         localCollection: RxCollection<TestDocType, {}, {}, {}>,
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>
     }> {
-        const [localCollection, remoteCollection] = await Promise.all([
-            humansCollection.createHumanWithTimestamp(docsAmount.local, randomCouchString(10), false),
-            humansCollection.createHumanWithTimestamp(docsAmount.remote, randomCouchString(10), false)
-        ]);
+        const localCollection = await humansCollection.createHumanWithTimestamp(docsAmount.local, randomCouchString(10), false);
+        const remoteCollection = await humansCollection.createHumanWithTimestamp(docsAmount.remote, randomCouchString(10), false);
         return {
             localCollection,
             remoteCollection
