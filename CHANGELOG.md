@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX on `RxCollection.remove()` the related storages like the meta of replications, must also be removed.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

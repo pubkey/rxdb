@@ -22,7 +22,8 @@ import {
 } from './util';
 import {
     fillObjectDataBeforeInsert,
-    createRxCollectionStorageInstance
+    createRxCollectionStorageInstance,
+    removeCollectionStorages
 } from './rx-collection-helper';
 import {
     createRxQuery,
@@ -882,8 +883,15 @@ export class RxCollectionBase<
     /**
      * remove all data of the collection
      */
-    remove(): Promise<any> {
-        return this.database.removeCollection(this.name);
+    async remove(): Promise<any> {
+        await this.destroy();
+        await removeCollectionStorages(
+            this.database.storage,
+            this.database.internalStore,
+            this.database.token,
+            this.database.name,
+            this.name
+        );
     }
 
     get asRxCollection(): RxCollection<RxDocumentType, OrmMethods, StaticMethods> {

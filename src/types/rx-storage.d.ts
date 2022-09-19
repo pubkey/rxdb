@@ -39,14 +39,6 @@ export type RxDocumentData<T> = T & {
      * Any revision that matches the [height]-[hash] format can be used.
      */
     _rev: string;
-
-    /**
-     * RxDB specific meta data of the document.
-     * TODO in RxDB version 12 we introduced the _meta field.
-     * But for easier migration, _deleted, _rev etc. are still at the root level
-     * of the document.
-     * In the next major release 13 we should move these values into the _meta field.
-     */
     _meta: RxDocumentMeta;
 }
 
