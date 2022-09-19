@@ -190,19 +190,27 @@ export function syncGraphQL<RxDocType, CheckpointType>(
     graphqlReplicationState.start = () => {
         if (mustUseSocket) {
             const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws));
-            const clientRequest = wsClient.request(ensureNotFalsy(pull.streamQueryBuilder)(mutateableClientState.headers));
-            clientRequest.subscribe({
-                next(data: any) {
-                    const firstField = Object.keys(data.data)[0];
-                    pullStream$.next(data.data[firstField]);
-                },
-                error(error: any) {
-                    pullStream$.error(error);
-                }
-            });
-            wsClient.onReconnected(() => {
+
+            wsClient.on('connected', () => {
                 pullStream$.next('RESYNC');
             });
+
+            const query: any = ensureNotFalsy(pull.streamQueryBuilder)(mutateableClientState.headers);
+
+            wsClient.subscribe(
+                query,
+                {
+                    next: (data: any) => {
+                        const firstField = Object.keys(data.data)[0];
+                        pullStream$.next(data.data[firstField]);
+                    },
+                    error: (error: any) => {
+                        pullStream$.error(error);
+                    },
+                    complete: () => {
+                        pullStream$.complete();
+                    }
+                });
         }
         return startBefore();
     }
