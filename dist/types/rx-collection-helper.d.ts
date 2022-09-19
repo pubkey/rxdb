@@ -1,4 +1,4 @@
-import type { RxDatabase, RxDocumentData, RxStorageInstance, RxStorageInstanceCreationParams } from './types';
+import type { InternalStoreDocType, RxDatabase, RxDocumentData, RxStorage, RxStorageInstance, RxStorageInstanceCreationParams } from './types';
 import type { RxSchema } from './rx-schema';
 /**
  * fills in the default data.
@@ -9,3 +9,8 @@ export declare function fillObjectDataBeforeInsert<RxDocType>(schema: RxSchema<R
  * Creates the storage instances that are used internally in the collection
  */
 export declare function createRxCollectionStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>(rxDatabase: RxDatabase<{}, Internals, InstanceCreationOptions>, storageInstanceCreationParams: RxStorageInstanceCreationParams<RxDocumentType, InstanceCreationOptions>): Promise<RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>>;
+/**
+ * Removes the main storage of the collection
+ * and all connected storages like the ones from the replication meta etc.
+ */
+export declare function removeCollectionStorages(storage: RxStorage<any, any>, databaseInternalStorage: RxStorageInstance<InternalStoreDocType<any>, any, any>, databaseInstanceToken: string, databaseName: string, collectionName: string): Promise<void>;

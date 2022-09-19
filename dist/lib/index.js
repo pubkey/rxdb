@@ -9,7 +9,6 @@ var _exportNames = {
   removeRxDatabase: true,
   isRxDatabase: true,
   dbCount: true,
-  _collectionNamePrimary: true,
   isRxDatabaseFirstTimeInstantiated: true,
   ensureNoStartupErrors: true,
   overwritable: true,
@@ -46,12 +45,6 @@ Object.defineProperty(exports, "_clearHook", {
   enumerable: true,
   get: function get() {
     return _hooks._clearHook;
-  }
-});
-Object.defineProperty(exports, "_collectionNamePrimary", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase._collectionNamePrimary;
   }
 });
 Object.defineProperty(exports, "addRxPlugin", {

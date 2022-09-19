@@ -281,11 +281,13 @@ bulkWriteRows, context) {
                 attachmentData: attachmentData
               });
             } else {
-              attachmentsUpdate.push({
-                documentId: id,
-                attachmentId: attachmentId,
-                attachmentData: attachmentData
-              });
+              if (attachmentData.data && attachmentData.digest !== previousAttachmentData.digest) {
+                attachmentsUpdate.push({
+                  documentId: id,
+                  attachmentId: attachmentId,
+                  attachmentData: attachmentData
+                });
+              }
             }
           });
         }

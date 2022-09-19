@@ -9,6 +9,7 @@ import { ensureNotFalsy, fastUnsecureHash, flatClone, PROMISE_RESOLVE_FALSE, PRO
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, replicateRxStorageInstance, RX_REPLICATION_META_INSTANCE_SCHEMA } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
 import { DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, swapdeletedFieldToDefaultDeleted } from './replication-helper';
+import { addConnectedStorageToCollection } from '../../rx-database-internal-store';
 
 function _catch(body, recover) {
   try {
@@ -293,20 +294,23 @@ export var RxReplicationState = /*#__PURE__*/function () {
       var pullModifier = _this3.pull && _this3.pull.modifier ? _this3.pull.modifier : DEFAULT_MODIFIER;
       var pushModifier = _this3.push && _this3.push.modifier ? _this3.push.modifier : DEFAULT_MODIFIER;
       var database = _this3.collection.database;
-      return Promise.resolve(_this3.collection.database.storage.createStorageInstance({
+      var metaInstanceCollectionName = _this3.collection.name + '-rx-replication-' + _this3.replicationIdentifierHash;
+      return Promise.resolve(Promise.all([_this3.collection.database.storage.createStorageInstance({
         databaseName: database.name,
-        collectionName: _this3.collection.name + '-rx-replication-' + _this3.replicationIdentifierHash,
+        collectionName: metaInstanceCollectionName,
         databaseInstanceToken: database.token,
         multiInstance: database.multiInstance,
         // TODO is this always false?
         options: {},
         schema: RX_REPLICATION_META_INSTANCE_SCHEMA
-      })).then(function (_this2$collection$dat) {
+      }), addConnectedStorageToCollection(_this3.collection, metaInstanceCollectionName, RX_REPLICATION_META_INSTANCE_SCHEMA)])).then(function (_ref) {
+        var metaInstance = _ref[0];
+
         function _temp2() {
           _this3.callOnStart();
         }
 
-        _this3.metaInstance = _this2$collection$dat;
+        _this3.metaInstance = metaInstance;
         _this3.internalReplicationState = replicateRxStorageInstance({
           pushBatchSize: _this3.push && _this3.push.batchSize ? _this3.push.batchSize : 100,
           pullBatchSize: _this3.pull && _this3.pull.batchSize ? _this3.pull.batchSize : 100,
@@ -608,21 +612,21 @@ export var RxReplicationState = /*#__PURE__*/function () {
 
   return RxReplicationState;
 }();
-export function replicateRxCollection(_ref) {
-  var replicationIdentifier = _ref.replicationIdentifier,
-      collection = _ref.collection,
-      _ref$deletedField = _ref.deletedField,
-      deletedField = _ref$deletedField === void 0 ? '_deleted' : _ref$deletedField,
-      pull = _ref.pull,
-      push = _ref.push,
-      _ref$live = _ref.live,
-      live = _ref$live === void 0 ? true : _ref$live,
-      _ref$retryTime = _ref.retryTime,
-      retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
-      _ref$waitForLeadershi = _ref.waitForLeadership,
-      waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
-      _ref$autoStart = _ref.autoStart,
-      autoStart = _ref$autoStart === void 0 ? true : _ref$autoStart;
+export function replicateRxCollection(_ref2) {
+  var replicationIdentifier = _ref2.replicationIdentifier,
+      collection = _ref2.collection,
+      _ref2$deletedField = _ref2.deletedField,
+      deletedField = _ref2$deletedField === void 0 ? '_deleted' : _ref2$deletedField,
+      pull = _ref2.pull,
+      push = _ref2.push,
+      _ref2$live = _ref2.live,
+      live = _ref2$live === void 0 ? true : _ref2$live,
+      _ref2$retryTime = _ref2.retryTime,
+      retryTime = _ref2$retryTime === void 0 ? 1000 * 5 : _ref2$retryTime,
+      _ref2$waitForLeadersh = _ref2.waitForLeadership,
+      waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
+      _ref2$autoStart = _ref2.autoStart,
+      autoStart = _ref2$autoStart === void 0 ? true : _ref2$autoStart;
   var replicationIdentifierHash = fastUnsecureHash([collection.database.name, collection.name, replicationIdentifier].join('|'));
   var replicationState = new RxReplicationState(replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart);
   startReplicationOnLeaderShip(waitForLeadership, replicationState);

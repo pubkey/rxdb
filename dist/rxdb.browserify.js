@@ -679,7 +679,6 @@ var _exportNames = {
   removeRxDatabase: true,
   isRxDatabase: true,
   dbCount: true,
-  _collectionNamePrimary: true,
   isRxDatabaseFirstTimeInstantiated: true,
   ensureNoStartupErrors: true,
   overwritable: true,
@@ -716,12 +715,6 @@ Object.defineProperty(exports, "_clearHook", {
   enumerable: true,
   get: function get() {
     return _hooks._clearHook;
-  }
-});
-Object.defineProperty(exports, "_collectionNamePrimary", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase._collectionNamePrimary;
   }
 });
 Object.defineProperty(exports, "addRxPlugin", {
@@ -7011,10 +7004,102 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createRxCollectionStorageInstance = void 0;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
+exports.removeCollectionStorages = void 0;
 
 var _util = require("./util");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
+
+var _hooks = require("./hooks");
+
+var _rxDatabaseInternalStore = require("./rx-database-internal-store");
+
+var _rxStorageHelper = require("./rx-storage-helper");
+
+/**
+ * Removes the main storage of the collection
+ * and all connected storages like the ones from the replication meta etc.
+ */
+var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName) {
+  try {
+    return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storage.statics, databaseInternalStorage)).then(function (allCollectionMetaDocs) {
+      var relevantCollectionMetaDocs = allCollectionMetaDocs.filter(function (metaDoc) {
+        return metaDoc.data.name === collectionName;
+      });
+      var removeStorages = [];
+      relevantCollectionMetaDocs.forEach(function (metaDoc) {
+        removeStorages.push({
+          collectionName: metaDoc.data.name,
+          schema: metaDoc.data.schema,
+          isCollection: true
+        });
+        metaDoc.data.connectedStorages.forEach(function (row) {
+          return removeStorages.push({
+            collectionName: row.collectionName,
+            isCollection: false,
+            schema: row.schema
+          });
+        });
+      }); // ensure uniqueness
+
+      var alreadyAdded = new Set();
+      removeStorages = removeStorages.filter(function (row) {
+        var key = row.collectionName + '||' + row.schema.version;
+
+        if (alreadyAdded.has(key)) {
+          return false;
+        } else {
+          alreadyAdded.add(key);
+          return true;
+        }
+      }); // remove all the storages
+
+      return Promise.resolve(Promise.all(removeStorages.map(function (row) {
+        try {
+          return Promise.resolve(storage.createStorageInstance({
+            collectionName: row.collectionName,
+            databaseInstanceToken: databaseInstanceToken,
+            databaseName: databaseName,
+            multiInstance: false,
+            options: {},
+            schema: row.schema
+          })).then(function (storageInstance) {
+            return Promise.resolve(storageInstance.remove()).then(function () {
+              var _temp = function () {
+                if (row.isCollection) {
+                  return Promise.resolve((0, _hooks.runAsyncPluginHooks)('postRemoveRxCollection', {
+                    storage: storage,
+                    databaseName: databaseName,
+                    collectionName: collectionName
+                  })).then(function () {});
+                }
+              }();
+
+              if (_temp && _temp.then) return _temp.then(function () {});
+            });
+          });
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      }))).then(function () {
+        // remove the meta documents
+        var writeRows = relevantCollectionMetaDocs.map(function (doc) {
+          var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
+          writeDoc._deleted = true;
+          return {
+            previous: doc,
+            document: writeDoc
+          };
+        });
+        return Promise.resolve(databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all')).then(function () {});
+      });
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+exports.removeCollectionStorages = removeCollectionStorages;
 
 /**
  * Creates the storage instances that are used internally in the collection
@@ -7054,7 +7139,7 @@ function fillObjectDataBeforeInsert(schema, data) {
   return useJson;
 }
 
-},{"./rx-schema-helper":39,"./util":46}],31:[function(require,module,exports){
+},{"./hooks":6,"./rx-database-internal-store":32,"./rx-schema-helper":39,"./rx-storage-helper":41,"./util":46}],31:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -7879,7 +7964,15 @@ var RxCollectionBase = /*#__PURE__*/function () {
   ;
 
   _proto.remove = function remove() {
-    return this.database.removeCollection(this.name);
+    try {
+      var _this18 = this;
+
+      return Promise.resolve(_this18.destroy()).then(function () {
+        return Promise.resolve((0, _rxCollectionHelper.removeCollectionStorages)(_this18.database.storage, _this18.database.internalStore, _this18.database.token, _this18.database.name, _this18.name)).then(function () {});
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   (0, _createClass2["default"])(RxCollectionBase, [{
@@ -8080,14 +8173,281 @@ function isRxCollection(obj) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAllCollectionDocuments = exports.ensureStorageTokenDocumentExists = exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_ID = exports.INTERNAL_STORE_SCHEMA_TITLE = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
+exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_ID = exports.INTERNAL_STORE_SCHEMA_TITLE = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
+exports._collectionNamePrimary = _collectionNamePrimary;
+exports.getAllCollectionDocuments = exports.ensureStorageTokenDocumentExists = exports.addConnectedStorageToCollection = void 0;
 exports.getPrimaryKeyOfInternalDocument = getPrimaryKeyOfInternalDocument;
 
 var _rxError = require("./rx-error");
 
 var _rxSchemaHelper = require("./rx-schema-helper");
 
+var _rxStorageHelper = require("./rx-storage-helper");
+
 var _util = require("./util");
+
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
+
+function _settle(pact, state, value) {
+  if (!pact.s) {
+    if (value instanceof _Pact) {
+      if (value.s) {
+        if (state & 1) {
+          state = value.s;
+        }
+
+        value = value.v;
+      } else {
+        value.o = _settle.bind(null, pact, state);
+        return;
+      }
+    }
+
+    if (value && value.then) {
+      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
+      return;
+    }
+
+    pact.s = state;
+    pact.v = value;
+    var observer = pact.o;
+
+    if (observer) {
+      observer(pact);
+    }
+  }
+}
+
+var _Pact = /*#__PURE__*/function () {
+  function _Pact() {}
+
+  _Pact.prototype.then = function (onFulfilled, onRejected) {
+    var result = new _Pact();
+    var state = this.s;
+
+    if (state) {
+      var callback = state & 1 ? onFulfilled : onRejected;
+
+      if (callback) {
+        try {
+          _settle(result, 1, callback(this.v));
+        } catch (e) {
+          _settle(result, 2, e);
+        }
+
+        return result;
+      } else {
+        return this;
+      }
+    }
+
+    this.o = function (_this) {
+      try {
+        var value = _this.v;
+
+        if (_this.s & 1) {
+          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
+        } else if (onRejected) {
+          _settle(result, 1, onRejected(value));
+        } else {
+          _settle(result, 2, value);
+        }
+      } catch (e) {
+        _settle(result, 2, e);
+      }
+    };
+
+    return result;
+  };
+
+  return _Pact;
+}();
+
+function _isSettledPact(thenable) {
+  return thenable instanceof _Pact && thenable.s & 1;
+}
+
+function _for(test, update, body) {
+  var stage;
+
+  for (;;) {
+    var shouldContinue = test();
+
+    if (_isSettledPact(shouldContinue)) {
+      shouldContinue = shouldContinue.v;
+    }
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    if (shouldContinue.then) {
+      stage = 0;
+      break;
+    }
+
+    var result = body();
+
+    if (result && result.then) {
+      if (_isSettledPact(result)) {
+        result = result.s;
+      } else {
+        stage = 1;
+        break;
+      }
+    }
+
+    if (update) {
+      var updateValue = update();
+
+      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+        stage = 2;
+        break;
+      }
+    }
+  }
+
+  var pact = new _Pact();
+
+  var reject = _settle.bind(null, pact, 2);
+
+  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
+  return pact;
+
+  function _resumeAfterBody(value) {
+    result = value;
+
+    do {
+      if (update) {
+        updateValue = update();
+
+        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
+          return;
+        }
+      }
+
+      shouldContinue = test();
+
+      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
+        _settle(pact, 1, result);
+
+        return;
+      }
+
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+        return;
+      }
+
+      result = body();
+
+      if (_isSettledPact(result)) {
+        result = result.v;
+      }
+    } while (!result || !result.then);
+
+    result.then(_resumeAfterBody).then(void 0, reject);
+  }
+
+  function _resumeAfterTest(shouldContinue) {
+    if (shouldContinue) {
+      result = body();
+
+      if (result && result.then) {
+        result.then(_resumeAfterBody).then(void 0, reject);
+      } else {
+        _resumeAfterBody(result);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+
+  function _resumeAfterUpdate() {
+    if (shouldContinue = test()) {
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+      } else {
+        _resumeAfterTest(shouldContinue);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+}
+
+var addConnectedStorageToCollection = function addConnectedStorageToCollection(collection, storageCollectionName, schema) {
+  try {
+    var _exit2 = false;
+
+    var collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
+
+    var collectionDocId = getPrimaryKeyOfInternalDocument(collectionNameWithVersion, INTERNAL_CONTEXT_COLLECTION);
+    return Promise.resolve(_for(function () {
+      return !_exit2;
+    }, void 0, function () {
+      return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(collection.database.internalStore, collectionDocId)).then(function (collectionDoc) {
+        var saveData = (0, _util.clone)((0, _util.ensureNotFalsy)(collectionDoc));
+        /**
+         * Add array if not exist for backwards compatibility
+         * TODO remove this in 2023
+         */
+
+        if (!saveData.data.connectedStorages) {
+          saveData.data.connectedStorages = [];
+        } // do nothing if already in array
+
+
+        var alreadyThere = saveData.data.connectedStorages.find(function (row) {
+          return row.collectionName === storageCollectionName && row.schema.version === schema.version;
+        });
+
+        if (alreadyThere) {
+          _exit2 = true;
+          return;
+        } // otherwise add to array and save
+
+
+        saveData.data.connectedStorages.push({
+          collectionName: storageCollectionName,
+          schema: schema
+        });
+        return _catch(function () {
+          return Promise.resolve((0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
+            previous: (0, _util.ensureNotFalsy)(collectionDoc),
+            document: saveData
+          }, 'add-connected-storage-to-collection')).then(function () {});
+        }, function (err) {
+          if (!(0, _rxError.isBulkWriteConflictError)(err)) {
+            throw err;
+          }
+        });
+      });
+    }));
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+/**
+ * returns the primary for a given collection-data
+ * used in the internal store of a RxDatabase
+ */
+
+
+exports.addConnectedStorageToCollection = addConnectedStorageToCollection;
 
 var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists(rxDatabase) {
   try {
@@ -8162,9 +8522,9 @@ exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
  * Returns all internal documents
  * with context 'collection'
  */
-var getAllCollectionDocuments = function getAllCollectionDocuments(storage, storageInstance) {
+var getAllCollectionDocuments = function getAllCollectionDocuments(storageStatics, storageInstance) {
   try {
-    var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
+    var getAllQueryPrepared = storageStatics.prepareQuery(storageInstance.schema, {
       selector: {
         context: INTERNAL_CONTEXT_COLLECTION
       },
@@ -8192,8 +8552,6 @@ exports.getAllCollectionDocuments = getAllCollectionDocuments;
 var INTERNAL_CONTEXT_COLLECTION = 'collection';
 exports.INTERNAL_CONTEXT_COLLECTION = INTERNAL_CONTEXT_COLLECTION;
 var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
-exports.INTERNAL_CONTEXT_STORAGE_TOKEN = INTERNAL_CONTEXT_STORAGE_TOKEN;
-var INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 /**
  * Do not change the title,
  * we have to flag the internal schema so that
@@ -8203,7 +8561,7 @@ var INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
  * to do some optimizations in some cases.
  */
 
-exports.INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = INTERNAL_CONTEXT_REPLICATION_PRIMITIVES;
+exports.INTERNAL_CONTEXT_STORAGE_TOKEN = INTERNAL_CONTEXT_STORAGE_TOKEN;
 var INTERNAL_STORE_SCHEMA_TITLE = 'RxInternalDocument';
 exports.INTERNAL_STORE_SCHEMA_TITLE = INTERNAL_STORE_SCHEMA_TITLE;
 var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
@@ -8225,7 +8583,7 @@ var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
     },
     context: {
       type: 'string',
-      "enum": [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES, 'OTHER']
+      "enum": [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, 'OTHER']
     },
     data: {
       type: 'object',
@@ -8262,7 +8620,11 @@ exports.STORAGE_TOKEN_DOCUMENT_KEY = STORAGE_TOKEN_DOCUMENT_KEY;
 var STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
 exports.STORAGE_TOKEN_DOCUMENT_ID = STORAGE_TOKEN_DOCUMENT_ID;
 
-},{"./rx-error":36,"./rx-schema-helper":39,"./util":46}],33:[function(require,module,exports){
+function _collectionNamePrimary(name, schema) {
+  return name + '-' + schema.version;
+}
+
+},{"./rx-error":36,"./rx-schema-helper":39,"./rx-storage-helper":41,"./util":46}],33:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -8271,8 +8633,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxDatabaseBase = void 0;
-exports._collectionNamePrimary = _collectionNamePrimary;
-exports._removeAllOfCollection = void 0;
 exports.createRxDatabase = createRxDatabase;
 exports.createRxDatabaseStorageInstance = void 0;
 exports.dbCount = dbCount;
@@ -8299,8 +8659,6 @@ var _operators = require("rxjs/operators");
 var _rxCollection = require("./rx-collection");
 
 var _rxStorageHelper = require("./rx-storage-helper");
-
-var _rxCollectionHelper = require("./rx-collection-helper");
 
 var _obliviousSet = require("oblivious-set");
 
@@ -8355,7 +8713,7 @@ var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
   try {
     var databaseInstanceToken = (0, _util.randomCouchString)(10);
     return Promise.resolve(createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
-      return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storage, dbInternalsStorageInstance)).then(function (collectionDocs) {
+      return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storage.statics, dbInternalsStorageInstance)).then(function (collectionDocs) {
         var removedCollectionNames = [];
         return Promise.resolve(Promise.all(collectionDocs.map(function (colDoc) {
           try {
@@ -8415,35 +8773,6 @@ var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(d
 };
 
 exports.createRxDatabaseStorageInstance = createRxDatabaseStorageInstance;
-
-/**
- * removes all internal docs of a given collection
- * @return resolves all known collection-versions
- */
-var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collectionName) {
-  try {
-    return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(rxDatabase.storage, rxDatabase.internalStore)).then(function (docs) {
-      var relevantDocs = docs.filter(function (colDoc) {
-        return colDoc.data.name === collectionName;
-      });
-      var writeRows = relevantDocs.map(function (doc) {
-        var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
-        writeDoc._deleted = true;
-        return {
-          previous: doc,
-          document: writeDoc
-        };
-      });
-      return rxDatabase.internalStore.bulkWrite(writeRows, 'rx-database-remove-collection-all').then(function () {
-        return relevantDocs;
-      });
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports._removeAllOfCollection = _removeAllOfCollection;
 
 /**
  * stores the used database names
@@ -8560,7 +8889,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     try {
       var _this3 = this;
 
-      return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(_this3.internalStore, (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(_collectionNamePrimary(name, schema), _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION))).then(function (doc) {
+      return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(_this3.internalStore, (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)((0, _rxDatabaseInternalStore._collectionNamePrimary)(name, schema), _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION))).then(function (doc) {
         if (!doc) {
           throw (0, _rxError.newRxError)('SNH', {
             name: name,
@@ -8610,8 +8939,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
           });
         }
 
-        var collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
-
+        var collectionNameWithVersion = (0, _rxDatabaseInternalStore._collectionNamePrimary)(name, rxJsonSchema);
         var collectionDocData = {
           id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionNameWithVersion, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
           key: collectionNameWithVersion,
@@ -8620,7 +8948,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
             name: collectionName,
             schemaHash: schema.hash,
             schema: schema.jsonSchema,
-            version: schema.version
+            version: schema.version,
+            connectedStorages: []
           },
           _deleted: false,
           _meta: (0, _util.getDefaultRxDocumentMeta)(),
@@ -8692,48 +9021,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     }
   }
   /**
-   * delete all data of the collection and its previous versions
-   */
-  ;
-
-  _proto.removeCollection = function removeCollection(collectionName) {
-    var _this6 = this;
-
-    var destroyPromise = _util.PROMISE_RESOLVE_VOID;
-
-    if (this.collections[collectionName]) {
-      destroyPromise = this.collections[collectionName].destroy();
-    } // remove schemas from internal db
-
-
-    return destroyPromise.then(function () {
-      return _removeAllOfCollection(_this6, collectionName);
-    }) // get all relevant pouchdb-instances
-    .then(function (knownVersions) {
-      return Promise.all(knownVersions.map(function (knownVersionDoc) {
-        return (0, _rxCollectionHelper.createRxCollectionStorageInstance)(_this6.asRxDatabase, {
-          databaseInstanceToken: _this6.token,
-          databaseName: _this6.name,
-          collectionName: collectionName,
-          schema: knownVersionDoc.data.schema,
-          options: _this6.instanceCreationOptions,
-          multiInstance: _this6.multiInstance
-        });
-      }));
-    }) // remove the storage instance
-    .then(function (storageInstances) {
-      return Promise.all(storageInstances.map(function (instance) {
-        return instance.remove();
-      }));
-    }).then(function () {
-      return (0, _hooks.runAsyncPluginHooks)('postRemoveRxCollection', {
-        storage: _this6.storage,
-        databaseName: _this6.name,
-        collectionName: collectionName
-      });
-    }).then(function () {});
-  }
-  /**
    * runs the given function between idleQueue-locking
    */
   ;
@@ -8799,24 +9086,24 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.destroy = function destroy() {
     try {
-      var _this8 = this;
+      var _this7 = this;
 
-      if (_this8.destroyed) {
+      if (_this7.destroyed) {
         return Promise.resolve(_util.PROMISE_RESOLVE_FALSE);
       } // settings destroyed = true must be the first thing to do.
 
 
-      _this8.destroyed = true;
-      return Promise.resolve((0, _hooks.runAsyncPluginHooks)('preDestroyRxDatabase', _this8)).then(function () {
+      _this7.destroyed = true;
+      return Promise.resolve((0, _hooks.runAsyncPluginHooks)('preDestroyRxDatabase', _this7)).then(function () {
         /**
          * Complete the event stream
          * to stop all subscribers who forgot to unsubscribe.
          */
-        _this8.eventBulks$.complete();
+        _this7.eventBulks$.complete();
 
         DB_COUNT--;
 
-        _this8._subs.map(function (sub) {
+        _this7._subs.map(function (sub) {
           return sub.unsubscribe();
         });
         /**
@@ -8827,23 +9114,23 @@ var RxDatabaseBase = /*#__PURE__*/function () {
          */
 
 
-        return _this8.name === 'pseudoInstance' ? _util.PROMISE_RESOLVE_FALSE : _this8.requestIdlePromise().then(function () {
-          return Promise.all(_this8.onDestroy.map(function (fn) {
+        return _this7.name === 'pseudoInstance' ? _util.PROMISE_RESOLVE_FALSE : _this7.requestIdlePromise().then(function () {
+          return Promise.all(_this7.onDestroy.map(function (fn) {
             return fn();
           }));
         }) // destroy all collections
         .then(function () {
-          return Promise.all(Object.keys(_this8.collections).map(function (key) {
-            return _this8.collections[key];
+          return Promise.all(Object.keys(_this7.collections).map(function (key) {
+            return _this7.collections[key];
           }).map(function (col) {
             return col.destroy();
           }));
         }) // destroy internal storage instances
         .then(function () {
-          return _this8.internalStore.close();
+          return _this7.internalStore.close();
         }) // remove combination from USED_COMBINATIONS-map
         .then(function () {
-          return USED_DATABASE_NAMES["delete"](_this8.name);
+          return USED_DATABASE_NAMES["delete"](_this7.name);
         }).then(function () {
           return true;
         });
@@ -8859,10 +9146,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
   ;
 
   _proto.remove = function remove() {
-    var _this9 = this;
+    var _this8 = this;
 
     return this.destroy().then(function () {
-      return removeRxDatabase(_this9.name, _this9.storage);
+      return removeRxDatabase(_this8.name, _this8.storage);
     });
   };
 
@@ -8896,15 +9183,6 @@ function throwIfDatabaseNameUsed(name) {
       link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
     });
   }
-}
-/**
- * returns the primary for a given collection-data
- * used in the internal pouchdb-instances
- */
-
-
-function _collectionNamePrimary(name, schema) {
-  return name + '-' + schema.version;
 }
 
 function createRxDatabase(_ref3) {
@@ -8982,7 +9260,7 @@ function dbCount() {
   return DB_COUNT;
 }
 
-},{"./hooks":6,"./rx-collection":31,"./rx-collection-helper":30,"./rx-database-internal-store":32,"./rx-error":36,"./rx-schema":40,"./rx-storage-helper":41,"./util":46,"@babel/runtime/helpers/createClass":50,"@babel/runtime/helpers/interopRequireDefault":53,"custom-idle-queue":399,"oblivious-set":422,"rxjs":458,"rxjs/operators":683}],34:[function(require,module,exports){
+},{"./hooks":6,"./rx-collection":31,"./rx-database-internal-store":32,"./rx-error":36,"./rx-schema":40,"./rx-storage-helper":41,"./util":46,"@babel/runtime/helpers/createClass":50,"@babel/runtime/helpers/interopRequireDefault":53,"custom-idle-queue":399,"oblivious-set":422,"rxjs":458,"rxjs/operators":683}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11521,11 +11799,13 @@ bulkWriteRows, context) {
                 attachmentData: attachmentData
               });
             } else {
-              attachmentsUpdate.push({
-                documentId: id,
-                attachmentId: attachmentId,
-                attachmentData: attachmentData
-              });
+              if (attachmentData.data && attachmentData.digest !== previousAttachmentData.digest) {
+                attachmentsUpdate.push({
+                  documentId: id,
+                  attachmentId: attachmentId,
+                  attachmentData: attachmentData
+                });
+              }
             }
           });
         }

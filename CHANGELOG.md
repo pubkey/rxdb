@@ -3,15 +3,17 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX saving multiple attachments broke previously stored attachments on some storages.
-- UPDATE graphql websocket dependencies [#3980](https://github.com/pubkey/rxdb/pull/3980) Thanks [@herefishyfish](https://github.com/herefishyfish)
-- FIX on `RxCollection.remove()` the related storages like the meta of replications, must also be removed.
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.1.0 (19 September 2022)
+
+- FIX saving multiple attachments broke previously stored attachments on some storages.
+- UPDATE graphql websocket dependencies [#3980](https://github.com/pubkey/rxdb/pull/3980) Thanks [@herefishyfish](https://github.com/herefishyfish)
+- FIX on `RxCollection.remove()` the related storages like the meta of replications, must also be removed.
 
 ### 13.0.3 (17 September 2022)
 

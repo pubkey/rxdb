@@ -7,7 +7,7 @@ exports.GRAPHQL_WEBSOCKET_BY_URL = void 0;
 exports.getGraphQLWebSocket = getGraphQLWebSocket;
 exports.removeGraphQLWebSocketRef = removeGraphQLWebSocketRef;
 
-var _subscriptionsTransportWs = require("subscriptions-transport-ws");
+var _graphqlWs = require("graphql-ws");
 
 var _util = require("../../util");
 
@@ -20,9 +20,13 @@ function getGraphQLWebSocket(url) {
   var has = GRAPHQL_WEBSOCKET_BY_URL.get(url);
 
   if (!has) {
-    var wsClient = new _subscriptionsTransportWs.SubscriptionClient(url, {
-      reconnect: true
-    }, _isomorphicWs.WebSocket);
+    var wsClient = (0, _graphqlWs.createClient)({
+      url: url,
+      shouldRetry: function shouldRetry() {
+        return true;
+      },
+      webSocketImpl: _isomorphicWs.WebSocket
+    });
     has = {
       url: url,
       socket: wsClient,
@@ -42,7 +46,7 @@ function removeGraphQLWebSocketRef(url) {
 
   if (obj.refCount === 0) {
     GRAPHQL_WEBSOCKET_BY_URL["delete"](url);
-    obj.socket.close();
+    obj.socket.dispose();
   }
 }
 //# sourceMappingURL=graphql-websocket.js.map

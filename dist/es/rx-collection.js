@@ -1,7 +1,7 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter, startWith, mergeMap, shareReplay } from 'rxjs/operators';
 import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, clone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, RXJS_SHARE_REPLAY_DEFAULTS, getDefaultRxDocumentMeta, getDefaultRevision, nextTick } from './util';
-import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance } from './rx-collection-helper';
+import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance, removeCollectionStorages } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { newRxError, newRxTypeError } from './rx-error';
 import { DocCache } from './doc-cache';
@@ -797,7 +797,15 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   ;
 
   _proto.remove = function remove() {
-    return this.database.removeCollection(this.name);
+    try {
+      var _this18 = this;
+
+      return Promise.resolve(_this18.destroy()).then(function () {
+        return Promise.resolve(removeCollectionStorages(_this18.database.storage, _this18.database.internalStore, _this18.database.token, _this18.database.name, _this18.name)).then(function () {});
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   _createClass(RxCollectionBase, [{

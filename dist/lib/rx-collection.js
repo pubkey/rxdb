@@ -822,7 +822,15 @@ var RxCollectionBase = /*#__PURE__*/function () {
   ;
 
   _proto.remove = function remove() {
-    return this.database.removeCollection(this.name);
+    try {
+      var _this18 = this;
+
+      return Promise.resolve(_this18.destroy()).then(function () {
+        return Promise.resolve((0, _rxCollectionHelper.removeCollectionStorages)(_this18.database.storage, _this18.database.internalStore, _this18.database.token, _this18.database.name, _this18.name)).then(function () {});
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   (0, _createClass2["default"])(RxCollectionBase, [{

@@ -1,7 +1,6 @@
-import type { CollectionsOfDatabase, InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType, RxDatabase, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstance } from './types';
+import type { CollectionsOfDatabase, InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType, RxCollection, RxDatabase, RxDocumentData, RxJsonSchema, RxStorageInstance, RxStorageStatics } from './types';
 export declare const INTERNAL_CONTEXT_COLLECTION = "collection";
 export declare const INTERNAL_CONTEXT_STORAGE_TOKEN = "storage-token";
-export declare const INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = "plugin-replication-primitives";
 /**
  * Do not change the title,
  * we have to flag the internal schema so that
@@ -17,7 +16,7 @@ export declare function getPrimaryKeyOfInternalDocument(key: string, context: st
  * Returns all internal documents
  * with context 'collection'
  */
-export declare function getAllCollectionDocuments(storage: RxStorage<any, any>, storageInstance: RxStorageInstance<InternalStoreDocType<any>, any, any>): Promise<RxDocumentData<InternalStoreCollectionDocType>[]>;
+export declare function getAllCollectionDocuments(storageStatics: RxStorageStatics, storageInstance: RxStorageInstance<InternalStoreDocType<any>, any, any>): Promise<RxDocumentData<InternalStoreCollectionDocType>[]>;
 /**
  * to not confuse multiInstance-messages with other databases that have the same
  * name and adapter, but do not share state with this one (for example in-memory-instances),
@@ -26,3 +25,9 @@ export declare function getAllCollectionDocuments(storage: RxStorage<any, any>, 
 export declare const STORAGE_TOKEN_DOCUMENT_KEY = "storageToken";
 export declare const STORAGE_TOKEN_DOCUMENT_ID: string;
 export declare function ensureStorageTokenDocumentExists<Collections extends CollectionsOfDatabase = any>(rxDatabase: RxDatabase<Collections>): Promise<RxDocumentData<InternalStoreStorageTokenDocType>>;
+export declare function addConnectedStorageToCollection(collection: RxCollection<any>, storageCollectionName: string, schema: RxJsonSchema<any>): Promise<void>;
+/**
+ * returns the primary for a given collection-data
+ * used in the internal store of a RxDatabase
+ */
+export declare function _collectionNamePrimary(name: string, schema: RxJsonSchema<any>): string;

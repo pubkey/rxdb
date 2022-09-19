@@ -1,6 +1,268 @@
-import { newRxError } from './rx-error';
+import { isBulkWriteConflictError, newRxError } from './rx-error';
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
-import { ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './util';
+import { getSingleDocument, writeSingle } from './rx-storage-helper';
+import { clone, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './util';
+
+function _catch(body, recover) {
+  try {
+    var result = body();
+  } catch (e) {
+    return recover(e);
+  }
+
+  if (result && result.then) {
+    return result.then(void 0, recover);
+  }
+
+  return result;
+}
+/**
+ * returns the primary for a given collection-data
+ * used in the internal store of a RxDatabase
+ */
+
+
+function _settle(pact, state, value) {
+  if (!pact.s) {
+    if (value instanceof _Pact) {
+      if (value.s) {
+        if (state & 1) {
+          state = value.s;
+        }
+
+        value = value.v;
+      } else {
+        value.o = _settle.bind(null, pact, state);
+        return;
+      }
+    }
+
+    if (value && value.then) {
+      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
+      return;
+    }
+
+    pact.s = state;
+    pact.v = value;
+    var observer = pact.o;
+
+    if (observer) {
+      observer(pact);
+    }
+  }
+}
+
+var _Pact = /*#__PURE__*/function () {
+  function _Pact() {}
+
+  _Pact.prototype.then = function (onFulfilled, onRejected) {
+    var result = new _Pact();
+    var state = this.s;
+
+    if (state) {
+      var callback = state & 1 ? onFulfilled : onRejected;
+
+      if (callback) {
+        try {
+          _settle(result, 1, callback(this.v));
+        } catch (e) {
+          _settle(result, 2, e);
+        }
+
+        return result;
+      } else {
+        return this;
+      }
+    }
+
+    this.o = function (_this) {
+      try {
+        var value = _this.v;
+
+        if (_this.s & 1) {
+          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
+        } else if (onRejected) {
+          _settle(result, 1, onRejected(value));
+        } else {
+          _settle(result, 2, value);
+        }
+      } catch (e) {
+        _settle(result, 2, e);
+      }
+    };
+
+    return result;
+  };
+
+  return _Pact;
+}();
+
+function _isSettledPact(thenable) {
+  return thenable instanceof _Pact && thenable.s & 1;
+}
+
+function _for(test, update, body) {
+  var stage;
+
+  for (;;) {
+    var shouldContinue = test();
+
+    if (_isSettledPact(shouldContinue)) {
+      shouldContinue = shouldContinue.v;
+    }
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    if (shouldContinue.then) {
+      stage = 0;
+      break;
+    }
+
+    var result = body();
+
+    if (result && result.then) {
+      if (_isSettledPact(result)) {
+        result = result.s;
+      } else {
+        stage = 1;
+        break;
+      }
+    }
+
+    if (update) {
+      var updateValue = update();
+
+      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+        stage = 2;
+        break;
+      }
+    }
+  }
+
+  var pact = new _Pact();
+
+  var reject = _settle.bind(null, pact, 2);
+
+  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
+  return pact;
+
+  function _resumeAfterBody(value) {
+    result = value;
+
+    do {
+      if (update) {
+        updateValue = update();
+
+        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
+          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
+          return;
+        }
+      }
+
+      shouldContinue = test();
+
+      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
+        _settle(pact, 1, result);
+
+        return;
+      }
+
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+        return;
+      }
+
+      result = body();
+
+      if (_isSettledPact(result)) {
+        result = result.v;
+      }
+    } while (!result || !result.then);
+
+    result.then(_resumeAfterBody).then(void 0, reject);
+  }
+
+  function _resumeAfterTest(shouldContinue) {
+    if (shouldContinue) {
+      result = body();
+
+      if (result && result.then) {
+        result.then(_resumeAfterBody).then(void 0, reject);
+      } else {
+        _resumeAfterBody(result);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+
+  function _resumeAfterUpdate() {
+    if (shouldContinue = test()) {
+      if (shouldContinue.then) {
+        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
+      } else {
+        _resumeAfterTest(shouldContinue);
+      }
+    } else {
+      _settle(pact, 1, result);
+    }
+  }
+}
+
+export var addConnectedStorageToCollection = function addConnectedStorageToCollection(collection, storageCollectionName, schema) {
+  try {
+    var _exit2 = false;
+
+    var collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
+
+    var collectionDocId = getPrimaryKeyOfInternalDocument(collectionNameWithVersion, INTERNAL_CONTEXT_COLLECTION);
+    return Promise.resolve(_for(function () {
+      return !_exit2;
+    }, void 0, function () {
+      return Promise.resolve(getSingleDocument(collection.database.internalStore, collectionDocId)).then(function (collectionDoc) {
+        var saveData = clone(ensureNotFalsy(collectionDoc));
+        /**
+         * Add array if not exist for backwards compatibility
+         * TODO remove this in 2023
+         */
+
+        if (!saveData.data.connectedStorages) {
+          saveData.data.connectedStorages = [];
+        } // do nothing if already in array
+
+
+        var alreadyThere = saveData.data.connectedStorages.find(function (row) {
+          return row.collectionName === storageCollectionName && row.schema.version === schema.version;
+        });
+
+        if (alreadyThere) {
+          _exit2 = true;
+          return;
+        } // otherwise add to array and save
+
+
+        saveData.data.connectedStorages.push({
+          collectionName: storageCollectionName,
+          schema: schema
+        });
+        return _catch(function () {
+          return Promise.resolve(writeSingle(collection.database.internalStore, {
+            previous: ensureNotFalsy(collectionDoc),
+            document: saveData
+          }, 'add-connected-storage-to-collection')).then(function () {});
+        }, function (err) {
+          if (!isBulkWriteConflictError(err)) {
+            throw err;
+          }
+        });
+      });
+    }));
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists(rxDatabase) {
   try {
     /**
@@ -72,9 +334,9 @@ export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumen
  * Returns all internal documents
  * with context 'collection'
  */
-export var getAllCollectionDocuments = function getAllCollectionDocuments(storage, storageInstance) {
+export var getAllCollectionDocuments = function getAllCollectionDocuments(storageStatics, storageInstance) {
   try {
-    var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, {
+    var getAllQueryPrepared = storageStatics.prepareQuery(storageInstance.schema, {
       selector: {
         context: INTERNAL_CONTEXT_COLLECTION
       },
@@ -99,7 +361,6 @@ export var getAllCollectionDocuments = function getAllCollectionDocuments(storag
 
 export var INTERNAL_CONTEXT_COLLECTION = 'collection';
 export var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
-export var INTERNAL_CONTEXT_REPLICATION_PRIMITIVES = 'plugin-replication-primitives';
 /**
  * Do not change the title,
  * we have to flag the internal schema so that
@@ -129,7 +390,7 @@ export var INTERNAL_STORE_SCHEMA = fillWithDefaultSettings({
     },
     context: {
       type: 'string',
-      "enum": [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_REPLICATION_PRIMITIVES, 'OTHER']
+      "enum": [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, 'OTHER']
     },
     data: {
       type: 'object',
@@ -160,4 +421,7 @@ export function getPrimaryKeyOfInternalDocument(key, context) {
 }
 export var STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
 export var STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
+export function _collectionNamePrimary(name, schema) {
+  return name + '-' + schema.version;
+}
 //# sourceMappingURL=rx-database-internal-store.js.map

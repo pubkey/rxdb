@@ -237,18 +237,21 @@ function syncGraphQL(_ref) {
   graphqlReplicationState.start = function () {
     if (mustUseSocket) {
       var wsClient = (0, _graphqlWebsocket.getGraphQLWebSocket)((0, _util.ensureNotFalsy)(url.ws));
-      var clientRequest = wsClient.request((0, _util.ensureNotFalsy)(pull.streamQueryBuilder)(mutateableClientState.headers));
-      clientRequest.subscribe({
+      wsClient.on('connected', function () {
+        pullStream$.next('RESYNC');
+      });
+      var query = (0, _util.ensureNotFalsy)(pull.streamQueryBuilder)(mutateableClientState.headers);
+      wsClient.subscribe(query, {
         next: function next(data) {
           var firstField = Object.keys(data.data)[0];
           pullStream$.next(data.data[firstField]);
         },
         error: function error(_error) {
           pullStream$.error(_error);
+        },
+        complete: function complete() {
+          pullStream$.complete();
         }
-      });
-      wsClient.onReconnected(function () {
-        pullStream$.next('RESYNC');
       });
     }
 

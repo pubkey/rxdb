@@ -6,8 +6,7 @@ import './types/modules/graphql-client.d';
 import './types/modules/mocha.parallel.d';
 import './types/modules/modifiyjs.d';
 export { addRxPlugin } from './plugin';
-export { createRxDatabase, removeRxDatabase, isRxDatabase, dbCount, _collectionNamePrimary, // used in tests
-isRxDatabaseFirstTimeInstantiated, ensureNoStartupErrors } from './rx-database';
+export { createRxDatabase, removeRxDatabase, isRxDatabase, dbCount, isRxDatabaseFirstTimeInstantiated, ensureNoStartupErrors } from './rx-database';
 export * from './rx-database-internal-store';
 export { overwritable } from './overwritable';
 export { isRxCollection, RxCollectionBase, createRxCollection // used in tests

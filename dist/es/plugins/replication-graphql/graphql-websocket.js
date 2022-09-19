@@ -1,4 +1,4 @@
-import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { createClient } from 'graphql-ws';
 import { getFromMapOrThrow } from '../../util';
 import { WebSocket as IsomorphicWebSocket } from 'isomorphic-ws';
 export var GRAPHQL_WEBSOCKET_BY_URL = new Map();
@@ -6,9 +6,13 @@ export function getGraphQLWebSocket(url) {
   var has = GRAPHQL_WEBSOCKET_BY_URL.get(url);
 
   if (!has) {
-    var wsClient = new SubscriptionClient(url, {
-      reconnect: true
-    }, IsomorphicWebSocket);
+    var wsClient = createClient({
+      url: url,
+      shouldRetry: function shouldRetry() {
+        return true;
+      },
+      webSocketImpl: IsomorphicWebSocket
+    });
     has = {
       url: url,
       socket: wsClient,
@@ -27,7 +31,7 @@ export function removeGraphQLWebSocketRef(url) {
 
   if (obj.refCount === 0) {
     GRAPHQL_WEBSOCKET_BY_URL["delete"](url);
-    obj.socket.close();
+    obj.socket.dispose();
   }
 }
 //# sourceMappingURL=graphql-websocket.js.map

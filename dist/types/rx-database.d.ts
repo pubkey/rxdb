@@ -1,6 +1,6 @@
 import { IdleQueue } from 'custom-idle-queue';
 import type { LeaderElector } from 'broadcast-channel';
-import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxJsonSchema, RxCollection, CouchDBServerOptions, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, CouchDBServerResponse, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, InternalStoreCollectionDocType, RxTypeError, RxError, HashFunction, MaybePromise } from './types';
+import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxCollection, CouchDBServerOptions, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, CouchDBServerResponse, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, RxTypeError, RxError, HashFunction, MaybePromise } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
 import type { RxBackupState } from './plugins/backup';
 import { ObliviousSet } from 'oblivious-set';
@@ -101,10 +101,6 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
         [key in keyof CreatedCollections]: RxCollection;
     }>;
     /**
-     * delete all data of the collection and its previous versions
-     */
-    removeCollection(collectionName: string): Promise<void>;
-    /**
      * runs the given function between idleQueue-locking
      */
     lockedRun<T>(fn: (...args: any[]) => T): T extends Promise<any> ? T : Promise<T>;
@@ -141,16 +137,6 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     remove(): Promise<string[]>;
     get asRxDatabase(): RxDatabase<{}, Internals, InstanceCreationOptions>;
 }
-/**
- * returns the primary for a given collection-data
- * used in the internal pouchdb-instances
- */
-export declare function _collectionNamePrimary(name: string, schema: RxJsonSchema<any>): string;
-/**
- * removes all internal docs of a given collection
- * @return resolves all known collection-versions
- */
-export declare function _removeAllOfCollection(rxDatabase: RxDatabaseBase<any, any, any>, collectionName: string): Promise<RxDocumentData<InternalStoreCollectionDocType>[]>;
 /**
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.

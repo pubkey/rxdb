@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxDatabaseBase = void 0;
-exports._collectionNamePrimary = _collectionNamePrimary;
-exports._removeAllOfCollection = void 0;
 exports.createRxDatabase = createRxDatabase;
 exports.createRxDatabaseStorageInstance = void 0;
 exports.dbCount = dbCount;
@@ -34,8 +32,6 @@ var _operators = require("rxjs/operators");
 var _rxCollection = require("./rx-collection");
 
 var _rxStorageHelper = require("./rx-storage-helper");
-
-var _rxCollectionHelper = require("./rx-collection-helper");
 
 var _obliviousSet = require("oblivious-set");
 
@@ -90,7 +86,7 @@ var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
   try {
     var databaseInstanceToken = (0, _util.randomCouchString)(10);
     return Promise.resolve(createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
-      return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storage, dbInternalsStorageInstance)).then(function (collectionDocs) {
+      return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storage.statics, dbInternalsStorageInstance)).then(function (collectionDocs) {
         var removedCollectionNames = [];
         return Promise.resolve(Promise.all(collectionDocs.map(function (colDoc) {
           try {
@@ -150,35 +146,6 @@ var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(d
 };
 
 exports.createRxDatabaseStorageInstance = createRxDatabaseStorageInstance;
-
-/**
- * removes all internal docs of a given collection
- * @return resolves all known collection-versions
- */
-var _removeAllOfCollection = function _removeAllOfCollection(rxDatabase, collectionName) {
-  try {
-    return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(rxDatabase.storage, rxDatabase.internalStore)).then(function (docs) {
-      var relevantDocs = docs.filter(function (colDoc) {
-        return colDoc.data.name === collectionName;
-      });
-      var writeRows = relevantDocs.map(function (doc) {
-        var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
-        writeDoc._deleted = true;
-        return {
-          previous: doc,
-          document: writeDoc
-        };
-      });
-      return rxDatabase.internalStore.bulkWrite(writeRows, 'rx-database-remove-collection-all').then(function () {
-        return relevantDocs;
-      });
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-exports._removeAllOfCollection = _removeAllOfCollection;
 
 /**
  * stores the used database names
@@ -295,7 +262,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     try {
       var _this3 = this;
 
-      return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(_this3.internalStore, (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(_collectionNamePrimary(name, schema), _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION))).then(function (doc) {
+      return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(_this3.internalStore, (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)((0, _rxDatabaseInternalStore._collectionNamePrimary)(name, schema), _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION))).then(function (doc) {
         if (!doc) {
           throw (0, _rxError.newRxError)('SNH', {
             name: name,
@@ -345,8 +312,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
           });
         }
 
-        var collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
-
+        var collectionNameWithVersion = (0, _rxDatabaseInternalStore._collectionNamePrimary)(name, rxJsonSchema);
         var collectionDocData = {
           id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionNameWithVersion, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
           key: collectionNameWithVersion,
@@ -355,7 +321,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
             name: collectionName,
             schemaHash: schema.hash,
             schema: schema.jsonSchema,
-            version: schema.version
+            version: schema.version,
+            connectedStorages: []
           },
           _deleted: false,
           _meta: (0, _util.getDefaultRxDocumentMeta)(),
@@ -427,48 +394,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     }
   }
   /**
-   * delete all data of the collection and its previous versions
-   */
-  ;
-
-  _proto.removeCollection = function removeCollection(collectionName) {
-    var _this6 = this;
-
-    var destroyPromise = _util.PROMISE_RESOLVE_VOID;
-
-    if (this.collections[collectionName]) {
-      destroyPromise = this.collections[collectionName].destroy();
-    } // remove schemas from internal db
-
-
-    return destroyPromise.then(function () {
-      return _removeAllOfCollection(_this6, collectionName);
-    }) // get all relevant pouchdb-instances
-    .then(function (knownVersions) {
-      return Promise.all(knownVersions.map(function (knownVersionDoc) {
-        return (0, _rxCollectionHelper.createRxCollectionStorageInstance)(_this6.asRxDatabase, {
-          databaseInstanceToken: _this6.token,
-          databaseName: _this6.name,
-          collectionName: collectionName,
-          schema: knownVersionDoc.data.schema,
-          options: _this6.instanceCreationOptions,
-          multiInstance: _this6.multiInstance
-        });
-      }));
-    }) // remove the storage instance
-    .then(function (storageInstances) {
-      return Promise.all(storageInstances.map(function (instance) {
-        return instance.remove();
-      }));
-    }).then(function () {
-      return (0, _hooks.runAsyncPluginHooks)('postRemoveRxCollection', {
-        storage: _this6.storage,
-        databaseName: _this6.name,
-        collectionName: collectionName
-      });
-    }).then(function () {});
-  }
-  /**
    * runs the given function between idleQueue-locking
    */
   ;
@@ -534,24 +459,24 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
   _proto.destroy = function destroy() {
     try {
-      var _this8 = this;
+      var _this7 = this;
 
-      if (_this8.destroyed) {
+      if (_this7.destroyed) {
         return Promise.resolve(_util.PROMISE_RESOLVE_FALSE);
       } // settings destroyed = true must be the first thing to do.
 
 
-      _this8.destroyed = true;
-      return Promise.resolve((0, _hooks.runAsyncPluginHooks)('preDestroyRxDatabase', _this8)).then(function () {
+      _this7.destroyed = true;
+      return Promise.resolve((0, _hooks.runAsyncPluginHooks)('preDestroyRxDatabase', _this7)).then(function () {
         /**
          * Complete the event stream
          * to stop all subscribers who forgot to unsubscribe.
          */
-        _this8.eventBulks$.complete();
+        _this7.eventBulks$.complete();
 
         DB_COUNT--;
 
-        _this8._subs.map(function (sub) {
+        _this7._subs.map(function (sub) {
           return sub.unsubscribe();
         });
         /**
@@ -562,23 +487,23 @@ var RxDatabaseBase = /*#__PURE__*/function () {
          */
 
 
-        return _this8.name === 'pseudoInstance' ? _util.PROMISE_RESOLVE_FALSE : _this8.requestIdlePromise().then(function () {
-          return Promise.all(_this8.onDestroy.map(function (fn) {
+        return _this7.name === 'pseudoInstance' ? _util.PROMISE_RESOLVE_FALSE : _this7.requestIdlePromise().then(function () {
+          return Promise.all(_this7.onDestroy.map(function (fn) {
             return fn();
           }));
         }) // destroy all collections
         .then(function () {
-          return Promise.all(Object.keys(_this8.collections).map(function (key) {
-            return _this8.collections[key];
+          return Promise.all(Object.keys(_this7.collections).map(function (key) {
+            return _this7.collections[key];
           }).map(function (col) {
             return col.destroy();
           }));
         }) // destroy internal storage instances
         .then(function () {
-          return _this8.internalStore.close();
+          return _this7.internalStore.close();
         }) // remove combination from USED_COMBINATIONS-map
         .then(function () {
-          return USED_DATABASE_NAMES["delete"](_this8.name);
+          return USED_DATABASE_NAMES["delete"](_this7.name);
         }).then(function () {
           return true;
         });
@@ -594,10 +519,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
   ;
 
   _proto.remove = function remove() {
-    var _this9 = this;
+    var _this8 = this;
 
     return this.destroy().then(function () {
-      return removeRxDatabase(_this9.name, _this9.storage);
+      return removeRxDatabase(_this8.name, _this8.storage);
     });
   };
 
@@ -631,15 +556,6 @@ function throwIfDatabaseNameUsed(name) {
       link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
     });
   }
-}
-/**
- * returns the primary for a given collection-data
- * used in the internal pouchdb-instances
- */
-
-
-function _collectionNamePrimary(name, schema) {
-  return name + '-' + schema.version;
 }
 
 function createRxDatabase(_ref3) {
