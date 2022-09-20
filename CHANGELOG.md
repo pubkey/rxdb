@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX respect the `prefers-reduced-motion` media query to not show blinking animations to neurodiverse people at the landingpage.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
