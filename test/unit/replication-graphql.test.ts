@@ -390,6 +390,30 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.destroy();
             });
+            it('should respect the pull.responseModifier', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(10))
+                ]);
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+
+                    },
+                    live: false,
+                    deletedField: 'deleted'
+                });
+
+                await replicationState.awaitInitialReplication();
+
+
+                process.exit();
+                server.close();
+                c.database.destroy();
+            });
             it('should pull all documents when they have the same timestamp because they are also sorted by id', async () => {
                 const amount = batchSize * 2;
                 const testData = getTestData(amount);

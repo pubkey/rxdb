@@ -176,6 +176,7 @@ export type {
     RxErrorParameters,
     RxGraphQLReplicationPushQueryBuilder,
     RxGraphQLReplicationPullQueryBuilder,
+    RxGraphQLPullResponseModifier,
     RxJsonSchema,
     RxLocalDocument,
     RxPlugin,

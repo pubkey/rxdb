@@ -189,7 +189,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                      * error handling.
                      */
                     let done = false;
-                    let result: ReplicationPullHandlerResult<RxDocType> = {} as any;
+                    let result: ReplicationPullHandlerResult<RxDocType, CheckpointType> = {} as any;
                     while (!done) {
                         try {
                             result = await this.pull.handler(

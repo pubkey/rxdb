@@ -132,7 +132,15 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 }
 
                 const dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
-                const data: any = objectPath.get(result, dataPath);
+                let data: any = objectPath.get(result, dataPath);
+
+                if (pull.responseModifier) {
+                    data = await pull.responseModifier(
+                        data,
+                        'handler',
+                        lastPulledCheckpoint
+                    );
+                }
 
                 const docsData: WithDeleted<RxDocType>[] = data.documents;
                 const newCheckpoint = data.checkpoint;

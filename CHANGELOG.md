@@ -4,7 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - FIX respect the `prefers-reduced-motion` media query to not show blinking animations to neurodiverse people at the landingpage.
-
+- ADD `pull.responseModifier` to the graphql replication plugin so that you can aggregate the checkpoint from the returned graphql respones.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

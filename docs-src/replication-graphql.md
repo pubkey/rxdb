@@ -353,6 +353,45 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = collection.syncGr
 });
 ```
 
+### pull.responseModifier
+
+With the `pull.responseModifier` you can modify the whole response from the GraphQL endpoint **before** it is processed by RxDB.
+For example if your endpoint is not capable of returning a valid checkpoint, but instead only returns the plain document array, you can use the `responseModifier` to aggregate the checkpoint from the returned documents.
+
+```js
+import {
+
+} from 'rxdb';
+const replicationState: RxGraphQLReplicationState<RxDocType> = collection.syncGraphQL({
+    url: {/* ... */},
+    headers: {/* ... */},
+    push: {/* ... */},
+    pull: {
+        responseModifier: async function(
+            plainResponse, // the exact response that was returned from the server
+            origin, // either 'handler' if it came from the pull.handler, or 'stream' if it came from the pull.stream
+            requestCheckpoint // if origin==='handler', the requestCheckpoint contains the checkpoint that was send to the backend
+        ) {
+            /**
+             * In this example we aggregate the checkpoint from the documents array
+             * that was returned from the graphql endpoint.
+             */
+            const docs = plainResponse;
+            return {
+                documents: docs,
+                checkpoint: docs.length === 0 ? requestCheckpoint : {
+                    name: lastOfArray(docs).name,
+                    updatedAt: lastOfArray(docs).updatedAt
+                }
+            };
+        }
+    },
+    /* ... */
+});
+```
+
+
+
 #### Helper Functions
 
 RxDB provides the helper functions `graphQLSchemaFromRxSchema()`, `pullQueryBuilderFromRxSchema()`, `pullStreamBuilderFromRxSchema()` and `pushQueryBuilderFromRxSchema()` that can be used to generate handlers and schemas from the `RxJsonSchema`. To learn how to use them, please inspect the [GraphQL Example](https://github.com/pubkey/rxdb/tree/master/examples/graphql).
