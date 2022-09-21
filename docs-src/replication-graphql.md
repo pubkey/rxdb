@@ -369,7 +369,7 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = collection.syncGr
     pull: {
         responseModifier: async function(
             plainResponse, // the exact response that was returned from the server
-            origin, // either 'handler' if it came from the pull.handler, or 'stream' if it came from the pull.stream
+            origin, // either 'handler' if plainResponse came from the pull.handler, or 'stream' if it came from the pull.stream
             requestCheckpoint // if origin==='handler', the requestCheckpoint contains the checkpoint that was send to the backend
         ) {
             /**
