@@ -166,6 +166,7 @@ export type {
     RxStorageReplicationMeta,
     DocumentsWithCheckpoint,
     RxReplicationPullStreamItem,
+    ReplicationPullHandlerResult,
 
     // other stuff
     RxDumpCollectionBase,

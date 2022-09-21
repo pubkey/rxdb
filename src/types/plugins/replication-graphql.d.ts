@@ -32,7 +32,7 @@ export type GraphQLSyncPullOptions<RxDocType, CheckpointType> = Omit<
 
 export type RxGraphQLPullResponseModifier<RxDocType, CheckpointType> = (
     // the exact response that was returned from the server
-    plainResponse: any,
+    plainResponse: ReplicationPullHandlerResult<RxDocType, CheckpointType> | any,
     // either 'handler' if it came from the pull.handler, or 'stream' if it came from the pull.stream
     origin: 'handler' | 'stream',
     requestCheckpoint?: CheckpointType
