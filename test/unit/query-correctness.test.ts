@@ -18,6 +18,7 @@ config.parallel('query-correctness.test.js', () => {
     type TestDoc = {
         id: string;
         age: number;
+        alwaysX: 'X';
     }
     const schema: RxJsonSchema<TestDoc> = {
         version: 0,
@@ -33,14 +34,23 @@ config.parallel('query-correctness.test.js', () => {
                 minimum: 100,
                 maximum: 200,
                 multipleOf: 1
+            },
+            alwaysX: {
+                type: 'string',
+                enum: ['X'],
+                maxLength: 3
             }
         },
         required: [
             'id',
+            'alwaysX',
             'age'
         ],
         indexes: [
-            'age'
+            [
+                'alwaysX',
+                'age'
+            ]
         ]
     };
 
@@ -63,14 +73,17 @@ config.parallel('query-correctness.test.js', () => {
 
             await collection.insert({
                 id: 'A',
+                alwaysX: 'X',
                 age: 100
             });
             await collection.insert({
                 id: 'B',
+                alwaysX: 'X',
                 age: 150
             });
             await collection.insert({
                 id: 'C',
+                alwaysX: 'X',
                 age: 200
             });
 
@@ -106,14 +119,17 @@ config.parallel('query-correctness.test.js', () => {
 
             await collection.insert({
                 id: 'A',
+                alwaysX: 'X',
                 age: 100
             });
             await collection.insert({
                 id: 'B',
+                alwaysX: 'X',
                 age: 150
             });
             await collection.insert({
                 id: 'C',
+                alwaysX: 'X',
                 age: 200
             });
 
