@@ -1,5 +1,6 @@
 import { RxReplicationWriteToMasterRow } from '../replication-protocol';
-import { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions } from './replication';
+import { MaybePromise } from '../util';
+import { ReplicationOptions, ReplicationPullHandlerResult, ReplicationPullOptions, ReplicationPushOptions } from './replication';
 
 export interface RxGraphQLReplicationQueryBuilderResponseObject {
     query: string;
@@ -26,7 +27,16 @@ export type GraphQLSyncPullOptions<RxDocType, CheckpointType> = Omit<
     queryBuilder: RxGraphQLReplicationPullQueryBuilder<CheckpointType>;
     streamQueryBuilder?: RxGraphQLReplicationPullStreamQueryBuilder;
     dataPath?: string;
+    responseModifier?: RxGraphQLPullResponseModifier<RxDocType, CheckpointType>;
 }
+
+export type RxGraphQLPullResponseModifier<RxDocType, CheckpointType> = (
+    // the exact response that was returned from the server
+    plainResponse: ReplicationPullHandlerResult<RxDocType, CheckpointType> | any,
+    // either 'handler' if it came from the pull.handler, or 'stream' if it came from the pull.stream
+    origin: 'handler' | 'stream',
+    requestCheckpoint?: CheckpointType
+) => MaybePromise<ReplicationPullHandlerResult<RxDocType, CheckpointType>>;
 
 export type RxGraphQLReplicationPullStreamQueryBuilder = (headers: { [k: string]: string }) => RxGraphQLReplicationQueryBuilderResponse;
 

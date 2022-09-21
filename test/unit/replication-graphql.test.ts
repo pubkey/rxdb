@@ -25,7 +25,8 @@ import {
     RxJsonSchema,
     randomCouchString,
     ensureNotFalsy,
-    RxReplicationWriteToMasterRow
+    RxReplicationWriteToMasterRow,
+    ReplicationPullHandlerResult
 } from '../../';
 
 import {
@@ -160,6 +161,7 @@ describe('replication-graphql.test.ts', () => {
          * We do not have to unsubscribe because the observable will cancel anyway.
          */
         replicationState.error$.subscribe(err => {
+            console.error('ensureReplicationHasNoErrors() has error:');
             console.dir(err.parameters.errors);
             console.log(JSON.stringify(err.parameters.errors, null, 4));
             throw err;
@@ -1262,6 +1264,66 @@ describe('replication-graphql.test.ts', () => {
 
                 await server.close();
                 await c.database.destroy();
+            });
+            it('should respect the pull.responseModifier', async () => {
+                const checkpointIterationModeAmount = 5;
+                const eventObservationModeAmount = 3;
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(checkpointIterationModeAmount))
+                ]);
+
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        batchSize: 2,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: pullStreamQueryBuilder,
+                        responseModifier(
+                            originalResponse: ReplicationPullHandlerResult<HumanWithTimestampDocumentType, any>,
+                            origin,
+                            _requestCheckpoint
+                        ) {
+                            originalResponse.documents = originalResponse.documents.map(doc => {
+                                doc.name = doc.name + '-response-modified-' + origin;
+                                return doc;
+                            });
+                            return originalResponse;
+                        }
+                    },
+                    live: true,
+                    deletedField: 'deleted'
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+                console.log('--- 1');
+                await replicationState.awaitInitialReplication();
+
+
+
+                let docsOnLocal = await c.find().exec();
+                assert.strictEqual(
+                    docsOnLocal.filter(d => d.name.endsWith('response-modified-handler')).length,
+                    checkpointIterationModeAmount
+                );
+
+
+                // ensure it also runs on pull.stream$
+                await Promise.all(
+                    getTestData(3).map(d => server.setDocument(d))
+                );
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === (checkpointIterationModeAmount + eventObservationModeAmount);
+                });
+                docsOnLocal = await c.find().exec();
+                assert.strictEqual(
+                    docsOnLocal.filter(d => d.name.endsWith('response-modified-stream')).length,
+                    eventObservationModeAmount
+                );
+
+                server.close();
+                c.database.destroy();
             });
         });
 

@@ -166,6 +166,7 @@ export type {
     RxStorageReplicationMeta,
     DocumentsWithCheckpoint,
     RxReplicationPullStreamItem,
+    ReplicationPullHandlerResult,
 
     // other stuff
     RxDumpCollectionBase,
@@ -176,6 +177,7 @@ export type {
     RxErrorParameters,
     RxGraphQLReplicationPushQueryBuilder,
     RxGraphQLReplicationPullQueryBuilder,
+    RxGraphQLPullResponseModifier,
     RxJsonSchema,
     RxLocalDocument,
     RxPlugin,
