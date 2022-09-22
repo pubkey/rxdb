@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - FIX(sqlite) use dollar params instead of named params
+- CHANGE run performance tests without the `dev-mode` plugin
 
 <!-- ADD new changes here! -->
 
