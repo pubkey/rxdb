@@ -27,7 +27,7 @@
 
 ### 13.0.1 (16 September 2022)
 
-### 13.0.0 (16 September 2022)
+### 13.0.0 (16 September 2022) BREAKING [read the announcement](./docs-src/releases/13.0.0.md)
 
 - FIX `graphQLSchemaFromRxSchema()` must not create broken schema when there are no `headerFields`
 
