@@ -94,8 +94,9 @@ jobs:
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm run test:performance:pouchdb
+          run: npm run test:performance:pouchdb:browser
 
+      - run: npm run test:performance:pouchdb:node
 
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
@@ -182,7 +183,12 @@ jobs:
       - name: npm run test:fast:memory-validation
         run: npm run test:fast:memory-validation
 
-      - run: npm run test:performance:memory
+      - name: performance test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:performance:memory:browser
+
+      - run: npm run test:performance:memory:node
 
   # run the node tests for the LokiJS RxStorage in a different
   # task to run in parallel.
