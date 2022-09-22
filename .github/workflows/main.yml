@@ -216,10 +216,7 @@ jobs:
       - name: npm run test:node:dexie-worker
         run: npm run test:node:dexie-worker
 
-      - name: performance test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm run test:performance:dexie-worker
+      - run: npm run test:performance:dexie-worker
 
       # TODO this randomly fails,
       # I think node.js has a problem with spawning too many workers at once.

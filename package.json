@@ -82,12 +82,12 @@
 
     "test:performance:pouchdb": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb CI=true karma start ./config/karma.performance.conf.js --single-run",
     "test:performance:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs CI=true karma start ./config/karma.performance.conf.js --single-run",
-    "test:performance:dexie-worker": "npm run transpile && cross-env DEFAULT_STORAGE=dexie-worker CI=true karma start ./config/karma.performance.conf.js --single-run",
     "test:performance:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie CI=true karma start ./config/karma.performance.conf.js --single-run",
+    "test:performance:dexie-worker": "npm run transpile && cross-env DEFAULT_STORAGE=dexie-worker mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
-
-
+    "test:performance:custom:browser": "npm run transpile && cross-env DEFAULT_STORAGE=custom CI=true karma start ./config/karma.performance.conf.js --single-run",
+    "test:performance:custom:node": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
 
     "couch:start": "docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1",
     "couch:stop": "docker rm -f rxdb-couchdb",
