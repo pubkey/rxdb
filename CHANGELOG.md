@@ -27,6 +27,8 @@
 
 ### 13.0.1 (16 September 2022)
 
+### 13.0.0 (16 September 2022)
+
 - FIX `graphQLSchemaFromRxSchema()` must not create broken schema when there are no `headerFields`
 
 - ADD credentials settings to the GraphQL replication plugin [#3976](https://github.com/pubkey/rxdb/pull/3976) Thanks [@marcoklein](https://github.com/marcoklein)
