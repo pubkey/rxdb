@@ -1,19 +1,13 @@
 import assert from 'assert';
-import {
-    clone
-} from 'async-test-util';
 
 import config from './config';
-import * as schemas from '../helper/schemas';
 import {
     RxJsonSchema,
-    RxDocumentData,
-    fillWithDefaultSettings,
     randomCouchString,
     createRxDatabase
 } from '../../';
 
-config.parallel('query-correctness.test.js', () => {
+config.parallel('query-correctness.test.ts', () => {
 
     type TestDoc = {
         id: string;
