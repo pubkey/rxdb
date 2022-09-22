@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX(sqlite) use dollar params instead of named params
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
