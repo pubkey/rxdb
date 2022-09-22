@@ -2,6 +2,22 @@ window.onload = function () {
 
 
     /**
+     * Having blinking stuff can be annoying for people with
+     * neuronal problems. So we disable it for everyone
+     * who has set the reduced motions settings in the browser/OS
+     * @link https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion
+     * @link https://web.dev/prefers-reduced-motion/
+     * @link https://github.com/pubkey/rxdb/pull/3800
+     * @link https://a11y-101.com/development/reduced-motion
+     */
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+        console.log('reducedMotion is set to true');
+        return;
+    }
+
+
+    /**
      * In the past we had this beating effect.
      * But it turned out that many people do not like that,
      * and in the 2022 user survey, most people opted for removing it.

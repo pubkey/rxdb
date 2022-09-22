@@ -2413,6 +2413,39 @@ Therefore, if your schema contains optional properties, you have to transform th
     <span class="hljs-comment">/* ... */</span>
 });
 </code></pre>
+<h3 id="pullresponsemodifier">pull.responseModifier</h3>
+<p>With the <code>pull.responseModifier</code> you can modify the whole response from the GraphQL endpoint <strong>before</strong> it is processed by RxDB.
+For example if your endpoint is not capable of returning a valid checkpoint, but instead only returns the plain document array, you can use the <code>responseModifier</code> to aggregate the checkpoint from the returned documents.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">import</span> {
+
+} <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">const</span> replicationState: RxGraphQLReplicationState&lt;RxDocType&gt; = collection.syncGraphQL({
+    url: {<span class="hljs-comment">/* ... */</span>},
+    headers: {<span class="hljs-comment">/* ... */</span>},
+    push: {<span class="hljs-comment">/* ... */</span>},
+    pull: {
+        responseModifier: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">
+            plainResponse, <span class="hljs-comment">// the exact response that was returned from the server</span>
+            origin, <span class="hljs-comment">// either &apos;handler&apos; if plainResponse came from the pull.handler, or &apos;stream&apos; if it came from the pull.stream</span>
+            requestCheckpoint <span class="hljs-comment">// if origin===&apos;handler&apos;, the requestCheckpoint contains the checkpoint that was send to the backend</span>
+        </span>) </span>{
+            <span class="hljs-comment">/**
+             * In this example we aggregate the checkpoint from the documents array
+             * that was returned from the graphql endpoint.
+             */</span>
+            <span class="hljs-keyword">const</span> docs = plainResponse;
+            <span class="hljs-keyword">return</span> {
+                documents: docs,
+                checkpoint: docs.length === <span class="hljs-number">0</span> ? requestCheckpoint : {
+                    name: lastOfArray(docs).name,
+                    updatedAt: lastOfArray(docs).updatedAt
+                }
+            };
+        }
+    },
+    <span class="hljs-comment">/* ... */</span>
+});
+</code></pre>
 <h4 id="helper-functions">Helper Functions</h4>
 <p>RxDB provides the helper functions <code>graphQLSchemaFromRxSchema()</code>, <code>pullQueryBuilderFromRxSchema()</code>, <code>pullStreamBuilderFromRxSchema()</code> and <code>pushQueryBuilderFromRxSchema()</code> that can be used to generate handlers and schemas from the <code>RxJsonSchema</code>. To learn how to use them, please inspect the <a href="https://github.com/pubkey/rxdb/tree/master/examples/graphql" target="_blank">GraphQL Example</a>.</p>
 <h3 id="rxgraphqlreplicationstate">RxGraphQLReplicationState</h3>

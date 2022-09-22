@@ -17,12 +17,15 @@ export type InternalStoreReplicationPullDocType<RxDocType> = InternalStoreDocTyp
     lastPulledDoc: RxDocumentData<RxDocType>;
 }>;
 
-export type ReplicationPullHandlerResult<RxDocType> = {
-    checkpoint: any;
+export type ReplicationPullHandlerResult<RxDocType, CheckpointType> = {
+    checkpoint: CheckpointType;
     documents: WithDeleted<RxDocType>[];
 };
 
-export type ReplicationPullHandler<RxDocType, CheckpointType> = (lastPulledCheckpoint: CheckpointType, batchSize: number) => Promise<ReplicationPullHandlerResult<RxDocType>>;
+export type ReplicationPullHandler<RxDocType, CheckpointType> = (
+    lastPulledCheckpoint: CheckpointType,
+    batchSize: number
+) => Promise<ReplicationPullHandlerResult<RxDocType, CheckpointType>>;
 export type ReplicationPullOptions<RxDocType, CheckpointType> = {
     /**
      * A handler that pulls the new remote changes

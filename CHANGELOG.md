@@ -3,13 +3,16 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX respect the `prefers-reduced-motion` media query to not show blinking animations to neurodiverse people at the landingpage.
-- ADD `pull.responseModifier` to the graphql replication plugin so that you can aggregate the checkpoint from the returned graphql response.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.2.0 (22 September 2022)
+
+- FIX respect the `prefers-reduced-motion` media query to not show blinking animations to neurodiverse people at the landingpage.
+- ADD `pull.responseModifier` to the graphql replication plugin so that you can aggregate the checkpoint from the returned graphql response.
 
 ### 13.1.0 (19 September 2022)
 

@@ -97,18 +97,31 @@ export function syncGraphQL(_ref) {
         try {
           return Promise.resolve(pull.queryBuilder(lastPulledCheckpoint, pullBatchSize)).then(function (pullGraphQL) {
             return Promise.resolve(mutateableClientState.client.query(pullGraphQL.query, pullGraphQL.variables)).then(function (result) {
+              function _temp2() {
+                var docsData = data.documents;
+                var newCheckpoint = data.checkpoint;
+                return {
+                  documents: docsData,
+                  checkpoint: newCheckpoint
+                };
+              }
+
               if (result.errors) {
                 throw result.errors;
               }
 
               var dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
               var data = objectPath.get(result, dataPath);
-              var docsData = data.documents;
-              var newCheckpoint = data.checkpoint;
-              return {
-                documents: docsData,
-                checkpoint: newCheckpoint
-              };
+
+              var _temp = function () {
+                if (pull.responseModifier) {
+                  return Promise.resolve(pull.responseModifier(data, 'handler', lastPulledCheckpoint)).then(function (_pull$responseModifie) {
+                    data = _pull$responseModifie;
+                  });
+                }
+              }();
+
+              return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
             });
           });
         } catch (e) {
@@ -159,9 +172,27 @@ export function syncGraphQL(_ref) {
       });
       var query = ensureNotFalsy(pull.streamQueryBuilder)(mutateableClientState.headers);
       wsClient.subscribe(query, {
-        next: function next(data) {
-          var firstField = Object.keys(data.data)[0];
-          pullStream$.next(data.data[firstField]);
+        next: function (streamResponse) {
+          try {
+            var _temp5 = function _temp5() {
+              pullStream$.next(_data);
+            };
+
+            var firstField = Object.keys(streamResponse.data)[0];
+            var _data = streamResponse.data[firstField];
+
+            var _temp6 = function () {
+              if (pull.responseModifier) {
+                return Promise.resolve(pull.responseModifier(_data, 'stream')).then(function (_pull$responseModifie2) {
+                  _data = _pull$responseModifie2;
+                });
+              }
+            }();
+
+            return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
+          } catch (e) {
+            return Promise.reject(e);
+          }
         },
         error: function error(_error) {
           pullStream$.error(_error);
