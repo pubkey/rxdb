@@ -21,26 +21,16 @@ const configuration = {
     colors: true,
     autoWatch: false,
 
-    /**
-     * see
-     * @link https://github.com/litixsoft/karma-detect-browsers
-     */
     detectBrowsers: {
         enabled: true,
         usePhantomJS: false,
-        postDetection: function (availableBrowser) {
-            // return ['Chrome'];
-            // return ['Firefox'];
-            
-            const doNotUseTheseBrowsers = [
-                'PhantomJS',
-                'FirefoxAurora',
-                'FirefoxNightly',
-                'ChromeCanary'
-            ];
-            const browsers = availableBrowser
-                .filter(b => !doNotUseTheseBrowsers.includes(b));
-            return browsers;
+        postDetection: function () {
+            /**
+             * We run the performance tests only in chrome
+             * because it has the same V8 JavaScript engine
+             * as we have in Node.js
+             */
+            return ['Chrome'];
         }
     },
 
