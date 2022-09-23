@@ -1296,10 +1296,7 @@ describe('replication-graphql.test.ts', () => {
                 });
                 ensureReplicationHasNoErrors(replicationState);
 
-                console.log('--- 1');
                 await replicationState.awaitInitialReplication();
-
-
 
                 let docsOnLocal = await c.find().exec();
                 assert.strictEqual(

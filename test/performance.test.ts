@@ -110,6 +110,7 @@ describe('performance.test.ts', () => {
                     docIds.push(data.id);
                     return data;
                 });
+
             updateTime();
             await collection.bulkInsert(docsData);
             updateTime('insert-documents');

@@ -5,6 +5,7 @@
 
 - FIX(sqlite) use dollar params instead of named params
 - CHANGE run performance tests without the `dev-mode` plugin
+- IMPROVE performance of document writes by not using try-catch in a hot path.
 
 <!-- ADD new changes here! -->
 
