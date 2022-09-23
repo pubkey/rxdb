@@ -151,7 +151,6 @@
     "event-reduce-js": "2.0.4",
     "express": "4.17.3",
     "fast-deep-equal": "3.1.3",
-    "foundationdb": "1.1.3",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "15.8.0",
     "graphql-client": "2.0.1",

@@ -23,14 +23,14 @@ describe('performance.test.ts', () => {
     });
     it('run the performance test', async function () {
         this.timeout(120 * 1000);
-        const runs = config.isFastMode() ? 1 : 6;
+        const runs = config.isFastMode() ? 1 : 12;
 
         const perfStorage = config.storage.getPerformanceStorage();
 
         const totalTimes: { [k: string]: number[] } = {};
 
-        const collectionsAmount = 3;
-        const docsAmount = 300;
+        const collectionsAmount = 4;
+        const docsAmount = 600;
 
         let runsDone = 0;
         while (runsDone < runs) {
@@ -144,7 +144,8 @@ describe('performance.test.ts', () => {
 
 
         const timeToLog: any = {
-            description: perfStorage.description
+            description: perfStorage.description,
+            platform: config.platform.name
         };
         Object.entries(totalTimes).forEach(([key, times]) => {
             timeToLog[key] = averageOfTimeValues(times, 50);
