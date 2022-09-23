@@ -47,13 +47,6 @@ jobs:
       - name: test:typings
         run: npm run test:typings
 
-      - name: npm run test:performance:pouchdb
-        run: npm run test:performance:pouchdb
-
-      - name: npm run test:performance:lokijs
-        run: npm run test:performance:lokijs
-
-
   storage-pouchdb:
     runs-on: ubuntu-20.04
     steps:
@@ -98,6 +91,12 @@ jobs:
         with:
           run: npm run test:browser:ci:pouchdb
 
+      - name: performance test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:performance:pouchdb:browser
+
+      - run: npm run test:performance:pouchdb:node
 
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
@@ -137,6 +136,11 @@ jobs:
         uses: GabrielBB/xvfb-action@v1
         with:
           run: npm run test:browser:ci:lokijs
+
+      - name: performance test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:performance:lokijs
 
   storage-memory:
     runs-on: ubuntu-20.04
@@ -179,6 +183,12 @@ jobs:
       - name: npm run test:fast:memory-validation
         run: npm run test:fast:memory-validation
 
+      - name: performance test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:performance:memory:browser
+
+      - run: npm run test:performance:memory:node
 
   # run the node tests for the LokiJS RxStorage in a different
   # task to run in parallel.
@@ -211,6 +221,8 @@ jobs:
 
       - name: npm run test:node:dexie-worker
         run: npm run test:node:dexie-worker
+
+      - run: npm run test:performance:dexie-worker
 
       # TODO this randomly fails,
       # I think node.js has a problem with spawning too many workers at once.
@@ -258,6 +270,12 @@ jobs:
         with:
           run: npm run test:browser:ci:dexie
 
+      - name: performance test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:performance:dexie
+
+
   storage-foundationdb:
     runs-on: ubuntu-20.04
     steps:
@@ -293,7 +311,7 @@ jobs:
 
       - run: npm run test:node:foundationdb
       - run: npm run test:fast:foundationdb
-
+      - run: npm run test:performance:foundationdb
 
   angular:
     runs-on: ubuntu-20.04

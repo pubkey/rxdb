@@ -956,3 +956,37 @@ AFTER:
     "find-by-ids": 0.11590833341081937,
     "find-by-query": 2.83842833340168
 }
+
+
+## 23 September 2022
+
+Optimize memory storage inserts
+
+BEFORE:
+
+{
+    "description": "memory",
+    "platform": "node",
+    "time-to-first-insert": 4.579850833339151,
+    "insert-documents": 63.33092266668488,
+    "find-by-ids": 0.14936283333615089,
+    "find-by-query": 2.2706114999988736
+}
+
+AFTER:
+
+{
+    "description": "memory",
+    "platform": "node",
+    "time-to-first-insert": 6.710264333290979,
+    "insert-documents": 28.996477166734014,
+    "find-by-ids": 0.21324566666347286,
+    "find-by-query": 2.148450500021378
+}
+
+
+
+
+
+
+

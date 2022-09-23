@@ -108,8 +108,10 @@ import {
 } from './rx-storage-helper';
 import { defaultConflictHandler } from './replication-protocol';
 
-const HOOKS_WHEN = ['pre', 'post'];
-const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
+const HOOKS_WHEN = ['pre', 'post'] as const;
+type HookWhenType = typeof HOOKS_WHEN[number];
+const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'] as const;
+type HookKeyType = typeof HOOKS_KEYS[number];
 let hooksApplied = false;
 
 export class RxCollectionBase<
@@ -162,7 +164,14 @@ export class RxCollectionBase<
     public _atomicUpsertQueues: Map<string, Promise<any>> = new Map();
     // defaults
     public synced: boolean = false;
-    public hooks: any = {};
+    public hooks: {
+        [key in HookKeyType]: {
+            [when in HookWhenType]: {
+                series: Function[];
+                parallel: Function[];
+            };
+        }
+    } = {} as any;
     public _subs: Subscription[] = [];
 
     public _docCache: DocCache<
@@ -311,15 +320,15 @@ export class RxCollectionBase<
             const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
             return useDocData;
         });
-        const docs = await Promise.all(
-            useDocs.map(doc => {
-                return this._runHooks('pre', 'insert', doc)
-                    .then(() => {
-                        return doc;
-                    });
-            })
-        );
-
+        const docs = this.hasHooks('pre', 'insert') ?
+            await Promise.all(
+                useDocs.map(doc => {
+                    return this._runHooks('pre', 'insert', doc)
+                        .then(() => {
+                            return doc;
+                        });
+                })
+            ) : useDocs;
         const docsMap: Map<string, RxDocumentType> = new Map();
         const insertRows: BulkWriteRow<RxDocumentType>[] = docs.map(doc => {
             docsMap.set((doc as any)[this.schema.primaryPath] as any, doc);
@@ -332,33 +341,30 @@ export class RxCollectionBase<
             const row: BulkWriteRow<RxDocumentType> = { document: docData };
             return row;
         });
-
         const results = await this.storageInstance.bulkWrite(
             insertRows,
             'rx-collection-bulk-insert'
         );
 
         // create documents
-        const successEntries: [string, RxDocumentData<RxDocumentType>][] = Object.entries(results.success);
-        const rxDocuments: any[] = successEntries
-            .map(([key, writtenDocData]) => {
-                const docData: RxDocumentData<RxDocumentType> = getFromMapOrThrow(docsMap, key) as any;
-                docData._rev = writtenDocData._rev;
-
-                const doc = createRxDocument(this as any, docData);
+        const successDocData: RxDocumentData<RxDocumentType>[] = Object.values(results.success);
+        const rxDocuments: any[] = successDocData
+            .map((writtenDocData) => {
+                const doc = createRxDocument(this as any, writtenDocData);
                 return doc;
             });
 
-
-        await Promise.all(
-            rxDocuments.map(doc => {
-                return this._runHooks(
-                    'post', 'insert',
-                    docsMap.get(doc.primary),
-                    doc
-                );
-            })
-        );
+        if (this.hasHooks('post', 'insert')) {
+            await Promise.all(
+                rxDocuments.map(doc => {
+                    return this._runHooks(
+                        'post', 'insert',
+                        docsMap.get(doc.primary),
+                        doc
+                    );
+                })
+            );
+        }
 
         return {
             success: rxDocuments,
@@ -743,7 +749,7 @@ export class RxCollectionBase<
     /**
      * HOOKS
      */
-    addHook(when: string, key: string, fun: any, parallel = false) {
+    addHook(when: HookWhenType, key: HookKeyType, fun: any, parallel = false) {
         if (typeof fun !== 'function') {
             throw newRxTypeError('COL7', {
                 key,
@@ -785,19 +791,30 @@ export class RxCollectionBase<
         this.hooks[key][when][runName].push(boundFun);
     }
 
-    getHooks(when: string, key: string) {
-        try {
-            return this.hooks[key][when];
-        } catch (e) {
+    getHooks(when: HookWhenType, key: HookKeyType) {
+        if (
+            !this.hooks[key] ||
+            !this.hooks[key][when]
+        ) {
             return {
                 series: [],
                 parallel: []
             };
         }
+        return this.hooks[key][when];
     }
 
-    _runHooks(when: string, key: string, data: any, instance?: any): Promise<any> {
+    hasHooks(when: HookWhenType, key: HookKeyType) {
         const hooks = this.getHooks(when, key);
+        if (!hooks) {
+            return false;
+        }
+        return hooks.series.length > 0 || hooks.parallel.length > 0;
+    }
+
+    _runHooks(when: HookWhenType, key: HookKeyType, data: any, instance?: any): Promise<any> {
+        const hooks = this.getHooks(when, key);
+
         if (!hooks) {
             return PROMISE_RESOLVE_VOID;
         }
@@ -815,7 +832,7 @@ export class RxCollectionBase<
     /**
      * does the same as ._runHooks() but with non-async-functions
      */
-    _runHooksSync(when: string, key: string, data: any, instance: any) {
+    _runHooksSync(when: HookWhenType, key: HookKeyType, data: any, instance: any) {
         const hooks = this.getHooks(when, key);
         if (!hooks) return;
         hooks.series.forEach((hook: any) => hook(data, instance));

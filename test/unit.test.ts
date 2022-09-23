@@ -65,7 +65,6 @@ import './unit/backup.test';
 import './unit/import-export.test';
 import './unit/dexie-helper.test';
 import './unit/plugin.test';
-import './unit/performance.test';
 import './unit/last.test';
 
 
