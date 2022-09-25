@@ -55,7 +55,7 @@ A big difference in the RxStorage implementations is the performance. In differe
 
 **LokiJS** stores all data in memory and only saves to disc occasionally (or on exit). Therefore it has a very fast read/write performance, but loading all data into memory on the first page load can take longer for big amounts of documents. Also this storage can only be used when all data fits into the memory at least once.
 
-The Premium **sharding** RxStorage is only usefull when big amounts of documents have to be stored or queries. In the CI performance test, we only insert 600 documents so that the performance actually decreases when sharding is used.
+The Premium **sharding** RxStorage is only usefull when big amounts of documents have to be stored or queries. In the CI performance test, we only insert a small amount of documents so that the performance actually decreases when sharding is used.
 
 The **PouchDB** RxStorage is slow because it has to handle all revisions of a document on writes and queries. This makes PouchDB the only storage where it is possible to replicate with a CouchDB compatible endpoint.
 
