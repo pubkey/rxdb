@@ -398,7 +398,6 @@ describe('replication.test.js', () => {
 
             async function docsInMeta(repState: typeof replicationState1): Promise<number> {
                 const metaInstance = ensureNotFalsy(repState.metaInstance);
-                console.log('metaInstance ' + metaInstance.databaseName + ' -- ' + metaInstance.collectionName);
                 const prepared = repState.collection.database.storage.statics.prepareQuery(
                     metaInstance.schema,
                     normalizeMangoQuery(

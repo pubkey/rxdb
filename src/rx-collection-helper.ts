@@ -9,7 +9,8 @@ import type {
 } from './types';
 import {
     getDefaultRevision,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    now
 } from './util';
 import {
     fillPrimaryKey
@@ -134,6 +135,7 @@ export async function removeCollectionStorages(
     // remove the meta documents
     const writeRows = relevantCollectionMetaDocs.map(doc => {
         const writeDoc = flatCloneDocWithMeta(doc);
+        writeDoc._meta.lwt = now();
         writeDoc._deleted = true;
         return {
             previous: doc,
