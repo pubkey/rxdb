@@ -79,6 +79,7 @@ import {
     INTERNAL_STORE_SCHEMA,
     _collectionNamePrimary
 } from './rx-database-internal-store';
+import { removeCollectionStorages } from './rx-collection-helper';
 
 /**
  * stores the used database names
@@ -650,25 +651,18 @@ export async function removeRxDatabase(
         dbInternalsStorageInstance
     );
 
-    const removedCollectionNames: string[] = [];
+    const collectionNames = new Set<string>();
+    collectionDocs.forEach(doc => collectionNames.add(doc.data.name));
+    const removedCollectionNames: string[] = Array.from(collectionNames);
+
     await Promise.all(
-        collectionDocs
-            .map(async (colDoc) => {
-                const schema = colDoc.data.schema;
-                const collectionName = colDoc.data.name;
-                removedCollectionNames.push(collectionName);
-                const storageInstance = await storage.createStorageInstance<any>(
-                    {
-                        databaseInstanceToken,
-                        databaseName,
-                        collectionName,
-                        schema,
-                        options: {},
-                        multiInstance: false
-                    }
-                );
-                await storageInstance.remove();
-            })
+        removedCollectionNames.map(collectionName => removeCollectionStorages(
+            storage,
+            dbInternalsStorageInstance,
+            databaseInstanceToken,
+            databaseName,
+            collectionName
+        ))
     );
 
     await runAsyncPluginHooks('postRemoveRxDatabase', {

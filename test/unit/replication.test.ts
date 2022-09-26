@@ -398,7 +398,6 @@ describe('replication.test.js', () => {
 
             async function docsInMeta(repState: typeof replicationState1): Promise<number> {
                 const metaInstance = ensureNotFalsy(repState.metaInstance);
-                console.log('metaInstance ' + metaInstance.databaseName + ' -- ' + metaInstance.collectionName);
                 const prepared = repState.collection.database.storage.statics.prepareQuery(
                     metaInstance.schema,
                     normalizeMangoQuery(
@@ -409,9 +408,6 @@ describe('replication.test.js', () => {
                 const result = await metaInstance.query(prepared);
                 return result.documents.length;
             }
-
-            const docsInMetaBefore = await docsInMeta(replicationState1);
-            console.log('docsInMetaBefore: ' + docsInMetaBefore);
 
             await localCollection.remove();
             await localCollection.database.destroy();
