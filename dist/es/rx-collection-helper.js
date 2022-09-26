@@ -1,4 +1,4 @@
-import { getDefaultRevision, getDefaultRxDocumentMeta } from './util';
+import { createRevision, getDefaultRevision, getDefaultRxDocumentMeta, now } from './util';
 import { fillPrimaryKey } from './rx-schema-helper';
 import { runAsyncPluginHooks } from './hooks';
 import { getAllCollectionDocuments } from './rx-database-internal-store';
@@ -12,7 +12,13 @@ import { flatCloneDocWithMeta } from './rx-storage-helper';
  * Removes the main storage of the collection
  * and all connected storages like the ones from the replication meta etc.
  */
-export var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName) {
+export var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
+/**
+ * If no hash function is provided,
+ * we assume that the whole internal store is removed anyway
+ * so we do not have to delete the meta documents.
+ */
+hashFunction) {
   try {
     return Promise.resolve(getAllCollectionDocuments(storage.statics, databaseInternalStorage)).then(function (allCollectionMetaDocs) {
       var relevantCollectionMetaDocs = allCollectionMetaDocs.filter(function (metaDoc) {
@@ -57,7 +63,7 @@ export var removeCollectionStorages = function removeCollectionStorages(storage,
             schema: row.schema
           })).then(function (storageInstance) {
             return Promise.resolve(storageInstance.remove()).then(function () {
-              var _temp = function () {
+              var _temp2 = function () {
                 if (row.isCollection) {
                   return Promise.resolve(runAsyncPluginHooks('postRemoveRxCollection', {
                     storage: storage,
@@ -67,24 +73,31 @@ export var removeCollectionStorages = function removeCollectionStorages(storage,
                 }
               }();
 
-              if (_temp && _temp.then) return _temp.then(function () {});
+              if (_temp2 && _temp2.then) return _temp2.then(function () {});
             });
           });
         } catch (e) {
           return Promise.reject(e);
         }
       }))).then(function () {
-        // remove the meta documents
-        var writeRows = relevantCollectionMetaDocs.map(function (doc) {
-          var writeDoc = flatCloneDocWithMeta(doc);
-          writeDoc._deleted = true;
-          return {
-            previous: doc,
-            document: writeDoc
-          };
-        });
-        return Promise.resolve(databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all')).then(function () {});
-      });
+        var _temp = function () {
+          if (hashFunction) {
+            var writeRows = relevantCollectionMetaDocs.map(function (doc) {
+              var writeDoc = flatCloneDocWithMeta(doc);
+              writeDoc._deleted = true;
+              writeDoc._meta.lwt = now();
+              writeDoc._rev = createRevision(hashFunction, writeDoc, doc);
+              return {
+                previous: doc,
+                document: writeDoc
+              };
+            });
+            return Promise.resolve(databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all')).then(function () {});
+          }
+        }();
+
+        if (_temp && _temp.then) return _temp.then(function () {});
+      }); // remove the meta documents
     });
   } catch (e) {
     return Promise.reject(e);

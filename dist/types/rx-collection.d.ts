@@ -6,6 +6,10 @@ import { Subscription, Observable } from 'rxjs';
 import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise } from './types';
 import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
+declare const HOOKS_WHEN: readonly ["pre", "post"];
+declare type HookWhenType = typeof HOOKS_WHEN[number];
+declare const HOOKS_KEYS: readonly ["insert", "save", "remove", "create"];
+declare type HookKeyType = typeof HOOKS_KEYS[number];
 export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = {
     [prop: string]: any;
 }, OrmMethods = {}, StaticMethods = {
@@ -34,7 +38,14 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     get remove$(): Observable<RxChangeEventDelete<RxDocumentType>>;
     _atomicUpsertQueues: Map<string, Promise<any>>;
     synced: boolean;
-    hooks: any;
+    hooks: {
+        [key in HookKeyType]: {
+            [when in HookWhenType]: {
+                series: Function[];
+                parallel: Function[];
+            };
+        };
+    };
     _subs: Subscription[];
     _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>>;
     _queryCache: QueryCache;
@@ -107,13 +118,17 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     /**
      * HOOKS
      */
-    addHook(when: string, key: string, fun: any, parallel?: boolean): void;
-    getHooks(when: string, key: string): any;
-    _runHooks(when: string, key: string, data: any, instance?: any): Promise<any>;
+    addHook(when: HookWhenType, key: HookKeyType, fun: any, parallel?: boolean): void;
+    getHooks(when: HookWhenType, key: HookKeyType): {
+        series: Function[];
+        parallel: Function[];
+    };
+    hasHooks(when: HookWhenType, key: HookKeyType): boolean;
+    _runHooks(when: HookWhenType, key: HookKeyType, data: any, instance?: any): Promise<any>;
     /**
      * does the same as ._runHooks() but with non-async-functions
      */
-    _runHooksSync(when: string, key: string, data: any, instance: any): void;
+    _runHooksSync(when: HookWhenType, key: HookKeyType, data: any, instance: any): void;
     /**
      * Returns a promise that resolves after the given time.
      * Ensures that is properly cleans up when the collection is destroyed
@@ -132,3 +147,4 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
  */
 export declare function createRxCollection({ database, name, schema, instanceCreationOptions, migrationStrategies, autoMigrate, statics, methods, attachments, options, localDocuments, cacheReplacementPolicy, conflictHandler }: any): Promise<RxCollection>;
 export declare function isRxCollection(obj: any): boolean;
+export {};

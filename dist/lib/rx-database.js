@@ -37,6 +37,8 @@ var _obliviousSet = require("oblivious-set");
 
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
 
+var _rxCollectionHelper = require("./rx-collection-helper");
+
 /**
  * For better performance some tasks run async
  * and are awaited later.
@@ -87,25 +89,13 @@ var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
     var databaseInstanceToken = (0, _util.randomCouchString)(10);
     return Promise.resolve(createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
       return Promise.resolve((0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storage.statics, dbInternalsStorageInstance)).then(function (collectionDocs) {
-        var removedCollectionNames = [];
-        return Promise.resolve(Promise.all(collectionDocs.map(function (colDoc) {
-          try {
-            var schema = colDoc.data.schema;
-            var collectionName = colDoc.data.name;
-            removedCollectionNames.push(collectionName);
-            return Promise.resolve(storage.createStorageInstance({
-              databaseInstanceToken: databaseInstanceToken,
-              databaseName: databaseName,
-              collectionName: collectionName,
-              schema: schema,
-              options: {},
-              multiInstance: false
-            })).then(function (storageInstance) {
-              return Promise.resolve(storageInstance.remove()).then(function () {});
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
+        var collectionNames = new Set();
+        collectionDocs.forEach(function (doc) {
+          return collectionNames.add(doc.data.name);
+        });
+        var removedCollectionNames = Array.from(collectionNames);
+        return Promise.resolve(Promise.all(removedCollectionNames.map(function (collectionName) {
+          return (0, _rxCollectionHelper.removeCollectionStorages)(storage, dbInternalsStorageInstance, databaseInstanceToken, databaseName, collectionName);
         }))).then(function () {
           return Promise.resolve((0, _hooks.runAsyncPluginHooks)('postRemoveRxDatabase', {
             databaseName: databaseName,

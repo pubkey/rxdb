@@ -169,6 +169,48 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
   _proto.bulkInsert = function bulkInsert(docsData) {
     try {
+      var _temp4 = function _temp4(docs) {
+        var docsMap = new Map();
+        var insertRows = docs.map(function (doc) {
+          docsMap.set(doc[_this6.schema.primaryPath], doc);
+          var docData = Object.assign(doc, {
+            _attachments: {},
+            _meta: getDefaultRxDocumentMeta(),
+            _rev: getDefaultRevision(),
+            _deleted: false
+          });
+          var row = {
+            document: docData
+          };
+          return row;
+        });
+        return Promise.resolve(_this6.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert')).then(function (results) {
+          function _temp2() {
+            return {
+              success: rxDocuments,
+              error: Object.values(results.error)
+            };
+          }
+
+          // create documents
+          var successDocData = Object.values(results.success);
+          var rxDocuments = successDocData.map(function (writtenDocData) {
+            var doc = createRxDocument(_this6, writtenDocData);
+            return doc;
+          });
+
+          var _temp = function () {
+            if (_this6.hasHooks('post', 'insert')) {
+              return Promise.resolve(Promise.all(rxDocuments.map(function (doc) {
+                return _this6._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
+              }))).then(function () {});
+            }
+          }();
+
+          return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
+        });
+      };
+
       var _this6 = this;
 
       /**
@@ -186,46 +228,14 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         var useDocData = fillObjectDataBeforeInsert(_this6.schema, docData);
         return useDocData;
       });
-      return Promise.resolve(Promise.all(useDocs.map(function (doc) {
+
+      var _this5$hasHooks2 = _this6.hasHooks('pre', 'insert');
+
+      return Promise.resolve(_this5$hasHooks2 ? Promise.resolve(Promise.all(useDocs.map(function (doc) {
         return _this6._runHooks('pre', 'insert', doc).then(function () {
           return doc;
         });
-      }))).then(function (docs) {
-        var docsMap = new Map();
-        var insertRows = docs.map(function (doc) {
-          docsMap.set(doc[_this6.schema.primaryPath], doc);
-          var docData = Object.assign(doc, {
-            _attachments: {},
-            _meta: getDefaultRxDocumentMeta(),
-            _rev: getDefaultRevision(),
-            _deleted: false
-          });
-          var row = {
-            document: docData
-          };
-          return row;
-        });
-        return Promise.resolve(_this6.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert')).then(function (results) {
-          // create documents
-          var successEntries = Object.entries(results.success);
-          var rxDocuments = successEntries.map(function (_ref) {
-            var key = _ref[0],
-                writtenDocData = _ref[1];
-            var docData = getFromMapOrThrow(docsMap, key);
-            docData._rev = writtenDocData._rev;
-            var doc = createRxDocument(_this6, docData);
-            return doc;
-          });
-          return Promise.resolve(Promise.all(rxDocuments.map(function (doc) {
-            return _this6._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
-          }))).then(function () {
-            return {
-              success: rxDocuments,
-              error: Object.values(results.error)
-            };
-          });
-        });
-      });
+      }))).then(_temp4) : _temp4(useDocs));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -453,7 +463,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         }
       }); // find everything which was not in docCache
 
-      var _temp2 = function () {
+      var _temp6 = function () {
         if (mustBeQueried.length > 0) {
           return Promise.resolve(_this13.storageInstance.findDocumentsById(mustBeQueried, false)).then(function (docs) {
             Object.values(docs).forEach(function (docData) {
@@ -464,7 +474,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         }
       }();
 
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
+      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(function () {
         return ret;
       }) : ret);
     } catch (e) {
@@ -519,7 +529,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     mergeMap(function () {
       queue = queue.then(function () {
         try {
-          var _temp6 = function _temp6(_result) {
+          var _temp10 = function _temp10(_result) {
             if (_exit2) return _result;
             firstEmitDone = true;
             return currentValue;
@@ -538,7 +548,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
           lastChangeEvent = _this14._changeEventBuffer.counter;
 
-          var _temp7 = function () {
+          var _temp11 = function () {
             if (missedChangeEvents === null) {
               /**
                * changeEventBuffer is of bounds -> we must re-execute over the database
@@ -574,14 +584,14 @@ export var RxCollectionBase = /*#__PURE__*/function () {
               }); // nothing happened that affects the result -> do not emit
 
               if (!resultHasChanged && firstEmitDone) {
-                var _temp8 = false;
+                var _temp12 = false;
                 _exit2 = true;
-                return _temp8;
+                return _temp12;
               }
             }
           }();
 
-          return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
+          return Promise.resolve(_temp11 && _temp11.then ? _temp11.then(_temp10) : _temp10(_temp11));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -672,14 +682,24 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   };
 
   _proto.getHooks = function getHooks(when, key) {
-    try {
-      return this.hooks[key][when];
-    } catch (e) {
+    if (!this.hooks[key] || !this.hooks[key][when]) {
       return {
         series: [],
         parallel: []
       };
     }
+
+    return this.hooks[key][when];
+  };
+
+  _proto.hasHooks = function hasHooks(when, key) {
+    var hooks = this.getHooks(when, key);
+
+    if (!hooks) {
+      return false;
+    }
+
+    return hooks.series.length > 0 || hooks.parallel.length > 0;
   };
 
   _proto._runHooks = function _runHooks(when, key, data, instance) {
@@ -801,7 +821,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       var _this18 = this;
 
       return Promise.resolve(_this18.destroy()).then(function () {
-        return Promise.resolve(removeCollectionStorages(_this18.database.storage, _this18.database.internalStore, _this18.database.token, _this18.database.name, _this18.name)).then(function () {});
+        return Promise.resolve(removeCollectionStorages(_this18.database.storage, _this18.database.internalStore, _this18.database.token, _this18.database.name, _this18.name, _this18.database.hashFunction)).then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);
@@ -909,30 +929,30 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
  */
 
 
-export function createRxCollection(_ref2) {
-  var database = _ref2.database,
-      name = _ref2.name,
-      schema = _ref2.schema,
-      _ref2$instanceCreatio = _ref2.instanceCreationOptions,
-      instanceCreationOptions = _ref2$instanceCreatio === void 0 ? {} : _ref2$instanceCreatio,
-      _ref2$migrationStrate = _ref2.migrationStrategies,
-      migrationStrategies = _ref2$migrationStrate === void 0 ? {} : _ref2$migrationStrate,
-      _ref2$autoMigrate = _ref2.autoMigrate,
-      autoMigrate = _ref2$autoMigrate === void 0 ? true : _ref2$autoMigrate,
-      _ref2$statics = _ref2.statics,
-      statics = _ref2$statics === void 0 ? {} : _ref2$statics,
-      _ref2$methods = _ref2.methods,
-      methods = _ref2$methods === void 0 ? {} : _ref2$methods,
-      _ref2$attachments = _ref2.attachments,
-      attachments = _ref2$attachments === void 0 ? {} : _ref2$attachments,
-      _ref2$options = _ref2.options,
-      options = _ref2$options === void 0 ? {} : _ref2$options,
-      _ref2$localDocuments = _ref2.localDocuments,
-      localDocuments = _ref2$localDocuments === void 0 ? false : _ref2$localDocuments,
-      _ref2$cacheReplacemen = _ref2.cacheReplacementPolicy,
-      cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? defaultCacheReplacementPolicy : _ref2$cacheReplacemen,
-      _ref2$conflictHandler = _ref2.conflictHandler,
-      conflictHandler = _ref2$conflictHandler === void 0 ? defaultConflictHandler : _ref2$conflictHandler;
+export function createRxCollection(_ref) {
+  var database = _ref.database,
+      name = _ref.name,
+      schema = _ref.schema,
+      _ref$instanceCreation = _ref.instanceCreationOptions,
+      instanceCreationOptions = _ref$instanceCreation === void 0 ? {} : _ref$instanceCreation,
+      _ref$migrationStrateg = _ref.migrationStrategies,
+      migrationStrategies = _ref$migrationStrateg === void 0 ? {} : _ref$migrationStrateg,
+      _ref$autoMigrate = _ref.autoMigrate,
+      autoMigrate = _ref$autoMigrate === void 0 ? true : _ref$autoMigrate,
+      _ref$statics = _ref.statics,
+      statics = _ref$statics === void 0 ? {} : _ref$statics,
+      _ref$methods = _ref.methods,
+      methods = _ref$methods === void 0 ? {} : _ref$methods,
+      _ref$attachments = _ref.attachments,
+      attachments = _ref$attachments === void 0 ? {} : _ref$attachments,
+      _ref$options = _ref.options,
+      options = _ref$options === void 0 ? {} : _ref$options,
+      _ref$localDocuments = _ref.localDocuments,
+      localDocuments = _ref$localDocuments === void 0 ? false : _ref$localDocuments,
+      _ref$cacheReplacement = _ref.cacheReplacementPolicy,
+      cacheReplacementPolicy = _ref$cacheReplacement === void 0 ? defaultCacheReplacementPolicy : _ref$cacheReplacement,
+      _ref$conflictHandler = _ref.conflictHandler,
+      conflictHandler = _ref$conflictHandler === void 0 ? defaultConflictHandler : _ref$conflictHandler;
   var storageInstanceCreationParams = {
     databaseInstanceToken: database.token,
     databaseName: database.name,
@@ -947,9 +967,9 @@ export function createRxCollection(_ref2) {
     var collection = new RxCollectionBase(database, name, schema, storageInstance, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics, conflictHandler);
     return collection.prepare().then(function () {
       // ORM add statics
-      Object.entries(statics).forEach(function (_ref3) {
-        var funName = _ref3[0],
-            fun = _ref3[1];
+      Object.entries(statics).forEach(function (_ref2) {
+        var funName = _ref2[0],
+            fun = _ref2[1];
         Object.defineProperty(collection, funName, {
           get: function get() {
             return fun.bind(collection);

@@ -10,6 +10,7 @@ import { createRxCollection } from './rx-collection';
 import { flatCloneDocWithMeta, getSingleDocument, getWrappedStorageInstance, INTERNAL_STORAGE_NAME } from './rx-storage-helper';
 import { ObliviousSet } from 'oblivious-set';
 import { ensureStorageTokenDocumentExists, getAllCollectionDocuments, getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_COLLECTION, INTERNAL_STORE_SCHEMA, _collectionNamePrimary } from './rx-database-internal-store';
+import { removeCollectionStorages } from './rx-collection-helper';
 /**
  * stores the used database names
  * so we can throw when the same database is created more then once.
@@ -61,25 +62,13 @@ export var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
     var databaseInstanceToken = randomCouchString(10);
     return Promise.resolve(createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
       return Promise.resolve(getAllCollectionDocuments(storage.statics, dbInternalsStorageInstance)).then(function (collectionDocs) {
-        var removedCollectionNames = [];
-        return Promise.resolve(Promise.all(collectionDocs.map(function (colDoc) {
-          try {
-            var schema = colDoc.data.schema;
-            var collectionName = colDoc.data.name;
-            removedCollectionNames.push(collectionName);
-            return Promise.resolve(storage.createStorageInstance({
-              databaseInstanceToken: databaseInstanceToken,
-              databaseName: databaseName,
-              collectionName: collectionName,
-              schema: schema,
-              options: {},
-              multiInstance: false
-            })).then(function (storageInstance) {
-              return Promise.resolve(storageInstance.remove()).then(function () {});
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
+        var collectionNames = new Set();
+        collectionDocs.forEach(function (doc) {
+          return collectionNames.add(doc.data.name);
+        });
+        var removedCollectionNames = Array.from(collectionNames);
+        return Promise.resolve(Promise.all(removedCollectionNames.map(function (collectionName) {
+          return removeCollectionStorages(storage, dbInternalsStorageInstance, databaseInstanceToken, databaseName, collectionName);
         }))).then(function () {
           return Promise.resolve(runAsyncPluginHooks('postRemoveRxDatabase', {
             databaseName: databaseName,

@@ -3,16 +3,18 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX(sqlite) use dollar params instead of named params
-- CHANGE run performance tests without the `dev-mode` plugin
-- IMPROVE performance of document writes by not using try-catch in a hot path.
-- FIX `RxDatabase.remove()` must properly remove the collection storage together with the replication states.
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.3.0 (26 September 2022)
+
+- FIX(sqlite) use dollar params instead of named params
+- CHANGE run performance tests without the `dev-mode` plugin
+- IMPROVE performance of document writes by not using try-catch in a hot path.
+- FIX `RxDatabase.remove()` must properly remove the collection storage together with the replication states.
 
 ### 13.2.0 (22 September 2022)
 
