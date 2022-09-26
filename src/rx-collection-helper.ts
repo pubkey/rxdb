@@ -1,4 +1,5 @@
 import type {
+    HashFunction,
     InternalStoreDocType,
     RxDatabase,
     RxDocumentData,
@@ -8,6 +9,7 @@ import type {
     RxStorageInstanceCreationParams
 } from './types';
 import {
+    createRevision,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now
@@ -70,7 +72,13 @@ export async function removeCollectionStorages(
     databaseInternalStorage: RxStorageInstance<InternalStoreDocType<any>, any, any>,
     databaseInstanceToken: string,
     databaseName: string,
-    collectionName: string
+    collectionName: string,
+    /**
+     * If no hash function is provided,
+     * we assume that the whole internal store is removed anyway
+     * so we do not have to delete the meta documents.
+     */
+    hashFunction?: HashFunction,
 ) {
     const allCollectionMetaDocs = await getAllCollectionDocuments(
         storage.statics,
@@ -133,17 +141,24 @@ export async function removeCollectionStorages(
     );
 
     // remove the meta documents
-    const writeRows = relevantCollectionMetaDocs.map(doc => {
-        const writeDoc = flatCloneDocWithMeta(doc);
-        writeDoc._meta.lwt = now();
-        writeDoc._deleted = true;
-        return {
-            previous: doc,
-            document: writeDoc
-        };
-    });
-    await databaseInternalStorage.bulkWrite(
-        writeRows,
-        'rx-database-remove-collection-all'
-    );
+    if (hashFunction) {
+        const writeRows = relevantCollectionMetaDocs.map(doc => {
+            const writeDoc = flatCloneDocWithMeta(doc);
+            writeDoc._deleted = true;
+            writeDoc._meta.lwt = now();
+            writeDoc._rev = createRevision(
+                hashFunction,
+                writeDoc,
+                doc
+            );
+            return {
+                previous: doc,
+                document: writeDoc
+            };
+        });
+        await databaseInternalStorage.bulkWrite(
+            writeRows,
+            'rx-database-remove-collection-all'
+        );
+    }
 }

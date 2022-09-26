@@ -409,9 +409,6 @@ describe('replication.test.js', () => {
                 return result.documents.length;
             }
 
-            const docsInMetaBefore = await docsInMeta(replicationState1);
-            console.log('docsInMetaBefore: ' + docsInMetaBefore);
-
             await localCollection.remove();
             await localCollection.database.destroy();
 

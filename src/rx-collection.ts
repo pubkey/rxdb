@@ -907,7 +907,8 @@ export class RxCollectionBase<
             this.database.internalStore,
             this.database.token,
             this.database.name,
-            this.name
+            this.name,
+            this.database.hashFunction
         );
     }
 
