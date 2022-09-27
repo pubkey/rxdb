@@ -16,7 +16,8 @@ import {
     objectPathMonad,
     defaultHashFunction,
     b64DecodeUnicode,
-    b64EncodeUnicode
+    b64EncodeUnicode,
+    batchArray
 } from '../../';
 import {
     validateDatabaseName,
@@ -409,6 +410,30 @@ describe('util.test.js', () => {
                 assert.throws(() => ensureInteger(value));
             });
         })
+    });
+    describe('.batchArray()', () => {
+        it('should split into the correct amounts of batches', () => {
+            const getArrayWithItems = (amount: number) => {
+                return new Array(amount).fill(0);
+            }
+
+            assert.strictEqual(
+                batchArray(getArrayWithItems(10), 10).length,
+                1
+            );
+            assert.strictEqual(
+                batchArray(getArrayWithItems(10), 5).length,
+                2
+            );
+            assert.strictEqual(
+                batchArray(getArrayWithItems(10), 3).length,
+                4
+            );
+            assert.strictEqual(
+                batchArray(getArrayWithItems(10), 9).length,
+                2
+            );
+        });
     });
     describe('.objectPathMonad()', () => {
         it('should get the correct values', () => {

@@ -13,6 +13,7 @@ import type {
     WithDeleted
 } from '../types';
 import {
+    batchArray,
     ensureNotFalsy,
     PROMISE_RESOLVE_FALSE
 } from '../util';
@@ -270,14 +271,29 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                 return false;
             }
 
-            const masterWriteResult = await replicationHandler.masterWrite(Object.values(writeRowsToMaster));
+
+            const writeRowsArray = Object.values(writeRowsToMaster);
             const conflictIds: Set<string> = new Set();
             const conflictsById: ById<WithDeleted<RxDocType>> = {};
-            masterWriteResult.forEach(conflictDoc => {
-                const id = (conflictDoc as any)[state.primaryPath];
-                conflictIds.add(id);
-                conflictsById[id] = conflictDoc;
-            });
+
+            /**
+             * To always respect the push.batchSize,
+             * we have to split the write rows into batches
+             * to ensure that replicationHandler.masterWrite() is never
+             * called with more documents than what the batchSize limits.
+             */
+            const writeBatches = batchArray(writeRowsArray, state.input.pushBatchSize);
+            await Promise.all(
+                writeBatches.map(async (writeBatch) => {
+                    const masterWriteResult = await replicationHandler.masterWrite(writeBatch);
+                    masterWriteResult.forEach(conflictDoc => {
+                        const id = (conflictDoc as any)[state.primaryPath];
+                        conflictIds.add(id);
+                        conflictsById[id] = conflictDoc;
+                    });
+                })
+            );
+
 
             const useWriteRowsToMeta: BulkWriteRow<RxStorageReplicationMeta>[] = [];
 

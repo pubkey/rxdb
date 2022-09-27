@@ -291,6 +291,55 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/3994
+         */
+        it('#3994 should respect the push.batchSize', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+            const batchSize = 2;
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: (docs) => {
+                        if (docs.length === 0 || docs.length > batchSize) {
+                            throw new Error('push.batchSize(' + batchSize + ') not respected ' + docs.length);
+                        }
+                        return getPushHandler(remoteCollection)(docs);
+                    },
+                    batchSize
+                }
+            });
+            replicationState.error$.subscribe(err => {
+                console.log('got error :');
+                console.dir(err);
+                throw err;
+            });
+
+            /**
+             * Insert many documents at once to
+             * produce an eventBulk that contains many documents
+             */
+            await localCollection.bulkInsert(
+                new Array(10).fill(0).map((() => schemaObjects.humanWithTimestamp()))
+            );
+
+            await replicationState.awaitInSync();
+
+            const docsOnRemote = await remoteCollection.find().exec();
+            assert.strictEqual(
+                docsOnRemote.length,
+                10
+            );
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
     });
     config.parallel('other', () => {
         describe('autoStart', () => {
