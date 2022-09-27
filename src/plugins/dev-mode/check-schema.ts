@@ -417,10 +417,11 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                             lastPathPart = partParts.pop();
                             parentPath = partParts.join('.');
                         }
-                        const parentSchemaPart = getSchemaByObjectPath(
+                        const parentSchemaPart = parentPath === '' ? jsonSchema : getSchemaByObjectPath(
                             jsonSchema,
                             parentPath
                         );
+
                         if (
                             !parentSchemaPart.required ||
                             !parentSchemaPart.required.includes(lastPathPart)
@@ -493,7 +494,8 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
         .filter(index =>
             index.schemaObj.type !== 'string' &&
             index.schemaObj.type !== 'integer' &&
-            index.schemaObj.type !== 'number'
+            index.schemaObj.type !== 'number' &&
+            index.schemaObj.type !== 'boolean'
         )
         .forEach(index => {
             throw newRxError('SC22', {

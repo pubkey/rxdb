@@ -915,6 +915,64 @@ config.parallel('rx-schema.test.js', () => {
 
             db.destroy();
         });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/3994#issuecomment-1260073490
+         */
+        it('#3994 must work with a boolean index', async () => {
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage()
+            });
+
+            const mySchema = {
+                'keyCompression': false,
+                'version': 0,
+                'primaryKey': '_id',
+                'type': 'object',
+                'properties': {
+                    '_id': {
+                        'type': 'string',
+                        'maxLength': 100
+                    },
+                    'data': {
+                        'type': 'object'
+                    },
+                    'isNew': {
+                        'type': 'boolean',
+                        'default': false
+                    },
+                    'createdAt': {
+                        'type': 'string',
+                        'format': 'date-time',
+                        'maxLength': 24
+                    },
+                    'updatedAt': {
+                        'type': 'string',
+                        'format': 'date-time',
+                        'maxLength': 24
+                    }
+                },
+                'required': [
+                    '_id',
+                    'data',
+                    'createdAt',
+                    'updatedAt',
+                    'isNew'
+                ],
+                'indexes': [
+                    'createdAt',
+                    'updatedAt',
+                    'isNew'
+                ]
+            };
+            await db.addCollections({
+                test: {
+                    schema: mySchema
+                }
+            });
+
+            db.destroy();
+        });
     });
     describe('wait a bit', () => {
         it('w8 a bit', async () => {

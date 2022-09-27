@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX Push batchSize in not respected [#3994](https://github.com/pubkey/rxdb/issues/3994)
+- FIX boolean indexes not working [#3994](https://github.com/pubkey/rxdb/issues/3994)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
