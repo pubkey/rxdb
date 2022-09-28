@@ -437,7 +437,34 @@ function startReplicationUpstream(state) {
               return Promise.reject(e);
             }
           }))).then(function () {
-            return writeRowsToMasterIds.length === 0 ? false : Promise.resolve(replicationHandler.masterWrite(Object.values(writeRowsToMaster))).then(function (masterWriteResult) {
+            if (writeRowsToMasterIds.length === 0) {
+              return false;
+            }
+
+            var writeRowsArray = Object.values(writeRowsToMaster);
+            var conflictIds = new Set();
+            var conflictsById = {};
+            /**
+             * To always respect the push.batchSize,
+             * we have to split the write rows into batches
+             * to ensure that replicationHandler.masterWrite() is never
+             * called with more documents than what the batchSize limits.
+             */
+
+            var writeBatches = (0, _util.batchArray)(writeRowsArray, state.input.pushBatchSize);
+            return Promise.resolve(Promise.all(writeBatches.map(function (writeBatch) {
+              try {
+                return Promise.resolve(replicationHandler.masterWrite(writeBatch)).then(function (masterWriteResult) {
+                  masterWriteResult.forEach(function (conflictDoc) {
+                    var id = conflictDoc[state.primaryPath];
+                    conflictIds.add(id);
+                    conflictsById[id] = conflictDoc;
+                  });
+                });
+              } catch (e) {
+                return Promise.reject(e);
+              }
+            }))).then(function () {
               function _temp6() {
                 function _temp4() {
                   /**
@@ -523,13 +550,6 @@ function startReplicationUpstream(state) {
                 return _temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3);
               }
 
-              var conflictIds = new Set();
-              var conflictsById = {};
-              masterWriteResult.forEach(function (conflictDoc) {
-                var id = conflictDoc[state.primaryPath];
-                conflictIds.add(id);
-                conflictsById[id] = conflictDoc;
-              });
               var useWriteRowsToMeta = [];
               writeRowsToMasterIds.forEach(function (docId) {
                 if (!conflictIds.has(docId)) {

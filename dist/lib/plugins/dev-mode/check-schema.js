@@ -422,7 +422,7 @@ function checkSchema(jsonSchema) {
               parentPath = partParts.join('.');
             }
 
-            var parentSchemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(jsonSchema, parentPath);
+            var parentSchemaPart = parentPath === '' ? jsonSchema : (0, _rxSchemaHelper.getSchemaByObjectPath)(jsonSchema, parentPath);
 
             if (!parentSchemaPart.required || !parentSchemaPart.required.includes(lastPathPart)) {
               throw (0, _rxError.newRxError)('SC38', {
@@ -504,7 +504,7 @@ function checkSchema(jsonSchema) {
       schemaObj: schemaObj
     };
   }).filter(function (index) {
-    return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number';
+    return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number' && index.schemaObj.type !== 'boolean';
   }).forEach(function (index) {
     throw (0, _rxError.newRxError)('SC22', {
       key: index.indexPath,

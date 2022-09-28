@@ -402,7 +402,7 @@ export function checkSchema(jsonSchema) {
               parentPath = partParts.join('.');
             }
 
-            var parentSchemaPart = getSchemaByObjectPath(jsonSchema, parentPath);
+            var parentSchemaPart = parentPath === '' ? jsonSchema : getSchemaByObjectPath(jsonSchema, parentPath);
 
             if (!parentSchemaPart.required || !parentSchemaPart.required.includes(lastPathPart)) {
               throw newRxError('SC38', {
@@ -482,7 +482,7 @@ export function checkSchema(jsonSchema) {
       schemaObj: schemaObj
     };
   }).filter(function (index) {
-    return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number';
+    return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number' && index.schemaObj.type !== 'boolean';
   }).forEach(function (index) {
     throw newRxError('SC22', {
       key: index.indexPath,

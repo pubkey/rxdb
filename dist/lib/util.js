@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RX_META_LWT_MINIMUM = exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
 exports.adapterObject = adapterObject;
+exports.arrayBufferToBase64 = arrayBufferToBase64;
 exports.arrayFilterNotEmpty = arrayFilterNotEmpty;
 exports.b64DecodeUnicode = b64DecodeUnicode;
 exports.b64EncodeUnicode = b64EncodeUnicode;
@@ -639,6 +640,22 @@ function b64DecodeUnicode(str) {
   return (0, _jsBase.decode)(str);
 }
 /**
+ * @link https://stackoverflow.com/a/9458996/3443137
+ */
+
+
+function arrayBufferToBase64(buffer) {
+  var binary = '';
+  var bytes = new Uint8Array(buffer);
+  var len = bytes.byteLength;
+
+  for (var i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+
+  return btoa(binary);
+}
+/**
  * This is an abstraction over the Blob/Buffer data structure.
  * We need this because it behaves different in different JavaScript runtimes.
  * Since RxDB 13.0.0 we switch to Blob-only because Node.js does not support
@@ -714,15 +731,9 @@ var blobBufferUtil = {
         blobBuffer = new Blob([blobBuffer]);
       }
 
-      return Promise.resolve(blobBuffer.text()).then(function (text) {
-        /**
-         * We need to format into an utf-8 string or else btoa()
-         * will not work properly on latin-1 characters.
-         * @link https://stackoverflow.com/a/30106551/3443137
-         */
-        var base64 = b64EncodeUnicode(text);
-        return base64;
-      });
+      return Promise.resolve(fetch(URL.createObjectURL(blobBuffer)).then(function (res) {
+        return res.arrayBuffer();
+      })).then(arrayBufferToBase64);
     } catch (e) {
       return Promise.reject(e);
     }

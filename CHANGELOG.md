@@ -2,14 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX image attachments not working correctly in the browser
-- FIX Push batchSize in not respected [#3994](https://github.com/pubkey/rxdb/issues/3994)
-- FIX boolean indexes not working [#3994](https://github.com/pubkey/rxdb/issues/3994)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.4.0 (28 September 2022)
+
+- FIX image attachments not working correctly in the browser
+- FIX Push batchSize in not respected [#3994](https://github.com/pubkey/rxdb/issues/3994)
+- FIX boolean indexes not working [#3994](https://github.com/pubkey/rxdb/issues/3994)
 
 ### 13.3.0 (26 September 2022)
 

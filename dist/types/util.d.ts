@@ -164,6 +164,10 @@ export declare function arrayFilterNotEmpty<TValue>(value: TValue | null | undef
 export declare function b64EncodeUnicode(str: string): string;
 export declare function b64DecodeUnicode(str: string): string;
 /**
+ * @link https://stackoverflow.com/a/9458996/3443137
+ */
+export declare function arrayBufferToBase64(buffer: ArrayBuffer): string;
+/**
  * This is an abstraction over the Blob/Buffer data structure.
  * We need this because it behaves different in different JavaScript runtimes.
  * Since RxDB 13.0.0 we switch to Blob-only because Node.js does not support
