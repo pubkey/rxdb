@@ -667,7 +667,6 @@ export const blobBufferUtil = {
          */
         const blobBufferType = Object.prototype.toString.call(blobBuffer);
         if (blobBufferType === '[object Uint8Array]') {
-            console.log('is electorn renderer!');
             blobBuffer = new Blob([blobBuffer]);
         }
 
