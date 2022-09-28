@@ -815,5 +815,59 @@ config.parallel('attachments.test.ts', () => {
 
             db.destroy();
         });
+        /**
+         * Reported from martin via discord
+         */
+        it('image attachments not working in the browser', async function () {
+            if (config.platform.isNode()) {
+                return;
+            }
+
+            this.timeout(1000000);
+
+            const attachmentUrl = 'http://localhost:18001/files/no-sql.png';
+
+            function renderImageBlob(imageBlob: Blob) {
+                return new Promise<void>((res, rej) => {
+                    const objectUrl = URL.createObjectURL(imageBlob);
+                    const image = document.createElement('img');
+                    image.setAttribute('src', objectUrl);
+                    image.onerror = (err) => {
+                        console.log('error:');
+                        console.dir(err);
+                        console.dir(err.toString());
+                        rej(err);
+                    };
+                    image.onload = () => {
+                        console.log('success');
+                        res();
+                    };
+                    document.body.appendChild(image);
+                });
+            }
+
+            console.log('##########################');
+            console.log('##########################');
+            console.log('##########################');
+            console.log('##########################');
+
+            const fileSource = await fetch(attachmentUrl);
+            const fileData = await fileSource.blob();
+            await renderImageBlob(fileData);
+            console.dir(fileData);
+
+            const b64string = await blobBufferUtil.toBase64String(fileData);
+            const blobBuffer = await blobBufferUtil.createBlobBufferFromBase64(
+                b64string,
+                'image/png'
+            );
+            console.log('Hallo', fileData, blobBuffer, Object.prototype.toString.call(fileData));
+            await renderImageBlob(blobBuffer as Blob);
+
+            console.log('WORKS !!!');
+
+            await wait(100000);
+
+        });
     });
 });

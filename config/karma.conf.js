@@ -1,10 +1,32 @@
-
+const path = require('path');
+const express = require('express');
+const cors = require('cors');
 
 // while the karma tests run, we need some things which we start here
 const GraphQLServer = require('../test_tmp/helper/graphql-server');
 function thingsWeNeed() {
     // we need one graphql server so the browser can sync to it
     GraphQLServer.spawn([], 18000);
+
+    /**
+     * we need to serve some static files
+     * to run tests for attachments
+     */
+    const fileServerPort = 18001;
+    const app = express();
+    app.use(cors());
+    app.get('/', (req, res) => {
+        res.send('Hello World!');
+    });
+    const staticFilesPath = path.join(
+        __dirname,
+        '../',
+        'docs-src',
+        'files'
+    );
+    console.log('staticFilesPath: ' + staticFilesPath);
+    app.use('/files', express.static(staticFilesPath));
+    app.listen(fileServerPort, () => console.log(`Server listening on port: ${fileServerPort}`));
 }
 thingsWeNeed();
 
@@ -40,7 +62,7 @@ const configuration = {
         postDetection: function (availableBrowser) {
             // return ['Chrome'];
             // return ['Firefox'];
-            
+
             const doNotUseTheseBrowsers = [
                 'PhantomJS',
                 'FirefoxAurora',
