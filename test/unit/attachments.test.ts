@@ -23,6 +23,8 @@ import {
     wrappedKeyEncryptionStorage
 } from '../../plugins/encryption';
 
+const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
+
 config.parallel('attachments.test.ts', () => {
     if (!config.storage.hasAttachments) {
         return;
@@ -67,6 +69,56 @@ config.parallel('attachments.test.ts', () => {
 
         return collections[name];
     }
+    function renderImageBlob(imageBlob: Blob) {
+        return new Promise<void>((res, rej) => {
+            const objectUrl = URL.createObjectURL(imageBlob);
+            const image = document.createElement('img');
+            image.setAttribute('src', objectUrl);
+            image.onerror = (err) => {
+                rej(err);
+            };
+            image.onload = () => {
+                res();
+                image.remove();
+            };
+            document.body.appendChild(image);
+        });
+    }
+
+    describe('base64 blob transformations', () => {
+        it('should create the same base64 string in the browser as it did on node.js', async () => {
+            if (config.platform.isNode()) {
+                return;
+            }
+            const attachmentUrl = STATIC_FILE_SERVER_URL + 'files/no-sql.png';
+            const base64StringNode = await fetch(STATIC_FILE_SERVER_URL + 'base64/no-sql.png').then(r => r.text());
+
+            const fileSource = await fetch(attachmentUrl);
+            const fileData = await fileSource.blob();
+            const b64stringBrowser = await blobBufferUtil.toBase64String(fileData);
+
+            assert.strictEqual(
+                b64stringBrowser,
+                base64StringNode
+            );
+        });
+        it('image attachment should be useable as img-element after base64<->Blob transformations', async function () {
+            if (config.platform.isNode()) {
+                return;
+            }
+            const attachmentUrl = STATIC_FILE_SERVER_URL + 'files/no-sql.png';
+            const fileSource = await fetch(attachmentUrl);
+            const fileData = await fileSource.blob();
+            await renderImageBlob(fileData);
+
+            const b64string = await blobBufferUtil.toBase64String(fileData);
+            const blobBuffer = await blobBufferUtil.createBlobBufferFromBase64(
+                b64string,
+                'image/png'
+            );
+            await renderImageBlob(blobBuffer as Blob);
+        });
+    });
 
     describe('.putAttachment()', () => {
         it('should insert one attachment', async () => {
@@ -406,6 +458,31 @@ config.parallel('attachments.test.ts', () => {
             // getting the data again must be decrypted
             const data = await attachment.getStringData();
             assert.strictEqual(data, 'foo bar aaa');
+            c.database.destroy();
+        });
+        it('should be able to render an encrytped stored image attachment', async () => {
+            if (config.platform.isNode()) {
+                return;
+            }
+            const c = await createEncryptedAttachmentsCollection(1);
+
+
+            const attachmentUrl = STATIC_FILE_SERVER_URL + 'files/no-sql.png';
+            const fileSource = await fetch(attachmentUrl);
+            const fileData = await fileSource.blob();
+
+            const doc = await c.findOne().exec(true);
+            await doc.putAttachment({
+                data: fileData,
+                id: 'image',
+                type: 'image/png'
+            });
+
+            const attachment = ensureNotFalsy(doc.getAttachment('image'));
+            const refetchedBlob = await attachment.getData();
+
+            await renderImageBlob(refetchedBlob as Blob);
+
             c.database.destroy();
         });
     });
