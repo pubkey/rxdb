@@ -560,7 +560,7 @@ export function arrayFilterNotEmpty<TValue>(value: TValue | null | undefined): v
         return false;
     }
     return true;
-  }
+}
 
 
 /**
@@ -584,6 +584,20 @@ export function b64EncodeUnicode(str: string) {
 export function b64DecodeUnicode(str: string) {
     return decode(str);
 }
+
+/**
+ * @link https://stackoverflow.com/a/9458996/3443137
+ */
+export function arrayBufferToBase64(buffer: ArrayBuffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
 
 /**
  * This is an abstraction over the Blob/Buffer data structure.
@@ -643,7 +657,7 @@ export const blobBufferUtil = {
     },
     async toBase64String(blobBuffer: BlobBuffer | string): Promise<string> {
         if (typeof blobBuffer === 'string') {
-            return Promise.resolve(blobBuffer);
+            return blobBuffer;
         }
 
         /**
@@ -653,18 +667,12 @@ export const blobBufferUtil = {
          */
         const blobBufferType = Object.prototype.toString.call(blobBuffer);
         if (blobBufferType === '[object Uint8Array]') {
+            console.log('is electorn renderer!');
             blobBuffer = new Blob([blobBuffer]);
         }
 
-        const text = await (blobBuffer as Blob).text();
-
-        /**
-         * We need to format into an utf-8 string or else btoa()
-         * will not work properly on latin-1 characters.
-         * @link https://stackoverflow.com/a/30106551/3443137
-         */
-        const base64 = b64EncodeUnicode(text);
-        return base64;
+        const arrayBuffer = await fetch(URL.createObjectURL(blobBuffer as Blob)).then(res => res.arrayBuffer());
+        return arrayBufferToBase64(arrayBuffer);
     },
     size(blobBuffer: BlobBuffer): number {
         return (blobBuffer as Blob).size;
