@@ -161,6 +161,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             documentWrites,
             context
         );
+        ret.error = categorized.errors;
 
         categorized.bulkInsertDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
@@ -179,9 +180,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             );
             localState.collection.update(writeDoc);
             ret.success[docId as any] = writeRow.document;
-        });
-        categorized.errors.forEach(err => {
-            ret.error[err.documentId] = err;
         });
         localState.databaseState.saveQueue.addWrite();
 

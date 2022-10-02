@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- REFACTOR stuff for a new optimization plugin
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

@@ -19,6 +19,8 @@ export {
     ensureNoStartupErrors
 } from './rx-database';
 
+export * from './rx-error';
+
 export * from './rx-database-internal-store';
 
 export {
@@ -150,6 +152,7 @@ export type {
     RxStorageInstance,
     RxStorageDefaultCheckpoint,
     CategorizeBulkWriteRowsOutput,
+    DexiePreparedQuery, 
 
     // conflict handling
     RxConflictHandler,

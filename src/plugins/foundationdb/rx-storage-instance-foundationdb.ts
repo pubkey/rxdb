@@ -115,9 +115,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                 context
             );
 
-            categorized.errors.forEach(err => {
-                ret.error[err.documentId] = err;
-            });
+            ret.error = categorized.errors;
 
             // INSERTS
             categorized.bulkInsertDocs.forEach(writeRow => {

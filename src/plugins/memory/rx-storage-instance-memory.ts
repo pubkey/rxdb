@@ -102,9 +102,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             documentWrites,
             context
         );
-        categorized.errors.forEach(err => {
-            ret.error[err.documentId] = err;
-        });
+        ret.error = categorized.errors;
 
         /**
          * Do inserts/updates

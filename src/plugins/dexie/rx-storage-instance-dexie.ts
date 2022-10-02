@@ -107,9 +107,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     documentWrites,
                     context
                 );
-                categorized.errors.forEach(err => {
-                    ret.error[err.documentId] = err;
-                });
+                ret.error = categorized.errors;
 
                 /**
                  * Batch up the database operations

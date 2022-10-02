@@ -10,6 +10,7 @@ import {
 } from './rx-schema-helper';
 import type {
     BulkWriteRow,
+    ById,
     CategorizeBulkWriteRowsOutput,
     EventBulk,
     RxAttachmentWriteData,
@@ -167,8 +168,15 @@ export function categorizeBulkWriteRows<RxDocType>(
      * Current state of the documents
      * inside of the storage. Used to determine
      * which writes cause conflicts.
+     * This can be a Map for better performance
+     * but it can also be an object because some storages
+     * need to work with something that is JSON-stringify-able
+     * and we do not want to transform a big object into a Map
+     * each time we use it.
      */
-    docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>>,
+    docsInDb:
+        Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>> |
+        ById<RxDocumentData<RxDocType>>,
     /**
      * The write rows that are passed to
      * RxStorageInstance().bulkWrite().
@@ -179,7 +187,7 @@ export function categorizeBulkWriteRows<RxDocType>(
     const hasAttachments = !!storageInstance.schema.attachments;
     const bulkInsertDocs: BulkWriteRow<RxDocType>[] = [];
     const bulkUpdateDocs: BulkWriteRow<RxDocType>[] = [];
-    const errors: RxStorageBulkWriteError<RxDocType>[] = [];
+    const errors: ById<RxStorageBulkWriteError<RxDocType>> = {};
     const changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][] = [];
     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
         id: randomCouchString(10),
@@ -205,9 +213,12 @@ export function categorizeBulkWriteRows<RxDocType>(
 
 
     const startTime = now();
+
+    const docsByIdIsMap = typeof docsInDb.get === 'function';
+
     bulkWriteRows.forEach(writeRow => {
         const id = writeRow.document[primaryPath];
-        const documentInDb = docsInDb.get(id);
+        const documentInDb = docsByIdIsMap ? (docsInDb as any).get(id) : (docsInDb as any)[id];
         let attachmentError: RxStorageBulkWriteError<RxDocType> | undefined;
 
         if (!documentInDb) {
@@ -226,7 +237,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                         status: 510,
                         writeRow
                     };
-                    errors.push(attachmentError);
+                    errors[id as any] = attachmentError;
                 } else {
                     attachmentsAdd.push({
                         documentId: id as any,
@@ -279,7 +290,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                     writeRow: writeRow,
                     documentInDb
                 };
-                errors.push(err);
+                errors[id as any] = err;
                 return;
             }
 
@@ -345,7 +356,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                 }
             }
             if (attachmentError) {
-                errors.push(attachmentError);
+                errors[id as any] = attachmentError;
             } else {
                 if (hasAttachments) {
                     bulkUpdateDocs.push(stripAttachmentsDataFromRow(writeRow));
