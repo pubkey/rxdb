@@ -3,13 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- REFACTOR stuff for a new optimization plugin
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.4.1 (2 October 2022)
+
+- REFACTOR stuff for a new optimization plugin
 
 ### 13.4.0 (28 September 2022)
 

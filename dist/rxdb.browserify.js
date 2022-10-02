@@ -854,6 +854,20 @@ var _plugin = require("./plugin");
 
 var _rxDatabase = require("./rx-database");
 
+var _rxError = require("./rx-error");
+
+Object.keys(_rxError).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxError[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxError[key];
+    }
+  });
+});
+
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
 
 Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
@@ -1026,7 +1040,7 @@ Object.keys(_util).forEach(function (key) {
   });
 });
 
-},{"./custom-index":3,"./hooks":6,"./overwritable":8,"./plugin":10,"./plugin-helpers":9,"./query-cache":20,"./query-planner":21,"./replication-protocol/index":26,"./rx-change-event":29,"./rx-collection":31,"./rx-collection-helper":30,"./rx-database":33,"./rx-database-internal-store":32,"./rx-document":35,"./rx-document-prototype-merge":34,"./rx-query":38,"./rx-query-helper":37,"./rx-schema":40,"./rx-schema-helper":39,"./rx-storage-helper":41,"./rx-storage-multiinstance":42,"./types/modules/graphql-client.d":43,"./types/modules/mocha.parallel.d":44,"./types/modules/modifiyjs.d":45,"./util":46}],8:[function(require,module,exports){
+},{"./custom-index":3,"./hooks":6,"./overwritable":8,"./plugin":10,"./plugin-helpers":9,"./query-cache":20,"./query-planner":21,"./replication-protocol/index":26,"./rx-change-event":29,"./rx-collection":31,"./rx-collection-helper":30,"./rx-database":33,"./rx-database-internal-store":32,"./rx-document":35,"./rx-document-prototype-merge":34,"./rx-error":36,"./rx-query":38,"./rx-query-helper":37,"./rx-schema":40,"./rx-schema-helper":39,"./rx-storage-helper":41,"./rx-storage-multiinstance":42,"./types/modules/graphql-client.d":43,"./types/modules/mocha.parallel.d":44,"./types/modules/modifiyjs.d":45,"./util":46}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11702,6 +11716,11 @@ function categorizeBulkWriteRows(storageInstance, primaryPath,
  * Current state of the documents
  * inside of the storage. Used to determine
  * which writes cause conflicts.
+ * This can be a Map for better performance
+ * but it can also be an object because some storages
+ * need to work with something that is JSON-stringify-able
+ * and we do not want to transform a big object into a Map
+ * each time we use it.
  */
 docsInDb,
 /**
@@ -11712,7 +11731,7 @@ bulkWriteRows, context) {
   var hasAttachments = !!storageInstance.schema.attachments;
   var bulkInsertDocs = [];
   var bulkUpdateDocs = [];
-  var errors = [];
+  var errors = {};
   var changedDocumentIds = [];
   var eventBulk = {
     id: (0, _util.randomCouchString)(10),
@@ -11724,9 +11743,10 @@ bulkWriteRows, context) {
   var attachmentsRemove = [];
   var attachmentsUpdate = [];
   var startTime = (0, _util.now)();
+  var docsByIdIsMap = typeof docsInDb.get === 'function';
   bulkWriteRows.forEach(function (writeRow) {
     var id = writeRow.document[primaryPath];
-    var documentInDb = docsInDb.get(id);
+    var documentInDb = docsByIdIsMap ? docsInDb.get(id) : docsInDb[id];
     var attachmentError;
 
     if (!documentInDb) {
@@ -11746,7 +11766,7 @@ bulkWriteRows, context) {
             status: 510,
             writeRow: writeRow
           };
-          errors.push(attachmentError);
+          errors[id] = attachmentError;
         } else {
           attachmentsAdd.push({
             documentId: id,
@@ -11792,7 +11812,7 @@ bulkWriteRows, context) {
           writeRow: writeRow,
           documentInDb: documentInDb
         };
-        errors.push(err);
+        errors[id] = err;
         return;
       } // handle attachments data
 
@@ -11855,7 +11875,7 @@ bulkWriteRows, context) {
       }
 
       if (attachmentError) {
-        errors.push(attachmentError);
+        errors[id] = attachmentError;
       } else {
         if (hasAttachments) {
           bulkUpdateDocs.push(stripAttachmentsDataFromRow(writeRow));

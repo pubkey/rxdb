@@ -69,9 +69,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                 return doc;
               });
               categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(_this2, _this2.primaryPath, docsInDbMap, documentWrites, context);
-              categorized.errors.forEach(function (err) {
-                ret.error[err.documentId] = err;
-              });
+              ret.error = categorized.errors;
               /**
                * Batch up the database operations
                * so we can later run them in bulk.

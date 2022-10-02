@@ -3,7 +3,7 @@ import { RxChangeEvent } from './rx-change-event';
 import { RxDocumentMeta } from './rx-document';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
-import { Override, StringKeys } from './util';
+import { ById, Override, StringKeys } from './util';
 
 /**
  * The document data how it comes out of the storage instance.
@@ -176,20 +176,18 @@ export type RxStorageBulkWriteError<RxDocType> = {
     documentInDb?: RxDocumentData<RxDocType>;
 }
 
-export type RxStorageBulkWriteResponse<DocData> = {
+export type RxStorageBulkWriteResponse<RxDocType> = {
     /**
      * A map that is indexed by the documentId
      * contains all succeded writes.
      */
-    success: RxDocumentDataById<DocData>;
+    success: RxDocumentDataById<RxDocType>;
 
     /**
      * A map that is indexed by the documentId
      * contains all errored writes.
      */
-    error: {
-        [documentId: string]: RxStorageBulkWriteError<DocData>;
-    };
+    error: ById<RxStorageBulkWriteError<RxDocType>>;
 }
 
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
@@ -320,14 +318,7 @@ export type CategorizeBulkWriteRowsOutput<RxDocType> = {
      * RxStorageInstance().getChangedDocumentsSince().
      */
     changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][];
-
-    /**
-     * TODO directly return a docId->error object
-     * like in the return value of bulkWrite().
-     * This will improve performance because we do not have to iterate
-     * over the error array again.
-     */
-    errors: RxStorageBulkWriteError<RxDocType>[];
+    errors: ById<RxStorageBulkWriteError<RxDocType>>;
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {
         documentId: string;

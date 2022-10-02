@@ -141,6 +141,11 @@ function categorizeBulkWriteRows(storageInstance, primaryPath,
  * Current state of the documents
  * inside of the storage. Used to determine
  * which writes cause conflicts.
+ * This can be a Map for better performance
+ * but it can also be an object because some storages
+ * need to work with something that is JSON-stringify-able
+ * and we do not want to transform a big object into a Map
+ * each time we use it.
  */
 docsInDb,
 /**
@@ -151,7 +156,7 @@ bulkWriteRows, context) {
   var hasAttachments = !!storageInstance.schema.attachments;
   var bulkInsertDocs = [];
   var bulkUpdateDocs = [];
-  var errors = [];
+  var errors = {};
   var changedDocumentIds = [];
   var eventBulk = {
     id: (0, _util.randomCouchString)(10),
@@ -163,9 +168,10 @@ bulkWriteRows, context) {
   var attachmentsRemove = [];
   var attachmentsUpdate = [];
   var startTime = (0, _util.now)();
+  var docsByIdIsMap = typeof docsInDb.get === 'function';
   bulkWriteRows.forEach(function (writeRow) {
     var id = writeRow.document[primaryPath];
-    var documentInDb = docsInDb.get(id);
+    var documentInDb = docsByIdIsMap ? docsInDb.get(id) : docsInDb[id];
     var attachmentError;
 
     if (!documentInDb) {
@@ -185,7 +191,7 @@ bulkWriteRows, context) {
             status: 510,
             writeRow: writeRow
           };
-          errors.push(attachmentError);
+          errors[id] = attachmentError;
         } else {
           attachmentsAdd.push({
             documentId: id,
@@ -231,7 +237,7 @@ bulkWriteRows, context) {
           writeRow: writeRow,
           documentInDb: documentInDb
         };
-        errors.push(err);
+        errors[id] = err;
         return;
       } // handle attachments data
 
@@ -294,7 +300,7 @@ bulkWriteRows, context) {
       }
 
       if (attachmentError) {
-        errors.push(attachmentError);
+        errors[id] = attachmentError;
       } else {
         if (hasAttachments) {
           bulkUpdateDocs.push(stripAttachmentsDataFromRow(writeRow));

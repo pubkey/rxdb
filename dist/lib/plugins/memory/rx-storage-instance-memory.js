@@ -51,9 +51,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
       error: {}
     };
     var categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(this, this.primaryPath, this.internals.documents, documentWrites, context);
-    categorized.errors.forEach(function (err) {
-      ret.error[err.documentId] = err;
-    });
+    ret.error = categorized.errors;
     /**
      * Do inserts/updates
      */

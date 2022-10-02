@@ -82,9 +82,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
               }
             }))).then(function () {
               categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(_this2, _this2.primaryPath, docsInDB, documentWrites, context);
-              categorized.errors.forEach(function (err) {
-                ret.error[err.documentId] = err;
-              }); // INSERTS
+              ret.error = categorized.errors; // INSERTS
 
               categorized.bulkInsertDocs.forEach(function (writeRow) {
                 var docId = writeRow.document[_this2.primaryPath];

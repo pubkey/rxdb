@@ -1,7 +1,7 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, CategorizeBulkWriteRowsOutput, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys } from './types';
+import type { BulkWriteRow, ById, CategorizeBulkWriteRowsOutput, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys } from './types';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
 export declare function getSingleDocument<RxDocType>(storageInstance: RxStorageInstance<RxDocType, any, any>, documentId: string): Promise<RxDocumentData<RxDocType> | null>;
@@ -32,8 +32,13 @@ export declare function categorizeBulkWriteRows<RxDocType>(storageInstance: RxSt
  * Current state of the documents
  * inside of the storage. Used to determine
  * which writes cause conflicts.
+ * This can be a Map for better performance
+ * but it can also be an object because some storages
+ * need to work with something that is JSON-stringify-able
+ * and we do not want to transform a big object into a Map
+ * each time we use it.
  */
-docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>>, 
+docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>> | ById<RxDocumentData<RxDocType>>, 
 /**
  * The write rows that are passed to
  * RxStorageInstance().bulkWrite().
