@@ -139,6 +139,11 @@ describe('util.test.js', () => {
             const sorted = sortObject(obj);
             assert.ok(sorted.color.$regex instanceof RegExp);
         });
+        it('should sort object arrays in a deterministic order', () => {
+            const arr = [{a: 1}, {b: 2}];
+            const sorted = sortObject(arr);
+            assert.deepStrictEqual(sorted, [{a: 1}, {b: 2}]);
+        });
     });
     describe('.validateDatabaseName()', () => {
         describe('positive', () => {
