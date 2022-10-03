@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 13.4.2 (3 October 2022)
+
 ### 13.4.1 (2 October 2022)
 
 - REFACTOR stuff for a new optimization plugin

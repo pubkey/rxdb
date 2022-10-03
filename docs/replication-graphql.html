@@ -2109,7 +2109,7 @@
 <p>The GraphQL replication provides handlers for GraphQL to run a <a href="replication.html">replication</a> with GraphQL as transportation layer.</p>
 <p><strong>NOTICE:</strong> To play around, check out the full example of the RxDB <a href="https://github.com/pubkey/rxdb/tree/master/examples/graphql" target="_blank">GraphQL replication with server and client</a></p>
 <h2 id="usage">Usage</h2>
-<p>Before you use the GraphQL replication, make shure you learned how the <a href="replication.html">RxDB replication</a> works.</p>
+<p>Before you use the GraphQL replication, make sure you&apos;ve learned how the <a href="replication.html">RxDB replication</a> works.</p>
 <h3 id="creating-a-compatible-graphql-server">Creating a compatible GraphQL Server</h3>
 <p>At the server-side, there must exist an endpoint which returns newer rows when the last <code>checkpoint</code> is used as input. For example lets say you create a <code>Query</code> <code>pullHuman</code> which returns a list of document writes that happened after the given checkpoint.</p>
 <p>For the push-replication, you also need a <code>Mutation</code> <code>pushHuman</code> which lets RxDB update data of documents by sending the previous doucment state and the new client document state.
@@ -2178,7 +2178,7 @@ type Subscription {
             }
         });
 
-        <span class="hljs-comment">// only return documents newer then the input document</span>
+        <span class="hljs-comment">// only return documents newer than the input document</span>
         <span class="hljs-keyword">const</span> filterForMinUpdatedAtAndId = sortedDocuments.filter(doc =&gt; {
             <span class="hljs-keyword">if</span> (doc.updatedAt &lt; minUpdatedAt) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
             <span class="hljs-keyword">if</span> (doc.updatedAt &gt; minUpdatedAt) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
