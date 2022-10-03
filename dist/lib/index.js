@@ -184,6 +184,20 @@ var _plugin = require("./plugin");
 
 var _rxDatabase = require("./rx-database");
 
+var _rxError = require("./rx-error");
+
+Object.keys(_rxError).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxError[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxError[key];
+    }
+  });
+});
+
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
 
 Object.keys(_rxDatabaseInternalStore).forEach(function (key) {

@@ -216,6 +216,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
           }
         });
         var categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(_this3, _this3.primaryPath, docsInDb, documentWrites, context);
+        ret.error = categorized.errors;
         categorized.bulkInsertDocs.forEach(function (writeRow) {
           var docId = writeRow.document[_this3.primaryPath];
           localState.collection.insert((0, _util.flatClone)(writeRow.document));
@@ -229,9 +230,6 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
           });
           localState.collection.update(writeDoc);
           ret.success[docId] = writeRow.document;
-        });
-        categorized.errors.forEach(function (err) {
-          ret.error[err.documentId] = err;
         });
         localState.databaseState.saveQueue.addWrite();
 

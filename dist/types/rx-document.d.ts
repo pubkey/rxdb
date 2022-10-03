@@ -33,7 +33,11 @@ export declare const basePrototype: {
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
-        };
+        }; /**
+         * TODO
+         * instead of appliying the _this-hack
+         * we should make these accesors functions instead of getters.
+         */
         _rev: string;
         _meta: import("./types").RxDocumentMeta;
     }>;
@@ -41,7 +45,11 @@ export declare const basePrototype: {
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
-        };
+        }; /**
+         * TODO
+         * instead of appliying the _this-hack
+         * we should make these accesors functions instead of getters.
+         */
         _rev: string;
         _meta: import("./types").RxDocumentMeta;
     };
@@ -110,7 +118,11 @@ export declare function createRxDocumentConstructor(proto?: {
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
-        };
+        }; /**
+         * TODO
+         * instead of appliying the _this-hack
+         * we should make these accesors functions instead of getters.
+         */
         _rev: string;
         _meta: import("./types").RxDocumentMeta;
     }>;
@@ -118,7 +130,11 @@ export declare function createRxDocumentConstructor(proto?: {
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
-        };
+        }; /**
+         * TODO
+         * instead of appliying the _this-hack
+         * we should make these accesors functions instead of getters.
+         */
         _rev: string;
         _meta: import("./types").RxDocumentMeta;
     };
@@ -188,7 +204,11 @@ export declare function createRxDocumentConstructor(proto?: {
             _deleted: boolean;
             _attachments: {
                 [attachmentId: string]: import("./types").RxAttachmentData;
-            };
+            }; /**
+             * TODO
+             * instead of appliying the _this-hack
+             * we should make these accesors functions instead of getters.
+             */
             _rev: string;
             _meta: import("./types").RxDocumentMeta;
         }>;
@@ -196,7 +216,11 @@ export declare function createRxDocumentConstructor(proto?: {
             _deleted: boolean;
             _attachments: {
                 [attachmentId: string]: import("./types").RxAttachmentData;
-            };
+            }; /**
+             * TODO
+             * instead of appliying the _this-hack
+             * we should make these accesors functions instead of getters.
+             */
             _rev: string;
             _meta: import("./types").RxDocumentMeta;
         };
