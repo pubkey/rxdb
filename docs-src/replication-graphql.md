@@ -6,7 +6,7 @@ The GraphQL replication provides handlers for GraphQL to run a [replication](./r
 
 ## Usage
 
-Before you use the GraphQL replication, make shure you learned how the [RxDB replication](./replication.md) works.
+Before you use the GraphQL replication, make sure you've learned how the [RxDB replication](./replication.md) works.
 
 ### Creating a compatible GraphQL Server
 
@@ -84,7 +84,7 @@ const rootValue = {
             }
         });
 
-        // only return documents newer then the input document
+        // only return documents newer than the input document
         const filterForMinUpdatedAtAndId = sortedDocuments.filter(doc => {
             if (doc.updatedAt < minUpdatedAt) return false;
             if (doc.updatedAt > minUpdatedAt) return true;
