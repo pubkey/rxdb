@@ -100,6 +100,7 @@ describe('performance.test.ts', () => {
              */
             await collection.insert(schemaObjects.averageSchema());
             updateTime('time-to-first-insert');
+            await wait(200);
 
             // insert documents
             const docIds: string[] = [];
@@ -114,6 +115,7 @@ describe('performance.test.ts', () => {
             updateTime();
             await collection.bulkInsert(docsData);
             updateTime('insert-documents');
+            await wait(200);
 
             /**
              * Find by id,
@@ -125,6 +127,7 @@ describe('performance.test.ts', () => {
             const idsResult = await collection.storageInstance.findDocumentsById(docIds, false);
             updateTime('find-by-ids');
             assert.strictEqual(Object.keys(idsResult).length, docsAmount);
+            await wait(200);
 
             // find by query
             updateTime();
