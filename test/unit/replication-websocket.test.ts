@@ -320,7 +320,18 @@ config.parallel('replication-websocket.test.ts', () => {
             collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType>
         ) {
             const docs = await collection.find().exec();
-            docs.forEach(doc => assert.strictEqual(doc.name, 'updated'))
+            try {
+                docs.forEach(doc => assert.strictEqual(doc.name, 'updated'));
+            } catch (err) {
+                console.error('ERR: not all docs are updated:');
+                console.dir(
+                    docs.map(doc => ({
+                        id: doc.id,
+                        name: doc.name
+                    }))
+                );
+                throw new Error('not all docs are equal');
+            }
         }
         await ensureUpdated(localCollection);
         await ensureUpdated(localDatabase.humans2);
