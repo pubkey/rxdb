@@ -124,6 +124,7 @@ describe('performance.test.ts', () => {
              * just return the documents from the cache.
              * 
              */
+            updateTime();
             const idsResult = await collection.storageInstance.findDocumentsById(docIds, false);
             updateTime('find-by-ids');
             assert.strictEqual(Object.keys(idsResult).length, docsAmount);
