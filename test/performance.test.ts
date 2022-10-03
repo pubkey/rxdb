@@ -146,7 +146,9 @@ describe('performance.test.ts', () => {
 
         const timeToLog: any = {
             description: perfStorage.description,
-            platform: config.platform.name
+            platform: config.platform.name,
+            collectionsAmount,
+            docsAmount
         };
         Object.entries(totalTimes).forEach(([key, times]) => {
             timeToLog[key] = averageOfTimeValues(times, 50);

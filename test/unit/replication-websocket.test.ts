@@ -323,7 +323,7 @@ config.parallel('replication-websocket.test.ts', () => {
             try {
                 docs.forEach(doc => assert.strictEqual(doc.name, 'updated'));
             } catch (err) {
-                console.error('ERR: not all docs are updated:');
+                console.error('ERR: not all docs are updated for collection ' + collection.name + ':');
                 console.dir(
                     docs.map(doc => ({
                         id: doc.id,
