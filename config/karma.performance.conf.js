@@ -20,7 +20,7 @@ const configuration = {
     port: 9876,
     colors: true,
     autoWatch: false,
-
+    browserNoActivityTimeout: 1000 * 60 * 3,
     detectBrowsers: {
         enabled: true,
         usePhantomJS: false,
