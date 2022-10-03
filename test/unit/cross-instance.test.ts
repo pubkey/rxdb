@@ -228,7 +228,7 @@ config.parallel('cross-instance.test.js', () => {
 
             let doc2: typeof doc1 | null = null;
             await waitUntil(async () => {
-                doc2 = await c2.human.findOne().exec(true);
+                doc2 = await c2.human.findOne().exec();
                 return !!doc2;
             });
 
