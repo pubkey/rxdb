@@ -5,11 +5,13 @@
 
 <!-- ADD new changes here! -->
 
-- ADD new premium plugin `RxStorage Localstorage Meta Optimizer`
-
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.4.4 (4 October 2022)
+
+- ADD new premium plugin `RxStorage Localstorage Meta Optimizer`
 
 ### 13.4.2 (3 October 2022)
 
