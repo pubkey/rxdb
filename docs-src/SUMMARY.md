@@ -125,6 +125,7 @@
     * [RxStorage Worker](./rx-storage-worker.md)
     * [RxStorage Memory Synced](./rx-storage-memory-synced.md)
     * [RxStorage Sharding](./rx-storage-sharding.md)
+    * [RxStorage Localstorage Meta Optimizer](./rx-storage-localstorage-meta-optimizer.md)
 
 * [Replication](./replication.md)
     * [Replication GraphQL](./replication-graphql.md)

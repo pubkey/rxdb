@@ -5,6 +5,8 @@
 
 <!-- ADD new changes here! -->
 
+- ADD new premium plugin `RxStorage Localstorage Meta Optimizer`
+
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
