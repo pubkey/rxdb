@@ -140,7 +140,8 @@ jobs:
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm run test:performance:lokijs
+          run: npm run test:performance:lokijs:browser
+      - run: npm run test:performance:pouchdb:node
 
   storage-memory:
     runs-on: ubuntu-20.04
