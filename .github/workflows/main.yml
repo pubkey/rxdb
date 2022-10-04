@@ -141,7 +141,7 @@ jobs:
         uses: GabrielBB/xvfb-action@v1
         with:
           run: npm run test:performance:lokijs:browser
-      - run: npm run test:performance:pouchdb:node
+      - run: npm run test:performance:lokijs:node
 
   storage-memory:
     runs-on: ubuntu-20.04
