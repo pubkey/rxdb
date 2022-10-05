@@ -1,3 +1,10 @@
+import {
+    ensureNotFalsy
+} from '../';
+
+
+
+
 window.onload = function () {
 
 
@@ -35,24 +42,24 @@ window.onload = function () {
      * Pointers to html elements are prefixed with $
      * Lists of pointers have $$
      */
-    var $heartbeatAudio = document.getElementById('heartbeat-audio');
-    var $$beating = document.getElementsByClassName('beating');
-    var $$beatingFirst = document.getElementsByClassName('beating-first');
-    var $$beatingSecond = document.getElementsByClassName('beating-second');
-    var $$beatingNumber = document.getElementsByClassName('beating-number');
-    var $$beatingColor = document.getElementsByClassName('beating-color');
+    const $heartbeatAudio: any = ensureNotFalsy(document.getElementById('heartbeat-audio'));
+    const $$beating: any[] = document.getElementsByClassName('beating') as any;
+    const $$beatingFirst: any[] = document.getElementsByClassName('beating-first') as any;
+    const $$beatingSecond: any[] = document.getElementsByClassName('beating-second') as any;
+    const $$beatingNumber = document.getElementsByClassName('beating-number');
+    const $$beatingColor: any[] = document.getElementsByClassName('beating-color') as any;
 
-    var $swapOutFirst = document.getElementById('swap-out-first');
-    var $swapOutSecond = document.getElementById('swap-out-second');
+    const $swapOutFirst = ensureNotFalsy(document.getElementById('swap-out-first'));
+    const $swapOutSecond = ensureNotFalsy(document.getElementById('swap-out-second'));
 
 
-    var audioVolume = 0.5;
+    let audioVolume = 0.5;
     $heartbeatAudio.volume = audioVolume;
-    var heartbeatListeners = [];
-    var heartbeatIndex = 0;
-    var heartbeatDuration = 851.088;
-    var heartbeatTimeToFirstBeat = 105;
-    var heartbeatTimeToSecondBeat = 324;
+    const heartbeatListeners: any[] = [];
+    let heartbeatIndex = 0;
+    const heartbeatDuration = 851.088;
+    const heartbeatTimeToFirstBeat = 105;
+    const heartbeatTimeToSecondBeat = 324;
 
     console.log('heartbeatDuration: ' + heartbeatDuration);
 
@@ -61,7 +68,7 @@ window.onload = function () {
      * This will 'unlock' the audio element so we can later play() at any time.
      * @link https://www.py4u.net/discuss/287774
      */
-    var touchStartDone = false;
+    let touchStartDone = false;
     window.addEventListener('touchstart', function () {
         if (touchStartDone) {
             return;
@@ -93,10 +100,10 @@ window.onload = function () {
 
 
     // swap out main text on every X heartbeat
-    var swapOutTextEveryX = 1;
-    var swapOutsDone = 0;
-    function swapMainText(index) {
-        var textsFirst = [
+    const swapOutTextEveryX = 1;
+    let swapOutsDone = 0;
+    function swapMainText(index: number) {
+        const textsFirst = [
             'NoSQL',
             'OfflineFirst',
             'JavaScript',
@@ -104,7 +111,7 @@ window.onload = function () {
             'reactive',
             'realtime'
         ];
-        var textsSecond = [
+        const textsSecond = [
             'for the Web',
             'for Node.js',
             'for Browsers',
@@ -136,7 +143,7 @@ window.onload = function () {
     }
 
     // beat sound on heartbeat
-    heartbeatListeners.push(function (index) {
+    heartbeatListeners.push(function (index: number) {
 
         /**
          * This might throw because we cannot play audio when the user
@@ -196,8 +203,8 @@ window.onload = function () {
             // only increase randomly so it looks more natural.
             if (randomBoolean() && randomBoolean()) {
                 setTimeout(function () {
-                    var value = parseFloat(element.innerHTML, 10);
-                    var newValue = value + 1;
+                    const value = parseFloat(element.innerHTML);
+                    const newValue = value + 1;
                     element.innerHTML = newValue + '';
                 }, heartbeatTimeToFirstBeat);
             }
@@ -205,20 +212,20 @@ window.onload = function () {
     });
 
     // tablet swap color on heartbeat
-    var colors = [
+    const colors = [
         '#e6008d',
         '#8d2089',
         '#5f2688'
     ];
-    var lastColorByElementIndex = {};
+    const lastColorByElementIndex: any = {};
     heartbeatListeners.push(function () {
         setTimeout(function () {
             Array.from($$beatingColor).forEach(function (element, idx) {
-                var isColor = lastColorByElementIndex[idx];
+                let isColor = lastColorByElementIndex[idx];
                 if (!isColor) {
                     isColor = colors[0];
                 }
-                var newColor = randomOfArray(colors, isColor);
+                const newColor = randomOfArray(colors, isColor);
                 lastColorByElementIndex[idx] = newColor;
                 element.style.backgroundColor = newColor;
             });
@@ -233,8 +240,8 @@ window.onload = function () {
 function randomBoolean() {
     return Math.random() < 0.5;
 }
-function randomOfArray(array, mustNotBe) {
-    var ret;
+function randomOfArray<T>(array: T[], mustNotBe?: T): T {
+    let ret;
     while (!ret || ret === mustNotBe) {
         ret = array[Math.floor(Math.random() * array.length)];
     }

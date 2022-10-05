@@ -1,10 +1,10 @@
 /** reset some defaults **/
 body,
 html {
-    margin    : 0;
-    padding   : 0;
+    margin: 0;
+    padding: 0;
     min-height: 100%;
-    width     : 100%;
+    width: 100%;
     overflow-x: hidden;
 }
 
@@ -27,8 +27,8 @@ a:visited {
 }
 
 .half {
-    width        : calc(50% - 20px);
-    padding-left : 10px;
+    width: calc(50% - 20px);
+    padding-left: 10px;
     padding-right: 10px;
 }
 
@@ -39,14 +39,14 @@ a:visited {
 }
 
 .third {
-    width        : calc(33.33% - 20px);
-    padding-left : 10px;
+    width: calc(33.33% - 20px);
+    padding-left: 10px;
     padding-right: 10px;
 }
 
 .fifth {
-    width        : calc(20% - 20px);
-    padding-left : 10px;
+    width: calc(20% - 20px);
+    padding-left: 10px;
     padding-right: 10px;
 }
 
@@ -60,35 +60,35 @@ a:visited {
 }
 
 .centered {
-    display        : flex;
-    flex-direction : column;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    align-items    : center;
+    align-items: center;
 }
 
 .pseudo-hidden {
-    display : block;
-    width   : 1px;
-    height  : 1px;
+    display: block;
+    width: 1px;
+    height: 1px;
     overflow: hidden;
 }
 
 
 .underline {
-    z-index : 5;
+    z-index: 5;
     position: relative;
 }
 
 .underline::after {
-    content   : "";
-    position  : absolute;
-    left      : 0px;
-    bottom    : 0px;
-    width     : 100%;
-    height    : 30%;
-    opacity   : 0.4;
+    content: "";
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    width: 100%;
+    height: 30%;
+    opacity: 0.4;
     background: var(--color-top);
-    z-index   : -1;
+    z-index: -1;
 }
 
 @media (max-width: 500px) {
@@ -110,26 +110,26 @@ a:visited {
 
 .button {
     background-color: var(--color-top);
-    border-radius   : 8px;
-    min-width       : 3rem;
-    font-size       : 1rem;
+    border-radius: 8px;
+    min-width: 3rem;
+    font-size: 1rem;
 
-    padding      : 10px;
-    padding-left : 20px;
+    padding: 10px;
+    padding-left: 20px;
     padding-right: 20px;
-    text-align   : center;
-    margin-right : 20px;
+    text-align: center;
+    margin-right: 20px;
 
-    color         : white;
-    font-weight   : bold;
-    user-select   : none;
+    color: white;
+    font-weight: bold;
+    user-select: none;
     vertical-align: middle;
-    outline       : 2px solid transparent;
+    outline: 2px solid transparent;
     outline-offset: 2px;
-    line-height   : 1.2;
+    line-height: 1.2;
 
     will-change: box-shadow text-decoration transform;
-    transition : all .15s ease-in-out;
+    transition: all .15s ease-in-out;
 }
 
 .button a {
@@ -153,14 +153,12 @@ p {
     line-height: 150%;
 }
 
-p,
-ul,
-li {
+p {
     font-size: var(--fontSizes-xl);
 }
 
 p a {
-    color      : var(--color-top);
+    color: var(--color-top);
     font-weight: bold;
 }
 
@@ -168,21 +166,25 @@ p a:hover {
     text-decoration: underline;
 }
 
-li {
+ul.checked li {
     margin-bottom: 34px;
 }
 
-ul {
+ul.checked li {
     list-style: none;
 }
 
-ul li:before {
-    content      : '✓ ';
-    font-size    : 40px;
-    display      : block;
-    float        : left;
+ul.checked li {
+    font-size: var(--fontSizes-xl);
+}
+
+ul.checked li:before {
+    content: '✓ ';
+    font-size: 40px;
+    display: block;
+    float: left;
     padding-right: 10px;
-    margin-top   : -11px;
+    margin-top: -11px;
 }
 
 
@@ -190,26 +192,26 @@ body {
     background-color: var(--bg-color);
 
     /** font **/
-    color      : white;
+    color: white;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 header {
-    z-index         : 10;
+    z-index: 10;
     background-color: var(--bg-color);
-    position        : fixed;
-    display         : block;
-    height          : 60px;
-    padding-top     : 22px;
-    padding-bottom  : 22px;
-    width           : 90%;
-    padding-left    : 5%;
-    padding-right   : 5%;
+    position: fixed;
+    display: block;
+    height: 60px;
+    padding-top: 22px;
+    padding-bottom: 22px;
+    width: 90%;
+    padding-left: 5%;
+    padding-right: 5%;
 }
 
 header a {
     text-decoration: none;
-    color          : #a0aec0;
+    color: #a0aec0;
 }
 
 header a:hover {
@@ -221,11 +223,11 @@ header .logo {
 }
 
 header .logo {
-    color          : white;
-    font-weight    : bold;
+    color: white;
+    font-weight: bold;
     text-decoration: none;
-    will-change    : transform;
-    transition     : 150ms ease-in-out;
+    will-change: transform;
+    transition: 150ms ease-in-out;
 }
 
 header a:hover .logo {
@@ -234,41 +236,41 @@ header a:hover .logo {
 
 
 header .text {
-    padding-top  : 20px;
-    float        : left;
+    padding-top: 20px;
+    float: left;
     padding-right: 15px;
 }
 
 header .logo .text {
-    font-size  : var(--fontSizes-xl);
+    font-size: var(--fontSizes-xl);
     padding-top: 18px;
-    color      : white;
+    color: white;
 }
 
 header .logo img {
-    float : left;
+    float: left;
 }
 
 .header-space {
-    width : 100%;
+    width: 100%;
     height: calc(var(--space-between-blocks) + 110px);
 }
 
 
 
 .content {
-    width        : 98%;
-    padding-left : 1%;
+    width: 98%;
+    padding-left: 1%;
     padding-right: 1%;
-    max-width    : 1248px;
-    margin-left  : auto;
-    margin-right : auto;
+    max-width: 1248px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 @media (max-width: 800px) {
     .content {
-        width        : 94%;
-        padding-left : 3%;
+        width: 94%;
+        padding-left: 3%;
         padding-right: 3%;
     }
 }
@@ -277,24 +279,24 @@ header .logo img {
 
 
 .smartphone {
-    width            : 200px;
-    height           : 200px;
+    width: 200px;
+    height: 200px;
     background-repeat: no-repeat;
-    background-size  : contain;
-    background-image : url(../files/smartphone/tablet_white.svg);
+    background-size: contain;
+    background-image: url(../files/smartphone/tablet_white.svg);
 }
 
 .smartphone .smartphone-color {
     -webkit-transition: background-color 100ms linear;
-    -ms-transition    : background-color 100ms linear;
-    transition        : background-color 100ms linear;
+    -ms-transition: background-color 100ms linear;
+    transition: background-color 100ms linear;
 
     background-color: #e6008d;
-    border-radius   : 4px;
+    border-radius: 4px;
 
-    width      : 65.4%;
-    height     : 76.2%;
-    margin-top : 7.4%;
+    width: 65.4%;
+    height: 76.2%;
+    margin-top: 7.4%;
     margin-left: 17.4%;
 }
 
@@ -302,12 +304,12 @@ header .logo img {
 
 
 .block {
-    width           : 100%;
-    min-height      : 450px;
-    padding-top     : 80px;
-    padding-bottom  : 80px;
+    width: 100%;
+    min-height: 450px;
+    padding-top: 80px;
+    padding-bottom: 80px;
     background-color: var(--bg-color);
-    position        : relative;
+    position: relative;
 }
 
 
@@ -330,7 +332,7 @@ header .logo img {
 }
 
 .block.first .inner {
-    width   : 60%;
+    width: 60%;
     position: fixed;
 }
 
@@ -341,15 +343,15 @@ header .logo img {
 }
 
 .block.first .text {
-    font-size   : var(--fontSizes-6xl);
-    font-weight : 600;
-    text-align  : right;
+    font-size: var(--fontSizes-6xl);
+    font-weight: 600;
+    text-align: right;
     margin-right: 13px;
 }
 
 @media (max-width: 900px) {
     .block.first .text {
-        text-align  : center;
+        text-align: center;
         margin-right: 0px;
     }
 }
@@ -357,26 +359,26 @@ header .logo img {
 .block.first img {
     width: 307px;
     margin-left: 35px;
-    margin-top : 8px;
+    margin-top: 8px;
 }
 
 @media (max-width: 900px) {
     .block.first img {
         margin-left: 0px;
-        margin-top : 16px;
+        margin-top: 16px;
     }
 }
 
 
 .block.second .content-canvas {
-    width      : 60%;
+    width: 60%;
     margin-left: 20%;
-    margin-top : 120px;
+    margin-top: 120px;
 }
 
 @media (max-width: 800px) {
     .block.second .content-canvas {
-        width      : 90%;
+        width: 90%;
         margin-left: 5%;
     }
 }
@@ -393,24 +395,24 @@ header .logo img {
 
 @media (max-width: 530px) {
     .block.second .smartphone {
-        width : 150px;
+        width: 150px;
         height: 150px;
     }
 }
 
 
 .block.second .line {
-    width           : 80%;
-    margin-left     : 0%;
-    height          : 3px;
+    width: 80%;
+    margin-left: 0%;
+    height: 3px;
     background-color: white;
-    margin-top      : 62px;
+    margin-top: 62px;
 }
 
 .block.second .arrow {
-    width      : 60%;
+    width: 60%;
     margin-left: -20%;
-    margin-top : 45px;
+    margin-top: 45px;
 }
 
 .block.second .arrow.arrow-right {
@@ -421,11 +423,11 @@ header .logo img {
 
 
 .block.replication .replication-icons {
-    height     : 515px;
-    width      : 90%;
+    height: 515px;
+    width: 90%;
     margin-left: 10%;
-    margin-top : 0px;
-    position   : relative;
+    margin-top: 0px;
+    position: relative;
 }
 
 @media (max-width: 900px) {
@@ -436,17 +438,17 @@ header .logo img {
 
 
 .block.replication .replicate-logo {
-    position   : absolute;
-    width      : 120px;
+    position: absolute;
+    width: 120px;
     margin-left: 50%;
-    left       : -60px;
-    top        : 50%;
-    margin-top : -75px;
+    left: -60px;
+    top: 50%;
+    margin-top: -75px;
 }
 
 .block.replication .replicate-graphql {
-    position   : absolute;
-    margin-top : 8%;
+    position: absolute;
+    margin-top: 8%;
     margin-left: 10%;
 }
 
@@ -458,10 +460,10 @@ header .logo img {
 
 
 .block.replication .replicate-couchdb {
-    position   : absolute;
-    left       : 90%;
+    position: absolute;
+    left: 90%;
     margin-left: -130px;
-    margin-top : 8%;
+    margin-top: 8%;
 }
 
 @media (max-width: 500px) {
@@ -472,29 +474,29 @@ header .logo img {
 
 
 .block.replication .replicate-rest {
-    position   : absolute;
-    margin-top : -70px;
-    top        : 83%;
+    position: absolute;
+    margin-top: -70px;
+    top: 83%;
     margin-left: 20%;
-    left       : -35px;
-    text-align : center;
+    left: -35px;
+    text-align: center;
 }
 
 .block.replication .replicate-websocket {
-    position   : absolute;
-    margin-top : -70px;
-    top        : 93%;
+    position: absolute;
+    margin-top: -70px;
+    top: 93%;
     margin-left: 50%;
-    left       : -35px;
-    text-align : center;
+    left: -35px;
+    text-align: center;
 }
 
 .block.replication .replicate-p2p {
-    position  : absolute;
+    position: absolute;
     margin-top: -70px;
-    top       : 83%;
+    top: 83%;
 
-    left       : 80%;
+    left: 80%;
     margin-left: -35px;
 
     text-align: center;
@@ -512,34 +514,34 @@ header .logo img {
 }
 
 .block.offline-first .offline-image-wrapper {
-    position   : absolute;
-    transform  : rotate(77deg);
-    width      : 1500px;
+    position: absolute;
+    transform: rotate(77deg);
+    width: 1500px;
     margin-left: -750px;
-    left       : 46%;
-    top        : -12%;
+    left: 46%;
+    top: -12%;
 }
 
 @media (max-width: 900px) {
     .block.offline-first .offline-image-wrapper {
-        transform  : rotate(110deg);
-        width      : 1200px;
+        transform: rotate(110deg);
+        width: 1200px;
         margin-left: -600px;
     }
 }
 
 @media (max-width: 500px) {
     .block.offline-first .offline-image-wrapper {
-        transform  : rotate(110deg);
-        width      : 600px;
+        transform: rotate(110deg);
+        width: 600px;
         margin-left: -300px;
-        top        : 10%;
+        top: 10%;
     }
 }
 
 .block.offline-first .offline-image {
-    width           : 100%;
-    height          : 100%;
+    width: 100%;
+    height: 100%;
     transform-origin: center bottom;
 }
 
@@ -563,11 +565,11 @@ header .logo img {
 
 .block.frameworks .circle {
     font-size: 85%;
-    position : absolute;
+    position: absolute;
 }
 
 .block.frameworks .circle img {
-    height        : 46%;
+    height: 46%;
     padding-bottom: 3px;
 }
 
@@ -603,16 +605,16 @@ header .logo img {
 }
 
 .block.fifth .box {
-    border-radius : 0.75rem;
-    padding-top   : 12px;
+    border-radius: 0.75rem;
+    padding-top: 12px;
     padding-bottom: 12px;
-    padding-left  : 16px;
-    padding-right : 16px;
+    padding-left: 16px;
+    padding-right: 16px;
 
-    float       : left;
-    width       : calc(50% - 40px - 32px);
+    float: left;
+    width: calc(50% - 40px - 32px);
     margin-right: 20px;
-    margin-top  : 20px;
+    margin-top: 20px;
 }
 
 @media (max-width: 590px) {
@@ -623,9 +625,9 @@ header .logo img {
 
 
 .block.fifth .box img {
-    width        : 20px;
+    width: 20px;
     padding-right: 10px;
-    float        : left;
+    float: left;
 }
 
 .block.fifth .box a {
@@ -638,16 +640,114 @@ header .logo img {
 
 .block.fifth .box .label {
     margin-top: 2px;
-    float     : left;
+    float: left;
 }
 
 .block.fifth .box .value {
-    color            : var(--color-top);
-    font-weight      : bold;
-    float            : right;
+    color: var(--color-top);
+    font-weight: bold;
+    float: right;
     margin-inline-end: 0px;
-    right            : 0px;
+    right: 0px;
 }
+
+
+.block.sixth h2 {
+    text-align: center;
+}
+
+.block.sixth .buy-options {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 10px;
+    row-gap: 1em;
+}
+
+.block.sixth .buy-option {
+    border-radius: 6px;
+
+    padding: 3px;
+}
+
+
+.block.sixth .buy-option-inner {
+    min-height: 450px;
+    background-color: var(--bg-color-dark);
+    padding: 10px;
+    border-radius: 4px;
+    position: relative;
+
+    color: white;
+}
+
+.block.sixth .buy-option-inner h2 {
+    font-size: 1.5em;
+    text-align: center;
+    width: 100%;
+    height: 50px;
+}
+
+.block.sixth .buy-option-title {
+    padding-bottom: 35px;
+}
+
+.block.sixth .buy-option-inner .price {
+    text-align: center;
+    width: 100%;
+    font-size: 0.8em;
+}
+
+.block.sixth .buy-option-features {
+    width: 90%;
+    margin-left: 5%;
+}
+
+.block.sixth .buy-option-features p {
+    font-size: 1em;
+}
+
+.block.sixth .buy-option-action {
+    position: absolute;
+    width: calc(100% - 20px);
+    left: 10px;
+    bottom: 8px;
+
+    font-size: 1.2rem;
+    text-align: center;
+    font-weight: bold;
+
+    border-radius: 6px;
+
+    padding-top: 15px;
+    padding-bottom: 15px;
+
+    cursor: pointer;
+    color: white;
+
+}
+
+.block.sixth .buy-option-action:hover {
+    box-shadow: 2px 2px 10px white, -2px -1px 10px white;
+}
+
+.block.sixth .buy-option-features {
+    padding-bottom: 20px;
+    font-size: 1em;
+}
+
+.block.sixth .buy-option-features li {
+    padding-bottom: 10px;
+}
+
+
+
+
+
+
+
+
 
 .block.last {
     padding-bottom: 0px;
@@ -659,24 +759,24 @@ header .logo img {
 
 .block.last .buttons {
     margin-top: 90px;
-    position  : relative;
-    height    : 500px;
+    position: relative;
+    height: 500px;
 }
 
 .block.last .buttons .button {
-    display : inline;
+    display: inline;
     position: absolute;
-    top     : 0;
-    left    : 0;
-    margin  : 0;
+    top: 0;
+    left: 0;
+    margin: 0;
 }
 
 .block.last .button.get-premium {
-    padding      : 10px;
-    padding-left : 38px;
+    padding: 10px;
+    padding-left: 38px;
     padding-right: 38px;
     border-radius: 10px;
-    font-size    : 37px;
+    font-size: 37px;
 
 }
 
@@ -688,11 +788,11 @@ header .logo img {
  */
 .neumorphism-circle-xl {
     border-radius: 50%;
-    width        : 130px;
-    height       : 130px;
-    font-size    : 85%;
+    width: 130px;
+    height: 130px;
+    font-size: 85%;
 
-    color     : white;
+    color: white;
     background: var(--bg-color);
 
     box-shadow: 5px 5px 10px #161c26,
@@ -701,11 +801,11 @@ header .logo img {
 
 .neumorphism-circle-m {
     border-radius: 50%;
-    width        : 95px;
-    height       : 95px;
-    font-size    : 85%;
+    width: 95px;
+    height: 95px;
+    font-size: 85%;
 
-    color     : white;
+    color: white;
     background: var(--bg-color);
 
     box-shadow: 5px 5px 10px #171c26,
@@ -720,11 +820,11 @@ header .logo img {
 
 .neumorphism-circle-s {
     border-radius: 50%;
-    width        : 70px;
-    height       : 70px;
-    font-size    : 85%;
+    width: 70px;
+    height: 70px;
+    font-size: 85%;
 
-    color     : white;
+    color: white;
     background: var(--bg-color);
 
     box-shadow: 3px 3px 6px #151a24,
@@ -740,15 +840,43 @@ header .logo img {
 
 .neumorphism-circle-xs {
     border-radius: 50%;
-    width        : 70px;
-    height       : 70px;
-    font-size    : 85%;
+    width: 70px;
+    height: 70px;
+    font-size: 85%;
 
-    color     : white;
+    color: white;
     background: var(--bg-color);
 
     box-shadow: 5px 5px 7px #171c26,
         -5px -5px 7px #1d2432;
+}
+
+.bg-top {
+    background-color: var(--color-top);
+}
+
+.bg-middle {
+    background-color: var(--color-middle);
+}
+
+.bg-bottom {
+    background-color: var(--color-bottom);
+}
+
+.bg-gradient-right-bottom {
+    background: linear-gradient(to right bottom, var(--color-top), var(--color-middle), var(--color-bottom));
+}
+.bg-gradient-left-bottom {
+    background: linear-gradient(to left bottom, var(--color-top), var(--color-middle), var(--color-bottom));
+}
+.bg-gradient-right-top {
+    background: linear-gradient(to right top, var(--color-top), var(--color-middle), var(--color-bottom));
+}
+.bg-gradient-left-top {
+    background: linear-gradient(to left top, var(--color-top), var(--color-middle), var(--color-bottom));
+}
+.bg-gradient-top {
+    background: linear-gradient(to top, var(--color-top), var(--color-middle), var(--color-bottom));
 }
 
 
@@ -762,29 +890,29 @@ header .logo img {
  * is made beating via javascript
  */
 .beating.animation {
-    will-change     : transform;
+    will-change: transform;
     transform-origin: center center;
-    animation       : animateHeartbeat;
+    animation: animateHeartbeat;
 }
 
 .beating-first.animation {
-    will-change     : transform;
+    will-change: transform;
     transform-origin: center center;
-    animation       : animateOnFirstHeartbeat;
+    animation: animateOnFirstHeartbeat;
 }
 
 .beating-second.animation {
-    will-change     : transform;
+    will-change: transform;
     transform-origin: center center;
-    animation       : animateOnSecondHeartbeat;
+    animation: animateOnSecondHeartbeat;
 }
 
 .beating-color {
-    will-change       : background-color;
+    will-change: background-color;
     -webkit-transition: background-color 100ms linear;
-    -ms-transition    : background-color 100ms linear;
-    transition        : background-color 100ms linear;
-    background-color  : #e6008d;
+    -ms-transition: background-color 100ms linear;
+    transition: background-color 100ms linear;
+    background-color: #e6008d;
 }
 
 /*
