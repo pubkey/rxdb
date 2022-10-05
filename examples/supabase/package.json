@@ -19,7 +19,7 @@
     "html-webpack-plugin": "5.5.0",
     "mini-css-extract-plugin": "2.6.1",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.5.6"
+    "rxjs": "7.5.7"
   },
   "devDependencies": {
     "local-web-server": "5.2.1",
