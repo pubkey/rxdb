@@ -24,6 +24,12 @@ type MousePositionType = {
     time: number;
 };
 
+type HeadingTextType = {
+    text1: string;
+    text2: string;
+};
+
+
 
 window.onload = async function () {
 
@@ -32,6 +38,12 @@ window.onload = async function () {
         localDocuments: true,
         storage: getRxStorageDexie()
     });
+
+    const headingTextDoc = await database.upsertLocal<HeadingTextType>('headingtext', {
+        text1: 'JavaScript',
+        text2: 'you deserve'
+    });
+
 
     // track mouse position
     const mousePointerDoc = await database.upsertLocal<MousePositionType>('mousepos', {
@@ -106,6 +118,12 @@ window.onload = async function () {
     console.log('heartbeatDuration: ' + heartbeatDuration);
 
 
+    headingTextDoc.$.subscribe(textDoc => {
+        $swapOutFirst.innerHTML = textDoc.data.text1;
+        $swapOutSecond.innerHTML = textDoc.data.text2;
+    });
+
+
 
     setInterval(function () {
         /**
@@ -156,9 +174,13 @@ window.onload = async function () {
             ) {
                 swapOutsDone = swapOutsDone + 1;
                 if (swapOutsDone % 2 === 0) {
-                    $swapOutFirst.innerHTML = randomOfArray(textsFirst, $swapOutFirst.innerHTML);
+                    headingTextDoc.atomicPatch({
+                        text1: randomOfArray(textsFirst, $swapOutFirst.innerHTML)
+                    });
                 } else {
-                    $swapOutSecond.innerHTML = randomOfArray(textsSecond, $swapOutSecond.innerHTML);
+                    headingTextDoc.atomicPatch({
+                        text2: randomOfArray(textsSecond, $swapOutSecond.innerHTML)
+                    });
                 }
             }
         }, heartbeatTimeToFirstBeat);
