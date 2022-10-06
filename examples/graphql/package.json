@@ -48,7 +48,7 @@
     "source-map-loader": "3.0.1",
     "style-loader": "3.3.1",
     "testcafe": "1.20.1",
-    "testcafe-hammerhead": "24.7.3",
+    "testcafe-hammerhead": "24.7.4",
     "webpack": "5.74.0",
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "4.7.4"
