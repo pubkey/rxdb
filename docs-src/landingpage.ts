@@ -13,6 +13,10 @@ import {
 } from '../plugins/local-documents';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import {
+    RxDBLeaderElectionPlugin
+} from '../plugins/leader-election';
+addRxPlugin(RxDBLeaderElectionPlugin);
+import {
     merge,
     fromEvent
 } from 'rxjs';
@@ -167,23 +171,25 @@ window.onload = async function () {
          * Do not directly change the text on the audio start,
          * but wait a bit for the first beat sound.
          */
-        setTimeout(function () {
-            if (
-                index > 2 &&
-                index % swapOutTextEveryX === 0
-            ) {
-                swapOutsDone = swapOutsDone + 1;
-                if (swapOutsDone % 2 === 0) {
-                    headingTextDoc.atomicPatch({
-                        text1: randomOfArray(textsFirst, $swapOutFirst.innerHTML)
-                    });
-                } else {
-                    headingTextDoc.atomicPatch({
-                        text2: randomOfArray(textsSecond, $swapOutSecond.innerHTML)
-                    });
+        database.waitForLeadership().then(() => {
+            setTimeout(function () {
+                if (
+                    index > 2 &&
+                    index % swapOutTextEveryX === 0
+                ) {
+                    swapOutsDone = swapOutsDone + 1;
+                    if (swapOutsDone % 2 === 0) {
+                        headingTextDoc.atomicPatch({
+                            text1: randomOfArray(textsFirst, $swapOutFirst.innerHTML)
+                        });
+                    } else {
+                        headingTextDoc.atomicPatch({
+                            text2: randomOfArray(textsSecond, $swapOutSecond.innerHTML)
+                        });
+                    }
                 }
-            }
-        }, heartbeatTimeToFirstBeat);
+            }, heartbeatTimeToFirstBeat);
+        });
     }
 
     // beat sound on heartbeat
