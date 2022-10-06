@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- REFACTORED the landingpage to have less blinking and no more autoplay audio.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
