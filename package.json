@@ -112,7 +112,7 @@
     "// docs": "TODO move away from gitbook so we are not forced to use node.js version 13 to build the docs",
     "docs:install": "gitbook install docs-src",
     "docs:landingpage:dev": "webpack-dev-server --mode development --config ./config/landingpage.webpack.config.js",
-    "docs:landingpage:build": "webpack --config ./config/landingpage.webpack.config.js",
+    "docs:landingpage:build": "npm run build && webpack --config ./config/landingpage.webpack.config.js",
     "docs:landingpage:copy": "rimraf -f ./docs/index.html && cp ./docs-src/index.html ./docs/index.html",
     "// docs:serve": "start a local server to watch the docs. Served at http://localhost:4000/",
     "docs:serve": "gitbook serve docs-src",
