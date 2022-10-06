@@ -728,10 +728,6 @@ header .logo img {
 
 }
 
-.block.sixth .buy-option-action:hover {
-    box-shadow: 2px 2px 10px white, -2px -1px 10px white;
-}
-
 .block.sixth .buy-option-features {
     padding-bottom: 20px;
     font-size: 1em;
@@ -854,14 +850,24 @@ header .logo img {
 .bg-top {
     background-color: var(--color-top);
 }
-
 .bg-middle {
     background-color: var(--color-middle);
 }
-
 .bg-bottom {
     background-color: var(--color-bottom);
 }
+
+.hover-shaddow-top:hover {
+    box-shadow: 2px 2px 10px var(--color-top), -2px -1px 10px var(--color-top);
+}
+.hover-shaddow-middle:hover {
+    box-shadow: 2px 2px 10px var(--color-middle), -2px -1px 10px var(--color-middle);
+}
+.hover-shaddow-bottom:hover {
+    box-shadow: 2px 2px 10px var(--color-bottom), -2px -1px 10px var(--color-bottom);
+}
+
+
 
 .bg-gradient-right-bottom {
     background: linear-gradient(to right bottom, var(--color-top), var(--color-middle), var(--color-bottom));

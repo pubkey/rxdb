@@ -1,7 +1,10 @@
 import {
     ensureNotFalsy
 } from '../';
-
+import {
+    merge,
+    fromEvent
+} from 'rxjs';
 
 
 
@@ -24,18 +27,8 @@ window.onload = function () {
     }
 
 
-    /**
-     * In the past we had this beating effect.
-     * But it turned out that many people do not like that,
-     * and in the 2022 user survey, most people opted for removing it.
-     * So now it is disabled but can be turned on by passing the correct url parameter '?beating=true'
-     * @link https://github.com/pubkey/rxdb/pull/3800
-     */
-    // const urlSearchParams = new URLSearchParams(window.location.search);
-    // const urlParams = Object.fromEntries(urlSearchParams.entries());
-    // if (!urlParams.beating) {
-    //     return;
-    // }
+
+    startTiltToMouse();
 
 
     /**
@@ -233,6 +226,50 @@ window.onload = function () {
     });
 
 };
+
+
+/**
+ * @link https://armandocanals.com/posts/CSS-transform-rotating-a-3D-object-perspective-based-on-mouse-position.html
+ */
+function startTiltToMouse() {
+    const $$tiltToMouse: any[] = document.getElementsByClassName('tilt-to-mouse') as any;
+
+    const constrain = 100;
+    function transforms(x: number, y: number, el: any) {
+        const box = el.getBoundingClientRect();
+        const calcX = -(y - box.y - (box.height / 2)) / constrain;
+        const calcY = (x - box.x - (box.width / 2)) / constrain;
+
+        return `perspective(100px)    rotateX(${calcX}deg)    rotateY(${calcY}deg) `;
+    }
+
+    function transformElement(el: any, xyEl: number[]) {
+        el.style.transform = transforms.apply(null, xyEl as any);
+    }
+
+
+    // track mouse position
+    let mousePosition: number[] | undefined = undefined as any;
+    window.addEventListener('mousemove', (ev) => {
+        mousePosition = [ev.clientX, ev.clientY];
+    });
+
+
+    merge(
+        fromEvent(window, 'mousemove'),
+        fromEvent(window, 'scroll'),
+        fromEvent(window, 'resize')
+    ).subscribe(() => {
+        window.requestAnimationFrame(function () {
+            if (mousePosition) {
+                Array.from($$tiltToMouse).forEach($element => {
+                    const position = ensureNotFalsy(mousePosition).concat([$element]);
+                    transformElement($element, position);
+                });
+            }
+        });
+    });
+}
 
 
 // UTILS
