@@ -1,15 +1,65 @@
 import {
-    ensureNotFalsy
+    ensureNotFalsy,
+    createRxDatabase,
+    RxLocalDocument,
+    now,
+    addRxPlugin
 } from '../';
 import {
+    getRxStorageDexie
+} from '../plugins/dexie';
+import {
+    RxDBLocalDocumentsPlugin
+} from '../plugins/local-documents';
+addRxPlugin(RxDBLocalDocumentsPlugin);
+import {
     merge,
-    fromEvent,
-    mergeMap
+    fromEvent
 } from 'rxjs';
 
 
+type MousePositionType = {
+    x: number;
+    y: number;
+    time: number;
+};
 
-window.onload = function () {
+
+window.onload = async function () {
+
+    const database = await createRxDatabase({
+        name: 'rxdb-landingpage',
+        localDocuments: true,
+        storage: getRxStorageDexie()
+    });
+
+    // track mouse position
+    const mousePointerDoc = await database.upsertLocal<MousePositionType>('mousepos', {
+        x: 0,
+        y: 0,
+        time: 0
+    });
+
+    let currentMousePosition: number[] = [];
+    window.addEventListener('mousemove', (ev) => {
+        currentMousePosition = [ev.clientX, ev.clientY];
+    });
+
+
+    merge(
+        fromEvent(window, 'mousemove'),
+        fromEvent(window, 'scroll'),
+        fromEvent(window, 'resize')
+    ).subscribe(() => {
+        mousePointerDoc.atomicPatch({
+            x: currentMousePosition[0],
+            y: currentMousePosition[1],
+            time: now()
+        });
+    });
+
+
+
 
 
     /**
@@ -29,8 +79,8 @@ window.onload = function () {
 
 
 
-    startTiltToMouse();
-    startEnlargeOnMousePos();
+    startTiltToMouse(mousePointerDoc);
+    startEnlargeOnMousePos(mousePointerDoc);
 
 
     /**
@@ -230,25 +280,11 @@ window.onload = function () {
 };
 
 
-// track mouse position
-let mousePosition: number[] | undefined = undefined as any;
-window.addEventListener('mousemove', (ev) => {
-    mousePosition = [ev.clientX, ev.clientY];
-});
-
-const pointerRelevant$ = merge(
-    fromEvent(window, 'mousemove'),
-    fromEvent(window, 'scroll'),
-    fromEvent(window, 'resize')
-).pipe(
-    mergeMap(() => new Promise<any>(res => window.requestAnimationFrame(res)))
-);
-
 
 /**
  * @link https://armandocanals.com/posts/CSS-transform-rotating-a-3D-object-perspective-based-on-mouse-position.html
  */
-function startTiltToMouse() {
+function startTiltToMouse(mousePosDoc: RxLocalDocument<any, MousePositionType>) {
     const $$tiltToMouse: any[] = document.getElementsByClassName('tilt-to-mouse') as any;
 
     const constrain = 100;
@@ -264,20 +300,21 @@ function startTiltToMouse() {
         el.style.transform = transforms.apply(null, xyEl as any);
     }
 
-    pointerRelevant$.subscribe(() => {
-        if (mousePosition) {
-            Array.from($$tiltToMouse).forEach($element => {
-                const position = ensureNotFalsy(mousePosition).concat([$element]);
-                transformElement($element, position);
-            });
+    mousePosDoc.$.subscribe((mousePos) => {
+        if (!mousePos.data.time) {
+            return;
         }
+        Array.from($$tiltToMouse).forEach($element => {
+            const position = ensureNotFalsy([mousePos.data.x, mousePos.data.y]).concat([$element]);
+            transformElement($element, position);
+        });
     });
 }
 
 /**
  * @link https://stackoverflow.com/a/16225919/3443137
  */
-function startEnlargeOnMousePos() {
+function startEnlargeOnMousePos(mousePosDoc: RxLocalDocument<any, MousePositionType>) {
     const $$enlargeOnMouse: any[] = document.getElementsByClassName('enlarge-on-mouse') as any;
 
     function getElementPosition(el: HTMLElement) {
@@ -299,16 +336,15 @@ function startEnlargeOnMousePos() {
         el.style.transform = transform;
     }
 
-    pointerRelevant$.subscribe(() => {
-        if (!mousePosition) {
+    mousePosDoc.$.subscribe((mousePos) => {
+        if (!mousePos.data.time) {
             return;
         }
         Array.from($$enlargeOnMouse).forEach($element => {
-            const mp = ensureNotFalsy(mousePosition);
             const elementPosition = getElementPosition($element);
 
-            const dx = mp[0] - elementPosition.centerX;
-            const dy = mp[1] - elementPosition.centerY;
+            const dx = mousePos.data.x - elementPosition.centerX;
+            const dy = mousePos.data.y - elementPosition.centerY;
 
             const distance = Math.sqrt(dx * dx + dy * dy);
 

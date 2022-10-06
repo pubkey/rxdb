@@ -37,6 +37,6 @@ window.rdt('init', 't2_131k54', {
 window.rdt('track', 'PageVisit');
 window.rdt('track', 'Lead', {
     transactionId: 'docs-or-main-visit-' + new Date().getTime(),
-    value: 1
+    value: 0.1
 });
 // /Reddit Pixel
