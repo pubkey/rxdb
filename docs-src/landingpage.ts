@@ -3,7 +3,8 @@ import {
 } from '../';
 import {
     merge,
-    fromEvent
+    fromEvent,
+    mergeMap
 } from 'rxjs';
 
 
@@ -29,6 +30,7 @@ window.onload = function () {
 
 
     startTiltToMouse();
+    startEnlargeOnMousePos();
 
 
     /**
@@ -228,6 +230,21 @@ window.onload = function () {
 };
 
 
+// track mouse position
+let mousePosition: number[] | undefined = undefined as any;
+window.addEventListener('mousemove', (ev) => {
+    mousePosition = [ev.clientX, ev.clientY];
+});
+
+const pointerRelevant$ = merge(
+    fromEvent(window, 'mousemove'),
+    fromEvent(window, 'scroll'),
+    fromEvent(window, 'resize')
+).pipe(
+    mergeMap(() => new Promise<any>(res => window.requestAnimationFrame(res)))
+);
+
+
 /**
  * @link https://armandocanals.com/posts/CSS-transform-rotating-a-3D-object-perspective-based-on-mouse-position.html
  */
@@ -235,7 +252,7 @@ function startTiltToMouse() {
     const $$tiltToMouse: any[] = document.getElementsByClassName('tilt-to-mouse') as any;
 
     const constrain = 100;
-    function transforms(x: number, y: number, el: any) {
+    function transforms(x: number, y: number, el: HTMLElement) {
         const box = el.getBoundingClientRect();
         const calcX = -(y - box.y - (box.height / 2)) / constrain;
         const calcY = (x - box.x - (box.width / 2)) / constrain;
@@ -247,28 +264,71 @@ function startTiltToMouse() {
         el.style.transform = transforms.apply(null, xyEl as any);
     }
 
-
-    // track mouse position
-    let mousePosition: number[] | undefined = undefined as any;
-    window.addEventListener('mousemove', (ev) => {
-        mousePosition = [ev.clientX, ev.clientY];
+    pointerRelevant$.subscribe(() => {
+        if (mousePosition) {
+            Array.from($$tiltToMouse).forEach($element => {
+                const position = ensureNotFalsy(mousePosition).concat([$element]);
+                transformElement($element, position);
+            });
+        }
     });
+}
 
+/**
+ * @link https://stackoverflow.com/a/16225919/3443137
+ */
+function startEnlargeOnMousePos() {
+    const $$enlargeOnMouse: any[] = document.getElementsByClassName('enlarge-on-mouse') as any;
 
-    merge(
-        fromEvent(window, 'mousemove'),
-        fromEvent(window, 'scroll'),
-        fromEvent(window, 'resize')
-    ).subscribe(() => {
-        window.requestAnimationFrame(function () {
-            if (mousePosition) {
-                Array.from($$tiltToMouse).forEach($element => {
-                    const position = ensureNotFalsy(mousePosition).concat([$element]);
-                    transformElement($element, position);
-                });
+    function getElementPosition(el: HTMLElement) {
+        const rect = el.getBoundingClientRect();
+
+        const centerX = rect.left + (rect.width / 2);
+        const centerY = rect.top + (rect.height / 2);
+
+        return {
+            centerX,
+            centerY,
+            width: rect.width,
+            height: rect.height
+        };
+    }
+
+    function enlargeElement(el: HTMLElement, scale: number) {
+        const transform = `scale(${scale})`;
+        el.style.transform = transform;
+    }
+
+    pointerRelevant$.subscribe(() => {
+        if (!mousePosition) {
+            return;
+        }
+        Array.from($$enlargeOnMouse).forEach($element => {
+            const mp = ensureNotFalsy(mousePosition);
+            const elementPosition = getElementPosition($element);
+
+            const dx = mp[0] - elementPosition.centerX;
+            const dy = mp[1] - elementPosition.centerY;
+
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            function easeInQuint(x: number): number {
+                return x ^ 1.9;
             }
+
+            let scale = 1 + (elementPosition.width / 2) / (easeInQuint(distance + 300));
+            if (scale > 1.5) {
+                scale = 1.5;
+            }
+            if (scale < 1.01) {
+                scale = 1;
+            }
+
+            enlargeElement($element, scale);
+
         });
     });
+
 }
 
 
