@@ -87,7 +87,6 @@ window.onload = async function () {
      * Pointers to html elements are prefixed with $
      * Lists of pointers have $$
      */
-    const $heartbeatAudio: any = ensureNotFalsy(document.getElementById('heartbeat-audio'));
     const $$beating: any[] = document.getElementsByClassName('beating') as any;
     const $$beatingFirst: any[] = document.getElementsByClassName('beating-first') as any;
     const $$beatingSecond: any[] = document.getElementsByClassName('beating-second') as any;
@@ -98,8 +97,6 @@ window.onload = async function () {
     const $swapOutSecond = ensureNotFalsy(document.getElementById('swap-out-second'));
 
 
-    let audioVolume = 0.5;
-    $heartbeatAudio.volume = audioVolume;
     const heartbeatListeners: any[] = [];
     let heartbeatIndex = 0;
     const heartbeatDuration = 851.088;
@@ -108,26 +105,6 @@ window.onload = async function () {
 
     console.log('heartbeatDuration: ' + heartbeatDuration);
 
-    /**
-     * For iOS we have to trigger the audio start on the first user interaction.
-     * This will 'unlock' the audio element so we can later play() at any time.
-     * @link https://www.py4u.net/discuss/287774
-     */
-    let touchStartDone = false;
-    window.addEventListener('touchstart', function () {
-        if (touchStartDone) {
-            return;
-        }
-        touchStartDone = true;
-        console.log('touchstart: START');
-        $heartbeatAudio.volume = 0.01;
-        $heartbeatAudio.play().catch(function () { /* Ignore erros */ });
-        setTimeout(function () {
-            $heartbeatAudio.pause();
-            $heartbeatAudio.currentTime = 0;
-            console.log('touchstart: END');
-        }, 1);
-    });
 
 
     setInterval(function () {
@@ -191,33 +168,11 @@ window.onload = async function () {
     heartbeatListeners.push(function (index: number) {
 
         /**
-         * This might throw because we cannot play audio when the user
-         * has not interacted with the dom yet. 
-         **/
-        $heartbeatAudio.play()
-            .then(function () {
+         * Only swap out the main text when the audio was playing,
+         * so we ensure that the user interacted with the site.
+         */
+        swapMainText(index);
 
-                /**
-                 * Only swap out the main text when the audio was playing,
-                 * so we ensure that the user interacted with the site.
-                 */
-                swapMainText(index);
-
-                /**
-                 * If play() did not error,
-                 * we decrease the volume to
-                 * ensure we do not piss of people that are looking
-                 * for which browser tab is playing audio.
-                 */
-                audioVolume = audioVolume * 0.9;
-                $heartbeatAudio.volume = audioVolume;
-            }).catch(function () {
-                /**
-                 * This might fail if the user has not already interaced with the UI
-                 * and we are not allowed to play sound yet.
-                 * Then we just do not play sound and ignore the error.
-                 */
-            });
     });
 
     // css animation of big logo on heartbeat
