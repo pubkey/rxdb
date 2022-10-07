@@ -2050,7 +2050,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const lastEvent = lastOfArray(emitted);
 
                 assert.strictEqual(
-                    lastEvent.context,
+                    lastEvent?.context,
                     context
                 );
 
