@@ -3,13 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- REFACTORED the landingpage to have less blinking and no more autoplay audio.
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.4.5 (7 October 2022)
+
+- REFACTORED the landingpage to have less blinking and no more autoplay audio.
 
 ### 13.4.4 (4 October 2022)
 
