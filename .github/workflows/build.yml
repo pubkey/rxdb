@@ -47,6 +47,18 @@ jobs:
         run: |
           npm run docs:build
 
+      - name: Update node for landingpage
+        uses: actions/setup-node@v3.4.1
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: build landingpage
+        run: |
+          node -v
+          rm -r node_modules/
+          npm install
+          npm run docs:landingpage:build
+
       - name: Commit files
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"

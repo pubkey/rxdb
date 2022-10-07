@@ -116,7 +116,7 @@
     "docs:landingpage:copy": "rimraf -f ./docs/index.html && cp ./docs-src/index.html ./docs/index.html",
     "// docs:serve": "start a local server to watch the docs. Served at http://localhost:4000/",
     "docs:serve": "gitbook serve docs-src",
-    "docs:build": "gitbook install docs-src && gitbook build docs-src docs && cp docs-src/files/logo/icon.png docs/gitbook/images/apple-touch-icon-precomposed-152.png && cp docs-src/files/logo/icon.ico docs/gitbook/images/favicon.ico && npm run docs:copy && npm run docs:remove:time && npm run docs:landingpage:build",
+    "docs:build": "gitbook install docs-src && gitbook build docs-src docs && cp docs-src/files/logo/icon.png docs/gitbook/images/apple-touch-icon-precomposed-152.png && cp docs-src/files/logo/icon.ico docs/gitbook/images/favicon.ico && npm run docs:copy && npm run docs:remove:time",
     "docs:copy": "cp -r docs-src/files docs/files && npm run docs:landingpage:copy",
     "docs:remove:time": "node ./scripts/docs-remove-time.js",
     "disc": "npm run transpile && npm run build:es && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",

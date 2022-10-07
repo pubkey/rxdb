@@ -88,6 +88,7 @@ jobs:
           rm -rf node_modules/
           npm install
 
+      - run: npm run docs:landingpage:build
       - run: npm run build
 
       - name: "update version and changelog"
