@@ -670,12 +670,6 @@ header .logo img {
     row-gap: 1em;
 }
 
-@media (max-width: 840px) {
-    .block.sixth .buy-options  {
-        grid-template-columns: repeat(1, minmax(0, 1fr));
-    }
-}
-
 
 .block.sixth .buy-option {
     border-radius: 6px;
@@ -685,7 +679,7 @@ header .logo img {
 
 
 .block.sixth .buy-option-inner {
-    min-height: 450px;
+    min-height: 490px;
     background-color: var(--bg-color-dark);
     padding: 10px;
     border-radius: 4px;
@@ -693,6 +687,18 @@ header .logo img {
 
     color: white;
 }
+
+/* IPAD has 820px width, so we use 819px here */
+@media (max-width: 819px) {
+    .block.sixth .buy-options  {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+    .block.sixth .buy-option-inner {
+        min-height: 425px;
+    }
+}
+
+
 
 .block.sixth .buy-option-inner h2 {
     font-size: 1.5em;
