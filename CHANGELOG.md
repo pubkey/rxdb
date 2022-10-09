@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX may return undefined if array is empty [#4011](https://github.com/pubkey/rxdb/pull/4011) Thanks [@AlexErrant](https://github.com/AlexErrant)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
