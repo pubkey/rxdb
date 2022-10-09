@@ -2208,11 +2208,11 @@ describe('rx-collection.test.ts', () => {
 
             // Now we should have more updates and at some point all documents
             // are in the result set.
-            await AsyncTestUtil.waitUntil(() => lastOfArray(emitted).size === matchingIds.length);
+            await AsyncTestUtil.waitUntil(() => lastOfArray(emitted)?.size === matchingIds.length);
 
             // wait a bit more
             await AsyncTestUtil.wait(config.isFastMode() ? 50 : 150);
-            assert.strictEqual(lastOfArray(emitted).size, matchingIds.length);
+            assert.strictEqual(lastOfArray(emitted)?.size, matchingIds.length);
 
 
             /**
@@ -2238,19 +2238,19 @@ describe('rx-collection.test.ts', () => {
             // should have the same result set as running findByIds() once.
             const singleQueryDocs = await collection.findByIds(matchingIds);
 
+            const lastEmit = lastOfArray(emitted) as Map<string, RxDocumentData<HumanDocumentType>>;
             const singleResultPlain = matchingIds.map(id => getFromMapOrThrow(singleQueryDocs, id).toJSON(true))
-            const observedResultPlain = matchingIds.map(id => getFromMapOrThrow(lastOfArray(emitted), id))
+            const observedResultPlain = matchingIds.map(id => getFromMapOrThrow(lastEmit, id))
             assert.deepStrictEqual(singleResultPlain, observedResultPlain);
 
             //  And contains the right data
-            const lastEmit = lastOfArray(emitted);
             assert.strictEqual(lastEmit.get('a')?.passportId, 'a');
             assert.strictEqual(lastEmit.get('b')?.passportId, 'b');
             assert.strictEqual(lastEmit.get('c')?.passportId, 'c');
             assert.strictEqual(lastEmit.get('d')?.passportId, 'd');
 
             //  Let's try to update something different that should be ignored
-            const sizeBeforeRandomInserts = lastOfArray(emitted).size;
+            const sizeBeforeRandomInserts = lastOfArray(emitted)?.size;
             await collection.storageInstance.bulkWrite(
                 [
                     createObject('e'),
@@ -2263,10 +2263,11 @@ describe('rx-collection.test.ts', () => {
 
             //  Wait a bit to see if we catch anything
             await wait(config.isFastMode() ? 100 : 300);
-            const sizeAfterRandomInserts = lastOfArray(emitted).size;
+            const sizeAfterRandomInserts = lastOfArray(emitted)?.size;
 
             //  Verify that the subscription has not been triggered and no error has been added
             assert.strictEqual(sizeBeforeRandomInserts, sizeAfterRandomInserts);
+            assert(sizeBeforeRandomInserts !== undefined)
 
             // clean up afterwards
             sub.unsubscribe();

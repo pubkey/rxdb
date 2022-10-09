@@ -305,7 +305,7 @@ export function randomCouchString(length: number = 10): string {
 export const RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
 
 
-export function lastOfArray<T>(ar: T[]): T {
+export function lastOfArray<T>(ar: T[]): T | undefined {
     return ar[ar.length - 1];
 }
 
