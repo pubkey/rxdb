@@ -152,7 +152,11 @@ describe('replication.test.js', () => {
             remoteCollection.database.destroy();
         });
         it('should allow asynchronous push and pull modifiers', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+            const docsPerSide = 5;
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: docsPerSide,
+                remote: docsPerSide
+            });
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -160,7 +164,7 @@ describe('replication.test.js', () => {
                 pull: {
                     handler: getPullHandler(remoteCollection),
                     modifier: async (doc) => {
-                        await wait(0);
+                        await wait(config.isFastMode() ? 10 : 100);
                         doc = clone(doc);
                         doc.name = 'pull-modified';
                         return doc;
@@ -169,7 +173,7 @@ describe('replication.test.js', () => {
                 push: {
                     handler: getPushHandler(remoteCollection),
                     modifier: async (doc) => {
-                        await wait(0);
+                        await wait(config.isFastMode() ? 10 : 100);
                         doc = clone(doc);
                         doc.name = 'push-modified';
                         return doc;
@@ -181,11 +185,16 @@ describe('replication.test.js', () => {
             const docsLocal = await localCollection.find().exec();
             const docsRemote = await remoteCollection.find().exec();
 
-            const pullModifiedLocal = docsLocal.filter(d => d.name === 'pull-modified');
-            assert.strictEqual(pullModifiedLocal.length, 5);
-
             const pushModifiedRemote = docsRemote.filter(d => d.name === 'push-modified');
-            assert.strictEqual(pushModifiedRemote.length, 5);
+            assert.strictEqual(pushModifiedRemote.length, docsPerSide);
+
+            const pullModifiedLocal = docsLocal.filter(d => d.name === 'pull-modified');
+            /**
+             * Pushed documents will be also pull modified
+             * when they are fetched from the master again.
+             * So here we just do a gte check instead of a strict equal.
+             */
+            assert.ok(pullModifiedLocal.length >= docsPerSide);
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
