@@ -9,27 +9,20 @@ exports.ensureNotRemoved = ensureNotRemoved;
 exports.getMemoryCollectionKey = getMemoryCollectionKey;
 exports.putWriteRowToState = putWriteRowToState;
 exports.removeDocFromState = removeDocFromState;
-
 var _arrayPushAtSortPosition = require("array-push-at-sort-position");
-
 var _rxError = require("../../rx-error");
-
 var _binarySearchBounds = require("./binary-search-bounds");
-
 function getMemoryCollectionKey(databaseName, collectionName) {
   return databaseName + '--memory--' + collectionName;
 }
-
 function ensureNotRemoved(instance) {
   if (instance.internals.removed) {
     throw new Error('removed');
   }
 }
-
 function attachmentMapKey(documentId, attachmentId) {
   return documentId + '||' + attachmentId;
 }
-
 var SORT_BY_INDEX_STRING = function SORT_BY_INDEX_STRING(a, b) {
   if (a.indexString < b.indexString) {
     return -1;
@@ -37,38 +30,32 @@ var SORT_BY_INDEX_STRING = function SORT_BY_INDEX_STRING(a, b) {
     return 1;
   }
 };
-
 function putWriteRowToState(docId, state, stateByIndex, row, docInState) {
   state.documents.set(docId, row.document);
   stateByIndex.forEach(function (byIndex) {
     var docsWithIndex = byIndex.docsWithIndex;
     var newIndexString = byIndex.getIndexableString(row.document);
-
     var _pushAtSortPosition = (0, _arrayPushAtSortPosition.pushAtSortPosition)(docsWithIndex, {
-      id: docId,
-      doc: row.document,
-      indexString: newIndexString
-    }, SORT_BY_INDEX_STRING, true),
-        insertPosition = _pushAtSortPosition[1];
+        id: docId,
+        doc: row.document,
+        indexString: newIndexString
+      }, SORT_BY_INDEX_STRING, true),
+      insertPosition = _pushAtSortPosition[1];
+
     /**
      * Remove previous if it was in the state
      */
-
-
     if (docInState) {
       var previousIndexString = byIndex.getIndexableString(docInState);
-
       if (previousIndexString === newIndexString) {
         /**
          * Index not changed -> The old doc must be before or after the new one.
          */
         var prev = docsWithIndex[insertPosition - 1];
-
         if (prev && prev.id === docId) {
           docsWithIndex.splice(insertPosition - 1, 1);
         } else {
           var next = docsWithIndex[insertPosition + 1];
-
           if (next.id === docId) {
             docsWithIndex.splice(insertPosition + 1, 1);
           } else {
@@ -92,7 +79,6 @@ function putWriteRowToState(docId, state, stateByIndex, row, docInState) {
     }
   });
 }
-
 function removeDocFromState(primaryPath, schema, state, doc) {
   var docId = doc[primaryPath];
   state.documents["delete"](docId);
@@ -105,7 +91,6 @@ function removeDocFromState(primaryPath, schema, state, doc) {
     docsWithIndex.splice(positionInIndex, 1);
   });
 }
-
 function compareDocsWithIndex(a, b) {
   if (a.indexString < b.indexString) {
     return -1;

@@ -14,8 +14,9 @@ export * from './replication-protocol';
 export * from './conflict-handling';
 export * from './rx-change-event';
 export * from './query-planner';
-export * from './util'; // plugins
+export * from './util';
 
+// plugins
 export * from './plugins/replication';
 export * from './plugins/replication-graphql';
 export * from './plugins/replication-couchdb';

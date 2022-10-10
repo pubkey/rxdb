@@ -7,30 +7,23 @@ exports.getLocal = void 0;
 exports.getLocal$ = getLocal$;
 exports.insertLocal = void 0;
 exports.upsertLocal = upsertLocal;
-
 var _util = require("../../util");
-
 var _operators = require("rxjs/operators");
-
 var _rxLocalDocument = require("./rx-local-document");
-
 var _localDocumentsHelper = require("./local-documents-helper");
-
 var _rxStorageHelper = require("../../rx-storage-helper");
-
 var getLocal = function getLocal(id) {
   try {
     var _this5 = this;
-
     return Promise.resolve((0, _localDocumentsHelper.getLocalDocStateByParent)(_this5)).then(function (state) {
-      var docCache = state.docCache; // check in doc-cache
+      var docCache = state.docCache;
 
+      // check in doc-cache
       var found = docCache.get(id);
       return found ? Promise.resolve(found) : (0, _rxStorageHelper.getSingleDocument)(state.storageInstance, id).then(function (docData) {
         if (!docData) {
           return null;
         }
-
         var doc = (0, _rxLocalDocument.createRxLocalDocument)(id, docData, _this5, state);
         return doc;
       })["catch"](function () {
@@ -41,17 +34,13 @@ var getLocal = function getLocal(id) {
     return Promise.reject(e);
   }
 };
-
 exports.getLocal = getLocal;
-
 /**
  * save the local-document-data
  * throws if already exists
- */
-var insertLocal = function insertLocal(id, data) {
+ */var insertLocal = function insertLocal(id, data) {
   try {
     var _this2 = this;
-
     return Promise.resolve((0, _localDocumentsHelper.getLocalDocStateByParent)(_this2)).then(function (state) {
       // create new one
       var docData = {
@@ -74,23 +63,17 @@ var insertLocal = function insertLocal(id, data) {
   } catch (e) {
     return Promise.reject(e);
   }
-};
-/**
- * save the local-document-data
- * overwrites existing if exists
- */
-
-
+}; /**
+    * save the local-document-data
+    * overwrites existing if exists
+    */
 exports.insertLocal = insertLocal;
-
 function upsertLocal(id, data) {
   var _this3 = this;
-
   return this.getLocal(id).then(function (existing) {
     if (!existing) {
       // create new one
       var docPromise = _this3.insertLocal(id, data);
-
       return docPromise;
     } else {
       // update existing
@@ -102,10 +85,8 @@ function upsertLocal(id, data) {
     }
   });
 }
-
 function getLocal$(id) {
   var _this6 = this;
-
   return this.$.pipe((0, _operators.startWith)(null), (0, _operators.mergeMap)(function (cE) {
     try {
       if (cE) {
@@ -126,7 +107,6 @@ function getLocal$(id) {
     try {
       if (changeEventOrDoc.changeEvent) {
         var cE = changeEventOrDoc.changeEvent;
-
         if (!cE.isLocal || cE.documentId !== id) {
           return Promise.resolve({
             use: false

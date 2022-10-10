@@ -2,7 +2,6 @@ import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } 
 import { ensureNotFalsy } from '../../util';
 import { RxStorageDexieStatics } from '../dexie';
 import { getFoundationDBIndexName } from './foundationdb-helpers';
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -10,56 +9,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     const observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -71,38 +59,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -111,64 +89,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -178,7 +139,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -191,7 +151,6 @@ function _for(test, update, body) {
     }
   }
 }
-
 export var queryFoundationDB = function queryFoundationDB(instance, preparedQuery) {
   try {
     var queryPlan = preparedQuery.queryPlan;
@@ -220,12 +179,12 @@ export var queryFoundationDB = function queryFoundationDB(instance, preparedQuer
           var innerResult = [];
           var indexTx = tx.at(indexDB.subspace);
           var mainTx = tx.at(dbs.main.subspace);
-          var range = indexTx.getRangeBatch(lowerBoundString, upperBoundString, {// TODO these options seem to be broken in the foundationdb node bindings
+          var range = indexTx.getRangeBatch(lowerBoundString, upperBoundString, {
+            // TODO these options seem to be broken in the foundationdb node bindings
             // limit: instance.settings.batchSize,
             // streamingMode: StreamingMode.Exact
           });
           var done = false;
-
           var _temp2 = _for(function () {
             return !_interrupt2 && !done;
           }, void 0, function () {
@@ -235,7 +194,6 @@ export var queryFoundationDB = function queryFoundationDB(instance, preparedQuer
                 _interrupt2 = true;
                 return;
               }
-
               var docIds = next.value.map(function (row) {
                 return row[1];
               });
@@ -248,7 +206,6 @@ export var queryFoundationDB = function queryFoundationDB(instance, preparedQuer
                       innerResult.push(docData);
                     }
                   }
-
                   if (!mustManuallyResort && innerResult.length === skipPlusLimit) {
                     done = true;
                     range["return"]();
@@ -257,7 +214,6 @@ export var queryFoundationDB = function queryFoundationDB(instance, preparedQuer
               });
             });
           });
-
           return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
             return innerResult;
           }) : innerResult);
@@ -267,9 +223,9 @@ export var queryFoundationDB = function queryFoundationDB(instance, preparedQuer
       })).then(function (result) {
         if (mustManuallyResort) {
           result = result.sort(sortComparator);
-        } // apply skip and limit boundaries.
+        }
 
-
+        // apply skip and limit boundaries.
         result = result.slice(skip, skipPlusLimit);
         return {
           documents: result

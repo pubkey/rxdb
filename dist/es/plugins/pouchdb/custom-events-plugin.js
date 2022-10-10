@@ -8,6 +8,7 @@
  * @link https://github.com/pubkey/rxdb/blob/1f4115b69bdacbb853af9c637d70f5f184d4e474/src/rx-storage-pouchdb.ts#L273
  * @link https://hasura.io/blog/couchdb-style-conflict-resolution-rxdb-hasura/
  */
+
 import PouchDBCore from 'pouchdb-core';
 import { Subject } from 'rxjs';
 import { ensureNotFalsy, flatClone, getFromMapOrThrow, now, parseRevision, PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
@@ -16,7 +17,6 @@ import { getEventKey, pouchChangeRowToChangeEvent, POUCHDB_DESIGN_PREFIX, POUCHD
 export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDBInstance, primaryPath, emitData) {
   try {
     var ret = [];
-
     var _temp12 = function () {
       if (!emitData.writeOptions.custom && emitData.writeOptions.hasOwnProperty('new_edits') && emitData.writeOptions.new_edits === false) {
         return Promise.resolve(Promise.all(emitData.writeDocs.map(function (writeDoc) {
@@ -26,20 +26,18 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
             return Promise.resolve(writeAttachmentsToAttachments(writeDoc._attachments)).then(function (_writeAttachmentsToAt) {
               writeDoc._attachments = _writeAttachmentsToAt;
               var previousDoc = emitData.previousDocs.get(id);
-
               if (previousDoc) {
                 previousDoc = pouchDocumentDataToRxDocumentData(primaryPath, previousDoc);
               }
-
               if (previousDoc) {
                 var parsedRevPrevious = parseRevision(previousDoc._rev);
                 var parsedRevNew = parseRevision(writeDoc._rev);
-
                 if (parsedRevPrevious.height > parsedRevNew.height ||
                 /**
                  * If the revision height is equal,
                  * we determine the higher hash as winner.
                  */
+
                 parsedRevPrevious.height === parsedRevNew.height && parsedRevPrevious.hash > parsedRevNew.hash) {
                   /**
                    * The newly added document was not the latest revision
@@ -50,19 +48,15 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                   return;
                 }
               }
-
               if (!previousDoc && writeDoc._deleted) {
                 // deleted document was added as revision
                 return;
               }
-
               if (previousDoc && previousDoc._deleted && writeDoc._deleted) {
                 // delete document was deleted again
                 return;
               }
-
               var event;
-
               if ((!previousDoc || previousDoc._deleted) && !writeDoc._deleted) {
                 // was insert
                 event = {
@@ -95,7 +89,6 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                   }
                 });
               }
-
               var changeEvent = changeEventToNormal(pouchDBInstance, primaryPath, event, emitData.startTime, emitData.endTime);
               ret.push(changeEvent);
             });
@@ -113,11 +106,9 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
             return Promise.resolve(Promise.all(emitData.writeResult.map(function (resultRow) {
               try {
                 var id = resultRow.id;
-
                 if (id.startsWith(POUCHDB_DESIGN_PREFIX) || id.startsWith(POUCHDB_LOCAL_PREFIX)) {
                   return Promise.resolve();
                 }
-
                 var writeDoc = getFromMapOrThrow(writeDocsById, resultRow.id);
                 writeDoc = pouchDocumentDataToRxDocumentData(primaryPath, writeDoc);
                 return Promise.resolve(writeAttachmentsToAttachments(writeDoc._attachments)).then(function (_writeAttachmentsToAt2) {
@@ -139,7 +130,6 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                 if (resultRow.error) {
                   return Promise.resolve();
                 }
-
                 var id = resultRow.id;
                 var writeRow = getFromMapOrThrow(writeMap, id);
                 return Promise.resolve(writeAttachmentsToAttachments(writeRow.document._attachments)).then(function (attachments) {
@@ -149,13 +139,11 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                       ret.push(changeEvent);
                     }
                   }
-
                   var newDoc = Object.assign({}, writeRow.document, {
                     _attachments: attachments,
                     _rev: resultRow.rev
                   });
                   var event;
-
                   var _temp15 = function () {
                     if (!writeRow.previous || writeRow.previous._deleted) {
                       // was insert
@@ -193,11 +181,9 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                           };
                         }
                       }();
-
                       if (_temp17 && _temp17.then) return _temp17.then(function () {});
                     }
                   }();
-
                   return _temp15 && _temp15.then ? _temp15.then(_temp16) : _temp16(_temp15);
                 });
               } catch (e) {
@@ -206,11 +192,9 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
             }))).then(function () {});
           }
         }();
-
         if (_temp13 && _temp13.then) return _temp13.then(function () {});
       }
     }();
-
     return Promise.resolve(_temp12 && _temp12.then ? _temp12.then(function () {
       return ret;
     }) : ret);
@@ -224,21 +208,20 @@ export var EVENT_EMITTER_BY_POUCH_INSTANCE = new Map();
 export function getCustomEventEmitterByPouch(pouch) {
   var key = [pouch.__opts.name, pouch.adapter].join('|');
   var emitter = EVENT_EMITTER_BY_POUCH_INSTANCE.get(key);
-
   if (!emitter) {
     emitter = {
       subject: new Subject()
     };
     EVENT_EMITTER_BY_POUCH_INSTANCE.set(key, emitter);
   }
-
   return emitter;
 }
+
 /**
  * Counter, used to debug stuff.
  */
-
 var i = 0;
+
 /**
  * Because we cannot force pouchdb to await bulkDocs runs
  * inside of a transaction, like done with the other RxStorage implementations,
@@ -247,8 +230,8 @@ var i = 0;
  * TODO this is somehow a hack. Instead of doing that, inspect how
  * PouchDB runs bulkDocs internally and adapt that transaction handling.
  */
-
 var BULK_DOC_RUN_QUEUE = new WeakMap();
+
 /**
  * PouchDB is like a minefield,
  * where stuff randomly does not work dependend on some conditions.
@@ -256,21 +239,18 @@ var BULK_DOC_RUN_QUEUE = new WeakMap();
  * we hack into the bulkDocs() function
  * and adjust the behavior accordingly.
  */
-
 export function addCustomEventsPluginToPouch() {
   if (addedToPouch) {
     return;
   }
-
   addedToPouch = true;
   var oldBulkDocs = PouchDBCore.prototype.bulkDocs;
+
   /**
    * Ensure we do not run bulkDocs() in parallel on the same PouchDB instance.
    */
-
   var newBulkDocs = function newBulkDocs(body, options, callback) {
     var _this = this;
-
     /**
      * Normalize inputs
      * because there are many ways to call pouchdb.bulkDocs()
@@ -279,19 +259,16 @@ export function addCustomEventsPluginToPouch() {
       callback = options;
       options = {};
     }
-
     if (!options) {
       options = {};
     }
+
     /**
      * PouchDB internal requests
      * must still be handled normally
      * to decrease the likelyness of bugs.
      */
-
-
     var internalPouches = ['_replicator', '_users', 'pouch__all_dbs__'];
-
     if (internalPouches.includes(this.name) || this.name.includes('-mrview-')) {
       return oldBulkDocs.call(this, body, options, function (err, result) {
         if (err) {
@@ -303,13 +280,10 @@ export function addCustomEventsPluginToPouch() {
         }
       });
     }
-
     var queue = BULK_DOC_RUN_QUEUE.get(this);
-
     if (!queue) {
       queue = PROMISE_RESOLVE_VOID;
     }
-
     queue = queue.then(function () {
       try {
         return Promise.resolve(newBulkDocsInner.bind(_this)(body, options, callback));
@@ -320,7 +294,6 @@ export function addCustomEventsPluginToPouch() {
     BULK_DOC_RUN_QUEUE.set(this, queue);
     return queue;
   };
-
   var newBulkDocsInner = function newBulkDocsInner(body, options, callback) {
     try {
       var _temp8 = function _temp8() {
@@ -329,7 +302,6 @@ export function addCustomEventsPluginToPouch() {
          */
         var usePouchResult = [];
         var hasNonErrorWrite = false;
-
         if (options.custom && options.hasOwnProperty('new_edits') && options.new_edits === false) {
           /**
            * Reset the write docs array,
@@ -340,12 +312,11 @@ export function addCustomEventsPluginToPouch() {
           var insertDocsById = options.custom.insertDocsById;
           Array.from(writeRowById.entries()).forEach(function (_ref) {
             var id = _ref[0],
-                writeRow = _ref[1];
+              writeRow = _ref[1];
             var previousRev = writeRow.previous ? writeRow.previous._rev : null;
             var newRev = parseRevision(writeRow.document._rev);
             var docInDb = previousDocsInDb.get(id);
             var docInDbRev = docInDb ? docInDb._rev : null;
-
             if (docInDbRev !== previousRev) {
               // we have a conflict
               usePouchResult.push({
@@ -373,23 +344,22 @@ export function addCustomEventsPluginToPouch() {
               });
             }
           });
+
           /**
            * Optimization shortcut,
            * if all document writes were conflict errors,
            * we can skip directly.
            */
-
           if (!hasNonErrorWrite) {
             return usePouchResult;
           }
         }
+
         /**
          * pouchdb calls this function again with transformed input.
          * This would lead to duplicate events. So we marks the deeper calls via the options
          * parameter and do not emit events if it is set.
          */
-
-
         var deeperOptions = flatClone(options);
         deeperOptions.isDeeper = true;
         var callReturn;
@@ -412,14 +382,11 @@ export function addCustomEventsPluginToPouch() {
               include_docs: true
             }).on('change', function (change) {
               var docId = change.id;
-
               if (docIds.has(docId)) {
                 docIds["delete"](docId);
-
                 if (heighestSequence < change.seq) {
                   heighestSequence = change.seq;
                 }
-
                 if (docIds.size === 0) {
                   changesSub.cancel();
                   res(heighestSequence);
@@ -427,13 +394,13 @@ export function addCustomEventsPluginToPouch() {
               }
             });
           });
+
           /**
            * We cannot send the custom here,
            * because when a migration between different major RxDB versions is done,
            * multiple versions of the RxDB PouchDB RxStorage might have added their
            * custom method via PouchDBCore.plugin()
            */
-
           var useOptsForOldBulkDocs = flatClone(deeperOptions);
           delete useOptsForOldBulkDocs.custom;
           callReturn = oldBulkDocs.call(_this3, docs, useOptsForOldBulkDocs, function (err, result) {
@@ -446,14 +413,13 @@ export function addCustomEventsPluginToPouch() {
                     result.forEach(function (row) {
                       usePouchResult.push(row);
                     });
+
                     /**
                      * For calls that came from RxDB,
                      * we have to ensure that the events are emitted
                      * before the actual call resolves.
                      */
-
                     var eventsPromise = PROMISE_RESOLVE_VOID;
-
                     if (!options.isDeeper) {
                       var endTime = now();
                       var emitData = {
@@ -478,7 +444,6 @@ export function addCustomEventsPluginToPouch() {
                         emitter.subject.next(eventBulk);
                       });
                     }
-
                     if (callback) {
                       callback(null, usePouchResult);
                     } else {
@@ -488,13 +453,10 @@ export function addCustomEventsPluginToPouch() {
                       });
                     }
                   };
-
                   var hasError = result.find(function (row) {
                     return row.error;
                   });
-
                   var _heighestSequence = -1;
-
                   var _temp7 = function () {
                     if (!hasError) {
                       return Promise.resolve(heighestSequencePromise).then(function (_heighestSequenceProm) {
@@ -504,7 +466,6 @@ export function addCustomEventsPluginToPouch() {
                       changesSub.cancel();
                     }
                   }();
-
                   return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
                 } catch (e) {
                   return Promise.reject(e);
@@ -515,40 +476,34 @@ export function addCustomEventsPluginToPouch() {
         });
         return options.custom ? callPromise : callReturn;
       };
-
       var _this3 = this;
-
       var startTime = now();
       var runId = i++;
+
       /**
        * Normalize inputs
        * because there are many ways to call pouchdb.bulkDocs()
        */
-
       if (typeof options === 'function') {
         callback = options;
         options = {};
       }
-
       if (!options) {
         options = {};
       }
-
       var docs;
-
       if (Array.isArray(body)) {
         docs = body;
       } else if (body === undefined) {
         docs = [];
       } else {
         docs = body.docs;
-
         if (body.hasOwnProperty('new_edits')) {
           options.new_edits = body.new_edits;
         }
-      } // throw if no docs given, because RxDB should never make such a call.
+      }
 
-
+      // throw if no docs given, because RxDB should never make such a call.
       if (docs.length === 0) {
         throw newRxError('SNH', {
           args: {
@@ -557,15 +512,13 @@ export function addCustomEventsPluginToPouch() {
           }
         });
       }
+
       /**
        * If new_edits=false we have to first find the current state
        * of the document and can later check if the state was changed
        * because a new revision was written and we have to emit an event.
        */
-
-
       var previousDocsInDb = options.custom ? options.custom.previousDocsInDb : new Map();
-
       var _temp9 = function () {
         if (options.hasOwnProperty('new_edits') && options.new_edits === false) {
           return Promise.resolve(_this3.bulkGet({
@@ -584,7 +537,6 @@ export function addCustomEventsPluginToPouch() {
             var mustRefetchBecauseDeleted = [];
             viaBulkGet.results.forEach(function (resultRow) {
               var firstDoc = resultRow.docs[0];
-
               if (firstDoc.ok) {
                 previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
               } else {
@@ -593,7 +545,6 @@ export function addCustomEventsPluginToPouch() {
                 }
               }
             });
-
             var _temp = function () {
               if (mustRefetchBecauseDeleted.length > 0) {
                 return Promise.resolve(_this3.allDocs({
@@ -615,7 +566,6 @@ export function addCustomEventsPluginToPouch() {
                   })).then(function (deletedDocsViaBulkGetWithRev) {
                     deletedDocsViaBulkGetWithRev.results.forEach(function (resultRow) {
                       var firstDoc = resultRow.docs[0];
-
                       if (firstDoc.ok) {
                         previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
                       } else {
@@ -631,18 +581,15 @@ export function addCustomEventsPluginToPouch() {
                 });
               }
             }();
-
             if (_temp && _temp.then) return _temp.then(function () {});
           });
         }
       }();
-
       return Promise.resolve(_temp9 && _temp9.then ? _temp9.then(_temp8) : _temp8(_temp9));
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   PouchDBCore.plugin({
     bulkDocs: newBulkDocs
   });

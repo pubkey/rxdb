@@ -28,13 +28,10 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
     this.settings = settings;
     this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
   }
-
   var _proto = RxStorageInstanceFoundationDB.prototype;
-
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
       var _this2 = this;
-
       return Promise.resolve(_this2.internals.dbsPromise).then(function (dbs) {
         var categorized = null;
         return Promise.resolve(dbs.root.doTransaction(function (tx) {
@@ -53,7 +50,6 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
              * TODO this might be faster if fdb
              * any time adds a bulk-fetch-by-key method.
              */
-
             return Promise.resolve(Promise.all(ids.map(function (id) {
               try {
                 return Promise.resolve(mainTx.get(id)).then(function (doc) {
@@ -64,30 +60,34 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
               }
             }))).then(function () {
               categorized = categorizeBulkWriteRows(_this2, _this2.primaryPath, docsInDB, documentWrites, context);
-              ret.error = categorized.errors; // INSERTS
+              ret.error = categorized.errors;
 
+              // INSERTS
               categorized.bulkInsertDocs.forEach(function (writeRow) {
                 var docId = writeRow.document[_this2.primaryPath];
-                ret.success[docId] = writeRow.document; // insert document data
+                ret.success[docId] = writeRow.document;
 
-                mainTx.set(docId, writeRow.document); // insert secondary indexes
+                // insert document data
+                mainTx.set(docId, writeRow.document);
 
+                // insert secondary indexes
                 Object.values(dbs.indexes).forEach(function (indexMeta) {
                   var indexString = indexMeta.getIndexableString(writeRow.document);
                   var indexTx = tx.at(indexMeta.db.subspace);
                   indexTx.set(indexString, docId);
                 });
-              }); // UPDATES
-
+              });
+              // UPDATES
               categorized.bulkUpdateDocs.forEach(function (writeRow) {
-                var docId = writeRow.document[_this2.primaryPath]; // overwrite document data
+                var docId = writeRow.document[_this2.primaryPath];
 
-                mainTx.set(docId, writeRow.document); // update secondary indexes
+                // overwrite document data
+                mainTx.set(docId, writeRow.document);
 
+                // update secondary indexes
                 Object.values(dbs.indexes).forEach(function (indexMeta) {
                   var oldIndexString = indexMeta.getIndexableString(ensureNotFalsy(writeRow.previous));
                   var newIndexString = indexMeta.getIndexableString(writeRow.document);
-
                   if (oldIndexString !== newIndexString) {
                     var indexTx = tx.at(indexMeta.db.subspace);
                     indexTx["delete"](oldIndexString);
@@ -95,8 +95,9 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
                   }
                 });
                 ret.success[docId] = writeRow.document;
-              }); // attachments
+              });
 
+              // attachments
               categorized.attachmentsAdd.forEach(function (attachment) {
                 attachmentTx.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
               });
@@ -124,10 +125,8 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
               id: lastState[_this2.primaryPath],
               lwt: lastState._meta.lwt
             };
-
             _this2.changes$.next(ensureNotFalsy(categorized).eventBulk);
           }
-
           return result;
         });
       });
@@ -135,11 +134,9 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.findDocumentsById = function findDocumentsById(ids, withDeleted) {
     try {
       var _this4 = this;
-
       return Promise.resolve(_this4.internals.dbsPromise).then(function (dbs) {
         return dbs.main.doTransaction(function (tx) {
           try {
@@ -166,15 +163,12 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.query = function query(preparedQuery) {
     return queryFoundationDB(this, preparedQuery);
   };
-
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     try {
       var _this6 = this;
-
       return Promise.resolve(_this6.internals.dbsPromise).then(function (dbs) {
         return Promise.resolve(dbs.attachments.get(attachmentMapKey(documentId, attachmentId))).then(function (attachment) {
           return attachment.data;
@@ -184,30 +178,24 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
       var _this8 = this;
-
       var _require = require('foundationdb'),
-          keySelector = _require.keySelector,
-          StreamingMode = _require.StreamingMode;
-
+        keySelector = _require.keySelector,
+        StreamingMode = _require.StreamingMode;
       return Promise.resolve(_this8.internals.dbsPromise).then(function (dbs) {
         var index = ['_meta.lwt', _this8.primaryPath];
         var indexName = getFoundationDBIndexName(index);
         var indexMeta = dbs.indexes[indexName];
         var lowerBoundString = '';
-
         if (checkpoint) {
           var _checkpointPartialDoc;
-
           var checkpointPartialDoc = (_checkpointPartialDoc = {}, _checkpointPartialDoc[_this8.primaryPath] = checkpoint.id, _checkpointPartialDoc._meta = {
             lwt: checkpoint.lwt
           }, _checkpointPartialDoc);
           lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
         }
-
         return Promise.resolve(dbs.root.doTransaction(function (tx) {
           try {
             var innerResult = [];
@@ -248,15 +236,12 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.changeStream = function changeStream() {
     return this.changes$.asObservable();
   };
-
   _proto.remove = function remove() {
     try {
       var _this10 = this;
-
       return Promise.resolve(_this10.internals.dbsPromise).then(function (dbs) {
         return Promise.resolve(dbs.root.doTransaction(function (tx) {
           tx.clearRange('', INDEX_MAX);
@@ -269,15 +254,12 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     try {
       var _this12 = this;
-
       var _require2 = require('foundationdb'),
-          keySelector = _require2.keySelector,
-          StreamingMode = _require2.StreamingMode;
-
+        keySelector = _require2.keySelector,
+        StreamingMode = _require2.StreamingMode;
       var maxDeletionTime = now() - minimumDeletedTime;
       return Promise.resolve(_this12.internals.dbsPromise).then(function (dbs) {
         var index = CLEANUP_INDEX;
@@ -305,7 +287,6 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
                 noMoreUndeleted = false;
                 range.pop();
               }
-
               var docIds = range.map(function (row) {
                 return row[1];
               });
@@ -335,51 +316,42 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.conflictResultionTasks = function conflictResultionTasks() {
     return new Subject().asObservable();
   };
-
   _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
     return PROMISE_RESOLVE_VOID;
   };
-
   _proto.close = function close() {
     try {
       var _this14 = this;
-
       if (_this14.closed) {
         return Promise.reject(newRxError('SNH', {
           database: _this14.databaseName,
           collection: _this14.collectionName
         }));
       }
-
       _this14.closed = true;
-
       _this14.changes$.complete();
-
       return Promise.resolve(_this14.internals.dbsPromise).then(function (dbs) {
-        dbs.root.close(); // TODO shouldnt we close the index databases?
+        dbs.root.close();
+
+        // TODO shouldnt we close the index databases?
         // Object.values(dbs.indexes).forEach(db => db.close());
       });
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   return RxStorageInstanceFoundationDB;
 }();
 export function createFoundationDBStorageInstance(storage, params, settings) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
-
   var _require3 = require('foundationdb'),
-      open = _require3.open,
-      directory = _require3.directory,
-      encoders = _require3.encoders;
-
+    open = _require3.open,
+    directory = _require3.directory,
+    encoders = _require3.encoders;
   var connection = open(settings.clusterFile);
-
   var dbsPromise = function () {
     try {
       return Promise.resolve(directory.createOrOpen(connection, 'rxdb')).then(function (dir) {
@@ -396,8 +368,8 @@ export function createFoundationDBStorageInstance(storage, params, settings) {
           var indexAr = Array.isArray(index) ? index.slice(0) : [index];
           indexAr.unshift('_deleted');
           return indexAr;
-        }); // used for `getChangedDocumentsSince()`
-
+        });
+        // used for `getChangedDocumentsSince()`
         useIndexesFinal.push(['_meta.lwt', primaryPath]);
         useIndexesFinal.push(CLEANUP_INDEX);
         useIndexesFinal.forEach(function (indexAr) {
@@ -422,7 +394,6 @@ export function createFoundationDBStorageInstance(storage, params, settings) {
       return Promise.reject(e);
     }
   }();
-
   var internals = {
     connection: connection,
     dbsPromise: dbsPromise

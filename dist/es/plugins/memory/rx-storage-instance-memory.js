@@ -21,12 +21,9 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     this.settings = settings;
     this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
   }
-
   var _proto = RxStorageInstanceMemory.prototype;
-
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     var _this = this;
-
     ensureNotRemoved(this);
     var ret = {
       success: {},
@@ -34,10 +31,10 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     };
     var categorized = categorizeBulkWriteRows(this, this.primaryPath, this.internals.documents, documentWrites, context);
     ret.error = categorized.errors;
+
     /**
      * Do inserts/updates
      */
-
     var stateByIndex = Object.values(this.internals.byIndex);
     categorized.bulkInsertDocs.forEach(function (writeRow) {
       var docId = writeRow.document[_this.primaryPath];
@@ -49,10 +46,10 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       putWriteRowToState(docId, _this.internals, stateByIndex, writeRow, _this.internals.documents.get(docId));
       ret.success[docId] = writeRow.document;
     });
+
     /**
      * Handle attachments
      */
-
     var attachmentsMap = this.internals.attachments;
     categorized.attachmentsAdd.forEach(function (attachment) {
       attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
@@ -63,7 +60,6 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     categorized.attachmentsRemove.forEach(function (attachment) {
       attachmentsMap["delete"](attachmentMapKey(attachment.documentId, attachment.attachmentId));
     });
-
     if (categorized.eventBulk.events.length > 0) {
       var lastState = getNewestOfDocumentStates(this.primaryPath, Object.values(ret.success));
       categorized.eventBulk.checkpoint = {
@@ -72,24 +68,19 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       };
       this.changes$.next(categorized.eventBulk);
     }
-
     return Promise.resolve(ret);
   };
-
   _proto.findDocumentsById = function findDocumentsById(docIds, withDeleted) {
     var _this2 = this;
-
     var ret = {};
     docIds.forEach(function (docId) {
       var docInDb = _this2.internals.documents.get(docId);
-
       if (docInDb && (!docInDb._deleted || withDeleted)) {
         ret[docId] = docInDb;
       }
     });
     return Promise.resolve(ret);
   };
-
   _proto.query = function query(preparedQuery) {
     var queryPlan = preparedQuery.queryPlan;
     var query = preparedQuery.query;
@@ -114,36 +105,29 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     }, compareDocsWithIndex);
     var rows = [];
     var done = false;
-
     while (!done) {
       var currentDoc = docsWithIndex[indexOfLower];
-
       if (!currentDoc || currentDoc.indexString > upperBoundString) {
         break;
       }
-
       if (queryMatcher(currentDoc.doc)) {
         rows.push(currentDoc.doc);
       }
-
       if (rows.length >= skipPlusLimit && !mustManuallyResort || indexOfLower >= docsWithIndex.length) {
         done = true;
       }
-
       indexOfLower++;
     }
-
     if (mustManuallyResort) {
       rows = rows.sort(sortComparator);
-    } // apply skip and limit boundaries.
+    }
 
-
+    // apply skip and limit boundaries.
     rows = rows.slice(skip, skipPlusLimit);
     return Promise.resolve({
       documents: rows
     });
   };
-
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
     var sinceId = checkpoint ? checkpoint.id : '';
@@ -153,16 +137,15 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
     var indexOfLower = boundGT(docsWithIndex, {
       indexString: lowerBoundString
-    }, compareDocsWithIndex); // TODO use array.slice() so we do not have to iterate here
+    }, compareDocsWithIndex);
 
+    // TODO use array.slice() so we do not have to iterate here
     var rows = [];
-
     while (rows.length < limit && indexOfLower < docsWithIndex.length) {
       var currentDoc = docsWithIndex[indexOfLower];
       rows.push(currentDoc.doc);
       indexOfLower++;
     }
-
     var lastDoc = lastOfArray(rows);
     return Promise.resolve({
       documents: rows,
@@ -175,7 +158,6 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       }
     });
   };
-
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     var maxDeletionTime = now() - minimumDeletedTime;
     var index = ['_deleted', '_meta.lwt', this.primaryPath];
@@ -186,10 +168,8 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       indexString: lowerBoundString
     }, compareDocsWithIndex);
     var done = false;
-
     while (!done) {
       var currentDoc = docsWithIndex[indexOfLower];
-
       if (!currentDoc || currentDoc.doc._meta.lwt > maxDeletionTime) {
         done = true;
       } else {
@@ -197,36 +177,28 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
         indexOfLower++;
       }
     }
-
     return PROMISE_RESOLVE_TRUE;
   };
-
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     ensureNotRemoved(this);
     var data = getFromMapOrThrow(this.internals.attachments, attachmentMapKey(documentId, attachmentId));
     return Promise.resolve(data.data);
   };
-
   _proto.changeStream = function changeStream() {
     ensureNotRemoved(this);
     return this.changes$.asObservable();
   };
-
   _proto.remove = function remove() {
     try {
       var _this4 = this;
-
       ensureNotRemoved(_this4);
       _this4.internals.removed = true;
-
       _this4.storage.collectionStates["delete"](getMemoryCollectionKey(_this4.databaseName, _this4.collectionName));
-
       return Promise.resolve(_this4.close()).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   _proto.close = function close() {
     if (this.closed) {
       return Promise.reject(newRxError('SNH', {
@@ -234,32 +206,25 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
         collection: this.collectionName
       }));
     }
-
     this.closed = true;
     this.changes$.complete();
     this.internals.refCount = this.internals.refCount - 1;
-
     if (this.internals.refCount === 0) {
       this.storage.collectionStates["delete"](getMemoryCollectionKey(this.databaseName, this.collectionName));
     }
-
     return PROMISE_RESOLVE_VOID;
   };
-
   _proto.conflictResultionTasks = function conflictResultionTasks() {
     return this.internals.conflictResultionTasks$.asObservable();
   };
-
   _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
     return PROMISE_RESOLVE_VOID;
   };
-
   return RxStorageInstanceMemory;
 }();
 export function createMemoryStorageInstance(storage, params, settings) {
   var collectionKey = getMemoryCollectionKey(params.databaseName, params.collectionName);
   var internals = storage.collectionStates.get(collectionKey);
-
   if (!internals) {
     internals = {
       removed: false,
@@ -274,7 +239,6 @@ export function createMemoryStorageInstance(storage, params, settings) {
   } else {
     internals.refCount = internals.refCount + 1;
   }
-
   var instance = new RxStorageInstanceMemory(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
   return Promise.resolve(instance);
 }

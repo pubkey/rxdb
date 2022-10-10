@@ -5,23 +5,16 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.dexieQuery = void 0;
 exports.getKeyRangeByQueryPlan = getKeyRangeByQueryPlan;
-
 var _dexieHelper = require("./dexie-helper");
-
 var _rxStorageDexie = require("./rx-storage-dexie");
-
 /**
  * Runs mango queries over the Dexie.js database.
- */
-var dexieQuery = function dexieQuery(instance, preparedQuery) {
+ */var dexieQuery = function dexieQuery(instance, preparedQuery) {
   try {
     return Promise.resolve(instance.internals).then(function (state) {
       var query = preparedQuery.query;
-
       var queryMatcher = _rxStorageDexie.RxStorageDexieStatics.getQueryMatcher(instance.schema, preparedQuery);
-
       var sortComparator = _rxStorageDexie.RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
-
       var skip = query.skip ? query.skip : 0;
       var limit = query.limit ? query.limit : Infinity;
       var skipPlusLimit = skip + limit;
@@ -37,17 +30,17 @@ var dexieQuery = function dexieQuery(instance, preparedQuery) {
            * Instead we should not leave Dexie.js API and find
            * a way to create the cursor with Dexie.js.
            */
-          var tx = dexieTx.idbtrans; // const nativeIndexedDB = state.dexieDb.backendDB();
+          var tx = dexieTx.idbtrans;
+
+          // const nativeIndexedDB = state.dexieDb.backendDB();
           // const trans = nativeIndexedDB.transaction([DEXIE_DOCS_TABLE_NAME], 'readonly');
 
           var store = tx.objectStore(_dexieHelper.DEXIE_DOCS_TABLE_NAME);
           var index;
-
           if (queryPlanFields.length === 1 && queryPlanFields[0] === instance.primaryPath) {
             index = store;
           } else {
             var indexName;
-
             if (queryPlanFields.length === 1) {
               indexName = (0, _dexieHelper.dexieReplaceIfStartsWithPipe)(queryPlanFields[0]);
             } else {
@@ -55,30 +48,25 @@ var dexieQuery = function dexieQuery(instance, preparedQuery) {
                 return (0, _dexieHelper.dexieReplaceIfStartsWithPipe)(field);
               }).join('+') + ']';
             }
-
             index = store.index(indexName);
           }
-
           var cursorReq = index.openCursor(keyRange);
           return Promise.resolve(new Promise(function (res) {
             cursorReq.onsuccess = function (e) {
               var cursor = e.target.result;
-
               if (cursor) {
                 // We have a record in cursor.value
                 var docData = (0, _dexieHelper.fromDexieToStorage)(cursor.value);
-
                 if (queryMatcher(docData)) {
                   rows.push(docData);
                 }
+
                 /**
                  * If we do not have to manually sort
                  * and have enough documents,
                  * we can abort iterating over the cursor
                  * because we already have every relevant document.
                  */
-
-
                 if (queryPlan.sortFieldsSameAsIndexFields && rows.length === skipPlusLimit) {
                   res();
                 } else {
@@ -96,10 +84,11 @@ var dexieQuery = function dexieQuery(instance, preparedQuery) {
       })).then(function () {
         if (!queryPlan.sortFieldsSameAsIndexFields) {
           rows = rows.sort(sortComparator);
-        } // apply skip and limit boundaries.
+        }
 
-
+        // apply skip and limit boundaries.
         rows = rows.slice(skip, skipPlusLimit);
+
         /**
          * Comment this in for debugging to check all fields in the database.
          */
@@ -123,9 +112,7 @@ var dexieQuery = function dexieQuery(instance, preparedQuery) {
     return Promise.reject(e);
   }
 };
-
 exports.dexieQuery = dexieQuery;
-
 function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
   if (!IDBKeyRange) {
     if (typeof window === 'undefined') {
@@ -134,16 +121,14 @@ function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
       IDBKeyRange = window.IDBKeyRange;
     }
   }
+
   /**
    * If index has only one field,
    * we have to pass the keys directly, not the key arrays.
    */
-
-
   if (queryPlan.index.length === 1) {
     return IDBKeyRange.bound(queryPlan.startKeys[0], queryPlan.endKeys[0], queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
   }
-
   return IDBKeyRange.bound(queryPlan.startKeys, queryPlan.endKeys, queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
 }
 //# sourceMappingURL=dexie-query.js.map

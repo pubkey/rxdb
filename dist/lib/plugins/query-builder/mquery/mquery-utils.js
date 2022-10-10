@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.isObject = isObject;
 exports.merge = merge;
-
 /**
  * this is copied from
  * @link https://github.com/aheckmann/mquery/blob/master/lib/utils.js
@@ -15,16 +14,15 @@ exports.merge = merge;
  * @link https://github.com/aheckmann/mquery/commit/792e69fd0a7281a0300be5cade5a6d7c1d468ad4
  */
 var SPECIAL_PROPERTIES = ['__proto__', 'constructor', 'prototype'];
+
 /**
  * Merges 'from' into 'to' without overwriting existing properties.
  */
-
 function merge(to, from) {
   Object.keys(from).forEach(function (key) {
     if (SPECIAL_PROPERTIES.includes(key)) {
       return;
     }
-
     if (typeof to[key] === 'undefined') {
       to[key] = from[key];
     } else {
@@ -32,11 +30,10 @@ function merge(to, from) {
     }
   });
 }
+
 /**
  * Determines if `arg` is an object.
  */
-
-
 function isObject(arg) {
   return '[object Object]' === arg.toString();
 }

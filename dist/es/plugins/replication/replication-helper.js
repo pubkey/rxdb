@@ -1,5 +1,6 @@
-import { flatClone } from '../../util'; // does nothing
+import { flatClone } from '../../util';
 
+// does nothing
 export var DEFAULT_MODIFIER = function DEFAULT_MODIFIER(d) {
   return Promise.resolve(d);
 };

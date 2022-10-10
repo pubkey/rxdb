@@ -9,7 +9,6 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { addCustomEventsPluginToPouch } from './custom-events-plugin';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
  * Will skip indexes that already exist.
@@ -19,7 +18,6 @@ export var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
     if (!schema.indexes) {
       return Promise.resolve();
     }
-
     var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     return Promise.resolve(pouch.getIndexes()).then(function (before) {
       var existingIndexes = new Set(before.indexes.map(function (idx) {
@@ -27,11 +25,11 @@ export var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
       }));
       return Promise.resolve(Promise.all(schema.indexes.map(function (indexMaybeArray) {
         var indexArray = isMaybeReadonlyArray(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+
         /**
          * replace primary key with _id
          * because that is the enforced primary key on pouchdb.
          */
-
         indexArray = indexArray.map(function (key) {
           if (key === primaryKey) {
             return '_id';
@@ -40,17 +38,15 @@ export var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
           }
         });
         var indexName = getPouchIndexDesignDocNameByIndex(indexArray);
-
         if (existingIndexes.has(indexName)) {
           // index already exists
           return;
         }
+
         /**
          * TODO we might have even better performance by doing a pouch.bulkDocs()
          * on index creation
          */
-
-
         return pouch.createIndex({
           name: indexName,
           ddoc: indexName,
@@ -64,10 +60,10 @@ export var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
     return Promise.reject(e);
   }
 };
+
 /**
  * returns the pouchdb-database-name
  */
-
 export var RxStoragePouch = /*#__PURE__*/function () {
   function RxStoragePouch(adapter) {
     var pouchSettings = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -77,9 +73,7 @@ export var RxStoragePouch = /*#__PURE__*/function () {
     this.pouchSettings = pouchSettings;
     checkPouchAdapter(adapter);
   }
-
   var _proto = RxStoragePouch.prototype;
-
   _proto.createPouch = function createPouch(location, options) {
     var pouchDbParameters = {
       location: location,
@@ -88,6 +82,7 @@ export var RxStoragePouch = /*#__PURE__*/function () {
     };
     var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, this.pouchSettings, pouchDbParameters.settings);
     var pouch = new PouchDB(pouchDbParameters.location, pouchDBOptions);
+
     /**
      * In the past we found some errors where the PouchDB is not directly useable
      * so we we had to call .info() first to ensure it can be used.
@@ -98,11 +93,9 @@ export var RxStoragePouch = /*#__PURE__*/function () {
 
     return Promise.resolve(pouch);
   };
-
   _proto.createStorageInstance = function createStorageInstance(params) {
     try {
       var _this2 = this;
-
       ensureRxStorageInstanceParamsAreCorrect(params);
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this2.createPouch(pouchLocation, params.options)).then(function (pouch) {
@@ -121,14 +114,13 @@ export var RxStoragePouch = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   return RxStoragePouch;
 }();
+
 /**
  * Checks if all is ok with the given adapter,
  * else throws an error.
  */
-
 export function checkPouchAdapter(adapter) {
   if (typeof adapter === 'string') {
     if (!PouchDB.adapters || !PouchDB.adapters[adapter]) {
@@ -138,7 +130,6 @@ export function checkPouchAdapter(adapter) {
     }
   } else {
     isLevelDown(adapter);
-
     if (!PouchDB.adapters || !PouchDB.adapters.leveldb) {
       throw newRxError('DB10', {
         adapter: adapter
@@ -148,7 +139,6 @@ export function checkPouchAdapter(adapter) {
 }
 export function getPouchLocation(dbName, collectionName, schemaVersion) {
   var prefix = dbName + '-rxdb-' + schemaVersion + '-';
-
   if (!collectionName.includes('/')) {
     return prefix + collectionName;
   } else {
@@ -172,11 +162,9 @@ export function getRxStoragePouch(adapter, pouchSettings) {
     addPouchPlugin(PouchDBFind);
     addCustomEventsPluginToPouch();
   }
-
   if (!adapter) {
     throw new Error('adapter missing');
   }
-
   var storage = new RxStoragePouch(adapter, pouchSettings);
   return storage;
 }

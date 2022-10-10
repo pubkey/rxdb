@@ -12,12 +12,11 @@ export var RxStorageDexieStatics = {
         query: mutateableQuery
       });
     }
+
     /**
      * Store the query plan together with the
      * prepared query to save performance.
      */
-
-
     var queryPlan = getQueryPlan(schema, mutateableQuery);
     return {
       query: mutateableQuery,
@@ -30,22 +29,18 @@ export var RxStorageDexieStatics = {
   getQueryMatcher: function getQueryMatcher(_schema, preparedQuery) {
     var query = preparedQuery.query;
     var mingoQuery = new MingoQuery(query.selector);
-
     var fun = function fun(doc) {
       if (doc._deleted) {
         return false;
       }
-
       var cursor = mingoQuery.find([doc]);
       var next = cursor.next();
-
       if (next) {
         return true;
       } else {
         return false;
       }
     };
-
     return fun;
   },
   checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
@@ -56,14 +51,11 @@ export var RxStorageDexie = /*#__PURE__*/function () {
     this.statics = RxStorageDexieStatics;
     this.settings = settings;
   }
-
   var _proto = RxStorageDexie.prototype;
-
   _proto.createStorageInstance = function createStorageInstance(params) {
     ensureRxStorageInstanceParamsAreCorrect(params);
     return createDexieStorageInstance(this, params, this.settings);
   };
-
   return RxStorageDexie;
 }();
 export function getRxStorageDexie() {

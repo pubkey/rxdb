@@ -7,19 +7,12 @@ exports.compressDocumentData = compressDocumentData;
 exports.decompressDocumentData = decompressDocumentData;
 exports.getCompressionStateByRxJsonSchema = getCompressionStateByRxJsonSchema;
 exports.wrappedKeyCompressionStorage = wrappedKeyCompressionStorage;
-
 var _jsonschemaKeyCompression = require("jsonschema-key-compression");
-
 var _overwritable = require("../overwritable");
-
 var _pluginHelpers = require("../plugin-helpers");
-
 var _rxSchemaHelper = require("../rx-schema-helper");
-
 var _rxStorageHelper = require("../rx-storage-helper");
-
 var _util = require("../util");
-
 /**
  * this plugin adds the keycompression-capabilities to rxdb
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
@@ -30,7 +23,6 @@ var _util = require("../util");
  * by the storage instance for better performance.
  */
 var COMPRESSION_STATE_BY_SCHEMA = new WeakMap();
-
 function getCompressionStateByRxJsonSchema(schema) {
   /**
    * Because we cache the state by the JsonSchema,
@@ -38,9 +30,7 @@ function getCompressionStateByRxJsonSchema(schema) {
    * is never mutated.
    */
   _overwritable.overwritable.deepFreezeWhenDevMode(schema);
-
   var compressionState = COMPRESSION_STATE_BY_SCHEMA.get(schema);
-
   if (!compressionState) {
     var compressionSchema = (0, _util.flatClone)(schema);
     delete compressionSchema.primaryKey;
@@ -51,8 +41,9 @@ function getCompressionStateByRxJsonSchema(schema) {
      */
     (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey), '_rev', '_attachments', '_deleted', '_meta']);
     delete compressionSchema.primaryKey;
-    var compressedSchema = (0, _jsonschemaKeyCompression.createCompressedJsonSchema)(table, compressionSchema); // also compress primary key
+    var compressedSchema = (0, _jsonschemaKeyCompression.createCompressedJsonSchema)(table, compressionSchema);
 
+    // also compress primary key
     if (typeof schema.primaryKey !== 'string') {
       var composedPrimary = schema.primaryKey;
       var newComposedPrimary = {
@@ -66,12 +57,11 @@ function getCompressionStateByRxJsonSchema(schema) {
     } else {
       compressedSchema.primaryKey = (0, _jsonschemaKeyCompression.compressedPath)(table, schema.primaryKey);
     }
+
     /**
      * the key compression module does not know about indexes
      * in the schema, so we have to also compress them here.
      */
-
-
     if (schema.indexes) {
       var newIndexes = schema.indexes.map(function (idx) {
         if ((0, _util.isMaybeReadonlyArray)(idx)) {
@@ -84,7 +74,6 @@ function getCompressionStateByRxJsonSchema(schema) {
       });
       compressedSchema.indexes = newIndexes;
     }
-
     compressionState = {
       table: table,
       schema: schema,
@@ -92,10 +81,8 @@ function getCompressionStateByRxJsonSchema(schema) {
     };
     COMPRESSION_STATE_BY_SCHEMA.set(schema, compressionState);
   }
-
   return compressionState;
 }
-
 function wrappedKeyCompressionStorage(args) {
   var statics = Object.assign({}, args.storage.statics, {
     prepareQuery: function prepareQuery(schema, mutateableQuery) {
@@ -104,7 +91,6 @@ function wrappedKeyCompressionStorage(args) {
         mutateableQuery = (0, _jsonschemaKeyCompression.compressQuery)(compressionState.table, mutateableQuery);
         return args.storage.statics.prepareQuery(compressionState.compressedSchema, mutateableQuery);
       }
-
       return args.storage.statics.prepareQuery(schema, mutateableQuery);
     },
     getSortComparator: function getSortComparator(schema, preparedQuery) {
@@ -142,22 +128,17 @@ function wrappedKeyCompressionStorage(args) {
         var modifyToStorage = function modifyToStorage(docData) {
           return compressDocumentData(compressionState, docData);
         };
-
         var modifyFromStorage = function modifyFromStorage(docData) {
           return decompressDocumentData(compressionState, docData);
-        };
-        /**
-         * Because this wrapper resolves the key-compression,
-         * we can set the flag to false
-         * which allows underlying storages to detect wrong conficturations
-         * like when keyCompression is set to false but no key-compression module is used.
-         */
-
-
+        }; /**
+            * Because this wrapper resolves the key-compression,
+            * we can set the flag to false
+            * which allows underlying storages to detect wrong conficturations
+            * like when keyCompression is set to false but no key-compression module is used.
+            */
         if (!params.schema.keyCompression) {
           return Promise.resolve(args.storage.createStorageInstance(params));
         }
-
         var compressionState = getCompressionStateByRxJsonSchema(params.schema);
         var childSchema = (0, _util.flatClone)(compressionState.compressedSchema);
         childSchema.keyCompression = false;
@@ -172,7 +153,6 @@ function wrappedKeyCompressionStorage(args) {
     }
   });
 }
-
 function compressDocumentData(compressionState, docData) {
   /**
    * Do not send attachments to compressObject()
@@ -185,7 +165,6 @@ function compressDocumentData(compressionState, docData) {
   docData._attachments = attachments;
   return docData;
 }
-
 function decompressDocumentData(compressionState, docData) {
   return (0, _jsonschemaKeyCompression.decompressObject)(compressionState.table, docData);
 }

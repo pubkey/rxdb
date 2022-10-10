@@ -1,9 +1,9 @@
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-
 /**
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with remote graphql endpoint
  */
+
 import GraphQLClient from 'graphql-client';
 import objectPath from 'object-path';
 import { ensureNotFalsy, fastUnsecureHash } from '../../util';
@@ -15,10 +15,8 @@ import { removeGraphQLWebSocketRef, getGraphQLWebSocket } from './graphql-websoc
 import { Subject } from 'rxjs';
 export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   _inheritsLoose(RxGraphQLReplicationState, _RxReplicationState);
-
   function RxGraphQLReplicationState(url, clientState, replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart) {
     var _this;
-
     _this = _RxReplicationState.call(this, replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart) || this;
     _this.url = url;
     _this.clientState = clientState;
@@ -32,9 +30,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationStat
     _this.autoStart = autoStart;
     return _this;
   }
-
   var _proto = RxGraphQLReplicationState.prototype;
-
   _proto.setHeaders = function setHeaders(headers) {
     this.clientState.headers = headers;
     this.clientState.client = GraphQLClient({
@@ -43,7 +39,6 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationStat
       credentials: this.clientState.credentials
     });
   };
-
   _proto.setCredentials = function setCredentials(credentials) {
     this.clientState.credentials = credentials;
     this.clientState.client = GraphQLClient({
@@ -52,32 +47,31 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationStat
       credentials: credentials
     });
   };
-
   return RxGraphQLReplicationState;
 }(RxReplicationState);
 export function syncGraphQL(_ref) {
   var url = _ref.url,
-      _ref$headers = _ref.headers,
-      headers = _ref$headers === void 0 ? {} : _ref$headers,
-      credentials = _ref.credentials,
-      _ref$deletedField = _ref.deletedField,
-      deletedField = _ref$deletedField === void 0 ? '_deleted' : _ref$deletedField,
-      _ref$waitForLeadershi = _ref.waitForLeadership,
-      waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
-      pull = _ref.pull,
-      push = _ref.push,
-      _ref$live = _ref.live,
-      live = _ref$live === void 0 ? true : _ref$live,
-      _ref$retryTime = _ref.retryTime,
-      retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
-      _ref$autoStart = _ref.autoStart,
-      autoStart = _ref$autoStart === void 0 ? true : _ref$autoStart;
+    _ref$headers = _ref.headers,
+    headers = _ref$headers === void 0 ? {} : _ref$headers,
+    credentials = _ref.credentials,
+    _ref$deletedField = _ref.deletedField,
+    deletedField = _ref$deletedField === void 0 ? '_deleted' : _ref$deletedField,
+    _ref$waitForLeadershi = _ref.waitForLeadership,
+    waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
+    pull = _ref.pull,
+    push = _ref.push,
+    _ref$live = _ref.live,
+    live = _ref$live === void 0 ? true : _ref$live,
+    _ref$retryTime = _ref.retryTime,
+    retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
+    _ref$autoStart = _ref.autoStart,
+    autoStart = _ref$autoStart === void 0 ? true : _ref$autoStart;
   var collection = this;
+
   /**
    * We use this object to store the GraphQL client
    * so we can later swap out the client inside of the replication handlers.
    */
-
   var mutateableClientState = {
     headers: headers,
     credentials: credentials,
@@ -89,7 +83,6 @@ export function syncGraphQL(_ref) {
   };
   var pullStream$ = new Subject();
   var replicationPrimitivesPull;
-
   if (pull) {
     var pullBatchSize = pull.batchSize ? pull.batchSize : 20;
     replicationPrimitivesPull = {
@@ -105,14 +98,11 @@ export function syncGraphQL(_ref) {
                   checkpoint: newCheckpoint
                 };
               }
-
               if (result.errors) {
                 throw result.errors;
               }
-
               var dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
               var data = objectPath.get(result, dataPath);
-
               var _temp = function () {
                 if (pull.responseModifier) {
                   return Promise.resolve(pull.responseModifier(data, 'handler', lastPulledCheckpoint)).then(function (_pull$responseModifie) {
@@ -120,7 +110,6 @@ export function syncGraphQL(_ref) {
                   });
                 }
               }();
-
               return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
             });
           });
@@ -133,9 +122,7 @@ export function syncGraphQL(_ref) {
       stream$: pullStream$.asObservable()
     };
   }
-
   var replicationPrimitivesPush;
-
   if (push) {
     replicationPrimitivesPush = {
       handler: function handler(rows) {
@@ -145,7 +132,6 @@ export function syncGraphQL(_ref) {
               if (result.errors) {
                 throw result.errors;
               }
-
               var dataPath = Object.keys(result.data)[0];
               var data = objectPath.get(result.data, dataPath);
               return data;
@@ -159,11 +145,9 @@ export function syncGraphQL(_ref) {
       modifier: push.modifier
     };
   }
-
   var graphqlReplicationState = new RxGraphQLReplicationState(url, mutateableClientState, GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(url.http ? url.http : url.ws), collection, deletedField, replicationPrimitivesPull, replicationPrimitivesPush, live, retryTime, autoStart);
   var mustUseSocket = url.ws && pull && pull.streamQueryBuilder && live;
   var startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
-
   graphqlReplicationState.start = function () {
     if (mustUseSocket) {
       var wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws));
@@ -177,10 +161,8 @@ export function syncGraphQL(_ref) {
             var _temp5 = function _temp5() {
               pullStream$.next(_data);
             };
-
             var firstField = Object.keys(streamResponse.data)[0];
             var _data = streamResponse.data[firstField];
-
             var _temp6 = function () {
               if (pull.responseModifier) {
                 return Promise.resolve(pull.responseModifier(_data, 'stream')).then(function (_pull$responseModifie2) {
@@ -188,7 +170,6 @@ export function syncGraphQL(_ref) {
                 });
               }
             }();
-
             return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
           } catch (e) {
             return Promise.reject(e);
@@ -202,22 +183,16 @@ export function syncGraphQL(_ref) {
         }
       });
     }
-
     return startBefore();
   };
-
   var cancelBefore = graphqlReplicationState.cancel.bind(graphqlReplicationState);
-
   graphqlReplicationState.cancel = function () {
     pullStream$.complete();
-
     if (mustUseSocket) {
       removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
     }
-
     return cancelBefore();
   };
-
   startReplicationOnLeaderShip(waitForLeadership, graphqlReplicationState);
   return graphqlReplicationState;
 }

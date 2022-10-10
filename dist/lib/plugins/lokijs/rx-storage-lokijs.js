@@ -1,25 +1,17 @@
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxStorageLokiStatics = exports.RxStorageLoki = void 0;
 exports.getRxStorageLoki = getRxStorageLoki;
-
 var _lokijs = _interopRequireDefault(require("lokijs"));
-
 var _util = require("../../util");
-
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
-
 var _lokijsHelper = require("./lokijs-helper");
-
 var _rxStorageHelper = require("../../rx-storage-helper");
-
 var _rxSchemaHelper = require("../../rx-schema-helper");
-
 var RxStorageLokiStatics = {
   prepareQuery: function prepareQuery(_schema, mutateableQuery) {
     if (Object.keys((0, _util.ensureNotFalsy)(mutateableQuery.selector)).length > 0) {
@@ -33,13 +25,11 @@ var RxStorageLokiStatics = {
         _deleted: false
       };
     }
-
     return mutateableQuery;
   },
   getSortComparator: function getSortComparator(schema, query) {
     return (0, _lokijsHelper.getLokiSortComparator)(schema, query);
   },
-
   /**
    * Returns a function that determines if a document matches a query selector.
    * It is important to have the exact same logix as lokijs uses, to be sure
@@ -49,13 +39,11 @@ var RxStorageLokiStatics = {
    * Because I am lazy, I do not copy paste and maintain that code.
    * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
    * same with Collection.
-   */
-  getQueryMatcher: function getQueryMatcher(_schema, query) {
+   */getQueryMatcher: function getQueryMatcher(_schema, query) {
     var fun = function fun(doc) {
       if (doc._deleted) {
         return false;
       }
-
       var docWithResetDeleted = (0, _util.flatClone)(doc);
       docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
       var fakeCollection = {
@@ -71,38 +59,32 @@ var RxStorageLokiStatics = {
       var ret = fakeResultSet.filteredrows.length > 0;
       return ret;
     };
-
     return fun;
   },
   checkpointSchema: _rxSchemaHelper.DEFAULT_CHECKPOINT_SCHEMA
 };
 exports.RxStorageLokiStatics = RxStorageLokiStatics;
-
 var RxStorageLoki = /*#__PURE__*/function () {
   /**
    * Create one leader elector by db name.
    * This is done inside of the storage, not globally
    * to make it easier to test multi-tab behavior.
    */
+
   function RxStorageLoki(databaseSettings) {
     this.name = _lokijsHelper.RX_STORAGE_NAME_LOKIJS;
     this.statics = RxStorageLokiStatics;
     this.leaderElectorByLokiDbName = new Map();
     this.databaseSettings = databaseSettings;
   }
-
   var _proto = RxStorageLoki.prototype;
-
   _proto.createStorageInstance = function createStorageInstance(params) {
     (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
     return (0, _rxStorageInstanceLoki.createLokiStorageInstance)(this, params, this.databaseSettings);
   };
-
   return RxStorageLoki;
 }();
-
 exports.RxStorageLoki = RxStorageLoki;
-
 function getRxStorageLoki() {
   var databaseSettings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var storage = new RxStorageLoki(databaseSettings);

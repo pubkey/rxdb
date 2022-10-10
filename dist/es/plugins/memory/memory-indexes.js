@@ -4,10 +4,12 @@ export function addIndexesToInternalsState(state, schema) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
   var useIndexes = !schema.indexes ? [] : schema.indexes.map(function (row) {
     return Array.isArray(row) ? row.slice(0) : [row];
-  }); // we need this as default index
+  });
 
-  useIndexes.push([primaryPath]); // we need this index for running cleanup()
+  // we need this as default index
+  useIndexes.push([primaryPath]);
 
+  // we need this index for running cleanup()
   useIndexes.push(['_meta.lwt', primaryPath]);
   useIndexes.forEach(function (indexAr) {
     /**
@@ -21,8 +23,9 @@ export function addIndexesToInternalsState(state, schema) {
       docsWithIndex: [],
       getIndexableString: getIndexableStringMonad(schema, indexAr)
     };
-  }); // we need this index for the changes()
+  });
 
+  // we need this index for the changes()
   var changesIndex = ['_meta.lwt', primaryPath];
   var indexName = getMemoryIndexName(changesIndex);
   state.byIndex[indexName] = {

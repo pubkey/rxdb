@@ -4,7 +4,6 @@ import IsomorphicWebSocket from 'isomorphic-ws';
 import { getFromMapOrThrow, randomCouchString } from '../../util';
 import { filter, map, Subject, firstValueFrom, BehaviorSubject } from 'rxjs';
 import { newRxError } from '../../rx-error';
-
 /**
  * Copied and adapter from the 'reconnecting-websocket' npm module.
  * Some bundlers have problems with bundling the isomorphic-ws plugin
@@ -13,17 +12,16 @@ import { newRxError } from '../../rx-error';
  */
 function ensureIsWebsocket(w) {
   var is = typeof w !== 'undefined' && !!w && w.CLOSING === 2;
-
   if (!is) {
     console.dir(w);
     throw new Error('websocket not valid');
   }
 }
+
 /**
  * Reuse the same socket even when multiple
  * collection replicate with the same server at once.
  */
-
 
 export var replicateWithWebsocketServer = function replicateWithWebsocketServer(options) {
   try {
@@ -31,12 +29,10 @@ export var replicateWithWebsocketServer = function replicateWithWebsocketServer(
       var wsClient = socketState.socket;
       var messages$ = socketState.message$;
       var requestCounter = 0;
-
       function getRequestId() {
         var count = requestCounter++;
         return options.collection.database.token + '|' + requestFlag + '|' + count;
       }
-
       var requestFlag = randomCouchString(10);
       var replicationState = replicateRxCollection({
         collection: options.collection,
@@ -98,12 +94,12 @@ export var replicateWithWebsocketServer = function replicateWithWebsocketServer(
            * might have missed out events while being offline.
            */
           replicationState.reSync();
+
           /**
            * Because reconnecting creates a new websocket-instance,
            * we have to start the changestream from the remote again
            * each time.
            */
-
           var streamRequest = {
             id: 'stream',
             collection: options.collection.name,
@@ -131,7 +127,6 @@ export var getWebSocket = function getWebSocket(url, database) {
      */
     var cacheKey = url + '|||' + database.token;
     var has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
-
     if (!has) {
       ensureIsWebsocket(IsomorphicWebSocket);
       var wsClient = new ReconnectingWebSocket(url, [], {
@@ -144,20 +139,15 @@ export var getWebSocket = function getWebSocket(url, database) {
           res();
         };
       });
-
       wsClient.onclose = function () {
         connected$.next(false);
       };
-
       var message$ = new Subject();
-
       wsClient.onmessage = function (messageObj) {
         var message = JSON.parse(messageObj.data);
         message$.next(message);
       };
-
       var error$ = new Subject();
-
       wsClient.onerror = function (err) {
         var emitError = newRxError('RC_STREAM', {
           errors: Array.isArray(err) ? err : [err],
@@ -165,7 +155,6 @@ export var getWebSocket = function getWebSocket(url, database) {
         });
         error$.next(emitError);
       };
-
       has = {
         url: url,
         socket: wsClient,
@@ -179,7 +168,6 @@ export var getWebSocket = function getWebSocket(url, database) {
     } else {
       has.refCount = has.refCount + 1;
     }
-
     return Promise.resolve(has.openPromise).then(function () {
       return has;
     });
@@ -192,7 +180,6 @@ export function removeWebSocketRef(url, database) {
   var cacheKey = url + '|||' + database.token;
   var obj = getFromMapOrThrow(WEBSOCKET_BY_CACHE_KEY, cacheKey);
   obj.refCount = obj.refCount - 1;
-
   if (obj.refCount === 0) {
     WEBSOCKET_BY_CACHE_KEY["delete"](cacheKey);
     obj.connected$.complete();

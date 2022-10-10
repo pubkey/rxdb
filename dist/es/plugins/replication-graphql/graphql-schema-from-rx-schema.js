@@ -3,10 +3,10 @@ import { fillWithDefaultSettings } from '../../rx-schema-helper';
 import { clone, ensureNotFalsy, flatClone, ucfirst } from '../../util';
 // we use two spaces because get-graphql-from-jsonschema does also
 export var SPACING = '  ';
+
 /**
  * Create a GraphQL schema from a given RxJsonSchema
  */
-
 export function graphQLSchemaFromRxSchema(input) {
   var ret = {
     asString: '',
@@ -18,13 +18,14 @@ export function graphQLSchemaFromRxSchema(input) {
   };
   Object.entries(input).forEach(function (_ref) {
     var collectionName = _ref[0],
-        collectionSettings = _ref[1];
+      collectionSettings = _ref[1];
     collectionSettings = fillUpOptionals(collectionSettings);
     var schema = collectionSettings.schema;
     var prefixes = ensureNotFalsy(collectionSettings.prefixes);
     var ucCollectionName = ucfirst(collectionName);
-    var collectionNameInput = ucfirst(collectionName) + 'Input'; // input
+    var collectionNameInput = ucfirst(collectionName) + 'Input';
 
+    // input
     var inputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreInputKeys));
     var inputGraphQL = getGraphqlSchemaFromJsonSchema({
       rootName: collectionNameInput,
@@ -85,14 +86,13 @@ export function graphQLSchemaFromRxSchema(input) {
       schema: headersSchema,
       direction: 'input'
     });
-
     if (ensureNotFalsy(collectionSettings.headerFields).length > 0) {
       ret.inputs = ret.inputs.concat(headersInputGraphQL.typeDefinitions.map(function (str) {
         return replaceTopLevelTypeName(str, headersInputName);
       }));
-    } // output
+    }
 
-
+    // output
     var outputSchema = stripKeysFromSchema(schema, ensureNotFalsy(collectionSettings.ignoreOutputKeys));
     var outputGraphQL = getGraphqlSchemaFromJsonSchema({
       rootName: collectionName,
@@ -126,28 +126,30 @@ export function graphQLSchemaFromRxSchema(input) {
       return replaceTopLevelTypeName(str, ucCollectionName + prefixes.checkpoint);
     })).concat(pullBulkOutputGraphQL.typeDefinitions.map(function (str) {
       return replaceTopLevelTypeName(str, ucCollectionName + prefixes.pullBulk);
-    })); // query
+    }));
 
+    // query
     var queryName = prefixes.pull + ucCollectionName;
     var queryKeys = ['checkpoint: ' + collectionNameInput + prefixes.checkpoint, 'limit: Int!'];
     var queryString = queryName + '(' + queryKeys.join(', ') + '): ' + ucCollectionName + prefixes.pullBulk + '!';
-    ret.queries.push(SPACING + queryString); // mutation
+    ret.queries.push(SPACING + queryString);
 
+    // mutation
     var mutationName = prefixes.push + ucCollectionName;
     var mutationString = mutationName + '(' + collectionName + prefixes.pushRow + ': [' + collectionNameInput + prefixes.pushRow + ']): [' + ucCollectionName + '!]!';
-    ret.mutations.push(SPACING + mutationString); // subscription
+    ret.mutations.push(SPACING + mutationString);
 
+    // subscription
     var subscriptionHeaderInputString = '';
-
     if (collectionSettings.headerFields && collectionSettings.headerFields.length > 0) {
       subscriptionHeaderInputString = '(headers: ' + headersInputName + ')';
     }
-
     var subscriptionName = prefixes.stream + ucCollectionName;
     var subscriptionString = subscriptionName + subscriptionHeaderInputString + ': ' + ucCollectionName + prefixes.pullBulk + '!';
     ret.subscriptions.push(SPACING + subscriptionString);
-  }); // build full string
+  });
 
+  // build full string
   var fullQueryString = 'type Query {\n' + ret.queries.join('\n') + '\n}\n';
   var fullMutationString = 'type Mutation {\n' + ret.mutations.join('\n') + '\n}\n';
   var fullSubscriptionString = 'type Subscription {\n' + ret.subscriptions.join('\n') + '\n}\n';
@@ -159,77 +161,64 @@ export function graphQLSchemaFromRxSchema(input) {
 }
 export function fillUpOptionals(input) {
   input = flatClone(input);
-  var schema = fillWithDefaultSettings(input.schema); // strip internal attributes
-
+  var schema = fillWithDefaultSettings(input.schema);
+  // strip internal attributes
   Object.keys(schema.properties).forEach(function (key) {
     if (key.startsWith('_')) {
       delete schema.properties[key];
     }
   });
-  input.schema = schema; // add deleted field to schema
+  input.schema = schema;
 
+  // add deleted field to schema
   if (!input.deletedField) {
     input.deletedField = '_deleted';
   }
-
   schema.properties[input.deletedField] = {
     type: 'boolean'
   };
-  schema.required.push(input.deletedField); // fill up prefixes
+  schema.required.push(input.deletedField);
 
+  // fill up prefixes
   if (!input.prefixes) {
     input.prefixes = {};
   }
-
   var prefixes = input.prefixes;
-
   if (!prefixes.push) {
     prefixes.push = 'push';
   }
-
   if (!prefixes.pushRow) {
     prefixes.pushRow = 'PushRow';
   }
-
   if (!prefixes.checkpoint) {
     prefixes.checkpoint = 'Checkpoint';
   }
-
   if (!prefixes.pull) {
     prefixes.pull = 'pull';
   }
-
   if (!prefixes.pullBulk) {
     prefixes.pullBulk = 'PullBulk';
   }
-
   if (!prefixes.stream) {
     prefixes.stream = 'stream';
   }
-
   if (!prefixes.headers) {
     prefixes.headers = 'Headers';
   }
-
   if (!input.headerFields) {
     input.headerFields = [];
   }
-
   if (!input.withRevisions) {
     input.withRevisions = false;
   }
-
   if (!input.ignoreInputKeys) {
     input.ignoreInputKeys = [];
   }
-
   if (!input.ignoreOutputKeys) {
     input.ignoreOutputKeys = [];
   }
-
   return input;
 }
-
 function stripKeysFromSchema(schema, strip) {
   var cloned = clone(schema);
   strip.forEach(function (key) {
@@ -237,12 +226,11 @@ function stripKeysFromSchema(schema, strip) {
   });
   return cloned;
 }
+
 /**
  * get-graphql-from-jsonschema add a T0-suffix
  * that we do not want for the top level type
  */
-
-
 function replaceTopLevelTypeName(str, ucCollectionName) {
   return str.replace(' ' + ucCollectionName + 'T0 ', ' ' + ucCollectionName + ' ');
 }

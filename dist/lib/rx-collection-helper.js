@@ -6,22 +6,15 @@ Object.defineProperty(exports, "__esModule", {
 exports.createRxCollectionStorageInstance = void 0;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 exports.removeCollectionStorages = void 0;
-
 var _util = require("./util");
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var _hooks = require("./hooks");
-
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
-
 var _rxStorageHelper = require("./rx-storage-helper");
-
 /**
  * Removes the main storage of the collection
  * and all connected storages like the ones from the replication meta etc.
- */
-var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
+ */var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
 /**
  * If no hash function is provided,
  * we assume that the whole internal store is removed anyway
@@ -47,20 +40,21 @@ hashFunction) {
             schema: row.schema
           });
         });
-      }); // ensure uniqueness
+      });
 
+      // ensure uniqueness
       var alreadyAdded = new Set();
       removeStorages = removeStorages.filter(function (row) {
         var key = row.collectionName + '||' + row.schema.version;
-
         if (alreadyAdded.has(key)) {
           return false;
         } else {
           alreadyAdded.add(key);
           return true;
         }
-      }); // remove all the storages
+      });
 
+      // remove all the storages
       return Promise.resolve(Promise.all(removeStorages.map(function (row) {
         try {
           return Promise.resolve(storage.createStorageInstance({
@@ -81,7 +75,6 @@ hashFunction) {
                   })).then(function () {});
                 }
               }();
-
               if (_temp2 && _temp2.then) return _temp2.then(function () {});
             });
           });
@@ -104,7 +97,6 @@ hashFunction) {
             return Promise.resolve(databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all')).then(function () {});
           }
         }();
-
         if (_temp && _temp.then) return _temp.then(function () {});
       }); // remove the meta documents
     });
@@ -112,13 +104,10 @@ hashFunction) {
     return Promise.reject(e);
   }
 };
-
 exports.removeCollectionStorages = removeCollectionStorages;
-
 /**
  * Creates the storage instances that are used internally in the collection
- */
-var createRxCollectionStorageInstance = function createRxCollectionStorageInstance(rxDatabase, storageInstanceCreationParams) {
+ */var createRxCollectionStorageInstance = function createRxCollectionStorageInstance(rxDatabase, storageInstanceCreationParams) {
   try {
     storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
     return Promise.resolve(rxDatabase.storage.createStorageInstance(storageInstanceCreationParams));
@@ -126,9 +115,7 @@ var createRxCollectionStorageInstance = function createRxCollectionStorageInstan
     return Promise.reject(e);
   }
 };
-
 exports.createRxCollectionStorageInstance = createRxCollectionStorageInstance;
-
 /**
  * fills in the default data.
  * This also clones the data.
@@ -137,19 +124,15 @@ function fillObjectDataBeforeInsert(schema, data) {
   var useJson = schema.fillObjectWithDefaults(data);
   useJson = (0, _rxSchemaHelper.fillPrimaryKey)(schema.primaryPath, schema.jsonSchema, useJson);
   useJson._meta = (0, _util.getDefaultRxDocumentMeta)();
-
   if (!useJson.hasOwnProperty('_deleted')) {
     useJson._deleted = false;
   }
-
   if (!useJson.hasOwnProperty('_attachments')) {
     useJson._attachments = {};
   }
-
   if (!useJson.hasOwnProperty('_rev')) {
     useJson._rev = (0, _util.getDefaultRevision)();
   }
-
   return useJson;
 }
 //# sourceMappingURL=rx-collection-helper.js.map

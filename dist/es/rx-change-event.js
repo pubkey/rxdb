@@ -2,6 +2,7 @@
  * RxChangeEvents a emitted when something in the database changes
  * they can be grabbed by the observables of database, collection and document
  */
+
 import { overwritable } from './overwritable';
 export function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
   if (rxChangeEvent.documentData) {
@@ -10,13 +11,13 @@ export function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
     return rxChangeEvent.previousDocumentData;
   }
 }
+
 /**
  * Might return null which means an
  * already deleted document got modified but still is deleted.
  * Theses kind of events are not relevant for the event-reduce algorithm
  * and must be filtered out.
  */
-
 export function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
   switch (rxChangeEvent.operation) {
     case 'INSERT':
@@ -26,7 +27,6 @@ export function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
         doc: rxChangeEvent.documentData,
         previous: null
       };
-
     case 'UPDATE':
       return {
         operation: rxChangeEvent.operation,
@@ -34,7 +34,6 @@ export function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
         doc: overwritable.deepFreezeWhenDevMode(rxChangeEvent.documentData),
         previous: rxChangeEvent.previousDocumentData ? rxChangeEvent.previousDocumentData : 'UNKNOWN'
       };
-
     case 'DELETE':
       return {
         operation: rxChangeEvent.operation,
@@ -44,14 +43,13 @@ export function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
       };
   }
 }
+
 /**
  * Flattens the given events into a single array of events.
  * Used mostly in tests.
  */
-
 export function flattenEvents(input) {
   var output = [];
-
   if (Array.isArray(input)) {
     input.forEach(function (inputItem) {
       var add = flattenEvents(inputItem);
@@ -67,7 +65,6 @@ export function flattenEvents(input) {
       output.push(input);
     }
   }
-
   var usedIds = new Set();
   var nonDuplicate = [];
   output.forEach(function (ev) {

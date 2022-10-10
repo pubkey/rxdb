@@ -5,25 +5,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxStorageInstanceDexie = void 0;
 exports.createDexieStorageInstance = createDexieStorageInstance;
-
 var _rxjs = require("rxjs");
-
 var _util = require("../../util");
-
 var _dexieHelper = require("./dexie-helper");
-
 var _dexieQuery = require("./dexie-query");
-
 var _rxSchemaHelper = require("../../rx-schema-helper");
-
 var _rxStorageHelper = require("../../rx-storage-helper");
-
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
-
 var _rxError = require("../../rx-error");
-
 var instanceId = (0, _util.now)();
-
 var RxStorageInstanceDexie = /*#__PURE__*/function () {
   function RxStorageInstanceDexie(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.changes$ = new _rxjs.Subject();
@@ -38,13 +28,10 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     this.settings = settings;
     this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
   }
-
   var _proto = RxStorageInstanceDexie.prototype;
-
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
       var _this2 = this;
-
       ensureNotClosed(_this2);
       return Promise.resolve(_this2.internals).then(function (state) {
         var ret = {
@@ -61,20 +48,18 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
             return Promise.resolve((0, _dexieHelper.getDocsInDb)(_this2.internals, documentKeys)).then(function (docsInDbWithInternals) {
               docsInDbWithInternals.forEach(function (docWithDexieInternals) {
                 var doc = docWithDexieInternals ? (0, _dexieHelper.fromDexieToStorage)(docWithDexieInternals) : docWithDexieInternals;
-
                 if (doc) {
                   docsInDbMap.set(doc[_this2.primaryPath], doc);
                 }
-
                 return doc;
               });
               categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(_this2, _this2.primaryPath, docsInDbMap, documentWrites, context);
               ret.error = categorized.errors;
+
               /**
                * Batch up the database operations
                * so we can later run them in bulk.
                */
-
               var bulkPutDocs = [];
               var bulkRemoveDocs = [];
               var bulkPutDeletedDocs = [];
@@ -87,7 +72,6 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
               categorized.bulkUpdateDocs.forEach(function (row) {
                 var docId = row.document[_this2.primaryPath];
                 ret.success[docId] = row.document;
-
                 if (row.document._deleted && row.previous && !row.previous._deleted) {
                   // newly deleted
                   bulkRemoveDocs.push(docId);
@@ -126,10 +110,8 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
             (0, _util.ensureNotFalsy)(categorized).eventBulk.events.forEach(function (event) {
               return event.endTime = endTime;
             });
-
             _this2.changes$.next((0, _util.ensureNotFalsy)(categorized).eventBulk);
           }
-
           return ret;
         });
       });
@@ -137,11 +119,9 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
     try {
       var _this4 = this;
-
       ensureNotClosed(_this4);
       return Promise.resolve(_this4.internals).then(function (state) {
         var ret = {};
@@ -150,15 +130,12 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
             var _temp3 = function _temp3() {
               ids.forEach(function (id, idx) {
                 var documentInDb = docsInDb[idx];
-
                 if (documentInDb && (!documentInDb._deleted || deleted)) {
                   ret[id] = (0, _dexieHelper.fromDexieToStorage)(documentInDb);
                 }
               });
             };
-
             var docsInDb;
-
             var _temp4 = function () {
               if (deleted) {
                 return Promise.resolve((0, _dexieHelper.getDocsInDb)(_this4.internals, ids)).then(function (_getDocsInDb) {
@@ -170,7 +147,6 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                 });
               }
             }();
-
             return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
           } catch (e) {
             return Promise.reject(e);
@@ -183,16 +159,13 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.query = function query(preparedQuery) {
     ensureNotClosed(this);
     return (0, _dexieQuery.dexieQuery)(this, preparedQuery);
   };
-
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
       var _this6 = this;
-
       ensureNotClosed(_this6);
       var sinceLwt = checkpoint ? checkpoint.lwt : _util.RX_META_LWT_MINIMUM;
       var sinceId = checkpoint ? checkpoint.id : '';
@@ -210,7 +183,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
           }
         }))).then(function (_ref) {
           var changedDocsNormal = _ref[0],
-              changedDocsDeleted = _ref[1];
+            changedDocsDeleted = _ref[1];
           var changedDocs = changedDocsNormal.concat(changedDocsDeleted);
           changedDocs = (0, _util.sortDocumentsByLastWriteTime)(_this6.primaryPath, changedDocs);
           changedDocs = changedDocs.slice(0, limit);
@@ -231,11 +204,9 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.remove = function remove() {
     try {
       var _this8 = this;
-
       ensureNotClosed(_this8);
       return Promise.resolve(_this8.internals).then(function (state) {
         return Promise.resolve(Promise.all([state.dexieDeletedTable.clear(), state.dexieTable.clear()])).then(function () {
@@ -246,16 +217,13 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.changeStream = function changeStream() {
     ensureNotClosed(this);
     return this.changes$.asObservable();
   };
-
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     try {
       var _this10 = this;
-
       ensureNotClosed(_this10);
       return Promise.resolve(_this10.internals).then(function (state) {
         return Promise.resolve(state.dexieDb.transaction('rw', state.dexieDeletedTable, function () {
@@ -284,12 +252,10 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
     ensureNotClosed(this);
     throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
   };
-
   _proto.close = function close() {
     ensureNotClosed(this);
     this.closed = true;
@@ -297,27 +263,21 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     (0, _dexieHelper.closeDexieDb)(this.internals);
     return _util.PROMISE_RESOLVE_VOID;
   };
-
   _proto.conflictResultionTasks = function conflictResultionTasks() {
     return new _rxjs.Subject();
   };
-
   _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
     return Promise.resolve();
   };
-
   return RxStorageInstanceDexie;
 }();
-
 exports.RxStorageInstanceDexie = RxStorageInstanceDexie;
-
 function createDexieStorageInstance(storage, params, settings) {
   var internals = (0, _dexieHelper.getDexieDbWithTables)(params.databaseName, params.collectionName, settings, params.schema);
   var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
   (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(_dexieHelper.RX_STORAGE_NAME_DEXIE, params, instance);
   return Promise.resolve(instance);
 }
-
 function ensureNotClosed(instance) {
   if (instance.closed) {
     throw new Error('RxStorageInstanceDexie is closed ' + instance.databaseName + '-' + instance.collectionName);

@@ -7,16 +7,15 @@
  * @link https://github.com/aheckmann/mquery/commit/792e69fd0a7281a0300be5cade5a6d7c1d468ad4
  */
 var SPECIAL_PROPERTIES = ['__proto__', 'constructor', 'prototype'];
+
 /**
  * Merges 'from' into 'to' without overwriting existing properties.
  */
-
 export function merge(to, from) {
   Object.keys(from).forEach(function (key) {
     if (SPECIAL_PROPERTIES.includes(key)) {
       return;
     }
-
     if (typeof to[key] === 'undefined') {
       to[key] = from[key];
     } else {
@@ -24,10 +23,10 @@ export function merge(to, from) {
     }
   });
 }
+
 /**
  * Determines if `arg` is an object.
  */
-
 export function isObject(arg) {
   return '[object Object]' === arg.toString();
 }

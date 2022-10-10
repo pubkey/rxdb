@@ -7,9 +7,7 @@ var _exportNames = {
   RxDBCleanupPlugin: true
 };
 exports.RxDBCleanupPlugin = void 0;
-
 var _cleanup = require("./cleanup");
-
 Object.keys(_cleanup).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;

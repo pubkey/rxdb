@@ -10,7 +10,6 @@ export function getValidator(schema) {
   var validator = isMyJsonValid(schema);
   return function (docData) {
     var isValid = validator(docData);
-
     if (!isValid) {
       throw newRxError('VD2', {
         errors: validator.errors,

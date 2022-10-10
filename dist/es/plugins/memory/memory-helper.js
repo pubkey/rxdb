@@ -12,7 +12,6 @@ export function ensureNotRemoved(instance) {
 export function attachmentMapKey(documentId, attachmentId) {
   return documentId + '||' + attachmentId;
 }
-
 var SORT_BY_INDEX_STRING = function SORT_BY_INDEX_STRING(a, b) {
   if (a.indexString < b.indexString) {
     return -1;
@@ -20,38 +19,32 @@ var SORT_BY_INDEX_STRING = function SORT_BY_INDEX_STRING(a, b) {
     return 1;
   }
 };
-
 export function putWriteRowToState(docId, state, stateByIndex, row, docInState) {
   state.documents.set(docId, row.document);
   stateByIndex.forEach(function (byIndex) {
     var docsWithIndex = byIndex.docsWithIndex;
     var newIndexString = byIndex.getIndexableString(row.document);
-
     var _pushAtSortPosition = pushAtSortPosition(docsWithIndex, {
-      id: docId,
-      doc: row.document,
-      indexString: newIndexString
-    }, SORT_BY_INDEX_STRING, true),
-        insertPosition = _pushAtSortPosition[1];
+        id: docId,
+        doc: row.document,
+        indexString: newIndexString
+      }, SORT_BY_INDEX_STRING, true),
+      insertPosition = _pushAtSortPosition[1];
+
     /**
      * Remove previous if it was in the state
      */
-
-
     if (docInState) {
       var previousIndexString = byIndex.getIndexableString(docInState);
-
       if (previousIndexString === newIndexString) {
         /**
          * Index not changed -> The old doc must be before or after the new one.
          */
         var prev = docsWithIndex[insertPosition - 1];
-
         if (prev && prev.id === docId) {
           docsWithIndex.splice(insertPosition - 1, 1);
         } else {
           var next = docsWithIndex[insertPosition + 1];
-
           if (next.id === docId) {
             docsWithIndex.splice(insertPosition + 1, 1);
           } else {

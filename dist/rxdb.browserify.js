@@ -2,20 +2,16 @@
 "use strict";
 
 require("@babel/polyfill");
-
 var RxDB = _interopRequireWildcard(require("./index.js"));
-
 var RxDbPouchPlugin = _interopRequireWildcard(require("./plugins/pouchdb/index.js"));
-
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 /**
  * this is the index for a browserify-build
  * which produces a single file that can be embeded into the html
  * and used via window.RxDB
  */
+
 RxDbPouchPlugin.addPouchPlugin(require('pouchdb-adapter-idb'));
 RxDbPouchPlugin.addPouchPlugin(require('pouchdb-adapter-http'));
 window['RxDB'] = RxDB;
@@ -28,20 +24,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ChangeEventBuffer = void 0;
 exports.createChangeEventBuffer = createChangeEventBuffer;
-
 var _operators = require("rxjs/operators");
-
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
- */
-var ChangeEventBuffer = /*#__PURE__*/function () {
+ */var ChangeEventBuffer = /*#__PURE__*/function () {
   /**
    * array with changeEvents
    * starts with oldest known event, ends with newest
    */
+
   function ChangeEventBuffer(collection) {
     var _this = this;
-
     this.subs = [];
     this.limit = 100;
     this.counter = 0;
@@ -54,24 +47,20 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
       return _this._handleChangeEvent(cE);
     }));
   }
-
   var _proto = ChangeEventBuffer.prototype;
-
   _proto._handleChangeEvent = function _handleChangeEvent(changeEvent) {
     this.counter++;
     this.buffer.push(changeEvent);
     this.eventCounterMap.set(changeEvent, this.counter);
-
     while (this.buffer.length > this.limit) {
       this.buffer.shift();
     }
   }
+
   /**
    * gets the array-index for the given pointer
    * @return arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
-   */
-  ;
-
+   */;
   _proto.getArrayIndexByPointer = function getArrayIndexByPointer(pointer) {
     var oldestEvent = this.buffer[0];
     var oldestCounter = this.eventCounterMap.get(oldestEvent);
@@ -80,22 +69,20 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
     var rest = pointer - oldestCounter;
     return rest;
   }
+
   /**
    * get all changeEvents which came in later than the pointer-event
    * @return array with change-events. Iif null, pointer out of bounds
-   */
-  ;
-
+   */;
   _proto.getFrom = function getFrom(pointer) {
     var ret = [];
     var currentIndex = this.getArrayIndexByPointer(pointer);
-    if (currentIndex === null) // out of bounds
+    if (currentIndex === null)
+      // out of bounds
       return null;
-
     while (true) {
       var nextEvent = this.buffer[currentIndex];
       currentIndex++;
-
       if (!nextEvent) {
         return ret;
       } else {
@@ -103,10 +90,8 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
       }
     }
   };
-
   _proto.runFrom = function runFrom(pointer, fn) {
     var ret = this.getFrom(pointer);
-
     if (ret === null) {
       throw new Error('out of bounds');
     } else {
@@ -115,36 +100,31 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
       });
     }
   }
+
   /**
    * no matter how many operations are done on one document,
    * only the last operation has to be checked to calculate the new state
    * this function reduces the events to the last ChangeEvent of each doc
-   */
-  ;
-
+   */;
   _proto.reduceByLastOfDoc = function reduceByLastOfDoc(changeEvents) {
-    return changeEvents.slice(0); // TODO the old implementation was wrong
+    return changeEvents.slice(0);
+    // TODO the old implementation was wrong
     // because it did not correctly reassigned the previousData of the changeevents
     // this should be added to the event-reduce library and not be done in RxDB
-
     var docEventMap = {};
     changeEvents.forEach(function (changeEvent) {
       docEventMap[changeEvent.documentId] = changeEvent;
     });
     return Object.values(docEventMap);
   };
-
   _proto.destroy = function destroy() {
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
   };
-
   return ChangeEventBuffer;
 }();
-
 exports.ChangeEventBuffer = ChangeEventBuffer;
-
 function createChangeEventBuffer(collection) {
   return new ChangeEventBuffer(collection);
 }
@@ -160,13 +140,9 @@ exports.getNumberIndexString = getNumberIndexString;
 exports.getStartIndexStringFromLowerBound = getStartIndexStringFromLowerBound;
 exports.getStartIndexStringFromUpperBound = getStartIndexStringFromUpperBound;
 exports.getStringLengthOfIndexNumber = getStringLengthOfIndexNumber;
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var _util = require("./util");
-
 var _queryPlanner = require("./query-planner");
-
 /**
  * For some RxStorage implementations,
  * we need to use our custom crafted indexes
@@ -195,11 +171,9 @@ function getIndexableStringMonad(schema, index) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
     var type = schemaPart.type;
     var parsedLengths;
-
     if (type === 'number' || type === 'integer') {
       parsedLengths = getStringLengthOfIndexNumber(schemaPart);
     }
-
     return {
       fieldName: fieldName,
       schemaPart: schemaPart,
@@ -208,39 +182,32 @@ function getIndexableStringMonad(schema, index) {
       getValueFn: (0, _util.objectPathMonad)(fieldName)
     };
   });
-
   var ret = function ret(docData) {
     var str = '';
     fieldNameProperties.forEach(function (props) {
       var schemaPart = props.schemaPart;
       var type = schemaPart.type;
       var fieldValue = props.getValueFn(docData);
-
       if (type === 'string') {
         if (!fieldValue) {
           fieldValue = '';
         }
-
         str += fieldValue.padStart(schemaPart.maxLength, ' ');
       } else if (type === 'boolean') {
         var boolToStr = fieldValue ? '1' : '0';
         str += boolToStr;
       } else {
         var parsedLengths = (0, _util.ensureNotFalsy)(props.parsedLengths);
-
         if (!fieldValue) {
           fieldValue = 0;
         }
-
         str += getNumberIndexString(parsedLengths, fieldValue);
       }
     });
     return str;
   };
-
   return ret;
 }
-
 function getStringLengthOfIndexNumber(schemaPart) {
   var minimum = Math.floor(schemaPart.minimum);
   var maximum = Math.ceil(schemaPart.maximum);
@@ -249,18 +216,15 @@ function getStringLengthOfIndexNumber(schemaPart) {
   var nonDecimals = valueSpan.toString().length;
   var multipleOfParts = multipleOf.toString().split('.');
   var decimals = 0;
-
   if (multipleOfParts.length > 1) {
     decimals = multipleOfParts[1].length;
   }
-
   return {
     nonDecimals: nonDecimals,
     decimals: decimals,
     roundedMinimum: minimum
   };
 }
-
 function getNumberIndexString(parsedLengths, fieldValue) {
   var str = '';
   var nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
@@ -270,26 +234,21 @@ function getNumberIndexString(parsedLengths, fieldValue) {
   str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
   return str;
 }
-
 function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
   var str = '';
   index.forEach(function (fieldName, idx) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
     var bound = lowerBound[idx];
     var type = schemaPart.type;
-
     switch (type) {
       case 'string':
         var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
-
         if (typeof bound === 'string') {
           str += bound.padStart(maxLength, ' ');
         } else {
           str += ''.padStart(maxLength, ' ');
         }
-
         break;
-
       case 'boolean':
         if (bound === null) {
           str += '0';
@@ -297,47 +256,37 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
           var boolToStr = bound ? '1' : '0';
           str += boolToStr;
         }
-
         break;
-
       case 'number':
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-
         if (bound === null) {
           str += '0'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);
         }
-
         break;
-
       default:
         throw new Error('unknown index type ' + type);
     }
   });
   return str;
 }
-
 function getStartIndexStringFromUpperBound(schema, index, upperBound) {
   var str = '';
   index.forEach(function (fieldName, idx) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
     var bound = upperBound[idx];
     var type = schemaPart.type;
-
     switch (type) {
       case 'string':
         var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
-
         if (typeof bound === 'string') {
           str += bound.padStart(maxLength, _queryPlanner.INDEX_MAX);
         } else {
           str += ''.padStart(maxLength, _queryPlanner.INDEX_MAX);
         }
-
         break;
-
       case 'boolean':
         if (bound === null) {
           str += '1';
@@ -345,21 +294,16 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
           var boolToStr = bound ? '1' : '0';
           str += boolToStr;
         }
-
         break;
-
       case 'number':
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-
         if (bound === null || bound === _queryPlanner.INDEX_MAX) {
           str += '9'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);
         }
-
         break;
-
       default:
         throw new Error('unknown index type ' + type);
     }
@@ -374,30 +318,23 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DocCache = void 0;
-
 var DocCache = /*#__PURE__*/function () {
   function DocCache() {
     this._map = new Map();
     this._map = new Map();
   }
-
   var _proto = DocCache.prototype;
-
   _proto.get = function get(id) {
     return this._map.get(id);
   };
-
   _proto.set = function set(id, obj) {
     return this._map.set(id, obj);
   };
-
   _proto["delete"] = function _delete(id) {
     return this._map["delete"](id);
   };
-
   return DocCache;
 }();
-
 exports.DocCache = DocCache;
 
 },{}],5:[function(require,module,exports){
@@ -410,15 +347,10 @@ exports.RXQUERY_QUERY_PARAMS_CACHE = void 0;
 exports.calculateNewResults = calculateNewResults;
 exports.getQueryParams = getQueryParams;
 exports.getSortFieldsOfQuery = getSortFieldsOfQuery;
-
 var _eventReduceJs = require("event-reduce-js");
-
 var _rxChangeEvent = require("./rx-change-event");
-
 var _util = require("./util");
-
 var _rxQueryHelper = require("./rx-query-helper");
-
 function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
     return [primaryKey];
@@ -428,24 +360,21 @@ function getSortFieldsOfQuery(primaryKey, query) {
     });
   }
 }
-
 var RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
 exports.RXQUERY_QUERY_PARAMS_CACHE = RXQUERY_QUERY_PARAMS_CACHE;
-
 function getQueryParams(rxQuery) {
   if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
     var collection = rxQuery.collection;
     var preparedQuery = rxQuery.getPreparedQuery();
     var normalizedMangoQuery = (0, _rxQueryHelper.normalizeMangoQuery)(collection.storageInstance.schema, (0, _util.clone)(rxQuery.mangoQuery));
     var primaryKey = collection.schema.primaryPath;
+
     /**
      * Create a custom sort comparator
      * that uses the hooks to ensure
      * we send for example compressed documents to be sorted by compressed queries.
      */
-
     var sortComparator = collection.database.storage.statics.getSortComparator(collection.schema.jsonSchema, preparedQuery);
-
     var useSortComparator = function useSortComparator(docA, docB) {
       var sortComparatorData = {
         docA: docA,
@@ -454,15 +383,13 @@ function getQueryParams(rxQuery) {
       };
       return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
     };
+
     /**
      * Create a custom query matcher
      * that uses the hooks to ensure
      * we send for example compressed documents to match compressed queries.
      */
-
-
     var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.schema.jsonSchema, preparedQuery);
-
     var useQueryMatcher = function useQueryMatcher(doc) {
       var queryMatcherData = {
         doc: doc,
@@ -470,7 +397,6 @@ function getQueryParams(rxQuery) {
       };
       return queryMatcher(queryMatcherData.doc);
     };
-
     var ret = {
       primaryKey: rxQuery.collection.schema.primaryPath,
       skip: normalizedMangoQuery.skip,
@@ -485,14 +411,12 @@ function getQueryParams(rxQuery) {
     return RXQUERY_QUERY_PARAMS_CACHE.get(rxQuery);
   }
 }
-
 function calculateNewResults(rxQuery, rxChangeEvents) {
   if (!rxQuery.collection.database.eventReduce) {
     return {
       runFullQueryAgain: true
     };
   }
-
   var queryParams = getQueryParams(rxQuery);
   var previousResults = (0, _util.ensureNotFalsy)(rxQuery._result).docsData.slice(0);
   var previousResultsMap = (0, _util.ensureNotFalsy)(rxQuery._result).docsDataMap;
@@ -508,7 +432,6 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
       keyDocumentMap: previousResultsMap
     };
     var actionName = (0, _eventReduceJs.calculateActionName)(stateResolveFunctionInput);
-
     if (actionName === 'runFullQueryAgain') {
       return true;
     } else if (actionName !== 'doNothing') {
@@ -517,7 +440,6 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
       return false;
     }
   });
-
   if (foundNonOptimizeable) {
     return {
       runFullQueryAgain: true
@@ -541,7 +463,6 @@ exports.HOOKS = void 0;
 exports._clearHook = _clearHook;
 exports.runAsyncPluginHooks = runAsyncPluginHooks;
 exports.runPluginHooks = runPluginHooks;
-
 /**
  * hook-functions that can be extended by the plugin
  */
@@ -551,12 +472,10 @@ var HOOKS = {
    * Use this to block the usage of non-compatible plugins.
    */
   preAddRxPlugin: [],
-
   /**
    * functions that run before the database is created
    */
   preCreateRxDatabase: [],
-
   /**
    * runs after the database is created and prepared
    * but before the instance is returned to the user
@@ -565,45 +484,38 @@ var HOOKS = {
   createRxDatabase: [],
   preCreateRxCollection: [],
   createRxCollection: [],
-
   /**
   * runs at the end of the destroy-process of a collection
   * @async
   */
   postDestroyRxCollection: [],
-
   /**
    * Runs after a collection is removed.
    * @async
    */
   postRemoveRxCollection: [],
-
   /**
     * functions that get the json-schema as input
     * to do additionally checks/manipulation
     */
   preCreateRxSchema: [],
-
   /**
    * functions that run after the RxSchema is created
    * gets RxSchema as attribute
    */
   createRxSchema: [],
   preCreateRxQuery: [],
-
   /**
    * Runs before a query is send to the
    * prepareQuery function of the storage engine.
    */
   prePrepareQuery: [],
   createRxDocument: [],
-
   /**
    * runs after a RxDocument is created,
    * cannot be async
    */
   postCreateRxDocument: [],
-
   /**
    * Runs before a RxStorageInstance is created
    * gets the params of createStorageInstance()
@@ -611,7 +523,6 @@ var HOOKS = {
    * Notice that you have to clone stuff before mutating the inputs.
    */
   preCreateRxStorageInstance: [],
-
   /**
    * runs on the document-data before the document is migrated
    * {
@@ -620,17 +531,14 @@ var HOOKS = {
    * }
    */
   preMigrateDocument: [],
-
   /**
    * runs after the migration of a document has been done
    */
   postMigrateDocument: [],
-
   /**
    * runs at the beginning of the destroy-process of a database
    */
   preDestroyRxDatabase: [],
-
   /**
    * runs after a database has been removed
    * @async
@@ -638,29 +546,26 @@ var HOOKS = {
   postRemoveRxDatabase: []
 };
 exports.HOOKS = HOOKS;
-
 function runPluginHooks(hookKey, obj) {
   HOOKS[hookKey].forEach(function (fun) {
     return fun(obj);
   });
 }
+
 /**
  * TODO
  * we should not run the hooks in parallel
  * this makes stuff unpredictable.
  */
-
-
 function runAsyncPluginHooks(hookKey, obj) {
   return Promise.all(HOOKS[hookKey].map(function (fun) {
     return fun(obj);
   }));
 }
+
 /**
  * used in tests to remove hooks
  */
-
-
 function _clearHook(type, fun) {
   HOOKS[type] = HOOKS[type].filter(function (h) {
     return h !== fun;
@@ -843,19 +748,12 @@ Object.defineProperty(exports, "toTypedRxJsonSchema", {
     return _rxSchema.toTypedRxJsonSchema;
   }
 });
-
 require("./types/modules/graphql-client.d");
-
 require("./types/modules/mocha.parallel.d");
-
 require("./types/modules/modifiyjs.d");
-
 var _plugin = require("./plugin");
-
 var _rxDatabase = require("./rx-database");
-
 var _rxError = require("./rx-error");
-
 Object.keys(_rxError).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -867,9 +765,7 @@ Object.keys(_rxError).forEach(function (key) {
     }
   });
 });
-
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
-
 Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -881,23 +777,14 @@ Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
     }
   });
 });
-
 var _overwritable = require("./overwritable");
-
 var _rxCollection = require("./rx-collection");
-
 var _rxCollectionHelper = require("./rx-collection-helper");
-
 var _rxDocument = require("./rx-document");
-
 var _rxChangeEvent = require("./rx-change-event");
-
 var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
-
 var _rxQuery = require("./rx-query");
-
 var _rxQueryHelper = require("./rx-query-helper");
-
 Object.keys(_rxQueryHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -909,11 +796,8 @@ Object.keys(_rxQueryHelper).forEach(function (key) {
     }
   });
 });
-
 var _rxSchema = require("./rx-schema");
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 Object.keys(_rxSchemaHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -925,9 +809,7 @@ Object.keys(_rxSchemaHelper).forEach(function (key) {
     }
   });
 });
-
 var _rxStorageHelper = require("./rx-storage-helper");
-
 Object.keys(_rxStorageHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -939,9 +821,7 @@ Object.keys(_rxStorageHelper).forEach(function (key) {
     }
   });
 });
-
 var _index = require("./replication-protocol/index");
-
 Object.keys(_index).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -953,9 +833,7 @@ Object.keys(_index).forEach(function (key) {
     }
   });
 });
-
 var _rxStorageMultiinstance = require("./rx-storage-multiinstance");
-
 Object.keys(_rxStorageMultiinstance).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -967,9 +845,7 @@ Object.keys(_rxStorageMultiinstance).forEach(function (key) {
     }
   });
 });
-
 var _customIndex = require("./custom-index");
-
 Object.keys(_customIndex).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -981,9 +857,7 @@ Object.keys(_customIndex).forEach(function (key) {
     }
   });
 });
-
 var _queryPlanner = require("./query-planner");
-
 Object.keys(_queryPlanner).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -995,9 +869,7 @@ Object.keys(_queryPlanner).forEach(function (key) {
     }
   });
 });
-
 var _pluginHelpers = require("./plugin-helpers");
-
 Object.keys(_pluginHelpers).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -1009,11 +881,8 @@ Object.keys(_pluginHelpers).forEach(function (key) {
     }
   });
 });
-
 var _hooks = require("./hooks");
-
 var _queryCache = require("./query-cache");
-
 Object.keys(_queryCache).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -1025,9 +894,7 @@ Object.keys(_queryCache).forEach(function (key) {
     }
   });
 });
-
 var _util = require("./util");
-
 Object.keys(_util).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -1047,37 +914,32 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.overwritable = void 0;
-
 /**
  * functions that can or should be overwritten by plugins
  * IMPORTANT: Do not import any big stuff from RxDB here!
  * An 'overwritable' can be used inside WebWorkers for RxStorage only,
  * and we do not want to have the full RxDB lib bundled in them.
  */
+
 var overwritable = {
   /**
    * if this method is overwritten with one
    * that returns true, we do additional checks
    * which help the developer but have bad performance
-   */
-  isDevMode: function isDevMode() {
+   */isDevMode: function isDevMode() {
     return false;
   },
-
   /**
    * Deep freezes and object when in dev-mode.
    * Deep-Freezing has the same performance as deep-cloning, so we only do that in dev-mode.
    * Also, we can ensure the readonly state via typescript
    * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
-   */
-  deepFreezeWhenDevMode: function deepFreezeWhenDevMode(obj) {
+   */deepFreezeWhenDevMode: function deepFreezeWhenDevMode(obj) {
     return obj;
   },
-
   /**
    * overwritten to map error-codes to text-messages
-   */
-  tunnelErrorMessage: function tunnelErrorMessage(message) {
+   */tunnelErrorMessage: function tunnelErrorMessage(message) {
     return "RxDB Error-Code " + message + ".\n        Error messages are not included in RxDB core to reduce build size.\n        - To find out what this error means, either use the dev-mode-plugin https://rxdb.info/dev-mode.html\n        - or search for the error code here: https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
 };
@@ -1091,21 +953,18 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.wrapRxStorageInstance = wrapRxStorageInstance;
 exports.wrappedValidateStorageFactory = wrappedValidateStorageFactory;
-
 var _operators = require("rxjs/operators");
-
 var _util = require("./util");
-
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
  */
 var VALIDATOR_CACHE_BY_VALIDATOR_KEY = new Map();
+
 /**
  * This factory is used in the validation plugins
  * so that we can reuse the basic storage wrapping code.
  */
-
 function wrappedValidateStorageFactory(
 /**
  * Returns a method that can be used to validate
@@ -1119,21 +978,16 @@ validatorKey) {
   if (!VALIDATOR_CACHE_BY_VALIDATOR_KEY.has(validatorKey)) {
     VALIDATOR_CACHE_BY_VALIDATOR_KEY.set(validatorKey, new Map());
   }
-
   var VALIDATOR_CACHE = (0, _util.getFromMapOrThrow)(VALIDATOR_CACHE_BY_VALIDATOR_KEY, validatorKey);
-
   function initValidator(schema) {
     var hash = (0, _util.fastUnsecureHash)(JSON.stringify(schema));
-
     if (!VALIDATOR_CACHE.has(hash)) {
       var validator = getValidator(schema);
       VALIDATOR_CACHE.set(hash, validator);
       return validator;
     }
-
     return (0, _util.getFromMapOrThrow)(VALIDATOR_CACHE, hash);
   }
-
   return function (args) {
     return Object.assign({}, args.storage, {
       createStorageInstance: function createStorageInstance(params) {
@@ -1150,18 +1004,15 @@ validatorKey) {
               return validatorCached = initValidator(params.schema);
             });
             var oldBulkWrite = instance.bulkWrite.bind(instance);
-
             instance.bulkWrite = function (documentWrites, context) {
               if (!validatorCached) {
                 validatorCached = initValidator(params.schema);
               }
-
               documentWrites.forEach(function (row) {
                 validatorCached(row.document);
               });
               return oldBulkWrite(documentWrites, context);
             };
-
             return instance;
           });
         } catch (e) {
@@ -1171,12 +1022,11 @@ validatorKey) {
     });
   };
 }
+
 /**
  * Used in plugins to easily modify all in- and outgoing
  * data of that storage instance.
  */
-
-
 function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
   var errorFromStorage = function errorFromStorage(error) {
     try {
@@ -1187,7 +1037,6 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
             return ret;
           });
         }
-
         var _temp = function () {
           if (ret.writeRow.previous) {
             return Promise.resolve(fromStorage(ret.writeRow.previous)).then(function (_fromStorage3) {
@@ -1195,13 +1044,10 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
             });
           }
         }();
-
         return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
       };
-
       var ret = (0, _util.flatClone)(error);
       ret.writeRow = (0, _util.flatClone)(ret.writeRow);
-
       var _temp6 = function () {
         if (ret.documentInDb) {
           return Promise.resolve(fromStorage(ret.documentInDb)).then(function (_fromStorage2) {
@@ -1209,42 +1055,35 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
           });
         }
       }();
-
       return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   var fromStorage = function fromStorage(docData) {
     try {
       if (!docData) {
         return Promise.resolve(docData);
       }
-
       return Promise.resolve(modifyFromStorage(docData));
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   var toStorage = function toStorage(docData) {
     try {
       if (!docData) {
         return Promise.resolve(docData);
       }
-
       return Promise.resolve(modifyToStorage(docData));
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   var modifyAttachmentFromStorage = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : function (v) {
     return v;
   };
   var oldBulkWrite = instance.bulkWrite.bind(instance);
-
   instance.bulkWrite = function (documentWrites, context) {
     try {
       var useRows = [];
@@ -1252,7 +1091,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
         try {
           return Promise.resolve(Promise.all([row.previous ? toStorage(row.previous) : undefined, toStorage(row.document)])).then(function (_ref) {
             var previous = _ref[0],
-                document = _ref[1];
+              document = _ref[1];
             useRows.push({
               previous: previous,
               document: document
@@ -1270,14 +1109,14 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
           var promises = [];
           Object.entries(writeResult.success).forEach(function (_ref2) {
             var k = _ref2[0],
-                v = _ref2[1];
+              v = _ref2[1];
             promises.push(fromStorage(v).then(function (v) {
               return ret.success[k] = v;
             }));
           });
           Object.entries(writeResult.error).forEach(function (_ref3) {
             var k = _ref3[0],
-                error = _ref3[1];
+              error = _ref3[1];
             promises.push(errorFromStorage(error).then(function (err) {
               return ret.error[k] = err;
             }));
@@ -1291,9 +1130,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
       return Promise.reject(e);
     }
   };
-
   var oldQuery = instance.query.bind(instance);
-
   instance.query = function (preparedQuery) {
     return oldQuery(preparedQuery).then(function (queryResult) {
       return Promise.all(queryResult.documents.map(function (doc) {
@@ -1305,9 +1142,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
       };
     });
   };
-
   var oldGetAttachmentData = instance.getAttachmentData.bind(instance);
-
   instance.getAttachmentData = function (documentId, attachmentId) {
     try {
       return Promise.resolve(oldGetAttachmentData(documentId, attachmentId)).then(function (data) {
@@ -1320,16 +1155,14 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
       return Promise.reject(e);
     }
   };
-
   var oldFindDocumentsById = instance.findDocumentsById.bind(instance);
-
   instance.findDocumentsById = function (ids, deleted) {
     return oldFindDocumentsById(ids, deleted).then(function (findResult) {
       try {
         var ret = {};
         return Promise.resolve(Promise.all(Object.entries(findResult).map(function (_ref4) {
           var key = _ref4[0],
-              doc = _ref4[1];
+            doc = _ref4[1];
           return Promise.resolve(fromStorage(doc)).then(function (_fromStorage) {
             ret[key] = _fromStorage;
           });
@@ -1341,9 +1174,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
       }
     });
   };
-
   var oldGetChangedDocumentsSince = instance.getChangedDocumentsSince.bind(instance);
-
   instance.getChangedDocumentsSince = function (limit, checkpoint) {
     return oldGetChangedDocumentsSince(limit, checkpoint).then(function (result) {
       try {
@@ -1361,9 +1192,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
       }
     });
   };
-
   var oldChangeStream = instance.changeStream.bind(instance);
-
   instance.changeStream = function () {
     return oldChangeStream().pipe((0, _operators.mergeMap)(function (eventBulk) {
       try {
@@ -1371,7 +1200,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
           try {
             return Promise.resolve(Promise.all([fromStorage(event.documentData), fromStorage(event.previousDocumentData)])).then(function (_ref5) {
               var documentData = _ref5[0],
-                  previousDocumentData = _ref5[1];
+                previousDocumentData = _ref5[1];
               var ev = {
                 operation: event.operation,
                 eventId: event.eventId,
@@ -1401,9 +1230,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
       }
     }));
   };
-
   var oldConflictResultionTasks = instance.conflictResultionTasks.bind(instance);
-
   instance.conflictResultionTasks = function () {
     return oldConflictResultionTasks().pipe((0, _operators.mergeMap)(function (task) {
       try {
@@ -1427,14 +1254,11 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
       }
     }));
   };
-
   var oldResolveConflictResultionTask = instance.resolveConflictResultionTask.bind(instance);
-
   instance.resolveConflictResultionTask = function (taskSolution) {
     if (taskSolution.output.isEqual) {
       return oldResolveConflictResultionTask(taskSolution);
     }
-
     var useSolution = {
       id: taskSolution.id,
       output: {
@@ -1444,7 +1268,6 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
     };
     return oldResolveConflictResultionTask(useSolution);
   };
-
   return instance;
 }
 
@@ -1455,23 +1278,14 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.addRxPlugin = addRxPlugin;
-
 var _rxSchema = require("./rx-schema");
-
 var _rxDocument = require("./rx-document");
-
 var _rxQuery = require("./rx-query");
-
 var _rxCollection = require("./rx-collection");
-
 var _rxDatabase = require("./rx-database");
-
 var _overwritable = require("./overwritable");
-
 var _hooks = require("./hooks");
-
 var _rxError = require("./rx-error");
-
 /**
  * this handles how plugins are added to rxdb
  * basically it changes the internal prototypes
@@ -1489,63 +1303,58 @@ var PROTOTYPES = {
   RxDatabase: _rxDatabase.RxDatabaseBase.prototype
 };
 var ADDED_PLUGINS = new Set();
+
 /**
  * Add a plugin to the RxDB library.
  * Plugins are added globally and cannot be removed.
  */
-
 function addRxPlugin(plugin) {
   (0, _hooks.runPluginHooks)('preAddRxPlugin', {
     plugin: plugin,
     plugins: ADDED_PLUGINS
-  }); // do nothing if added before
+  });
 
+  // do nothing if added before
   if (ADDED_PLUGINS.has(plugin)) {
     return;
   } else {
     ADDED_PLUGINS.add(plugin);
   }
+
   /**
    * Since version 10.0.0 we decoupled pouchdb from
    * the rxdb core. Therefore pouchdb plugins must be added
    * with the addPouchPlugin() method of the pouchdb plugin.
    */
-
-
   if (!plugin.rxdb) {
     throw (0, _rxError.newRxTypeError)('PL1', {
       plugin: plugin
     });
   }
-
   if (plugin.init) {
     plugin.init();
-  } // prototype-overwrites
+  }
 
-
+  // prototype-overwrites
   if (plugin.prototypes) {
     Object.entries(plugin.prototypes).forEach(function (_ref) {
       var name = _ref[0],
-          fun = _ref[1];
+        fun = _ref[1];
       return fun(PROTOTYPES[name]);
     });
-  } // overwritable-overwrites
-
-
+  }
+  // overwritable-overwrites
   if (plugin.overwritable) {
     Object.assign(_overwritable.overwritable, plugin.overwritable);
-  } // extend-hooks
-
-
+  }
+  // extend-hooks
   if (plugin.hooks) {
     Object.entries(plugin.hooks).forEach(function (_ref2) {
       var name = _ref2[0],
-          hooksObj = _ref2[1];
-
+        hooksObj = _ref2[1];
       if (hooksObj.after) {
         _hooks.HOOKS[name].push(hooksObj.after);
       }
-
       if (hooksObj.before) {
         _hooks.HOOKS[name].unshift(hooksObj.before);
       }
@@ -1567,21 +1376,14 @@ exports.getAttachmentSize = getAttachmentSize;
 exports.hashAttachmentData = hashAttachmentData;
 exports.postMigrateDocument = postMigrateDocument;
 exports.putAttachment = exports.preMigrateDocument = void 0;
-
 var _operators = require("rxjs/operators");
-
 var _util = require("./../util");
-
 var _rxError = require("../rx-error");
-
 var _rxStorageHelper = require("../rx-storage-helper");
-
 var _pouchdb = require("./pouchdb");
-
 var preMigrateDocument = function preMigrateDocument(data) {
   try {
     var attachments = data.docData._attachments;
-
     var _temp2 = function () {
       if (attachments) {
         var newAttachments = {};
@@ -1609,25 +1411,19 @@ var preMigrateDocument = function preMigrateDocument(data) {
         });
       }
     }();
-
     return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
   } catch (e) {
     return Promise.reject(e);
   }
 };
-
 exports.preMigrateDocument = preMigrateDocument;
-
 var putAttachment = function putAttachment(attachmentData) {
   try {
     var _arguments2 = arguments,
-        _this7 = this;
-
+      _this7 = this;
     var skipIfSame = _arguments2.length > 1 && _arguments2[1] !== undefined ? _arguments2[1] : true;
     ensureSchemaSupportsAttachments(_this7);
-
     var dataSize = _util.blobBufferUtil.size(attachmentData.data);
-
     return Promise.resolve(_util.blobBufferUtil.toBase64String(attachmentData.data)).then(function (dataString) {
       var id = attachmentData.id;
       var type = attachmentData.type;
@@ -1639,13 +1435,11 @@ var putAttachment = function putAttachment(attachmentData) {
           try {
             if (skipIfSame && _this7._data._attachments && _this7._data._attachments[id]) {
               var currentMeta = _this7._data._attachments[id];
-
               if (currentMeta.type === type && currentMeta.digest === newDigest) {
                 // skip because same data and same type
                 return Promise.resolve(_this7.getAttachment(id));
               }
             }
-
             var docWriteData = (0, _rxStorageHelper.flatCloneDocWithMeta)(_this7._data);
             docWriteData._attachments = (0, _util.flatClone)(docWriteData._attachments);
             docWriteData._attachments[id] = {
@@ -1664,9 +1458,7 @@ var putAttachment = function putAttachment(attachmentData) {
               var newData = (0, _util.flatClone)(_this7._data);
               newData._rev = writeResult._rev;
               newData._attachments = writeResult._attachments;
-
               _this7._dataSync$.next(newData);
-
               return attachment;
             });
           } catch (e) {
@@ -1679,14 +1471,10 @@ var putAttachment = function putAttachment(attachmentData) {
   } catch (e) {
     return Promise.reject(e);
   }
-};
-/**
- * get an attachment of the document by its id
- */
-
-
+}; /**
+    * get an attachment of the document by its id
+    */
 exports.putAttachment = putAttachment;
-
 /**
  * To be able to support PouchDB with attachments,
  * we have to use the md5 hashing here, even if the RxDatabase itself
@@ -1694,35 +1482,29 @@ exports.putAttachment = putAttachment;
  */
 function hashAttachmentData(attachmentBase64String) {
   var binary;
-
   try {
     binary = (0, _util.b64DecodeUnicode)(attachmentBase64String);
   } catch (err) {
     console.log('could not run b64DecodeUnicode() on ' + attachmentBase64String);
     throw err;
   }
-
   return (0, _pouchdb.pouchHash)(binary);
 }
-
 function getAttachmentSize(attachmentBase64String) {
   return atob(attachmentBase64String).length;
 }
-
 function ensureSchemaSupportsAttachments(doc) {
   var schemaJson = doc.collection.schema.jsonSchema;
-
   if (!schemaJson.attachments) {
     throw (0, _rxError.newRxError)('AT1', {
       link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
     });
   }
 }
-
 var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment) {
   Object.entries(attachment.doc.collection.attachments).forEach(function (_ref) {
     var funName = _ref[0],
-        fun = _ref[1];
+      fun = _ref[1];
     Object.defineProperty(attachment, funName, {
       get: function get() {
         return fun.bind(attachment);
@@ -1730,33 +1512,28 @@ var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment)
     });
   });
 };
+
 /**
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
  */
-
-
 var RxAttachment = /*#__PURE__*/function () {
   function RxAttachment(_ref2) {
     var doc = _ref2.doc,
-        id = _ref2.id,
-        type = _ref2.type,
-        length = _ref2.length,
-        digest = _ref2.digest;
+      id = _ref2.id,
+      type = _ref2.type,
+      length = _ref2.length,
+      digest = _ref2.digest;
     this.doc = doc;
     this.id = id;
     this.type = type;
     this.length = length;
     this.digest = digest;
-
     _assignMethodsToAttachment(this);
   }
-
   var _proto = RxAttachment.prototype;
-
   _proto.remove = function remove() {
     var _this = this;
-
     this.doc._atomicQueue = this.doc._atomicQueue.then(function () {
       try {
         var docWriteData = (0, _rxStorageHelper.flatCloneDocWithMeta)(_this.doc._data);
@@ -1770,7 +1547,6 @@ var RxAttachment = /*#__PURE__*/function () {
           var newData = (0, _util.flatClone)(_this.doc._data);
           newData._rev = writeResult._rev;
           newData._attachments = writeResult._attachments;
-
           _this.doc._dataSync$.next(newData);
         });
       } catch (e) {
@@ -1779,15 +1555,13 @@ var RxAttachment = /*#__PURE__*/function () {
     });
     return this.doc._atomicQueue;
   }
+
   /**
    * returns the data for the attachment
-   */
-  ;
-
+   */;
   _proto.getData = function getData() {
     try {
       var _this3 = this;
-
       return Promise.resolve(_this3.doc.collection.storageInstance.getAttachmentData(_this3.doc.primary, _this3.id)).then(function (plainDataBase64) {
         return Promise.resolve(_util.blobBufferUtil.createBlobBufferFromBase64(plainDataBase64, _this3.type));
       });
@@ -1795,11 +1569,9 @@ var RxAttachment = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.getStringData = function getStringData() {
     try {
       var _this5 = this;
-
       return Promise.resolve(_this5.getData()).then(function (data) {
         return Promise.resolve(_util.blobBufferUtil.toString(data));
       });
@@ -1807,12 +1579,9 @@ var RxAttachment = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   return RxAttachment;
 }();
-
 exports.RxAttachment = RxAttachment;
-
 function fromStorageInstanceResult(id, attachmentData, rxDocument) {
   return new RxAttachment({
     doc: rxDocument,
@@ -1822,39 +1591,31 @@ function fromStorageInstanceResult(id, attachmentData, rxDocument) {
     digest: attachmentData.digest
   });
 }
-
 function getAttachment(id) {
   ensureSchemaSupportsAttachments(this);
-
   var docData = this._dataSync$.getValue();
-
   if (!docData._attachments || !docData._attachments[id]) return null;
   var attachmentData = docData._attachments[id];
   var attachment = fromStorageInstanceResult(id, attachmentData, this);
   return attachment;
 }
+
 /**
  * returns all attachments of the document
  */
-
-
 function allAttachments() {
   var _this8 = this;
-
   ensureSchemaSupportsAttachments(this);
+  var docData = this._dataSync$.getValue();
 
-  var docData = this._dataSync$.getValue(); // if there are no attachments, the field is missing
-
-
+  // if there are no attachments, the field is missing
   if (!docData._attachments) {
     return [];
   }
-
   return Object.keys(docData._attachments).map(function (id) {
     return fromStorageInstanceResult(id, docData._attachments[id], _this8);
   });
 }
-
 function postMigrateDocument(_action) {
   /**
    * No longer needed because
@@ -1862,7 +1623,6 @@ function postMigrateDocument(_action) {
    */
   return _util.PROMISE_RESOLVE_VOID;
 }
-
 var RxDBAttachmentsPlugin = {
   name: 'attachments',
   rxdb: true,
@@ -1874,19 +1634,17 @@ var RxDBAttachmentsPlugin = {
       Object.defineProperty(proto, 'allAttachments$', {
         get: function allAttachments$() {
           var _this9 = this;
-
           return this._dataSync$.pipe((0, _operators.map)(function (data) {
             if (!data['_attachments']) {
               return {};
             }
-
             return data['_attachments'];
           }), (0, _operators.map)(function (attachmentsData) {
             return Object.entries(attachmentsData);
           }), (0, _operators.map)(function (entries) {
             return entries.map(function (_ref3) {
               var id = _ref3[0],
-                  attachmentData = _ref3[1];
+                attachmentData = _ref3[1];
               return fromStorageInstanceResult(id, attachmentData, _this9);
             });
           }));
@@ -1914,11 +1672,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.POUCHDB_LOCATION = void 0;
 exports.checkAdapter = checkAdapter;
-
 var _pouchDb = require("./pouch-db");
-
 var _util = require("../../util");
-
 /**
  * this plugin adds the checkAdapter-function to rxdb
  * you can use it to check if the given adapter is working in the current environmet
@@ -1931,13 +1686,10 @@ var _util = require("../../util");
  */
 var POUCHDB_LOCATION = 'rxdb-adapter-check';
 exports.POUCHDB_LOCATION = POUCHDB_LOCATION;
-
 function checkAdapter(adapter) {
   // id of the document which is stored and removed to ensure everything works
   var _id = POUCHDB_LOCATION + '-' + (0, _util.randomCouchString)(12);
-
   var pouch;
-
   try {
     pouch = new _pouchDb.PouchDB(POUCHDB_LOCATION, (0, _util.adapterObject)(adapter), {
       auto_compaction: true,
@@ -1946,7 +1698,6 @@ function checkAdapter(adapter) {
   } catch (err) {
     return _util.PROMISE_RESOLVE_FALSE;
   }
-
   var recoveredDoc;
   return pouch.info() // ensure that we wait until db is useable
   // ensure write works
@@ -1958,12 +1709,14 @@ function checkAdapter(adapter) {
         time: (0, _util.now)()
       }
     });
-  }) // ensure read works
+  })
+  // ensure read works
   .then(function () {
     return pouch.get(_id);
   }).then(function (doc) {
     return recoveredDoc = doc;
-  }) // ensure remove works
+  })
+  // ensure remove works
   .then(function () {
     return pouch.remove(recoveredDoc);
   }).then(function () {
@@ -1973,6 +1726,7 @@ function checkAdapter(adapter) {
   })["catch"](function () {
     return false;
   });
+
   /**
    * NOTICE:
    * Do not remove the pouchdb-instance after the test
@@ -1987,7 +1741,6 @@ function checkAdapter(adapter) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -1996,17 +1749,11 @@ exports.addCustomEventsPluginToPouch = addCustomEventsPluginToPouch;
 exports.changeEventToNormal = changeEventToNormal;
 exports.eventEmitDataToStorageEvents = void 0;
 exports.getCustomEventEmitterByPouch = getCustomEventEmitterByPouch;
-
 var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
-
 var _rxjs = require("rxjs");
-
 var _util = require("../../util");
-
 var _rxError = require("../../rx-error");
-
 var _pouchdbHelper = require("./pouchdb-helper");
-
 /*
  * Instead of listening to pouch.changes,
  * we overwrite pouchdbs bulkDocs()
@@ -2016,11 +1763,9 @@ var _pouchdbHelper = require("./pouchdb-helper");
  * @link http://jsbin.com/pagebi/1/edit?js,output
  * @link https://github.com/pubkey/rxdb/blob/1f4115b69bdacbb853af9c637d70f5f184d4e474/src/rx-storage-pouchdb.ts#L273
  * @link https://hasura.io/blog/couchdb-style-conflict-resolution-rxdb-hasura/
- */
-var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDBInstance, primaryPath, emitData) {
+ */var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDBInstance, primaryPath, emitData) {
   try {
     var ret = [];
-
     var _temp12 = function () {
       if (!emitData.writeOptions.custom && emitData.writeOptions.hasOwnProperty('new_edits') && emitData.writeOptions.new_edits === false) {
         return Promise.resolve(Promise.all(emitData.writeDocs.map(function (writeDoc) {
@@ -2030,20 +1775,18 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
             return Promise.resolve((0, _pouchdbHelper.writeAttachmentsToAttachments)(writeDoc._attachments)).then(function (_writeAttachmentsToAt) {
               writeDoc._attachments = _writeAttachmentsToAt;
               var previousDoc = emitData.previousDocs.get(id);
-
               if (previousDoc) {
                 previousDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(primaryPath, previousDoc);
               }
-
               if (previousDoc) {
                 var parsedRevPrevious = (0, _util.parseRevision)(previousDoc._rev);
                 var parsedRevNew = (0, _util.parseRevision)(writeDoc._rev);
-
                 if (parsedRevPrevious.height > parsedRevNew.height ||
                 /**
                  * If the revision height is equal,
                  * we determine the higher hash as winner.
                  */
+
                 parsedRevPrevious.height === parsedRevNew.height && parsedRevPrevious.hash > parsedRevNew.hash) {
                   /**
                    * The newly added document was not the latest revision
@@ -2054,19 +1797,15 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                   return;
                 }
               }
-
               if (!previousDoc && writeDoc._deleted) {
                 // deleted document was added as revision
                 return;
               }
-
               if (previousDoc && previousDoc._deleted && writeDoc._deleted) {
                 // delete document was deleted again
                 return;
               }
-
               var event;
-
               if ((!previousDoc || previousDoc._deleted) && !writeDoc._deleted) {
                 // was insert
                 event = {
@@ -2099,7 +1838,6 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                   }
                 });
               }
-
               var changeEvent = changeEventToNormal(pouchDBInstance, primaryPath, event, emitData.startTime, emitData.endTime);
               ret.push(changeEvent);
             });
@@ -2117,11 +1855,9 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
             return Promise.resolve(Promise.all(emitData.writeResult.map(function (resultRow) {
               try {
                 var id = resultRow.id;
-
                 if (id.startsWith(_pouchdbHelper.POUCHDB_DESIGN_PREFIX) || id.startsWith(_pouchdbHelper.POUCHDB_LOCAL_PREFIX)) {
                   return Promise.resolve();
                 }
-
                 var writeDoc = (0, _util.getFromMapOrThrow)(writeDocsById, resultRow.id);
                 writeDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(primaryPath, writeDoc);
                 return Promise.resolve((0, _pouchdbHelper.writeAttachmentsToAttachments)(writeDoc._attachments)).then(function (_writeAttachmentsToAt2) {
@@ -2143,7 +1879,6 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                 if (resultRow.error) {
                   return Promise.resolve();
                 }
-
                 var id = resultRow.id;
                 var writeRow = (0, _util.getFromMapOrThrow)(writeMap, id);
                 return Promise.resolve((0, _pouchdbHelper.writeAttachmentsToAttachments)(writeRow.document._attachments)).then(function (attachments) {
@@ -2153,13 +1888,11 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                       ret.push(changeEvent);
                     }
                   }
-
                   var newDoc = Object.assign({}, writeRow.document, {
                     _attachments: attachments,
                     _rev: resultRow.rev
                   });
                   var event;
-
                   var _temp15 = function () {
                     if (!writeRow.previous || writeRow.previous._deleted) {
                       // was insert
@@ -2197,11 +1930,9 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                           };
                         }
                       }();
-
                       if (_temp17 && _temp17.then) return _temp17.then(function () {});
                     }
                   }();
-
                   return _temp15 && _temp15.then ? _temp15.then(_temp16) : _temp16(_temp15);
                 });
               } catch (e) {
@@ -2210,11 +1941,9 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
             }))).then(function () {});
           }
         }();
-
         if (_temp13 && _temp13.then) return _temp13.then(function () {});
       }
     }();
-
     return Promise.resolve(_temp12 && _temp12.then ? _temp12.then(function () {
       return ret;
     }) : ret);
@@ -2222,32 +1951,28 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
     return Promise.reject(e);
   }
 };
-
 exports.eventEmitDataToStorageEvents = eventEmitDataToStorageEvents;
 // ensure only added once
 var addedToPouch = false;
 var EVENT_EMITTER_BY_POUCH_INSTANCE = new Map();
 exports.EVENT_EMITTER_BY_POUCH_INSTANCE = EVENT_EMITTER_BY_POUCH_INSTANCE;
-
 function getCustomEventEmitterByPouch(pouch) {
   var key = [pouch.__opts.name, pouch.adapter].join('|');
   var emitter = EVENT_EMITTER_BY_POUCH_INSTANCE.get(key);
-
   if (!emitter) {
     emitter = {
       subject: new _rxjs.Subject()
     };
     EVENT_EMITTER_BY_POUCH_INSTANCE.set(key, emitter);
   }
-
   return emitter;
 }
+
 /**
  * Counter, used to debug stuff.
  */
-
-
 var i = 0;
+
 /**
  * Because we cannot force pouchdb to await bulkDocs runs
  * inside of a transaction, like done with the other RxStorage implementations,
@@ -2256,8 +1981,8 @@ var i = 0;
  * TODO this is somehow a hack. Instead of doing that, inspect how
  * PouchDB runs bulkDocs internally and adapt that transaction handling.
  */
-
 var BULK_DOC_RUN_QUEUE = new WeakMap();
+
 /**
  * PouchDB is like a minefield,
  * where stuff randomly does not work dependend on some conditions.
@@ -2265,21 +1990,18 @@ var BULK_DOC_RUN_QUEUE = new WeakMap();
  * we hack into the bulkDocs() function
  * and adjust the behavior accordingly.
  */
-
 function addCustomEventsPluginToPouch() {
   if (addedToPouch) {
     return;
   }
-
   addedToPouch = true;
   var oldBulkDocs = _pouchdbCore["default"].prototype.bulkDocs;
+
   /**
    * Ensure we do not run bulkDocs() in parallel on the same PouchDB instance.
    */
-
   var newBulkDocs = function newBulkDocs(body, options, callback) {
     var _this = this;
-
     /**
      * Normalize inputs
      * because there are many ways to call pouchdb.bulkDocs()
@@ -2288,19 +2010,16 @@ function addCustomEventsPluginToPouch() {
       callback = options;
       options = {};
     }
-
     if (!options) {
       options = {};
     }
+
     /**
      * PouchDB internal requests
      * must still be handled normally
      * to decrease the likelyness of bugs.
      */
-
-
     var internalPouches = ['_replicator', '_users', 'pouch__all_dbs__'];
-
     if (internalPouches.includes(this.name) || this.name.includes('-mrview-')) {
       return oldBulkDocs.call(this, body, options, function (err, result) {
         if (err) {
@@ -2312,13 +2031,10 @@ function addCustomEventsPluginToPouch() {
         }
       });
     }
-
     var queue = BULK_DOC_RUN_QUEUE.get(this);
-
     if (!queue) {
       queue = _util.PROMISE_RESOLVE_VOID;
     }
-
     queue = queue.then(function () {
       try {
         return Promise.resolve(newBulkDocsInner.bind(_this)(body, options, callback));
@@ -2329,7 +2045,6 @@ function addCustomEventsPluginToPouch() {
     BULK_DOC_RUN_QUEUE.set(this, queue);
     return queue;
   };
-
   var newBulkDocsInner = function newBulkDocsInner(body, options, callback) {
     try {
       var _temp8 = function _temp8() {
@@ -2338,7 +2053,6 @@ function addCustomEventsPluginToPouch() {
          */
         var usePouchResult = [];
         var hasNonErrorWrite = false;
-
         if (options.custom && options.hasOwnProperty('new_edits') && options.new_edits === false) {
           /**
            * Reset the write docs array,
@@ -2349,12 +2063,11 @@ function addCustomEventsPluginToPouch() {
           var insertDocsById = options.custom.insertDocsById;
           Array.from(writeRowById.entries()).forEach(function (_ref) {
             var id = _ref[0],
-                writeRow = _ref[1];
+              writeRow = _ref[1];
             var previousRev = writeRow.previous ? writeRow.previous._rev : null;
             var newRev = (0, _util.parseRevision)(writeRow.document._rev);
             var docInDb = previousDocsInDb.get(id);
             var docInDbRev = docInDb ? docInDb._rev : null;
-
             if (docInDbRev !== previousRev) {
               // we have a conflict
               usePouchResult.push({
@@ -2382,23 +2095,22 @@ function addCustomEventsPluginToPouch() {
               });
             }
           });
+
           /**
            * Optimization shortcut,
            * if all document writes were conflict errors,
            * we can skip directly.
            */
-
           if (!hasNonErrorWrite) {
             return usePouchResult;
           }
         }
+
         /**
          * pouchdb calls this function again with transformed input.
          * This would lead to duplicate events. So we marks the deeper calls via the options
          * parameter and do not emit events if it is set.
          */
-
-
         var deeperOptions = (0, _util.flatClone)(options);
         deeperOptions.isDeeper = true;
         var callReturn;
@@ -2421,14 +2133,11 @@ function addCustomEventsPluginToPouch() {
               include_docs: true
             }).on('change', function (change) {
               var docId = change.id;
-
               if (docIds.has(docId)) {
                 docIds["delete"](docId);
-
                 if (heighestSequence < change.seq) {
                   heighestSequence = change.seq;
                 }
-
                 if (docIds.size === 0) {
                   changesSub.cancel();
                   res(heighestSequence);
@@ -2436,13 +2145,13 @@ function addCustomEventsPluginToPouch() {
               }
             });
           });
+
           /**
            * We cannot send the custom here,
            * because when a migration between different major RxDB versions is done,
            * multiple versions of the RxDB PouchDB RxStorage might have added their
            * custom method via PouchDBCore.plugin()
            */
-
           var useOptsForOldBulkDocs = (0, _util.flatClone)(deeperOptions);
           delete useOptsForOldBulkDocs.custom;
           callReturn = oldBulkDocs.call(_this3, docs, useOptsForOldBulkDocs, function (err, result) {
@@ -2455,14 +2164,13 @@ function addCustomEventsPluginToPouch() {
                     result.forEach(function (row) {
                       usePouchResult.push(row);
                     });
+
                     /**
                      * For calls that came from RxDB,
                      * we have to ensure that the events are emitted
                      * before the actual call resolves.
                      */
-
                     var eventsPromise = _util.PROMISE_RESOLVE_VOID;
-
                     if (!options.isDeeper) {
                       var endTime = (0, _util.now)();
                       var emitData = {
@@ -2487,7 +2195,6 @@ function addCustomEventsPluginToPouch() {
                         emitter.subject.next(eventBulk);
                       });
                     }
-
                     if (callback) {
                       callback(null, usePouchResult);
                     } else {
@@ -2497,13 +2204,10 @@ function addCustomEventsPluginToPouch() {
                       });
                     }
                   };
-
                   var hasError = result.find(function (row) {
                     return row.error;
                   });
-
                   var _heighestSequence = -1;
-
                   var _temp7 = function () {
                     if (!hasError) {
                       return Promise.resolve(heighestSequencePromise).then(function (_heighestSequenceProm) {
@@ -2513,7 +2217,6 @@ function addCustomEventsPluginToPouch() {
                       changesSub.cancel();
                     }
                   }();
-
                   return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
                 } catch (e) {
                   return Promise.reject(e);
@@ -2524,40 +2227,34 @@ function addCustomEventsPluginToPouch() {
         });
         return options.custom ? callPromise : callReturn;
       };
-
       var _this3 = this;
-
       var startTime = (0, _util.now)();
       var runId = i++;
+
       /**
        * Normalize inputs
        * because there are many ways to call pouchdb.bulkDocs()
        */
-
       if (typeof options === 'function') {
         callback = options;
         options = {};
       }
-
       if (!options) {
         options = {};
       }
-
       var docs;
-
       if (Array.isArray(body)) {
         docs = body;
       } else if (body === undefined) {
         docs = [];
       } else {
         docs = body.docs;
-
         if (body.hasOwnProperty('new_edits')) {
           options.new_edits = body.new_edits;
         }
-      } // throw if no docs given, because RxDB should never make such a call.
+      }
 
-
+      // throw if no docs given, because RxDB should never make such a call.
       if (docs.length === 0) {
         throw (0, _rxError.newRxError)('SNH', {
           args: {
@@ -2566,15 +2263,13 @@ function addCustomEventsPluginToPouch() {
           }
         });
       }
+
       /**
        * If new_edits=false we have to first find the current state
        * of the document and can later check if the state was changed
        * because a new revision was written and we have to emit an event.
        */
-
-
       var previousDocsInDb = options.custom ? options.custom.previousDocsInDb : new Map();
-
       var _temp9 = function () {
         if (options.hasOwnProperty('new_edits') && options.new_edits === false) {
           return Promise.resolve(_this3.bulkGet({
@@ -2593,7 +2288,6 @@ function addCustomEventsPluginToPouch() {
             var mustRefetchBecauseDeleted = [];
             viaBulkGet.results.forEach(function (resultRow) {
               var firstDoc = resultRow.docs[0];
-
               if (firstDoc.ok) {
                 previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
               } else {
@@ -2602,7 +2296,6 @@ function addCustomEventsPluginToPouch() {
                 }
               }
             });
-
             var _temp = function () {
               if (mustRefetchBecauseDeleted.length > 0) {
                 return Promise.resolve(_this3.allDocs({
@@ -2624,7 +2317,6 @@ function addCustomEventsPluginToPouch() {
                   })).then(function (deletedDocsViaBulkGetWithRev) {
                     deletedDocsViaBulkGetWithRev.results.forEach(function (resultRow) {
                       var firstDoc = resultRow.docs[0];
-
                       if (firstDoc.ok) {
                         previousDocsInDb.set(firstDoc.ok._id, firstDoc.ok);
                       } else {
@@ -2640,23 +2332,19 @@ function addCustomEventsPluginToPouch() {
                 });
               }
             }();
-
             if (_temp && _temp.then) return _temp.then(function () {});
           });
         }
       }();
-
       return Promise.resolve(_temp9 && _temp9.then ? _temp9.then(_temp8) : _temp8(_temp9));
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   _pouchdbCore["default"].plugin({
     bulkDocs: newBulkDocs
   });
 }
-
 function changeEventToNormal(pouchDBInstance, primaryPath, change, startTime, endTime) {
   var doc = change.operation === 'DELETE' ? change.previous : change.doc;
   var primary = doc[primaryPath];
@@ -2678,9 +2366,7 @@ function changeEventToNormal(pouchDBInstance, primaryPath, change, startTime, en
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
 var _pouchDb = require("./pouch-db");
-
 Object.keys(_pouchDb).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _pouchDb[key]) return;
@@ -2691,9 +2377,7 @@ Object.keys(_pouchDb).forEach(function (key) {
     }
   });
 });
-
 var _rxStoragePouchdb = require("./rx-storage-pouchdb");
-
 Object.keys(_rxStoragePouchdb).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxStoragePouchdb[key]) return;
@@ -2704,9 +2388,7 @@ Object.keys(_rxStoragePouchdb).forEach(function (key) {
     }
   });
 });
-
 var _adapterCheck = require("./adapter-check");
-
 Object.keys(_adapterCheck).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _adapterCheck[key]) return;
@@ -2717,9 +2399,7 @@ Object.keys(_adapterCheck).forEach(function (key) {
     }
   });
 });
-
 var _customEventsPlugin = require("./custom-events-plugin");
-
 Object.keys(_customEventsPlugin).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _customEventsPlugin[key]) return;
@@ -2730,9 +2410,7 @@ Object.keys(_customEventsPlugin).forEach(function (key) {
     }
   });
 });
-
 var _pouchdbHelper = require("./pouchdb-helper");
-
 Object.keys(_pouchdbHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _pouchdbHelper[key]) return;
@@ -2743,9 +2421,7 @@ Object.keys(_pouchdbHelper).forEach(function (key) {
     }
   });
 });
-
 var _pouchStatics = require("./pouch-statics");
-
 Object.keys(_pouchStatics).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _pouchStatics[key]) return;
@@ -2756,9 +2432,7 @@ Object.keys(_pouchStatics).forEach(function (key) {
     }
   });
 });
-
 var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
-
 Object.keys(_rxStorageInstancePouch).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxStorageInstancePouch[key]) return;
@@ -2774,7 +2448,6 @@ Object.keys(_rxStorageInstancePouch).forEach(function (key) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -2782,11 +2455,8 @@ exports.PouchDB = void 0;
 exports.addPouchPlugin = addPouchPlugin;
 exports.isInstanceOf = isInstanceOf;
 exports.isLevelDown = isLevelDown;
-
 var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
-
 var _rxError = require("../../rx-error");
-
 /**
  * this handles the pouchdb-instance
  * to easy add modules and manipulate things
@@ -2812,22 +2482,20 @@ function isLevelDown(adapter) {
     });
   }
 }
-
 function isInstanceOf(obj) {
   return obj instanceof _pouchdbCore["default"];
 }
+
 /**
  * Adding a PouchDB plugin multiple times,
  * can sometimes error. So we have to check if the plugin
  * was added before.
  */
-
-
 var ADDED_POUCH_PLUGINS = new Set();
+
 /**
  * Add a pouchdb plugin to the pouchdb library.
  */
-
 function addPouchPlugin(plugin) {
   if (plugin.rxdb) {
     throw (0, _rxError.newRxTypeError)('PL2', {
@@ -2839,19 +2507,14 @@ function addPouchPlugin(plugin) {
    * So we monkeypatch the plugin to use the default property
    * when it was imported or packaged this way.
    */
-
-
   if (typeof plugin === 'object' && plugin["default"]) {
     plugin = plugin["default"];
   }
-
   if (!ADDED_POUCH_PLUGINS.has(plugin)) {
     ADDED_POUCH_PLUGINS.add(plugin);
-
     _pouchdbCore["default"].plugin(plugin);
   }
 }
-
 var PouchDB = _pouchdbCore["default"];
 exports.PouchDB = PouchDB;
 
@@ -2863,30 +2526,21 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxStoragePouchStatics = void 0;
 exports.preparePouchDbQuery = preparePouchDbQuery;
-
 var _pouchdbSelectorCore = require("pouchdb-selector-core");
-
 var _rxError = require("../../rx-error");
-
 var _pouchdbHelper = require("./pouchdb-helper");
-
 var _rxSchemaHelper = require("../../rx-schema-helper");
-
 var _overwritable = require("../../overwritable");
-
 var _util = require("../../util");
-
 var RxStoragePouchStatics = {
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
-
     var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
     var sortOptions = query.sort ? query.sort : [(_ref = {}, _ref[primaryPath] = 'asc', _ref)];
     var selector = query.selector ? query.selector : {};
     var inMemoryFields = Object.keys(selector).filter(function (key) {
       return !key.startsWith('$');
     });
-
     var fun = function fun(a, b) {
       /**
        * Sorting on two documents with the same primary is not allowed
@@ -2900,10 +2554,10 @@ var RxStoragePouchStatics = {
           },
           primaryPath: primaryPath
         });
-      } // TODO use createFieldSorter
+      }
+
+      // TODO use createFieldSorter
       // TODO make a performance test
-
-
       var rows = [a, b].map(function (doc) {
         return {
           doc: (0, _pouchdbHelper.pouchSwapPrimaryToId)(primaryPath, doc)
@@ -2913,7 +2567,6 @@ var RxStoragePouchStatics = {
         selector: {},
         sort: sortOptions
       }, inMemoryFields);
-
       if (sortedRows.length !== 2) {
         throw (0, _rxError.newRxError)('SNH', {
           query: query,
@@ -2924,30 +2577,24 @@ var RxStoragePouchStatics = {
           }
         });
       }
-
       if (sortedRows[0].doc._id === rows[0].doc._id) {
         return -1;
       } else {
         return 1;
       }
     };
-
     return fun;
   },
-
   /**
    * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
-   */
-  getQueryMatcher: function getQueryMatcher(schema, query) {
+   */getQueryMatcher: function getQueryMatcher(schema, query) {
     var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
     var selector = query.selector ? query.selector : {};
     var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(selector);
-
     var fun = function fun(doc) {
       if (doc._deleted) {
         return false;
       }
-
       var cloned = (0, _pouchdbHelper.pouchSwapPrimaryToId)(primaryPath, doc);
       var row = {
         doc: cloned
@@ -2958,37 +2605,33 @@ var RxStoragePouchStatics = {
       var ret = rowsMatched && rowsMatched.length === 1;
       return ret;
     };
-
     return fun;
   },
-
   /**
    * pouchdb has many bugs and strange behaviors
    * this functions takes a normal mango query
    * and transforms it to one that fits for pouchdb
-   */
-  prepareQuery: function prepareQuery(schema, mutateableQuery) {
+   */prepareQuery: function prepareQuery(schema, mutateableQuery) {
     return preparePouchDbQuery(schema, mutateableQuery);
   },
   checkpointSchema: _pouchdbHelper.POUCHDB_CHECKPOINT_SCHEMA
 };
+
 /**
  * pouchdb has many bugs and strange behaviors
  * this functions takes a normal mango query
  * and transforms it to one that fits for pouchdb
  */
-
 exports.RxStoragePouchStatics = RxStoragePouchStatics;
-
 function preparePouchDbQuery(schema, mutateableQuery) {
   var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   var query = mutateableQuery;
+
   /**
    * because sort wont work on unused keys we have to workaround
    * so we add the key to the selector if necessary
    * @link https://github.com/nolanlawson/pouchdb-find/issues/204
    */
-
   if (query.sort) {
     query.sort.forEach(function (sortPart) {
       var key = Object.keys(sortPart)[0];
@@ -2996,10 +2639,8 @@ function preparePouchDbQuery(schema, mutateableQuery) {
       var keyUsed = query.selector && query.selector[key] && Object.keys(query.selector[key]).some(function (op) {
         return comparisonOperators.includes(op);
       });
-
       if (!keyUsed) {
         var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, key);
-
         if (!schemaObj) {
           throw (0, _rxError.newRxError)('QU5', {
             query: query,
@@ -3007,15 +2648,12 @@ function preparePouchDbQuery(schema, mutateableQuery) {
             schema: schema
           });
         }
-
         if (!query.selector) {
           query.selector = {};
         }
-
         if (!query.selector[key]) {
           query.selector[key] = {};
         }
-
         switch (schemaObj.type) {
           case 'number':
           case 'integer':
@@ -3024,7 +2662,6 @@ function preparePouchDbQuery(schema, mutateableQuery) {
             // -Infinity does not work since pouchdb 6.2.0
             query.selector[key].$gt = -9999999999999999999999999999;
             break;
-
           case 'string':
             /**
              * strings need an empty string, see
@@ -3033,30 +2670,27 @@ function preparePouchDbQuery(schema, mutateableQuery) {
             if (typeof query.selector[key] !== 'string') {
               query.selector[key].$gt = '';
             }
-
             break;
-
           default:
             query.selector[key].$gt = null;
             break;
         }
       }
     });
-  } // regex does not work over the primary key
+  }
 
-
+  // regex does not work over the primary key
   if (_overwritable.overwritable.isDevMode() && query.selector && query.selector[primaryKey] && query.selector[primaryKey].$regex) {
     throw (0, _rxError.newRxError)('QU4', {
       path: primaryKey,
       query: mutateableQuery
     });
-  } // primary-swap sorting
+  }
 
-
+  // primary-swap sorting
   if (query.sort) {
     var sortArray = query.sort.map(function (part) {
       var _newPart;
-
       var key = Object.keys(part)[0];
       var direction = Object.values(part)[0];
       var useKey = key === primaryKey ? '_id' : key;
@@ -3064,22 +2698,21 @@ function preparePouchDbQuery(schema, mutateableQuery) {
       return newPart;
     });
     query.sort = sortArray;
-  } // strip empty selectors
+  }
 
-
+  // strip empty selectors
   Object.entries((0, _util.ensureNotFalsy)(query.selector)).forEach(function (_ref2) {
     var k = _ref2[0],
-        v = _ref2[1];
-
+      v = _ref2[1];
     if (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0) {
       delete (0, _util.ensureNotFalsy)(query.selector)[k];
     }
   });
+
   /**
    * Set use_index
    * @link https://pouchdb.com/guides/mango-queries.html#use_index
    */
-
   if (mutateableQuery.index) {
     var indexMaybeArray = mutateableQuery.index;
     var indexArray = (0, _util.isMaybeReadonlyArray)(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
@@ -3094,7 +2727,6 @@ function preparePouchDbQuery(schema, mutateableQuery) {
     delete mutateableQuery.index;
     mutateableQuery.use_index = indexName;
   }
-
   query.selector = (0, _pouchdbHelper.primarySwapPouchDbQuerySelector)(query.selector, primaryKey);
   return query;
 }
@@ -3121,27 +2753,20 @@ exports.pouchSwapPrimaryToId = pouchSwapPrimaryToId;
 exports.primarySwapPouchDbQuerySelector = primarySwapPouchDbQuerySelector;
 exports.rxDocumentDataToPouchDocumentData = rxDocumentDataToPouchDocumentData;
 exports.writeAttachmentsToAttachments = void 0;
-
 var _pouchdbMd = require("pouchdb-md5");
-
 var _util = require("../../util");
-
 var _rxError = require("../../rx-error");
-
 var _attachments = require("../attachments");
-
 var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attachments) {
   try {
     if (!attachments) {
       return Promise.resolve({});
     }
-
     var ret = {};
     return Promise.resolve(Promise.all(Object.entries(attachments).map(function (_ref4) {
       try {
         var key = _ref4[0],
-            obj = _ref4[1];
-
+          obj = _ref4[1];
         if (!obj.type) {
           throw (0, _rxError.newRxError)('SNH', {
             args: {
@@ -3154,8 +2779,6 @@ var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attac
          * so we have to remove the data to have a
          * non-write attachment.
          */
-
-
         var _temp4 = function () {
           if (obj.data) {
             var _temp5 = function _temp5(dataAsBase64String) {
@@ -3168,23 +2791,18 @@ var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attac
                 };
               });
             };
-
             var _asWrite = obj;
             var data = _asWrite.data;
             var isBuffer = typeof Buffer !== 'undefined' && Buffer.isBuffer(data);
-
             if (isBuffer) {
               data = new Blob([data]);
             }
-
             var _temp6 = typeof data === 'string';
-
             return _temp6 ? _temp5(data) : Promise.resolve(_util.blobBufferUtil.toBase64String(data)).then(_temp5);
           } else {
             ret[key] = obj;
           }
         }();
-
         return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
       } catch (e) {
         return Promise.reject(e);
@@ -3196,64 +2814,58 @@ var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attac
     return Promise.reject(e);
   }
 };
-
 exports.writeAttachmentsToAttachments = writeAttachmentsToAttachments;
 var RX_STORAGE_NAME_POUCHDB = 'pouchdb';
+
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
-
 exports.RX_STORAGE_NAME_POUCHDB = RX_STORAGE_NAME_POUCHDB;
 var OPEN_POUCHDB_STORAGE_INSTANCES = new Set();
+
 /**
  * All open PouchDB instances are stored here
  * so that we can find them again when needed in the internals.
  */
-
 exports.OPEN_POUCHDB_STORAGE_INSTANCES = OPEN_POUCHDB_STORAGE_INSTANCES;
 var OPEN_POUCH_INSTANCES = new Map();
 exports.OPEN_POUCH_INSTANCES = OPEN_POUCH_INSTANCES;
-
 function openPouchId(databaseInstanceToken, databaseName, collectionName, schemaVersion) {
   return [databaseInstanceToken, databaseName, collectionName, schemaVersion + ''].join('||');
 }
+
 /**
  * prefix of local pouchdb documents
  */
-
-
 var POUCHDB_LOCAL_PREFIX = '_local/';
 exports.POUCHDB_LOCAL_PREFIX = POUCHDB_LOCAL_PREFIX;
 var POUCHDB_LOCAL_PREFIX_LENGTH = POUCHDB_LOCAL_PREFIX.length;
+
 /**
  * Pouchdb stores indexes as design documents,
  * we have to filter them out and not return the
  * design documents to the outside.
  */
-
 exports.POUCHDB_LOCAL_PREFIX_LENGTH = POUCHDB_LOCAL_PREFIX_LENGTH;
 var POUCHDB_DESIGN_PREFIX = '_design/';
+
 /**
  * PouchDB does not allow to add custom properties
  * that start with lodash like RxDB's _meta field.
  * So we have to map this field into a non-lodashed field.
  */
-
 exports.POUCHDB_DESIGN_PREFIX = POUCHDB_DESIGN_PREFIX;
 var POUCHDB_META_FIELDNAME = 'rxdbMeta';
 exports.POUCHDB_META_FIELDNAME = POUCHDB_META_FIELDNAME;
-
 function pouchSwapIdToPrimary(primaryKey, docData) {
   if (primaryKey === '_id' || docData[primaryKey]) {
     return docData;
   }
-
   docData = (0, _util.flatClone)(docData);
   docData[primaryKey] = docData._id;
   delete docData._id;
   return docData;
 }
-
 function pouchSwapIdToPrimaryString(primaryKey, str) {
   if (str === '_id') {
     return primaryKey;
@@ -3261,21 +2873,20 @@ function pouchSwapIdToPrimaryString(primaryKey, str) {
     return str;
   }
 }
-
 function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
-  var useDoc = pouchSwapIdToPrimary(primaryKey, pouchDoc); // always flat clone becaues we mutate the _attachments property.
+  var useDoc = pouchSwapIdToPrimary(primaryKey, pouchDoc);
 
+  // always flat clone becaues we mutate the _attachments property.
   useDoc = (0, _util.flatClone)(useDoc);
-  delete useDoc._revisions; // ensure deleted flag is set.
+  delete useDoc._revisions;
 
+  // ensure deleted flag is set.
   useDoc._deleted = !!useDoc._deleted;
   useDoc._attachments = {};
-
   if (pouchDoc._attachments) {
     Object.entries(pouchDoc._attachments).forEach(function (_ref) {
       var key = _ref[0],
-          value = _ref[1];
-
+        value = _ref[1];
       if (value.data) {
         useDoc._attachments[key] = {
           data: value.data,
@@ -3291,24 +2902,21 @@ function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
       }
     });
   }
-
   useDoc._meta = useDoc[POUCHDB_META_FIELDNAME];
   delete useDoc[POUCHDB_META_FIELDNAME];
   return useDoc;
 }
-
 function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
-  var pouchDoc = pouchSwapPrimaryToId(primaryKey, doc); // always flat clone becaues we mutate the _attachments property.
+  var pouchDoc = pouchSwapPrimaryToId(primaryKey, doc);
 
+  // always flat clone becaues we mutate the _attachments property.
   pouchDoc = (0, _util.flatClone)(pouchDoc);
   pouchDoc._attachments = {};
-
   if (doc._attachments) {
     Object.entries(doc._attachments).forEach(function (_ref2) {
       var key = _ref2[0],
-          value = _ref2[1];
+        value = _ref2[1];
       var useValue = value;
-
       if (useValue.data) {
         pouchDoc._attachments[key] = {
           data: useValue.data,
@@ -3324,45 +2932,39 @@ function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
       }
     });
   }
-
   pouchDoc[POUCHDB_META_FIELDNAME] = pouchDoc._meta;
   delete pouchDoc._meta;
   return pouchDoc;
 }
+
 /**
  * Swaps the primaryKey of the document
  * to the _id property.
  */
-
-
 function pouchSwapPrimaryToId(primaryKey, docData) {
   // optimisation shortcut
   if (primaryKey === '_id') {
     return docData;
   }
-
   var idValue = docData[primaryKey];
   var ret = (0, _util.flatClone)(docData);
   delete ret[primaryKey];
   ret._id = idValue;
   return ret;
 }
+
 /**
  * in:  '_local/foobar'
  * out: 'foobar'
  */
-
-
 function pouchStripLocalFlagFromPrimary(str) {
   return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
-
 function getEventKey(pouchDBInstance, primary, change) {
   var useRev = change.doc ? change.doc._rev : change.previous._rev;
   var eventKey = pouchDBInstance.name + '|' + primary + '|' + change.operation + '|' + useRev;
   return eventKey;
 }
-
 function pouchChangeRowToChangeEvent(primaryKey, pouchDoc) {
   if (!pouchDoc) {
     throw (0, _rxError.newRxError)('SNH', {
@@ -3371,11 +2973,9 @@ function pouchChangeRowToChangeEvent(primaryKey, pouchDoc) {
       }
     });
   }
-
   var id = pouchDoc._id;
   var doc = pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc);
   var revHeight = doc._rev ? (0, _util.getHeightOfRevision)(doc._rev) : 1;
-
   if (pouchDoc._deleted) {
     return {
       operation: 'DELETE',
@@ -3399,10 +2999,8 @@ function pouchChangeRowToChangeEvent(primaryKey, pouchDoc) {
     };
   }
 }
-
 function pouchChangeRowToChangeStreamEvent(primaryKey, pouchRow) {
   var doc = pouchRow.doc;
-
   if (!doc) {
     throw (0, _rxError.newRxError)('SNH', {
       args: {
@@ -3410,9 +3008,7 @@ function pouchChangeRowToChangeStreamEvent(primaryKey, pouchRow) {
       }
     });
   }
-
   var revHeight = (0, _util.getHeightOfRevision)(doc._rev);
-
   if (pouchRow.deleted) {
     var previousDoc = (0, _util.flatClone)(pouchDocumentDataToRxDocumentData(primaryKey, pouchRow.doc));
     var ev = {
@@ -3443,18 +3039,16 @@ function pouchChangeRowToChangeStreamEvent(primaryKey, pouchRow) {
     return _ev2;
   }
 }
+
 /**
  * Runs a primary swap with transform all custom primaryKey occurences
  * into '_id'
  * @recursive
  */
-
-
 function primarySwapPouchDbQuerySelector(selector, primaryKey) {
   if (primaryKey === '_id') {
     return selector;
   }
-
   if (Array.isArray(selector)) {
     return selector.map(function (item) {
       return primarySwapPouchDbQuerySelector(item, primaryKey);
@@ -3463,8 +3057,7 @@ function primarySwapPouchDbQuerySelector(selector, primaryKey) {
     var ret = {};
     Object.entries(selector).forEach(function (_ref3) {
       var k = _ref3[0],
-          v = _ref3[1];
-
+        v = _ref3[1];
       if (k === primaryKey) {
         ret._id = v;
       } else {
@@ -3480,7 +3073,6 @@ function primarySwapPouchDbQuerySelector(selector, primaryKey) {
     return selector;
   }
 }
-
 function pouchHash(data) {
   return new Promise(function (res) {
     (0, _pouchdbMd.binaryMd5)(data, function (digest) {
@@ -3488,18 +3080,16 @@ function pouchHash(data) {
     });
   });
 }
-
 function getPouchIndexDesignDocNameByIndex(index) {
   var indexName = 'idx-rxdb-index-' + index.join(',');
   return indexName;
 }
+
 /**
  * PouchDB has not way to read deleted local documents
  * out of the database.
  * So instead of deleting them, we set a custom deleted flag.
  */
-
-
 var RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted';
 exports.RXDB_POUCH_DELETED_FLAG = RXDB_POUCH_DELETED_FLAG;
 var POUCHDB_CHECKPOINT_SCHEMA = {
@@ -3523,21 +3113,13 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxStorageInstancePouch = void 0;
-
 var _obliviousSet = require("oblivious-set");
-
 var _rxjs = require("rxjs");
-
 var _rxError = require("../../rx-error");
-
 var _pouchdbHelper = require("./pouchdb-helper");
-
 var _util = require("../../util");
-
 var _customEventsPlugin = require("./custom-events-plugin");
-
 var _rxSchemaHelper = require("../../rx-schema-helper");
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -3545,56 +3127,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     var observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -3606,38 +3177,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -3646,64 +3207,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -3713,7 +3257,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -3726,16 +3269,15 @@ function _for(test, update, body) {
     }
   }
 }
-
 /**
  * Because we internally use the findDocumentsById()
  * method, it is defined here because RxStorage wrappers
  * might swap out the function.
- */
-var pouchFindDocumentsById = function pouchFindDocumentsById(instance, ids, deleted) {
+ */var pouchFindDocumentsById = function pouchFindDocumentsById(instance, ids, deleted) {
   try {
     ensureNotClosed(instance);
     var ret = {};
+
     /**
      * On deleted documents, PouchDB will only return the tombstone.
      * So we have to get the properties directly for each document
@@ -3745,7 +3287,6 @@ var pouchFindDocumentsById = function pouchFindDocumentsById(instance, ids, dele
      * when one past revision was written via new_edits=false
      * @link https://stackoverflow.com/a/63516761/3443137
      */
-
     if (deleted) {
       instance.nonParallelQueue = instance.nonParallelQueue.then(function () {
         try {
@@ -3804,17 +3345,15 @@ var pouchFindDocumentsById = function pouchFindDocumentsById(instance, ids, dele
     return Promise.reject(e);
   }
 };
-
 var lastId = 0;
-
 var RxStorageInstancePouch = /*#__PURE__*/function () {
   /**
    * Some PouchDB operations give wrong results when they run in parallel.
    * So we have to ensure they are queued up.
    */
+
   function RxStorageInstancePouch(storage, databaseName, collectionName, schema, internals, options) {
     var _this = this;
-
     this.id = lastId++;
     this.changes$ = new _rxjs.Subject();
     this.subs = [];
@@ -3826,9 +3365,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     this.schema = schema;
     this.internals = internals;
     this.options = options;
-
     _pouchdbHelper.OPEN_POUCHDB_STORAGE_INSTANCES.add(this);
-
     this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
     /**
      * Instead of listening to pouch.changes,
@@ -3836,82 +3373,66 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
      * and create our own event stream, this will work more relyable
      * and does not mix up with write events from other sources.
      */
-
     var emitter = (0, _customEventsPlugin.getCustomEventEmitterByPouch)(this.internals.pouch);
+
     /**
      * Contains all eventIds that of emitted events,
      * used because multi-instance pouchdbs often will reemit the same
      * event on the other browser tab so we have to de-duplicate them.
      */
-
     var emittedEventBulkIds = new _obliviousSet.ObliviousSet(60 * 1000);
     var eventSub = emitter.subject.subscribe(function (eventBulk) {
       if (eventBulk.events.length === 0 || emittedEventBulkIds.has(eventBulk.id)) {
         return;
       }
+      emittedEventBulkIds.add(eventBulk.id);
 
-      emittedEventBulkIds.add(eventBulk.id); // rewrite primaryPath of all events
-
+      // rewrite primaryPath of all events
       eventBulk.events.forEach(function (event) {
         if (event.documentData) {
           event.documentData = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this.primaryPath, event.documentData);
         }
-
         if (event.previousDocumentData) {
           event.previousDocumentData = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this.primaryPath, event.previousDocumentData);
         }
       });
-
       _this.changes$.next(eventBulk);
     });
     this.subs.push(eventSub);
   }
-
   var _proto = RxStorageInstancePouch.prototype;
-
   _proto.close = function close() {
     ensureNotClosed(this);
     this.closed = true;
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
-
     _pouchdbHelper.OPEN_POUCHDB_STORAGE_INSTANCES["delete"](this);
+    _pouchdbHelper.OPEN_POUCH_INSTANCES["delete"](this.internals.pouchInstanceId);
 
-    _pouchdbHelper.OPEN_POUCH_INSTANCES["delete"](this.internals.pouchInstanceId); // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
+    // TODO this did not work because a closed pouchdb cannot be recreated in the same process run
     // await this.internals.pouch.close();
-
-
     return _util.PROMISE_RESOLVE_VOID;
   };
-
   _proto.remove = function remove() {
     try {
       var _this3 = this;
-
       ensureNotClosed(_this3);
       _this3.closed = true;
-
       _this3.subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
-
       _pouchdbHelper.OPEN_POUCHDB_STORAGE_INSTANCES["delete"](_this3);
-
       _pouchdbHelper.OPEN_POUCH_INSTANCES["delete"](_this3.internals.pouchInstanceId);
-
       return Promise.resolve(_this3.internals.pouch.destroy()).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
       var _this5 = this;
-
       ensureNotClosed(_this5);
-
       if (documentWrites.length === 0) {
         throw (0, _rxError.newRxError)('P2', {
           args: {
@@ -3919,7 +3440,6 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
           }
         });
       }
-
       var writeRowById = new Map();
       var insertDocsById = new Map();
       var writeDocs = documentWrites.map(function (writeData) {
@@ -3931,19 +3451,17 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             args: writeData
           });
         }
+
         /**
          * Ensure that a revision exists,
          * having an empty revision here would not throw
          * but just not resolve forever.
          */
-
-
         if (!writeData.document._rev) {
           throw (0, _rxError.newRxError)('SNH', {
             args: writeData
           });
         }
-
         var primary = writeData.document[_this5.primaryPath];
         writeRowById.set(primary, writeData);
         var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, writeData.document);
@@ -3970,7 +3488,6 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             return Promise.all(pouchResult.map(function (resultRow) {
               try {
                 var writeRow = (0, _util.getFromMapOrThrow)(writeRowById, resultRow.id);
-
                 var _temp4 = function () {
                   if (resultRow.error) {
                     var previousDoc = (0, _util.getFromMapOrThrow)(previousDocsInDb, resultRow.id);
@@ -3986,14 +3503,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                     var _temp5 = function _temp5() {
                       ret.success[resultRow.id] = _pushObj;
                     };
-
                     var _pushObj = (0, _util.flatClone)(writeRow.document);
-
                     _pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this5.primaryPath, _pushObj);
-                    _pushObj._rev = resultRow.rev; // replace the inserted attachments with their diggest
+                    _pushObj._rev = resultRow.rev;
 
+                    // replace the inserted attachments with their diggest
                     _pushObj._attachments = {};
-
                     var _temp6 = function () {
                       if (!writeRow.document._attachments) {
                         writeRow.document._attachments = {};
@@ -4003,11 +3518,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                         });
                       }
                     }();
-
                     return _temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6);
                   }
                 }();
-
                 return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
               } catch (e) {
                 return Promise.reject(e);
@@ -4025,11 +3538,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.query = function query(preparedQuery) {
     try {
       var _this7 = this;
-
       ensureNotClosed(_this7);
       return Promise.resolve(_this7.internals.pouch.find(preparedQuery)).then(function (findResult) {
         var ret = {
@@ -4044,11 +3555,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     try {
       var _this9 = this;
-
       ensureNotClosed(_this9);
       return Promise.resolve(_this9.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
         /**
@@ -4057,27 +3566,22 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
          * So here we have to transform the Buffer to a Blob.
          */
         var isBuffer = typeof Buffer !== 'undefined' && Buffer.isBuffer(attachmentData);
-
         if (isBuffer) {
           attachmentData = new Blob([attachmentData]);
         }
-
         return Promise.resolve(_util.blobBufferUtil.toBase64String(attachmentData));
       });
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
     return pouchFindDocumentsById(this, ids, deleted);
   };
-
   _proto.changeStream = function changeStream() {
     ensureNotClosed(this);
     return this.changes$.asObservable();
   };
-
   _proto.cleanup = function cleanup(_minimumDeletedTime) {
     ensureNotClosed(this);
     /**
@@ -4086,12 +3590,10 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
      * in freeing up disc space.
      * @link https://github.com/pouchdb/pouchdb/issues/802
      */
-
     return this.internals.pouch.compact().then(function () {
       return true;
     });
   };
-
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
       var _temp9 = function _temp9() {
@@ -4105,7 +3607,6 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
              */
             throw new Error('same sequence');
           }
-
           var lastRow = (0, _util.lastOfArray)(changedDocuments);
           var documents = changedDocuments.map(function (changeRow) {
             return (0, _util.getFromObjectOrThrow)(documentsData, changeRow.id);
@@ -4120,15 +3621,11 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
           };
         });
       };
-
       var _this11 = this;
-
       ensureNotClosed(_this11);
-
       if (!limit || typeof limit !== 'number') {
         throw new Error('wrong limit');
       }
-
       var pouchChangesOpts = {
         live: false,
         limit: limit,
@@ -4144,7 +3641,6 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
        * Because PouchDB also returns changes of _design documents,
        * we have to fill up the results with more changes if this happens.
        */
-
       var _temp10 = _for(function () {
         return !!first || skippedDesignDocuments > 0;
       }, void 0, function () {
@@ -4153,7 +3649,6 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         return Promise.resolve(_this11.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
           var addChangedDocuments = pouchResults.results.filter(function (row) {
             var isDesignDoc = row.id.startsWith(_pouchdbHelper.POUCHDB_DESIGN_PREFIX);
-
             if (isDesignDoc) {
               skippedDesignDocuments = skippedDesignDocuments + 1;
               return false;
@@ -4167,32 +3662,27 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             };
           });
           changedDocuments = changedDocuments.concat(addChangedDocuments);
-          lastSequence = pouchResults.last_seq; // modify pouch options for next run of pouch.changes()
+          lastSequence = pouchResults.last_seq;
 
+          // modify pouch options for next run of pouch.changes()
           pouchChangesOpts.since = lastSequence;
           pouchChangesOpts.limit = skippedDesignDocuments;
         });
       });
-
       return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(_temp9) : _temp9(_temp10));
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   _proto.conflictResultionTasks = function conflictResultionTasks() {
     return new _rxjs.Subject();
   };
-
   _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
     return Promise.resolve();
   };
-
   return RxStorageInstancePouch;
 }();
-
 exports.RxStorageInstancePouch = RxStorageInstancePouch;
-
 function ensureNotClosed(instance) {
   if (instance.closed) {
     throw new Error('RxStorageInstancePouch is closed ' + instance.databaseName + '-' + instance.collectionName);
@@ -4204,7 +3694,6 @@ function ensureNotClosed(instance) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -4214,39 +3703,25 @@ exports.createIndexesOnPouch = void 0;
 exports.getPouchDBOfRxCollection = getPouchDBOfRxCollection;
 exports.getPouchLocation = getPouchLocation;
 exports.getRxStoragePouch = getRxStoragePouch;
-
 var _util = require("../../util");
-
 var _pouchDb = require("./pouch-db");
-
 var _rxError = require("../../rx-error");
-
 var _rxStorageInstancePouch = require("./rx-storage-instance-pouch");
-
 var _pouchdbHelper = require("./pouchdb-helper");
-
 var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
-
 var _pouchStatics = require("./pouch-statics");
-
 var _rxSchemaHelper = require("../../rx-schema-helper");
-
 var _customEventsPlugin = require("./custom-events-plugin");
-
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
-
 var _rxStorageHelper = require("../../rx-storage-helper");
-
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
  * Will skip indexes that already exist.
- */
-var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
+ */var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
   try {
     if (!schema.indexes) {
       return Promise.resolve();
     }
-
     var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
     return Promise.resolve(pouch.getIndexes()).then(function (before) {
       var existingIndexes = new Set(before.indexes.map(function (idx) {
@@ -4254,11 +3729,11 @@ var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
       }));
       return Promise.resolve(Promise.all(schema.indexes.map(function (indexMaybeArray) {
         var indexArray = (0, _util.isMaybeReadonlyArray)(indexMaybeArray) ? indexMaybeArray : [indexMaybeArray];
+
         /**
          * replace primary key with _id
          * because that is the enforced primary key on pouchdb.
          */
-
         indexArray = indexArray.map(function (key) {
           if (key === primaryKey) {
             return '_id';
@@ -4267,17 +3742,15 @@ var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
           }
         });
         var indexName = (0, _pouchdbHelper.getPouchIndexDesignDocNameByIndex)(indexArray);
-
         if (existingIndexes.has(indexName)) {
           // index already exists
           return;
         }
+
         /**
          * TODO we might have even better performance by doing a pouch.bulkDocs()
          * on index creation
          */
-
-
         return pouch.createIndex({
           name: indexName,
           ddoc: indexName,
@@ -4290,14 +3763,10 @@ var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
   } catch (e) {
     return Promise.reject(e);
   }
-};
-/**
- * returns the pouchdb-database-name
- */
-
-
+}; /**
+    * returns the pouchdb-database-name
+    */
 exports.createIndexesOnPouch = createIndexesOnPouch;
-
 var RxStoragePouch = /*#__PURE__*/function () {
   function RxStoragePouch(adapter) {
     var pouchSettings = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -4307,9 +3776,7 @@ var RxStoragePouch = /*#__PURE__*/function () {
     this.pouchSettings = pouchSettings;
     checkPouchAdapter(adapter);
   }
-
   var _proto = RxStoragePouch.prototype;
-
   _proto.createPouch = function createPouch(location, options) {
     var pouchDbParameters = {
       location: location,
@@ -4318,6 +3785,7 @@ var RxStoragePouch = /*#__PURE__*/function () {
     };
     var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, this.pouchSettings, pouchDbParameters.settings);
     var pouch = new _pouchDb.PouchDB(pouchDbParameters.location, pouchDBOptions);
+
     /**
      * In the past we found some errors where the PouchDB is not directly useable
      * so we we had to call .info() first to ensure it can be used.
@@ -4328,11 +3796,9 @@ var RxStoragePouch = /*#__PURE__*/function () {
 
     return Promise.resolve(pouch);
   };
-
   _proto.createStorageInstance = function createStorageInstance(params) {
     try {
       var _this2 = this;
-
       (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
       return Promise.resolve(_this2.createPouch(pouchLocation, params.options)).then(function (pouch) {
@@ -4342,9 +3808,7 @@ var RxStoragePouch = /*#__PURE__*/function () {
             pouch: pouch,
             pouchInstanceId: pouchInstanceId
           }, params.options);
-
           _pouchdbHelper.OPEN_POUCH_INSTANCES.set(pouchInstanceId, pouch);
-
           (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(_pouchdbHelper.RX_STORAGE_NAME_POUCHDB, params, instance);
           return instance;
         });
@@ -4353,17 +3817,12 @@ var RxStoragePouch = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   return RxStoragePouch;
-}();
-/**
- * Checks if all is ok with the given adapter,
- * else throws an error.
- */
-
-
+}(); /**
+      * Checks if all is ok with the given adapter,
+      * else throws an error.
+      */
 exports.RxStoragePouch = RxStoragePouch;
-
 function checkPouchAdapter(adapter) {
   if (typeof adapter === 'string') {
     if (!_pouchDb.PouchDB.adapters || !_pouchDb.PouchDB.adapters[adapter]) {
@@ -4373,7 +3832,6 @@ function checkPouchAdapter(adapter) {
     }
   } else {
     (0, _pouchDb.isLevelDown)(adapter);
-
     if (!_pouchDb.PouchDB.adapters || !_pouchDb.PouchDB.adapters.leveldb) {
       throw (0, _rxError.newRxError)('DB10', {
         adapter: adapter
@@ -4381,10 +3839,8 @@ function checkPouchAdapter(adapter) {
     }
   }
 }
-
 function getPouchLocation(dbName, collectionName, schemaVersion) {
   var prefix = dbName + '-rxdb-' + schemaVersion + '-';
-
   if (!collectionName.includes('/')) {
     return prefix + collectionName;
   } else {
@@ -4396,26 +3852,21 @@ function getPouchLocation(dbName, collectionName, schemaVersion) {
     return ret;
   }
 }
-
 function getPouchDBOfRxCollection(collection) {
   var id = (0, _pouchdbHelper.openPouchId)(collection.database.token, collection.database.name, collection.name, collection.schema.version);
   var pouch = (0, _util.getFromMapOrThrow)(_pouchdbHelper.OPEN_POUCH_INSTANCES, id);
   return pouch;
 }
-
 var addedRxDBPouchPlugins = false;
-
 function getRxStoragePouch(adapter, pouchSettings) {
   if (!addedRxDBPouchPlugins) {
     addedRxDBPouchPlugins = true;
     (0, _pouchDb.addPouchPlugin)(_pouchdbFind["default"]);
     (0, _customEventsPlugin.addCustomEventsPluginToPouch)();
   }
-
   if (!adapter) {
     throw new Error('adapter missing');
   }
-
   var storage = new RxStoragePouch(adapter, pouchSettings);
   return storage;
 }
@@ -4432,100 +3883,76 @@ exports.createQueryCache = createQueryCache;
 exports.defaultCacheReplacementPolicyMonad = exports.defaultCacheReplacementPolicy = void 0;
 exports.triggerCacheReplacement = triggerCacheReplacement;
 exports.uncacheRxQuery = uncacheRxQuery;
-
 var _util = require("./util");
-
 /**
  * the query-cache makes sure that on every query-state, exactly one instance can exist
  * if you use the same mango-query more then once, it will reuse the first RxQuery
- */
-var QueryCache = /*#__PURE__*/function () {
+ */var QueryCache = /*#__PURE__*/function () {
   function QueryCache() {
     this._map = new Map();
   }
-
   var _proto = QueryCache.prototype;
-
   /**
    * check if an equal query is in the cache,
    * if true, return the cached one,
    * if false, save the given one and return it
-   */
-  _proto.getByQuery = function getByQuery(rxQuery) {
+   */_proto.getByQuery = function getByQuery(rxQuery) {
     var stringRep = rxQuery.toString();
-
     if (!this._map.has(stringRep)) {
       this._map.set(stringRep, rxQuery);
     }
-
     return this._map.get(stringRep);
   };
-
   return QueryCache;
 }();
-
 exports.QueryCache = QueryCache;
-
 function createQueryCache() {
   return new QueryCache();
 }
-
 function uncacheRxQuery(queryCache, rxQuery) {
   rxQuery.uncached = true;
   var stringRep = rxQuery.toString();
-
   queryCache._map["delete"](stringRep);
 }
-
 function countRxQuerySubscribers(rxQuery) {
   return rxQuery.refCount$.observers.length;
 }
-
 var DEFAULT_TRY_TO_KEEP_MAX = 100;
 exports.DEFAULT_TRY_TO_KEEP_MAX = DEFAULT_TRY_TO_KEEP_MAX;
 var DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
+
 /**
  * The default cache replacement policy
  * See docs-src/query-cache.md to learn how it should work.
  * Notice that this runs often and should block the cpu as less as possible
  * This is a monad which makes it easier to unit test
  */
-
 exports.DEFAULT_UNEXECUTED_LIFETME = DEFAULT_UNEXECUTED_LIFETME;
-
 var defaultCacheReplacementPolicyMonad = function defaultCacheReplacementPolicyMonad(tryToKeepMax, unExecutedLifetime) {
   return function (_collection, queryCache) {
     if (queryCache._map.size < tryToKeepMax) {
       return;
     }
-
     var minUnExecutedLifetime = (0, _util.now)() - unExecutedLifetime;
     var maybeUncash = [];
     var queriesInCache = Array.from(queryCache._map.values());
-
     for (var _i = 0, _queriesInCache = queriesInCache; _i < _queriesInCache.length; _i++) {
       var rxQuery = _queriesInCache[_i];
-
       // filter out queries with subscribers
       if (countRxQuerySubscribers(rxQuery) > 0) {
         continue;
-      } // directly uncache queries that never executed and are older then unExecutedLifetime
-
-
+      }
+      // directly uncache queries that never executed and are older then unExecutedLifetime
       if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
         uncacheRxQuery(queryCache, rxQuery);
         continue;
       }
-
       maybeUncash.push(rxQuery);
     }
-
     var mustUncache = maybeUncash.length - tryToKeepMax;
-
     if (mustUncache <= 0) {
       return;
     }
-
     var sortedByLastUsage = maybeUncash.sort(function (a, b) {
       return a._lastEnsureEqual - b._lastEnsureEqual;
     });
@@ -4535,31 +3962,28 @@ var defaultCacheReplacementPolicyMonad = function defaultCacheReplacementPolicyM
     });
   };
 };
-
 exports.defaultCacheReplacementPolicyMonad = defaultCacheReplacementPolicyMonad;
 var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETME);
 exports.defaultCacheReplacementPolicy = defaultCacheReplacementPolicy;
 var COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
+
 /**
  * Triggers the cache replacement policy after waitTime has passed.
  * We do not run this directly because at exactly the time a query is created,
  * we need all CPU to minimize latency.
  * Also this should not be triggered multiple times when waitTime is still waiting.
  */
-
 exports.COLLECTIONS_WITH_RUNNING_CLEANUP = COLLECTIONS_WITH_RUNNING_CLEANUP;
-
 function triggerCacheReplacement(rxCollection) {
   if (COLLECTIONS_WITH_RUNNING_CLEANUP.has(rxCollection)) {
     // already started
     return;
   }
-
   COLLECTIONS_WITH_RUNNING_CLEANUP.add(rxCollection);
+
   /**
    * Do not run directly to not reduce result latency of a new query
    */
-
   (0, _util.nextTick)() // wait at least one tick
   .then(function () {
     return (0, _util.requestIdlePromise)(200);
@@ -4568,7 +3992,6 @@ function triggerCacheReplacement(rxCollection) {
     if (!rxCollection.destroyed) {
       rxCollection.cacheReplacementPolicy(rxCollection, rxCollection._queryCache);
     }
-
     COLLECTIONS_WITH_RUNNING_CLEANUP["delete"](rxCollection);
   });
 }
@@ -4584,12 +4007,11 @@ exports.getMatcherQueryOpts = getMatcherQueryOpts;
 exports.getQueryPlan = getQueryPlan;
 exports.isLogicalOperator = isLogicalOperator;
 exports.rateQueryPlan = rateQueryPlan;
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var INDEX_MAX = String.fromCharCode(65535);
 exports.INDEX_MAX = INDEX_MAX;
 var INDEX_MIN = -Infinity;
+
 /**
  * Returns the query plan which contains
  * information about how to run the query
@@ -4597,20 +4019,16 @@ var INDEX_MIN = -Infinity;
  * 
  * This is used in some storage like Memory, dexie.js and IndexedDB.
  */
-
 exports.INDEX_MIN = INDEX_MIN;
-
 function getQueryPlan(schema, query) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   var selector = query.selector;
   var indexes = schema.indexes ? schema.indexes.slice(0) : [];
-
   if (query.index) {
     indexes = [query.index];
   } else {
     indexes.push([primaryPath]);
   }
-
   var optimalSortIndex = query.sort.map(function (sortField) {
     return Object.keys(sortField)[0];
   });
@@ -4619,7 +4037,6 @@ function getQueryPlan(schema, query) {
    * Most storages do not support descending indexes
    * so having a 'desc' in the sorting, means we always have to re-sort the results.
    */
-
   var hasDescSorting = !!query.sort.find(function (sortField) {
     return Object.values(sortField)[0] === 'desc';
   });
@@ -4629,7 +4046,6 @@ function getQueryPlan(schema, query) {
     var opts = index.map(function (indexField) {
       var matcher = selector[indexField];
       var operators = matcher ? Object.keys(matcher) : [];
-
       if (!matcher || !operators.length) {
         return {
           startKey: INDEX_MIN,
@@ -4638,7 +4054,6 @@ function getQueryPlan(schema, query) {
           inclusiveEnd: true
         };
       }
-
       var matcherOpts = {};
       operators.forEach(function (operator) {
         if (isLogicalOperator(operator)) {
@@ -4646,24 +4061,21 @@ function getQueryPlan(schema, query) {
           var partialOpts = getMatcherQueryOpts(operator, operatorValue);
           matcherOpts = Object.assign(matcherOpts, partialOpts);
         }
-      }); // fill missing attributes
+      });
 
+      // fill missing attributes
       if (typeof matcherOpts.startKey === 'undefined') {
         matcherOpts.startKey = INDEX_MIN;
       }
-
       if (typeof matcherOpts.endKey === 'undefined') {
         matcherOpts.endKey = INDEX_MAX;
       }
-
       if (typeof matcherOpts.inclusiveStart === 'undefined') {
         matcherOpts.inclusiveStart = true;
       }
-
       if (typeof matcherOpts.inclusiveEnd === 'undefined') {
         matcherOpts.inclusiveEnd = true;
       }
-
       return matcherOpts;
     });
     var queryPlan = {
@@ -4683,16 +4095,15 @@ function getQueryPlan(schema, query) {
       sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(',')
     };
     var quality = rateQueryPlan(schema, query, queryPlan);
-
     if (quality > 0 && quality > currentBestQuality || query.index) {
       currentBestQuality = quality;
       currentBestQueryPlan = queryPlan;
     }
   });
+
   /**
    * No index found, use the default index
    */
-
   if (!currentBestQueryPlan) {
     return {
       index: [primaryPath],
@@ -4703,16 +4114,12 @@ function getQueryPlan(schema, query) {
       sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath
     };
   }
-
   return currentBestQueryPlan;
 }
-
 var LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
-
 function isLogicalOperator(operator) {
   return LOGICAL_OPERATORS.has(operator);
 }
-
 function getMatcherQueryOpts(operator, operatorValue) {
   switch (operator) {
     case '$eq':
@@ -4720,64 +4127,52 @@ function getMatcherQueryOpts(operator, operatorValue) {
         startKey: operatorValue,
         endKey: operatorValue
       };
-
     case '$lte':
       return {
         endKey: operatorValue
       };
-
     case '$gte':
       return {
         startKey: operatorValue
       };
-
     case '$lt':
       return {
         endKey: operatorValue,
         inclusiveEnd: false
       };
-
     case '$gt':
       return {
         startKey: operatorValue,
         inclusiveStart: false
       };
-
     default:
       throw new Error('SNH');
   }
 }
+
 /**
  * Returns a number that determines the quality of the query plan.
  * Higher number means better query plan.
  */
-
-
 function rateQueryPlan(schema, query, queryPlan) {
   var quality = 0;
   var pointsPerMatchingKey = 10;
   var idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(function (keyValue) {
     return keyValue === INDEX_MIN;
   });
-
   if (idxOfFirstMinStartKey > 0) {
     quality = quality + idxOfFirstMinStartKey * pointsPerMatchingKey;
   }
-
   var idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(function (keyValue) {
     return keyValue === INDEX_MAX;
   });
-
   if (idxOfFirstMaxEndKey > 0) {
     quality = quality + idxOfFirstMaxEndKey * pointsPerMatchingKey;
   }
-
   var pointsIfNoReSortMustBeDone = 5;
-
   if (queryPlan.sortFieldsSameAsIndexFields) {
     quality = quality + pointsIfNoReSortMustBeDone;
   }
-
   return quality;
 }
 
@@ -4789,15 +4184,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getCheckpointKey = getCheckpointKey;
 exports.setCheckpoint = exports.getLastCheckpointDoc = void 0;
-
 var _rxSchemaHelper = require("../rx-schema-helper");
-
 var _rxStorageHelper = require("../rx-storage-helper");
-
 var _util = require("../util");
-
 var _metaInstance = require("./meta-instance");
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -4805,56 +4195,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     var observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -4866,38 +4245,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -4906,64 +4275,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -4973,7 +4325,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -4986,12 +4337,10 @@ function _for(test, update, body) {
     }
   }
 }
-
 /**
  * Sets the checkpoint,
  * automatically resolves conflicts that appear.
- */
-var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
+ */var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
   try {
     var _exit2 = false;
     var previousCheckpointDoc = state.lastCheckpointDoc[direction];
@@ -5009,6 +4358,7 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
        * Only write checkpoint if it is different from before
        * to have less writes to the storage.
        */
+
       !previousCheckpointDoc || JSON.stringify(previousCheckpointDoc.data) !== JSON.stringify(checkpoint))) {
         var newDoc = {
           id: '',
@@ -5035,7 +4385,6 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
           if (previousCheckpointDoc) {
             newDoc.data = (0, _rxStorageHelper.stackCheckpoints)([previousCheckpointDoc.data, newDoc.data]);
           }
-
           newDoc._meta.lwt = (0, _util.now)();
           newDoc._rev = (0, _util.createRevision)(state.input.hashFunction, newDoc, previousCheckpointDoc);
           return Promise.resolve(state.input.metaInstance.bulkWrite([{
@@ -5047,7 +4396,6 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
               _exit2 = true;
             } else {
               var error = (0, _util.getFromObjectOrThrow)(result.error, newDoc.id);
-
               if (error.status !== 409) {
                 throw error;
               } else {
@@ -5063,9 +4411,7 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
     return Promise.reject(e);
   }
 };
-
 exports.setCheckpoint = setCheckpoint;
-
 var getLastCheckpointDoc = function getLastCheckpointDoc(state, direction) {
   try {
     var checkpointDocId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, {
@@ -5076,7 +4422,6 @@ var getLastCheckpointDoc = function getLastCheckpointDoc(state, direction) {
     return Promise.resolve(state.input.metaInstance.findDocumentsById([checkpointDocId], false)).then(function (checkpointResult) {
       var checkpointDoc = checkpointResult[checkpointDocId];
       state.lastCheckpointDoc[direction] = checkpointDoc;
-
       if (checkpointDoc) {
         return checkpointDoc.data;
       } else {
@@ -5087,9 +4432,7 @@ var getLastCheckpointDoc = function getLastCheckpointDoc(state, direction) {
     return Promise.reject(e);
   }
 };
-
 exports.getLastCheckpointDoc = getLastCheckpointDoc;
-
 function getCheckpointKey(input) {
   var hash = (0, _util.fastUnsecureHash)([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));
   return 'rx-storage-replication-' + hash;
@@ -5099,16 +4442,12 @@ function getCheckpointKey(input) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.resolveConflictError = exports.defaultConflictHandler = void 0;
-
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
-
 var _util = require("../util");
-
 /**
  * Resolves a conflict error or determines that the given document states are equal.
  * Returns the resolved document that must be written to the fork.
@@ -5116,8 +4455,7 @@ var _util = require("../util");
  * If document is not in conflict, returns undefined.
  * If error is non-409, it throws an error.
  * Conflicts are only solved in the upstream, never in the downstream.
- */
-var resolveConflictError = function resolveConflictError(state, input, forkState) {
+ */var resolveConflictError = function resolveConflictError(state, input, forkState) {
   try {
     var conflictHandler = state.input.conflictHandler;
     return Promise.resolve(conflictHandler(input, 'replication-resolve-conflict')).then(function (conflictHandlerOutput) {
@@ -5153,9 +4491,7 @@ var resolveConflictError = function resolveConflictError(state, input, forkState
     return Promise.reject(e);
   }
 };
-
 exports.resolveConflictError = resolveConflictError;
-
 var defaultConflictHandler = function defaultConflictHandler(i, _context) {
   /**
    * If the documents are deep equal,
@@ -5169,18 +4505,16 @@ var defaultConflictHandler = function defaultConflictHandler(i, _context) {
       isEqual: true
     });
   }
+
   /**
    * The default conflict handler will always
    * drop the fork state and use the master state instead.
    */
-
-
   return Promise.resolve({
     isEqual: false,
     documentData: i.realMasterState
   });
 };
-
 exports.defaultConflictHandler = defaultConflictHandler;
 
 },{"../util":46,"@babel/runtime/helpers/interopRequireDefault":53,"fast-deep-equal":410}],24:[function(require,module,exports){
@@ -5190,19 +4524,12 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.startReplicationDownstream = startReplicationDownstream;
-
 var _rxjs = require("rxjs");
-
 var _rxStorageHelper = require("../rx-storage-helper");
-
 var _util = require("../util");
-
 var _checkpoint = require("./checkpoint");
-
 var _helper = require("./helper");
-
 var _metaInstance = require("./meta-instance");
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -5210,56 +4537,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     var observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -5271,38 +4587,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -5311,64 +4617,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -5378,7 +4667,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -5391,7 +4679,6 @@ function _for(test, update, body) {
     }
   }
 }
-
 /**
  * Writes all documents from the master to the fork.
  * The downstream has two operation modes
@@ -5404,17 +4691,14 @@ function startReplicationDownstream(state) {
   var downstreamResyncOnce = function downstreamResyncOnce() {
     try {
       state.stats.down.downstreamResyncOnce = state.stats.down.downstreamResyncOnce + 1;
-
       if (state.events.canceled.getValue()) {
         return Promise.resolve();
       }
-
       state.checkpointQueue = state.checkpointQueue.then(function () {
         return (0, _checkpoint.getLastCheckpointDoc)(state, 'down');
       });
       return Promise.resolve(state.checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
-
         function _temp2() {
           return Promise.all(promises).then(function () {
             if (!state.firstSyncDone.down.getValue()) {
@@ -5422,9 +4706,7 @@ function startReplicationDownstream(state) {
             }
           });
         }
-
         var promises = [];
-
         var _temp = _for(function () {
           return !_interrupt && !state.events.canceled.getValue();
         }, void 0, function () {
@@ -5434,24 +4716,21 @@ function startReplicationDownstream(state) {
               _interrupt = true;
               return;
             }
-
             lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, downResult.checkpoint]);
             promises.push(persistFromMaster(downResult.documents, lastCheckpoint));
           });
         });
-
         return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
       });
     } catch (e) {
       return Promise.reject(e);
     }
   };
+  var replicationHandler = state.input.replicationHandler;
 
-  var replicationHandler = state.input.replicationHandler; // used to detect which tasks etc can in it at which order.
-
+  // used to detect which tasks etc can in it at which order.
   var timer = 0;
   var openTasks = [];
-
   function addNewTask(task) {
     state.stats.down.addNewTask = state.stats.down.addNewTask + 1;
     var taskWithTime = {
@@ -5461,21 +4740,17 @@ function startReplicationDownstream(state) {
     openTasks.push(taskWithTime);
     state.streamQueue.down = state.streamQueue.down.then(function () {
       var useTasks = [];
-
       while (openTasks.length > 0) {
         state.events.active.down.next(true);
-
         var _taskWithTime = (0, _util.ensureNotFalsy)(openTasks.shift());
+
         /**
          * If the task came in before the last time we started the pull 
          * from the master, then we can drop the task.
          */
-
-
         if (_taskWithTime.time < lastTimeMasterChangesRequested) {
           continue;
         }
-
         if (_taskWithTime.task === 'RESYNC') {
           if (useTasks.length === 0) {
             useTasks.push(_taskWithTime.task);
@@ -5484,15 +4759,12 @@ function startReplicationDownstream(state) {
             break;
           }
         }
-
         useTasks.push(_taskWithTime.task);
       }
-
       if (useTasks.length === 0) {
         state.events.active.down.next(false);
         return;
       }
-
       if (useTasks[0] === 'RESYNC') {
         return downstreamResyncOnce();
       } else {
@@ -5500,12 +4772,11 @@ function startReplicationDownstream(state) {
       }
     });
   }
-
   addNewTask('RESYNC');
+
   /**
    * If a write on the master happens, we have to trigger the downstream.
    */
-
   var sub = replicationHandler.masterChangeStream$.subscribe(function (task) {
     state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
     addNewTask(task);
@@ -5515,13 +4786,12 @@ function startReplicationDownstream(state) {
   }))).then(function () {
     return sub.unsubscribe();
   });
+
   /**
    * For faster performance, we directly start each write
    * and then await all writes at the end.
    */
-
   var lastTimeMasterChangesRequested = -1;
-
   function downstreamProcessChanges(tasks) {
     state.stats.down.downstreamProcessChanges = state.stats.down.downstreamProcessChanges + 1;
     var docsOfAllTasks = [];
@@ -5530,12 +4800,12 @@ function startReplicationDownstream(state) {
       if (task === 'RESYNC') {
         throw new Error('SNH');
       }
-
       docsOfAllTasks = docsOfAllTasks.concat(task.documents);
       lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, task.checkpoint]);
     });
     return persistFromMaster(docsOfAllTasks, (0, _util.ensureNotFalsy)(lastCheckpoint));
   }
+
   /**
    * It can happen that the calls to masterChangesSince() or the changeStream()
    * are way faster then how fast the documents can be persisted.
@@ -5544,53 +4814,47 @@ function startReplicationDownstream(state) {
    * This often bundles up single writes and improves performance
    * by processing the documents in bulks.
    */
-
-
   var persistenceQueue = _util.PROMISE_RESOLVE_VOID;
   var nonPersistedFromMaster = {
     docs: {}
   };
-
   function persistFromMaster(docs, checkpoint) {
     state.stats.down.persistFromMaster = state.stats.down.persistFromMaster + 1;
+
     /**
      * Add the new docs to the non-persistend list
      */
-
     docs.forEach(function (docData) {
       var docId = docData[state.primaryPath];
       nonPersistedFromMaster.docs[docId] = docData;
     });
     nonPersistedFromMaster.checkpoint = checkpoint;
+
     /**
      * Run in the queue
      * with all open documents from nonPersistedFromMaster.
      */
-
     persistenceQueue = persistenceQueue.then(function () {
       var downDocsById = nonPersistedFromMaster.docs;
       nonPersistedFromMaster.docs = {};
       var useCheckpoint = nonPersistedFromMaster.checkpoint;
       var docIds = Object.keys(downDocsById);
-
       if (state.events.canceled.getValue() || docIds.length === 0) {
         return _util.PROMISE_RESOLVE_VOID;
       }
-
       var writeRowsToFork = [];
       var writeRowsToForkById = {};
       var writeRowsToMeta = {};
       var useMetaWriteRows = [];
       return Promise.all([state.input.forkInstance.findDocumentsById(docIds, true), (0, _metaInstance.getAssumedMasterState)(state, docIds)]).then(function (_ref) {
         var currentForkState = _ref[0],
-            assumedMasterState = _ref[1];
+          assumedMasterState = _ref[1];
         return Promise.all(docIds.map(function (docId) {
           try {
             var forkStateFullDoc = currentForkState[docId];
             var forkStateDocData = forkStateFullDoc ? (0, _helper.writeDocToDocState)(forkStateFullDoc) : undefined;
             var masterState = downDocsById[docId];
             var assumedMaster = assumedMasterState[docId];
-
             if (assumedMaster && assumedMaster.metaDocument.isResolvedConflict === forkStateFullDoc._rev) {
               /**
                * The current fork state represents a resolved conflict
@@ -5599,7 +4863,6 @@ function startReplicationDownstream(state) {
                */
               return Promise.resolve(_util.PROMISE_RESOLVE_VOID);
             }
-
             var isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ? _util.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
               realMasterState: assumedMaster.docData,
               newDocumentState: forkStateDocData
@@ -5616,7 +4879,6 @@ function startReplicationDownstream(state) {
                  */
                 return _util.PROMISE_RESOLVE_VOID;
               }
-
               var areStatesExactlyEqualPromise = !forkStateDocData ? _util.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
                 realMasterState: masterState,
                 newDocumentState: forkStateDocData
@@ -5636,15 +4898,13 @@ function startReplicationDownstream(state) {
                   if (!assumedMaster || isAssumedMasterEqualToForkState === false) {
                     useMetaWriteRows.push((0, _metaInstance.getMetaWriteRow)(state, forkStateDocData, assumedMaster ? assumedMaster.metaDocument : undefined));
                   }
-
                   return _util.PROMISE_RESOLVE_VOID;
                 }
+
                 /**
                  * All other master states need to be written to the forkInstance
                  * and metaInstance.
                  */
-
-
                 var newForkState = Object.assign({}, masterState, forkStateFullDoc ? {
                   _meta: (0, _util.flatClone)(forkStateFullDoc._meta),
                   _attachments: {},
@@ -5707,9 +4967,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.docStateToWriteDoc = docStateToWriteDoc;
 exports.writeDocToDocState = writeDocToDocState;
-
 var _util = require("../util");
-
 function docStateToWriteDoc(hashFunction, docState, previous) {
   var docData = Object.assign({}, docState, {
     _attachments: {},
@@ -5721,7 +4979,6 @@ function docStateToWriteDoc(hashFunction, docState, previous) {
   docData._rev = (0, _util.createRevision)(hashFunction, docData, previous);
   return docData;
 }
-
 function writeDocToDocState(writeDoc) {
   var ret = (0, _util.flatClone)(writeDoc);
   delete ret._attachments;
@@ -5750,15 +5007,10 @@ exports.awaitRxStorageReplicationInSync = awaitRxStorageReplicationInSync;
 exports.cancelRxStorageReplication = void 0;
 exports.replicateRxStorageInstance = replicateRxStorageInstance;
 exports.rxStorageInstanceToReplicationHandler = rxStorageInstanceToReplicationHandler;
-
 var _rxjs = require("rxjs");
-
 var _rxSchemaHelper = require("../rx-schema-helper");
-
 var _util = require("../util");
-
 var _checkpoint = require("./checkpoint");
-
 Object.keys(_checkpoint).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -5770,9 +5022,7 @@ Object.keys(_checkpoint).forEach(function (key) {
     }
   });
 });
-
 var _downstream = require("./downstream");
-
 Object.keys(_downstream).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -5784,9 +5034,7 @@ Object.keys(_downstream).forEach(function (key) {
     }
   });
 });
-
 var _helper = require("./helper");
-
 Object.keys(_helper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -5798,9 +5046,7 @@ Object.keys(_helper).forEach(function (key) {
     }
   });
 });
-
 var _upstream = require("./upstream");
-
 Object.keys(_upstream).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -5812,9 +5058,7 @@ Object.keys(_upstream).forEach(function (key) {
     }
   });
 });
-
 var _metaInstance = require("./meta-instance");
-
 Object.keys(_metaInstance).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -5826,9 +5070,7 @@ Object.keys(_metaInstance).forEach(function (key) {
     }
   });
 });
-
 var _conflicts = require("./conflicts");
-
 Object.keys(_conflicts).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -5840,7 +5082,6 @@ Object.keys(_conflicts).forEach(function (key) {
     }
   });
 });
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -5848,56 +5089,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     var observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -5909,38 +5139,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -5949,64 +5169,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -6016,7 +5219,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -6029,13 +5231,11 @@ function _for(test, update, body) {
     }
   }
 }
-
 /**
  * These files contain the replication protocol.
  * It can be used to replicated RxStorageInstances or RxCollections
  * or even to do a client(s)-server replication.
- */
-var cancelRxStorageReplication = function cancelRxStorageReplication(replicationState) {
+ */var cancelRxStorageReplication = function cancelRxStorageReplication(replicationState) {
   try {
     replicationState.events.canceled.next(true);
     return Promise.resolve(replicationState.streamQueue.down).then(function () {
@@ -6053,9 +5253,7 @@ var cancelRxStorageReplication = function cancelRxStorageReplication(replication
     return Promise.reject(e);
   }
 };
-
 exports.cancelRxStorageReplication = cancelRxStorageReplication;
-
 var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state) {
   try {
     return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
@@ -6064,27 +5262,24 @@ var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state
         return !_exit;
       }, void 0, function () {
         var _state$streamQueue = state.streamQueue,
-            down = _state$streamQueue.down,
-            up = _state$streamQueue.up;
+          down = _state$streamQueue.down,
+          up = _state$streamQueue.up;
         return Promise.resolve(Promise.all([up, down])).then(function () {
           if (down === state.streamQueue.down && up === state.streamQueue.up) {
             _exit = true;
           }
-        });
-        /**
-         * If the Promises have not been reasigned
-         * after awaiting them, we know that the replication
-         * is in idle state at this point in time.
-         */
+        }); /**
+             * If the Promises have not been reasigned
+             * after awaiting them, we know that the replication
+             * is in idle state at this point in time.
+             */
       });
     });
   } catch (e) {
     return Promise.reject(e);
   }
 };
-
 exports.awaitRxStorageReplicationIdle = awaitRxStorageReplicationIdle;
-
 function replicateRxStorageInstance(input) {
   var checkpointKey = (0, _checkpoint.getCheckpointKey)(input);
   var state = {
@@ -6137,7 +5332,6 @@ function replicateRxStorageInstance(input) {
   (0, _upstream.startReplicationUpstream)(state);
   return state;
 }
-
 function awaitRxStorageReplicationFirstInSync(state) {
   return (0, _rxjs.firstValueFrom)((0, _rxjs.combineLatest)([state.firstSyncDone.down.pipe((0, _rxjs.filter)(function (v) {
     return !!v;
@@ -6145,11 +5339,9 @@ function awaitRxStorageReplicationFirstInSync(state) {
     return !!v;
   }))])).then(function () {});
 }
-
 function awaitRxStorageReplicationInSync(replicationState) {
   return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
 }
-
 function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFunction) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(instance.schema.primaryKey);
   var replicationHandler = {
@@ -6186,9 +5378,8 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFu
           return Promise.resolve(Promise.all(Object.entries(rowById).map(function (_ref) {
             try {
               var id = _ref[0],
-                  row = _ref[1];
+                row = _ref[1];
               var masterState = masterDocsState[id];
-
               var _temp4 = function () {
                 if (!masterState) {
                   writeRows.push({
@@ -6212,11 +5403,9 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFu
                       }
                     });
                   }();
-
                   if (_temp5 && _temp5.then) return _temp5.then(function () {});
                 }
               }();
-
               return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
             } catch (e) {
               return Promise.reject(e);
@@ -6235,7 +5424,6 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFu
                 });
               }
             }();
-
             return _temp && _temp.then ? _temp.then(function () {
               return conflicts;
             }) : conflicts;
@@ -6258,13 +5446,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.RX_REPLICATION_META_INSTANCE_SCHEMA = void 0;
 exports.getAssumedMasterState = getAssumedMasterState;
 exports.getMetaWriteRow = getMetaWriteRow;
-
 var _rxSchemaHelper = require("../rx-schema-helper");
-
 var _rxStorageHelper = require("../rx-storage-helper");
-
 var _util = require("../util");
-
 var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   primaryKey: {
     key: 'id',
@@ -6301,13 +5485,12 @@ var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSet
   },
   required: ['id', 'replicationIdentifier', 'isCheckpoint', 'itemId', 'data']
 });
+
 /**
  * Returns the document states of what the fork instance
  * assumes to be the latest state on the master instance.
  */
-
 exports.RX_REPLICATION_META_INSTANCE_SCHEMA = RX_REPLICATION_META_INSTANCE_SCHEMA;
-
 function getAssumedMasterState(state, docIds) {
   return state.input.metaInstance.findDocumentsById(docIds.map(function (docId) {
     var useId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, {
@@ -6327,7 +5510,6 @@ function getAssumedMasterState(state, docIds) {
     return ret;
   });
 }
-
 function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict) {
   var docId = newMasterDocState[state.primaryPath];
   var newMeta = previous ? (0, _rxStorageHelper.flatCloneDocWithMeta)(previous) : {
@@ -6361,21 +5543,13 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.startReplicationUpstream = startReplicationUpstream;
-
 var _rxjs = require("rxjs");
-
 var _rxStorageHelper = require("../rx-storage-helper");
-
 var _util = require("../util");
-
 var _checkpoint = require("./checkpoint");
-
 var _conflicts = require("./conflicts");
-
 var _helper = require("./helper");
-
 var _metaInstance = require("./meta-instance");
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -6383,56 +5557,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     var observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -6444,38 +5607,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -6484,64 +5637,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -6551,7 +5687,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -6564,7 +5699,6 @@ function _for(test, update, body) {
     }
   }
 }
-
 /**
  * Writes all document changes from the fork to the master.
  * The upstream runs on two modes:
@@ -6577,28 +5711,23 @@ function startReplicationUpstream(state) {
   var upstreamInitialSync = function upstreamInitialSync() {
     try {
       state.stats.up.upstreamInitialSync = state.stats.up.upstreamInitialSync + 1;
-
       if (state.events.canceled.getValue()) {
         return Promise.resolve();
       }
-
       state.checkpointQueue = state.checkpointQueue.then(function () {
         return (0, _checkpoint.getLastCheckpointDoc)(state, 'up');
       });
       return Promise.resolve(state.checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
-
         function _temp13() {
           /**
            * If we had conflicts during the inital sync,
            * it means that we likely have new writes to the fork
            * and so we have to run the initial sync again to upastream these new writes.
-           */
-          return Promise.resolve(Promise.all(promises)).then(function (resolvedPromises) {
+           */return Promise.resolve(Promise.all(promises)).then(function (resolvedPromises) {
             var hadConflicts = resolvedPromises.find(function (r) {
               return !!r;
             });
-
             var _temp11 = function () {
               if (hadConflicts) {
                 return Promise.resolve(upstreamInitialSync()).then(function () {});
@@ -6606,13 +5735,10 @@ function startReplicationUpstream(state) {
                 state.firstSyncDone.up.next(true);
               }
             }();
-
             if (_temp11 && _temp11.then) return _temp11.then(function () {});
           });
         }
-
         var promises = [];
-
         var _temp12 = _for(function () {
           return !_interrupt && !state.events.canceled.getValue();
         }, void 0, function () {
@@ -6622,30 +5748,26 @@ function startReplicationUpstream(state) {
               _interrupt = true;
               return;
             }
-
             lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, upResult.checkpoint]);
             promises.push(persistToMaster(upResult.documents, (0, _util.ensureNotFalsy)(lastCheckpoint)));
           });
         });
-
         return _temp12 && _temp12.then ? _temp12.then(_temp13) : _temp13(_temp12);
       });
     } catch (e) {
       return Promise.reject(e);
     }
-  };
-  /**
-   * Takes all open tasks an processes them at once.
-   */
-
-
+  }; /**
+      * Takes all open tasks an processes them at once.
+      */
   var replicationHandler = state.input.replicationHandler;
   state.streamQueue.up = state.streamQueue.up.then(function () {
     return upstreamInitialSync().then(function () {
       processTasks();
     });
-  }); // used to detect which tasks etc can in it at which order.
+  });
 
+  // used to detect which tasks etc can in it at which order.
   var timer = 0;
   var initialSyncStartTime = -1;
   var openTasks = [];
@@ -6657,7 +5779,6 @@ function startReplicationUpstream(state) {
       task: eventBulk,
       time: timer++
     });
-
     if (state.input.waitBeforePersist) {
       return state.input.waitBeforePersist().then(function () {
         return processTasks();
@@ -6671,13 +5792,11 @@ function startReplicationUpstream(state) {
   }))).then(function () {
     return sub.unsubscribe();
   });
-
   function processTasks() {
     if (state.events.canceled.getValue() || openTasks.length === 0) {
       state.events.active.up.next(false);
       return;
     }
-
     state.stats.up.processTasks = state.stats.up.processTasks + 1;
     state.events.active.up.next(true);
     state.streamQueue.up = state.streamQueue.up.then(function () {
@@ -6686,7 +5805,6 @@ function startReplicationUpstream(state) {
        */
       var docs = [];
       var checkpoint = {};
-
       while (openTasks.length > 0) {
         var taskWithTime = (0, _util.ensureNotFalsy)(openTasks.shift());
         /**
@@ -6694,17 +5812,14 @@ function startReplicationUpstream(state) {
          * has run, we can ignore the task because the inital sync already processed
          * these documents.
          */
-
         if (taskWithTime.time < initialSyncStartTime) {
           continue;
         }
-
         docs = docs.concat(taskWithTime.task.events.map(function (r) {
           return r.documentData;
         }));
         checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);
       }
-
       var promise = docs.length === 0 ? _util.PROMISE_RESOLVE_FALSE : persistToMaster(docs, checkpoint);
       return promise.then(function () {
         if (openTasks.length === 0) {
@@ -6715,22 +5830,21 @@ function startReplicationUpstream(state) {
       });
     });
   }
-
   var persistenceQueue = _util.PROMISE_RESOLVE_FALSE;
   var nonPersistedFromMaster = {
     docs: {}
   };
+
   /**
    * Returns true if had conflicts,
    * false if not.
    */
-
   function persistToMaster(docs, checkpoint) {
     state.stats.up.persistToMaster = state.stats.up.persistToMaster + 1;
+
     /**
      * Add the new docs to the non-persistend list
      */
-
     docs.forEach(function (docData) {
       var docId = docData[state.primaryPath];
       nonPersistedFromMaster.docs[docId] = docData;
@@ -6741,16 +5855,13 @@ function startReplicationUpstream(state) {
         if (state.events.canceled.getValue()) {
           return Promise.resolve(false);
         }
-
         var upDocsById = nonPersistedFromMaster.docs;
         nonPersistedFromMaster.docs = {};
         var useCheckpoint = nonPersistedFromMaster.checkpoint;
         var docIds = Object.keys(upDocsById);
-
         if (docIds.length === 0) {
           return Promise.resolve(false);
         }
-
         return Promise.resolve((0, _metaInstance.getAssumedMasterState)(state, docIds)).then(function (assumedMasterState) {
           var writeRowsToMaster = {};
           var writeRowsToMasterIds = [];
@@ -6763,7 +5874,6 @@ function startReplicationUpstream(state) {
                   _exit2 = true;
                   return;
                 }
-
                 writeRowsToMasterIds.push(docId);
                 writeRowsToMaster[docId] = {
                   assumedMasterState: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
@@ -6771,21 +5881,20 @@ function startReplicationUpstream(state) {
                 };
                 writeRowsToMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, docData, assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined);
               };
-
               var _exit2 = false;
               var fullDocData = upDocsById[docId];
               forkStateById[docId] = fullDocData;
               var docData = (0, _helper.writeDocToDocState)(fullDocData);
               var assumedMasterDoc = assumedMasterState[docId];
+
               /**
                * If the master state is equal to the
                * fork state, we can assume that the document state is already
                * replicated.
                */
-
-              var _temp10 = assumedMasterDoc && // if the isResolvedConflict is correct, we do not have to compare the documents.
+              var _temp10 = assumedMasterDoc &&
+              // if the isResolvedConflict is correct, we do not have to compare the documents.
               assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev;
-
               return Promise.resolve(_temp10 ? Promise.resolve(state.input.conflictHandler({
                 realMasterState: assumedMasterDoc.docData,
                 newDocumentState: docData
@@ -6797,17 +5906,16 @@ function startReplicationUpstream(state) {
             if (writeRowsToMasterIds.length === 0) {
               return false;
             }
-
             var writeRowsArray = Object.values(writeRowsToMaster);
             var conflictIds = new Set();
             var conflictsById = {};
+
             /**
              * To always respect the push.batchSize,
              * we have to split the write rows into batches
              * to ensure that replicationHandler.masterWrite() is never
              * called with more documents than what the batchSize limits.
              */
-
             var writeBatches = (0, _util.batchArray)(writeRowsArray, state.input.pushBatchSize);
             return Promise.resolve(Promise.all(writeBatches.map(function (writeBatch) {
               try {
@@ -6834,7 +5942,6 @@ function startReplicationUpstream(state) {
                   });
                   return hadConflictWrites;
                 }
-
                 /**
                  * Resolve conflicts by writing a new document
                  * state to the fork instance and the 'real' master state
@@ -6842,7 +5949,6 @@ function startReplicationUpstream(state) {
                  * Non-409 errors will be detected by resolveConflictError()
                  */
                 var hadConflictWrites = false;
-
                 var _temp3 = function () {
                   if (conflictIds.size > 0) {
                     state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
@@ -6850,7 +5956,7 @@ function startReplicationUpstream(state) {
                     var conflictWriteMeta = {};
                     return Promise.resolve(Promise.all(Object.entries(conflictsById).map(function (_ref) {
                       var docId = _ref[0],
-                          realMasterState = _ref[1];
+                        realMasterState = _ref[1];
                       var writeToMasterRow = writeRowsToMaster[docId];
                       var input = {
                         newDocumentState: writeToMasterRow.newDocumentState,
@@ -6887,26 +5993,21 @@ function startReplicationUpstream(state) {
                             Object.keys(forkWriteResult.success).forEach(function (docId) {
                               useMetaWrites.push(conflictWriteMeta[docId]);
                             });
-
                             var _temp = function () {
                               if (useMetaWrites.length > 0) {
                                 return Promise.resolve(state.input.metaInstance.bulkWrite(useMetaWrites, 'replication-up-write-conflict-meta')).then(function () {});
                               }
                             }();
-
                             if (_temp && _temp.then) return _temp.then(function () {});
                           }); // TODO what to do with conflicts while writing to the metaInstance?
                         }
                       }();
-
                       if (_temp2 && _temp2.then) return _temp2.then(function () {});
                     });
                   }
                 }();
-
                 return _temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3);
               }
-
               var useWriteRowsToMeta = [];
               writeRowsToMasterIds.forEach(function (docId) {
                 if (!conflictIds.has(docId)) {
@@ -6914,13 +6015,11 @@ function startReplicationUpstream(state) {
                   useWriteRowsToMeta.push(writeRowsToMeta[docId]);
                 }
               });
-
               var _temp5 = function () {
                 if (useWriteRowsToMeta.length > 0) {
                   return Promise.resolve(state.input.metaInstance.bulkWrite(useWriteRowsToMeta, 'replication-up-write-meta')).then(function () {}); // TODO what happens when we have conflicts here?
                 }
               }();
-
               return _temp5 && _temp5.then ? _temp5.then(_temp6) : _temp6(_temp5);
             });
           });
@@ -6945,13 +6044,12 @@ Object.defineProperty(exports, "__esModule", {
 exports.flattenEvents = flattenEvents;
 exports.getDocumentDataOfRxChangeEvent = getDocumentDataOfRxChangeEvent;
 exports.rxChangeEventToEventReduceChangeEvent = rxChangeEventToEventReduceChangeEvent;
-
 var _overwritable = require("./overwritable");
-
 /**
  * RxChangeEvents a emitted when something in the database changes
  * they can be grabbed by the observables of database, collection and document
  */
+
 function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
   if (rxChangeEvent.documentData) {
     return rxChangeEvent.documentData;
@@ -6959,14 +6057,13 @@ function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
     return rxChangeEvent.previousDocumentData;
   }
 }
+
 /**
  * Might return null which means an
  * already deleted document got modified but still is deleted.
  * Theses kind of events are not relevant for the event-reduce algorithm
  * and must be filtered out.
  */
-
-
 function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
   switch (rxChangeEvent.operation) {
     case 'INSERT':
@@ -6976,7 +6073,6 @@ function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
         doc: rxChangeEvent.documentData,
         previous: null
       };
-
     case 'UPDATE':
       return {
         operation: rxChangeEvent.operation,
@@ -6984,7 +6080,6 @@ function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
         doc: _overwritable.overwritable.deepFreezeWhenDevMode(rxChangeEvent.documentData),
         previous: rxChangeEvent.previousDocumentData ? rxChangeEvent.previousDocumentData : 'UNKNOWN'
       };
-
     case 'DELETE':
       return {
         operation: rxChangeEvent.operation,
@@ -6994,15 +6089,13 @@ function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
       };
   }
 }
+
 /**
  * Flattens the given events into a single array of events.
  * Used mostly in tests.
  */
-
-
 function flattenEvents(input) {
   var output = [];
-
   if (Array.isArray(input)) {
     input.forEach(function (inputItem) {
       var add = flattenEvents(inputItem);
@@ -7018,7 +6111,6 @@ function flattenEvents(input) {
       output.push(input);
     }
   }
-
   var usedIds = new Set();
   var nonDuplicate = [];
   output.forEach(function (ev) {
@@ -7039,22 +6131,15 @@ Object.defineProperty(exports, "__esModule", {
 exports.createRxCollectionStorageInstance = void 0;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 exports.removeCollectionStorages = void 0;
-
 var _util = require("./util");
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var _hooks = require("./hooks");
-
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
-
 var _rxStorageHelper = require("./rx-storage-helper");
-
 /**
  * Removes the main storage of the collection
  * and all connected storages like the ones from the replication meta etc.
- */
-var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
+ */var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
 /**
  * If no hash function is provided,
  * we assume that the whole internal store is removed anyway
@@ -7080,20 +6165,21 @@ hashFunction) {
             schema: row.schema
           });
         });
-      }); // ensure uniqueness
+      });
 
+      // ensure uniqueness
       var alreadyAdded = new Set();
       removeStorages = removeStorages.filter(function (row) {
         var key = row.collectionName + '||' + row.schema.version;
-
         if (alreadyAdded.has(key)) {
           return false;
         } else {
           alreadyAdded.add(key);
           return true;
         }
-      }); // remove all the storages
+      });
 
+      // remove all the storages
       return Promise.resolve(Promise.all(removeStorages.map(function (row) {
         try {
           return Promise.resolve(storage.createStorageInstance({
@@ -7114,7 +6200,6 @@ hashFunction) {
                   })).then(function () {});
                 }
               }();
-
               if (_temp2 && _temp2.then) return _temp2.then(function () {});
             });
           });
@@ -7137,7 +6222,6 @@ hashFunction) {
             return Promise.resolve(databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all')).then(function () {});
           }
         }();
-
         if (_temp && _temp.then) return _temp.then(function () {});
       }); // remove the meta documents
     });
@@ -7145,13 +6229,10 @@ hashFunction) {
     return Promise.reject(e);
   }
 };
-
 exports.removeCollectionStorages = removeCollectionStorages;
-
 /**
  * Creates the storage instances that are used internally in the collection
- */
-var createRxCollectionStorageInstance = function createRxCollectionStorageInstance(rxDatabase, storageInstanceCreationParams) {
+ */var createRxCollectionStorageInstance = function createRxCollectionStorageInstance(rxDatabase, storageInstanceCreationParams) {
   try {
     storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
     return Promise.resolve(rxDatabase.storage.createStorageInstance(storageInstanceCreationParams));
@@ -7159,9 +6240,7 @@ var createRxCollectionStorageInstance = function createRxCollectionStorageInstan
     return Promise.reject(e);
   }
 };
-
 exports.createRxCollectionStorageInstance = createRxCollectionStorageInstance;
-
 /**
  * fills in the default data.
  * This also clones the data.
@@ -7170,19 +6249,15 @@ function fillObjectDataBeforeInsert(schema, data) {
   var useJson = schema.fillObjectWithDefaults(data);
   useJson = (0, _rxSchemaHelper.fillPrimaryKey)(schema.primaryPath, schema.jsonSchema, useJson);
   useJson._meta = (0, _util.getDefaultRxDocumentMeta)();
-
   if (!useJson.hasOwnProperty('_deleted')) {
     useJson._deleted = false;
   }
-
   if (!useJson.hasOwnProperty('_attachments')) {
     useJson._attachments = {};
   }
-
   if (!useJson.hasOwnProperty('_rev')) {
     useJson._rev = (0, _util.getDefaultRevision)();
   }
-
   return useJson;
 }
 
@@ -7190,48 +6265,33 @@ function fillObjectDataBeforeInsert(schema, data) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxCollectionBase = void 0;
 exports.createRxCollection = createRxCollection;
 exports.isRxCollection = isRxCollection;
-
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-
 var _operators = require("rxjs/operators");
-
 var _util = require("./util");
-
 var _rxCollectionHelper = require("./rx-collection-helper");
-
 var _rxQuery = require("./rx-query");
-
 var _rxError = require("./rx-error");
-
 var _docCache = require("./doc-cache");
-
 var _queryCache = require("./query-cache");
-
 var _changeEventBuffer = require("./change-event-buffer");
-
 var _hooks = require("./hooks");
-
 var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
-
 var _rxStorageHelper = require("./rx-storage-helper");
-
 var _replicationProtocol = require("./replication-protocol");
-
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
-
 var RxCollectionBase = /*#__PURE__*/function () {
   /**
    * Stores all 'normal' documents
    */
+
   function RxCollectionBase(database, name, schema, internalStorageInstance) {
     var instanceCreationOptions = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
     var migrationStrategies = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
@@ -7265,16 +6325,12 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this.cacheReplacementPolicy = cacheReplacementPolicy;
     this.statics = statics;
     this.conflictHandler = conflictHandler;
-
     _applyHookFunctions(this.asRxCollection);
   }
-
   var _proto = RxCollectionBase.prototype;
-
   _proto.prepare = function prepare() {
     try {
       var _this2 = this;
-
       _this2.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(_this2.database, _this2.internalStorageInstance, _this2.schema.jsonSchema);
       _this2.$ = _this2.database.eventBulks$.pipe((0, _operators.filter)(function (changeEventBulk) {
         return changeEventBulk.collectionName === _this2.name;
@@ -7282,12 +6338,12 @@ var RxCollectionBase = /*#__PURE__*/function () {
         return changeEventBulk.events;
       }));
       _this2._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)(_this2.asRxCollection);
+
       /**
        * Instead of resolving the EventBulk array here and spit it into
        * single events, we should fully work with event bulks internally
        * to save performance.
        */
-
       return Promise.resolve(_this2.database.storageToken).then(function (databaseStorageToken) {
         var subDocs = _this2.storageInstance.changeStream().subscribe(function (eventBulk) {
           var changeEventBulk = {
@@ -7302,34 +6358,29 @@ var RxCollectionBase = /*#__PURE__*/function () {
             checkpoint: eventBulk.checkpoint,
             context: eventBulk.context
           };
-
           _this2.database.$emit(changeEventBulk);
         });
-
         _this2._subs.push(subDocs);
+
         /**
          * When a write happens to the collection
          * we find the changed document in the docCache
          * and tell it that it has to change its data.
          */
-
-
         _this2._subs.push(_this2.$.pipe((0, _operators.filter)(function (cE) {
           return !cE.isLocal;
         })).subscribe(function (cE) {
           // when data changes, send it to RxDocument in docCache
           var doc = _this2._docCache.get(cE.documentId);
-
           if (doc) {
             doc._handleChangeEvent(cE);
           }
         }));
+
         /**
          * Resolve the conflict tasks
          * of the RxStorageInstance
          */
-
-
         _this2._subs.push(_this2.storageInstance.conflictResultionTasks().subscribe(function (task) {
           _this2.conflictHandler(task.input, task.context).then(function (output) {
             _this2.storageInstance.resolveConflictResultionTask({
@@ -7338,7 +6389,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
             });
           });
         }));
-
         return _util.PROMISE_RESOLVE_VOID;
       });
     } catch (e) {
@@ -7346,29 +6396,23 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }
   } // overwritte by migration-plugin
   ;
-
   _proto.migrationNeeded = function migrationNeeded() {
     throw (0, _util.pluginMissing)('migration');
   };
-
   _proto.getDataMigrator = function getDataMigrator() {
     throw (0, _util.pluginMissing)('migration');
   };
-
   _proto.migrate = function migrate() {
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
     return this.getDataMigrator().migrate(batchSize);
   };
-
   _proto.migratePromise = function migratePromise() {
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
     return this.getDataMigrator().migratePromise(batchSize);
   };
-
   _proto.insert = function insert(json) {
     try {
       var _this4 = this;
-
       var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this4.schema, json);
       return Promise.resolve(_this4.bulkInsert([useJson])).then(function (writeResult) {
         var isError = writeResult.error[0];
@@ -7380,7 +6424,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.bulkInsert = function bulkInsert(docsData) {
     try {
       var _temp4 = function _temp4(docs) {
@@ -7405,14 +6448,12 @@ var RxCollectionBase = /*#__PURE__*/function () {
               error: Object.values(results.error)
             };
           }
-
           // create documents
           var successDocData = Object.values(results.success);
           var rxDocuments = successDocData.map(function (writtenDocData) {
             var doc = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this6, writtenDocData);
             return doc;
           });
-
           var _temp = function () {
             if (_this6.hasHooks('post', 'insert')) {
               return Promise.resolve(Promise.all(rxDocuments.map(function (doc) {
@@ -7420,13 +6461,10 @@ var RxCollectionBase = /*#__PURE__*/function () {
               }))).then(function () {});
             }
           }();
-
           return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
         });
       };
-
       var _this6 = this;
-
       /**
        * Optimization shortcut,
        * do nothing when called with an empty array
@@ -7437,14 +6475,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
           error: []
         });
       }
-
       var useDocs = docsData.map(function (docData) {
         var useDocData = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this6.schema, docData);
         return useDocData;
       });
-
       var _this5$hasHooks2 = _this6.hasHooks('pre', 'insert');
-
       return Promise.resolve(_this5$hasHooks2 ? Promise.resolve(Promise.all(useDocs.map(function (doc) {
         return _this6._runHooks('pre', 'insert', doc).then(function () {
           return doc;
@@ -7454,11 +6489,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.bulkRemove = function bulkRemove(ids) {
     try {
       var _this8 = this;
-
       /**
        * Optimization shortcut,
        * do nothing when called with an empty array
@@ -7469,7 +6502,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
           error: []
         });
       }
-
       return Promise.resolve(_this8.findByIds(ids)).then(function (rxDocumentMap) {
         var docsData = [];
         var docsMap = new Map();
@@ -7491,8 +6523,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
             };
           });
           return Promise.resolve(_this8.storageInstance.bulkWrite(removeDocs, 'rx-collection-bulk-remove')).then(function (results) {
-            var successIds = Object.keys(results.success); // run hooks
+            var successIds = Object.keys(results.success);
 
+            // run hooks
             return Promise.resolve(Promise.all(successIds.map(function (id) {
               return _this8._runHooks('post', 'remove', docsMap.get(id), rxDocumentMap.get(id));
             }))).then(function () {
@@ -7510,22 +6543,17 @@ var RxCollectionBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  }
-  /**
-   * same as bulkInsert but overwrites existing document with same primary
-   */
-  ;
-
+  } /**
+     * same as bulkInsert but overwrites existing document with same primary
+     */;
   _proto.bulkUpsert = function bulkUpsert(docsData) {
     try {
       var _this10 = this;
-
       var insertData = [];
       var useJsonByDocId = new Map();
       docsData.forEach(function (docData) {
         var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this10.schema, docData);
         var primary = useJson[_this10.schema.primaryPath];
-
         if (!primary) {
           throw (0, _rxError.newRxError)('COL3', {
             primaryPath: _this10.schema.primaryPath,
@@ -7533,7 +6561,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
             schema: _this10.schema.jsonSchema
           });
         }
-
         useJsonByDocId.set(primary, useJson);
         insertData.push(useJson);
       });
@@ -7555,41 +6582,33 @@ var RxCollectionBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  }
-  /**
-   * same as insert but overwrites existing document with same primary
-   */
-  ;
-
+  } /**
+     * same as insert but overwrites existing document with same primary
+     */;
   _proto.upsert = function upsert(json) {
     return this.bulkUpsert([json]).then(function (result) {
       return result[0];
     });
   }
+
   /**
    * upserts to a RxDocument, uses atomicUpdate if document already exists
-   */
-  ;
-
+   */;
   _proto.atomicUpsert = function atomicUpsert(json) {
     var _this11 = this;
-
     var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this.schema, json);
     var primary = useJson[this.schema.primaryPath];
-
     if (!primary) {
       throw (0, _rxError.newRxError)('COL4', {
         data: json
       });
-    } // ensure that it wont try 2 parallel runs
+    }
 
-
+    // ensure that it wont try 2 parallel runs
     var queue = this._atomicUpsertQueues.get(primary);
-
     if (!queue) {
       queue = _util.PROMISE_RESOLVE_VOID;
     }
-
     queue = queue.then(function () {
       return _atomicUpsertEnsureRxDocumentExists(_this11, primary, useJson);
     }).then(function (wasInserted) {
@@ -7601,33 +6620,25 @@ var RxCollectionBase = /*#__PURE__*/function () {
         return wasInserted.doc;
       }
     });
-
     this._atomicUpsertQueues.set(primary, queue);
-
     return queue;
   };
-
   _proto.find = function find(queryObj) {
     if (typeof queryObj === 'string') {
       throw (0, _rxError.newRxError)('COL5', {
         queryObj: queryObj
       });
     }
-
     if (!queryObj) {
       queryObj = (0, _rxQuery._getDefaultQuery)();
     }
-
     var query = (0, _rxQuery.createRxQuery)('find', queryObj, this);
     return query;
   };
-
   _proto.findOne = function findOne(queryObj) {
     var query;
-
     if (typeof queryObj === 'string') {
       var _selector;
-
       query = (0, _rxQuery.createRxQuery)('findOne', {
         selector: (_selector = {}, _selector[this.schema.primaryPath] = queryObj, _selector),
         limit: 1
@@ -7635,48 +6646,44 @@ var RxCollectionBase = /*#__PURE__*/function () {
     } else {
       if (!queryObj) {
         queryObj = (0, _rxQuery._getDefaultQuery)();
-      } // cannot have limit on findOne queries because it will be overwritte
+      }
 
-
+      // cannot have limit on findOne queries because it will be overwritte
       if (queryObj.limit) {
         throw (0, _rxError.newRxError)('QU6');
       }
-
       queryObj.limit = 1;
       query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this);
     }
-
     if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
       throw (0, _rxError.newRxTypeError)('COL6', {
         queryObj: queryObj
       });
     }
-
     return query;
   }
+
   /**
    * find a list documents by their primary key
    * has way better performance then running multiple findOne() or a find() with a complex $or-selected
-   */
-  ;
-
+   */;
   _proto.findByIds = function findByIds(ids) {
     try {
       var _this13 = this;
-
       var ret = new Map();
-      var mustBeQueried = []; // first try to fill from docCache
+      var mustBeQueried = [];
 
+      // first try to fill from docCache
       ids.forEach(function (id) {
         var doc = _this13._docCache.get(id);
-
         if (doc) {
           ret.set(id, doc);
         } else {
           mustBeQueried.push(id);
         }
-      }); // find everything which was not in docCache
+      });
 
+      // find everything which was not in docCache
       var _temp6 = function () {
         if (mustBeQueried.length > 0) {
           return Promise.resolve(_this13.storageInstance.findDocumentsById(mustBeQueried, false)).then(function (docs) {
@@ -7687,29 +6694,24 @@ var RxCollectionBase = /*#__PURE__*/function () {
           });
         }
       }();
-
       return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(function () {
         return ret;
       }) : ret);
     } catch (e) {
       return Promise.reject(e);
     }
-  }
-  /**
-   * like this.findByIds but returns an observable
-   * that always emits the current state
-   */
-  ;
-
+  } /**
+     * like this.findByIds but returns an observable
+     * that always emits the current state
+     */;
   _proto.findByIds$ = function findByIds$(ids) {
     var _this14 = this;
-
     var currentValue = null;
     var lastChangeEvent = -1;
+
     /**
      * Ensure we do not process events in parallel
      */
-
     var queue = _util.PROMISE_RESOLVE_VOID;
     var initialPromise = this.findByIds(ids).then(function (docsMap) {
       lastChangeEvent = _this14._changeEventBuffer.counter;
@@ -7723,9 +6725,12 @@ var RxCollectionBase = /*#__PURE__*/function () {
      * is not relevant for the query.
      */
     (0, _operators.filter)(function (changeEvent) {
-      if ( // first emit has no event
-      changeEvent && ( // local documents are not relevant for the query
-      changeEvent.isLocal || // document of the change is not in the ids list.
+      if (
+      // first emit has no event
+      changeEvent && (
+      // local documents are not relevant for the query
+      changeEvent.isLocal ||
+      // document of the change is not in the ids list.
       !ids.includes(changeEvent.documentId))) {
         return false;
       } else {
@@ -7748,27 +6753,21 @@ var RxCollectionBase = /*#__PURE__*/function () {
             firstEmitDone = true;
             return currentValue;
           };
-
           var _exit2 = false;
-
           /**
            * We first have to clone the Map
            * to ensure we do not create side effects by mutating
            * a Map that has already been returned before.
            */
           currentValue = new Map((0, _util.ensureNotFalsy)(currentValue));
-
           var missedChangeEvents = _this14._changeEventBuffer.getFrom(lastChangeEvent + 1);
-
           lastChangeEvent = _this14._changeEventBuffer.counter;
-
           var _temp11 = function () {
             if (missedChangeEvents === null) {
               /**
                * changeEventBuffer is of bounds -> we must re-execute over the database
                * because we cannot calculate the new results just from the events.
-               */
-              return Promise.resolve(_this14.findByIds(ids)).then(function (newResult) {
+               */return Promise.resolve(_this14.findByIds(ids)).then(function (newResult) {
                 lastChangeEvent = _this14._changeEventBuffer.counter;
                 _exit2 = true;
                 return newResult;
@@ -7777,14 +6776,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
               var resultHasChanged = false;
               missedChangeEvents.forEach(function (rxChangeEvent) {
                 var docId = rxChangeEvent.documentId;
-
                 if (!ids.includes(docId)) {
                   // document is not relevant for the result set
                   return;
                 }
-
                 var op = rxChangeEvent.operation;
-
                 if (op === 'INSERT' || op === 'UPDATE') {
                   resultHasChanged = true;
                   var rxDocument = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this14.asRxCollection, rxChangeEvent.documentData);
@@ -7795,8 +6791,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
                     (0, _util.ensureNotFalsy)(currentValue)["delete"](docId);
                   }
                 }
-              }); // nothing happened that affects the result -> do not emit
+              });
 
+              // nothing happened that affects the result -> do not emit
               if (!resultHasChanged && firstEmitDone) {
                 var _temp12 = false;
                 _exit2 = true;
@@ -7804,7 +6801,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
               }
             }
           }();
-
           return Promise.resolve(_temp11 && _temp11.then ? _temp11.then(_temp10) : _temp10(_temp11));
         } catch (e) {
           return Promise.reject(e);
@@ -7815,76 +6811,67 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return !!x;
     }), (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS));
   }
+
   /**
    * Export collection to a JSON friendly format.
-   */
-  ;
-
+   */;
   _proto.exportJSON = function exportJSON() {
     throw (0, _util.pluginMissing)('json-dump');
   }
+
   /**
    * Import the parsed JSON export into the collection.
    * @param _exportedJSON The previously exported data from the `<collection>.exportJSON()` method.
-   */
-  ;
-
+   */;
   _proto.importJSON = function importJSON(_exportedJSON) {
     throw (0, _util.pluginMissing)('json-dump');
   }
+
   /**
    * sync with a CouchDB endpoint
-   */
-  ;
-
+   */;
   _proto.syncCouchDB = function syncCouchDB(_syncOptions) {
     throw (0, _util.pluginMissing)('replication');
   }
+
   /**
    * sync with a GraphQL endpoint
-   */
-  ;
-
+   */;
   _proto.syncGraphQL = function syncGraphQL(_options) {
     throw (0, _util.pluginMissing)('replication-graphql');
   }
+
   /**
    * HOOKS
-   */
-  ;
-
+   */;
   _proto.addHook = function addHook(when, key, fun) {
     var parallel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-
     if (typeof fun !== 'function') {
       throw (0, _rxError.newRxTypeError)('COL7', {
         key: key,
         when: when
       });
     }
-
     if (!HOOKS_WHEN.includes(when)) {
       throw (0, _rxError.newRxTypeError)('COL8', {
         key: key,
         when: when
       });
     }
-
     if (!HOOKS_KEYS.includes(key)) {
       throw (0, _rxError.newRxError)('COL9', {
         key: key
       });
     }
-
     if (when === 'post' && key === 'create' && parallel === true) {
       throw (0, _rxError.newRxError)('COL10', {
         when: when,
         key: key,
         parallel: parallel
       });
-    } // bind this-scope to hook-function
+    }
 
-
+    // bind this-scope to hook-function
     var boundFun = fun.bind(this);
     var runName = parallel ? 'parallel' : 'series';
     this.hooks[key] = this.hooks[key] || {};
@@ -7894,7 +6881,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
     };
     this.hooks[key][when][runName].push(boundFun);
   };
-
   _proto.getHooks = function getHooks(when, key) {
     if (!this.hooks[key] || !this.hooks[key][when]) {
       return {
@@ -7902,45 +6888,39 @@ var RxCollectionBase = /*#__PURE__*/function () {
         parallel: []
       };
     }
-
     return this.hooks[key][when];
   };
-
   _proto.hasHooks = function hasHooks(when, key) {
     var hooks = this.getHooks(when, key);
-
     if (!hooks) {
       return false;
     }
-
     return hooks.series.length > 0 || hooks.parallel.length > 0;
   };
-
   _proto._runHooks = function _runHooks(when, key, data, instance) {
     var hooks = this.getHooks(when, key);
-
     if (!hooks) {
       return _util.PROMISE_RESOLVE_VOID;
-    } // run parallel: false
+    }
 
-
+    // run parallel: false
     var tasks = hooks.series.map(function (hook) {
       return function () {
         return hook(data, instance);
       };
     });
-    return (0, _util.promiseSeries)(tasks) // run parallel: true
+    return (0, _util.promiseSeries)(tasks)
+    // run parallel: true
     .then(function () {
       return Promise.all(hooks.parallel.map(function (hook) {
         return hook(data, instance);
       }));
     });
   }
+
   /**
    * does the same as ._runHooks() but with non-async-functions
-   */
-  ;
-
+   */;
   _proto._runHooksSync = function _runHooksSync(when, key, data, instance) {
     var hooks = this.getHooks(when, key);
     if (!hooks) return;
@@ -7948,47 +6928,39 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return hook(data, instance);
     });
   }
+
   /**
    * Returns a promise that resolves after the given time.
    * Ensures that is properly cleans up when the collection is destroyed
    * so that no running timeouts prevent the exit of the JavaScript process.
-   */
-  ;
-
+   */;
   _proto.promiseWait = function promiseWait(time) {
     var _this15 = this;
-
     var ret = new Promise(function (res) {
       var timeout = setTimeout(function () {
         _this15.timeouts["delete"](timeout);
-
         res();
       }, time);
-
       _this15.timeouts.add(timeout);
     });
     return ret;
   };
-
   _proto.destroy = function destroy() {
     var _this16 = this;
-
     if (this.destroyed) {
       return _util.PROMISE_RESOLVE_FALSE;
     }
+
     /**
      * Settings destroyed = true
      * must be the first thing to do,
      * so for example the replication can directly stop
      * instead of sending requests to a closed storage.
      */
-
-
     this.destroyed = true;
     Array.from(this.timeouts).forEach(function (timeout) {
       return clearTimeout(timeout);
     });
-
     if (this._changeEventBuffer) {
       this._changeEventBuffer.destroy();
     }
@@ -8000,8 +6972,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
      * because it might lead to undefined behavior like when a doc is written
      * but the change is not added to the changes collection.
      */
-
-
     return this.database.requestIdlePromise().then(function () {
       return Promise.all(_this16.onDestroy.map(function (fn) {
         return fn();
@@ -8018,22 +6988,19 @@ var RxCollectionBase = /*#__PURE__*/function () {
       _this16._subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
-
       delete _this16.database.collections[_this16.name];
       return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', _this16).then(function () {
         return true;
       });
     });
   }
+
   /**
    * remove all data of the collection
-   */
-  ;
-
+   */;
   _proto.remove = function remove() {
     try {
       var _this18 = this;
-
       return Promise.resolve(_this18.destroy()).then(function () {
         return Promise.resolve((0, _rxCollectionHelper.removeCollectionStorages)(_this18.database.storage, _this18.database.internalStore, _this18.database.token, _this18.database.name, _this18.name, _this18.database.hashFunction)).then(function () {});
       });
@@ -8041,7 +7008,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   (0, _createClass2["default"])(RxCollectionBase, [{
     key: "insert$",
     get: function get() {
@@ -8070,31 +7036,24 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }
   }]);
   return RxCollectionBase;
-}();
-/**
- * adds the hook-functions to the collections prototype
- * this runs only once
- */
-
-
+}(); /**
+      * adds the hook-functions to the collections prototype
+      * this runs only once
+      */
 exports.RxCollectionBase = RxCollectionBase;
-
 function _applyHookFunctions(collection) {
   if (hooksApplied) return; // already run
-
   hooksApplied = true;
   var colProto = Object.getPrototypeOf(collection);
   HOOKS_KEYS.forEach(function (key) {
     HOOKS_WHEN.map(function (when) {
       var fnName = when + (0, _util.ucfirst)(key);
-
       colProto[fnName] = function (fun, parallel) {
         return this.addHook(when, key, fun, parallel);
       };
     });
   });
 }
-
 function _atomicUpsertUpdate(doc, json) {
   return doc.atomicUpdate(function (_innerDoc) {
     return json;
@@ -8104,26 +7063,23 @@ function _atomicUpsertUpdate(doc, json) {
     return doc;
   });
 }
+
 /**
  * ensures that the given document exists
  * @return promise that resolves with new doc and flag if inserted
  */
-
-
 function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
   /**
    * Optimisation shortcut,
    * first try to find the document in the doc-cache
    */
   var docFromCache = rxCollection._docCache.get(primary);
-
   if (docFromCache) {
     return Promise.resolve({
       doc: docFromCache,
       inserted: false
     });
   }
-
   return rxCollection.findOne(primary).exec().then(function (doc) {
     if (!doc) {
       return rxCollection.insert(json).then(function (newDoc) {
@@ -8140,35 +7096,34 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
     }
   });
 }
+
 /**
  * creates and prepares a new collection
  */
-
-
 function createRxCollection(_ref) {
   var database = _ref.database,
-      name = _ref.name,
-      schema = _ref.schema,
-      _ref$instanceCreation = _ref.instanceCreationOptions,
-      instanceCreationOptions = _ref$instanceCreation === void 0 ? {} : _ref$instanceCreation,
-      _ref$migrationStrateg = _ref.migrationStrategies,
-      migrationStrategies = _ref$migrationStrateg === void 0 ? {} : _ref$migrationStrateg,
-      _ref$autoMigrate = _ref.autoMigrate,
-      autoMigrate = _ref$autoMigrate === void 0 ? true : _ref$autoMigrate,
-      _ref$statics = _ref.statics,
-      statics = _ref$statics === void 0 ? {} : _ref$statics,
-      _ref$methods = _ref.methods,
-      methods = _ref$methods === void 0 ? {} : _ref$methods,
-      _ref$attachments = _ref.attachments,
-      attachments = _ref$attachments === void 0 ? {} : _ref$attachments,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {} : _ref$options,
-      _ref$localDocuments = _ref.localDocuments,
-      localDocuments = _ref$localDocuments === void 0 ? false : _ref$localDocuments,
-      _ref$cacheReplacement = _ref.cacheReplacementPolicy,
-      cacheReplacementPolicy = _ref$cacheReplacement === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref$cacheReplacement,
-      _ref$conflictHandler = _ref.conflictHandler,
-      conflictHandler = _ref$conflictHandler === void 0 ? _replicationProtocol.defaultConflictHandler : _ref$conflictHandler;
+    name = _ref.name,
+    schema = _ref.schema,
+    _ref$instanceCreation = _ref.instanceCreationOptions,
+    instanceCreationOptions = _ref$instanceCreation === void 0 ? {} : _ref$instanceCreation,
+    _ref$migrationStrateg = _ref.migrationStrategies,
+    migrationStrategies = _ref$migrationStrateg === void 0 ? {} : _ref$migrationStrateg,
+    _ref$autoMigrate = _ref.autoMigrate,
+    autoMigrate = _ref$autoMigrate === void 0 ? true : _ref$autoMigrate,
+    _ref$statics = _ref.statics,
+    statics = _ref$statics === void 0 ? {} : _ref$statics,
+    _ref$methods = _ref.methods,
+    methods = _ref$methods === void 0 ? {} : _ref$methods,
+    _ref$attachments = _ref.attachments,
+    attachments = _ref$attachments === void 0 ? {} : _ref$attachments,
+    _ref$options = _ref.options,
+    options = _ref$options === void 0 ? {} : _ref$options,
+    _ref$localDocuments = _ref.localDocuments,
+    localDocuments = _ref$localDocuments === void 0 ? false : _ref$localDocuments,
+    _ref$cacheReplacement = _ref.cacheReplacementPolicy,
+    cacheReplacementPolicy = _ref$cacheReplacement === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref$cacheReplacement,
+    _ref$conflictHandler = _ref.conflictHandler,
+    conflictHandler = _ref$conflictHandler === void 0 ? _replicationProtocol.defaultConflictHandler : _ref$conflictHandler;
   var storageInstanceCreationParams = {
     databaseInstanceToken: database.token,
     databaseName: database.name,
@@ -8185,7 +7140,7 @@ function createRxCollection(_ref) {
       // ORM add statics
       Object.entries(statics).forEach(function (_ref2) {
         var funName = _ref2[0],
-            fun = _ref2[1];
+          fun = _ref2[1];
         Object.defineProperty(collection, funName, {
           get: function get() {
             return fun.bind(collection);
@@ -8193,11 +7148,9 @@ function createRxCollection(_ref) {
         });
       });
       var ret = _util.PROMISE_RESOLVE_VOID;
-
       if (autoMigrate && collection.schema.version !== 0) {
         ret = collection.migratePromise();
       }
-
       return ret;
     }).then(function () {
       (0, _hooks.runPluginHooks)('createRxCollection', {
@@ -8221,15 +7174,13 @@ function createRxCollection(_ref) {
     /**
      * If the collection creation fails,
      * we yet have to close the storage instances.
-     */
-    ["catch"](function (err) {
+     */["catch"](function (err) {
       return storageInstance.close().then(function () {
         return Promise.reject(err);
       });
     });
   });
 }
-
 function isRxCollection(obj) {
   return obj instanceof RxCollectionBase;
 }
@@ -8244,29 +7195,21 @@ exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_ID = exports
 exports._collectionNamePrimary = _collectionNamePrimary;
 exports.getAllCollectionDocuments = exports.ensureStorageTokenDocumentExists = exports.addConnectedStorageToCollection = void 0;
 exports.getPrimaryKeyOfInternalDocument = getPrimaryKeyOfInternalDocument;
-
 var _rxError = require("./rx-error");
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var _rxStorageHelper = require("./rx-storage-helper");
-
 var _util = require("./util");
-
 function _catch(body, recover) {
   try {
     var result = body();
   } catch (e) {
     return recover(e);
   }
-
   if (result && result.then) {
     return result.then(void 0, recover);
   }
-
   return result;
 }
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -8274,56 +7217,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     var observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -8335,38 +7267,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -8375,64 +7297,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -8442,7 +7347,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -8455,13 +7359,10 @@ function _for(test, update, body) {
     }
   }
 }
-
 var addConnectedStorageToCollection = function addConnectedStorageToCollection(collection, storageCollectionName, schema) {
   try {
     var _exit2 = false;
-
     var collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
-
     var collectionDocId = getPrimaryKeyOfInternalDocument(collectionNameWithVersion, INTERNAL_CONTEXT_COLLECTION);
     return Promise.resolve(_for(function () {
       return !_exit2;
@@ -8472,22 +7373,20 @@ var addConnectedStorageToCollection = function addConnectedStorageToCollection(c
          * Add array if not exist for backwards compatibility
          * TODO remove this in 2023
          */
-
         if (!saveData.data.connectedStorages) {
           saveData.data.connectedStorages = [];
-        } // do nothing if already in array
+        }
 
-
+        // do nothing if already in array
         var alreadyThere = saveData.data.connectedStorages.find(function (row) {
           return row.collectionName === storageCollectionName && row.schema.version === schema.version;
         });
-
         if (alreadyThere) {
           _exit2 = true;
           return;
-        } // otherwise add to array and save
+        }
 
-
+        // otherwise add to array and save
         saveData.data.connectedStorages.push({
           collectionName: storageCollectionName,
           schema: schema
@@ -8507,15 +7406,11 @@ var addConnectedStorageToCollection = function addConnectedStorageToCollection(c
   } catch (e) {
     return Promise.reject(e);
   }
-};
-/**
- * returns the primary for a given collection-data
- * used in the internal store of a RxDatabase
- */
-
-
+}; /**
+    * returns the primary for a given collection-data
+    * used in the internal store of a RxDatabase
+    */
 exports.addConnectedStorageToCollection = addConnectedStorageToCollection;
-
 var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists(rxDatabase) {
   try {
     /**
@@ -8531,7 +7426,6 @@ var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists
       key: STORAGE_TOKEN_DOCUMENT_KEY,
       data: {
         token: storageToken,
-
         /**
          * We add the instance token here
          * to be able to detect if a given RxDatabase instance
@@ -8553,43 +7447,35 @@ var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists
       if (writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
         return writeResult.success[STORAGE_TOKEN_DOCUMENT_ID];
       }
+
       /**
        * If we get a 409 error,
        * it means another instance already inserted the storage token.
        * So we get that token from the database and return that one.
        */
-
-
       var error = (0, _util.ensureNotFalsy)(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
-
       if (error.isError && error.status === 409) {
         var conflictError = error;
-
         if (passwordHash && passwordHash !== (0, _util.ensureNotFalsy)(conflictError.documentInDb).data.passwordHash) {
           throw (0, _rxError.newRxError)('DB1', {
             passwordHash: passwordHash,
             existingPasswordHash: (0, _util.ensureNotFalsy)(conflictError.documentInDb).data.passwordHash
           });
         }
-
         var storageTokenDocInDb = conflictError.documentInDb;
         return (0, _util.ensureNotFalsy)(storageTokenDocInDb);
       }
-
       throw error;
     });
   } catch (e) {
     return Promise.reject(e);
   }
 };
-
 exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
-
 /**
  * Returns all internal documents
  * with context 'collection'
- */
-var getAllCollectionDocuments = function getAllCollectionDocuments(storageStatics, storageInstance) {
+ */var getAllCollectionDocuments = function getAllCollectionDocuments(storageStatics, storageInstance) {
   try {
     var getAllQueryPrepared = storageStatics.prepareQuery(storageInstance.schema, {
       selector: {
@@ -8607,18 +7493,16 @@ var getAllCollectionDocuments = function getAllCollectionDocuments(storageStatic
   } catch (e) {
     return Promise.reject(e);
   }
-};
-/**
- * to not confuse multiInstance-messages with other databases that have the same
- * name and adapter, but do not share state with this one (for example in-memory-instances),
- * we set a storage-token and use it in the broadcast-channel
- */
-
-
+}; /**
+    * to not confuse multiInstance-messages with other databases that have the same
+    * name and adapter, but do not share state with this one (for example in-memory-instances),
+    * we set a storage-token and use it in the broadcast-channel
+    */
 exports.getAllCollectionDocuments = getAllCollectionDocuments;
 var INTERNAL_CONTEXT_COLLECTION = 'collection';
 exports.INTERNAL_CONTEXT_COLLECTION = INTERNAL_CONTEXT_COLLECTION;
 var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
+
 /**
  * Do not change the title,
  * we have to flag the internal schema so that
@@ -8627,7 +7511,6 @@ var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
  * is from the internals or not,
  * to do some optimizations in some cases.
  */
-
 exports.INTERNAL_CONTEXT_STORAGE_TOKEN = INTERNAL_CONTEXT_STORAGE_TOKEN;
 var INTERNAL_STORE_SCHEMA_TITLE = 'RxInternalDocument';
 exports.INTERNAL_STORE_SCHEMA_TITLE = INTERNAL_STORE_SCHEMA_TITLE;
@@ -8660,7 +7543,6 @@ var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   indexes: [],
   required: ['key', 'context', 'data'],
   additionalProperties: false,
-
   /**
    * If the sharding plugin is used,
    * it must not shard on the internal RxStorageInstance
@@ -8674,19 +7556,16 @@ var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   }
 });
 exports.INTERNAL_STORE_SCHEMA = INTERNAL_STORE_SCHEMA;
-
 function getPrimaryKeyOfInternalDocument(key, context) {
   return (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(INTERNAL_STORE_SCHEMA, {
     key: key,
     context: context
   });
 }
-
 var STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
 exports.STORAGE_TOKEN_DOCUMENT_KEY = STORAGE_TOKEN_DOCUMENT_KEY;
 var STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
 exports.STORAGE_TOKEN_DOCUMENT_ID = STORAGE_TOKEN_DOCUMENT_ID;
-
 function _collectionNamePrimary(name, schema) {
   return name + '-' + schema.version;
 }
@@ -8695,7 +7574,6 @@ function _collectionNamePrimary(name, schema) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -8706,40 +7584,25 @@ exports.dbCount = dbCount;
 exports.ensureNoStartupErrors = void 0;
 exports.isRxDatabase = isRxDatabase;
 exports.removeRxDatabase = exports.isRxDatabaseFirstTimeInstantiated = void 0;
-
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-
 var _customIdleQueue = require("custom-idle-queue");
-
 var _util = require("./util");
-
 var _rxError = require("./rx-error");
-
 var _rxSchema = require("./rx-schema");
-
 var _hooks = require("./hooks");
-
 var _rxjs = require("rxjs");
-
 var _operators = require("rxjs/operators");
-
 var _rxCollection = require("./rx-collection");
-
 var _rxStorageHelper = require("./rx-storage-helper");
-
 var _obliviousSet = require("oblivious-set");
-
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
-
 var _rxCollectionHelper = require("./rx-collection-helper");
-
 /**
  * For better performance some tasks run async
  * and are awaited later.
  * But we still have to ensure that there have been no errors
  * on database creation.
- */
-var ensureNoStartupErrors = function ensureNoStartupErrors(rxDatabase) {
+ */var ensureNoStartupErrors = function ensureNoStartupErrors(rxDatabase) {
   try {
     return Promise.resolve(rxDatabase.storageToken).then(function () {
       if (rxDatabase.startupErrors[0]) {
@@ -8750,17 +7613,14 @@ var ensureNoStartupErrors = function ensureNoStartupErrors(rxDatabase) {
     return Promise.reject(e);
   }
 };
-
 exports.ensureNoStartupErrors = ensureNoStartupErrors;
-
 /**
  * Returns true if the given RxDatabase was the first
  * instance that was created on the storage with this name.
  * 
  * Can be used for some optimizations because on the first instantiation,
  * we can assume that no data was written before.
- */
-var isRxDatabaseFirstTimeInstantiated = function isRxDatabaseFirstTimeInstantiated(database) {
+ */var isRxDatabaseFirstTimeInstantiated = function isRxDatabaseFirstTimeInstantiated(database) {
   try {
     return Promise.resolve(database.storageTokenDocument).then(function (tokenDoc) {
       return tokenDoc.data.instanceToken === database.token;
@@ -8769,16 +7629,13 @@ var isRxDatabaseFirstTimeInstantiated = function isRxDatabaseFirstTimeInstantiat
     return Promise.reject(e);
   }
 };
-
 exports.isRxDatabaseFirstTimeInstantiated = isRxDatabaseFirstTimeInstantiated;
-
 /**
  * Removes the database and all its known data
  * with all known collections and all internal meta data.
  * 
  * Returns the names of the removed collections.
- */
-var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
+ */var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
   try {
     var databaseInstanceToken = (0, _util.randomCouchString)(10);
     return Promise.resolve(createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
@@ -8806,14 +7663,11 @@ var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
     return Promise.reject(e);
   }
 };
-
 exports.removeRxDatabase = removeRxDatabase;
-
 /**
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.
- */
-var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, options, multiInstance, password) {
+ */var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, options, multiInstance, password) {
   try {
     return Promise.resolve(storage.createStorageInstance({
       databaseInstanceToken: databaseInstanceToken,
@@ -8828,16 +7682,13 @@ var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(d
     return Promise.reject(e);
   }
 };
-
 exports.createRxDatabaseStorageInstance = createRxDatabaseStorageInstance;
-
 /**
  * stores the used database names
  * so we can throw when the same database is created more then once.
  */
 var USED_DATABASE_NAMES = new Set();
 var DB_COUNT = 0;
-
 var RxDatabaseBase = /*#__PURE__*/function () {
   function RxDatabaseBase(name,
   /**
@@ -8846,7 +7697,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    */
   token, storage, instanceCreationOptions, password, multiInstance) {
     var _this = this;
-
     var eventReduce = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
     var options = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
     var
@@ -8881,6 +7731,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     this.hashFunction = hashFunction;
     this.cleanupPolicy = cleanupPolicy;
     DB_COUNT++;
+
     /**
      * In the dev-mode, we create a pseudoInstance
      * to get all properties of RxDatabase and ensure they do not
@@ -8891,7 +7742,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
      * TODO this is ugly, we should use a different way in the dev-mode
      * so that all non-dev-mode code can be cleaner.
      */
-
     if (this.name !== 'pseudoInstance') {
       /**
        * Wrap the internal store
@@ -8899,6 +7749,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
        * calculation of the idle state and the hooks.
        */
       this.internalStore = (0, _rxStorageHelper.getWrappedStorageInstance)(this.asRxDatabase, internalStore, _rxDatabaseInternalStore.INTERNAL_STORE_SCHEMA);
+
       /**
        * Start writing the storage token.
        * Do not await the creation because it would run
@@ -8907,7 +7758,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
        * Writing the token takes about 20 milliseconds
        * even on a fast adapter, so this is worth it.
        */
-
       this.storageTokenDocument = (0, _rxDatabaseInternalStore.ensureStorageTokenDocumentExists)(this.asRxDatabase)["catch"](function (err) {
         return _this.startupErrors.push(err);
       });
@@ -8918,34 +7768,29 @@ var RxDatabaseBase = /*#__PURE__*/function () {
       });
     }
   }
-
   var _proto = RxDatabaseBase.prototype;
-
   /**
    * This is the main handle-point for all change events
    * ChangeEvents created by this instance go:
    * RxDocument -> RxCollection -> RxDatabase.$emit -> MultiInstance
    * ChangeEvents created by other instances go:
    * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
-   */
-  _proto.$emit = function $emit(changeEventBulk) {
+   */_proto.$emit = function $emit(changeEventBulk) {
     if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
       return;
     }
+    this.emittedEventBulkIds.add(changeEventBulk.id);
 
-    this.emittedEventBulkIds.add(changeEventBulk.id); // emit into own stream
-
+    // emit into own stream
     this.eventBulks$.next(changeEventBulk);
   }
+
   /**
    * removes the collection-doc from the internalStore
-   */
-  ;
-
+   */;
   _proto.removeCollectionDoc = function removeCollectionDoc(name, schema) {
     try {
       var _this3 = this;
-
       return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(_this3.internalStore, (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)((0, _rxDatabaseInternalStore._collectionNamePrimary)(name, schema), _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION))).then(function (doc) {
         if (!doc) {
           throw (0, _rxError.newRxError)('SNH', {
@@ -8953,7 +7798,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
             schema: schema
           });
         }
-
         var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
         writeDoc._deleted = true;
         return Promise.resolve(_this3.internalStore.bulkWrite([{
@@ -8964,38 +7808,34 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  }
-  /**
-   * creates multiple RxCollections at once
-   * to be much faster by saving db txs and doing stuff in bulk-operations
-   * This function is not called often, but mostly in the critical path at the initial page load
-   * So it must be as fast as possible.
-   */
-  ;
-
+  } /**
+     * creates multiple RxCollections at once
+     * to be much faster by saving db txs and doing stuff in bulk-operations
+     * This function is not called often, but mostly in the critical path at the initial page load
+     * So it must be as fast as possible.
+     */;
   _proto.addCollections = function addCollections(collectionCreators) {
     try {
       var _this5 = this;
-
       var jsonSchemas = {};
       var schemas = {};
       var bulkPutDocs = [];
       var useArgsByCollectionName = {};
       Object.entries(collectionCreators).forEach(function (_ref) {
         var name = _ref[0],
-            args = _ref[1];
+          args = _ref[1];
         var collectionName = name;
         var rxJsonSchema = args.schema;
         jsonSchemas[collectionName] = rxJsonSchema;
         var schema = (0, _rxSchema.createRxSchema)(rxJsonSchema);
-        schemas[collectionName] = schema; // collection already exists
+        schemas[collectionName] = schema;
 
+        // collection already exists
         if (_this5.collections[name]) {
           throw (0, _rxError.newRxError)('DB3', {
             name: name
           });
         }
-
         var collectionNameWithVersion = (0, _rxDatabaseInternalStore._collectionNamePrimary)(name, rxJsonSchema);
         var collectionDocData = {
           id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionNameWithVersion, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
@@ -9020,8 +7860,9 @@ var RxDatabaseBase = /*#__PURE__*/function () {
           name: collectionName,
           schema: schema,
           database: _this5
-        }); // run hooks
+        });
 
+        // run hooks
         var hookData = (0, _util.flatClone)(args);
         hookData.database = _this5;
         hookData.name = name;
@@ -9032,11 +7873,11 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         return Promise.resolve(ensureNoStartupErrors(_this5)).then(function () {
           Object.entries(putDocsResult.error).forEach(function (_ref2) {
             var _id = _ref2[0],
-                error = _ref2[1];
+              error = _ref2[1];
             var docInDb = (0, _util.ensureNotFalsy)(error.documentInDb);
             var collectionName = docInDb.data.name;
-            var schema = schemas[collectionName]; // collection already exists but has different schema
-
+            var schema = schemas[collectionName];
+            // collection already exists but has different schema
             if (docInDb.data.schemaHash !== schema.hash) {
               throw (0, _rxError.newRxError)('DB6', {
                 database: _this5.name,
@@ -9053,10 +7894,10 @@ var RxDatabaseBase = /*#__PURE__*/function () {
             try {
               var useArgs = useArgsByCollectionName[collectionName];
               return Promise.resolve((0, _rxCollection.createRxCollection)(useArgs)).then(function (collection) {
-                ret[collectionName] = collection; // set as getter to the database
+                ret[collectionName] = collection;
 
+                // set as getter to the database
                 _this5.collections[collectionName] = collection;
-
                 if (!_this5[collectionName]) {
                   Object.defineProperty(_this5, collectionName, {
                     get: function get() {
@@ -9076,80 +7917,65 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  }
-  /**
-   * runs the given function between idleQueue-locking
-   */
-  ;
-
+  } /**
+     * runs the given function between idleQueue-locking
+     */;
   _proto.lockedRun = function lockedRun(fn) {
     return this.idleQueue.wrapCall(fn);
   };
-
   _proto.requestIdlePromise = function requestIdlePromise() {
     return this.idleQueue.requestIdlePromise();
   }
+
   /**
    * Export database to a JSON friendly format.
-   */
-  ;
-
+   */;
   _proto.exportJSON = function exportJSON(_collections) {
     throw (0, _util.pluginMissing)('json-dump');
   }
+
   /**
    * Import the parsed JSON export into the collection.
    * @param _exportedJSON The previously exported data from the `<db>.exportJSON()` method.
    * @note When an interface is loaded in this collection all base properties of the type are typed as `any`
    * since data could be encrypted.
-   */
-  ;
-
+   */;
   _proto.importJSON = function importJSON(_exportedJSON) {
     throw (0, _util.pluginMissing)('json-dump');
   };
-
   _proto.serverCouchDB = function serverCouchDB(_options) {
     throw (0, _util.pluginMissing)('server-couchdb');
   };
-
   _proto.backup = function backup(_options) {
     throw (0, _util.pluginMissing)('backup');
   };
-
   _proto.leaderElector = function leaderElector() {
     throw (0, _util.pluginMissing)('leader-election');
   };
-
   _proto.isLeader = function isLeader() {
     throw (0, _util.pluginMissing)('leader-election');
   }
   /**
    * returns a promise which resolves when the instance becomes leader
-   */
-  ;
-
+   */;
   _proto.waitForLeadership = function waitForLeadership() {
     throw (0, _util.pluginMissing)('leader-election');
   };
-
   _proto.migrationStates = function migrationStates() {
     throw (0, _util.pluginMissing)('migration');
   }
+
   /**
    * destroys the database-instance and all collections
-   */
-  ;
-
+   */;
   _proto.destroy = function destroy() {
     try {
       var _this7 = this;
-
       if (_this7.destroyed) {
         return Promise.resolve(_util.PROMISE_RESOLVE_FALSE);
-      } // settings destroyed = true must be the first thing to do.
+      }
 
-
+      // settings destroyed = true must be the first thing to do.
       _this7.destroyed = true;
       return Promise.resolve((0, _hooks.runAsyncPluginHooks)('preDestroyRxDatabase', _this7)).then(function () {
         /**
@@ -9157,35 +7983,35 @@ var RxDatabaseBase = /*#__PURE__*/function () {
          * to stop all subscribers who forgot to unsubscribe.
          */
         _this7.eventBulks$.complete();
-
         DB_COUNT--;
-
         _this7._subs.map(function (sub) {
           return sub.unsubscribe();
         });
+
         /**
          * Destroying the pseudo instance will throw
          * because stulff is missing
          * TODO we should not need the pseudo instance on runtime.
          * we should generate the property list on build time.
          */
-
-
         return _this7.name === 'pseudoInstance' ? _util.PROMISE_RESOLVE_FALSE : _this7.requestIdlePromise().then(function () {
           return Promise.all(_this7.onDestroy.map(function (fn) {
             return fn();
           }));
-        }) // destroy all collections
+        })
+        // destroy all collections
         .then(function () {
           return Promise.all(Object.keys(_this7.collections).map(function (key) {
             return _this7.collections[key];
           }).map(function (col) {
             return col.destroy();
           }));
-        }) // destroy internal storage instances
+        })
+        // destroy internal storage instances
         .then(function () {
           return _this7.internalStore.close();
-        }) // remove combination from USED_COMBINATIONS-map
+        })
+        // remove combination from USED_COMBINATIONS-map
         .then(function () {
           return USED_DATABASE_NAMES["delete"](_this7.name);
         }).then(function () {
@@ -9195,21 +8021,16 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  }
-  /**
-   * deletes the database and its stored data.
-   * Returns the names of all removed collections.
-   */
-  ;
-
+  } /**
+     * deletes the database and its stored data.
+     * Returns the names of all removed collections.
+     */;
   _proto.remove = function remove() {
     var _this8 = this;
-
     return this.destroy().then(function () {
       return removeRxDatabase(_this8.name, _this8.storage);
     });
   };
-
   (0, _createClass2["default"])(RxDatabaseBase, [{
     key: "$",
     get: function get() {
@@ -9222,15 +8043,11 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     }
   }]);
   return RxDatabaseBase;
-}();
-/**
- * checks if an instance with same name and adapter already exists
- * @throws {RxError} if used
- */
-
-
+}(); /**
+      * checks if an instance with same name and adapter already exists
+      * @throws {RxError} if used
+      */
 exports.RxDatabaseBase = RxDatabaseBase;
-
 function throwIfDatabaseNameUsed(name) {
   if (!USED_DATABASE_NAMES.has(name)) {
     return;
@@ -9241,25 +8058,24 @@ function throwIfDatabaseNameUsed(name) {
     });
   }
 }
-
 function createRxDatabase(_ref3) {
   var storage = _ref3.storage,
-      instanceCreationOptions = _ref3.instanceCreationOptions,
-      name = _ref3.name,
-      password = _ref3.password,
-      _ref3$multiInstance = _ref3.multiInstance,
-      multiInstance = _ref3$multiInstance === void 0 ? true : _ref3$multiInstance,
-      _ref3$eventReduce = _ref3.eventReduce,
-      eventReduce = _ref3$eventReduce === void 0 ? false : _ref3$eventReduce,
-      _ref3$ignoreDuplicate = _ref3.ignoreDuplicate,
-      ignoreDuplicate = _ref3$ignoreDuplicate === void 0 ? false : _ref3$ignoreDuplicate,
-      _ref3$options = _ref3.options,
-      options = _ref3$options === void 0 ? {} : _ref3$options,
-      cleanupPolicy = _ref3.cleanupPolicy,
-      _ref3$localDocuments = _ref3.localDocuments,
-      localDocuments = _ref3$localDocuments === void 0 ? false : _ref3$localDocuments,
-      _ref3$hashFunction = _ref3.hashFunction,
-      hashFunction = _ref3$hashFunction === void 0 ? _util.defaultHashFunction : _ref3$hashFunction;
+    instanceCreationOptions = _ref3.instanceCreationOptions,
+    name = _ref3.name,
+    password = _ref3.password,
+    _ref3$multiInstance = _ref3.multiInstance,
+    multiInstance = _ref3$multiInstance === void 0 ? true : _ref3$multiInstance,
+    _ref3$eventReduce = _ref3.eventReduce,
+    eventReduce = _ref3$eventReduce === void 0 ? false : _ref3$eventReduce,
+    _ref3$ignoreDuplicate = _ref3.ignoreDuplicate,
+    ignoreDuplicate = _ref3$ignoreDuplicate === void 0 ? false : _ref3$ignoreDuplicate,
+    _ref3$options = _ref3.options,
+    options = _ref3$options === void 0 ? {} : _ref3$options,
+    cleanupPolicy = _ref3.cleanupPolicy,
+    _ref3$localDocuments = _ref3.localDocuments,
+    localDocuments = _ref3$localDocuments === void 0 ? false : _ref3$localDocuments,
+    _ref3$hashFunction = _ref3.hashFunction,
+    hashFunction = _ref3$hashFunction === void 0 ? _util.defaultHashFunction : _ref3$hashFunction;
   (0, _hooks.runPluginHooks)('preCreateRxDatabase', {
     storage: storage,
     instanceCreationOptions: instanceCreationOptions,
@@ -9270,12 +8086,11 @@ function createRxDatabase(_ref3) {
     ignoreDuplicate: ignoreDuplicate,
     options: options,
     localDocuments: localDocuments
-  }); // check if combination already used
-
+  });
+  // check if combination already used
   if (!ignoreDuplicate) {
     throwIfDatabaseNameUsed(name);
   }
-
   USED_DATABASE_NAMES.add(name);
   var databaseInstanceToken = (0, _util.randomCouchString)(10);
   return createRxDatabaseStorageInstance(databaseInstanceToken, storage, name, instanceCreationOptions, multiInstance, password)
@@ -9284,8 +8099,7 @@ function createRxDatabase(_ref3) {
    * if some RxStorage wrapper is used that does some checks
    * and then throw.
    * In that case we have to properly clean up the database.
-   */
-  ["catch"](function (err) {
+   */["catch"](function (err) {
     USED_DATABASE_NAMES["delete"](name);
     throw err;
   }).then(function (storageInstance) {
@@ -9308,11 +8122,9 @@ function createRxDatabase(_ref3) {
     });
   });
 }
-
 function isRxDatabase(obj) {
   return obj instanceof RxDatabaseBase;
 }
-
 function dbCount() {
   return DB_COUNT;
 }
@@ -9328,13 +8140,9 @@ exports.createRxDocuments = createRxDocuments;
 exports.getDocumentOrmPrototype = getDocumentOrmPrototype;
 exports.getDocumentPrototype = getDocumentPrototype;
 exports.getRxDocumentConstructor = getRxDocumentConstructor;
-
 var _rxDocument = require("./rx-document");
-
 var _hooks = require("./hooks");
-
 var _overwritable = require("./overwritable");
-
 /**
  * For the ORM capabilities,
  * we have to merge the document prototype
@@ -9343,10 +8151,10 @@ var _overwritable = require("./overwritable");
  * adding them to a new object.
  * In the future we should do this by chaining the __proto__ objects
  */
+
 // caches
 var protoForCollection = new WeakMap();
 var constructorForCollection = new WeakMap();
-
 function getDocumentPrototype(rxCollection) {
   if (!protoForCollection.has(rxCollection)) {
     var schemaProto = rxCollection.schema.getDocumentPrototype();
@@ -9357,14 +8165,13 @@ function getDocumentPrototype(rxCollection) {
       var props = Object.getOwnPropertyNames(obj);
       props.forEach(function (key) {
         var desc = Object.getOwnPropertyDescriptor(obj, key);
+
         /**
          * When enumerable is true, it will show on console.dir(instance)
          * To not polute the output, only getters and methods are enumerable
          */
-
         var enumerable = true;
         if (key.startsWith('_') || key.endsWith('_') || key.startsWith('$') || key.endsWith('$')) enumerable = false;
-
         if (typeof desc.value === 'function') {
           // when getting a function, we automatically do a .bind(this)
           Object.defineProperty(proto, key, {
@@ -9384,66 +8191,56 @@ function getDocumentPrototype(rxCollection) {
     });
     protoForCollection.set(rxCollection, proto);
   }
-
   return protoForCollection.get(rxCollection);
 }
-
 function getRxDocumentConstructor(rxCollection) {
   if (!constructorForCollection.has(rxCollection)) {
     var ret = (0, _rxDocument.createRxDocumentConstructor)(getDocumentPrototype(rxCollection));
     constructorForCollection.set(rxCollection, ret);
   }
-
   return constructorForCollection.get(rxCollection);
 }
+
 /**
  * Create a RxDocument-instance from the jsonData
  * and the prototype merge.
  * If the document already exists in the _docCache,
  * return that instead to ensure we have no duplicates.
  */
-
-
 function createRxDocument(rxCollection, docData) {
-  var primary = docData[rxCollection.schema.primaryPath]; // return from cache if exists
+  var primary = docData[rxCollection.schema.primaryPath];
 
+  // return from cache if exists
   var cacheDoc = rxCollection._docCache.get(primary);
-
   if (cacheDoc) {
     return cacheDoc;
   }
-
   var doc = (0, _rxDocument.createWithConstructor)(getRxDocumentConstructor(rxCollection), rxCollection, _overwritable.overwritable.deepFreezeWhenDevMode(docData));
-
   rxCollection._docCache.set(primary, doc);
-
   rxCollection._runHooksSync('post', 'create', docData, doc);
-
   (0, _hooks.runPluginHooks)('postCreateRxDocument', doc);
   return doc;
 }
+
 /**
  * create RxDocument from the docs-array
  */
-
-
 function createRxDocuments(rxCollection, docsJSON) {
   return docsJSON.map(function (json) {
     return createRxDocument(rxCollection, json);
   });
 }
+
 /**
  * returns the prototype-object
  * that contains the orm-methods,
  * used in the proto-merge
  */
-
-
 function getDocumentOrmPrototype(rxCollection) {
   var proto = {};
   Object.entries(rxCollection.methods).forEach(function (_ref) {
     var k = _ref[0],
-        v = _ref[1];
+      v = _ref[1];
     proto[k] = v;
   });
   return proto;
@@ -9453,7 +8250,6 @@ function getDocumentOrmPrototype(rxCollection) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -9462,41 +8258,27 @@ exports.createRxDocumentConstructor = createRxDocumentConstructor;
 exports.createWithConstructor = createWithConstructor;
 exports.defineGetterSetter = defineGetterSetter;
 exports.isRxDocument = isRxDocument;
-
 var _objectPath = _interopRequireDefault(require("object-path"));
-
 var _rxjs = require("rxjs");
-
 var _operators = require("rxjs/operators");
-
 var _util = require("./util");
-
 var _rxError = require("./rx-error");
-
 var _hooks = require("./hooks");
-
 var _rxChangeEvent = require("./rx-change-event");
-
 var _overwritable = require("./overwritable");
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var _rxStorageHelper = require("./rx-storage-helper");
-
 function _catch(body, recover) {
   try {
     var result = body();
   } catch (e) {
     return recover(e);
   }
-
   if (result && result.then) {
     return result.then(void 0, recover);
   }
-
   return result;
 }
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -9504,56 +8286,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     var observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -9565,38 +8336,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -9605,64 +8366,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -9672,7 +8416,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -9685,7 +8428,6 @@ function _for(test, update, body) {
     }
   }
 }
-
 var basePrototype = {
   /**
    * TODO
@@ -9698,165 +8440,125 @@ var basePrototype = {
      * Might be undefined when vuejs-devtools are used
      * @link https://github.com/pubkey/rxdb/issues/1126
      */
-
-
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-
     return _this._dataSync$.getValue();
   },
-
   get primaryPath() {
     var _this = this;
-
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-
     return _this.collection.schema.primaryPath;
   },
-
   get primary() {
     var _this = this;
-
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-
     return _this._data[_this.primaryPath];
   },
-
   get revision() {
     var _this = this;
-
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-
     return _this._data._rev;
   },
-
   get deleted$() {
     var _this = this;
-
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-
     return _this._isDeleted$.asObservable();
   },
-
   get deleted() {
     var _this = this;
-
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-
     return _this._isDeleted$.getValue();
   },
-
   /**
    * returns the observable which emits the plain-data of this document
    */
   get $() {
     var _this = this;
-
     return _this._dataSync$.asObservable().pipe((0, _operators.map)(function (docData) {
       return _overwritable.overwritable.deepFreezeWhenDevMode(docData);
     }));
   },
-
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {
     if (changeEvent.documentId !== this.primary) {
       return;
-    } // ensure that new _rev is higher then current
+    }
 
-
+    // ensure that new _rev is higher then current
     var docData = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
     var newRevNr = (0, _util.getHeightOfRevision)(docData._rev);
     var currentRevNr = (0, _util.getHeightOfRevision)(this._data._rev);
     if (currentRevNr > newRevNr) return;
-
     switch (changeEvent.operation) {
       case 'INSERT':
         break;
-
       case 'UPDATE':
         var newData = changeEvent.documentData;
-
         this._dataSync$.next(newData);
-
         break;
-
       case 'DELETE':
         // remove from docCache to assure new upserted RxDocuments will be a new instance
         this.collection._docCache["delete"](this.primary);
-
         this._isDeleted$.next(true);
-
         break;
     }
   },
-
   /**
    * returns observable of the value of the given path
-   */
-  get$: function get$(path) {
+   */get$: function get$(path) {
     if (path.includes('.item.')) {
       throw (0, _rxError.newRxError)('DOC1', {
         path: path
       });
     }
+    if (path === this.primaryPath) throw (0, _rxError.newRxError)('DOC2');
 
-    if (path === this.primaryPath) throw (0, _rxError.newRxError)('DOC2'); // final fields cannot be modified and so also not observed
-
+    // final fields cannot be modified and so also not observed
     if (this.collection.schema.finalFields.includes(path)) {
       throw (0, _rxError.newRxError)('DOC3', {
         path: path
       });
     }
-
     var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(this.collection.schema.jsonSchema, path);
-
     if (!schemaObj) {
       throw (0, _rxError.newRxError)('DOC4', {
         path: path
       });
     }
-
     return this._dataSync$.pipe((0, _operators.map)(function (data) {
       return _objectPath["default"].get(data, path);
     }), (0, _operators.distinctUntilChanged)());
   },
-
   /**
    * populate the given path
-   */
-  populate: function populate(path) {
+   */populate: function populate(path) {
     var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(this.collection.schema.jsonSchema, path);
     var value = this.get(path);
-
     if (!value) {
       return _util.PROMISE_RESOLVE_NULL;
     }
-
     if (!schemaObj) {
       throw (0, _rxError.newRxError)('DOC5', {
         path: path
       });
     }
-
     if (!schemaObj.ref) {
       throw (0, _rxError.newRxError)('DOC6', {
         path: path,
         schemaObj: schemaObj
       });
     }
-
     var refCollection = this.collection.database.collections[schemaObj.ref];
-
     if (!refCollection) {
       throw (0, _rxError.newRxError)('DOC7', {
         ref: schemaObj.ref,
@@ -9864,7 +8566,6 @@ var basePrototype = {
         schemaObj: schemaObj
       });
     }
-
     if (schemaObj.type === 'array') {
       return refCollection.findByIds(value).then(function (res) {
         var valuesIterator = res.values();
@@ -9874,32 +8575,27 @@ var basePrototype = {
       return refCollection.findOne(value).exec();
     }
   },
-
   /**
    * get data by objectPath
-   */
-  get: function get(objPath) {
+   */get: function get(objPath) {
     if (!this._data) return undefined;
+    var valueObj = _objectPath["default"].get(this._data, objPath);
 
-    var valueObj = _objectPath["default"].get(this._data, objPath); // direct return if array or non-object
-
-
+    // direct return if array or non-object
     if (typeof valueObj !== 'object' || Array.isArray(valueObj)) {
       return _overwritable.overwritable.deepFreezeWhenDevMode(valueObj);
     }
+
     /**
      * TODO find a way to deep-freeze together with defineGetterSetter
      * so we do not have to do a deep clone here.
      */
-
-
     valueObj = (0, _util.clone)(valueObj);
     defineGetterSetter(this.collection.schema, valueObj, objPath, this);
     return valueObj;
   },
   toJSON: function toJSON() {
     var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
     if (!withMetaFields) {
       var data = (0, _util.flatClone)(this._data);
       delete data._rev;
@@ -9915,13 +8611,11 @@ var basePrototype = {
     var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     return (0, _util.clone)(this.toJSON(withMetaFields));
   },
-
   /**
    * updates document
    * @overwritten by plugin (optinal)
    * @param updateObj mongodb-like syntax
-   */
-  update: function update(_updateObj) {
+   */update: function update(_updateObj) {
     throw (0, _util.pluginMissing)('update');
   },
   putAttachment: function putAttachment() {
@@ -9933,18 +8627,14 @@ var basePrototype = {
   allAttachments: function allAttachments() {
     throw (0, _util.pluginMissing)('attachments');
   },
-
   get allAttachments$() {
     throw (0, _util.pluginMissing)('attachments');
   },
-
   /**
    * runs an atomic update over the document
    * @param function that takes the document-data and returns a new data-object
-   */
-  atomicUpdate: function atomicUpdate(mutationFunction) {
+   */atomicUpdate: function atomicUpdate(mutationFunction) {
     var _this2 = this;
-
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
         try {
@@ -9952,17 +8642,15 @@ var basePrototype = {
             if (_exit2) return _result3;
             res(_this2);
           };
-
           var _exit2 = false;
-          var done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
+          var done = false;
+          // we need a hacky while loop to stay incide the chain-link of _atomicQueue
           // while still having the option to run a retry on conflicts
-
           var _temp7 = _for(function () {
             return !_exit2 && !done;
           }, void 0, function () {
             function _temp3(_result) {
               if (_exit2) return _result;
-
               var _temp = _catch(function () {
                 return Promise.resolve(_this2._saveData(newData, oldData)).then(function () {
                   done = true;
@@ -9976,27 +8664,20 @@ var basePrototype = {
                  * Because atomicUpdate has a mutation function,
                  * we can just re-run the mutation until there is no conflict
                  */
-
                 var isConflict = (0, _rxError.isBulkWriteConflictError)(useError);
-
                 if (isConflict) {} else {
                   rej(useError);
                   _exit2 = true;
                 }
               });
-
               if (_temp && _temp.then) return _temp.then(function () {});
             }
-
-            var oldData = _this2._dataSync$.getValue(); // always await because mutationFunction might be async
-
-
+            var oldData = _this2._dataSync$.getValue();
+            // always await because mutationFunction might be async
             var newData;
-
             var _temp2 = _catch(function () {
               return Promise.resolve(mutationFunction((0, _util.clone)(oldData), _this2)).then(function (_mutationFunction) {
                 newData = _mutationFunction;
-
                 if (_this2.collection) {
                   newData = _this2.collection.schema.fillObjectWithDefaults(newData);
                 }
@@ -10005,10 +8686,8 @@ var basePrototype = {
               rej(err);
               _exit2 = true;
             });
-
             return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
           });
-
           return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
         } catch (e) {
           return Promise.reject(e);
@@ -10016,51 +8695,46 @@ var basePrototype = {
       });
     });
   },
-
   /**
    * patches the given properties
-   */
-  atomicPatch: function atomicPatch(patch) {
+   */atomicPatch: function atomicPatch(patch) {
     return this.atomicUpdate(function (docData) {
       Object.entries(patch).forEach(function (_ref) {
         var k = _ref[0],
-            v = _ref[1];
+          v = _ref[1];
         docData[k] = v;
       });
       return docData;
     });
   },
-
   /**
    * saves the new document-data
    * and handles the events
-   */
-  _saveData: function _saveData(newData, oldData) {
+   */_saveData: function _saveData(newData, oldData) {
     try {
       var _this4 = this;
+      newData = (0, _util.flatClone)(newData);
 
-      newData = (0, _util.flatClone)(newData); // deleted documents cannot be changed
-
+      // deleted documents cannot be changed
       if (_this4._isDeleted$.getValue()) {
         throw (0, _rxError.newRxError)('DOC11', {
           id: _this4.primary,
           document: _this4
         });
       }
+
       /**
        * Meta values must always be merged
        * instead of overwritten.
        * This ensures that different plugins do not overwrite
        * each others meta properties.
        */
+      newData._meta = Object.assign({}, oldData._meta, newData._meta);
 
-
-      newData._meta = Object.assign({}, oldData._meta, newData._meta); // ensure modifications are ok
-
+      // ensure modifications are ok
       if (_overwritable.overwritable.isDevMode()) {
         _this4.collection.schema.validateChange(oldData, newData);
       }
-
       return Promise.resolve(_this4.collection._runHooks('pre', 'save', newData, _this4)).then(function () {
         return Promise.resolve(_this4.collection.storageInstance.bulkWrite([{
           previous: oldData,
@@ -10075,24 +8749,19 @@ var basePrototype = {
       return Promise.reject(e);
     }
   },
-
   /**
    * remove the document,
    * this not not equal to a pouchdb.remove(),
    * instead we keep the values and only set _deleted: true
-   */
-  remove: function remove() {
+   */remove: function remove() {
     var _this5 = this;
-
     var collection = this.collection;
-
     if (this.deleted) {
       return Promise.reject((0, _rxError.newRxError)('DOC13', {
         document: this,
         id: this.primary
       }));
     }
-
     var deletedData = (0, _util.flatClone)(this._data);
     return collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       try {
@@ -10119,28 +8788,25 @@ var basePrototype = {
   }
 };
 exports.basePrototype = basePrototype;
-
 function createRxDocumentConstructor() {
   var proto = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : basePrototype;
-
   var constructor = function RxDocumentConstructor(collection, jsonData) {
-    this.collection = collection; // assume that this is always equal to the doc-data in the database
+    this.collection = collection;
 
+    // assume that this is always equal to the doc-data in the database
     this._dataSync$ = new _rxjs.BehaviorSubject(jsonData);
     this._isDeleted$ = new _rxjs.BehaviorSubject(false);
     this._atomicQueue = _util.PROMISE_RESOLVE_VOID;
+
     /**
      * because of the prototype-merge,
      * we can not use the native instanceof operator
      */
-
     this.isInstanceOfRxDocument = true;
   };
-
   constructor.prototype = proto;
   return constructor;
 }
-
 function defineGetterSetter(schema, valueObj) {
   var objPath = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
   var thisObj = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
@@ -10149,11 +8815,11 @@ function defineGetterSetter(schema, valueObj) {
   if (typeof pathProperties === 'undefined') return;
   if (pathProperties.properties) pathProperties = pathProperties.properties;
   Object.keys(pathProperties).forEach(function (key) {
-    var fullPath = (0, _util.trimDots)(objPath + '.' + key); // getter - value
+    var fullPath = (0, _util.trimDots)(objPath + '.' + key);
 
+    // getter - value
     valueObj.__defineGetter__(key, function () {
       var _this = thisObj ? thisObj : this;
-
       if (!_this.get || typeof _this.get !== 'function') {
         /**
          * When an object gets added to the state of a vuejs-component,
@@ -10162,53 +8828,43 @@ function defineGetterSetter(schema, valueObj) {
          */
         return undefined;
       }
-
       var ret = _this.get(fullPath);
-
       return ret;
-    }); // getter - observable$
-
-
+    });
+    // getter - observable$
     Object.defineProperty(valueObj, key + '$', {
       get: function get() {
         var _this = thisObj ? thisObj : this;
-
         return _this.get$(fullPath);
       },
       enumerable: false,
       configurable: false
-    }); // getter - populate_
-
+    });
+    // getter - populate_
     Object.defineProperty(valueObj, key + '_', {
       get: function get() {
         var _this = thisObj ? thisObj : this;
-
         return _this.populate(fullPath);
       },
       enumerable: false,
       configurable: false
-    }); // setter - value
-
+    });
+    // setter - value
     valueObj.__defineSetter__(key, function (val) {
       var _this = thisObj ? thisObj : this;
-
       return _this.set(fullPath, val);
     });
   });
 }
-
 function createWithConstructor(constructor, collection, jsonData) {
   var primary = jsonData[collection.schema.primaryPath];
-
   if (primary && primary.startsWith('_design')) {
     return null;
   }
-
   var doc = new constructor(collection, jsonData);
   (0, _hooks.runPluginHooks)('createRxDocument', doc);
   return doc;
 }
-
 function isRxDocument(obj) {
   if (typeof obj === 'undefined') return false;
   return !!obj.isInstanceOfRxDocument;
@@ -10218,7 +8874,6 @@ function isRxDocument(obj) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -10226,15 +8881,10 @@ exports.RxTypeError = exports.RxError = void 0;
 exports.isBulkWriteConflictError = isBulkWriteConflictError;
 exports.newRxError = newRxError;
 exports.newRxTypeError = newRxTypeError;
-
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
-
 var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
-
 var _overwritable = require("./overwritable");
-
 /**
  * here we use custom errors with the additional field 'parameters'
  */
@@ -10248,29 +8898,23 @@ function parametersToString(parameters) {
   ret += 'Given parameters: {\n';
   ret += Object.keys(parameters).map(function (k) {
     var paramStr = '[object Object]';
-
     try {
       paramStr = JSON.stringify(parameters[k], function (_k, v) {
         return v === undefined ? null : v;
       }, 2);
     } catch (e) {}
-
     return k + ':' + paramStr;
   }).join('\n');
   ret += '}';
   return ret;
 }
-
 function messageForError(message, code, parameters) {
   return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
 }
-
 var RxError = /*#__PURE__*/function (_Error) {
   (0, _inheritsLoose2["default"])(RxError, _Error);
-
   function RxError(code, message) {
     var _this;
-
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var mes = messageForError(message, code, parameters);
     _this = _Error.call(this, mes) || this;
@@ -10278,16 +8922,12 @@ var RxError = /*#__PURE__*/function (_Error) {
     _this.message = mes;
     _this.parameters = parameters;
     _this.rxdb = true; // tag them as internal
-
     return _this;
   }
-
   var _proto = RxError.prototype;
-
   _proto.toString = function toString() {
     return this.message;
   };
-
   (0, _createClass2["default"])(RxError, [{
     key: "name",
     get: function get() {
@@ -10301,15 +8941,11 @@ var RxError = /*#__PURE__*/function (_Error) {
   }]);
   return RxError;
 }( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(Error));
-
 exports.RxError = RxError;
-
 var RxTypeError = /*#__PURE__*/function (_TypeError) {
   (0, _inheritsLoose2["default"])(RxTypeError, _TypeError);
-
   function RxTypeError(code, message) {
     var _this2;
-
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var mes = messageForError(message, code, parameters);
     _this2 = _TypeError.call(this, mes) || this;
@@ -10317,16 +8953,12 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
     _this2.message = mes;
     _this2.parameters = parameters;
     _this2.rxdb = true; // tag them as internal
-
     return _this2;
   }
-
   var _proto2 = RxTypeError.prototype;
-
   _proto2.toString = function toString() {
     return this.message;
   };
-
   (0, _createClass2["default"])(RxTypeError, [{
     key: "name",
     get: function get() {
@@ -10340,22 +8972,18 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
   }]);
   return RxTypeError;
 }( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(TypeError));
-
 exports.RxTypeError = RxTypeError;
-
 function newRxError(code, parameters) {
   return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }
-
 function newRxTypeError(code, parameters) {
   return new RxTypeError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }
+
 /**
  * Returns the error if it is a 409 conflict,
  * return false if it is another error.
  */
-
-
 function isBulkWriteConflictError(err) {
   if (err.status === 409) {
     return err;
@@ -10371,13 +8999,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.normalizeMangoQuery = normalizeMangoQuery;
-
 var _queryPlanner = require("./query-planner");
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var _util = require("./util");
-
 /**
  * Normalize the query to ensure we have all fields set
  * and queries that represent the same query logic are detected as equal by the caching.
@@ -10385,11 +9009,9 @@ var _util = require("./util");
 function normalizeMangoQuery(schema, mangoQuery) {
   var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   var normalizedMangoQuery = (0, _util.flatClone)(mangoQuery);
-
   if (typeof normalizedMangoQuery.skip !== 'number') {
     normalizedMangoQuery.skip = 0;
   }
-
   if (!normalizedMangoQuery.selector) {
     normalizedMangoQuery.selector = {};
   } else {
@@ -10405,11 +9027,9 @@ function normalizeMangoQuery(schema, mangoQuery) {
      * For normalization, we have to normalize this
      * so our checks can perform properly.
      */
-
     Object.entries(normalizedMangoQuery.selector).forEach(function (_ref) {
       var field = _ref[0],
-          matcher = _ref[1];
-
+        matcher = _ref[1];
       if (typeof matcher !== 'object' || matcher === null) {
         normalizedMangoQuery.selector[field] = {
           $eq: matcher
@@ -10417,21 +9037,19 @@ function normalizeMangoQuery(schema, mangoQuery) {
       }
     });
   }
+
   /**
    * Ensure that if an index is specified,
    * the primaryKey is inside of it.
    */
-
-
   if (normalizedMangoQuery.index) {
     var indexAr = Array.isArray(normalizedMangoQuery.index) ? normalizedMangoQuery.index.slice(0) : [normalizedMangoQuery.index];
-
     if (!indexAr.includes(primaryKey)) {
       indexAr.push(primaryKey);
     }
-
     normalizedMangoQuery.index = indexAr;
   }
+
   /**
    * To ensure a deterministic sorting,
    * we have to ensure the primary key is always part
@@ -10440,8 +9058,6 @@ function normalizeMangoQuery(schema, mangoQuery) {
    * similiar to how we add the primary key to indexes that do not have it.
    * 
    */
-
-
   if (!normalizedMangoQuery.sort) {
     /**
      * If no sort is given at all,
@@ -10454,7 +9070,6 @@ function normalizeMangoQuery(schema, mangoQuery) {
     if (normalizedMangoQuery.index) {
       normalizedMangoQuery.sort = normalizedMangoQuery.index.map(function (field) {
         var _ref2;
-
         return _ref2 = {}, _ref2[field] = 'asc', _ref2;
       });
     } else {
@@ -10465,9 +9080,8 @@ function normalizeMangoQuery(schema, mangoQuery) {
         var fieldsWithLogicalOperator = new Set();
         Object.entries(normalizedMangoQuery.selector).forEach(function (_ref3) {
           var field = _ref3[0],
-              matcher = _ref3[1];
+            matcher = _ref3[1];
           var hasLogical = false;
-
           if (typeof matcher === 'object' && matcher !== null) {
             hasLogical = !!Object.keys(matcher).find(function (operator) {
               return (0, _queryPlanner.isLogicalOperator)(operator);
@@ -10475,7 +9089,6 @@ function normalizeMangoQuery(schema, mangoQuery) {
           } else {
             hasLogical = true;
           }
-
           if (hasLogical) {
             fieldsWithLogicalOperator.add(field);
           }
@@ -10487,30 +9100,25 @@ function normalizeMangoQuery(schema, mangoQuery) {
           var firstWrongIndex = useIndex.findIndex(function (indexField) {
             return !fieldsWithLogicalOperator.has(indexField);
           });
-
           if (firstWrongIndex > 0 && firstWrongIndex > currentFieldsAmount) {
             currentFieldsAmount = firstWrongIndex;
             currentBestIndexForSort = useIndex;
           }
         });
-
         if (currentBestIndexForSort) {
           normalizedMangoQuery.sort = currentBestIndexForSort.map(function (field) {
             var _ref4;
-
             return _ref4 = {}, _ref4[field] = 'asc', _ref4;
           });
         }
       }
+
       /**
        * Fall back to the primary key as sort order
        * if no better one has been found
        */
-
-
       if (!normalizedMangoQuery.sort) {
         var _ref5;
-
         normalizedMangoQuery.sort = [(_ref5 = {}, _ref5[primaryKey] = 'asc', _ref5)];
       }
     }
@@ -10518,15 +9126,12 @@ function normalizeMangoQuery(schema, mangoQuery) {
     var isPrimaryInSort = normalizedMangoQuery.sort.find(function (p) {
       return (0, _util.firstPropertyNameOfObject)(p) === primaryKey;
     });
-
     if (!isPrimaryInSort) {
       var _normalizedMangoQuery;
-
       normalizedMangoQuery.sort = normalizedMangoQuery.sort.slice(0);
       normalizedMangoQuery.sort.push((_normalizedMangoQuery = {}, _normalizedMangoQuery[primaryKey] = 'asc', _normalizedMangoQuery));
     }
   }
-
   return normalizedMangoQuery;
 }
 
@@ -10534,7 +9139,6 @@ function normalizeMangoQuery(schema, mangoQuery) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -10545,52 +9149,38 @@ exports.isFindOneByIdQuery = isFindOneByIdQuery;
 exports.isInstanceOf = isInstanceOf;
 exports.queryCollection = void 0;
 exports.tunnelQueryCache = tunnelQueryCache;
-
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
-
 var _rxjs = require("rxjs");
-
 var _operators = require("rxjs/operators");
-
 var _util = require("./util");
-
 var _rxError = require("./rx-error");
-
 var _hooks = require("./hooks");
-
 var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
-
 var _eventReduce = require("./event-reduce");
-
 var _queryCache = require("./query-cache");
-
 var _rxQueryHelper = require("./rx-query-helper");
-
 /**
  * Runs the query over the storage instance
  * of the collection.
  * Does some optimizations to ensuer findById is used
  * when specific queries are used.
- */
-var queryCollection = function queryCollection(rxQuery) {
+ */var queryCollection = function queryCollection(rxQuery) {
   try {
     var docs = [];
     var _collection = rxQuery.collection;
+
     /**
      * Optimizations shortcut.
      * If query is find-one-document-by-id,
      * then we do not have to use the slow query() method
      * but instead can use findDocumentsById()
      */
-
     var _temp2 = function () {
       if (rxQuery.isFindOneByIdQuery) {
         var docId = rxQuery.isFindOneByIdQuery;
         return Promise.resolve(_collection.storageInstance.findDocumentsById([docId], false)).then(function (docsMap) {
           var docData = docsMap[docId];
-
           if (docData) {
             docs.push(docData);
           }
@@ -10602,43 +9192,41 @@ var queryCollection = function queryCollection(rxQuery) {
         });
       }
     }();
-
     return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
       return docs;
     }) : docs);
   } catch (e) {
     return Promise.reject(e);
   }
-};
-/**
- * Returns true if the given query
- * selects exactly one document by its id.
- * Used to optimize performance because these kind of
- * queries do not have to run over an index and can use get-by-id instead.
- * Returns false if no query of that kind.
- * Returns the document id otherwise.
- */
-
-
+}; /**
+    * Returns true if the given query
+    * selects exactly one document by its id.
+    * Used to optimize performance because these kind of
+    * queries do not have to run over an index and can use get-by-id instead.
+    * Returns false if no query of that kind.
+    * Returns the document id otherwise.
+    */
 exports.queryCollection = queryCollection;
 var _queryCount = 0;
-
 var newQueryID = function newQueryID() {
   return ++_queryCount;
 };
-
 var RxQueryBase = /*#__PURE__*/function () {
   /**
    * Some stats then are used for debugging and cache replacement policies
    */
+
   // used in the query-cache to determine if the RxQuery can be cleaned up.
+
   // used by some plugins
+
   // used to count the subscribers to the query
 
   /**
    * Contains the current result state
    * or null if query has not run yet.
    */
+
   function RxQueryBase(op, mangoQuery, collection) {
     this.id = newQueryID();
     this._execOverDatabaseCount = 0;
@@ -10655,33 +9243,27 @@ var RxQueryBase = /*#__PURE__*/function () {
     this.op = op;
     this.mangoQuery = mangoQuery;
     this.collection = collection;
-
     if (!mangoQuery) {
       this.mangoQuery = _getDefaultQuery();
     }
-
     this.isFindOneByIdQuery = isFindOneByIdQuery(this.collection.schema.primaryPath, mangoQuery);
   }
-
   var _proto = RxQueryBase.prototype;
-
   /**
    * set the new result-data as result-docs of the query
    * @param newResultData json-docs that were received from pouchdb
-   */
-  _proto._setResultData = function _setResultData(newResultData) {
+   */_proto._setResultData = function _setResultData(newResultData) {
     var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, newResultData);
+
     /**
      * Instead of using the newResultData in the result cache,
      * we directly use the objects that are stored in the RxDocument
      * to ensure we do not store the same data twice and fill up the memory.
      */
-
     var primPath = this.collection.schema.primaryPath;
     var docsDataMap = new Map();
     var docsData = docs.map(function (doc) {
       var docData = doc._dataSync$.getValue();
-
       var id = docData[primPath];
       docsDataMap.set(id, docData);
       return docData;
@@ -10693,15 +9275,13 @@ var RxQueryBase = /*#__PURE__*/function () {
       time: (0, _util.now)()
     };
   }
+
   /**
    * executes the query on the database
    * @return results-array with document-data
-   */
-  ;
-
+   */;
   _proto._execOverDatabase = function _execOverDatabase() {
     var _this = this;
-
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
     this._lastExecStart = (0, _util.now)();
     var docsPromise = queryCollection(this);
@@ -10710,16 +9290,14 @@ var RxQueryBase = /*#__PURE__*/function () {
       return docs;
     });
   }
+
   /**
    * Execute the query
    * To have an easier implementations,
    * just subscribe and use the first result
-   */
-  ;
-
+   */;
   _proto.exec = function exec(throwIfMissing) {
     var _this2 = this;
-
     if (throwIfMissing && this.op !== 'findOne') {
       throw (0, _rxError.newRxError)('QU9', {
         collection: this.collection.name,
@@ -10727,13 +9305,12 @@ var RxQueryBase = /*#__PURE__*/function () {
         op: this.op
       });
     }
+
     /**
      * run _ensureEqual() here,
      * this will make sure that errors in the query which throw inside of the RxStorage,
      * will be thrown at this execution context and not in the background.
      */
-
-
     return _ensureEqual(this).then(function () {
       return (0, _rxjs.firstValueFrom)(_this2.$);
     }).then(function (result) {
@@ -10748,37 +9325,32 @@ var RxQueryBase = /*#__PURE__*/function () {
       }
     });
   }
+
   /**
    * cached call to get the queryMatcher
    * @overwrites itself with the actual value
-   */
-  ;
-
+   */;
   /**
    * returns a string that is used for equal-comparisons
    * @overwrites itself with the actual value
-   */
-  _proto.toString = function toString() {
+   */_proto.toString = function toString() {
     var stringObj = (0, _util.sortObject)({
       op: this.op,
       query: this.mangoQuery,
       other: this.other
     }, true);
     var value = JSON.stringify(stringObj, _util.stringifyFilter);
-
     this.toString = function () {
       return value;
     };
-
     return value;
   }
+
   /**
    * returns the prepared query
    * which can be send to the storage instance to query for documents.
    * @overwrites itself with the actual value.
-   */
-  ;
-
+   */;
   _proto.getPreparedQuery = function getPreparedQuery() {
     var hookInput = {
       rxQuery: this,
@@ -10787,38 +9359,32 @@ var RxQueryBase = /*#__PURE__*/function () {
     };
     (0, _hooks.runPluginHooks)('prePrepareQuery', hookInput);
     var value = this.collection.database.storage.statics.prepareQuery(this.collection.schema.jsonSchema, hookInput.mangoQuery);
-
     this.getPreparedQuery = function () {
       return value;
     };
-
     return value;
   }
+
   /**
    * returns true if the document matches the query,
    * does not use the 'skip' and 'limit'
-   */
-  ;
-
+   */;
   _proto.doesDocumentDataMatch = function doesDocumentDataMatch(docData) {
     // if doc is deleted, it cannot match
     if (docData._deleted) {
       return false;
     }
-
     return this.queryMatcher(docData);
   }
+
   /**
    * deletes all found documents
    * @return promise with deleted documents
-   */
-  ;
-
+   */;
   _proto.remove = function remove() {
     var ret;
     return this.exec().then(function (docs) {
       ret = docs;
-
       if (Array.isArray(docs)) {
         // TODO use a bulk operation instead of running .remove() on each document
         return Promise.all(docs.map(function (doc) {
@@ -10831,42 +9397,36 @@ var RxQueryBase = /*#__PURE__*/function () {
       return ret;
     });
   }
+
   /**
    * helper function to transform RxQueryBase to RxQuery type
-   */
-  ;
-
+   */;
   /**
    * updates all found documents
    * @overwritten by plugin (optional)
-   */
-  _proto.update = function update(_updateObj) {
+   */_proto.update = function update(_updateObj) {
     throw (0, _util.pluginMissing)('update');
-  } // we only set some methods of query-builder here
+  }
+
+  // we only set some methods of query-builder here
   // because the others depend on these ones
   ;
-
   _proto.where = function where(_queryObj) {
     throw (0, _util.pluginMissing)('query-builder');
   };
-
   _proto.sort = function sort(_params) {
     throw (0, _util.pluginMissing)('query-builder');
   };
-
   _proto.skip = function skip(_amount) {
     throw (0, _util.pluginMissing)('query-builder');
   };
-
   _proto.limit = function limit(_amount) {
     throw (0, _util.pluginMissing)('query-builder');
   };
-
   (0, _createClass2["default"])(RxQueryBase, [{
     key: "$",
     get: function get() {
       var _this3 = this;
-
       if (!this._$) {
         var results$ = this.collection.$.pipe(
         /**
@@ -10880,14 +9440,18 @@ var RxQueryBase = /*#__PURE__*/function () {
          * Start once to ensure the querying also starts
          * when there where no changes.
          */
-        (0, _operators.startWith)(null), // ensure query results are up to date.
+        (0, _operators.startWith)(null),
+        // ensure query results are up to date.
         (0, _operators.mergeMap)(function () {
           return _ensureEqual(_this3);
-        }), // use the current result set, written by _ensureEqual().
+        }),
+        // use the current result set, written by _ensureEqual().
         (0, _operators.map)(function () {
           return _this3._result;
-        }), // do not run stuff above for each new subscriber, only once.
-        (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS), // do not proceed if result set has not changed.
+        }),
+        // do not run stuff above for each new subscriber, only once.
+        (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS),
+        // do not proceed if result set has not changed.
         (0, _operators.distinctUntilChanged)(function (prev, curr) {
           if (prev && prev.time === (0, _util.ensureNotFalsy)(curr).time) {
             return true;
@@ -10903,7 +9467,6 @@ var RxQueryBase = /*#__PURE__*/function () {
          */
         (0, _operators.map)(function (result) {
           var useResult = (0, _util.ensureNotFalsy)(result);
-
           if (_this3.op === 'findOne') {
             // findOne()-queries emit RxDocument or null
             return useResult.docs.length === 0 ? null : useResult.docs[0];
@@ -10922,21 +9485,21 @@ var RxQueryBase = /*#__PURE__*/function () {
           return false;
         })));
       }
-
       return this._$;
-    } // stores the changeEvent-number of the last handled change-event
+    }
 
+    // stores the changeEvent-number of the last handled change-event
   }, {
     key: "queryMatcher",
     get: function get() {
       var schema = this.collection.schema.jsonSchema;
+
       /**
        * Instead of calling this.getPreparedQuery(),
        * we have to prepare the query for the query matcher
        * so that it does not contain modifications from the hooks
        * like the key compression.
        */
-
       var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, (0, _rxQueryHelper.normalizeMangoQuery)(this.collection.schema.jsonSchema, (0, _util.clone)(this.mangoQuery)));
       return (0, _util.overwriteGetterForCaching)(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(schema, usePreparedQuery));
     }
@@ -10948,141 +9511,123 @@ var RxQueryBase = /*#__PURE__*/function () {
   }]);
   return RxQueryBase;
 }();
-
 exports.RxQueryBase = RxQueryBase;
-
 function _getDefaultQuery() {
   return {
     selector: {}
   };
 }
+
 /**
  * run this query through the QueryCache
  */
-
-
 function tunnelQueryCache(rxQuery) {
   return rxQuery.collection._queryCache.getByQuery(rxQuery);
 }
-
 function createRxQuery(op, queryObj, collection) {
   (0, _hooks.runPluginHooks)('preCreateRxQuery', {
     op: op,
     queryObj: queryObj,
     collection: collection
   });
-  var ret = new RxQueryBase(op, queryObj, collection); // ensure when created with same params, only one is created
+  var ret = new RxQueryBase(op, queryObj, collection);
 
+  // ensure when created with same params, only one is created
   ret = tunnelQueryCache(ret);
   (0, _queryCache.triggerCacheReplacement)(collection);
   return ret;
 }
+
 /**
  * Check if the current results-state is in sync with the database
  * which means that no write event happened since the last run.
  * @return false if not which means it should re-execute
  */
-
-
 function _isResultsInSync(rxQuery) {
   var currentLatestEventNumber = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
-
   if (rxQuery._latestChangeEvent >= currentLatestEventNumber) {
     return true;
   } else {
     return false;
   }
 }
+
 /**
  * wraps __ensureEqual()
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
  */
-
-
 function _ensureEqual(rxQuery) {
   // Optimisation shortcut
   if (rxQuery.collection.database.destroyed || _isResultsInSync(rxQuery)) {
     return _util.PROMISE_RESOLVE_FALSE;
   }
-
   rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(function () {
     return __ensureEqual(rxQuery);
   });
   return rxQuery._ensureEqualQueue;
 }
+
 /**
  * ensures that the results of this query is equal to the results which a query over the database would give
  * @return true if results have changed
  */
-
-
 function __ensureEqual(rxQuery) {
   rxQuery._lastEnsureEqual = (0, _util.now)();
+
   /**
    * Optimisation shortcuts
    */
-
-  if ( // db is closed
-  rxQuery.collection.database.destroyed || // nothing happend since last run
+  if (
+  // db is closed
+  rxQuery.collection.database.destroyed ||
+  // nothing happend since last run
   _isResultsInSync(rxQuery)) {
     return _util.PROMISE_RESOLVE_FALSE;
   }
-
   var ret = false;
   var mustReExec = false; // if this becomes true, a whole execution over the database is made
-
   if (rxQuery._latestChangeEvent === -1) {
     // have not executed yet -> must run
     mustReExec = true;
   }
+
   /**
    * try to use EventReduce to calculate the new results
    */
-
-
   if (!mustReExec) {
     var missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
-
     if (missedChangeEvents === null) {
       // changeEventBuffer is of bounds -> we must re-execute over the database
       mustReExec = true;
     } else {
       rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
-
       var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-
       var eventReduceResult = (0, _eventReduce.calculateNewResults)(rxQuery, runChangeEvents);
-
       if (eventReduceResult.runFullQueryAgain) {
         // could not calculate the new results, execute must be done
         mustReExec = true;
       } else if (eventReduceResult.changed) {
         // we got the new results, we do not have to re-execute, mustReExec stays false
         ret = true; // true because results changed
-
         rxQuery._setResultData(eventReduceResult.newResults);
       }
     }
-  } // oh no we have to re-execute the whole query over the database
+  }
 
-
+  // oh no we have to re-execute the whole query over the database
   if (mustReExec) {
     // counter can change while _execOverDatabase() is running so we save it here
     var latestAfter = rxQuery.collection._changeEventBuffer.counter;
     return rxQuery._execOverDatabase().then(function (newResultData) {
       rxQuery._latestChangeEvent = latestAfter;
-
       if (!rxQuery._result || !(0, _fastDeepEqual["default"])(newResultData, rxQuery._result.docsData)) {
         ret = true; // true because results changed
-
         rxQuery._setResultData(newResultData);
       }
-
       return ret;
     });
   }
-
   return Promise.resolve(ret); // true if results have changed
 }
 
@@ -11094,10 +9639,8 @@ function isFindOneByIdQuery(primaryPath, query) {
       return query.selector[primaryPath].$eq;
     }
   }
-
   return false;
 }
-
 function isInstanceOf(obj) {
   return obj instanceof RxQueryBase;
 }
@@ -11106,7 +9649,6 @@ function isInstanceOf(obj) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -11119,20 +9661,15 @@ exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
 exports.getPseudoSchemaForVersion = getPseudoSchemaForVersion;
 exports.getSchemaByObjectPath = getSchemaByObjectPath;
 exports.normalizeRxJsonSchema = normalizeRxJsonSchema;
-
 var _objectPath = _interopRequireDefault(require("object-path"));
-
 var _rxError = require("./rx-error");
-
 var _util = require("./util");
-
 /**
  * Helper function to create a valid RxJsonSchema
  * with a given version.
  */
 function getPseudoSchemaForVersion(version, primaryKey) {
   var _properties;
-
   var pseudoSchema = fillWithDefaultSettings({
     version: version,
     type: 'object',
@@ -11145,27 +9682,22 @@ function getPseudoSchemaForVersion(version, primaryKey) {
   });
   return pseudoSchema;
 }
+
 /**
  * Returns the sub-schema for a given path
  */
-
-
 function getSchemaByObjectPath(rxJsonSchema, path) {
   var usePath = path;
   usePath = usePath.replace(/\./g, '.properties.');
   usePath = 'properties.' + usePath;
   usePath = (0, _util.trimDots)(usePath);
-
   var ret = _objectPath["default"].get(rxJsonSchema, usePath);
-
   return ret;
 }
-
 function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
   var cloned = (0, _util.flatClone)(documentData);
   var newPrimary = getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData);
   var existingPrimary = documentData[primaryPath];
-
   if (existingPrimary && existingPrimary !== newPrimary) {
     throw (0, _rxError.newRxError)('DOC19', {
       args: {
@@ -11176,11 +9708,9 @@ function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
       schema: jsonSchema
     });
   }
-
   cloned[primaryPath] = newPrimary;
   return cloned;
 }
-
 function getPrimaryFieldOfPrimaryKey(primaryKey) {
   if (typeof primaryKey === 'string') {
     return primaryKey;
@@ -11188,20 +9718,17 @@ function getPrimaryFieldOfPrimaryKey(primaryKey) {
     return primaryKey.key;
   }
 }
+
 /**
  * Returns the composed primaryKey of a document by its data.
  */
-
-
 function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
   if (typeof jsonSchema.primaryKey === 'string') {
     return documentData[jsonSchema.primaryKey];
   }
-
   var compositePrimary = jsonSchema.primaryKey;
   return compositePrimary.fields.map(function (field) {
     var value = _objectPath["default"].get(documentData, field);
-
     if (typeof value === 'undefined') {
       throw (0, _rxError.newRxError)('DOC18', {
         args: {
@@ -11210,10 +9737,10 @@ function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
         }
       });
     }
-
     return value;
   }).join(compositePrimary.separator);
 }
+
 /**
  * Normalize the RxJsonSchema.
  * We need this to ensure everything is set up properly
@@ -11226,107 +9753,108 @@ function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
  *
  * @return RxJsonSchema - ordered and filled
  */
-
-
 function normalizeRxJsonSchema(jsonSchema) {
   // TODO do we need the deep clone() here?
-  var normalizedSchema = (0, _util.sortObject)((0, _util.clone)(jsonSchema)); // indexes must NOT be sorted because sort order is important here.
+  var normalizedSchema = (0, _util.sortObject)((0, _util.clone)(jsonSchema));
 
+  // indexes must NOT be sorted because sort order is important here.
   if (jsonSchema.indexes) {
     normalizedSchema.indexes = Array.from(jsonSchema.indexes);
-  } // primaryKey.fields must NOT be sorted because sort order is important here.
+  }
 
-
+  // primaryKey.fields must NOT be sorted because sort order is important here.
   if (typeof normalizedSchema.primaryKey === 'object' && typeof jsonSchema.primaryKey === 'object') {
     normalizedSchema.primaryKey.fields = jsonSchema.primaryKey.fields;
   }
-
   return normalizedSchema;
 }
+
 /**
  * fills the schema-json with default-settings
  * @return cloned schemaObj
  */
-
-
 function fillWithDefaultSettings(schemaObj) {
   schemaObj = (0, _util.flatClone)(schemaObj);
   var primaryPath = getPrimaryFieldOfPrimaryKey(schemaObj.primaryKey);
-  schemaObj.properties = (0, _util.flatClone)(schemaObj.properties); // additionalProperties is always false
+  schemaObj.properties = (0, _util.flatClone)(schemaObj.properties);
 
-  schemaObj.additionalProperties = false; // fill with key-compression-state ()
+  // additionalProperties is always false
+  schemaObj.additionalProperties = false;
 
+  // fill with key-compression-state ()
   if (!schemaObj.hasOwnProperty('keyCompression')) {
     schemaObj.keyCompression = false;
-  } // indexes must be array
+  }
 
+  // indexes must be array
+  schemaObj.indexes = schemaObj.indexes ? schemaObj.indexes.slice(0) : [];
 
-  schemaObj.indexes = schemaObj.indexes ? schemaObj.indexes.slice(0) : []; // required must be array
+  // required must be array
+  schemaObj.required = schemaObj.required ? schemaObj.required.slice(0) : [];
 
-  schemaObj.required = schemaObj.required ? schemaObj.required.slice(0) : []; // encrypted must be array
-
+  // encrypted must be array
   schemaObj.encrypted = schemaObj.encrypted ? schemaObj.encrypted.slice(0) : [];
+
   /**
    * TODO we should not need to add the internal fields to the schema.
    * Better remove the fields before validation.
    */
   // add _rev
-
   schemaObj.properties._rev = {
     type: 'string',
     minLength: 1
-  }; // add attachments
+  };
 
+  // add attachments
   schemaObj.properties._attachments = {
     type: 'object'
-  }; // add deleted flag
+  };
 
+  // add deleted flag
   schemaObj.properties._deleted = {
     type: 'boolean'
-  }; // add meta property
+  };
 
+  // add meta property
   schemaObj.properties._meta = RX_META_SCHEMA;
+
   /**
    * meta fields are all required
    */
-
   schemaObj.required = schemaObj.required ? schemaObj.required.slice(0) : [];
   schemaObj.required.push('_deleted');
   schemaObj.required.push('_rev');
   schemaObj.required.push('_meta');
-  schemaObj.required.push('_attachments'); // final fields are always required
+  schemaObj.required.push('_attachments');
 
+  // final fields are always required
   var finalFields = getFinalFields(schemaObj);
   schemaObj.required = schemaObj.required.concat(finalFields).filter(function (field) {
     return !field.includes('.');
   }).filter(function (elem, pos, arr) {
     return arr.indexOf(elem) === pos;
   }); // unique;
-  // version is 0 by default
 
+  // version is 0 by default
   schemaObj.version = schemaObj.version || 0;
+
   /**
    * Append primary key to indexes that do not contain the primaryKey.
    * All indexes must have the primaryKey to ensure a deterministic sort order.
    */
-
   if (schemaObj.indexes) {
     schemaObj.indexes = schemaObj.indexes.map(function (index) {
       var arIndex = (0, _util.isMaybeReadonlyArray)(index) ? index.slice(0) : [index];
-
       if (!arIndex.includes(primaryPath)) {
         var modifiedIndex = arIndex.slice(0);
         modifiedIndex.push(primaryPath);
         return modifiedIndex;
       }
-
       return arIndex;
     });
   }
-
   return schemaObj;
 }
-
 var RX_META_SCHEMA = {
   type: 'object',
   properties: {
@@ -11336,7 +9864,6 @@ var RX_META_SCHEMA = {
      */
     lwt: {
       type: 'number',
-
       /**
        * We use 1 as minimum so that the value is never falsy.
        */
@@ -11345,7 +9872,6 @@ var RX_META_SCHEMA = {
       multipleOf: 0.01
     }
   },
-
   /**
    * Additional properties are allowed
    * and can be used by plugins to set various flags.
@@ -11353,30 +9879,29 @@ var RX_META_SCHEMA = {
   additionalProperties: true,
   required: ['lwt']
 };
+
 /**
  * returns the final-fields of the schema
  * @return field-names of the final-fields
  */
-
 exports.RX_META_SCHEMA = RX_META_SCHEMA;
-
 function getFinalFields(jsonSchema) {
   var ret = Object.keys(jsonSchema.properties).filter(function (key) {
     return jsonSchema.properties[key]["final"];
-  }); // primary is also final
+  });
 
+  // primary is also final
   var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
-  ret.push(primaryPath); // fields of composite primary are final
+  ret.push(primaryPath);
 
+  // fields of composite primary are final
   if (typeof jsonSchema.primaryKey !== 'string') {
     jsonSchema.primaryKey.fields.forEach(function (field) {
       return ret.push(field);
     });
   }
-
   return ret;
 }
-
 var DEFAULT_CHECKPOINT_SCHEMA = {
   type: 'object',
   properties: {
@@ -11396,7 +9921,6 @@ exports.DEFAULT_CHECKPOINT_SCHEMA = DEFAULT_CHECKPOINT_SCHEMA;
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -11406,43 +9930,31 @@ exports.getIndexes = getIndexes;
 exports.getPreviousVersions = getPreviousVersions;
 exports.isInstanceOf = isInstanceOf;
 exports.toTypedRxJsonSchema = toTypedRxJsonSchema;
-
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
-
 var _util = require("./util");
-
 var _rxError = require("./rx-error");
-
 var _hooks = require("./hooks");
-
 var _rxDocument = require("./rx-document");
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var _overwritable = require("./overwritable");
-
 var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonSchema) {
     this.jsonSchema = jsonSchema;
-    this.indexes = getIndexes(this.jsonSchema); // primary is always required
+    this.indexes = getIndexes(this.jsonSchema);
 
+    // primary is always required
     this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.jsonSchema.primaryKey);
     this.finalFields = (0, _rxSchemaHelper.getFinalFields)(this.jsonSchema);
   }
-
   var _proto = RxSchema.prototype;
-
   /**
    * checks if a given change on a document is allowed
    * Ensures that:
    * - final fields are not modified
    * @throws {Error} if not valid
-   */
-  _proto.validateChange = function validateChange(dataBefore, dataAfter) {
+   */_proto.validateChange = function validateChange(dataBefore, dataAfter) {
     var _this = this;
-
     this.finalFields.forEach(function (fieldName) {
       if (!(0, _fastDeepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
         throw (0, _rxError.newRxError)('DOC9', {
@@ -11454,11 +9966,10 @@ var RxSchema = /*#__PURE__*/function () {
       }
     });
   }
+
   /**
    * fills all unset fields with default-values if set
-   */
-  ;
-
+   */;
   _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
     obj = (0, _util.flatClone)(obj);
     Object.entries(this.defaultValues).filter(function (_ref) {
@@ -11466,17 +9977,16 @@ var RxSchema = /*#__PURE__*/function () {
       return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
     }).forEach(function (_ref2) {
       var k = _ref2[0],
-          v = _ref2[1];
+        v = _ref2[1];
       return obj[k] = v;
     });
     return obj;
   }
+
   /**
    * creates the schema-based document-prototype,
    * see RxCollection.getDocumentPrototype()
-   */
-  ;
-
+   */;
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     var proto = {};
     (0, _rxDocument.defineGetterSetter)(this, proto, '');
@@ -11485,11 +9995,9 @@ var RxSchema = /*#__PURE__*/function () {
     });
     return proto;
   };
-
   _proto.getPrimaryOfDocumentData = function getPrimaryOfDocumentData(documentData) {
     return (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(this.jsonSchema, documentData);
   };
-
   (0, _createClass2["default"])(RxSchema, [{
     key: "version",
     get: function get() {
@@ -11504,15 +10012,15 @@ var RxSchema = /*#__PURE__*/function () {
         return v.hasOwnProperty('default');
       }).forEach(function (_ref4) {
         var k = _ref4[0],
-            v = _ref4[1];
+          v = _ref4[1];
         return values[k] = v["default"];
       });
       return (0, _util.overwriteGetterForCaching)(this, 'defaultValues', values);
     }
+
     /**
      * @overrides itself on the first call
      */
-
   }, {
     key: "hash",
     get: function get() {
@@ -11521,19 +10029,16 @@ var RxSchema = /*#__PURE__*/function () {
   }]);
   return RxSchema;
 }();
-
 exports.RxSchema = RxSchema;
-
 function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(function (index) {
     return (0, _util.isMaybeReadonlyArray)(index) ? index : [index];
   });
 }
+
 /**
  * array with previous version-numbers
  */
-
-
 function getPreviousVersions(schema) {
   var version = schema.version ? schema.version : 0;
   var c = 0;
@@ -11541,33 +10046,26 @@ function getPreviousVersions(schema) {
     return c++;
   });
 }
-
 function createRxSchema(jsonSchema) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
   if (runPreCreateHooks) {
     (0, _hooks.runPluginHooks)('preCreateRxSchema', jsonSchema);
   }
-
   var useJsonSchema = (0, _rxSchemaHelper.fillWithDefaultSettings)(jsonSchema);
   useJsonSchema = (0, _rxSchemaHelper.normalizeRxJsonSchema)(useJsonSchema);
-
   _overwritable.overwritable.deepFreezeWhenDevMode(useJsonSchema);
-
   var schema = new RxSchema(useJsonSchema);
   (0, _hooks.runPluginHooks)('createRxSchema', schema);
   return schema;
 }
-
 function isInstanceOf(obj) {
   return obj instanceof RxSchema;
 }
+
 /**
  * Used as helper function the generate the document type out of the schema via typescript.
  * @link https://github.com/pubkey/rxdb/discussions/3467
  */
-
-
 function toTypedRxJsonSchema(schema) {
   return schema;
 }
@@ -11593,19 +10091,13 @@ exports.stripAttachmentsDataFromDocument = stripAttachmentsDataFromDocument;
 exports.stripAttachmentsDataFromRow = stripAttachmentsDataFromRow;
 exports.throwIfIsStorageWriteError = throwIfIsStorageWriteError;
 exports.writeSingle = void 0;
-
 var _overwritable = require("./overwritable");
-
 var _rxError = require("./rx-error");
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var _util = require("./util");
-
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-
 /**
  * Writes a single document,
  * throws RxStorageBulkWriteError on failure
@@ -11624,22 +10116,17 @@ var writeSingle = function writeSingle(instance, writeRow, context) {
   } catch (e) {
     return Promise.reject(e);
   }
-};
-/**
- * Checkpoints must be stackable over another.
- * This is required form some RxStorage implementations
- * like the sharding plugin, where a checkpoint only represents
- * the document state from some, but not all shards.
- */
-
-
+}; /**
+    * Checkpoints must be stackable over another.
+    * This is required form some RxStorage implementations
+    * like the sharding plugin, where a checkpoint only represents
+    * the document state from some, but not all shards.
+    */
 exports.writeSingle = writeSingle;
-
 var getSingleDocument = function getSingleDocument(storageInstance, documentId) {
   try {
     return Promise.resolve(storageInstance.findDocumentsById([documentId], false)).then(function (results) {
       var doc = results[documentId];
-
       if (doc) {
         return doc;
       } else {
@@ -11650,17 +10137,14 @@ var getSingleDocument = function getSingleDocument(storageInstance, documentId) 
     return Promise.reject(e);
   }
 };
-
 exports.getSingleDocument = getSingleDocument;
 var INTERNAL_STORAGE_NAME = '_rxdb_internal';
 exports.INTERNAL_STORAGE_NAME = INTERNAL_STORAGE_NAME;
 var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = RX_DATABASE_LOCAL_DOCS_STORAGE_NAME;
-
 function stackCheckpoints(checkpoints) {
   return Object.assign.apply(Object, [{}].concat(checkpoints));
 }
-
 function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
   var documentData = rxStorageChangeEvent.documentData;
   var previousDocumentData = rxStorageChangeEvent.previousDocumentData;
@@ -11677,7 +10161,6 @@ function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxColl
   };
   return ret;
 }
-
 function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
   if (error) {
     if (error.status === 409) {
@@ -11692,7 +10175,6 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
     }
   }
 }
-
 function getNewestOfDocumentStates(primaryPath, docs) {
   var ret = null;
   docs.forEach(function (doc) {
@@ -11702,6 +10184,7 @@ function getNewestOfDocumentStates(primaryPath, docs) {
   });
   return (0, _util.ensureNotFalsy)(ret);
 }
+
 /**
  * Analyzes a list of BulkWriteRows and determines
  * which documents must be inserted, updated or deleted
@@ -11709,8 +10192,6 @@ function getNewestOfDocumentStates(primaryPath, docs) {
  * and must not be written.
  * Used as helper inside of some RxStorage implementations.
  */
-
-
 function categorizeBulkWriteRows(storageInstance, primaryPath,
 /**
  * Current state of the documents
@@ -11748,7 +10229,6 @@ bulkWriteRows, context) {
     var id = writeRow.document[primaryPath];
     var documentInDb = docsByIdIsMap ? docsInDb.get(id) : docsInDb[id];
     var attachmentError;
-
     if (!documentInDb) {
       /**
        * It is possible to insert already deleted documents,
@@ -11757,8 +10237,7 @@ bulkWriteRows, context) {
       var insertedIsDeleted = writeRow.document._deleted ? true : false;
       Object.entries(writeRow.document._attachments).forEach(function (_ref) {
         var attachmentId = _ref[0],
-            attachmentData = _ref[1];
-
+          attachmentData = _ref[1];
         if (!attachmentData.data) {
           attachmentError = {
             documentId: id,
@@ -11775,7 +10254,6 @@ bulkWriteRows, context) {
           });
         }
       });
-
       if (!attachmentError) {
         if (hasAttachments) {
           bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
@@ -11783,7 +10261,6 @@ bulkWriteRows, context) {
           bulkInsertDocs.push(writeRow);
         }
       }
-
       if (!insertedIsDeleted) {
         changedDocumentIds.push(id);
         eventBulk.events.push({
@@ -11799,10 +10276,10 @@ bulkWriteRows, context) {
     } else {
       // update existing document
       var revInDb = documentInDb._rev;
+
       /**
        * Check for conflict
        */
-
       if (!writeRow.previous || !!writeRow.previous && revInDb !== writeRow.previous._rev) {
         // is conflict error
         var err = {
@@ -11814,9 +10291,9 @@ bulkWriteRows, context) {
         };
         errors[id] = err;
         return;
-      } // handle attachments data
+      }
 
-
+      // handle attachments data
       if (writeRow.document._deleted) {
         /**
          * Deleted documents must have cleared all their attachments.
@@ -11833,9 +10310,8 @@ bulkWriteRows, context) {
         // first check for errors
         Object.entries(writeRow.document._attachments).find(function (_ref2) {
           var attachmentId = _ref2[0],
-              attachmentData = _ref2[1];
+            attachmentData = _ref2[1];
           var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
-
           if (!previousAttachmentData && !attachmentData.data) {
             attachmentError = {
               documentId: id,
@@ -11845,16 +10321,13 @@ bulkWriteRows, context) {
               writeRow: writeRow
             };
           }
-
           return true;
         });
-
         if (!attachmentError) {
           Object.entries(writeRow.document._attachments).forEach(function (_ref3) {
             var attachmentId = _ref3[0],
-                attachmentData = _ref3[1];
+              attachmentData = _ref3[1];
             var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
-
             if (!previousAttachmentData) {
               attachmentsAdd.push({
                 documentId: id,
@@ -11873,7 +10346,6 @@ bulkWriteRows, context) {
           });
         }
       }
-
       if (attachmentError) {
         errors[id] = attachmentError;
       } else {
@@ -11883,12 +10355,10 @@ bulkWriteRows, context) {
           bulkUpdateDocs.push(writeRow);
         }
       }
-
       var writeDoc = writeRow.document;
       var eventDocumentData = null;
       var previousEventDocumentData = null;
       var operation = null;
-
       if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
         operation = 'INSERT';
         eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc;
@@ -11907,7 +10377,6 @@ bulkWriteRows, context) {
           }
         });
       }
-
       changedDocumentIds.push(id);
       eventBulk.events.push({
         eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
@@ -11931,20 +10400,18 @@ bulkWriteRows, context) {
     attachmentsUpdate: attachmentsUpdate
   };
 }
-
 function stripAttachmentsDataFromRow(writeRow) {
   return {
     previous: writeRow.previous,
     document: stripAttachmentsDataFromDocument(writeRow.document)
   };
 }
-
 function stripAttachmentsDataFromDocument(doc) {
   var useDoc = (0, _util.flatClone)(doc);
   useDoc._attachments = {};
   Object.entries(doc._attachments).forEach(function (_ref4) {
     var attachmentId = _ref4[0],
-        attachmentData = _ref4[1];
+      attachmentData = _ref4[1];
     useDoc._attachments[attachmentId] = {
       digest: attachmentData.digest,
       length: attachmentData.length,
@@ -11953,25 +10420,23 @@ function stripAttachmentsDataFromDocument(doc) {
   });
   return useDoc;
 }
+
 /**
  * Flat clone the document data
  * and also the _meta field.
  * Used many times when we want to change the meta
  * during replication etc.
  */
-
-
 function flatCloneDocWithMeta(doc) {
   var ret = (0, _util.flatClone)(doc);
   ret._meta = (0, _util.flatClone)(doc._meta);
   return ret;
 }
+
 /**
  * Each event is labeled with the id
  * to make it easy to filter out duplicates.
  */
-
-
 function getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow) {
   var docId = writeRow.document[primaryPath];
   var binaryValues = [!!writeRow.previous, writeRow.previous && writeRow.previous._deleted, !!writeRow.document._deleted];
@@ -11981,14 +10446,13 @@ function getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow) 
   var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
   return eventKey;
 }
+
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
  * and other data transformations and also ensure that database.lockedRun()
  * is used properly.
  */
-
-
 function getWrappedStorageInstance(database, storageInstance,
 /**
  * The original RxJsonSchema
@@ -11996,27 +10460,26 @@ function getWrappedStorageInstance(database, storageInstance,
  */
 rxJsonSchema) {
   _overwritable.overwritable.deepFreezeWhenDevMode(rxJsonSchema);
-
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
-
   function transformDocumentDataFromRxDBToRxStorage(writeRow) {
     var data = (0, _util.flatClone)(writeRow.document);
     data._meta = (0, _util.flatClone)(data._meta);
+
     /**
      * Do some checks in dev-mode
      * that would be too performance expensive
      * in production.
      */
-
     if (_overwritable.overwritable.isDevMode()) {
       // ensure that the primary key has not been changed
       data = (0, _rxSchemaHelper.fillPrimaryKey)(primaryPath, rxJsonSchema, data);
+
       /**
        * Ensure that the new revision is higher
        * then the previous one
        */
-
-      if (writeRow.previous) {// TODO run this in the dev-mode plugin
+      if (writeRow.previous) {
+        // TODO run this in the dev-mode plugin
         // const prev = parseRevision(writeRow.previous._rev);
         // const current = parseRevision(writeRow.document._rev);
         // if (current.height <= prev.height) {
@@ -12030,6 +10493,7 @@ rxJsonSchema) {
         //     });
         // }
       }
+
       /**
        * Ensure that _meta fields have been merged
        * and not replaced.
@@ -12038,8 +10502,6 @@ rxJsonSchema) {
        * to the document, it must be ensured that the
        * field of plugin A was not removed.
        */
-
-
       if (writeRow.previous) {
         Object.keys(writeRow.previous._meta).forEach(function (metaFieldName) {
           if (!writeRow.document._meta.hasOwnProperty(metaFieldName)) {
@@ -12051,21 +10513,19 @@ rxJsonSchema) {
         });
       }
     }
-
     data._meta.lwt = (0, _util.now)();
+
     /**
      * Yes we really want to set the revision here.
      * If you make a plugin that relies on having it's own revision
      * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
      */
-
     data._rev = (0, _util.createRevision)(database.hashFunction, data, writeRow.previous);
     return {
       document: data,
       previous: writeRow.previous
     };
   }
-
   var ret = {
     schema: storageInstance.schema,
     internals: storageInstance.internals,
@@ -12086,16 +10546,13 @@ rxJsonSchema) {
        * We do this by automatically fixing the conflict errors for that case
        * by running another bulkWrite() and merging the results.
        * @link https://github.com/pubkey/rxdb/pull/3839
-       */
-      .then(function (writeResult) {
+       */.then(function (writeResult) {
         var reInsertErrors = Object.values(writeResult.error).filter(function (error) {
           if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && (0, _util.ensureNotFalsy)(error.documentInDb)._deleted) {
             return true;
           }
-
           return false;
         });
-
         if (reInsertErrors.length > 0) {
           var useWriteResult = {
             error: (0, _util.flatClone)(writeResult.error),
@@ -12118,7 +10575,6 @@ rxJsonSchema) {
             return useWriteResult;
           });
         }
-
         return writeResult;
       });
     },
@@ -12167,7 +10623,6 @@ rxJsonSchema) {
       if (taskSolution.output.isEqual) {
         return storageInstance.resolveConflictResultionTask(taskSolution);
       }
-
       var doc = Object.assign({}, taskSolution.output.documentData, {
         _meta: (0, _util.getDefaultRxDocumentMeta)(),
         _rev: (0, _util.getDefaultRevision)(),
@@ -12189,13 +10644,12 @@ rxJsonSchema) {
   ret.originalStorageInstance = storageInstance;
   return ret;
 }
+
 /**
  * Each RxStorage implementation should
  * run this method at the first step of createStorageInstance()
  * to ensure that the configuration is correct.
  */
-
-
 function ensureRxStorageInstanceParamsAreCorrect(params) {
   if (params.schema.keyCompression) {
     throw (0, _rxError.newRxError)('UT5', {
@@ -12204,7 +10658,6 @@ function ensureRxStorageInstanceParamsAreCorrect(params) {
       }
     });
   }
-
   if (hasEncryption(params.schema)) {
     throw (0, _rxError.newRxError)('UT6', {
       args: {
@@ -12213,7 +10666,6 @@ function ensureRxStorageInstanceParamsAreCorrect(params) {
     });
   }
 }
-
 function hasEncryption(jsonSchema) {
   if (!!jsonSchema.encrypted && jsonSchema.encrypted.length > 0 || jsonSchema.attachments && jsonSchema.attachments.encrypted) {
     return true;
@@ -12232,13 +10684,9 @@ exports.BROADCAST_CHANNEL_BY_TOKEN = void 0;
 exports.addRxStorageMultiInstanceSupport = addRxStorageMultiInstanceSupport;
 exports.getBroadcastChannelReference = getBroadcastChannelReference;
 exports.removeBroadcastChannelReference = removeBroadcastChannelReference;
-
 var _rxjs = require("rxjs");
-
 var _operators = require("rxjs/operators");
-
 var _broadcastChannel = require("broadcast-channel");
-
 /**
  * When a persistend RxStorage is used in more the one JavaScript process,
  * the even stream of the changestream() function must be broadcasted to the other
@@ -12269,10 +10717,8 @@ var _broadcastChannel = require("broadcast-channel");
  */
 var BROADCAST_CHANNEL_BY_TOKEN = new Map();
 exports.BROADCAST_CHANNEL_BY_TOKEN = BROADCAST_CHANNEL_BY_TOKEN;
-
 function getBroadcastChannelReference(databaseInstanceToken, databaseName, refObject) {
   var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
-
   if (!state) {
     state = {
       /**
@@ -12285,26 +10731,20 @@ function getBroadcastChannelReference(databaseInstanceToken, databaseName, refOb
     };
     BROADCAST_CHANNEL_BY_TOKEN.set(databaseInstanceToken, state);
   }
-
   state.refs.add(refObject);
   return state.bc;
 }
-
 function removeBroadcastChannelReference(databaseInstanceToken, refObject) {
   var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
-
   if (!state) {
     return;
   }
-
   state.refs["delete"](refObject);
-
   if (state.refs.size === 0) {
     BROADCAST_CHANNEL_BY_TOKEN["delete"](databaseInstanceToken);
     return state.bc.close();
   }
 }
-
 function addRxStorageMultiInstanceSupport(storageName, instanceCreationParams, instance,
 /**
  * If provided, that channel will be used
@@ -12314,16 +10754,13 @@ providedBroadcastChannel) {
   if (!instanceCreationParams.multiInstance) {
     return;
   }
-
   var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
   var changesFromOtherInstances$ = new _rxjs.Subject();
-
   var eventListener = function eventListener(msg) {
     if (msg.storageName === storageName && msg.databaseName === instanceCreationParams.databaseName && msg.collectionName === instanceCreationParams.collectionName && msg.version === instanceCreationParams.schema.version) {
       changesFromOtherInstances$.next(msg.eventBulk);
     }
   };
-
   broadcastChannel.addEventListener('message', eventListener);
   var oldChangestream$ = instance.changeStream();
   var closed = false;
@@ -12331,7 +10768,6 @@ providedBroadcastChannel) {
     if (closed) {
       return;
     }
-
     broadcastChannel.postMessage({
       storageName: storageName,
       databaseName: instanceCreationParams.databaseName,
@@ -12340,25 +10776,20 @@ providedBroadcastChannel) {
       eventBulk: eventBulk
     });
   });
-
   instance.changeStream = function () {
     return changesFromOtherInstances$.asObservable().pipe((0, _operators.mergeWith)(oldChangestream$));
   };
-
   var oldClose = instance.close.bind(instance);
-
   instance.close = function () {
     try {
       closed = true;
       sub.unsubscribe();
       broadcastChannel.removeEventListener('message', eventListener);
-
       var _temp2 = function () {
         if (!providedBroadcastChannel) {
           return Promise.resolve(removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance)).then(function () {});
         }
       }();
-
       return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
         return oldClose();
       }) : oldClose());
@@ -12366,21 +10797,17 @@ providedBroadcastChannel) {
       return Promise.reject(e);
     }
   };
-
   var oldRemove = instance.remove.bind(instance);
-
   instance.remove = function () {
     try {
       closed = true;
       sub.unsubscribe();
       broadcastChannel.removeEventListener('message', eventListener);
-
       var _temp4 = function () {
         if (!providedBroadcastChannel) {
           return Promise.resolve(removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance)).then(function () {});
         }
       }();
-
       return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {
         return oldRemove();
       }) : oldRemove());
@@ -12404,7 +10831,6 @@ providedBroadcastChannel) {
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -12455,13 +10881,9 @@ exports.stringifyFilter = stringifyFilter;
 exports.toPromise = toPromise;
 exports.trimDots = trimDots;
 exports.ucfirst = ucfirst;
-
 var _clone = _interopRequireDefault(require("clone"));
-
 var _isElectron = _interopRequireDefault(require("is-electron"));
-
 var _jsBase = require("js-base64");
-
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -12476,6 +10898,7 @@ function pluginMissing(pluginKey) {
   pluginName += 'Plugin';
   return new Error("You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n            import { " + pluginName + " } from 'rxdb/plugins/" + pluginKey + "';\n            addRxPlugin(" + pluginName + ");\n        ");
 }
+
 /**
  * This is a very fast hash method
  * but it is not cryptographically secure.
@@ -12483,13 +10906,12 @@ function pluginMissing(pluginKey) {
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
  * @return a string as hash-result
  */
-
-
 function fastUnsecureHash(inputString) {
   var hashValue = 0,
-      i,
-      chr,
-      len;
+    i,
+    chr,
+    len;
+
   /**
    * For better performance we first transform all
    * chars into their ascii numbers at once.
@@ -12497,9 +10919,7 @@ function fastUnsecureHash(inputString) {
    * This is what makes the murmurhash implementation such fast.
    * @link https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L4
    */
-
   var encoded = new TextEncoder().encode(inputString);
-
   for (i = 0, len = inputString.length; i < len; i++) {
     chr = encoded[i];
     hashValue = (hashValue << 5) - hashValue + chr;
@@ -12509,27 +10929,26 @@ function fastUnsecureHash(inputString) {
   if (hashValue < 0) {
     hashValue = hashValue * -1;
   }
+
   /**
    * To make the output smaller
    * but still have it to represent the same value,
    * we use the biggest radix of 36 instead of just
    * transforming it into a hex string.
    */
-
-
   return hashValue.toString(36);
 }
+
 /**
  * Default hash method used to create revision hashes
  * that do not have to be cryptographically secure.
  * IMPORTANT: Changing the default hashing method
  * requires a BREAKING change!
  */
-
-
 function defaultHashFunction(input) {
   return fastUnsecureHash(input);
 }
+
 /**
  * Returns the current unix time in milliseconds (with two decmials!)
  * Because the accuracy of getTime() in javascript is bad,
@@ -12542,51 +10961,43 @@ function defaultHashFunction(input) {
  * because it turned out that some storages are such fast that
  * calling this method too often would return 'the future'.
  */
-
-
 var _lastNow = 0;
 /**
  * Returns the current time in milliseconds,
  * also ensures to not return the same value twice.
  */
-
 function now() {
   var ret = new Date().getTime();
   ret = ret + 0.01;
-
   if (ret <= _lastNow) {
     ret = _lastNow + 0.01;
   }
+
   /**
    * Strip the returned number to max two decimals.
    * In theory we would not need this but
    * in practice JavaScript has no such good number precision
    * so rounding errors could add another decimal place.
    */
-
-
   var twoDecimals = parseFloat(ret.toFixed(2));
   _lastNow = twoDecimals;
   return twoDecimals;
 }
+
 /**
  * returns a promise that resolves on the next tick
  */
-
-
 function nextTick() {
   return new Promise(function (res) {
     return setTimeout(res, 0);
   });
 }
-
 function promiseWait() {
   var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
   return new Promise(function (res) {
     return setTimeout(res, ms);
   });
 }
-
 function toPromise(maybePromise) {
   if (maybePromise && typeof maybePromise.then === 'function') {
     // is promise
@@ -12595,7 +11006,6 @@ function toPromise(maybePromise) {
     return Promise.resolve(maybePromise);
   }
 }
-
 var PROMISE_RESOLVE_TRUE = Promise.resolve(true);
 exports.PROMISE_RESOLVE_TRUE = PROMISE_RESOLVE_TRUE;
 var PROMISE_RESOLVE_FALSE = Promise.resolve(false);
@@ -12604,10 +11014,8 @@ var PROMISE_RESOLVE_NULL = Promise.resolve(null);
 exports.PROMISE_RESOLVE_NULL = PROMISE_RESOLVE_NULL;
 var PROMISE_RESOLVE_VOID = Promise.resolve();
 exports.PROMISE_RESOLVE_VOID = PROMISE_RESOLVE_VOID;
-
 function requestIdlePromise() {
   var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
   if (typeof window === 'object' && window['requestIdleCallback']) {
     return new Promise(function (res) {
       return window['requestIdleCallback'](res, {
@@ -12618,89 +11026,78 @@ function requestIdlePromise() {
     return promiseWait(0);
   }
 }
+
 /**
  * like Promise.all() but runs in series instead of parallel
  * @link https://github.com/egoist/promise.series/blob/master/index.js
  * @param tasks array with functions that return a promise
  */
-
-
 function promiseSeries(tasks, initial) {
   return tasks.reduce(function (current, next) {
     return current.then(next);
   }, Promise.resolve(initial));
 }
+
 /**
  * run the callback if requestIdleCallback available
  * do nothing if not
  * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
  */
-
-
 function requestIdleCallbackIfAvailable(fun) {
   if (typeof window === 'object' && window['requestIdleCallback']) window['requestIdleCallback'](fun);
 }
+
 /**
  * uppercase first char
  */
-
-
 function ucfirst(str) {
   str += '';
   var f = str.charAt(0).toUpperCase();
   return f + str.substr(1);
 }
+
 /**
  * removes trailing and ending dots from the string
  */
-
-
 function trimDots(str) {
   // start
   while (str.charAt(0) === '.') {
     str = str.substr(1);
-  } // end
+  }
 
-
+  // end
   while (str.slice(-1) === '.') {
     str = str.slice(0, -1);
   }
-
   return str;
 }
-
 function runXTimes(xTimes, fn) {
   new Array(xTimes).fill(0).forEach(function (_v, idx) {
     return fn(idx);
   });
 }
-
 function ensureNotFalsy(obj) {
   if (!obj) {
     throw new Error('ensureNotFalsy() is falsy');
   }
-
   return obj;
 }
-
 function ensureInteger(obj) {
   if (!Number.isInteger(obj)) {
     throw new Error('ensureInteger() is falsy');
   }
-
   return obj;
 }
+
 /**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set
  */
-
-
 function sortObject(obj) {
   var noArraySort = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
   if (!obj) return obj; // do not sort null, false or undefined
-  // array
 
+  // array
   if (!noArraySort && Array.isArray(obj)) {
     return obj.sort(function (a, b) {
       if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
@@ -12708,10 +11105,10 @@ function sortObject(obj) {
     }).map(function (i) {
       return sortObject(i, noArraySort);
     });
-  } // object
+  }
+
+  // object
   // array is also of type object
-
-
   if (typeof obj === 'object' && !Array.isArray(obj)) {
     if (obj instanceof RegExp) return obj;
     var out = {};
@@ -12721,166 +11118,139 @@ function sortObject(obj) {
       out[key] = sortObject(obj[key], noArraySort);
     });
     return out;
-  } // everything else
+  }
 
-
+  // everything else
   return obj;
 }
+
 /**
  * used to JSON.stringify() objects that contain a regex
  * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
  */
-
-
 function stringifyFilter(key, value) {
   if (value instanceof RegExp) {
     return value.toString();
   }
-
   return value;
 }
+
 /**
  * get a random string which can be used with couchdb
  * @link http://stackoverflow.com/a/1349426/3443137
  */
-
-
 function randomCouchString() {
   var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
   var text = '';
   var possible = 'abcdefghijklmnopqrstuvwxyz';
-
   for (var i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
-
   return text;
 }
+
 /**
  * A random string that is never inside of any storage
  */
-
-
 var RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
 exports.RANDOM_STRING = RANDOM_STRING;
-
 function lastOfArray(ar) {
   return ar[ar.length - 1];
 }
+
 /**
  * shuffle the given array
  */
-
-
 function shuffleArray(arr) {
   return arr.sort(function () {
     return Math.random() - 0.5;
   });
 }
+
 /**
  * Split array with items into smaller arrays with items
  * @link https://stackoverflow.com/a/7273794/3443137
  */
-
-
 function batchArray(array, batchSize) {
   array = array.slice(0);
   var ret = [];
-
   while (array.length) {
     var batch = array.splice(0, batchSize);
     ret.push(batch);
   }
-
   return ret;
 }
+
 /**
  * @link https://stackoverflow.com/a/15996017
  */
-
-
 function removeOneFromArrayIfMatches(ar, condition) {
   ar = ar.slice();
   var i = ar.length;
   var done = false;
-
   while (i-- && !done) {
     if (condition(ar[i])) {
       done = true;
       ar.splice(i, 1);
     }
   }
-
   return ar;
 }
+
 /**
  * transforms the given adapter into a pouch-compatible object
  */
-
-
 function adapterObject(adapter) {
   var adapterObj = {
     db: adapter
   };
-
   if (typeof adapter === 'string') {
     adapterObj = {
       adapter: adapter,
       db: undefined
     };
   }
-
   return adapterObj;
 }
-
 function recursiveDeepCopy(o) {
   if (!o) return o;
   return (0, _clone["default"])(o, false);
 }
-
 var clone = recursiveDeepCopy;
+
 /**
  * does a flat copy on the objects,
  * is about 3 times faster then using deepClone
  * @link https://jsperf.com/object-rest-spread-vs-clone/2
  */
-
 exports.clone = clone;
-
 function flatClone(obj) {
   return Object.assign({}, obj);
 }
+
 /**
  * @link https://stackoverflow.com/a/11509718/3443137
  */
-
-
 function firstPropertyNameOfObject(obj) {
   return Object.keys(obj)[0];
 }
-
 function firstPropertyValueOfObject(obj) {
   var key = Object.keys(obj)[0];
   return obj[key];
 }
-
 var isElectronRenderer = (0, _isElectron["default"])();
+
 /**
  * returns a flattened object
  * @link https://gist.github.com/penguinboy/762197
  */
-
 exports.isElectronRenderer = isElectronRenderer;
-
 function flattenObject(ob) {
   var toReturn = {};
-
   for (var i in ob) {
     if (!ob.hasOwnProperty(i)) continue;
-
     if (typeof ob[i] === 'object') {
       var flatObject = flattenObject(ob[i]);
-
       for (var _x in flatObject) {
         if (!flatObject.hasOwnProperty(_x)) continue;
         toReturn[i + '.' + _x] = flatObject[_x];
@@ -12889,10 +11259,8 @@ function flattenObject(ob) {
       toReturn[i] = ob[i];
     }
   }
-
   return toReturn;
 }
-
 function parseRevision(revision) {
   var split = revision.split('-');
   return {
@@ -12900,15 +11268,13 @@ function parseRevision(revision) {
     hash: split[1]
   };
 }
-
 function getHeightOfRevision(revision) {
   return parseRevision(revision).height;
 }
+
 /**
  * Creates the next write revision for a given document.
  */
-
-
 function createRevision(hashFunction, docData, previousDocData) {
   var previousRevision = previousDocData ? previousDocData._rev : null;
   var previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
@@ -12916,7 +11282,6 @@ function createRevision(hashFunction, docData, previousDocData) {
   var docWithoutRev = Object.assign({}, docData, {
     _rev: undefined,
     _rev_tree: undefined,
-
     /**
      * All _meta properties MUST NOT be part of the
      * revision hash.
@@ -12926,6 +11291,7 @@ function createRevision(hashFunction, docData, previousDocData) {
      */
     _meta: undefined
   });
+
   /**
    * The revision height must be part of the hash
    * as the last parameter of the document data.
@@ -12936,19 +11302,17 @@ function createRevision(hashFunction, docData, previousDocData) {
    * the replication can known if the state just looks equal
    * or if it is really exactly the equal state in data and time.
    */
-
   delete docWithoutRev._rev;
   docWithoutRev._rev = previousDocData ? newRevisionHeight : 1;
   var diggestString = JSON.stringify(docWithoutRev);
   var revisionHash = hashFunction(diggestString);
   return newRevisionHeight + '-' + revisionHash;
 }
+
 /**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run
  */
-
-
 function overwriteGetterForCaching(obj, getterName, value) {
   Object.defineProperty(obj, getterName, {
     get: function get() {
@@ -12957,14 +11321,14 @@ function overwriteGetterForCaching(obj, getterName, value) {
   });
   return value;
 }
+
 /**
  * returns true if the given name is likely a folder path
  */
-
-
 function isFolderPath(name) {
   // do not check, if foldername is given
-  if (name.includes('/') || // unix
+  if (name.includes('/') ||
+  // unix
   name.includes('\\') // windows
   ) {
     return true;
@@ -12972,31 +11336,24 @@ function isFolderPath(name) {
     return false;
   }
 }
-
 function getFromMapOrThrow(map, key) {
   var val = map.get(key);
-
   if (typeof val === 'undefined') {
     throw new Error('missing value from map ' + key);
   }
-
   return val;
 }
-
 function getFromObjectOrThrow(obj, key) {
   var val = obj[key];
-
   if (!val) {
     throw new Error('missing value from object ' + key);
   }
-
   return val;
 }
+
 /**
  * returns true if the supplied argument is either an Array<T> or a Readonly<Array<T>>
  */
-
-
 function isMaybeReadonlyArray(x) {
   // While this looks strange, it's a workaround for an issue in TypeScript:
   // https://github.com/microsoft/TypeScript/issues/17002
@@ -13007,26 +11364,24 @@ function isMaybeReadonlyArray(x) {
   // still performing runtime type inspection.
   return Array.isArray(x);
 }
+
 /**
  * Use this in array.filter() to remove all empty slots
  * and have the correct typings afterwards.
  * @link https://stackoverflow.com/a/46700791/3443137
  */
-
-
 function arrayFilterNotEmpty(value) {
   if (value === null || value === undefined) {
     return false;
   }
-
   return true;
 }
+
 /**
  * NO! We cannot just use btoa() and atob()
  * because they do not work correctly with binary data.
  * @link https://stackoverflow.com/q/30106476/3443137
  */
-
 
 /**
  * atob() and btoa() do not work well with non ascii chars,
@@ -13036,53 +11391,46 @@ function arrayFilterNotEmpty(value) {
 // Encoding UTF8 -> base64
 function b64EncodeUnicode(str) {
   return (0, _jsBase.encode)(str);
-} // Decoding base64 -> UTF8
+}
 
-
+// Decoding base64 -> UTF8
 function b64DecodeUnicode(str) {
   return (0, _jsBase.decode)(str);
 }
+
 /**
  * @link https://stackoverflow.com/a/9458996/3443137
  */
-
-
 function arrayBufferToBase64(buffer) {
   var binary = '';
   var bytes = new Uint8Array(buffer);
   var len = bytes.byteLength;
-
   for (var i = 0; i < len; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-
   return btoa(binary);
 }
+
 /**
  * This is an abstraction over the Blob/Buffer data structure.
  * We need this because it behaves different in different JavaScript runtimes.
  * Since RxDB 13.0.0 we switch to Blob-only because Node.js does not support
  * the Blob data structure which is also supported by the browsers.
  */
-
-
 var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
-   */
-  createBlobBuffer: function createBlobBuffer(data, type) {
+   */createBlobBuffer: function createBlobBuffer(data, type) {
     var blobBuffer = new Blob([data], {
       type: type
     });
     return blobBuffer;
   },
-
   /**
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
-   */
-  createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
+   */createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
     try {
       return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
         return Promise.resolve(base64Response.blob());
@@ -13105,15 +11453,12 @@ var blobBufferUtil = {
      * @link https://github.com/pubkey/rxdb/issues/1371
      */
     var blobBufferType = Object.prototype.toString.call(blobBuffer);
-
     if (blobBufferType === '[object Uint8Array]') {
       blobBuffer = new Blob([blobBuffer]);
     }
-
     if (typeof blobBuffer === 'string') {
       return Promise.resolve(blobBuffer);
     }
-
     return blobBuffer.text();
   },
   toBase64String: function toBase64String(blobBuffer) {
@@ -13121,19 +11466,16 @@ var blobBufferUtil = {
       if (typeof blobBuffer === 'string') {
         return Promise.resolve(blobBuffer);
       }
+
       /**
        * in the electron-renderer we have a typed array insteaf of a blob
        * so we have to transform it.
        * @link https://github.com/pubkey/rxdb/issues/1371
        */
-
-
       var blobBufferType = Object.prototype.toString.call(blobBuffer);
-
       if (blobBufferType === '[object Uint8Array]') {
         blobBuffer = new Blob([blobBuffer]);
       }
-
       return Promise.resolve(fetch(URL.createObjectURL(blobBuffer)).then(function (res) {
         return res.arrayBuffer();
       })).then(arrayBufferToBase64);
@@ -13145,28 +11487,27 @@ var blobBufferUtil = {
     return blobBuffer.size;
   }
 };
+
 /**
  * Using shareReplay() without settings will not unsubscribe
  * if there are no more subscribers.
  * So we use these defaults.
  * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
  */
-
 exports.blobBufferUtil = blobBufferUtil;
 var RXJS_SHARE_REPLAY_DEFAULTS = {
   bufferSize: 1,
   refCount: true
 };
+
 /**
  * We use 1 as minimum so that the value is never falsy.
  * This const is used in several places because querying
  * with a value lower then the minimum could give false results.
  */
-
 exports.RXJS_SHARE_REPLAY_DEFAULTS = RXJS_SHARE_REPLAY_DEFAULTS;
 var RX_META_LWT_MINIMUM = 1;
 exports.RX_META_LWT_MINIMUM = RX_META_LWT_MINIMUM;
-
 function getDefaultRxDocumentMeta() {
   return {
     /**
@@ -13178,13 +11519,12 @@ function getDefaultRxDocumentMeta() {
     lwt: RX_META_LWT_MINIMUM
   };
 }
+
 /**
  * Returns a revision that is not valid.
  * Use this to have correct typings
  * while the storage wrapper anyway will overwrite the revision.
  */
-
-
 function getDefaultRevision() {
   /**
    * Use a non-valid revision format,
@@ -13193,7 +11533,6 @@ function getDefaultRevision() {
    */
   return '';
 }
-
 function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
   return function (a, b) {
     if (a._meta.lwt === b._meta.lwt) {
@@ -13207,10 +11546,10 @@ function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
     }
   };
 }
-
 function sortDocumentsByLastWriteTime(primaryPath, docs) {
   return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
 }
+
 /**
  * To get specific nested path values from objects,
  * RxDB normally uses the 'object-path' npm module.
@@ -13219,36 +11558,30 @@ function sortDocumentsByLastWriteTime(primaryPath, docs) {
  * and we can re-use the generated function.
  */
 
-
 function objectPathMonad(objectPath) {
   var splitted = objectPath.split('.');
+
   /**
    * Performance shortcut,
    * if no nested path is used,
    * directly return the field of the object.
    */
-
   if (splitted.length === 1) {
     return function (obj) {
       return obj[objectPath];
     };
   }
-
   return function (obj) {
     var currentVal = obj;
     var t = 0;
-
     while (t < splitted.length) {
       var subPath = splitted[t];
       currentVal = currentVal[subPath];
-
       if (typeof currentVal === 'undefined') {
         return currentVal;
       }
-
       t++;
     }
-
     return currentVal;
   };
 }

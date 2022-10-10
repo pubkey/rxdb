@@ -2,6 +2,7 @@
  * This file contains everything
  * that is supposed to run inside of the worker.
  */
+
 import { expose } from 'threads/worker';
 import { getFromMapOrThrow } from '../../util';
 export function wrappedWorkerRxStorage(args) {
@@ -10,11 +11,9 @@ export function wrappedWorkerRxStorage(args) {
   var exposeMe = {
     /**
      * RxStorageInstance
-     */
-    createStorageInstance: function createStorageInstance(params) {
+     */createStorageInstance: function createStorageInstance(params) {
       try {
         var _instanceId = nextId++;
-
         return Promise.resolve(args.storage.createStorageInstance(params)).then(function (instance) {
           instanceById.set(_instanceId, instance);
           return _instanceId;

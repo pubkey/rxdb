@@ -8,19 +8,18 @@ import { newRxError } from '../../rx-error';
 export * from './check-schema';
 export * from './unallowed-properties';
 import deepFreeze from 'deep-freeze';
+
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
  * Also we can ensure the readonly state via typescript
  * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */
-
 export function deepFreezeWhenDevMode(obj) {
   // direct return if not suitable for deepFreeze()
   if (!obj || typeof obj === 'string' || typeof obj === 'number') {
     return obj;
   }
-
   return deepFreeze(obj);
 }
 var DEV_MODE_PLUGIN_NAME = 'dev-mode';
@@ -37,7 +36,6 @@ export var RxDBDevModePlugin = {
         console.error('RxDB: Error-Code not known: ' + code);
         throw new Error('Error-Code ' + code + ' not known, contact the maintainer');
       }
-
       return ERROR_MESSAGES[code];
     }
   },
@@ -68,13 +66,11 @@ export var RxDBDevModePlugin = {
       after: function after(args) {
         ensureCollectionNameValid(args);
         checkOrmDocumentMethods(args.schema, args.methods);
-
         if (args.name.charAt(0) === '_') {
           throw newRxError('DB2', {
             name: args.name
           });
         }
-
         if (!args.schema) {
           throw newRxError('DB4', {
             name: args.name,
@@ -98,8 +94,9 @@ export var RxDBDevModePlugin = {
         // check ORM-methods
         checkOrmMethods(args.creator.statics);
         checkOrmMethods(args.creator.methods);
-        checkOrmMethods(args.creator.attachments); // check migration strategies
+        checkOrmMethods(args.creator.attachments);
 
+        // check migration strategies
         if (args.creator.schema && args.creator.migrationStrategies) {
           checkMigrationStrategies(args.creator.schema, args.creator.migrationStrategies);
         }

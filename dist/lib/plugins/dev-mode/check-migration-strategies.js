@@ -4,11 +4,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.checkMigrationStrategies = checkMigrationStrategies;
-
 var _rxError = require("../../rx-error");
-
 var _rxSchema = require("../../rx-schema");
-
 /**
  * checks if the migrationStrategies are ok, throws if not
  * @throws {Error|TypeError} if not ok
@@ -20,17 +17,17 @@ function checkMigrationStrategies(schema, migrationStrategies) {
       schema: schema
     });
   }
+  var previousVersions = (0, _rxSchema.getPreviousVersions)(schema);
 
-  var previousVersions = (0, _rxSchema.getPreviousVersions)(schema); // for every previousVersion there must be strategy
-
+  // for every previousVersion there must be strategy
   if (previousVersions.length !== Object.keys(migrationStrategies).length) {
     throw (0, _rxError.newRxError)('COL12', {
       have: Object.keys(migrationStrategies),
       should: previousVersions
     });
-  } // every strategy must have number as property and be a function
+  }
 
-
+  // every strategy must have number as property and be a function
   previousVersions.map(function (vNr) {
     return {
       v: vNr,

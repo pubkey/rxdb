@@ -17,13 +17,11 @@ export var RxStorageLokiStatics = {
         _deleted: false
       };
     }
-
     return mutateableQuery;
   },
   getSortComparator: function getSortComparator(schema, query) {
     return getLokiSortComparator(schema, query);
   },
-
   /**
    * Returns a function that determines if a document matches a query selector.
    * It is important to have the exact same logix as lokijs uses, to be sure
@@ -33,13 +31,11 @@ export var RxStorageLokiStatics = {
    * Because I am lazy, I do not copy paste and maintain that code.
    * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
    * same with Collection.
-   */
-  getQueryMatcher: function getQueryMatcher(_schema, query) {
+   */getQueryMatcher: function getQueryMatcher(_schema, query) {
     var fun = function fun(doc) {
       if (doc._deleted) {
         return false;
       }
-
       var docWithResetDeleted = flatClone(doc);
       docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
       var fakeCollection = {
@@ -55,7 +51,6 @@ export var RxStorageLokiStatics = {
       var ret = fakeResultSet.filteredrows.length > 0;
       return ret;
     };
-
     return fun;
   },
   checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
@@ -66,20 +61,18 @@ export var RxStorageLoki = /*#__PURE__*/function () {
    * This is done inside of the storage, not globally
    * to make it easier to test multi-tab behavior.
    */
+
   function RxStorageLoki(databaseSettings) {
     this.name = RX_STORAGE_NAME_LOKIJS;
     this.statics = RxStorageLokiStatics;
     this.leaderElectorByLokiDbName = new Map();
     this.databaseSettings = databaseSettings;
   }
-
   var _proto = RxStorageLoki.prototype;
-
   _proto.createStorageInstance = function createStorageInstance(params) {
     ensureRxStorageInstanceParamsAreCorrect(params);
     return createLokiStorageInstance(this, params, this.databaseSettings);
   };
-
   return RxStorageLoki;
 }();
 export function getRxStorageLoki() {

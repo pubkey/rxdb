@@ -1,11 +1,7 @@
 var path = require('path');
-
 var TerserPlugin = require('terser-webpack-plugin');
-
 var projectRootPath = path.resolve(__dirname, '../../../../');
-
 var babelConfig = require('../../../../babel.config');
-
 module.exports = {
   entry: {
     'lokijs-incremental-indexeddb': './src/plugins/worker/workers/lokijs-incremental-indexeddb.worker.ts',
@@ -46,7 +42,6 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
-
     /**
      * Fix LokiJS bundle error
      * @link https://rxdb.info/rx-storage-lokijs.html
@@ -64,7 +59,6 @@ module.exports = {
           comments: false
         }
       },
-
       /**
        * Disable creating the license files.
        * @link https://github.com/webpack/webpack/issues/12506#issuecomment-789314176

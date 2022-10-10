@@ -5,9 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.docStateToWriteDoc = docStateToWriteDoc;
 exports.writeDocToDocState = writeDocToDocState;
-
 var _util = require("../util");
-
 function docStateToWriteDoc(hashFunction, docState, previous) {
   var docData = Object.assign({}, docState, {
     _attachments: {},
@@ -19,7 +17,6 @@ function docStateToWriteDoc(hashFunction, docState, previous) {
   docData._rev = (0, _util.createRevision)(hashFunction, docData, previous);
   return docData;
 }
-
 function writeDocToDocState(writeDoc) {
   var ret = (0, _util.flatClone)(writeDoc);
   delete ret._attachments;

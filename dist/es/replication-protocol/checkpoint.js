@@ -2,7 +2,6 @@ import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper';
 import { stackCheckpoints } from '../rx-storage-helper';
 import { createRevision, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow, now } from '../util';
 import { RX_REPLICATION_META_INSTANCE_SCHEMA } from './meta-instance';
-
 /**
  * Sets the checkpoint,
  * automatically resolves conflicts that appear.
@@ -14,56 +13,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     const observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -75,38 +63,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -115,64 +93,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -182,7 +143,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -195,7 +155,6 @@ function _for(test, update, body) {
     }
   }
 }
-
 export var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
   try {
     var _exit2 = false;
@@ -214,6 +173,7 @@ export var setCheckpoint = function setCheckpoint(state, direction, checkpoint) 
        * Only write checkpoint if it is different from before
        * to have less writes to the storage.
        */
+
       !previousCheckpointDoc || JSON.stringify(previousCheckpointDoc.data) !== JSON.stringify(checkpoint))) {
         var newDoc = {
           id: '',
@@ -240,7 +200,6 @@ export var setCheckpoint = function setCheckpoint(state, direction, checkpoint) 
           if (previousCheckpointDoc) {
             newDoc.data = stackCheckpoints([previousCheckpointDoc.data, newDoc.data]);
           }
-
           newDoc._meta.lwt = now();
           newDoc._rev = createRevision(state.input.hashFunction, newDoc, previousCheckpointDoc);
           return Promise.resolve(state.input.metaInstance.bulkWrite([{
@@ -252,7 +211,6 @@ export var setCheckpoint = function setCheckpoint(state, direction, checkpoint) 
               _exit2 = true;
             } else {
               var error = getFromObjectOrThrow(result.error, newDoc.id);
-
               if (error.status !== 409) {
                 throw error;
               } else {
@@ -278,7 +236,6 @@ export var getLastCheckpointDoc = function getLastCheckpointDoc(state, direction
     return Promise.resolve(state.input.metaInstance.findDocumentsById([checkpointDocId], false)).then(function (checkpointResult) {
       var checkpointDoc = checkpointResult[checkpointDocId];
       state.lastCheckpointDoc[direction] = checkpointDoc;
-
       if (checkpointDoc) {
         return checkpointDoc.data;
       } else {
