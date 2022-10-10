@@ -1,5 +1,3 @@
-/// <reference types="node" />
-/// <reference types="pouchdb-core" />
 import type { ChangeStreamEvent, DeepReadonly, JsonSchema, MaybeReadonly, PouchChangeRow, PouchCheckpoint, PouchDBInstance, RxAttachmentData, RxAttachmentWriteData, RxDocumentData, RxDocumentWriteData, RxLocalDocumentData, StringKeys, WithAttachments } from '../../types';
 import type { RxStorageInstancePouch } from './rx-storage-instance-pouch';
 import type { ChangeEvent } from 'event-reduce-js';
