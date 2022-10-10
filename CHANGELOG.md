@@ -4,7 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - FIX `lastOfArray()` may return undefined if array is empty [#4011](https://github.com/pubkey/rxdb/pull/4011) Thanks [@AlexErrant](https://github.com/AlexErrant)
-
+- FIX Remove legacy triple slash directives [#4023](https://github.com/pubkey/rxdb/pull/4023) Thanks [@jeromepochat](https://github.com/jeromepochat)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
