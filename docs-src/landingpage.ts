@@ -324,9 +324,14 @@ function startEnlargeOnMousePos(mousePosDoc: RxLocalDocument<any, MousePositionT
     }
 
     mousePosDoc.$.subscribe((mousePos) => {
-        if (!mousePos.data.time) {
+        if (
+            !mousePos.data.time ||
+            !mousePos.data.x ||
+            !mousePos.data.y
+        ) {
             return;
         }
+
         Array.from($$enlargeOnMouse).forEach($element => {
             const elementPosition = getElementPosition($element);
 
