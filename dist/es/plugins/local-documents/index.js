@@ -28,7 +28,6 @@ export var RxDBLocalDocumentsPlugin = {
            * We do not have to await
            * the creation to speed up initial page load.
            */
-
           /* await */
           createLocalDocStateByParent(args.database);
         }
@@ -41,7 +40,6 @@ export var RxDBLocalDocumentsPlugin = {
            * We do not have to await
            * the creation to speed up initial page load.
            */
-
           /* await */
           createLocalDocStateByParent(args.collection);
         }

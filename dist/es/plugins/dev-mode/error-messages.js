@@ -3,6 +3,7 @@
  * without it, only error-codes will be shown
  * This is mainly because error-string are hard to compress and we need a smaller build
  */
+
 export var ERROR_MESSAGES = {
   // util.js / config
   UT1: 'given name is no string or empty',
@@ -18,6 +19,7 @@ export var ERROR_MESSAGES = {
   // removed in 12.0.0 - P1: 'PouchDB.getBatch: limit must be > 2',
   P2: 'bulkWrite() cannot be called with an empty array',
   // removed in 12.0.0 - P3: 'bulkAddRevisions cannot be called with an empty array',
+
   // rx-query
   QU1: 'RxQuery._execOverDatabase(): op not known',
   // removed in 9.0.0 - QU2: 'limit() must get a number',
@@ -108,6 +110,7 @@ export var ERROR_MESSAGES = {
   JD2: 'RxCollection.importJSON(): the imported json relies on a different schema',
   JD3: 'RxCollection.importJSON(): json.passwordHash does not match the own',
   // plugins/leader-election.js
+
   // plugins/local-documents.js
   LD1: 'RxDocument.allAttachments$ cant use attachments on local documents',
   LD2: 'RxDocument.get(): objPath must be a string',
@@ -178,9 +181,9 @@ export var ERROR_MESSAGES = {
   // removed in 13.0.0, use RC_PULL instead - GQL2: 'GraphQL replication: unknown errors occurred in replication pull - see innerErrors for more details',
   GQL3: 'GraphQL replication: pull returns more documents then batchSize',
   // removed in 13.0.0, use RC_PUSH instead - GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
+
   // plugins/replication/
   REP1: 'Replication: _deleted field not provided',
-
   /**
    * Should never be thrown, use this for
    * null checks etc. so you do not have to increase the

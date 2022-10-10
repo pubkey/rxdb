@@ -3,6 +3,7 @@
  * which produces a single file that can be embeded into the html
  * and used via window.RxDB
  */
+
 import '@babel/polyfill';
 import * as RxDB from './index.js';
 import * as RxDbPouchPlugin from './plugins/pouchdb/index.js';

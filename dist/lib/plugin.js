@@ -4,23 +4,14 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.addRxPlugin = addRxPlugin;
-
 var _rxSchema = require("./rx-schema");
-
 var _rxDocument = require("./rx-document");
-
 var _rxQuery = require("./rx-query");
-
 var _rxCollection = require("./rx-collection");
-
 var _rxDatabase = require("./rx-database");
-
 var _overwritable = require("./overwritable");
-
 var _hooks = require("./hooks");
-
 var _rxError = require("./rx-error");
-
 /**
  * this handles how plugins are added to rxdb
  * basically it changes the internal prototypes
@@ -38,63 +29,58 @@ var PROTOTYPES = {
   RxDatabase: _rxDatabase.RxDatabaseBase.prototype
 };
 var ADDED_PLUGINS = new Set();
+
 /**
  * Add a plugin to the RxDB library.
  * Plugins are added globally and cannot be removed.
  */
-
 function addRxPlugin(plugin) {
   (0, _hooks.runPluginHooks)('preAddRxPlugin', {
     plugin: plugin,
     plugins: ADDED_PLUGINS
-  }); // do nothing if added before
+  });
 
+  // do nothing if added before
   if (ADDED_PLUGINS.has(plugin)) {
     return;
   } else {
     ADDED_PLUGINS.add(plugin);
   }
+
   /**
    * Since version 10.0.0 we decoupled pouchdb from
    * the rxdb core. Therefore pouchdb plugins must be added
    * with the addPouchPlugin() method of the pouchdb plugin.
    */
-
-
   if (!plugin.rxdb) {
     throw (0, _rxError.newRxTypeError)('PL1', {
       plugin: plugin
     });
   }
-
   if (plugin.init) {
     plugin.init();
-  } // prototype-overwrites
+  }
 
-
+  // prototype-overwrites
   if (plugin.prototypes) {
     Object.entries(plugin.prototypes).forEach(function (_ref) {
       var name = _ref[0],
-          fun = _ref[1];
+        fun = _ref[1];
       return fun(PROTOTYPES[name]);
     });
-  } // overwritable-overwrites
-
-
+  }
+  // overwritable-overwrites
   if (plugin.overwritable) {
     Object.assign(_overwritable.overwritable, plugin.overwritable);
-  } // extend-hooks
-
-
+  }
+  // extend-hooks
   if (plugin.hooks) {
     Object.entries(plugin.hooks).forEach(function (_ref2) {
       var name = _ref2[0],
-          hooksObj = _ref2[1];
-
+        hooksObj = _ref2[1];
       if (hooksObj.after) {
         _hooks.HOOKS[name].push(hooksObj.after);
       }
-
       if (hooksObj.before) {
         _hooks.HOOKS[name].unshift(hooksObj.before);
       }

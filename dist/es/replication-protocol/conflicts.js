@@ -1,6 +1,5 @@
 import deepEqual from 'fast-deep-equal';
 import { getDefaultRevision, createRevision, now, flatClone } from '../util';
-
 /**
  * Resolves a conflict error or determines that the given document states are equal.
  * Returns the resolved document that must be written to the fork.
@@ -58,12 +57,11 @@ export var defaultConflictHandler = function defaultConflictHandler(i, _context)
       isEqual: true
     });
   }
+
   /**
    * The default conflict handler will always
    * drop the fork state and use the master state instead.
    */
-
-
   return Promise.resolve({
     isEqual: false,
     documentData: i.realMasterState

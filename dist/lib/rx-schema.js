@@ -1,7 +1,6 @@
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -11,43 +10,31 @@ exports.getIndexes = getIndexes;
 exports.getPreviousVersions = getPreviousVersions;
 exports.isInstanceOf = isInstanceOf;
 exports.toTypedRxJsonSchema = toTypedRxJsonSchema;
-
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
-
 var _util = require("./util");
-
 var _rxError = require("./rx-error");
-
 var _hooks = require("./hooks");
-
 var _rxDocument = require("./rx-document");
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var _overwritable = require("./overwritable");
-
 var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonSchema) {
     this.jsonSchema = jsonSchema;
-    this.indexes = getIndexes(this.jsonSchema); // primary is always required
+    this.indexes = getIndexes(this.jsonSchema);
 
+    // primary is always required
     this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.jsonSchema.primaryKey);
     this.finalFields = (0, _rxSchemaHelper.getFinalFields)(this.jsonSchema);
   }
-
   var _proto = RxSchema.prototype;
-
   /**
    * checks if a given change on a document is allowed
    * Ensures that:
    * - final fields are not modified
    * @throws {Error} if not valid
-   */
-  _proto.validateChange = function validateChange(dataBefore, dataAfter) {
+   */_proto.validateChange = function validateChange(dataBefore, dataAfter) {
     var _this = this;
-
     this.finalFields.forEach(function (fieldName) {
       if (!(0, _fastDeepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
         throw (0, _rxError.newRxError)('DOC9', {
@@ -59,11 +46,10 @@ var RxSchema = /*#__PURE__*/function () {
       }
     });
   }
+
   /**
    * fills all unset fields with default-values if set
-   */
-  ;
-
+   */;
   _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
     obj = (0, _util.flatClone)(obj);
     Object.entries(this.defaultValues).filter(function (_ref) {
@@ -71,17 +57,16 @@ var RxSchema = /*#__PURE__*/function () {
       return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
     }).forEach(function (_ref2) {
       var k = _ref2[0],
-          v = _ref2[1];
+        v = _ref2[1];
       return obj[k] = v;
     });
     return obj;
   }
+
   /**
    * creates the schema-based document-prototype,
    * see RxCollection.getDocumentPrototype()
-   */
-  ;
-
+   */;
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     var proto = {};
     (0, _rxDocument.defineGetterSetter)(this, proto, '');
@@ -90,11 +75,9 @@ var RxSchema = /*#__PURE__*/function () {
     });
     return proto;
   };
-
   _proto.getPrimaryOfDocumentData = function getPrimaryOfDocumentData(documentData) {
     return (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(this.jsonSchema, documentData);
   };
-
   (0, _createClass2["default"])(RxSchema, [{
     key: "version",
     get: function get() {
@@ -109,15 +92,15 @@ var RxSchema = /*#__PURE__*/function () {
         return v.hasOwnProperty('default');
       }).forEach(function (_ref4) {
         var k = _ref4[0],
-            v = _ref4[1];
+          v = _ref4[1];
         return values[k] = v["default"];
       });
       return (0, _util.overwriteGetterForCaching)(this, 'defaultValues', values);
     }
+
     /**
      * @overrides itself on the first call
      */
-
   }, {
     key: "hash",
     get: function get() {
@@ -126,19 +109,16 @@ var RxSchema = /*#__PURE__*/function () {
   }]);
   return RxSchema;
 }();
-
 exports.RxSchema = RxSchema;
-
 function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(function (index) {
     return (0, _util.isMaybeReadonlyArray)(index) ? index : [index];
   });
 }
+
 /**
  * array with previous version-numbers
  */
-
-
 function getPreviousVersions(schema) {
   var version = schema.version ? schema.version : 0;
   var c = 0;
@@ -146,33 +126,26 @@ function getPreviousVersions(schema) {
     return c++;
   });
 }
-
 function createRxSchema(jsonSchema) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
   if (runPreCreateHooks) {
     (0, _hooks.runPluginHooks)('preCreateRxSchema', jsonSchema);
   }
-
   var useJsonSchema = (0, _rxSchemaHelper.fillWithDefaultSettings)(jsonSchema);
   useJsonSchema = (0, _rxSchemaHelper.normalizeRxJsonSchema)(useJsonSchema);
-
   _overwritable.overwritable.deepFreezeWhenDevMode(useJsonSchema);
-
   var schema = new RxSchema(useJsonSchema);
   (0, _hooks.runPluginHooks)('createRxSchema', schema);
   return schema;
 }
-
 function isInstanceOf(obj) {
   return obj instanceof RxSchema;
 }
+
 /**
  * Used as helper function the generate the document type out of the schema via typescript.
  * @link https://github.com/pubkey/rxdb/discussions/3467
  */
-
-
 function toTypedRxJsonSchema(schema) {
   return schema;
 }

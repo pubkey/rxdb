@@ -8,13 +8,9 @@ exports.getNumberIndexString = getNumberIndexString;
 exports.getStartIndexStringFromLowerBound = getStartIndexStringFromLowerBound;
 exports.getStartIndexStringFromUpperBound = getStartIndexStringFromUpperBound;
 exports.getStringLengthOfIndexNumber = getStringLengthOfIndexNumber;
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 var _util = require("./util");
-
 var _queryPlanner = require("./query-planner");
-
 /**
  * For some RxStorage implementations,
  * we need to use our custom crafted indexes
@@ -43,11 +39,9 @@ function getIndexableStringMonad(schema, index) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
     var type = schemaPart.type;
     var parsedLengths;
-
     if (type === 'number' || type === 'integer') {
       parsedLengths = getStringLengthOfIndexNumber(schemaPart);
     }
-
     return {
       fieldName: fieldName,
       schemaPart: schemaPart,
@@ -56,39 +50,32 @@ function getIndexableStringMonad(schema, index) {
       getValueFn: (0, _util.objectPathMonad)(fieldName)
     };
   });
-
   var ret = function ret(docData) {
     var str = '';
     fieldNameProperties.forEach(function (props) {
       var schemaPart = props.schemaPart;
       var type = schemaPart.type;
       var fieldValue = props.getValueFn(docData);
-
       if (type === 'string') {
         if (!fieldValue) {
           fieldValue = '';
         }
-
         str += fieldValue.padStart(schemaPart.maxLength, ' ');
       } else if (type === 'boolean') {
         var boolToStr = fieldValue ? '1' : '0';
         str += boolToStr;
       } else {
         var parsedLengths = (0, _util.ensureNotFalsy)(props.parsedLengths);
-
         if (!fieldValue) {
           fieldValue = 0;
         }
-
         str += getNumberIndexString(parsedLengths, fieldValue);
       }
     });
     return str;
   };
-
   return ret;
 }
-
 function getStringLengthOfIndexNumber(schemaPart) {
   var minimum = Math.floor(schemaPart.minimum);
   var maximum = Math.ceil(schemaPart.maximum);
@@ -97,18 +84,15 @@ function getStringLengthOfIndexNumber(schemaPart) {
   var nonDecimals = valueSpan.toString().length;
   var multipleOfParts = multipleOf.toString().split('.');
   var decimals = 0;
-
   if (multipleOfParts.length > 1) {
     decimals = multipleOfParts[1].length;
   }
-
   return {
     nonDecimals: nonDecimals,
     decimals: decimals,
     roundedMinimum: minimum
   };
 }
-
 function getNumberIndexString(parsedLengths, fieldValue) {
   var str = '';
   var nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
@@ -118,26 +102,21 @@ function getNumberIndexString(parsedLengths, fieldValue) {
   str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
   return str;
 }
-
 function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
   var str = '';
   index.forEach(function (fieldName, idx) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
     var bound = lowerBound[idx];
     var type = schemaPart.type;
-
     switch (type) {
       case 'string':
         var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
-
         if (typeof bound === 'string') {
           str += bound.padStart(maxLength, ' ');
         } else {
           str += ''.padStart(maxLength, ' ');
         }
-
         break;
-
       case 'boolean':
         if (bound === null) {
           str += '0';
@@ -145,47 +124,37 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
           var boolToStr = bound ? '1' : '0';
           str += boolToStr;
         }
-
         break;
-
       case 'number':
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-
         if (bound === null) {
           str += '0'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);
         }
-
         break;
-
       default:
         throw new Error('unknown index type ' + type);
     }
   });
   return str;
 }
-
 function getStartIndexStringFromUpperBound(schema, index, upperBound) {
   var str = '';
   index.forEach(function (fieldName, idx) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
     var bound = upperBound[idx];
     var type = schemaPart.type;
-
     switch (type) {
       case 'string':
         var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
-
         if (typeof bound === 'string') {
           str += bound.padStart(maxLength, _queryPlanner.INDEX_MAX);
         } else {
           str += ''.padStart(maxLength, _queryPlanner.INDEX_MAX);
         }
-
         break;
-
       case 'boolean':
         if (bound === null) {
           str += '1';
@@ -193,21 +162,16 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
           var boolToStr = bound ? '1' : '0';
           str += boolToStr;
         }
-
         break;
-
       case 'number':
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-
         if (bound === null || bound === _queryPlanner.INDEX_MAX) {
           str += '9'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);
         }
-
         break;
-
       default:
         throw new Error('unknown index type ' + type);
     }

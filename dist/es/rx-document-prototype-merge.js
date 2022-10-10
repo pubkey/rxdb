@@ -6,10 +6,12 @@
  * adding them to a new object.
  * In the future we should do this by chaining the __proto__ objects
  */
+
 import { createRxDocumentConstructor, basePrototype, createWithConstructor as createRxDocumentWithConstructor } from './rx-document';
 import { runPluginHooks } from './hooks';
-import { overwritable } from './overwritable'; // caches
+import { overwritable } from './overwritable';
 
+// caches
 var protoForCollection = new WeakMap();
 var constructorForCollection = new WeakMap();
 export function getDocumentPrototype(rxCollection) {
@@ -22,14 +24,13 @@ export function getDocumentPrototype(rxCollection) {
       var props = Object.getOwnPropertyNames(obj);
       props.forEach(function (key) {
         var desc = Object.getOwnPropertyDescriptor(obj, key);
+
         /**
          * When enumerable is true, it will show on console.dir(instance)
          * To not polute the output, only getters and methods are enumerable
          */
-
         var enumerable = true;
         if (key.startsWith('_') || key.endsWith('_') || key.startsWith('$') || key.endsWith('$')) enumerable = false;
-
         if (typeof desc.value === 'function') {
           // when getting a function, we automatically do a .bind(this)
           Object.defineProperty(proto, key, {
@@ -49,7 +50,6 @@ export function getDocumentPrototype(rxCollection) {
     });
     protoForCollection.set(rxCollection, proto);
   }
-
   return protoForCollection.get(rxCollection);
 }
 export function getRxDocumentConstructor(rxCollection) {
@@ -57,54 +57,49 @@ export function getRxDocumentConstructor(rxCollection) {
     var ret = createRxDocumentConstructor(getDocumentPrototype(rxCollection));
     constructorForCollection.set(rxCollection, ret);
   }
-
   return constructorForCollection.get(rxCollection);
 }
+
 /**
  * Create a RxDocument-instance from the jsonData
  * and the prototype merge.
  * If the document already exists in the _docCache,
  * return that instead to ensure we have no duplicates.
  */
-
 export function createRxDocument(rxCollection, docData) {
-  var primary = docData[rxCollection.schema.primaryPath]; // return from cache if exists
+  var primary = docData[rxCollection.schema.primaryPath];
 
+  // return from cache if exists
   var cacheDoc = rxCollection._docCache.get(primary);
-
   if (cacheDoc) {
     return cacheDoc;
   }
-
   var doc = createRxDocumentWithConstructor(getRxDocumentConstructor(rxCollection), rxCollection, overwritable.deepFreezeWhenDevMode(docData));
-
   rxCollection._docCache.set(primary, doc);
-
   rxCollection._runHooksSync('post', 'create', docData, doc);
-
   runPluginHooks('postCreateRxDocument', doc);
   return doc;
 }
+
 /**
  * create RxDocument from the docs-array
  */
-
 export function createRxDocuments(rxCollection, docsJSON) {
   return docsJSON.map(function (json) {
     return createRxDocument(rxCollection, json);
   });
 }
+
 /**
  * returns the prototype-object
  * that contains the orm-methods,
  * used in the proto-merge
  */
-
 export function getDocumentOrmPrototype(rxCollection) {
   var proto = {};
   Object.entries(rxCollection.methods).forEach(function (_ref) {
     var k = _ref[0],
-        v = _ref[1];
+      v = _ref[1];
     proto[k] = v;
   });
   return proto;

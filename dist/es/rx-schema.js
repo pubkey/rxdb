@@ -9,23 +9,20 @@ import { overwritable } from './overwritable';
 export var RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonSchema) {
     this.jsonSchema = jsonSchema;
-    this.indexes = getIndexes(this.jsonSchema); // primary is always required
+    this.indexes = getIndexes(this.jsonSchema);
 
+    // primary is always required
     this.primaryPath = getPrimaryFieldOfPrimaryKey(this.jsonSchema.primaryKey);
     this.finalFields = getFinalFields(this.jsonSchema);
   }
-
   var _proto = RxSchema.prototype;
-
   /**
    * checks if a given change on a document is allowed
    * Ensures that:
    * - final fields are not modified
    * @throws {Error} if not valid
-   */
-  _proto.validateChange = function validateChange(dataBefore, dataAfter) {
+   */_proto.validateChange = function validateChange(dataBefore, dataAfter) {
     var _this = this;
-
     this.finalFields.forEach(function (fieldName) {
       if (!deepEqual(dataBefore[fieldName], dataAfter[fieldName])) {
         throw newRxError('DOC9', {
@@ -37,11 +34,10 @@ export var RxSchema = /*#__PURE__*/function () {
       }
     });
   }
+
   /**
    * fills all unset fields with default-values if set
-   */
-  ;
-
+   */;
   _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
     obj = flatClone(obj);
     Object.entries(this.defaultValues).filter(function (_ref) {
@@ -49,17 +45,16 @@ export var RxSchema = /*#__PURE__*/function () {
       return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
     }).forEach(function (_ref2) {
       var k = _ref2[0],
-          v = _ref2[1];
+        v = _ref2[1];
       return obj[k] = v;
     });
     return obj;
   }
+
   /**
    * creates the schema-based document-prototype,
    * see RxCollection.getDocumentPrototype()
-   */
-  ;
-
+   */;
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     var proto = {};
     defineGetterSetter(this, proto, '');
@@ -68,11 +63,9 @@ export var RxSchema = /*#__PURE__*/function () {
     });
     return proto;
   };
-
   _proto.getPrimaryOfDocumentData = function getPrimaryOfDocumentData(documentData) {
     return getComposedPrimaryKeyOfDocumentData(this.jsonSchema, documentData);
   };
-
   _createClass(RxSchema, [{
     key: "version",
     get: function get() {
@@ -87,22 +80,21 @@ export var RxSchema = /*#__PURE__*/function () {
         return v.hasOwnProperty('default');
       }).forEach(function (_ref4) {
         var k = _ref4[0],
-            v = _ref4[1];
+          v = _ref4[1];
         return values[k] = v["default"];
       });
       return overwriteGetterForCaching(this, 'defaultValues', values);
     }
+
     /**
      * @overrides itself on the first call
      */
-
   }, {
     key: "hash",
     get: function get() {
       return overwriteGetterForCaching(this, 'hash', fastUnsecureHash(JSON.stringify(this.jsonSchema)));
     }
   }]);
-
   return RxSchema;
 }();
 export function getIndexes(jsonSchema) {
@@ -110,10 +102,10 @@ export function getIndexes(jsonSchema) {
     return isMaybeReadonlyArray(index) ? index : [index];
   });
 }
+
 /**
  * array with previous version-numbers
  */
-
 export function getPreviousVersions(schema) {
   var version = schema.version ? schema.version : 0;
   var c = 0;
@@ -123,11 +115,9 @@ export function getPreviousVersions(schema) {
 }
 export function createRxSchema(jsonSchema) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
   if (runPreCreateHooks) {
     runPluginHooks('preCreateRxSchema', jsonSchema);
   }
-
   var useJsonSchema = fillWithDefaultSettings(jsonSchema);
   useJsonSchema = normalizeRxJsonSchema(useJsonSchema);
   overwritable.deepFreezeWhenDevMode(useJsonSchema);
@@ -138,11 +128,11 @@ export function createRxSchema(jsonSchema) {
 export function isInstanceOf(obj) {
   return obj instanceof RxSchema;
 }
+
 /**
  * Used as helper function the generate the document type out of the schema via typescript.
  * @link https://github.com/pubkey/rxdb/discussions/3467
  */
-
 export function toTypedRxJsonSchema(schema) {
   return schema;
 }

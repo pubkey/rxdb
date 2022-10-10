@@ -4,19 +4,15 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxDBJsonDumpPlugin = void 0;
-
 var _rxQuery = require("../rx-query");
-
 var _rxError = require("../rx-error");
-
 var _util = require("../util");
-
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
+
 function dumpRxDatabase(collections) {
   var _this = this;
-
   var json = {
     name: this.name,
     instanceToken: this.token,
@@ -36,10 +32,8 @@ function dumpRxDatabase(collections) {
     return json;
   });
 }
-
 var importDumpRxDatabase = function importDumpRxDatabase(dump) {
   var _this2 = this;
-
   /**
    * collections must be created before the import
    * because we do not know about the other collection-settings here
@@ -49,18 +43,15 @@ var importDumpRxDatabase = function importDumpRxDatabase(dump) {
   }).map(function (col) {
     return col.name;
   });
-
   if (missingCollections.length > 0) {
     throw (0, _rxError.newRxError)('JD1', {
       missingCollections: missingCollections
     });
   }
-
   return Promise.all(dump.collections.map(function (colDump) {
     return _this2.collections[colDump.name].importJSON(colDump);
   }));
 };
-
 var dumpRxCollection = function dumpRxCollection() {
   var json = {
     name: this.name,
@@ -78,7 +69,6 @@ var dumpRxCollection = function dumpRxCollection() {
     return json;
   });
 };
-
 function importDumpRxCollection(exportedJSON) {
   // check schemaHash
   if (exportedJSON.schemaHash !== this.schema.hash) {
@@ -87,7 +77,6 @@ function importDumpRxCollection(exportedJSON) {
       own: this.schema.hash
     });
   }
-
   var docs = exportedJSON.docs;
   return this.storageInstance.bulkWrite(docs.map(function (docData) {
     var document = Object.assign({}, docData, {
@@ -103,7 +92,6 @@ function importDumpRxCollection(exportedJSON) {
     };
   }), 'json-dump-import');
 }
-
 var RxDBJsonDumpPlugin = {
   name: 'json-dump',
   rxdb: true,

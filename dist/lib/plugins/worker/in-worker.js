@@ -4,26 +4,22 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.wrappedWorkerRxStorage = wrappedWorkerRxStorage;
-
 var _worker = require("threads/worker");
-
 var _util = require("../../util");
-
 /**
  * This file contains everything
  * that is supposed to run inside of the worker.
  */
+
 function wrappedWorkerRxStorage(args) {
   var nextId = 0;
   var instanceById = new Map();
   var exposeMe = {
     /**
      * RxStorageInstance
-     */
-    createStorageInstance: function createStorageInstance(params) {
+     */createStorageInstance: function createStorageInstance(params) {
       try {
         var _instanceId = nextId++;
-
         return Promise.resolve(args.storage.createStorageInstance(params)).then(function (instance) {
           instanceById.set(_instanceId, instance);
           return _instanceId;

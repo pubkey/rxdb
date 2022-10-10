@@ -14,7 +14,6 @@ export function RxQueryUpdate(updateObj) {
     if (!docs) {
       return null;
     }
-
     if (Array.isArray(docs)) {
       return Promise.all(docs.map(function (doc) {
         return doc.update(updateObj);

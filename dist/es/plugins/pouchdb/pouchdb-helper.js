@@ -7,13 +7,11 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
     if (!attachments) {
       return Promise.resolve({});
     }
-
     var ret = {};
     return Promise.resolve(Promise.all(Object.entries(attachments).map(function (_ref4) {
       try {
         var key = _ref4[0],
-            obj = _ref4[1];
-
+          obj = _ref4[1];
         if (!obj.type) {
           throw newRxError('SNH', {
             args: {
@@ -26,8 +24,6 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
          * so we have to remove the data to have a
          * non-write attachment.
          */
-
-
         var _temp4 = function () {
           if (obj.data) {
             var _temp5 = function _temp5(dataAsBase64String) {
@@ -40,23 +36,18 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
                 };
               });
             };
-
             var _asWrite = obj;
             var data = _asWrite.data;
             var isBuffer = typeof Buffer !== 'undefined' && Buffer.isBuffer(data);
-
             if (isBuffer) {
               data = new Blob([data]);
             }
-
             var _temp6 = typeof data === 'string';
-
             return _temp6 ? _temp5(data) : Promise.resolve(blobBufferUtil.toBase64String(data)).then(_temp5);
           } else {
             ret[key] = obj;
           }
         }();
-
         return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
       } catch (e) {
         return Promise.reject(e);
@@ -69,45 +60,44 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
   }
 };
 export var RX_STORAGE_NAME_POUCHDB = 'pouchdb';
+
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
-
 export var OPEN_POUCHDB_STORAGE_INSTANCES = new Set();
+
 /**
  * All open PouchDB instances are stored here
  * so that we can find them again when needed in the internals.
  */
-
 export var OPEN_POUCH_INSTANCES = new Map();
 export function openPouchId(databaseInstanceToken, databaseName, collectionName, schemaVersion) {
   return [databaseInstanceToken, databaseName, collectionName, schemaVersion + ''].join('||');
 }
+
 /**
  * prefix of local pouchdb documents
  */
-
 export var POUCHDB_LOCAL_PREFIX = '_local/';
 export var POUCHDB_LOCAL_PREFIX_LENGTH = POUCHDB_LOCAL_PREFIX.length;
+
 /**
  * Pouchdb stores indexes as design documents,
  * we have to filter them out and not return the
  * design documents to the outside.
  */
-
 export var POUCHDB_DESIGN_PREFIX = '_design/';
+
 /**
  * PouchDB does not allow to add custom properties
  * that start with lodash like RxDB's _meta field.
  * So we have to map this field into a non-lodashed field.
  */
-
 export var POUCHDB_META_FIELDNAME = 'rxdbMeta';
 export function pouchSwapIdToPrimary(primaryKey, docData) {
   if (primaryKey === '_id' || docData[primaryKey]) {
     return docData;
   }
-
   docData = flatClone(docData);
   docData[primaryKey] = docData._id;
   delete docData._id;
@@ -121,19 +111,19 @@ export function pouchSwapIdToPrimaryString(primaryKey, str) {
   }
 }
 export function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
-  var useDoc = pouchSwapIdToPrimary(primaryKey, pouchDoc); // always flat clone becaues we mutate the _attachments property.
+  var useDoc = pouchSwapIdToPrimary(primaryKey, pouchDoc);
 
+  // always flat clone becaues we mutate the _attachments property.
   useDoc = flatClone(useDoc);
-  delete useDoc._revisions; // ensure deleted flag is set.
+  delete useDoc._revisions;
 
+  // ensure deleted flag is set.
   useDoc._deleted = !!useDoc._deleted;
   useDoc._attachments = {};
-
   if (pouchDoc._attachments) {
     Object.entries(pouchDoc._attachments).forEach(function (_ref) {
       var key = _ref[0],
-          value = _ref[1];
-
+        value = _ref[1];
       if (value.data) {
         useDoc._attachments[key] = {
           data: value.data,
@@ -149,23 +139,21 @@ export function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
       }
     });
   }
-
   useDoc._meta = useDoc[POUCHDB_META_FIELDNAME];
   delete useDoc[POUCHDB_META_FIELDNAME];
   return useDoc;
 }
 export function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
-  var pouchDoc = pouchSwapPrimaryToId(primaryKey, doc); // always flat clone becaues we mutate the _attachments property.
+  var pouchDoc = pouchSwapPrimaryToId(primaryKey, doc);
 
+  // always flat clone becaues we mutate the _attachments property.
   pouchDoc = flatClone(pouchDoc);
   pouchDoc._attachments = {};
-
   if (doc._attachments) {
     Object.entries(doc._attachments).forEach(function (_ref2) {
       var key = _ref2[0],
-          value = _ref2[1];
+        value = _ref2[1];
       var useValue = value;
-
       if (useValue.data) {
         pouchDoc._attachments[key] = {
           data: useValue.data,
@@ -181,33 +169,31 @@ export function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
       }
     });
   }
-
   pouchDoc[POUCHDB_META_FIELDNAME] = pouchDoc._meta;
   delete pouchDoc._meta;
   return pouchDoc;
 }
+
 /**
  * Swaps the primaryKey of the document
  * to the _id property.
  */
-
 export function pouchSwapPrimaryToId(primaryKey, docData) {
   // optimisation shortcut
   if (primaryKey === '_id') {
     return docData;
   }
-
   var idValue = docData[primaryKey];
   var ret = flatClone(docData);
   delete ret[primaryKey];
   ret._id = idValue;
   return ret;
 }
+
 /**
  * in:  '_local/foobar'
  * out: 'foobar'
  */
-
 export function pouchStripLocalFlagFromPrimary(str) {
   return str.substring(POUCHDB_LOCAL_PREFIX.length);
 }
@@ -224,11 +210,9 @@ export function pouchChangeRowToChangeEvent(primaryKey, pouchDoc) {
       }
     });
   }
-
   var id = pouchDoc._id;
   var doc = pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc);
   var revHeight = doc._rev ? getHeightOfRevision(doc._rev) : 1;
-
   if (pouchDoc._deleted) {
     return {
       operation: 'DELETE',
@@ -254,7 +238,6 @@ export function pouchChangeRowToChangeEvent(primaryKey, pouchDoc) {
 }
 export function pouchChangeRowToChangeStreamEvent(primaryKey, pouchRow) {
   var doc = pouchRow.doc;
-
   if (!doc) {
     throw newRxError('SNH', {
       args: {
@@ -262,9 +245,7 @@ export function pouchChangeRowToChangeStreamEvent(primaryKey, pouchRow) {
       }
     });
   }
-
   var revHeight = getHeightOfRevision(doc._rev);
-
   if (pouchRow.deleted) {
     var previousDoc = flatClone(pouchDocumentDataToRxDocumentData(primaryKey, pouchRow.doc));
     var ev = {
@@ -295,17 +276,16 @@ export function pouchChangeRowToChangeStreamEvent(primaryKey, pouchRow) {
     return _ev2;
   }
 }
+
 /**
  * Runs a primary swap with transform all custom primaryKey occurences
  * into '_id'
  * @recursive
  */
-
 export function primarySwapPouchDbQuerySelector(selector, primaryKey) {
   if (primaryKey === '_id') {
     return selector;
   }
-
   if (Array.isArray(selector)) {
     return selector.map(function (item) {
       return primarySwapPouchDbQuerySelector(item, primaryKey);
@@ -314,8 +294,7 @@ export function primarySwapPouchDbQuerySelector(selector, primaryKey) {
     var ret = {};
     Object.entries(selector).forEach(function (_ref3) {
       var k = _ref3[0],
-          v = _ref3[1];
-
+        v = _ref3[1];
       if (k === primaryKey) {
         ret._id = v;
       } else {
@@ -342,12 +321,12 @@ export function getPouchIndexDesignDocNameByIndex(index) {
   var indexName = 'idx-rxdb-index-' + index.join(',');
   return indexName;
 }
+
 /**
  * PouchDB has not way to read deleted local documents
  * out of the database.
  * So instead of deleting them, we set a custom deleted flag.
  */
-
 export var RXDB_POUCH_DELETED_FLAG = 'rxdb-pouch-deleted';
 export var POUCHDB_CHECKPOINT_SCHEMA = {
   type: 'object',

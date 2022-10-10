@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { blobBufferUtil, now } from '../../util';
+
 /**
  * ensure that the given folder exists
  */
@@ -18,7 +19,6 @@ export var writeToFile = function writeToFile(location, data) {
         });
       });
     };
-
     var _temp4 = function () {
       if (typeof data !== 'string') {
         return Promise.resolve(blobBufferUtil.toString(data)).then(function (_blobBufferUtil$toStr) {
@@ -26,7 +26,6 @@ export var writeToFile = function writeToFile(location, data) {
         });
       }
     }();
-
     return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
   } catch (e) {
     return Promise.reject(e);
@@ -39,10 +38,10 @@ export function ensureFolderExists(folderPath) {
     });
   }
 }
+
 /**
  * deletes and recreates the folder
  */
-
 export function clearFolder(folderPath) {
   deleteFolder(folderPath);
   ensureFolderExists(folderPath);
@@ -58,7 +57,6 @@ export function deleteFolder(folderPath) {
 export function prepareFolders(database, options) {
   ensureFolderExists(options.directory);
   var metaLoc = metaFileLocation(options);
-
   if (!fs.existsSync(metaLoc)) {
     var currentTime = now();
     var metaData = {
@@ -68,7 +66,6 @@ export function prepareFolders(database, options) {
     };
     fs.writeFileSync(metaLoc, JSON.stringify(metaData), 'utf-8');
   }
-
   Object.keys(database.collections).forEach(function (collectionName) {
     ensureFolderExists(path.join(options.directory, collectionName));
   });

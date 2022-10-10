@@ -4,7 +4,6 @@
  */
 import { PouchDB } from './pouch-db';
 import { adapterObject, now, PROMISE_RESOLVE_FALSE, randomCouchString } from '../../util';
-
 /**
  * The same pouchdb-location is used on each run
  * To ensure when this is run multiple times,
@@ -14,9 +13,7 @@ export var POUCHDB_LOCATION = 'rxdb-adapter-check';
 export function checkAdapter(adapter) {
   // id of the document which is stored and removed to ensure everything works
   var _id = POUCHDB_LOCATION + '-' + randomCouchString(12);
-
   var pouch;
-
   try {
     pouch = new PouchDB(POUCHDB_LOCATION, adapterObject(adapter), {
       auto_compaction: true,
@@ -25,7 +22,6 @@ export function checkAdapter(adapter) {
   } catch (err) {
     return PROMISE_RESOLVE_FALSE;
   }
-
   var recoveredDoc;
   return pouch.info() // ensure that we wait until db is useable
   // ensure write works
@@ -37,12 +33,14 @@ export function checkAdapter(adapter) {
         time: now()
       }
     });
-  }) // ensure read works
+  })
+  // ensure read works
   .then(function () {
     return pouch.get(_id);
   }).then(function (doc) {
     return recoveredDoc = doc;
-  }) // ensure remove works
+  })
+  // ensure remove works
   .then(function () {
     return pouch.remove(recoveredDoc);
   }).then(function () {
@@ -52,6 +50,7 @@ export function checkAdapter(adapter) {
   })["catch"](function () {
     return false;
   });
+
   /**
    * NOTICE:
    * Do not remove the pouchdb-instance after the test

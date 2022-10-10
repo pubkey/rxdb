@@ -1,7 +1,6 @@
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -9,15 +8,10 @@ exports.RxTypeError = exports.RxError = void 0;
 exports.isBulkWriteConflictError = isBulkWriteConflictError;
 exports.newRxError = newRxError;
 exports.newRxTypeError = newRxTypeError;
-
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
-
 var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
-
 var _overwritable = require("./overwritable");
-
 /**
  * here we use custom errors with the additional field 'parameters'
  */
@@ -31,29 +25,23 @@ function parametersToString(parameters) {
   ret += 'Given parameters: {\n';
   ret += Object.keys(parameters).map(function (k) {
     var paramStr = '[object Object]';
-
     try {
       paramStr = JSON.stringify(parameters[k], function (_k, v) {
         return v === undefined ? null : v;
       }, 2);
     } catch (e) {}
-
     return k + ':' + paramStr;
   }).join('\n');
   ret += '}';
   return ret;
 }
-
 function messageForError(message, code, parameters) {
   return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
 }
-
 var RxError = /*#__PURE__*/function (_Error) {
   (0, _inheritsLoose2["default"])(RxError, _Error);
-
   function RxError(code, message) {
     var _this;
-
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var mes = messageForError(message, code, parameters);
     _this = _Error.call(this, mes) || this;
@@ -61,16 +49,12 @@ var RxError = /*#__PURE__*/function (_Error) {
     _this.message = mes;
     _this.parameters = parameters;
     _this.rxdb = true; // tag them as internal
-
     return _this;
   }
-
   var _proto = RxError.prototype;
-
   _proto.toString = function toString() {
     return this.message;
   };
-
   (0, _createClass2["default"])(RxError, [{
     key: "name",
     get: function get() {
@@ -84,15 +68,11 @@ var RxError = /*#__PURE__*/function (_Error) {
   }]);
   return RxError;
 }( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(Error));
-
 exports.RxError = RxError;
-
 var RxTypeError = /*#__PURE__*/function (_TypeError) {
   (0, _inheritsLoose2["default"])(RxTypeError, _TypeError);
-
   function RxTypeError(code, message) {
     var _this2;
-
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var mes = messageForError(message, code, parameters);
     _this2 = _TypeError.call(this, mes) || this;
@@ -100,16 +80,12 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
     _this2.message = mes;
     _this2.parameters = parameters;
     _this2.rxdb = true; // tag them as internal
-
     return _this2;
   }
-
   var _proto2 = RxTypeError.prototype;
-
   _proto2.toString = function toString() {
     return this.message;
   };
-
   (0, _createClass2["default"])(RxTypeError, [{
     key: "name",
     get: function get() {
@@ -123,22 +99,18 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
   }]);
   return RxTypeError;
 }( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(TypeError));
-
 exports.RxTypeError = RxTypeError;
-
 function newRxError(code, parameters) {
   return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }
-
 function newRxTypeError(code, parameters) {
   return new RxTypeError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }
+
 /**
  * Returns the error if it is a 409 conflict,
  * return false if it is another error.
  */
-
-
 function isBulkWriteConflictError(err) {
   if (err.status === 409) {
     return err;

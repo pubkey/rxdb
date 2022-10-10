@@ -1,7 +1,6 @@
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -11,11 +10,8 @@ var _exportNames = {
 };
 exports.RxDBDevModePlugin = void 0;
 exports.deepFreezeWhenDevMode = deepFreezeWhenDevMode;
-
 var _errorMessages = require("./error-messages");
-
 var _checkSchema = require("./check-schema");
-
 Object.keys(_checkSchema).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -27,13 +23,9 @@ Object.keys(_checkSchema).forEach(function (key) {
     }
   });
 });
-
 var _checkOrm = require("./check-orm");
-
 var _checkMigrationStrategies = require("./check-migration-strategies");
-
 var _unallowedProperties = require("./unallowed-properties");
-
 Object.keys(_unallowedProperties).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -45,13 +37,9 @@ Object.keys(_unallowedProperties).forEach(function (key) {
     }
   });
 });
-
 var _checkQuery = require("./check-query");
-
 var _rxError = require("../../rx-error");
-
 var _deepFreeze = _interopRequireDefault(require("deep-freeze"));
-
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
@@ -63,10 +51,8 @@ function deepFreezeWhenDevMode(obj) {
   if (!obj || typeof obj === 'string' || typeof obj === 'number') {
     return obj;
   }
-
   return (0, _deepFreeze["default"])(obj);
 }
-
 var DEV_MODE_PLUGIN_NAME = 'dev-mode';
 var RxDBDevModePlugin = {
   name: DEV_MODE_PLUGIN_NAME,
@@ -81,7 +67,6 @@ var RxDBDevModePlugin = {
         console.error('RxDB: Error-Code not known: ' + code);
         throw new Error('Error-Code ' + code + ' not known, contact the maintainer');
       }
-
       return _errorMessages.ERROR_MESSAGES[code];
     }
   },
@@ -112,13 +97,11 @@ var RxDBDevModePlugin = {
       after: function after(args) {
         (0, _unallowedProperties.ensureCollectionNameValid)(args);
         (0, _checkOrm.checkOrmDocumentMethods)(args.schema, args.methods);
-
         if (args.name.charAt(0) === '_') {
           throw (0, _rxError.newRxError)('DB2', {
             name: args.name
           });
         }
-
         if (!args.schema) {
           throw (0, _rxError.newRxError)('DB4', {
             name: args.name,
@@ -142,8 +125,9 @@ var RxDBDevModePlugin = {
         // check ORM-methods
         (0, _checkOrm.checkOrmMethods)(args.creator.statics);
         (0, _checkOrm.checkOrmMethods)(args.creator.methods);
-        (0, _checkOrm.checkOrmMethods)(args.creator.attachments); // check migration strategies
+        (0, _checkOrm.checkOrmMethods)(args.creator.attachments);
 
+        // check migration strategies
         if (args.creator.schema && args.creator.migrationStrategies) {
           (0, _checkMigrationStrategies.checkMigrationStrategies)(args.creator.schema, args.creator.migrationStrategies);
         }

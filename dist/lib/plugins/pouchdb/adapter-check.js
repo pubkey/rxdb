@@ -5,11 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.POUCHDB_LOCATION = void 0;
 exports.checkAdapter = checkAdapter;
-
 var _pouchDb = require("./pouch-db");
-
 var _util = require("../../util");
-
 /**
  * this plugin adds the checkAdapter-function to rxdb
  * you can use it to check if the given adapter is working in the current environmet
@@ -22,13 +19,10 @@ var _util = require("../../util");
  */
 var POUCHDB_LOCATION = 'rxdb-adapter-check';
 exports.POUCHDB_LOCATION = POUCHDB_LOCATION;
-
 function checkAdapter(adapter) {
   // id of the document which is stored and removed to ensure everything works
   var _id = POUCHDB_LOCATION + '-' + (0, _util.randomCouchString)(12);
-
   var pouch;
-
   try {
     pouch = new _pouchDb.PouchDB(POUCHDB_LOCATION, (0, _util.adapterObject)(adapter), {
       auto_compaction: true,
@@ -37,7 +31,6 @@ function checkAdapter(adapter) {
   } catch (err) {
     return _util.PROMISE_RESOLVE_FALSE;
   }
-
   var recoveredDoc;
   return pouch.info() // ensure that we wait until db is useable
   // ensure write works
@@ -49,12 +42,14 @@ function checkAdapter(adapter) {
         time: (0, _util.now)()
       }
     });
-  }) // ensure read works
+  })
+  // ensure read works
   .then(function () {
     return pouch.get(_id);
   }).then(function (doc) {
     return recoveredDoc = doc;
-  }) // ensure remove works
+  })
+  // ensure remove works
   .then(function () {
     return pouch.remove(recoveredDoc);
   }).then(function () {
@@ -64,6 +59,7 @@ function checkAdapter(adapter) {
   })["catch"](function () {
     return false;
   });
+
   /**
    * NOTICE:
    * Do not remove the pouchdb-instance after the test

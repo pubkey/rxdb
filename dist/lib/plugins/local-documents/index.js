@@ -7,9 +7,7 @@ var _exportNames = {
   RxDBLocalDocumentsPlugin: true
 };
 exports.RxDBLocalDocumentsPlugin = void 0;
-
 var _localDocuments = require("./local-documents");
-
 Object.keys(_localDocuments).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -21,9 +19,7 @@ Object.keys(_localDocuments).forEach(function (key) {
     }
   });
 });
-
 var _localDocumentsHelper = require("./local-documents-helper");
-
 Object.keys(_localDocumentsHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -35,9 +31,7 @@ Object.keys(_localDocumentsHelper).forEach(function (key) {
     }
   });
 });
-
 var _rxLocalDocument = require("./rx-local-document");
-
 Object.keys(_rxLocalDocument).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -74,7 +68,6 @@ var RxDBLocalDocumentsPlugin = {
            * We do not have to await
            * the creation to speed up initial page load.
            */
-
           /* await */
           (0, _localDocumentsHelper.createLocalDocStateByParent)(args.database);
         }
@@ -87,7 +80,6 @@ var RxDBLocalDocumentsPlugin = {
            * We do not have to await
            * the creation to speed up initial page load.
            */
-
           /* await */
           (0, _localDocumentsHelper.createLocalDocStateByParent)(args.collection);
         }

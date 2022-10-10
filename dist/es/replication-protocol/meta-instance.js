@@ -37,11 +37,11 @@ export var RX_REPLICATION_META_INSTANCE_SCHEMA = fillWithDefaultSettings({
   },
   required: ['id', 'replicationIdentifier', 'isCheckpoint', 'itemId', 'data']
 });
+
 /**
  * Returns the document states of what the fork instance
  * assumes to be the latest state on the master instance.
  */
-
 export function getAssumedMasterState(state, docIds) {
   return state.input.metaInstance.findDocumentsById(docIds.map(function (docId) {
     var useId = getComposedPrimaryKeyOfDocumentData(RX_REPLICATION_META_INSTANCE_SCHEMA, {

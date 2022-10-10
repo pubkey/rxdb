@@ -4,21 +4,13 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.startReplicationUpstream = startReplicationUpstream;
-
 var _rxjs = require("rxjs");
-
 var _rxStorageHelper = require("../rx-storage-helper");
-
 var _util = require("../util");
-
 var _checkpoint = require("./checkpoint");
-
 var _conflicts = require("./conflicts");
-
 var _helper = require("./helper");
-
 var _metaInstance = require("./meta-instance");
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -26,56 +18,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     var observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -87,38 +68,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -127,64 +98,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -194,7 +148,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -207,7 +160,6 @@ function _for(test, update, body) {
     }
   }
 }
-
 /**
  * Writes all document changes from the fork to the master.
  * The upstream runs on two modes:
@@ -220,28 +172,23 @@ function startReplicationUpstream(state) {
   var upstreamInitialSync = function upstreamInitialSync() {
     try {
       state.stats.up.upstreamInitialSync = state.stats.up.upstreamInitialSync + 1;
-
       if (state.events.canceled.getValue()) {
         return Promise.resolve();
       }
-
       state.checkpointQueue = state.checkpointQueue.then(function () {
         return (0, _checkpoint.getLastCheckpointDoc)(state, 'up');
       });
       return Promise.resolve(state.checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
-
         function _temp13() {
           /**
            * If we had conflicts during the inital sync,
            * it means that we likely have new writes to the fork
            * and so we have to run the initial sync again to upastream these new writes.
-           */
-          return Promise.resolve(Promise.all(promises)).then(function (resolvedPromises) {
+           */return Promise.resolve(Promise.all(promises)).then(function (resolvedPromises) {
             var hadConflicts = resolvedPromises.find(function (r) {
               return !!r;
             });
-
             var _temp11 = function () {
               if (hadConflicts) {
                 return Promise.resolve(upstreamInitialSync()).then(function () {});
@@ -249,13 +196,10 @@ function startReplicationUpstream(state) {
                 state.firstSyncDone.up.next(true);
               }
             }();
-
             if (_temp11 && _temp11.then) return _temp11.then(function () {});
           });
         }
-
         var promises = [];
-
         var _temp12 = _for(function () {
           return !_interrupt && !state.events.canceled.getValue();
         }, void 0, function () {
@@ -265,30 +209,26 @@ function startReplicationUpstream(state) {
               _interrupt = true;
               return;
             }
-
             lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, upResult.checkpoint]);
             promises.push(persistToMaster(upResult.documents, (0, _util.ensureNotFalsy)(lastCheckpoint)));
           });
         });
-
         return _temp12 && _temp12.then ? _temp12.then(_temp13) : _temp13(_temp12);
       });
     } catch (e) {
       return Promise.reject(e);
     }
-  };
-  /**
-   * Takes all open tasks an processes them at once.
-   */
-
-
+  }; /**
+      * Takes all open tasks an processes them at once.
+      */
   var replicationHandler = state.input.replicationHandler;
   state.streamQueue.up = state.streamQueue.up.then(function () {
     return upstreamInitialSync().then(function () {
       processTasks();
     });
-  }); // used to detect which tasks etc can in it at which order.
+  });
 
+  // used to detect which tasks etc can in it at which order.
   var timer = 0;
   var initialSyncStartTime = -1;
   var openTasks = [];
@@ -300,7 +240,6 @@ function startReplicationUpstream(state) {
       task: eventBulk,
       time: timer++
     });
-
     if (state.input.waitBeforePersist) {
       return state.input.waitBeforePersist().then(function () {
         return processTasks();
@@ -314,13 +253,11 @@ function startReplicationUpstream(state) {
   }))).then(function () {
     return sub.unsubscribe();
   });
-
   function processTasks() {
     if (state.events.canceled.getValue() || openTasks.length === 0) {
       state.events.active.up.next(false);
       return;
     }
-
     state.stats.up.processTasks = state.stats.up.processTasks + 1;
     state.events.active.up.next(true);
     state.streamQueue.up = state.streamQueue.up.then(function () {
@@ -329,7 +266,6 @@ function startReplicationUpstream(state) {
        */
       var docs = [];
       var checkpoint = {};
-
       while (openTasks.length > 0) {
         var taskWithTime = (0, _util.ensureNotFalsy)(openTasks.shift());
         /**
@@ -337,17 +273,14 @@ function startReplicationUpstream(state) {
          * has run, we can ignore the task because the inital sync already processed
          * these documents.
          */
-
         if (taskWithTime.time < initialSyncStartTime) {
           continue;
         }
-
         docs = docs.concat(taskWithTime.task.events.map(function (r) {
           return r.documentData;
         }));
         checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);
       }
-
       var promise = docs.length === 0 ? _util.PROMISE_RESOLVE_FALSE : persistToMaster(docs, checkpoint);
       return promise.then(function () {
         if (openTasks.length === 0) {
@@ -358,22 +291,21 @@ function startReplicationUpstream(state) {
       });
     });
   }
-
   var persistenceQueue = _util.PROMISE_RESOLVE_FALSE;
   var nonPersistedFromMaster = {
     docs: {}
   };
+
   /**
    * Returns true if had conflicts,
    * false if not.
    */
-
   function persistToMaster(docs, checkpoint) {
     state.stats.up.persistToMaster = state.stats.up.persistToMaster + 1;
+
     /**
      * Add the new docs to the non-persistend list
      */
-
     docs.forEach(function (docData) {
       var docId = docData[state.primaryPath];
       nonPersistedFromMaster.docs[docId] = docData;
@@ -384,16 +316,13 @@ function startReplicationUpstream(state) {
         if (state.events.canceled.getValue()) {
           return Promise.resolve(false);
         }
-
         var upDocsById = nonPersistedFromMaster.docs;
         nonPersistedFromMaster.docs = {};
         var useCheckpoint = nonPersistedFromMaster.checkpoint;
         var docIds = Object.keys(upDocsById);
-
         if (docIds.length === 0) {
           return Promise.resolve(false);
         }
-
         return Promise.resolve((0, _metaInstance.getAssumedMasterState)(state, docIds)).then(function (assumedMasterState) {
           var writeRowsToMaster = {};
           var writeRowsToMasterIds = [];
@@ -406,7 +335,6 @@ function startReplicationUpstream(state) {
                   _exit2 = true;
                   return;
                 }
-
                 writeRowsToMasterIds.push(docId);
                 writeRowsToMaster[docId] = {
                   assumedMasterState: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
@@ -414,21 +342,20 @@ function startReplicationUpstream(state) {
                 };
                 writeRowsToMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, docData, assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined);
               };
-
               var _exit2 = false;
               var fullDocData = upDocsById[docId];
               forkStateById[docId] = fullDocData;
               var docData = (0, _helper.writeDocToDocState)(fullDocData);
               var assumedMasterDoc = assumedMasterState[docId];
+
               /**
                * If the master state is equal to the
                * fork state, we can assume that the document state is already
                * replicated.
                */
-
-              var _temp10 = assumedMasterDoc && // if the isResolvedConflict is correct, we do not have to compare the documents.
+              var _temp10 = assumedMasterDoc &&
+              // if the isResolvedConflict is correct, we do not have to compare the documents.
               assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev;
-
               return Promise.resolve(_temp10 ? Promise.resolve(state.input.conflictHandler({
                 realMasterState: assumedMasterDoc.docData,
                 newDocumentState: docData
@@ -440,17 +367,16 @@ function startReplicationUpstream(state) {
             if (writeRowsToMasterIds.length === 0) {
               return false;
             }
-
             var writeRowsArray = Object.values(writeRowsToMaster);
             var conflictIds = new Set();
             var conflictsById = {};
+
             /**
              * To always respect the push.batchSize,
              * we have to split the write rows into batches
              * to ensure that replicationHandler.masterWrite() is never
              * called with more documents than what the batchSize limits.
              */
-
             var writeBatches = (0, _util.batchArray)(writeRowsArray, state.input.pushBatchSize);
             return Promise.resolve(Promise.all(writeBatches.map(function (writeBatch) {
               try {
@@ -477,7 +403,6 @@ function startReplicationUpstream(state) {
                   });
                   return hadConflictWrites;
                 }
-
                 /**
                  * Resolve conflicts by writing a new document
                  * state to the fork instance and the 'real' master state
@@ -485,7 +410,6 @@ function startReplicationUpstream(state) {
                  * Non-409 errors will be detected by resolveConflictError()
                  */
                 var hadConflictWrites = false;
-
                 var _temp3 = function () {
                   if (conflictIds.size > 0) {
                     state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
@@ -493,7 +417,7 @@ function startReplicationUpstream(state) {
                     var conflictWriteMeta = {};
                     return Promise.resolve(Promise.all(Object.entries(conflictsById).map(function (_ref) {
                       var docId = _ref[0],
-                          realMasterState = _ref[1];
+                        realMasterState = _ref[1];
                       var writeToMasterRow = writeRowsToMaster[docId];
                       var input = {
                         newDocumentState: writeToMasterRow.newDocumentState,
@@ -530,26 +454,21 @@ function startReplicationUpstream(state) {
                             Object.keys(forkWriteResult.success).forEach(function (docId) {
                               useMetaWrites.push(conflictWriteMeta[docId]);
                             });
-
                             var _temp = function () {
                               if (useMetaWrites.length > 0) {
                                 return Promise.resolve(state.input.metaInstance.bulkWrite(useMetaWrites, 'replication-up-write-conflict-meta')).then(function () {});
                               }
                             }();
-
                             if (_temp && _temp.then) return _temp.then(function () {});
                           }); // TODO what to do with conflicts while writing to the metaInstance?
                         }
                       }();
-
                       if (_temp2 && _temp2.then) return _temp2.then(function () {});
                     });
                   }
                 }();
-
                 return _temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3);
               }
-
               var useWriteRowsToMeta = [];
               writeRowsToMasterIds.forEach(function (docId) {
                 if (!conflictIds.has(docId)) {
@@ -557,13 +476,11 @@ function startReplicationUpstream(state) {
                   useWriteRowsToMeta.push(writeRowsToMeta[docId]);
                 }
               });
-
               var _temp5 = function () {
                 if (useWriteRowsToMeta.length > 0) {
                   return Promise.resolve(state.input.metaInstance.bulkWrite(useWriteRowsToMeta, 'replication-up-write-meta')).then(function () {}); // TODO what happens when we have conflicts here?
                 }
               }();
-
               return _temp5 && _temp5.then ? _temp5.then(_temp6) : _temp6(_temp5);
             });
           });

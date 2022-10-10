@@ -2,6 +2,7 @@
  * this is the main entry-point for custom builds
  * it can be used as standalone but is also used in the batteries-included main-export
  */
+
 import './types/modules/graphql-client.d';
 import './types/modules/mocha.parallel.d';
 import './types/modules/modifiyjs.d';
@@ -29,5 +30,7 @@ export * from './plugin-helpers';
 export { _clearHook // used in tests
 } from './hooks';
 export * from './query-cache';
-export * from './util'; // TODO how to do 'export type * ..' ?
+export * from './util';
+
+// TODO how to do 'export type * ..' ?
 //# sourceMappingURL=index.js.map

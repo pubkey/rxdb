@@ -6,25 +6,22 @@ import { LokiSaveQueue } from './loki-save-queue';
 import { newRxError } from '../../rx-error';
 import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
-
 /**
  * If the local state must be used, that one is returned.
  * Returns false if a remote instance must be used.
  */
+
 function _catch(body, recover) {
   try {
     var result = body();
   } catch (e) {
     return recover(e);
   }
-
   if (result && result.then) {
     return result.then(void 0, recover);
   }
-
   return result;
 }
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -32,56 +29,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     var observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -93,38 +79,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -133,64 +109,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -200,7 +159,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -213,7 +171,6 @@ function _for(test, update, body) {
     }
   }
 }
-
 export var mustUseLocalState = function mustUseLocalState(instance) {
   try {
     if (instance.closed) {
@@ -230,11 +187,9 @@ export var mustUseLocalState = function mustUseLocalState(instance) {
         }
       });
     }
-
     if (instance.internals.localState) {
       return Promise.resolve(instance.internals.localState);
     }
-
     var leaderElector = ensureNotFalsy(instance.internals.leaderElector);
     return Promise.resolve(waitUntilHasLeader(leaderElector)).then(function () {
       /**
@@ -244,7 +199,6 @@ export var mustUseLocalState = function mustUseLocalState(instance) {
       if (instance.internals.localState) {
         return instance.internals.localState;
       }
-
       if (leaderElector.isLeader && !instance.internals.localState) {
         // own is leader, use local instance
         instance.internals.localState = createLokiLocalState({
@@ -274,13 +228,11 @@ export var waitUntilHasLeader = function waitUntilHasLeader(leaderElector) {
         return Promise.resolve(promiseWait(0)).then(function () {});
       });
     });
-
     return Promise.resolve(_temp13 && _temp13.then ? _temp13.then(function () {}) : void 0);
   } catch (e) {
     return Promise.reject(e);
   }
 };
-
 /**
  * Handles a request that came from a remote instance via requestRemoteInstance()
  * Runs the requested operation over the local db instance and sends back the result.
@@ -301,17 +253,12 @@ export var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
           };
           ensureNotFalsy(instance.internals.leaderElector).broadcastChannel.postMessage(response);
         };
-
         var operation = msg.operation;
         var params = msg.params;
-
         var _result;
-
         var _isError = false;
-
         var _temp11 = _catch(function () {
           var _ref2;
-
           return Promise.resolve((_ref2 = instance)[operation].apply(_ref2, params)).then(function (_operation) {
             _result = _operation;
           });
@@ -320,17 +267,14 @@ export var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
           _isError = true;
           _result = err;
         });
-
         return _temp11 && _temp11.then ? _temp11.then(_temp10) : _temp10(_temp11);
       }
     }();
-
     return Promise.resolve(_temp9 && _temp9.then ? _temp9.then(function () {}) : void 0);
   } catch (e) {
     return Promise.reject(e);
   }
 };
-
 /**
  * For multi-instance usage, we send requests to the RxStorage
  * to the current leading instance over the BroadcastChannel.
@@ -351,7 +295,6 @@ export var requestRemoteInstance = function requestRemoteInstance(instance, oper
             });
           }
         };
-
         broadcastChannel.addEventListener('internal', whenDeathListener);
       });
       var requestId = randomCouchString(12);
@@ -372,10 +315,10 @@ export var requestRemoteInstance = function requestRemoteInstance(instance, oper
             }
           }
         };
-
         broadcastChannel.addEventListener('message', responseListener);
-      }); // send out the request to the other instance
+      });
 
+      // send out the request to the other instance
       broadcastChannel.postMessage({
         response: false,
         type: messageType,
@@ -389,10 +332,8 @@ export var requestRemoteInstance = function requestRemoteInstance(instance, oper
         // clean up listeners
         broadcastChannel.removeEventListener('message', responseListener);
         broadcastChannel.removeEventListener('internal', whenDeathListener);
-
         if (firstResolved.retry) {
           var _ref;
-
           /**
            * The leader died while a remote request was running
            * we re-run the whole operation.
@@ -421,13 +362,11 @@ export var closeLokiCollections = function closeLokiCollections(databaseName, co
         // already closed
         return;
       }
-
       return Promise.resolve(databaseState.saveQueue.run()).then(function () {
         collections.forEach(function (collection) {
           var collectionName = collection.name;
           delete databaseState.collections[collectionName];
         });
-
         var _temp5 = function () {
           if (Object.keys(databaseState.collections).length === 0) {
             // all collections closed -> also close database
@@ -442,7 +381,6 @@ export var closeLokiCollections = function closeLokiCollections(databaseName, co
             })).then(function () {});
           }
         }();
-
         if (_temp5 && _temp5.then) return _temp5.then(function () {});
       });
     });
@@ -450,47 +388,45 @@ export var closeLokiCollections = function closeLokiCollections(databaseName, co
     return Promise.reject(e);
   }
 };
+
 /**
  * This function is at lokijs-helper
  * because we need it in multiple places.
  */
-
 export var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
 export var LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
 export var RX_STORAGE_NAME_LOKIJS = 'lokijs';
+
 /**
  * Loki attaches a $loki property to all data
  * which must be removed before returning the data back to RxDB.
  */
-
 export function stripLokiKey(docData) {
   if (!docData.$loki) {
     return docData;
   }
-
   var cloned = flatClone(docData);
+
   /**
    * In RxDB version 12.0.0,
    * we introduced the _meta field that already contains the last write time.
    * To be backwards compatible, we have to move the $lastWriteAt to the _meta field.
    * TODO remove this in the next major version.
    */
-
   if (cloned.$lastWriteAt) {
     cloned._meta = {
       lwt: cloned.$lastWriteAt
     };
     delete cloned.$lastWriteAt;
   }
-
   delete cloned.$loki;
   return cloned;
 }
+
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
-
 export var OPEN_LOKIJS_STORAGE_INSTANCES = new Set();
 export var LOKIJS_COLLECTION_DEFAULT_OPTIONS = {
   disableChangesApi: true,
@@ -506,14 +442,12 @@ export var LOKIJS_COLLECTION_DEFAULT_OPTIONS = {
 var LOKI_DATABASE_STATE_BY_NAME = new Map();
 export function getLokiDatabase(databaseName, databaseSettings) {
   var databaseState = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
-
   if (!databaseState) {
     /**
      * We assume that as soon as an adapter is passed,
      * the database has to be persistend.
      */
     var hasPersistence = !!databaseSettings.adapter;
-
     databaseState = function () {
       try {
         var _temp3 = function _temp3() {
@@ -521,13 +455,11 @@ export function getLokiDatabase(databaseName, databaseSettings) {
            * Autosave database on process end
            */
           var unloads = [];
-
           if (hasPersistence) {
             unloads.push(unloadAdd(function () {
               return lokiSaveQueue.run();
             }));
           }
-
           var state = {
             database: database,
             databaseSettings: useSettings,
@@ -537,19 +469,18 @@ export function getLokiDatabase(databaseName, databaseSettings) {
           };
           return state;
         };
-
         var persistenceMethod = hasPersistence ? 'adapter' : 'memory';
-
         if (databaseSettings.persistenceMethod) {
           persistenceMethod = databaseSettings.persistenceMethod;
         }
-
-        var useSettings = Object.assign( // defaults
+        var useSettings = Object.assign(
+        // defaults
         {
           autoload: hasPersistence,
           persistenceMethod: persistenceMethod,
           verbose: true
-        }, databaseSettings, // overwrites
+        }, databaseSettings,
+        // overwrites
         {
           /**
            * RxDB uses its custom load and save handling
@@ -561,13 +492,13 @@ export function getLokiDatabase(databaseName, databaseSettings) {
         });
         var database = new lokijs(databaseName + '.db', flatClone(useSettings));
         var lokiSaveQueue = new LokiSaveQueue(database, useSettings);
+
         /**
          * Wait until all data is loaded from persistence adapter.
          * Wrap the loading into the saveQueue to ensure that when many
          * collections are created at the same time, the load-calls do not interfere
          * with each other and cause error logs.
          */
-
         var _temp4 = function () {
           if (hasPersistence) {
             var loadDatabasePromise = new Promise(function (res, rej) {
@@ -578,7 +509,6 @@ export function getLokiDatabase(databaseName, databaseSettings) {
                   if (useSettings.autoloadCallback) {
                     useSettings.autoloadCallback(err);
                   }
-
                   err ? rej(err) : res();
                 });
               } catch (err) {
@@ -591,16 +521,13 @@ export function getLokiDatabase(databaseName, databaseSettings) {
             return Promise.resolve(loadDatabasePromise).then(function () {});
           }
         }();
-
         return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
       } catch (e) {
         return Promise.reject(e);
       }
     }();
-
     LOKI_DATABASE_STATE_BY_NAME.set(databaseName, databaseState);
   }
-
   return databaseState;
 }
 export function getLokiSortComparator(_schema, query) {
@@ -609,19 +536,15 @@ export function getLokiSortComparator(_schema, query) {
       query: query
     });
   }
-
   var sortOptions = query.sort;
-
   var fun = function fun(a, b) {
     var compareResult = 0; // 1 | -1
-
     sortOptions.find(function (sortPart) {
       var fieldName = Object.keys(sortPart)[0];
       var direction = Object.values(sortPart)[0];
       var directionMultiplier = direction === 'asc' ? 1 : -1;
       var valueA = a[fieldName];
       var valueB = b[fieldName];
-
       if (valueA === valueB) {
         return false;
       } else {
@@ -634,12 +557,12 @@ export function getLokiSortComparator(_schema, query) {
         }
       }
     });
+
     /**
      * Two different objects should never have the same sort position.
      * We ensure this by having the unique primaryKey in the sort params
      * which is added by RxDB if not existing yet.
      */
-
     if (!compareResult) {
       throw newRxError('SNH', {
         args: {
@@ -649,10 +572,8 @@ export function getLokiSortComparator(_schema, query) {
         }
       });
     }
-
     return compareResult;
   };
-
   return fun;
 }
 export function getLokiLeaderElector(databaseInstanceToken, broadcastChannelRefObject, databaseName) {

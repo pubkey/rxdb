@@ -6,13 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.ensureCollectionNameValid = ensureCollectionNameValid;
 exports.ensureDatabaseNameIsValid = ensureDatabaseNameIsValid;
 exports.validateDatabaseName = validateDatabaseName;
-
 var _rxError = require("../../rx-error");
-
 var _entityProperties = require("./entity-properties");
-
 var _util = require("../../util");
-
 /**
  * if the name of a collection
  * clashes with a property of RxDatabase,
@@ -24,18 +20,16 @@ function ensureCollectionNameValid(args) {
       name: args.name
     });
   }
-
   validateDatabaseName(args.name);
 }
-
 function ensureDatabaseNameIsValid(args) {
   validateDatabaseName(args.name);
+
   /**
    * The server-plugin has problems when a path with and ending slash is given
    * So we do not allow this.
    * @link https://github.com/pubkey/rxdb/issues/2251
    */
-
   if ((0, _util.isFolderPath)(args.name)) {
     if (args.name.endsWith('/') || args.name.endsWith('\\')) {
       throw (0, _rxError.newRxError)('DB11', {
@@ -44,9 +38,9 @@ function ensureDatabaseNameIsValid(args) {
     }
   }
 }
-
 var validCouchDBStringRegexStr = '^[a-z][_$a-z0-9\\-]*$';
 var validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
+
 /**
  * Validates that a given string is ok to be used with couchdb-collection-names.
  * We only allow these strings as database- or collection names because it ensures
@@ -56,26 +50,23 @@ var validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
  * @link https://neighbourhood.ie/blog/2020/10/13/everything-you-need-to-know-about-couchdb-database-names/
  * @throws  {RxError}
  */
-
 function validateDatabaseName(name) {
   if (typeof name !== 'string' || name.length === 0) {
     throw (0, _rxError.newRxTypeError)('UT1', {
       name: name
     });
-  } // do not check, if foldername is given
+  }
 
-
+  // do not check, if foldername is given
   if ((0, _util.isFolderPath)(name)) {
     return true;
   }
-
   if (!name.match(validCouchDBStringRegex)) {
     throw (0, _rxError.newRxError)('UT2', {
       regex: validCouchDBStringRegexStr,
       givenName: name
     });
   }
-
   return true;
 }
 //# sourceMappingURL=unallowed-properties.js.map

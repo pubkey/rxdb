@@ -13,9 +13,11 @@
  * Do not use this if the storage anyway broadcasts the events like when using MongoDB
  * or in the future W3C might introduce a way to listen to IndexedDB changes.
  */
+
 import { Subject } from 'rxjs';
 import { mergeWith } from 'rxjs/operators';
 import { BroadcastChannel } from 'broadcast-channel';
+
 /**
  * The broadcast-channel is reused by the databaseInstanceToken.
  * This is required so that it is easy to simulate multi-tab usage
@@ -28,11 +30,9 @@ import { BroadcastChannel } from 'broadcast-channel';
  * we should ensure that all channels are closed and cleaned up.
  * Otherwise we have forgot something.
  */
-
 export var BROADCAST_CHANNEL_BY_TOKEN = new Map();
 export function getBroadcastChannelReference(databaseInstanceToken, databaseName, refObject) {
   var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
-
   if (!state) {
     state = {
       /**
@@ -45,19 +45,15 @@ export function getBroadcastChannelReference(databaseInstanceToken, databaseName
     };
     BROADCAST_CHANNEL_BY_TOKEN.set(databaseInstanceToken, state);
   }
-
   state.refs.add(refObject);
   return state.bc;
 }
 export function removeBroadcastChannelReference(databaseInstanceToken, refObject) {
   var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
-
   if (!state) {
     return;
   }
-
   state.refs["delete"](refObject);
-
   if (state.refs.size === 0) {
     BROADCAST_CHANNEL_BY_TOKEN["delete"](databaseInstanceToken);
     return state.bc.close();
@@ -72,16 +68,13 @@ providedBroadcastChannel) {
   if (!instanceCreationParams.multiInstance) {
     return;
   }
-
   var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
   var changesFromOtherInstances$ = new Subject();
-
   var eventListener = function eventListener(msg) {
     if (msg.storageName === storageName && msg.databaseName === instanceCreationParams.databaseName && msg.collectionName === instanceCreationParams.collectionName && msg.version === instanceCreationParams.schema.version) {
       changesFromOtherInstances$.next(msg.eventBulk);
     }
   };
-
   broadcastChannel.addEventListener('message', eventListener);
   var oldChangestream$ = instance.changeStream();
   var closed = false;
@@ -89,7 +82,6 @@ providedBroadcastChannel) {
     if (closed) {
       return;
     }
-
     broadcastChannel.postMessage({
       storageName: storageName,
       databaseName: instanceCreationParams.databaseName,
@@ -98,25 +90,20 @@ providedBroadcastChannel) {
       eventBulk: eventBulk
     });
   });
-
   instance.changeStream = function () {
     return changesFromOtherInstances$.asObservable().pipe(mergeWith(oldChangestream$));
   };
-
   var oldClose = instance.close.bind(instance);
-
   instance.close = function () {
     try {
       closed = true;
       sub.unsubscribe();
       broadcastChannel.removeEventListener('message', eventListener);
-
       var _temp2 = function () {
         if (!providedBroadcastChannel) {
           return Promise.resolve(removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance)).then(function () {});
         }
       }();
-
       return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
         return oldClose();
       }) : oldClose());
@@ -124,21 +111,17 @@ providedBroadcastChannel) {
       return Promise.reject(e);
     }
   };
-
   var oldRemove = instance.remove.bind(instance);
-
   instance.remove = function () {
     try {
       closed = true;
       sub.unsubscribe();
       broadcastChannel.removeEventListener('message', eventListener);
-
       var _temp4 = function () {
         if (!providedBroadcastChannel) {
           return Promise.resolve(removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance)).then(function () {});
         }
       }();
-
       return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {
         return oldRemove();
       }) : oldRemove());

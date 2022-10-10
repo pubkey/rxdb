@@ -1,16 +1,12 @@
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.resolveConflictError = exports.defaultConflictHandler = void 0;
-
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
-
 var _util = require("../util");
-
 /**
  * Resolves a conflict error or determines that the given document states are equal.
  * Returns the resolved document that must be written to the fork.
@@ -18,8 +14,7 @@ var _util = require("../util");
  * If document is not in conflict, returns undefined.
  * If error is non-409, it throws an error.
  * Conflicts are only solved in the upstream, never in the downstream.
- */
-var resolveConflictError = function resolveConflictError(state, input, forkState) {
+ */var resolveConflictError = function resolveConflictError(state, input, forkState) {
   try {
     var conflictHandler = state.input.conflictHandler;
     return Promise.resolve(conflictHandler(input, 'replication-resolve-conflict')).then(function (conflictHandlerOutput) {
@@ -55,9 +50,7 @@ var resolveConflictError = function resolveConflictError(state, input, forkState
     return Promise.reject(e);
   }
 };
-
 exports.resolveConflictError = resolveConflictError;
-
 var defaultConflictHandler = function defaultConflictHandler(i, _context) {
   /**
    * If the documents are deep equal,
@@ -71,17 +64,15 @@ var defaultConflictHandler = function defaultConflictHandler(i, _context) {
       isEqual: true
     });
   }
+
   /**
    * The default conflict handler will always
    * drop the fork state and use the master state instead.
    */
-
-
   return Promise.resolve({
     isEqual: false,
     documentData: i.realMasterState
   });
 };
-
 exports.defaultConflictHandler = defaultConflictHandler;
 //# sourceMappingURL=conflicts.js.map

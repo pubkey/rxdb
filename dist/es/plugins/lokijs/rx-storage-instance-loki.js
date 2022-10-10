@@ -10,42 +10,34 @@ export var createLokiStorageInstance = function createLokiStorageInstance(storag
     var _temp5 = function _temp5() {
       var instance = new RxStorageInstanceLoki(params.databaseInstanceToken, storage, params.databaseName, params.collectionName, params.schema, _internals, params.options, databaseSettings);
       addRxStorageMultiInstanceSupport(RX_STORAGE_NAME_LOKIJS, params, instance, _internals.leaderElector ? _internals.leaderElector.broadcastChannel : undefined);
-
       if (params.multiInstance) {
         /**
          * Clean up the broadcast-channel reference on close()
          */
         var closeBefore = instance.close.bind(instance);
-
         instance.close = function () {
           removeBroadcastChannelReference(params.databaseInstanceToken, broadcastChannelRefObject);
           return closeBefore();
         };
-
         var removeBefore = instance.remove.bind(instance);
-
         instance.remove = function () {
           removeBroadcastChannelReference(params.databaseInstanceToken, broadcastChannelRefObject);
           return removeBefore();
         };
+
         /**
          * Directly create the localState when/if the db becomes leader.
          */
-
-
         ensureNotFalsy(_internals.leaderElector).awaitLeadership().then(function () {
           if (!instance.closed) {
             mustUseLocalState(instance);
           }
         });
       }
-
       return instance;
     };
-
     var _internals = {};
     var broadcastChannelRefObject = {};
-
     var _temp6 = function () {
       if (params.multiInstance) {
         var leaderElector = getLokiLeaderElector(params.databaseInstanceToken, broadcastChannelRefObject, params.databaseName);
@@ -56,7 +48,6 @@ export var createLokiStorageInstance = function createLokiStorageInstance(storag
         return Promise.resolve(_internals.localState).then(function () {});
       }
     }();
-
     return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
   } catch (e) {
     return Promise.reject(e);
@@ -67,14 +58,12 @@ export var createLokiLocalState = function createLokiLocalState(params, database
     if (!params.options) {
       params.options = {};
     }
-
     return Promise.resolve(getLokiDatabase(params.databaseName, databaseSettings)).then(function (databaseState) {
       /**
        * Construct loki indexes from RxJsonSchema indexes.
        * TODO what about compound indexes? Are they possible in lokijs?
        */
       var indices = [];
-
       if (params.schema.indexes) {
         params.schema.indexes.forEach(function (idx) {
           if (!isMaybeReadonlyArray(idx)) {
@@ -86,8 +75,6 @@ export var createLokiLocalState = function createLokiLocalState(params, database
        * LokiJS has no concept of custom primary key, they use a number-id that is generated.
        * To be able to query fast by primary key, we always add an index to the primary.
        */
-
-
       var primaryKey = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
       indices.push(primaryKey);
       var lokiCollectionName = params.collectionName + '-' + params.schema.version;
@@ -111,7 +98,6 @@ var instanceId = now();
 export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   function RxStorageInstanceLoki(databaseInstanceToken, storage, databaseName, collectionName, schema, internals, options, databaseSettings) {
     var _this = this;
-
     this.changes$ = new Subject();
     this.instanceId = instanceId++;
     this.closed = false;
@@ -125,7 +111,6 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     this.databaseSettings = databaseSettings;
     this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     OPEN_LOKIJS_STORAGE_INSTANCES.add(this);
-
     if (this.internals.leaderElector) {
       /**
        * To run handleRemoteRequest(),
@@ -159,13 +144,10 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
       });
     }
   }
-
   var _proto = RxStorageInstanceLoki.prototype;
-
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
       var _this3 = this;
-
       if (documentWrites.length === 0) {
         throw newRxError('P2', {
           args: {
@@ -173,12 +155,10 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
           }
         });
       }
-
       return Promise.resolve(mustUseLocalState(_this3)).then(function (localState) {
         if (!localState) {
           return requestRemoteInstance(_this3, 'bulkWrite', [documentWrites]);
         }
-
         var ret = {
           success: {},
           error: {}
@@ -188,7 +168,6 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         documentWrites.forEach(function (writeRow) {
           var id = writeRow.document[_this3.primaryPath];
           var documentInDb = localState.collection.by(_this3.primaryPath, id);
-
           if (documentInDb) {
             docsInDbWithLokiKey.set(id, documentInDb);
             docsInDb.set(id, stripLokiKey(documentInDb));
@@ -211,37 +190,30 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
           ret.success[docId] = writeRow.document;
         });
         localState.databaseState.saveQueue.addWrite();
-
         if (categorized.eventBulk.events.length > 0) {
           var lastState = getNewestOfDocumentStates(_this3.primaryPath, Object.values(ret.success));
           categorized.eventBulk.checkpoint = {
             id: lastState[_this3.primaryPath],
             lwt: lastState._meta.lwt
           };
-
           _this3.changes$.next(categorized.eventBulk);
         }
-
         return ret;
       });
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
     try {
       var _this5 = this;
-
       return Promise.resolve(mustUseLocalState(_this5)).then(function (localState) {
         if (!localState) {
           return requestRemoteInstance(_this5, 'findDocumentsById', [ids, deleted]);
         }
-
         var ret = {};
         ids.forEach(function (id) {
           var documentInDb = localState.collection.by(_this5.primaryPath, id);
-
           if (documentInDb && (!documentInDb._deleted || deleted)) {
             ret[id] = stripLokiKey(documentInDb);
           }
@@ -252,35 +224,28 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.query = function query(preparedQuery) {
     try {
       var _this7 = this;
-
       return Promise.resolve(mustUseLocalState(_this7)).then(function (localState) {
         if (!localState) {
           return requestRemoteInstance(_this7, 'query', [preparedQuery]);
         }
-
         var query = localState.collection.chain().find(preparedQuery.selector);
-
         if (preparedQuery.sort) {
           query = query.sort(getLokiSortComparator(_this7.schema, preparedQuery));
         }
+
         /**
          * Offset must be used before limit in LokiJS
          * @link https://github.com/techfort/LokiJS/issues/570
          */
-
-
         if (preparedQuery.skip) {
           query = query.offset(preparedQuery.skip);
         }
-
         if (preparedQuery.limit) {
           query = query.limit(preparedQuery.limit);
         }
-
         var foundDocuments = query.data().map(function (lokiDoc) {
           return stripLokiKey(lokiDoc);
         });
@@ -292,20 +257,16 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
     throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
   };
-
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
       var _this9 = this;
-
       return Promise.resolve(mustUseLocalState(_this9)).then(function (localState) {
         if (!localState) {
           return requestRemoteInstance(_this9, 'getChangedDocumentsSince', [limit, checkpoint]);
         }
-
         var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         var query = localState.collection.chain().find({
           '_meta.lwt': {
@@ -314,11 +275,9 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         }).sort(getSortDocumentsByLastWriteTimeComparator(_this9.primaryPath));
         var changedDocs = query.data();
         var first = changedDocs[0];
-
         if (checkpoint && first && first[_this9.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
           changedDocs.shift();
         }
-
         changedDocs = changedDocs.slice(0, limit);
         var lastDoc = lastOfArray(changedDocs);
         return {
@@ -338,20 +297,16 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.changeStream = function changeStream() {
     return this.changes$.asObservable();
   };
-
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     try {
       var _this11 = this;
-
       return Promise.resolve(mustUseLocalState(_this11)).then(function (localState) {
         if (!localState) {
           return requestRemoteInstance(_this11, 'cleanup', [minimumDeletedTime]);
         }
-
         var deleteAmountPerRun = 10;
         var maxDeletionTime = now() - minimumDeletedTime;
         var query = localState.collection.chain().find({
@@ -361,29 +316,22 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
           }
         }).limit(deleteAmountPerRun);
         var foundDocuments = query.data();
-
         if (foundDocuments.length > 0) {
           localState.collection.remove(foundDocuments);
           localState.databaseState.saveQueue.addWrite();
         }
-
         return foundDocuments.length !== deleteAmountPerRun;
       });
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   _proto.close = function close() {
     try {
       var _this13 = this;
-
       _this13.closed = true;
-
       _this13.changes$.complete();
-
       OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this13);
-
       var _temp2 = function () {
         if (_this13.internals.localState) {
           return Promise.resolve(_this13.internals.localState).then(function (localState) {
@@ -395,22 +343,18 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
           });
         }
       }();
-
       return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   _proto.remove = function remove() {
     try {
       var _this15 = this;
-
       return Promise.resolve(mustUseLocalState(_this15)).then(function (localState) {
         if (!localState) {
           return requestRemoteInstance(_this15, 'remove', []);
         }
-
         localState.databaseState.database.removeCollection(localState.collection.name);
         return Promise.resolve(localState.databaseState.saveQueue.run()).then(function () {
           return _this15.close();
@@ -420,15 +364,12 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.conflictResultionTasks = function conflictResultionTasks() {
     return new Subject();
   };
-
   _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
     return Promise.resolve();
   };
-
   return RxStorageInstanceLoki;
 }();
 //# sourceMappingURL=rx-storage-instance-loki.js.map

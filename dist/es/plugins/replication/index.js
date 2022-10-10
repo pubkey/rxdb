@@ -4,27 +4,24 @@
  * It is used in the other replication plugins
  * but also can be used as standalone with a custom replication handler.
  */
+
 import { BehaviorSubject, mergeMap, Subject } from 'rxjs';
 import { ensureNotFalsy, fastUnsecureHash, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } from '../../util';
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, replicateRxStorageInstance, RX_REPLICATION_META_INSTANCE_SCHEMA } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
 import { DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, swapdeletedFieldToDefaultDeleted } from './replication-helper';
 import { addConnectedStorageToCollection } from '../../rx-database-internal-store';
-
 function _catch(body, recover) {
   try {
     var result = body();
   } catch (e) {
     return recover(e);
   }
-
   if (result && result.then) {
     return result.then(void 0, recover);
   }
-
   return result;
 }
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -32,56 +29,45 @@ function _settle(pact, state, value) {
         if (state & 1) {
           state = value.s;
         }
-
         value = value.v;
       } else {
         value.o = _settle.bind(null, pact, state);
         return;
       }
     }
-
     if (value && value.then) {
       value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
       return;
     }
-
     pact.s = state;
     pact.v = value;
     var observer = pact.o;
-
     if (observer) {
       observer(pact);
     }
   }
 }
-
 var _Pact = /*#__PURE__*/function () {
   function _Pact() {}
-
   _Pact.prototype.then = function (onFulfilled, onRejected) {
     var result = new _Pact();
     var state = this.s;
-
     if (state) {
       var callback = state & 1 ? onFulfilled : onRejected;
-
       if (callback) {
         try {
           _settle(result, 1, callback(this.v));
         } catch (e) {
           _settle(result, 2, e);
         }
-
         return result;
       } else {
         return this;
       }
     }
-
     this.o = function (_this) {
       try {
         var value = _this.v;
-
         if (_this.s & 1) {
           _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
         } else if (onRejected) {
@@ -93,38 +79,28 @@ var _Pact = /*#__PURE__*/function () {
         _settle(result, 2, e);
       }
     };
-
     return result;
   };
-
   return _Pact;
 }();
-
 function _isSettledPact(thenable) {
   return thenable instanceof _Pact && thenable.s & 1;
 }
-
 function _for(test, update, body) {
   var stage;
-
   for (;;) {
     var shouldContinue = test();
-
     if (_isSettledPact(shouldContinue)) {
       shouldContinue = shouldContinue.v;
     }
-
     if (!shouldContinue) {
       return result;
     }
-
     if (shouldContinue.then) {
       stage = 0;
       break;
     }
-
     var result = body();
-
     if (result && result.then) {
       if (_isSettledPact(result)) {
         result = result.s;
@@ -133,64 +109,47 @@ function _for(test, update, body) {
         break;
       }
     }
-
     if (update) {
       var updateValue = update();
-
       if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
         stage = 2;
         break;
       }
     }
   }
-
   var pact = new _Pact();
-
   var reject = _settle.bind(null, pact, 2);
-
   (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
   return pact;
-
   function _resumeAfterBody(value) {
     result = value;
-
     do {
       if (update) {
         updateValue = update();
-
         if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
           updateValue.then(_resumeAfterUpdate).then(void 0, reject);
           return;
         }
       }
-
       shouldContinue = test();
-
       if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
         _settle(pact, 1, result);
-
         return;
       }
-
       if (shouldContinue.then) {
         shouldContinue.then(_resumeAfterTest).then(void 0, reject);
         return;
       }
-
       result = body();
-
       if (_isSettledPact(result)) {
         result = result.v;
       }
     } while (!result || !result.then);
-
     result.then(_resumeAfterBody).then(void 0, reject);
   }
-
   function _resumeAfterTest(shouldContinue) {
     if (shouldContinue) {
       result = body();
-
       if (result && result.then) {
         result.then(_resumeAfterBody).then(void 0, reject);
       } else {
@@ -200,7 +159,6 @@ function _for(test, update, body) {
       _settle(pact, 1, result);
     }
   }
-
   function _resumeAfterUpdate() {
     if (shouldContinue = test()) {
       if (shouldContinue.then) {
@@ -213,7 +171,6 @@ function _for(test, update, body) {
     }
   }
 }
-
 export var REPLICATION_STATE_BY_COLLECTION = new WeakMap();
 export var RxReplicationState = /*#__PURE__*/function () {
   function RxReplicationState(
@@ -223,7 +180,6 @@ export var RxReplicationState = /*#__PURE__*/function () {
    */
   replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart) {
     var _this = this;
-
     this.subs = [];
     this.subjects = {
       received: new Subject(),
@@ -237,7 +193,6 @@ export var RxReplicationState = /*#__PURE__*/function () {
       active: new BehaviorSubject(false),
       // true when something is running, false when not
       initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
-
     };
     this.received$ = this.subjects.received.asObservable();
     this.send$ = this.subjects.send.asObservable();
@@ -255,18 +210,18 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.retryTime = retryTime;
     this.autoStart = autoStart;
     var replicationStates = REPLICATION_STATE_BY_COLLECTION.get(collection);
-
     if (!replicationStates) {
       replicationStates = [];
       REPLICATION_STATE_BY_COLLECTION.set(collection, replicationStates);
     }
+    replicationStates.push(this);
 
-    replicationStates.push(this); // stop the replication when the collection gets destroyed
-
+    // stop the replication when the collection gets destroyed
     this.collection.onDestroy.push(function () {
       return _this.cancel();
-    }); // create getters for the observables
+    });
 
+    // create getters for the observables
     Object.keys(this.subjects).forEach(function (key) {
       Object.defineProperty(_this, key + '$', {
         get: function get() {
@@ -279,18 +234,15 @@ export var RxReplicationState = /*#__PURE__*/function () {
     });
     this.startPromise = startPromise;
   }
-
   var _proto = RxReplicationState.prototype;
-
   _proto.start = function start() {
     try {
       var _this3 = this;
-
       if (_this3.isStopped()) {
         return Promise.resolve();
-      } // fill in defaults for pull & push
+      }
 
-
+      // fill in defaults for pull & push
       var pullModifier = _this3.pull && _this3.pull.modifier ? _this3.pull.modifier : DEFAULT_MODIFIER;
       var pushModifier = _this3.push && _this3.push.modifier ? _this3.push.modifier : DEFAULT_MODIFIER;
       var database = _this3.collection.database;
@@ -305,11 +257,9 @@ export var RxReplicationState = /*#__PURE__*/function () {
         schema: RX_REPLICATION_META_INSTANCE_SCHEMA
       }), addConnectedStorageToCollection(_this3.collection, metaInstanceCollectionName, RX_REPLICATION_META_INSTANCE_SCHEMA)])).then(function (_ref) {
         var metaInstance = _ref[0];
-
         function _temp2() {
           _this3.callOnStart();
         }
-
         _this3.metaInstance = metaInstance;
         _this3.internalReplicationState = replicateRxStorageInstance({
           pushBatchSize: _this3.push && _this3.push.batchSize ? _this3.push.batchSize : 100,
@@ -325,15 +275,12 @@ export var RxReplicationState = /*#__PURE__*/function () {
                 if (ev === 'RESYNC') {
                   return Promise.resolve(ev);
                 }
-
                 var useEv = flatClone(ev);
-
                 if (_this3.deletedField !== '_deleted') {
                   useEv.documents = useEv.documents.map(function (doc) {
                     return swapdeletedFieldToDefaultDeleted(_this3.deletedField, doc);
                   });
                 }
-
                 return Promise.resolve(Promise.all(useEv.documents.map(function (d) {
                   return pullModifier(d);
                 }))).then(function (_Promise$all) {
@@ -348,13 +295,11 @@ export var RxReplicationState = /*#__PURE__*/function () {
               try {
                 var _temp6 = function _temp6() {
                   var useResult = flatClone(result);
-
                   if (_this3.deletedField !== '_deleted') {
                     useResult.documents = useResult.documents.map(function (doc) {
                       return swapdeletedFieldToDefaultDeleted(_this3.deletedField, doc);
                     });
                   }
-
                   return Promise.resolve(Promise.all(useResult.documents.map(function (d) {
                     return pullModifier(d);
                   }))).then(function (_Promise$all2) {
@@ -362,23 +307,20 @@ export var RxReplicationState = /*#__PURE__*/function () {
                     return useResult;
                   });
                 };
-
                 if (!_this3.pull) {
                   return Promise.resolve({
                     checkpoint: null,
                     documents: []
                   });
                 }
+
                 /**
                  * Retries must be done here in the replication primitives plugin,
                  * because the replication protocol itself has no
                  * error handling.
                  */
-
-
                 var done = false;
                 var result = {};
-
                 var _temp7 = _for(function () {
                   return !done;
                 }, void 0, function () {
@@ -393,15 +335,11 @@ export var RxReplicationState = /*#__PURE__*/function () {
                       errors: Array.isArray(err) ? err : [err],
                       direction: 'pull'
                     });
-
                     _this3.subjects.error.next(emitError);
-
                     return Promise.resolve(_this3.collection.promiseWait(ensureNotFalsy(_this3.retryTime))).then(function () {});
                   });
-
                   if (_temp3 && _temp3.then) return _temp3.then(function () {});
                 });
-
                 return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
               } catch (e) {
                 return Promise.reject(e);
@@ -412,7 +350,6 @@ export var RxReplicationState = /*#__PURE__*/function () {
                 if (!_this3.push) {
                   return Promise.resolve([]);
                 }
-
                 var done = false;
                 return Promise.resolve(Promise.all(rows.map(function (row) {
                   try {
@@ -420,17 +357,13 @@ export var RxReplicationState = /*#__PURE__*/function () {
                       function _temp12() {
                         if (_this3.deletedField !== '_deleted') {
                           row.newDocumentState = swapDefaultDeletedTodeletedField(_this3.deletedField, row.newDocumentState);
-
                           if (row.assumedMasterState) {
                             row.assumedMasterState = swapDefaultDeletedTodeletedField(_this3.deletedField, row.assumedMasterState);
                           }
                         }
-
                         return row;
                       }
-
                       row.newDocumentState = _pushModifier;
-
                       var _temp11 = function () {
                         if (row.assumedMasterState) {
                           return Promise.resolve(pushModifier(row.assumedMasterState)).then(function (_pushModifier2) {
@@ -438,7 +371,6 @@ export var RxReplicationState = /*#__PURE__*/function () {
                           });
                         }
                       }();
-
                       return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
                     });
                   } catch (e) {
@@ -451,9 +383,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
                     });
                     return conflicts;
                   }
-
                   var result = {};
-
                   var _temp9 = _for(function () {
                     return !done;
                   }, void 0, function () {
@@ -468,15 +398,11 @@ export var RxReplicationState = /*#__PURE__*/function () {
                         errors: Array.isArray(err) ? err : [err],
                         direction: 'push'
                       });
-
                       _this3.subjects.error.next(emitError);
-
                       return Promise.resolve(_this3.collection.promiseWait(ensureNotFalsy(_this3.retryTime))).then(function () {});
                     });
-
                     if (_temp8 && _temp8.then) return _temp8.then(function () {});
                   });
-
                   return _temp9 && _temp9.then ? _temp9.then(_temp10) : _temp10(_temp9);
                 });
               } catch (e) {
@@ -485,19 +411,15 @@ export var RxReplicationState = /*#__PURE__*/function () {
             }
           }
         });
-
         _this3.subs.push(_this3.internalReplicationState.events.error.subscribe(function (err) {
           _this3.subjects.error.next(err);
         }));
-
         _this3.subs.push(_this3.internalReplicationState.events.processed.down.subscribe(function (row) {
           return _this3.subjects.received.next(row.document);
         }));
-
         _this3.subs.push(_this3.internalReplicationState.events.processed.up.subscribe(function (writeToMasterRow) {
           _this3.subjects.send.next(writeToMasterRow.newDocumentState);
         }));
-
         if (_this3.pull && _this3.pull.stream$ && _this3.live) {
           _this3.subs.push(_this3.pull.stream$.subscribe({
             next: function next(ev) {
@@ -508,7 +430,6 @@ export var RxReplicationState = /*#__PURE__*/function () {
             }
           }));
         }
-
         var _temp = function () {
           if (!_this3.live) {
             return Promise.resolve(awaitRxStorageReplicationFirstInSync(_this3.internalReplicationState)).then(function () {
@@ -516,49 +437,40 @@ export var RxReplicationState = /*#__PURE__*/function () {
             });
           }
         }();
-
         return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
       });
     } catch (e) {
       return Promise.reject(e);
     }
   };
-
   _proto.isStopped = function isStopped() {
     if (this.subjects.canceled.getValue()) {
       return true;
     }
-
     return false;
   };
-
   _proto.awaitInitialReplication = function awaitInitialReplication() {
     try {
       var _this5 = this;
-
       return Promise.resolve(_this5.startPromise).then(function () {
         return awaitRxStorageReplicationFirstInSync(ensureNotFalsy(_this5.internalReplicationState));
       });
     } catch (e) {
       return Promise.reject(e);
     }
-  }
-  /**
-   * Returns a promise that resolves when:
-   * - All local data is replicated with the remote
-   * - No replication cycle is running or in retry-state
-   *
-   * WARNING: USing this function directly in a multi-tab browser application
-   * is dangerous because only the leading instance will ever be replicated,
-   * so this promise will not resolve in the other tabs.
-   * For multi-tab support you should set and observe a flag in a local document.
-   */
-  ;
-
+  } /**
+     * Returns a promise that resolves when:
+     * - All local data is replicated with the remote
+     * - No replication cycle is running or in retry-state
+     *
+     * WARNING: USing this function directly in a multi-tab browser application
+     * is dangerous because only the leading instance will ever be replicated,
+     * so this promise will not resolve in the other tabs.
+     * For multi-tab support you should set and observe a flag in a local document.
+     */;
   _proto.awaitInSync = function awaitInSync() {
     try {
       var _this7 = this;
-
       return Promise.resolve(_this7.startPromise).then(function () {
         return Promise.resolve(awaitRxStorageReplicationFirstInSync(ensureNotFalsy(_this7.internalReplicationState))).then(function () {
           return Promise.resolve(awaitRxStorageReplicationInSync(ensureNotFalsy(_this7.internalReplicationState))).then(function () {
@@ -570,34 +482,26 @@ export var RxReplicationState = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto.reSync = function reSync() {
     this.remoteEvents$.next('RESYNC');
   };
-
   _proto.emitEvent = function emitEvent(ev) {
     this.remoteEvents$.next(ev);
   };
-
   _proto.cancel = function cancel() {
     var _this8 = this;
-
     if (this.isStopped()) {
       return PROMISE_RESOLVE_FALSE;
     }
-
     var promises = [];
-
     if (this.internalReplicationState) {
       this.internalReplicationState.events.canceled.next(true);
     }
-
     if (this.metaInstance) {
       promises.push(ensureNotFalsy(this.internalReplicationState).checkpointQueue.then(function () {
         return ensureNotFalsy(_this8.metaInstance).close();
       }));
     }
-
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
@@ -609,24 +513,23 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.subjects.send.complete();
     return Promise.all(promises);
   };
-
   return RxReplicationState;
 }();
 export function replicateRxCollection(_ref2) {
   var replicationIdentifier = _ref2.replicationIdentifier,
-      collection = _ref2.collection,
-      _ref2$deletedField = _ref2.deletedField,
-      deletedField = _ref2$deletedField === void 0 ? '_deleted' : _ref2$deletedField,
-      pull = _ref2.pull,
-      push = _ref2.push,
-      _ref2$live = _ref2.live,
-      live = _ref2$live === void 0 ? true : _ref2$live,
-      _ref2$retryTime = _ref2.retryTime,
-      retryTime = _ref2$retryTime === void 0 ? 1000 * 5 : _ref2$retryTime,
-      _ref2$waitForLeadersh = _ref2.waitForLeadership,
-      waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
-      _ref2$autoStart = _ref2.autoStart,
-      autoStart = _ref2$autoStart === void 0 ? true : _ref2$autoStart;
+    collection = _ref2.collection,
+    _ref2$deletedField = _ref2.deletedField,
+    deletedField = _ref2$deletedField === void 0 ? '_deleted' : _ref2$deletedField,
+    pull = _ref2.pull,
+    push = _ref2.push,
+    _ref2$live = _ref2.live,
+    live = _ref2$live === void 0 ? true : _ref2$live,
+    _ref2$retryTime = _ref2.retryTime,
+    retryTime = _ref2$retryTime === void 0 ? 1000 * 5 : _ref2$retryTime,
+    _ref2$waitForLeadersh = _ref2.waitForLeadership,
+    waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
+    _ref2$autoStart = _ref2.autoStart,
+    autoStart = _ref2$autoStart === void 0 ? true : _ref2$autoStart;
   var replicationIdentifierHash = fastUnsecureHash([collection.database.name, collection.name, replicationIdentifier].join('|'));
   var replicationState = new RxReplicationState(replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart);
   startReplicationOnLeaderShip(waitForLeadership, replicationState);
@@ -643,7 +546,6 @@ export function startReplicationOnLeaderShip(waitForLeadership, replicationState
     if (replicationState.isStopped()) {
       return;
     }
-
     if (replicationState.autoStart) {
       replicationState.start();
     }

@@ -6,13 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.RX_REPLICATION_META_INSTANCE_SCHEMA = void 0;
 exports.getAssumedMasterState = getAssumedMasterState;
 exports.getMetaWriteRow = getMetaWriteRow;
-
 var _rxSchemaHelper = require("../rx-schema-helper");
-
 var _rxStorageHelper = require("../rx-storage-helper");
-
 var _util = require("../util");
-
 var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   primaryKey: {
     key: 'id',
@@ -49,13 +45,12 @@ var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSet
   },
   required: ['id', 'replicationIdentifier', 'isCheckpoint', 'itemId', 'data']
 });
+
 /**
  * Returns the document states of what the fork instance
  * assumes to be the latest state on the master instance.
  */
-
 exports.RX_REPLICATION_META_INSTANCE_SCHEMA = RX_REPLICATION_META_INSTANCE_SCHEMA;
-
 function getAssumedMasterState(state, docIds) {
   return state.input.metaInstance.findDocumentsById(docIds.map(function (docId) {
     var useId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, {
@@ -75,7 +70,6 @@ function getAssumedMasterState(state, docIds) {
     return ret;
   });
 }
-
 function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict) {
   var docId = newMasterDocState[state.primaryPath];
   var newMeta = previous ? (0, _rxStorageHelper.flatCloneDocWithMeta)(previous) : {

@@ -3,9 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
 var _pouch = require("./pouch");
-
 Object.keys(_pouch).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _pouch[key]) return;
@@ -16,9 +14,7 @@ Object.keys(_pouch).forEach(function (key) {
     }
   });
 });
-
 var _rxAttachment = require("./rx-attachment");
-
 Object.keys(_rxAttachment).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxAttachment[key]) return;
@@ -29,9 +25,7 @@ Object.keys(_rxAttachment).forEach(function (key) {
     }
   });
 });
-
 var _rxCollection = require("./rx-collection");
-
 Object.keys(_rxCollection).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxCollection[key]) return;
@@ -42,9 +36,7 @@ Object.keys(_rxCollection).forEach(function (key) {
     }
   });
 });
-
 var _rxDatabase = require("./rx-database");
-
 Object.keys(_rxDatabase).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxDatabase[key]) return;
@@ -55,9 +47,7 @@ Object.keys(_rxDatabase).forEach(function (key) {
     }
   });
 });
-
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
-
 Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxDatabaseInternalStore[key]) return;
@@ -68,9 +58,7 @@ Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
     }
   });
 });
-
 var _rxDocument = require("./rx-document");
-
 Object.keys(_rxDocument).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxDocument[key]) return;
@@ -81,9 +69,7 @@ Object.keys(_rxDocument).forEach(function (key) {
     }
   });
 });
-
 var _rxError = require("./rx-error");
-
 Object.keys(_rxError).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxError[key]) return;
@@ -94,9 +80,7 @@ Object.keys(_rxError).forEach(function (key) {
     }
   });
 });
-
 var _rxPlugin = require("./rx-plugin");
-
 Object.keys(_rxPlugin).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxPlugin[key]) return;
@@ -107,9 +91,7 @@ Object.keys(_rxPlugin).forEach(function (key) {
     }
   });
 });
-
 var _rxQuery = require("./rx-query");
-
 Object.keys(_rxQuery).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxQuery[key]) return;
@@ -120,9 +102,7 @@ Object.keys(_rxQuery).forEach(function (key) {
     }
   });
 });
-
 var _rxSchema = require("./rx-schema");
-
 Object.keys(_rxSchema).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxSchema[key]) return;
@@ -133,9 +113,7 @@ Object.keys(_rxSchema).forEach(function (key) {
     }
   });
 });
-
 var _rxStorage = require("./rx-storage");
-
 Object.keys(_rxStorage).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxStorage[key]) return;
@@ -146,9 +124,7 @@ Object.keys(_rxStorage).forEach(function (key) {
     }
   });
 });
-
 var _rxStorage2 = require("./rx-storage.interface");
-
 Object.keys(_rxStorage2).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxStorage2[key]) return;
@@ -159,9 +135,7 @@ Object.keys(_rxStorage2).forEach(function (key) {
     }
   });
 });
-
 var _replicationProtocol = require("./replication-protocol");
-
 Object.keys(_replicationProtocol).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _replicationProtocol[key]) return;
@@ -172,9 +146,7 @@ Object.keys(_replicationProtocol).forEach(function (key) {
     }
   });
 });
-
 var _conflictHandling = require("./conflict-handling");
-
 Object.keys(_conflictHandling).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _conflictHandling[key]) return;
@@ -185,9 +157,7 @@ Object.keys(_conflictHandling).forEach(function (key) {
     }
   });
 });
-
 var _rxChangeEvent = require("./rx-change-event");
-
 Object.keys(_rxChangeEvent).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _rxChangeEvent[key]) return;
@@ -198,9 +168,7 @@ Object.keys(_rxChangeEvent).forEach(function (key) {
     }
   });
 });
-
 var _queryPlanner = require("./query-planner");
-
 Object.keys(_queryPlanner).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _queryPlanner[key]) return;
@@ -211,9 +179,7 @@ Object.keys(_queryPlanner).forEach(function (key) {
     }
   });
 });
-
 var _util = require("./util");
-
 Object.keys(_util).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _util[key]) return;
@@ -224,9 +190,7 @@ Object.keys(_util).forEach(function (key) {
     }
   });
 });
-
 var _replication = require("./plugins/replication");
-
 Object.keys(_replication).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _replication[key]) return;
@@ -237,9 +201,7 @@ Object.keys(_replication).forEach(function (key) {
     }
   });
 });
-
 var _replicationGraphql = require("./plugins/replication-graphql");
-
 Object.keys(_replicationGraphql).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _replicationGraphql[key]) return;
@@ -250,9 +212,7 @@ Object.keys(_replicationGraphql).forEach(function (key) {
     }
   });
 });
-
 var _replicationCouchdb = require("./plugins/replication-couchdb");
-
 Object.keys(_replicationCouchdb).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _replicationCouchdb[key]) return;
@@ -263,9 +223,7 @@ Object.keys(_replicationCouchdb).forEach(function (key) {
     }
   });
 });
-
 var _localDocuments = require("./plugins/local-documents");
-
 Object.keys(_localDocuments).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _localDocuments[key]) return;
@@ -276,9 +234,7 @@ Object.keys(_localDocuments).forEach(function (key) {
     }
   });
 });
-
 var _serverCouchdb = require("./plugins/server-couchdb");
-
 Object.keys(_serverCouchdb).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _serverCouchdb[key]) return;
@@ -289,9 +245,7 @@ Object.keys(_serverCouchdb).forEach(function (key) {
     }
   });
 });
-
 var _migration = require("./plugins/migration");
-
 Object.keys(_migration).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _migration[key]) return;
@@ -302,9 +256,7 @@ Object.keys(_migration).forEach(function (key) {
     }
   });
 });
-
 var _backup = require("./plugins/backup");
-
 Object.keys(_backup).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _backup[key]) return;
@@ -315,9 +267,7 @@ Object.keys(_backup).forEach(function (key) {
     }
   });
 });
-
 var _cleanup = require("./plugins/cleanup");
-
 Object.keys(_cleanup).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _cleanup[key]) return;
@@ -328,9 +278,7 @@ Object.keys(_cleanup).forEach(function (key) {
     }
   });
 });
-
 var _lokijs = require("./plugins/lokijs");
-
 Object.keys(_lokijs).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _lokijs[key]) return;
@@ -341,9 +289,7 @@ Object.keys(_lokijs).forEach(function (key) {
     }
   });
 });
-
 var _dexie = require("./plugins/dexie");
-
 Object.keys(_dexie).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _dexie[key]) return;

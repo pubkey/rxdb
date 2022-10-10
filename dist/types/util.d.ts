@@ -78,7 +78,7 @@ export declare function randomCouchString(length?: number): string;
  * A random string that is never inside of any storage
  */
 export declare const RANDOM_STRING = "Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX";
-export declare function lastOfArray<T>(ar: T[]): T;
+export declare function lastOfArray<T>(ar: T[]): T | undefined;
 /**
  * shuffle the given array
  */

@@ -173,19 +173,12 @@ Object.defineProperty(exports, "toTypedRxJsonSchema", {
     return _rxSchema.toTypedRxJsonSchema;
   }
 });
-
 require("./types/modules/graphql-client.d");
-
 require("./types/modules/mocha.parallel.d");
-
 require("./types/modules/modifiyjs.d");
-
 var _plugin = require("./plugin");
-
 var _rxDatabase = require("./rx-database");
-
 var _rxError = require("./rx-error");
-
 Object.keys(_rxError).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -197,9 +190,7 @@ Object.keys(_rxError).forEach(function (key) {
     }
   });
 });
-
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
-
 Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -211,23 +202,14 @@ Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
     }
   });
 });
-
 var _overwritable = require("./overwritable");
-
 var _rxCollection = require("./rx-collection");
-
 var _rxCollectionHelper = require("./rx-collection-helper");
-
 var _rxDocument = require("./rx-document");
-
 var _rxChangeEvent = require("./rx-change-event");
-
 var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
-
 var _rxQuery = require("./rx-query");
-
 var _rxQueryHelper = require("./rx-query-helper");
-
 Object.keys(_rxQueryHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -239,11 +221,8 @@ Object.keys(_rxQueryHelper).forEach(function (key) {
     }
   });
 });
-
 var _rxSchema = require("./rx-schema");
-
 var _rxSchemaHelper = require("./rx-schema-helper");
-
 Object.keys(_rxSchemaHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -255,9 +234,7 @@ Object.keys(_rxSchemaHelper).forEach(function (key) {
     }
   });
 });
-
 var _rxStorageHelper = require("./rx-storage-helper");
-
 Object.keys(_rxStorageHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -269,9 +246,7 @@ Object.keys(_rxStorageHelper).forEach(function (key) {
     }
   });
 });
-
 var _index = require("./replication-protocol/index");
-
 Object.keys(_index).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -283,9 +258,7 @@ Object.keys(_index).forEach(function (key) {
     }
   });
 });
-
 var _rxStorageMultiinstance = require("./rx-storage-multiinstance");
-
 Object.keys(_rxStorageMultiinstance).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -297,9 +270,7 @@ Object.keys(_rxStorageMultiinstance).forEach(function (key) {
     }
   });
 });
-
 var _customIndex = require("./custom-index");
-
 Object.keys(_customIndex).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -311,9 +282,7 @@ Object.keys(_customIndex).forEach(function (key) {
     }
   });
 });
-
 var _queryPlanner = require("./query-planner");
-
 Object.keys(_queryPlanner).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -325,9 +294,7 @@ Object.keys(_queryPlanner).forEach(function (key) {
     }
   });
 });
-
 var _pluginHelpers = require("./plugin-helpers");
-
 Object.keys(_pluginHelpers).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -339,11 +306,8 @@ Object.keys(_pluginHelpers).forEach(function (key) {
     }
   });
 });
-
 var _hooks = require("./hooks");
-
 var _queryCache = require("./query-cache");
-
 Object.keys(_queryCache).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
@@ -355,9 +319,7 @@ Object.keys(_queryCache).forEach(function (key) {
     }
   });
 });
-
 var _util = require("./util");
-
 Object.keys(_util).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;

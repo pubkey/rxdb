@@ -13,7 +13,6 @@ export function getValidator(schema) {
   var validator = ajv.compile(schema);
   return function (docData) {
     var isValid = validator(docData);
-
     if (!isValid) {
       throw newRxError('VD2', {
         errors: validator.errors,

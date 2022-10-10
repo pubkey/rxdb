@@ -1,10 +1,10 @@
 import { newRxTypeError, newRxError } from '../../rx-error';
 import { getPreviousVersions } from '../../rx-schema';
+
 /**
  * checks if the migrationStrategies are ok, throws if not
  * @throws {Error|TypeError} if not ok
  */
-
 export function checkMigrationStrategies(schema, migrationStrategies) {
   // migrationStrategies must be object not array
   if (typeof migrationStrategies !== 'object' || Array.isArray(migrationStrategies)) {
@@ -12,17 +12,17 @@ export function checkMigrationStrategies(schema, migrationStrategies) {
       schema: schema
     });
   }
+  var previousVersions = getPreviousVersions(schema);
 
-  var previousVersions = getPreviousVersions(schema); // for every previousVersion there must be strategy
-
+  // for every previousVersion there must be strategy
   if (previousVersions.length !== Object.keys(migrationStrategies).length) {
     throw newRxError('COL12', {
       have: Object.keys(migrationStrategies),
       should: previousVersions
     });
-  } // every strategy must have number as property and be a function
+  }
 
-
+  // every strategy must have number as property and be a function
   previousVersions.map(function (vNr) {
     return {
       v: vNr,

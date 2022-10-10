@@ -1,19 +1,17 @@
 import { isLogicalOperator } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import { firstPropertyNameOfObject, flatClone, isMaybeReadonlyArray } from './util';
+
 /**
  * Normalize the query to ensure we have all fields set
  * and queries that represent the same query logic are detected as equal by the caching.
  */
-
 export function normalizeMangoQuery(schema, mangoQuery) {
   var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
   var normalizedMangoQuery = flatClone(mangoQuery);
-
   if (typeof normalizedMangoQuery.skip !== 'number') {
     normalizedMangoQuery.skip = 0;
   }
-
   if (!normalizedMangoQuery.selector) {
     normalizedMangoQuery.selector = {};
   } else {
@@ -29,11 +27,9 @@ export function normalizeMangoQuery(schema, mangoQuery) {
      * For normalization, we have to normalize this
      * so our checks can perform properly.
      */
-
     Object.entries(normalizedMangoQuery.selector).forEach(function (_ref) {
       var field = _ref[0],
-          matcher = _ref[1];
-
+        matcher = _ref[1];
       if (typeof matcher !== 'object' || matcher === null) {
         normalizedMangoQuery.selector[field] = {
           $eq: matcher
@@ -41,21 +37,19 @@ export function normalizeMangoQuery(schema, mangoQuery) {
       }
     });
   }
+
   /**
    * Ensure that if an index is specified,
    * the primaryKey is inside of it.
    */
-
-
   if (normalizedMangoQuery.index) {
     var indexAr = Array.isArray(normalizedMangoQuery.index) ? normalizedMangoQuery.index.slice(0) : [normalizedMangoQuery.index];
-
     if (!indexAr.includes(primaryKey)) {
       indexAr.push(primaryKey);
     }
-
     normalizedMangoQuery.index = indexAr;
   }
+
   /**
    * To ensure a deterministic sorting,
    * we have to ensure the primary key is always part
@@ -64,8 +58,6 @@ export function normalizeMangoQuery(schema, mangoQuery) {
    * similiar to how we add the primary key to indexes that do not have it.
    * 
    */
-
-
   if (!normalizedMangoQuery.sort) {
     /**
      * If no sort is given at all,
@@ -78,7 +70,6 @@ export function normalizeMangoQuery(schema, mangoQuery) {
     if (normalizedMangoQuery.index) {
       normalizedMangoQuery.sort = normalizedMangoQuery.index.map(function (field) {
         var _ref2;
-
         return _ref2 = {}, _ref2[field] = 'asc', _ref2;
       });
     } else {
@@ -89,9 +80,8 @@ export function normalizeMangoQuery(schema, mangoQuery) {
         var fieldsWithLogicalOperator = new Set();
         Object.entries(normalizedMangoQuery.selector).forEach(function (_ref3) {
           var field = _ref3[0],
-              matcher = _ref3[1];
+            matcher = _ref3[1];
           var hasLogical = false;
-
           if (typeof matcher === 'object' && matcher !== null) {
             hasLogical = !!Object.keys(matcher).find(function (operator) {
               return isLogicalOperator(operator);
@@ -99,7 +89,6 @@ export function normalizeMangoQuery(schema, mangoQuery) {
           } else {
             hasLogical = true;
           }
-
           if (hasLogical) {
             fieldsWithLogicalOperator.add(field);
           }
@@ -111,30 +100,25 @@ export function normalizeMangoQuery(schema, mangoQuery) {
           var firstWrongIndex = useIndex.findIndex(function (indexField) {
             return !fieldsWithLogicalOperator.has(indexField);
           });
-
           if (firstWrongIndex > 0 && firstWrongIndex > currentFieldsAmount) {
             currentFieldsAmount = firstWrongIndex;
             currentBestIndexForSort = useIndex;
           }
         });
-
         if (currentBestIndexForSort) {
           normalizedMangoQuery.sort = currentBestIndexForSort.map(function (field) {
             var _ref4;
-
             return _ref4 = {}, _ref4[field] = 'asc', _ref4;
           });
         }
       }
+
       /**
        * Fall back to the primary key as sort order
        * if no better one has been found
        */
-
-
       if (!normalizedMangoQuery.sort) {
         var _ref5;
-
         normalizedMangoQuery.sort = [(_ref5 = {}, _ref5[primaryKey] = 'asc', _ref5)];
       }
     }
@@ -142,15 +126,12 @@ export function normalizeMangoQuery(schema, mangoQuery) {
     var isPrimaryInSort = normalizedMangoQuery.sort.find(function (p) {
       return firstPropertyNameOfObject(p) === primaryKey;
     });
-
     if (!isPrimaryInSort) {
       var _normalizedMangoQuery;
-
       normalizedMangoQuery.sort = normalizedMangoQuery.sort.slice(0);
       normalizedMangoQuery.sort.push((_normalizedMangoQuery = {}, _normalizedMangoQuery[primaryKey] = 'asc', _normalizedMangoQuery));
     }
   }
-
   return normalizedMangoQuery;
 }
 //# sourceMappingURL=rx-query-helper.js.map

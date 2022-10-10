@@ -1,7 +1,6 @@
 import { Subject } from 'rxjs';
 import { spawn, Worker, Thread } from 'threads';
 import { ensureNotFalsy, getFromMapOrThrow } from '../../util';
-
 /**
  * TODO we have a bug.
  * When the exact same RxStorage opens and closes
@@ -13,7 +12,6 @@ export var removeWorkerRef = function removeWorkerRef(instance) {
   try {
     var workerState = getFromMapOrThrow(WORKER_BY_INSTANCE, instance.storage);
     workerState.refs["delete"](instance);
-
     var _temp2 = function () {
       if (workerState.refs.size === 0) {
         WORKER_BY_INSTANCE["delete"](instance.storage);
@@ -22,13 +20,11 @@ export var removeWorkerRef = function removeWorkerRef(instance) {
         })).then(function () {});
       }
     }();
-
     return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
   } catch (e) {
     return Promise.reject(e);
   }
 };
-
 /**
  * We have no way to detect if a worker is no longer needed.
  * So we create the worker process on the first RxStorageInstance
@@ -41,14 +37,10 @@ export var RxStorageWorker = /*#__PURE__*/function () {
     this.settings = settings;
     this.statics = statics;
   }
-
   var _proto = RxStorageWorker.prototype;
-
   _proto.createStorageInstance = function createStorageInstance(params) {
     var _this = this;
-
     var workerState = WORKER_BY_INSTANCE.get(this);
-
     if (!workerState) {
       workerState = {
         workerPromise: spawn(new Worker(this.settings.workerInput)),
@@ -56,7 +48,6 @@ export var RxStorageWorker = /*#__PURE__*/function () {
       };
       WORKER_BY_INSTANCE.set(this, workerState);
     }
-
     return workerState.workerPromise.then(function (worker) {
       return worker.createStorageInstance(params).then(function (instanceId) {
         var instance = new RxStorageInstanceWorker(_this, params.databaseName, params.collectionName, params.schema, {
@@ -69,7 +60,6 @@ export var RxStorageWorker = /*#__PURE__*/function () {
       });
     });
   };
-
   return RxStorageWorker;
 }();
 export var RxStorageInstanceWorker = /*#__PURE__*/function () {
@@ -77,9 +67,9 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
    * threads.js uses observable-fns instead of rxjs
    * so we have to transform it.
    */
+
   function RxStorageInstanceWorker(storage, databaseName, collectionName, schema, internals, options) {
     var _this2 = this;
-
     this.changes$ = new Subject();
     this.conflicts$ = new Subject();
     this.subs = [];
@@ -97,51 +87,38 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
       return _this2.conflicts$.next(ev);
     }));
   }
-
   var _proto2 = RxStorageInstanceWorker.prototype;
-
   _proto2.bulkWrite = function bulkWrite(documentWrites, context) {
     return this.internals.worker.bulkWrite(this.internals.instanceId, documentWrites, context);
   };
-
   _proto2.findDocumentsById = function findDocumentsById(ids, deleted) {
     return this.internals.worker.findDocumentsById(this.internals.instanceId, ids, deleted);
   };
-
   _proto2.query = function query(preparedQuery) {
     return this.internals.worker.query(this.internals.instanceId, preparedQuery);
   };
-
   _proto2.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     return this.internals.worker.getAttachmentData(this.internals.instanceId, documentId, attachmentId);
   };
-
   _proto2.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     return this.internals.worker.getChangedDocumentsSince(this.internals.instanceId, limit, checkpoint);
   };
-
   _proto2.changeStream = function changeStream() {
     return this.changes$.asObservable();
   };
-
   _proto2.cleanup = function cleanup(minDeletedTime) {
     return this.internals.worker.cleanup(this.internals.instanceId, minDeletedTime);
   };
-
   _proto2.close = function close() {
     try {
       var _this4 = this;
-
       if (_this4.closed) {
         return Promise.resolve();
       }
-
       _this4.closed = true;
-
       _this4.subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
-
       return Promise.resolve(_this4.internals.worker.close(_this4.internals.instanceId)).then(function () {
         return Promise.resolve(removeWorkerRef(_this4)).then(function () {});
       });
@@ -149,11 +126,9 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto2.remove = function remove() {
     try {
       var _this6 = this;
-
       return Promise.resolve(_this6.internals.worker.remove(_this6.internals.instanceId)).then(function () {
         _this6.closed = true;
         return Promise.resolve(removeWorkerRef(_this6)).then(function () {});
@@ -162,15 +137,12 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-
   _proto2.conflictResultionTasks = function conflictResultionTasks() {
     return new Subject();
   };
-
   _proto2.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
     return Promise.resolve();
   };
-
   return RxStorageInstanceWorker;
 }();
 export function getRxStorageWorker(settings) {
