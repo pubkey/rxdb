@@ -15,6 +15,13 @@ gtag('config', 'G-62D63SY3S0');
 
 
 
+window.trigger = function (type, value) {
+    console.log('window trigger: ' + type + ': ' + value);
+    window.rdt('track', 'Lead', {
+        transactionId: type + '-' + new Date().getTime(),
+        value: value
+    });
+}
 
 
 // Reddit Pixel
@@ -35,8 +42,11 @@ window.rdt('init', 't2_131k54', {
     useDecimalCurrencyValues: true
 });
 window.rdt('track', 'PageVisit');
-window.rdt('track', 'Lead', {
-    transactionId: 'docs-or-main-visit-' + new Date().getTime(),
-    value: 0.1
-});
+
+setTimeout(function () {
+    window.trigger('10-seconds-on-page', 0.01);
+}, 10 * 1000);
+setTimeout(function () {
+    window.trigger('30-seconds-on-page', 0.03);
+}, 30 * 1000);
 // /Reddit Pixel

@@ -24,6 +24,7 @@
     "couchdb",
     "live-query",
     "reactive",
+    "replication",
     "realtime"
   ],
   "license": "Apache-2.0",

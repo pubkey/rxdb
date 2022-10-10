@@ -153,7 +153,9 @@ window.onload = async function () {
             'JavaScript',
             'observable',
             'reactive',
-            'realtime'
+            'realtime',
+            'client side',
+            'fast'
         ];
         const textsSecond = [
             'for the Web',
@@ -161,7 +163,10 @@ window.onload = async function () {
             'for Browsers',
             'for Capacitor',
             'for Electron',
+            'for hybrid apps',
             'for PWAs',
+            'for react native',
+            'for nativescript',
             'for UI apps',
             'you deserve',
             'that syncs',
@@ -174,7 +179,6 @@ window.onload = async function () {
         database.waitForLeadership().then(() => {
             setTimeout(function () {
                 if (
-                    index > 2 &&
                     index % swapOutTextEveryX === 0
                 ) {
                     swapOutsDone = swapOutsDone + 1;
@@ -188,7 +192,7 @@ window.onload = async function () {
                         });
                     }
                 }
-            }, heartbeatTimeToFirstBeat);
+            });
         });
     }
 
