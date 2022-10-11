@@ -43,7 +43,7 @@ myDatabase.addCollections({
 });
 ```
 
-**NOTICE:** If you want to store local documents in a `RxCollection` but **NOT** in the `RxDatabase`, you **MUST NOT** set `localDocuments: true` in the `RxDatabase` because it will only slow down the inital database creation.
+**NOTICE:** If you want to store local documents in a `RxCollection` but **NOT** in the `RxDatabase`, you **MUST NOT** set `localDocuments: true` in the `RxDatabase` because it will only slow down the initial database creation.
 
 ## insertLocal()
 
