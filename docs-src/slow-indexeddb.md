@@ -261,7 +261,7 @@ Instead, we could use the [BroadcastChannel API](https://developer.mozilla.org/e
   <img src="./files/leader-election.gif" alt="Leader Election" width="500" />
 </p>
 
-The disadvantage is that the leader election process takes some time on the inital page load (about 150 milliseconds). Also the leader election can break when a JavaScript process is fully blocked for a longer time. When this happens, a good way is to just reload the browser tab to restart the election process.
+The disadvantage is that the leader election process takes some time on the initial page load (about 150 milliseconds). Also the leader election can break when a JavaScript process is fully blocked for a longer time. When this happens, a good way is to just reload the browser tab to restart the election process.
 
 Using a leader election is implemented in the [RxDB LokiJS Storage](./rx-storage-lokijs.md).
 
