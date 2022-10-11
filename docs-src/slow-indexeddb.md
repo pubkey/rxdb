@@ -116,7 +116,7 @@ RxDB uses batched cursors in the [IndexedDB RxStorage](./rx-storage-indexeddb.md
 
 Sharding is a technique, normally used in server side databases, where the database is partitioned horizontally. Instead of storing all documents at one table/collection, the documents are split into so called **shards** and each shard is stored on one table/collection. This is done in server side architectures to spread the load between multiple physical servers which **increases scalability**.
 
-When you use IndexedDB in a browser, there is of course no way to split the load between the client and other servers. But you can still benefit from sharding. Partitioning the documents horizontally into **multiple IndexedDB stores**, has shown to have a big performance improvement in write- and read operations while only increasing inital pageload slightly.
+When you use IndexedDB in a browser, there is of course no way to split the load between the client and other servers. But you can still benefit from sharding. Partitioning the documents horizontally into **multiple IndexedDB stores**, has shown to have a big performance improvement in write- and read operations while only increasing initial pageload slightly.
 
 <p align="center">
   <img src="./files/indexeddb-sharding-performance.png" alt="IndexedDB sharding performance" width="100%" />
