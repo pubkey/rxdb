@@ -81,7 +81,7 @@ const localDoc = await myCollection.upsertLocal(
 
 ## getLocal()
 
-Find a `RxLocalDocument` by it's id. Returns a Promise which resolves the `RxLocalDocument` or `null` if not exists.
+Find a `RxLocalDocument` by its id. Returns a Promise which resolves the `RxLocalDocument` or `null` if not exists.
 
 ```javascript
 const localDoc = await myCollection.getLocal('foobar');
