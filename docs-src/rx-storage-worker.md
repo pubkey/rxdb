@@ -85,7 +85,7 @@ const database = await createRxDatabase({
 
 Each call to `getRxStorageWorker()` will create a different worker instance so that when you have more then one `RxDatabase`, each database will have its own JavaScript worker process.
 
-To reuse the worker instance in more then one `RxDatabase`, you can store the output of `getRxStorageWorker()` into a variable an use that one. Reusing the worker can decrease the initial page load, but you might get slower database operations.
+To reuse the worker instance in more than one `RxDatabase`, you can store the output of `getRxStorageWorker()` into a variable an use that one. Reusing the worker can decrease the initial page load, but you might get slower database operations.
 
 ```ts
 // Call getRxStorageWorker() exactly once
