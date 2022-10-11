@@ -9,7 +9,7 @@ With an ACID transaction you can mutate data dependent on the current state of t
 
 To implement ACID transactions on a **single server**, the database has to keep track on who is running transactions and then schedule these transactions so that they can run in isolation.
 
-As soon as you have to split your database on **multiple servers**, transaction handling becomes way more difficult. The servers have to communicate with each other to find a consens about which transaction can run and which has to wait. Network connections might break, or one server might complete its part of the transaction and then be required to roll back its changes because of an error on another server. 
+As soon as you have to split your database on **multiple servers**, transaction handling becomes way more difficult. The servers have to communicate with each other to find a consensus about which transaction can run and which has to wait. Network connections might break, or one server might complete its part of the transaction and then be required to roll back its changes because of an error on another server. 
 
 But with RxDB you have **multiple clients** that can go randomly online or offline. The users can have different devices and the clock of these devices can go off by any time. To support ACID transactions here, RxDB would have to make the whole world stand still for all clients, while one client is doing a write operation. And even that can only work when all clients are online. Implementing that might be possible, but at the cost of an unpredictable amount of performance loss and not beaing able to support [offline-first](./offline-first.md).
 
