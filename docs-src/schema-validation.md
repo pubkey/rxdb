@@ -12,7 +12,7 @@ The schema validation is **not a plugin** but comes in as a wrapper around any o
 When no validation is used, any document data can be safed but there might be **undefined behavior** when saving data that does not comply to the schema of a `RxCollection`.
 
 
-RxDB has different implementations to validate data, each of them is based on a different [JSON Schema library](https://json-schema.org/implementations.html). In this exmaples we use the [Dexie.js RxStorage](./rx-storage-dexie.md), but you can wrap the validation around **any other** [RxStorage](./rx-storage.md).
+RxDB has different implementations to validate data, each of them is based on a different [JSON Schema library](https://json-schema.org/implementations.html). In this example we use the [Dexie.js RxStorage](./rx-storage-dexie.md), but you can wrap the validation around **any other** [RxStorage](./rx-storage.md).
 
 ### validate-ajv
 
