@@ -139,7 +139,7 @@ Sharding can be used with RxDB with the [Sharding Plugin](./rx-storage-sharding.
 
 Indexes improve the query performance of IndexedDB significant. Instead of fetching all data from the storage when you search for a subset of it, you can iterate over the index and stop iterating when all relevant data has been found.
 
-For example to query for all user documents that have an `age` greater then `25`, you would create an `age+id` index.
+For example to query for all user documents that have an `age` greater than `25`, you would create an `age+id` index.
 To be able to run a batched cursor over the index, we always need our primary key (`id`) as the last index field.
 
 Instead of doing this, you can use a `custom index` which can improve the performance. The custom index runs over a helper field `ageIdCustomIndex` which is added to each document on write. Our index now only contains a single `string` field instead of two (age-`number` and id-`string`).
