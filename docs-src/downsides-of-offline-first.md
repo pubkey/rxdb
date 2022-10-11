@@ -26,7 +26,7 @@ The problem is, that you have no chance to really predict how much data can be s
 ## Browser storage is not really persistent
 
 When data is stored inside IndexedDB or one of the other storage APIs, it cannot be trusted to stay there forever.
-Apple for example deletes the data when the website was not used in the [last 7 days](https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/). The other browsers also have logic to clean up the stored data, and in the end the user itself could be the one that deletes the browers local data.
+Apple for example deletes the data when the website was not used in the [last 7 days](https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/). The other browsers also have logic to clean up the stored data, and in the end the user itself could be the one that deletes the browsers local data.
 
 The most common way to handle this, is to replicate everything from the backend to the client again.
 Of course, this does not work for state that is not stored at the backend. So if you assume you can store the users private data inside the browser in a secure way, you are [wrong](https://medium.com/universal-ethereum/out-of-gas-were-shutting-down-unilogin-3b544838df1a#4f60).
