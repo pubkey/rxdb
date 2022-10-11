@@ -6,7 +6,7 @@ LokiJS has the main benefit of having a better performance. It can do this becau
 ### Pros
 
 - Queries can run faster because all data is processed in memory.
-- It has a much faster initial load time because it loads all data from IndexedDB in a single request. But this is only true for small datasets. If much data must is stored, the initial load time can be higher then on other RxStorage implementations.
+- It has a much faster initial load time because it loads all data from IndexedDB in a single request. But this is only true for small datasets. If much data must is stored, the initial load time can be higher than on other RxStorage implementations.
 
 ### Cons
 
