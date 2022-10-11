@@ -12,7 +12,7 @@ To not let RxDB fill up all the memory, a `cache replacement policy` is defined 
 The default policy starts cleaning up queries depending on how much queries are in the cache and how much document data they contain.
 
 * It will never uncache queries that have subscribers to their results
-* It tries to always have less then 100 queries without subscriptions in the cache.
+* It tries to always have less than 100 queries without subscriptions in the cache.
 * It prefers to uncache queries that have never executed and are older then 30 seconds
 * It prefers to uncache queries that have not been used for longer time
 
