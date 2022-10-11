@@ -83,7 +83,7 @@ WHERE
 At first, the query runs on the local database of Alice and everything is fine.
 
 But at the same time Bob, the other client, updates a row and sets `amountInStock` from `0` to `1`.
-Now Bob's client replicates the changes from Alice and runs them. Bob will end up with a different database state then Alice because on one of the rows, the `WHERE` condition was not met. This is not what we want, so our replication protocol should be able to fix it. For that it has to reduce all mutations into a deterministic state.
+Now Bob's client replicates the changes from Alice and runs them. Bob will end up with a different database state than Alice because on one of the rows, the `WHERE` condition was not met. This is not what we want, so our replication protocol should be able to fix it. For that it has to reduce all mutations into a deterministic state.
 
 Let me loosely describe how "many" SQL replications work:
 
