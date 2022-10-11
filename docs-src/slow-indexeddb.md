@@ -229,7 +229,7 @@ The improvement of this technique is minimal, but observable as [these tests](ht
 
 ## In-Memory on top of IndexedDB
 
-To prevent transaction handling and to fix the performance problems, we need to stop using IndexedDB as a database. Instead all data is loaded into the memory on the inital page load. Here all reads and writes happen in memory which is about 100x faster. Only some time after a write occured, the memory state is persisted into IndexedDB with a **single write transaction**. In this scenario IndexedDB is used as a filesystem, not as a database.
+To prevent transaction handling and to fix the performance problems, we need to stop using IndexedDB as a database. Instead all data is loaded into the memory on the initial page load. Here all reads and writes happen in memory which is about 100x faster. Only some time after a write occured, the memory state is persisted into IndexedDB with a **single write transaction**. In this scenario IndexedDB is used as a filesystem, not as a database.
 
 There are some libraries that already do that:
 
