@@ -49,7 +49,7 @@ Instead of handling local conflicts, in most cases it is easier to ensure that t
 
 ## Replication conflicts
 
-A replication conflict appears when mutliple clients write to the same documents at once and these documents are then replicated to the backend server. 
+A replication conflict appears when multiple clients write to the same documents at once and these documents are then replicated to the backend server. 
 
 When you replicate with the [Graphql replication](./replication-graphql.md) and the [replication primitives](./replication.md), RxDB assumes that conflicts are **detected** and **resolved** at the client side.
 
