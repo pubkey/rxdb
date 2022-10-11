@@ -160,7 +160,7 @@ Modern web apps are build with TypeScript and you want the transpiler to know th
 </p>
 
 <!-- 
-## Composeable queries
+## Composable queries
 -->
 
 
