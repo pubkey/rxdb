@@ -11,7 +11,7 @@ To make RxDB a sustainable Project, some plugins are not part of the RxDB open s
 - [RxStorage Sharding](./rx-storage-sharding.md) a wrapper around any other [RxStorage](./rx-storage.md) that improves performance by applying the sharding technique.
 - [Storage migration](./storage-migration.md) A plugins that migrates data from one storage to another. Use this when you want to change the used RxStorage or to migrate data from an older RxDB major version.
 - [RxStorage Memory Synced](./rx-storage-memory-synced.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlaying storage for persistence.
-The main reason to use this is to improve initial page load and query/write times. This is mostly usefull in browser based applications.
+The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications.
 - [RxStorage Localstorage Meta Optimizer](./rx-storage-localstorage-meta-optimizer.md) is a wrapper around any other RxStorage. The wrapper uses the original RxStorage for normal collection documents. But to optimize the initial page load time, it uses localstorage to store the plain key-value metadata that RxDB needs to create databases and collections. This plugin can only be used in browsers.
 
 ## Getting Premium
