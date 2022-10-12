@@ -331,7 +331,17 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     async awaitInSync(): Promise<true> {
         await this.startPromise;
         await awaitRxStorageReplicationFirstInSync(ensureNotFalsy(this.internalReplicationState));
+
+        /**
+         * Often awaitInSync() is called directly after a document write,
+         * like in the unit tests.
+         * So we first have to await the idleness to ensure that all RxChangeEvents
+         * are processed already.
+         */
+        await this.collection.database.requestIdlePromise();
+
         await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
+
         return true;
     }
 
