@@ -9,9 +9,9 @@ With an ACID transaction you can mutate data dependent on the current state of t
 
 To implement ACID transactions on a **single server**, the database has to keep track on who is running transactions and then schedule these transactions so that they can run in isolation.
 
-As soon as you have to split your database on **multiple servers**, transaction handling becomes way more difficult. The servers have to communicate with each other to find a consens about which transaction can run and which has to wait. Network connections might break, or one server might complete its part of the transaction and then be required to roll back its changes because of an error on another server. 
+As soon as you have to split your database on **multiple servers**, transaction handling becomes way more difficult. The servers have to communicate with each other to find a consensus about which transaction can run and which has to wait. Network connections might break, or one server might complete its part of the transaction and then be required to roll back its changes because of an error on another server. 
 
-But with RxDB you have **multiple clients** that can go randomly online or offline. The users can have different devices and the clock of these devices can go off by any time. To support ACID transactions here, RxDB would have to make the whole world stand still for all clients, while one client is doing a write operation. And even that can only work when all clients are online. Implementing that might be possible, but at the cost of an unpredictable amount of performance loss and not beaing able to support [offline-first](./offline-first.md).
+But with RxDB you have **multiple clients** that can go randomly online or offline. The users can have different devices and the clock of these devices can go off by any time. To support ACID transactions here, RxDB would have to make the whole world stand still for all clients, while one client is doing a write operation. And even that can only work when all clients are online. Implementing that might be possible, but at the cost of an unpredictable amount of performance loss and not being able to support [offline-first](./offline-first.md).
 
 > A single write operation to a document is the only atomic thing you can do in RxDB.
 
@@ -25,7 +25,7 @@ The benefits of not having to support transactions:
 
 ## Revisions
 
-Working without transactions leads to having undefined state when doing multiple database operations at the same time. Most client side databases rely on a last-write-wins stategy on write operations. This might be a viable solution for some cases, but often this leads to strange problems that are hard to debug.
+Working without transactions leads to having undefined state when doing multiple database operations at the same time. Most client side databases rely on a last-write-wins strategy on write operations. This might be a viable solution for some cases, but often this leads to strange problems that are hard to debug.
 
 Instead, to ensure that the behavior of RxDB is **always predictable**, RxDB relies on **revisions** for version control.
 
@@ -49,7 +49,7 @@ Instead of handling local conflicts, in most cases it is easier to ensure that t
 
 ## Replication conflicts
 
-A replication conflict appears when mutliple clients write to the same documents at once and these documents are then replicated to the backend server. 
+A replication conflict appears when multiple clients write to the same documents at once and these documents are then replicated to the backend server. 
 
 When you replicate with the [Graphql replication](./replication-graphql.md) and the [replication primitives](./replication.md), RxDB assumes that conflicts are **detected** and **resolved** at the client side.
 

@@ -44,7 +44,7 @@ const customerDocuments = await db.customers.find().where('city_id').equals(city
 
 So what are the differences? The SQL version would run faster on a remote database server because it would aggregate all data there and return only the customers as result set. But when you have a local database, it is not really a difference. Querying the two tables by hand would have about the same performance as a JavaScript implementation of SQL that is running locally.
 
-The main benefit from using SQL is, that the SQL query runs inside of a **single transaction**. When a change to one of our two tables happens, while our query runs, the SQL database will ensure that the write does not affect the result of the query. This could happen with NoSQL, while you retrieve the city document, the customer table gets changed and your result is not correct for the dataset that was there when you started the querying. As a workarround, you could observe the database for changes and if a change happened in between, you have to re-run everything.
+The main benefit from using SQL is, that the SQL query runs inside of a **single transaction**. When a change to one of our two tables happens, while our query runs, the SQL database will ensure that the write does not affect the result of the query. This could happen with NoSQL, while you retrieve the city document, the customer table gets changed and your result is not correct for the dataset that was there when you started the querying. As a workaround, you could observe the database for changes and if a change happened in between, you have to re-run everything.
 
 <p align="center">
   <img src="./files/no-relational-data.png" alt="no relational data" width="250" />
@@ -83,7 +83,7 @@ WHERE
 At first, the query runs on the local database of Alice and everything is fine.
 
 But at the same time Bob, the other client, updates a row and sets `amountInStock` from `0` to `1`.
-Now Bob's client replicates the changes from Alice and runs them. Bob will end up with a different database state then Alice because on one of the rows, the `WHERE` condition was not met. This is not what we want, so our replication protocol should be able to fix it. For that it has to reduce all mutations into a deterministic state.
+Now Bob's client replicates the changes from Alice and runs them. Bob will end up with a different database state than Alice because on one of the rows, the `WHERE` condition was not met. This is not what we want, so our replication protocol should be able to fix it. For that it has to reduce all mutations into a deterministic state.
 
 Let me loosely describe how "many" SQL replications work:
 
@@ -160,7 +160,7 @@ Modern web apps are build with TypeScript and you want the transpiler to know th
 </p>
 
 <!-- 
-## Composeable queries
+## Composable queries
 -->
 
 

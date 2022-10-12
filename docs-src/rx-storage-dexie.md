@@ -6,7 +6,7 @@ Dexie.js is a minimal wrapper around IndexedDB that has a good performance.
 For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/mingo) query handler.
 
 ## Pros 
-  - Smaller bundle size then with the PouchDB storage.
+  - Smaller bundle size than with the PouchDB storage.
   - Fast initial load even on big datasets.
   - Faster write and read performance than with PouchDB because it has less overhead.
 
