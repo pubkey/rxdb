@@ -26,7 +26,7 @@ The problem is, that you have no chance to really predict how much data can be s
 ## Browser storage is not really persistent
 
 When data is stored inside IndexedDB or one of the other storage APIs, it cannot be trusted to stay there forever.
-Apple for example deletes the data when the website was not used in the [last 7 days](https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/). The other browsers also have logic to clean up the stored data, and in the end the user itself could be the one that deletes the browers local data.
+Apple for example deletes the data when the website was not used in the [last 7 days](https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/). The other browsers also have logic to clean up the stored data, and in the end the user itself could be the one that deletes the browsers local data.
 
 The most common way to handle this, is to replicate everything from the backend to the client again.
 Of course, this does not work for state that is not stored at the backend. So if you assume you can store the users private data inside the browser in a secure way, you are [wrong](https://medium.com/universal-ethereum/out-of-gas-were-shutting-down-unilogin-3b544838df1a#4f60).
@@ -127,7 +127,7 @@ I started creating [RxDB](https://github.com/pubkey/rxdb) many years ago and whi
 
 So why are there no real relations in offline first databases? I could answer with these arguments like how JavaScript works better with document based data, how performance is better when having no joins or even how NoSQL queries are more composable. But the truth is, everything is NoSQL because it makes replication easy. An SQL query that mutates data in different tables based on some selects and joins, cannot be partially replicated without breaking the client. You have foreign keys that point to other rows and if these rows are not replicated yet, you have a problem. To implement a robust replication protocol for relational data, you need some stuff like a [reliable atomic clock](https://www.theverge.com/2012/11/26/3692392/google-spanner-atomic-clocks-GPS) and you have to block queries over multiple tables while a transaction replicated. [Watch this guy](https://youtu.be/iEFcmfmdh2w?t=607) implementing offline first replication on top of SQLite or read this [discussion](https://github.com/supabase/supabase/discussions/357) about implementing offline first in supabase.
 
-So creating replication for an SQL offline first database is way more work then just adding some network protocols on top of PostgreSQL. It might not even be possible for clients that have no reliable clock.
+So creating replication for an SQL offline first database is way more work than just adding some network protocols on top of PostgreSQL. It might not even be possible for clients that have no reliable clock.
 
 <p align="center">
   <img src="./files/no-relational-data.png" alt="no relational data" width="250" />

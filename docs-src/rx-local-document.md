@@ -43,7 +43,7 @@ myDatabase.addCollections({
 });
 ```
 
-**NOTICE:** If you want to store local documents in a `RxCollection` but **NOT** in the `RxDatabase`, you **MUST NOT** set `localDocuments: true` in the `RxDatabase` because it will only slow down the inital database creation.
+**NOTICE:** If you want to store local documents in a `RxCollection` but **NOT** in the `RxDatabase`, you **MUST NOT** set `localDocuments: true` in the `RxDatabase` because it will only slow down the initial database creation.
 
 ## insertLocal()
 
@@ -81,7 +81,7 @@ const localDoc = await myCollection.upsertLocal(
 
 ## getLocal()
 
-Find a `RxLocalDocument` by it's id. Returns a Promise which resolves the `RxLocalDocument` or `null` if not exists.
+Find a `RxLocalDocument` by its id. Returns a Promise which resolves the `RxLocalDocument` or `null` if not exists.
 
 ```javascript
 const localDoc = await myCollection.getLocal('foobar');
