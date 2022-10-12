@@ -482,8 +482,15 @@ var RxReplicationState = /*#__PURE__*/function () {
       var _this7 = this;
       return Promise.resolve(_this7.startPromise).then(function () {
         return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)((0, _util.ensureNotFalsy)(_this7.internalReplicationState))).then(function () {
-          return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationInSync)((0, _util.ensureNotFalsy)(_this7.internalReplicationState))).then(function () {
-            return true;
+          /**
+           * Often awaitInSync() is called directly after a document write,
+           * like in the unit tests.
+           * So we first have to await the idleness to ensure that all RxChangeEvents
+           * are processed already.
+           */return Promise.resolve(_this7.collection.database.requestIdlePromise()).then(function () {
+            return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationInSync)((0, _util.ensureNotFalsy)(_this7.internalReplicationState))).then(function () {
+              return true;
+            });
           });
         });
       });

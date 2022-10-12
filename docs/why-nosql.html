@@ -2151,7 +2151,7 @@ Some people think that they cannot do that with NoSQL, so let me explain.</p>
 <span class="hljs-keyword">const</span> customerDocuments = await db.customers.find().where(<span class="hljs-string">&apos;city_id&apos;</span>).equals(cityDocument.id).exec();
 </code></pre>
 <p>So what are the differences? The SQL version would run faster on a remote database server because it would aggregate all data there and return only the customers as result set. But when you have a local database, it is not really a difference. Querying the two tables by hand would have about the same performance as a JavaScript implementation of SQL that is running locally.</p>
-<p>The main benefit from using SQL is, that the SQL query runs inside of a <strong>single transaction</strong>. When a change to one of our two tables happens, while our query runs, the SQL database will ensure that the write does not affect the result of the query. This could happen with NoSQL, while you retrieve the city document, the customer table gets changed and your result is not correct for the dataset that was there when you started the querying. As a workarround, you could observe the database for changes and if a change happened in between, you have to re-run everything.</p>
+<p>The main benefit from using SQL is, that the SQL query runs inside of a <strong>single transaction</strong>. When a change to one of our two tables happens, while our query runs, the SQL database will ensure that the write does not affect the result of the query. This could happen with NoSQL, while you retrieve the city document, the customer table gets changed and your result is not correct for the dataset that was there when you started the querying. As a workaround, you could observe the database for changes and if a change happened in between, you have to re-run everything.</p>
 <p align="center">
   <img src="files/no-relational-data.png" alt="no relational data" width="250">
 </p>
@@ -2183,7 +2183,7 @@ and end up with the <strong>exact same</strong> database state as any other clie
 </code></pre>
 <p>At first, the query runs on the local database of Alice and everything is fine.</p>
 <p>But at the same time Bob, the other client, updates a row and sets <code>amountInStock</code> from <code>0</code> to <code>1</code>.
-Now Bob&apos;s client replicates the changes from Alice and runs them. Bob will end up with a different database state then Alice because on one of the rows, the <code>WHERE</code> condition was not met. This is not what we want, so our replication protocol should be able to fix it. For that it has to reduce all mutations into a deterministic state.</p>
+Now Bob&apos;s client replicates the changes from Alice and runs them. Bob will end up with a different database state than Alice because on one of the rows, the <code>WHERE</code> condition was not met. This is not what we want, so our replication protocol should be able to fix it. For that it has to reduce all mutations into a deterministic state.</p>
 <p>Let me loosely describe how &quot;many&quot; SQL replications work:</p>
 <p>Instead of just running all replicated queries, we remember a list of all past queries. When a new query comes in that happened <code>before</code> our last query, we roll back the previous queries, run the new query, and then re-execute our own queries on top of that. For that to work, all queries need a timestamp so we can order them correctly. But you cannot rely on the clock that is running at the client. Client side clocks drift, they can run in a different speed or even a malicious client modifies the clock on purpose. So instead of a normal timestamp, we have to use a <a href="https://jaredforsyth.com/posts/hybrid-logical-clocks/" target="_blank">Hybrid Logical Clock</a> that takes a client generated id and the number of the clients query into account. Our timestamp will then look like <code>2021-10-04T15:29.40.273Z-0000-eede1195b7d94dd5</code>. These timestamps can be brought into a deterministic order and each client can run the replicated queries in the same order. Watch <a href="https://www.youtube.com/watch?v=iEFcmfmdh2w&amp;t=607s" target="_blank">this video</a> to learn how to implement that.</p>
 <p>While this sounds easy and realizable, we have some problems:
@@ -2236,7 +2236,7 @@ This scales very bad because the more queries you run, the more results you have
 </p>
 
 <!-- 
-## Composeable queries
+## Composable queries
 -->
 <h2 id="what-you-lose-with-nosql">What you lose with NoSQL</h2>
 <ul>

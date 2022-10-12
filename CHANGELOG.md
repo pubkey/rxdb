@@ -3,16 +3,18 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX many typos from the [TYPOFIX event](https://github.com/pubkey/rxdb/issues/4024)
-- FIX `lastOfArray()` may return undefined if array is empty [#4011](https://github.com/pubkey/rxdb/pull/4011) Thanks [@AlexErrant](https://github.com/AlexErrant)
-- FIX Remove legacy triple slash directives [#4023](https://github.com/pubkey/rxdb/pull/4023) Thanks [@jeromepochat](https://github.com/jeromepochat)
-- FIX randomly failing replication test
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.5.0 (12 October 2022)
+
+- FIX many typos from the [TYPOFIX event](https://github.com/pubkey/rxdb/issues/4024)
+- FIX `lastOfArray()` may return undefined if array is empty [#4011](https://github.com/pubkey/rxdb/pull/4011) Thanks [@AlexErrant](https://github.com/AlexErrant)
+- FIX Remove legacy triple slash directives [#4023](https://github.com/pubkey/rxdb/pull/4023) Thanks [@jeromepochat](https://github.com/jeromepochat)
+- FIX randomly failing replication test
 
 ### 13.4.5 (7 October 2022)
 

@@ -2153,7 +2153,7 @@ myDatabase.addCollections({
   }
 });
 </code></pre>
-<p><strong>NOTICE:</strong> If you want to store local documents in a <code>RxCollection</code> but <strong>NOT</strong> in the <code>RxDatabase</code>, you <strong>MUST NOT</strong> set <code>localDocuments: true</code> in the <code>RxDatabase</code> because it will only slow down the inital database creation.</p>
+<p><strong>NOTICE:</strong> If you want to store local documents in a <code>RxCollection</code> but <strong>NOT</strong> in the <code>RxDatabase</code>, you <strong>MUST NOT</strong> set <code>localDocuments: true</code> in the <code>RxDatabase</code> because it will only slow down the initial database creation.</p>
 <h2 id="insertlocal">insertLocal()</h2>
 <p>Creates a local document for the database or collection. Throws if a local document with the same id already exists. Returns a Promise which resolves the new <code>RxLocalDocument</code>.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.insertLocal(
@@ -2181,7 +2181,7 @@ myDatabase.addCollections({
 );
 </code></pre>
 <h2 id="getlocal">getLocal()</h2>
-<p>Find a <code>RxLocalDocument</code> by it&apos;s id. Returns a Promise which resolves the <code>RxLocalDocument</code> or <code>null</code> if not exists.</p>
+<p>Find a <code>RxLocalDocument</code> by its id. Returns a Promise which resolves the <code>RxLocalDocument</code> or <code>null</code> if not exists.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.getLocal(<span class="hljs-string">&apos;foobar&apos;</span>);
 </code></pre>
 <h2 id="getlocal">getLocal$()</h2>

@@ -2189,7 +2189,7 @@ You can copy them to a location where it can be served from the webserver and th
 </code></pre>
 <h2 id="one-worker-per-database">One worker per database</h2>
 <p>Each call to <code>getRxStorageWorker()</code> will create a different worker instance so that when you have more then one <code>RxDatabase</code>, each database will have its own JavaScript worker process.</p>
-<p>To reuse the worker instance in more then one <code>RxDatabase</code>, you can store the output of <code>getRxStorageWorker()</code> into a variable an use that one. Reusing the worker can decrease the initial page load, but you might get slower database operations.</p>
+<p>To reuse the worker instance in more than one <code>RxDatabase</code>, you can store the output of <code>getRxStorageWorker()</code> into a variable an use that one. Reusing the worker can decrease the initial page load, but you might get slower database operations.</p>
 <pre><code class="lang-ts"><span class="hljs-comment">// Call getRxStorageWorker() exactly once</span>
 <span class="hljs-keyword">const</span> workerStorage = getRxStorageWorker({
     statics: RxStorageLokiStatics,
