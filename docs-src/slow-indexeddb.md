@@ -116,7 +116,7 @@ RxDB uses batched cursors in the [IndexedDB RxStorage](./rx-storage-indexeddb.md
 
 Sharding is a technique, normally used in server side databases, where the database is partitioned horizontally. Instead of storing all documents at one table/collection, the documents are split into so called **shards** and each shard is stored on one table/collection. This is done in server side architectures to spread the load between multiple physical servers which **increases scalability**.
 
-When you use IndexedDB in a browser, there is of course no way to split the load between the client and other servers. But you can still benefit from sharding. Partitioning the documents horizontally into **multiple IndexedDB stores**, has shown to have a big performance improvement in write- and read operations while only increasing inital pageload slightly.
+When you use IndexedDB in a browser, there is of course no way to split the load between the client and other servers. But you can still benefit from sharding. Partitioning the documents horizontally into **multiple IndexedDB stores**, has shown to have a big performance improvement in write- and read operations while only increasing initial pageload slightly.
 
 <p align="center">
   <img src="./files/indexeddb-sharding-performance.png" alt="IndexedDB sharding performance" width="100%" />
@@ -139,7 +139,7 @@ Sharding can be used with RxDB with the [Sharding Plugin](./rx-storage-sharding.
 
 Indexes improve the query performance of IndexedDB significant. Instead of fetching all data from the storage when you search for a subset of it, you can iterate over the index and stop iterating when all relevant data has been found.
 
-For example to query for all user documents that have an `age` greater then `25`, you would create an `age+id` index.
+For example to query for all user documents that have an `age` greater than `25`, you would create an `age+id` index.
 To be able to run a batched cursor over the index, we always need our primary key (`id`) as the last index field.
 
 Instead of doing this, you can use a `custom index` which can improve the performance. The custom index runs over a helper field `ageIdCustomIndex` which is added to each document on write. Our index now only contains a single `string` field instead of two (age-`number` and id-`string`).
@@ -229,7 +229,7 @@ The improvement of this technique is minimal, but observable as [these tests](ht
 
 ## In-Memory on top of IndexedDB
 
-To prevent transaction handling and to fix the performance problems, we need to stop using IndexedDB as a database. Instead all data is loaded into the memory on the inital page load. Here all reads and writes happen in memory which is about 100x faster. Only some time after a write occurred, the memory state is persisted into IndexedDB with a **single write transaction**. In this scenario IndexedDB is used as a filesystem, not as a database.
+To prevent transaction handling and to fix the performance problems, we need to stop using IndexedDB as a database. Instead all data is loaded into the memory on the initial page load. Here all reads and writes happen in memory which is about 100x faster. Only some time after a write occurred, the memory state is persisted into IndexedDB with a **single write transaction**. In this scenario IndexedDB is used as a filesystem, not as a database.
 
 There are some libraries that already do that:
 
@@ -240,10 +240,10 @@ There are some libraries that already do that:
 
 ### In-Memory: Persistence
 
-One downsite of not directly using IndexedDB, is that your data is not persistend all the time. And when the JavaScript process exists without having persisted to IndexedDB, data can be lost. To prevent this from happening, we have to ensure that the in-memory state is written down to the disc. One point is make persisting as fast as possible. LokiJS for example has the `incremental-indexeddb-adapter` which only saves new writes to the disc instead of persisting the whole state. Another point is to run the persisting at the correct point in time. For example the RxDB [LokiJS storage](https://rxdb.info/rx-storage-lokijs.html) persists in the following situations:
+One downside of not directly using IndexedDB, is that your data is not persistend all the time. And when the JavaScript process exists without having persisted to IndexedDB, data can be lost. To prevent this from happening, we have to ensure that the in-memory state is written down to the disc. One point is make persisting as fast as possible. LokiJS for example has the `incremental-indexeddb-adapter` which only saves new writes to the disc instead of persisting the whole state. Another point is to run the persisting at the correct point in time. For example the RxDB [LokiJS storage](https://rxdb.info/rx-storage-lokijs.html) persists in the following situations:
 
 - When the database is idle and no write or query is running. In that time we can persist the state if any new writes appeared before.
-- When the `window` fires the [beforeunload event](https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload) we can assume that the JavaScript process is exited any moment and we have to persiste the state. After `beforeunload` there are several seconds time which are sufficient to store all new changes. This has shown to work quite reliable.
+- When the `window` fires the [beforeunload event](https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload) we can assume that the JavaScript process is exited any moment and we have to persist the state. After `beforeunload` there are several seconds time which are sufficient to store all new changes. This has shown to work quite reliable.
 
 The only missing event that can happen is when the browser exists unexpectedly like when it crashes or when the power of the computer is shut of.
 
@@ -253,7 +253,7 @@ The only missing event that can happen is when the browser exists unexpectedly l
 
 One big difference between a web application and a 'normal' app, is that your users can use the app in multiple browser tabs at the same time. But when you have all database state in memory and only periodically write it to disc, multiple browser tabs could overwrite each other and you would loose data. This might not be a problem when you rely on a client-server replication, because the lost data might already be replicated with the backend and therefore with the other tabs. But this would not work when the client is offline.
 
-The ideal way to solve that problem, is to use a [SharedWorker](https://developer.mozilla.org/en/docs/Web/API/SharedWorker). A SharedWorker is like a [WebWorker](https://developer.mozilla.org/en/docs/Web/API/Web_Workers_API) that runs its own JavaScript process only that the SharedWorker is shared between multiple contexts. You could create the database in the SharedWorker and then all browser tabs could request the Worker for data instead of having their own database. But unfortunately the SharedWorker API does [not work](https://caniuse.com/sharedworkers) in all browsers. Safari [dropped](https://bugs.webkit.org/show_bug.cgi?id=140344) its support and InternetExplorer or Android Chrome, never addopted it. Also it cannot be polyfilled. **UPDATE:** [Apple added SharedWorkers back in Safari 142](https://developer.apple.com/safari/technology-preview/release-notes/)
+The ideal way to solve that problem, is to use a [SharedWorker](https://developer.mozilla.org/en/docs/Web/API/SharedWorker). A SharedWorker is like a [WebWorker](https://developer.mozilla.org/en/docs/Web/API/Web_Workers_API) that runs its own JavaScript process only that the SharedWorker is shared between multiple contexts. You could create the database in the SharedWorker and then all browser tabs could request the Worker for data instead of having their own database. But unfortunately the SharedWorker API does [not work](https://caniuse.com/sharedworkers) in all browsers. Safari [dropped](https://bugs.webkit.org/show_bug.cgi?id=140344) its support and InternetExplorer or Android Chrome, never adopted it. Also it cannot be polyfilled. **UPDATE:** [Apple added SharedWorkers back in Safari 142](https://developer.apple.com/safari/technology-preview/release-notes/)
 
 Instead, we could use the [BroadcastChannel API](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API) to communicate between tabs and then apply a [leader election](https://github.com/pubkey/broadcast-channel#using-the-leaderelection) between them. The leader election ensures that, no matter how many tabs are open, always one tab is the `Leader`.
 
@@ -261,7 +261,7 @@ Instead, we could use the [BroadcastChannel API](https://developer.mozilla.org/e
   <img src="./files/leader-election.gif" alt="Leader Election" width="500" />
 </p>
 
-The disadvantage is that the leader election process takes some time on the inital page load (about 150 milliseconds). Also the leader election can break when a JavaScript process is fully blocked for a longer time. When this happens, a good way is to just reload the browser tab to restart the election process.
+The disadvantage is that the leader election process takes some time on the initial page load (about 150 milliseconds). Also the leader election can break when a JavaScript process is fully blocked for a longer time. When this happens, a good way is to just reload the browser tab to restart the election process.
 
 Using a leader election is implemented in the [RxDB LokiJS Storage](./rx-storage-lokijs.md).
 
