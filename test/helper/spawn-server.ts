@@ -16,11 +16,11 @@ const InMemPouchDB = PouchDB.defaults({
 });
 const expressPouch = require('express-pouchdb')(InMemPouchDB);
 
-export function spawn(): Promise<{
+export async function spawn(): Promise<{
     url: string,
     close: () => Promise<void>
 }> {
-    const port = nextPort();
+    const port = await nextPort();
     const path = '/db';
     app.use(path, expressPouch);
     const ret = 'http://0.0.0.0:' + port + path;

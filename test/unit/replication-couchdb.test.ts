@@ -50,7 +50,7 @@ if (config.platform.isNode()) {
     addPouchPlugin(require('pouchdb-adapter-http'));
 }
 
-describe('replication-couchdb.test.js', () => {
+describe('replication-couchdb.test.ts', () => {
     if (
         !config.platform.isNode() ||
         !config.storage.hasCouchDBReplication
