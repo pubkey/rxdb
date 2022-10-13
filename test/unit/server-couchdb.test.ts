@@ -239,7 +239,7 @@ config.parallel('server-couchdb.test.ts', () => {
         serverCollection.database.destroy();
     });
     it('should free port when database is destroyed', async () => {
-        const port = 5000;
+        const port = await nextPort();
         const col1 = await humansCollection.create(0);
         await col1.database.serverCouchDB({
             port
