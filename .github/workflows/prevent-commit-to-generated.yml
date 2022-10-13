@@ -1,0 +1,16 @@
+name: Prevent non-master commits to generated files
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+    - dist
+    - docs
+
+jobs:
+  warn-user:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Warn User to not commit generated files
+        run: bash -c 'echo "You have commited generated files (from the dist or docs folder), this is not allowed. You can only commit files that you have manually edited" && exit 1'
