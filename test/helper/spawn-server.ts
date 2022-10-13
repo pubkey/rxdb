@@ -4,6 +4,7 @@
  */
 
 import { randomString } from 'async-test-util';
+import { nextPort } from './port-manager';
 
 const express = require('express');
 const app = express();
@@ -15,19 +16,17 @@ const InMemPouchDB = PouchDB.defaults({
 });
 const expressPouch = require('express-pouchdb')(InMemPouchDB);
 
-let lastPort = 12121;
-
 export function spawn(): Promise<{
     url: string,
     close: () => Promise<void>
 }> {
-    lastPort++;
+    const port = nextPort();
     const path = '/db';
     app.use(path, expressPouch);
-    const ret = 'http://0.0.0.0:' + lastPort + path;
+    const ret = 'http://0.0.0.0:' + port + path;
 
     return new Promise(res => {
-        const server = app.listen(lastPort, function () {
+        const server = app.listen(port, function () {
             res({
                 url: ret + '/' + randomString(5) + '/',
                 close(now = false) {
