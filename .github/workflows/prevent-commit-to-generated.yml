@@ -1,8 +1,7 @@
 name: Prevent non-master commits to generated files
 
 on:
-  push:
-    branches: [ master ]
+  pull_request:
     paths:
     - dist
     - docs
