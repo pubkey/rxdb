@@ -13,6 +13,7 @@ This storage is based on [SQLite](https://www.sqlite.org/index.html) and is made
 - It is part of [RxDB Premium](./premium.md)
 - Does not support CouchDB replication.
 - At the moment it is not possible to use regex queries with the SQLite RxStorage.
+- Requires at least SQLite version `3.38.0` (2022-02-22).
 
 ## Usage (with Node.js SQLite)
 
