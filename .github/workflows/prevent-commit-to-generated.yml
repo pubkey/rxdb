@@ -1,10 +1,11 @@
 name: Prevent non-master commits to generated files
 
 on:
+  # https://stackoverflow.com/a/70569968/3443137
   pull_request:
     paths:
-    - dist
-    - docs
+    - 'dist/**'
+    - 'docs/**'
 
 jobs:
   warn-user:
