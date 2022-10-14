@@ -1,13 +1,3 @@
-/**
- * this is a template for a test.
- * If you found a bug, edit this test to reproduce it
- * and than make a pull-request with that failing test.
- * The maintainer will later move your test to the correct possition in the test-suite.
- *
- * To run this test do:
- * - 'npm run test:node' so it runs in nodejs
- * - 'npm run test:browser' so it runs in the browser
- */
 import { createRxDatabase, addRxPlugin } from '../../';
 import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 import config from './config';
