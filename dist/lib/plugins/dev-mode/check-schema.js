@@ -56,7 +56,6 @@ function validateFieldsDeep(rxJsonSchema) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
   function checkField(fieldName, schemaObj, path) {
     if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName);
-    if (schemaObj == null || typeof schemaObj !== 'object') return;
 
     // 'item' only allowed it type=='array'
     if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
@@ -141,15 +140,14 @@ function validateFieldsDeep(rxJsonSchema) {
     }
   }
   function traverse(currentObj, currentPath) {
-    if (!currentObj || typeof currentObj !== 'object') return;
+    if (typeof currentObj !== 'object') return;
     Object.keys(currentObj).forEach(function (attributeName) {
-      var schemaObj = currentObj[attributeName];
-      if (!currentObj.properties && typeof schemaObj === 'object') {
-        checkField(attributeName, schemaObj, currentPath);
+      if (!currentObj.properties) {
+        checkField(attributeName, currentObj[attributeName], currentPath);
       }
       var nextPath = currentPath;
       if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
-      traverse(schemaObj, nextPath);
+      traverse(currentObj[attributeName], nextPath);
     });
   }
   traverse(rxJsonSchema, '');
