@@ -1,10 +1,9 @@
-import { createRxDatabase, addRxPlugin } from '../../';
-import { RxDBDevModePlugin } from '../../plugins/dev-mode';
+import { createRxDatabase } from '../../';
 import config from './config';
 import assert from 'assert';
 
 describe('TypeError: Cannot read properties of null (reading hasOwnProperty)', () => {
-    it('should fail because it reproduces the bug', async () => {
+    it('should pass because the bug is fixed', async () => {
         // create a schema
         const userSchema = {
             title: 'user schema',
@@ -32,14 +31,12 @@ describe('TypeError: Cannot read properties of null (reading hasOwnProperty)', (
             required: ['id', 'createTime', 'updateTime'],
         };
 
-        // generate a random database-name
-        const name = 'test-app';
-
-        addRxPlugin(RxDBDevModePlugin);
+        // add this plugin triggers the bug, but seems it's added in the test setup
+        // addRxPlugin(RxDBDevModePlugin);
 
         // create a database
         const db = await createRxDatabase({
-            name,
+            name: 'test-app',
             /**
              * By calling config.storage.getStorage(),
              * we can ensure that all variations of RxStorage are tested in the CI.
