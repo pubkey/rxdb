@@ -83,6 +83,7 @@ const configuration = {
 
             const doNotUseTheseBrowsers = [
                 'PhantomJS',
+                'SafariTechPreview',
                 'FirefoxAurora',
                 'FirefoxNightly',
                 'ChromeCanary'
