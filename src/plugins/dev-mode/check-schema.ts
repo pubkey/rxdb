@@ -74,6 +74,8 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
             !Array.isArray(schemaObj)
         ) checkFieldNameRegex(fieldName);
 
+        if (schemaObj == null || typeof schemaObj !== 'object') return
+
         // 'item' only allowed it type=='array'
         if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
             throw newRxError('SC2', {
@@ -167,7 +169,7 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
     }
 
     function traverse(currentObj: any, currentPath: any) {
-        if (typeof currentObj !== 'object' || currentObj == null) return;
+        if (!currentObj || typeof currentObj !== 'object') return;
         Object.keys(currentObj).forEach(attributeName => {
             const schemaObj = currentObj[attributeName];
             if (!currentObj.properties && typeof schemaObj === 'object') {
