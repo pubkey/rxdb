@@ -19,6 +19,7 @@ import './unit/query-planner.test';
  * your relevant tests run first.
  * Do not commit this file if you modified the order.
  */
+import './unit/checkschema.test'
 import './unit/rx-storage-implementations.test';
 import './unit/rx-storage-pouchdb.test';
 import './unit/rx-storage-lokijs.test';
