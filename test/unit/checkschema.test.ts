@@ -1,6 +1,5 @@
 import { createRxDatabase } from '../../';
 import config from './config';
-import assert from 'assert';
 
 describe('TypeError: Cannot read properties of null (reading hasOwnProperty)', () => {
     it('should pass because the bug is fixed', async () => {
@@ -44,19 +43,14 @@ describe('TypeError: Cannot read properties of null (reading hasOwnProperty)', (
             storage: config.storage.getStorage(),
         });
 
-        let err = null;
-
         // create a collection
         await db
             .addCollections({
                 users: {
                     schema: userSchema,
                 },
-            })
-            .catch((e) => {
-                err = e;
             });
 
-        assert.ok(err === null);
+        await db.destroy()
     });
 });
