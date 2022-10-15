@@ -39,8 +39,8 @@ async function run() {
                         maxLength: 30
                     }
                 },
-                indexes: ['name', 'color', 'updatedAt'],
-                required: ['id', 'color', 'updatedAt']
+                indexes: ['name', 'color'],
+                required: ['id', 'color']
             }
         }
     });

@@ -34,19 +34,29 @@ void main() async {
   try {
     print('# running javascript');
     print(plainJsCode);
-    print('--------------');
-    print('--------------');
-    print('--------------');
-    print('--------------');
+    print('--------------0');
+    final setToGlobalObject = await engine.evaluate("(key, val) => { this[key] = val; }");
+    await setToGlobalObject.invoke(["setTimeoutWait", (int time) async {
+      await Future.delayed(Duration(milliseconds: time));
+    }]);
+    print('--------------0.01');
     print(await engine.evaluate('process = {};'));
+    print(await engine.evaluate("""function setTimeout(fn, time) { 
+      (async() => {
+        await setTimeoutWait(time);
+        fn();
+      })();
+    }"""));
+    print('--------------0.1');
+    print(await engine.evaluate("async function getColor(){ new Promise(res => setTimeout(() => res('blue'), 100));  }"));
+    print('--------------0.2');
+    print(await engine.evaluate('getColor();'));
+    print('--------------0.3');
     print(await engine.evaluate(plainJsCode));
     print('--------------1');
     print(await engine.evaluate('process.test();'));
     print('--------------1.5');
 
-    print(await engine.evaluate("async function getColor(){    return Promise.resolve('blue');}"));
-    print('--------------2');
-    print(await engine.evaluate('getColor();'));
     print('--------------2.5');
     print(await engine.evaluate('process.run();'));
     print('--------------3');

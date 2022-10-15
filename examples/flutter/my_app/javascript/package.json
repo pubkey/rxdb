@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "rxdb": "13.5.0"
+    "rxdb": "13.5.1"
   },
   "devDependencies": {
     "webpack": "5.74.0",
