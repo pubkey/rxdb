@@ -10906,7 +10906,9 @@ function pluginMissing(pluginKey) {
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
  * @return a string as hash-result
  */
-function fastUnsecureHash(inputString) {
+function fastUnsecureHash(inputString,
+// used to test the polyfill
+doNotUseTextEncoder) {
   var hashValue = 0,
     i,
     chr,
@@ -10919,7 +10921,23 @@ function fastUnsecureHash(inputString) {
    * This is what makes the murmurhash implementation such fast.
    * @link https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L4
    */
-  var encoded = new TextEncoder().encode(inputString);
+  var encoded;
+
+  /**
+   * All modern browsers support the TextEncoder
+   * @link https://caniuse.com/textencoder
+   * But to make RxDB work in other JavaScript runtimes,
+   * like when using it in flutter or QuickJS, we need to
+   * make it work even when there is no TextEncoder.
+   */
+  if (typeof TextEncoder !== 'undefined' && !doNotUseTextEncoder) {
+    encoded = new TextEncoder().encode(inputString);
+  } else {
+    encoded = [];
+    for (var _i = 0; _i < inputString.length; _i++) {
+      encoded.push(inputString.charCodeAt(_i));
+    }
+  }
   for (i = 0, len = inputString.length; i < len; i++) {
     chr = encoded[i];
     hashValue = (hashValue << 5) - hashValue + chr;
@@ -38345,6 +38363,7 @@ var runtime = (function (exports) {
 
   var Op = Object.prototype;
   var hasOwn = Op.hasOwnProperty;
+  var defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; };
   var undefined; // More compressible than void 0.
   var $Symbol = typeof Symbol === "function" ? Symbol : {};
   var iteratorSymbol = $Symbol.iterator || "@@iterator";
@@ -38377,7 +38396,7 @@ var runtime = (function (exports) {
 
     // The ._invoke method unifies the implementations of the .next,
     // .throw, and .return methods.
-    generator._invoke = makeInvokeMethod(innerFn, self, context);
+    defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) });
 
     return generator;
   }
@@ -38438,8 +38457,12 @@ var runtime = (function (exports) {
   var Gp = GeneratorFunctionPrototype.prototype =
     Generator.prototype = Object.create(IteratorPrototype);
   GeneratorFunction.prototype = GeneratorFunctionPrototype;
-  define(Gp, "constructor", GeneratorFunctionPrototype);
-  define(GeneratorFunctionPrototype, "constructor", GeneratorFunction);
+  defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: true });
+  defineProperty(
+    GeneratorFunctionPrototype,
+    "constructor",
+    { value: GeneratorFunction, configurable: true }
+  );
   GeneratorFunction.displayName = define(
     GeneratorFunctionPrototype,
     toStringTagSymbol,
@@ -38549,7 +38572,7 @@ var runtime = (function (exports) {
 
     // Define the unified helper method that is used to implement .next,
     // .throw, and .return (see defineIteratorMethods).
-    this._invoke = enqueue;
+    defineProperty(this, "_invoke", { value: enqueue });
   }
 
   defineIteratorMethods(AsyncIterator.prototype);
@@ -38787,7 +38810,8 @@ var runtime = (function (exports) {
     this.reset(true);
   }
 
-  exports.keys = function(object) {
+  exports.keys = function(val) {
+    var object = Object(val);
     var keys = [];
     for (var key in object) {
       keys.push(key);

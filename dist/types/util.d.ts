@@ -12,7 +12,7 @@ export declare function pluginMissing(pluginKey: string): Error;
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
  * @return a string as hash-result
  */
-export declare function fastUnsecureHash(inputString: string): string;
+export declare function fastUnsecureHash(inputString: string, doNotUseTextEncoder?: boolean): string;
 /**
  * Default hash method used to create revision hashes
  * that do not have to be cryptographically secure.
