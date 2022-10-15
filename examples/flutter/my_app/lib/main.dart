@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
-
-
+  WidgetsFlutterBinding.ensureInitialized();
 
 
   runApp(const MyApp());
 
+  WidgetsFlutterBinding.ensureInitialized();
 
 
+  final prefs = await SharedPreferences.getInstance();
 
   
   print('#################');
@@ -35,20 +37,52 @@ void main() async {
     print('# running javascript');
     print(plainJsCode);
     print('--------------0');
+    print(await engine.evaluate('process = {};'));
+    print(await engine.evaluate('window = {};'));
+    print(await engine.evaluate('console = {};'));
+    print('--------------0.011');
     final setToGlobalObject = await engine.evaluate("(key, val) => { this[key] = val; }");
     await setToGlobalObject.invoke(["setTimeoutWait", (int time) async {
       await Future.delayed(Duration(milliseconds: time));
     }]);
     print('--------------0.01');
-    print(await engine.evaluate('process = {};'));
     print(await engine.evaluate("""function setTimeout(fn, time) { 
       (async() => {
         await setTimeoutWait(time);
         fn();
       })();
     }"""));
+    print('--------------0.02');
+    int lastIntervalId = 0;
+    List<int> runningIntervals = [];
+    await setToGlobalObject.invoke(["setIntervalMapper", (int time) async {
+      // Timer.periodic(new Duration(seconds: 1), (timer) {
+      //   debugPrint(timer.tick.toString());
+      // });
+      // TODO
+    }]);
+    print(await engine.evaluate("""function setInterval(fn, time) { 
+    }""")); // TODO
+    print('--------------0.03');
+    await setToGlobalObject.invoke(["clearIntervalMapper", (int intervalId) async {
+      // TODO
+    }]);
+    print(await engine.evaluate("""function clearInterval(handler) { 
+    }""")); // TODO
+
+    print('--------------0.04');
+    await setToGlobalObject.invoke(["persistKeyValue", (String key, String value) async {
+      print('----------------- persist start');
+      await prefs.setString(key, value);
+      print('----------------- persist end');
+    }]);
+    await setToGlobalObject.invoke(["readKeyValue", (String key) async {
+      final String? value = prefs.getString(key);
+      return value;
+    }]);
+
     print('--------------0.1');
-    print(await engine.evaluate("async function getColor(){ new Promise(res => setTimeout(() => res('blue'), 100));  }"));
+    print(await engine.evaluate("async function getColor(){ new Promise(res => setInterval(() => res('blue'), 100));  }"));
     print('--------------0.2');
     print(await engine.evaluate('getColor();'));
     print('--------------0.3');
