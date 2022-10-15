@@ -41,7 +41,9 @@ export function pluginMissing(
  * @return a string as hash-result
  */
 export function fastUnsecureHash(
-    inputString: string
+    inputString: string,
+    // used to test the polyfill
+    doNotUseTextEncoder?: boolean
 ): string {
     let hashValue = 0,
         i, chr, len;
@@ -53,7 +55,23 @@ export function fastUnsecureHash(
      * This is what makes the murmurhash implementation such fast.
      * @link https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L4
      */
-    const encoded = new TextEncoder().encode(inputString);
+    let encoded: Uint8Array | number[];
+
+    /**
+     * All modern browsers support the TextEncoder
+     * @link https://caniuse.com/textencoder
+     * But to make RxDB work in other JavaScript runtimes,
+     * like when using it in flutter or QuickJS, we need to
+     * make it work even when there is no TextEncoder.
+     */
+    if (typeof TextEncoder !== 'undefined' && !doNotUseTextEncoder) {
+        encoded = new TextEncoder().encode(inputString);
+    } else {
+        encoded = [];
+        for (let i = 0; i < inputString.length; i++) {
+            encoded.push(inputString.charCodeAt(i));
+        }
+    }
 
     for (i = 0, len = inputString.length; i < len; i++) {
         chr = encoded[i];

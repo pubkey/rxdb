@@ -29,22 +29,30 @@ import { BIG_BASE64 } from '../helper/big-base64';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
+        function ensureSameHashWithoutTextEncoder(str: string) {
+            const hashWith = fastUnsecureHash(str);
+            const hashWithout = fastUnsecureHash(str, true);
+            assert.strictEqual(hashWith, hashWithout);
+        }
         it('should work with a string', () => {
             const hash = fastUnsecureHash('foobar');
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
+            ensureSameHashWithoutTextEncoder('foobar');
         });
         it('should get the same hash twice', () => {
             const str = randomCouchString(10);
             const hash = fastUnsecureHash(str);
             const hash2 = fastUnsecureHash(str);
             assert.strictEqual(hash, hash2);
+            ensureSameHashWithoutTextEncoder(str);
         });
         it('should work with a very large string', () => {
             const str = randomCouchString(5000);
             const hash = fastUnsecureHash(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
+            ensureSameHashWithoutTextEncoder(str);
         });
 
 

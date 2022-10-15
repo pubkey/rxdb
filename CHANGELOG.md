@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD in `fastUnsecureHash()` use polyfill if `TextEncoder` is not available
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
