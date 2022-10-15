@@ -53,6 +53,52 @@ config.parallel('rx-schema.test.js', () => {
             });
         });
         describe('.checkSchema()', () => {
+            it('should not throw error for such schema', async () => {
+                const userSchema = {
+                    title: 'user schema',
+                    description: 'describes a user',
+                    type: 'object',
+                    version: 0,
+
+                    primaryKey: 'id',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100,
+                        },
+                        birthday: {
+                            type: ['string', 'null'],
+                            default: null,
+                        },
+                        createTime: {
+                            type: 'string',
+                        },
+                    },
+                    required: ['id', 'createTime', 'updateTime'],
+                };
+
+                // add this plugin triggers the bug, but seems it's added in the test setup
+                // addRxPlugin(RxDBDevModePlugin);
+
+                // create a database
+                const db = await createRxDatabase({
+                    name: 'test-app',
+                    /**
+                     * By calling config.storage.getStorage(),
+                     * we can ensure that all variations of RxStorage are tested in the CI.
+                     */
+                    storage: config.storage.getStorage(),
+                });
+
+                await db.addCollections({
+                    users: {
+                        schema: userSchema,
+                    },
+                });
+
+                await db.destroy();
+            });
+
             describe('positive', () => {
                 it('validate human', () => {
                     checkSchema(schemas.human);
