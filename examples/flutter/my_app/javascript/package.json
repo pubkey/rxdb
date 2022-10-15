@@ -1,0 +1,19 @@
+{
+  "name": "javascript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "bundle": "webpack --config ./webpack.config.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "rxdb": "13.5.0"
+  },
+  "devDependencies": {
+    "webpack": "5.74.0",
+    "webpack-cli": "4.10.0"
+  }
+}
