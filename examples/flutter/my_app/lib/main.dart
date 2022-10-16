@@ -6,14 +6,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  const app = MyApp();
+  runApp(app);
+  app.initJavaScript();
 
-  runApp(const MyApp());
+}
 
-  WidgetsFlutterBinding.ensureInitialized();
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
 
-  final prefs = await SharedPreferences.getInstance();
-
+  void initJavaScript() async {
   
   print('#################');
   print('#################');
@@ -23,19 +26,17 @@ void main() async {
   print('#################');
 
   String plainJsCode = await rootBundle.loadString("javascript/dist/main.js");
-  final engine = IsolateQjs(
+  final engine = FlutterQjs(
     stackSize: 1024 * 1024, // change stack size here.
-    moduleHandler: (String module) async {
-      print('# load flutter Qjs module handler ' + module);
-      return await '';
-    }
   );
+  engine.dispatch();
   await Future.delayed(Duration(seconds: 2));
 
+  final prefs = await SharedPreferences.getInstance();
 
   try {
     print('# running javascript');
-    print(plainJsCode);
+    // print(plainJsCode);
     print('--------------0');
     print(await engine.evaluate('process = {};'));
     print(await engine.evaluate('window = {};'));
@@ -46,33 +47,56 @@ void main() async {
       await Future.delayed(Duration(milliseconds: time));
     }]);
     print('--------------0.01');
-    print(await engine.evaluate("""function setTimeout(fn, time) { 
-      (async() => {
-        await setTimeoutWait(time);
-        fn();
-      })();
-    }"""));
+    print(await engine.evaluate("""
+      let timeoutId = 0;
+      let runningTimeouts = new Set();
+      function setTimeout(fn, time) { 
+        let id = timeoutId++;
+        runningTimeouts.add(id);
+        (async() => {
+          await setTimeoutWait(time);
+          if(!runningTimeouts.has(id)){
+            return;
+          }
+          clearTimeout(id);
+          fn();
+        })();
+        return id;
+      }
+      function clearTimeout(id) {
+        runningTimeouts.delete(id);
+      }
+    """));
     print('--------------0.02');
-    int lastIntervalId = 0;
-    List<int> runningIntervals = [];
-    await setToGlobalObject.invoke(["setIntervalMapper", (int time) async {
-      // Timer.periodic(new Duration(seconds: 1), (timer) {
-      //   debugPrint(timer.tick.toString());
-      // });
-      // TODO
-    }]);
-    print(await engine.evaluate("""function setInterval(fn, time) { 
-    }""")); // TODO
+    print(await engine.evaluate("""
+      let intervalid = 0;
+      let intervalMap = {};
+      function setInterval(callback, delay = 0, ...args) {
+        let id = intervalid++;
+
+        function repeat() {
+          intervalMap[id] = setTimeout(() => {
+          callback(...args)
+          if(intervalMap[id]) {
+            repeat()
+          }
+        }, delay)
+        }
+        repeat();
+        return id;
+      }
+      function clearInterval(intervalid) {
+        clearTimeout(intervalMap[intervalid])
+        delete intervalMap[intervalid]
+      }    
+    
+    """)); // TODO
     print('--------------0.03');
-    await setToGlobalObject.invoke(["clearIntervalMapper", (int intervalId) async {
-      // TODO
-    }]);
-    print(await engine.evaluate("""function clearInterval(handler) { 
-    }""")); // TODO
 
     print('--------------0.04');
     await setToGlobalObject.invoke(["persistKeyValue", (String key, String value) async {
       print('----------------- persist start');
+      print('----------------- persist start1');
       await prefs.setString(key, value);
       print('----------------- persist end');
     }]);
@@ -106,16 +130,7 @@ void main() async {
   print('EEEEEEEEEEEEEEEEEE');
   print('EEEEEEEEEEEEEEEEEE');
   print('EEEEEEEEEEEEEEEEEE');
-
-
-
-
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-
+  }
 
 
   // This widget is the root of your application.
