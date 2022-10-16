@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX Cannot read properties of null [#4055](https://github.com/pubkey/rxdb/pull/4055) Thanks [@Albert-Gao](https://github.com/Albert-Gao)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
