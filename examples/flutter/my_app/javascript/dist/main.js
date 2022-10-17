@@ -3386,7 +3386,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
      */
     function LokiFsAdapter() {
       try {
-        this.fs = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'fs'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+        this.fs = __webpack_require__(693);
       } catch (e) {
         this.fs = null;
       }
@@ -8737,7 +8737,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 /***/ }),
 
-/***/ 550:
+/***/ 528:
 /***/ (function(module, exports) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (root, factory) {
@@ -9061,6 +9061,13 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
   return mod
 })
 
+
+/***/ }),
+
+/***/ 693:
+/***/ (() => {
+
+/* (ignored) */
 
 /***/ }),
 
@@ -10817,7 +10824,7 @@ function _clearHook(type, fun) {
 }
 //# sourceMappingURL=hooks.js.map
 // EXTERNAL MODULE: ./node_modules/object-path/index.js
-var object_path = __webpack_require__(550);
+var object_path = __webpack_require__(528);
 var object_path_default = /*#__PURE__*/__webpack_require__.n(object_path);
 ;// CONCATENATED MODULE: ../../../../node_modules/tslib/tslib.es6.js
 /******************************************************************************
@@ -21738,14 +21745,22 @@ function getRxStorageLoki() {
   return storage;
 }
 //# sourceMappingURL=rx-storage-lokijs.js.map
-;// CONCATENATED MODULE: ./src/index.js
-
-
-
-
-function test() {
-    return 'test-success';
+;// CONCATENATED MODULE: ./src/rxdb-flutter.js
+function setFlutterRxDatabaseCreator(
+    createDB
+) {
+    process.init = async () => {
+        const db = await createDB();
+        process.db = db;
+        const databaseName = db.name;
+        const collectionNames = Object.keys(db.collections);
+        return {
+            databaseName,
+            collectionNames
+        };
+    };
 }
+
 
 
 
@@ -21769,19 +21784,32 @@ const lokijsAdapterFlutter = {
     },
     async saveDatabase(dbname, dbstring, callback) {
         await persistKeyValue(dbname, dbstring);
-      
+
         var success = true;  // make your own determinations
         if (success) {
-          callback(null);
+            callback(null);
         }
         else {
-          callback(new Error('An error was encountered loading " + dbname + " database.'));
+            callback(new Error('An error was encountered loading " + dbname + " database.'));
         }
-      }
+    }
 };
 
+;// CONCATENATED MODULE: ./src/index.js
 
-async function run() {
+
+
+
+
+function test() {
+    return 'test-success';
+}
+
+
+
+
+
+async function createDB() {
     const db = await createRxDatabase({
         name: 'flutter-test-db',
         storage: getRxStorageLoki({
@@ -21789,7 +21817,6 @@ async function run() {
         }),
         multiInstance: false
     });
-
     await db.addCollections({
         heroes: {
             schema: {
@@ -21815,26 +21842,13 @@ async function run() {
             }
         }
     });
-
-    const collection = db.heroes;
-
-    const doc = await collection.insert({
-        id: 'foobar',
-        name: 'barfoo',
-        color: 'blue'
-    });
-
-
-    return doc.color;
+    return db;
 }
 
 
-(() => {
-    process = {
-        run,
-        test
-    }
-})();
+setFlutterRxDatabaseCreator(
+    createDB
+);
 
 })();
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:flutter/services.dart';
+import 'package:my_app/rxdb.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -9,129 +10,37 @@ void main() async {
   const app = MyApp();
   runApp(app);
   app.initJavaScript();
-
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-
   void initJavaScript() async {
-  
-  print('#################');
-  print('#################');
-  print('#################');
-  print('#################');
-  print('#################');
-  print('#################');
+    print('#################');
+    print('#################');
+    print('#################');
+    print('#################');
+    print('#################');
+    print('#################');
 
-  String plainJsCode = await rootBundle.loadString("javascript/dist/main.js");
-  final engine = FlutterQjs(
-    stackSize: 1024 * 1024, // change stack size here.
-  );
-  engine.dispatch();
-  await Future.delayed(Duration(seconds: 2));
-
-  final prefs = await SharedPreferences.getInstance();
-
-  try {
-    print('# running javascript');
-    // print(plainJsCode);
-    print('--------------0');
-    print(await engine.evaluate('process = {};'));
-    print(await engine.evaluate('window = {};'));
-    print(await engine.evaluate('console = {};'));
-    print('--------------0.011');
-    final setToGlobalObject = await engine.evaluate("(key, val) => { this[key] = val; }");
-    await setToGlobalObject.invoke(["setTimeoutWait", (int time) async {
-      await Future.delayed(Duration(milliseconds: time));
-    }]);
-    print('--------------0.01');
-    print(await engine.evaluate("""
-      let timeoutId = 0;
-      let runningTimeouts = new Set();
-      function setTimeout(fn, time) { 
-        let id = timeoutId++;
-        runningTimeouts.add(id);
-        (async() => {
-          await setTimeoutWait(time);
-          if(!runningTimeouts.has(id)){
-            return;
-          }
-          clearTimeout(id);
-          fn();
-        })();
-        return id;
-      }
-      function clearTimeout(id) {
-        runningTimeouts.delete(id);
-      }
-    """));
-    print('--------------0.02');
-    print(await engine.evaluate("""
-      let intervalid = 0;
-      let intervalMap = {};
-      function setInterval(callback, delay = 0, ...args) {
-        let id = intervalid++;
-
-        function repeat() {
-          intervalMap[id] = setTimeout(() => {
-          callback(...args)
-          if(intervalMap[id]) {
-            repeat()
-          }
-        }, delay)
-        }
-        repeat();
-        return id;
-      }
-      function clearInterval(intervalid) {
-        clearTimeout(intervalMap[intervalid])
-        delete intervalMap[intervalid]
-      }    
+    RxDatabase database = await getRxDatabase("javascript/dist/main.js");
+    print(database);
+    RxCollection collection = database.getCollection('heroes');
     
-    """)); // TODO
-    print('--------------0.03');
+    var document = await collection.insert({
+      "id": "foo",
+      "name": "Alice",
+      "color": "blue"
+    });
+    
 
-    print('--------------0.04');
-    await setToGlobalObject.invoke(["persistKeyValue", (String key, String value) async {
-      print('----------------- persist start');
-      print('----------------- persist start1');
-      await prefs.setString(key, value);
-      print('----------------- persist end');
-    }]);
-    await setToGlobalObject.invoke(["readKeyValue", (String key) async {
-      final String? value = prefs.getString(key);
-      return value;
-    }]);
-
-    print('--------------0.1');
-    print(await engine.evaluate("async function getColor(){ new Promise(res => setInterval(() => res('blue'), 100));  }"));
-    print('--------------0.2');
-    print(await engine.evaluate('getColor();'));
-    print('--------------0.3');
-    print(await engine.evaluate(plainJsCode));
-    print('--------------1');
-    print(await engine.evaluate('process.test();'));
-    print('--------------1.5');
-
-    print('--------------2.5');
-    print(await engine.evaluate('process.run();'));
-    print('--------------3');
-  } catch (e) {
-    print('# running javascript ERROR');
-    print(e.toString());
+    print('EEEEEEEEEEEEEEEEEE');
+    print('EEEEEEEEEEEEEEEEEE');
+    print('EEEEEEEEEEEEEEEEEE');
+    print('EEEEEEEEEEEEEEEEEE');
+    print('EEEEEEEEEEEEEEEEEE');
+    print('EEEEEEEEEEEEEEEEEE');
   }
-    print('# running javascript DONE');
-
-  print('EEEEEEEEEEEEEEEEEE');
-  print('EEEEEEEEEEEEEEEEEE');
-  print('EEEEEEEEEEEEEEEEEE');
-  print('EEEEEEEEEEEEEEEEEE');
-  print('EEEEEEEEEEEEEEEEEE');
-  print('EEEEEEEEEEEEEEEEEE');
-  }
-
 
   // This widget is the root of your application.
   @override

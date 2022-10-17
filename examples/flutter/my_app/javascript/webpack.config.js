@@ -9,5 +9,10 @@ module.exports = {
     },
     optimization: {
         minimize: false
+    },
+    resolve: {
+        fallback: {
+            fs: false
+        }
     }
 };
