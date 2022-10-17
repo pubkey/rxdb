@@ -3,12 +3,22 @@ export function setFlutterRxDatabaseCreator(
 ) {
     process.init = async () => {
         const db = await createDB();
+        db.$.subscribe(ev => {
+            // eslint-disable-next-line no-undef
+            sendRxDBEvent(JSON.stringify(ev));
+        });
         process.db = db;
         const databaseName = db.name;
-        const collectionNames = Object.keys(db.collections);
+        const collections = [];
+        Object.entries(db.collections).forEach(([collectionName, collection]) => {
+            collections.push({
+                name: collectionName,
+                primaryKey: collection.schema.primaryPath
+            });
+        });
         return {
             databaseName,
-            collectionNames
+            collections
         };
     };
 }
@@ -17,12 +27,13 @@ export function setFlutterRxDatabaseCreator(
 
 
 /**
- * create a simple lokijs adapter so that we can persist string via flutter
+ * Create a simple lokijs adapter so that we can persist string via flutter
  * @link https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md#creating-your-own-basic-persistence-adapter
  */
 export const lokijsAdapterFlutter = {
     async loadDatabase(dbname, callback) {
         // using dbname, load the database from wherever your adapter expects it
+        // eslint-disable-next-line no-undef
         const serializedDb = await readKeyValue(dbname);
 
         var success = true; // make your own determinations
@@ -35,6 +46,7 @@ export const lokijsAdapterFlutter = {
         }
     },
     async saveDatabase(dbname, dbstring, callback) {
+        // eslint-disable-next-line no-undef
         await persistKeyValue(dbname, dbstring);
 
         var success = true;  // make your own determinations

@@ -16,10 +16,6 @@ export function test() {
     return 'test-success';
 }
 
-
-
-
-
 async function createDB() {
     const db = await createRxDatabase({
         name: 'flutter-test-db',
@@ -55,7 +51,6 @@ async function createDB() {
     });
     return db;
 }
-
 
 setFlutterRxDatabaseCreator(
     createDB
