@@ -32,6 +32,7 @@ import {
 async function createDB(databaseName) {
     // create the RxDatabase
     const db = await createRxDatabase({
+        // the database.name is variable so we can change it on the flutter side
         name: databaseName,
         storage: getRxStorageLoki({
             adapter: getLokijsAdapterFlutter()
@@ -58,8 +59,8 @@ async function createDB(databaseName) {
                         maxLength: 30
                     }
                 },
-                indexes: ['name', 'color'],
-                required: ['id', 'color']
+                indexes: ['name'],
+                required: ['id', 'name', 'color']
             }
         }
     });
