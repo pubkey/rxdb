@@ -164,8 +164,6 @@ class RxChangeEventBulk<RxDocType> {
       this.context);
 
   static RxChangeEventBulk<RxDocType> fromJSON<RxDocType>(dynamic json) {
-    print("UUUUUUUUUUUUUUUUUUUUUUUUUUU");
-    print(json);
     List<dynamic> eventsJson = json['events'];
     List<RxChangeEvent<RxDocType>> events = eventsJson.map((row) {
       var event = RxChangeEvent.fromJSON<RxDocType>(row);
@@ -219,7 +217,8 @@ class RxCollection<RxDocType> {
   late Stream<RxChangeEventBulk<dynamic>> eventBulks$;
 
   RxCollection(this.name, this.database, this.primaryKey) {
-    eventBulks$ = database.eventBulks$.where((bulk) => bulk.collectionName == name);
+    eventBulks$ =
+        database.eventBulks$.where((bulk) => bulk.collectionName == name);
     docCache = DocCache<RxDocType>(this);
   }
 
@@ -270,9 +269,12 @@ class RxQuery<RxDocType> {
   }
 
   Stream<List<RxDocument<RxDocType>>> $() {
-    if(subscribed == false) {
+    if (subscribed == false) {
       subscribed = true;
-      results$ = collection.eventBulks$.asyncMap((event) async {
+      results$ = MergeStream<dynamic>([
+        collection.eventBulks$,
+        Stream.fromIterable([1])
+      ]).asyncMap((event) async {
         var newResults = await exec();
         return newResults;
       });

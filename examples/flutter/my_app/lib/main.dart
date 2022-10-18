@@ -8,7 +8,6 @@ void main() async {
 
   await RxDatabaseState.init();
   const app = MyApp();
-  app.initJavaScript();
   runApp(app);
 }
 
@@ -40,40 +39,6 @@ class RxDatabaseState {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  void initJavaScript() async {
-    print('#################');
-    print('#################');
-    print('#################');
-    print('#################');
-    print('#################');
-    print('#################');
-
-    var collection = RxDatabaseState.collection;
-
-    var document = await collection.insert({
-      "id": "foo" + new DateTime.now().toString(),
-      "name": "Alice",
-      "color": "blue"
-    });
-
-    print("doc value: " + document.data['color']);
-
-    var query = collection.find({});
-    var existingDocs = await query.exec();
-    print("existing docs:");
-    print(existingDocs);
-    existingDocs.forEach((element) {
-      print("doc " + element.data['id']);
-    });
-
-    print('EEEEEEEEEEEEEEEEEE');
-    print('EEEEEEEEEEEEEEEEEE');
-    print('EEEEEEEEEEEEEEEEEE');
-    print('EEEEEEEEEEEEEEEEEE');
-    print('EEEEEEEEEEEEEEEEEE');
-    print('EEEEEEEEEEEEEEEEEE');
-  }
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -98,20 +63,27 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   RxQuery<RxHeroDocType> query = RxDatabaseState.collection.find({});
   List<RxDocument<RxHeroDocType>> documents = [];
-  int _counter = 1;
+  final nameController = TextEditingController();
+  final colorController = TextEditingController();
 
   _MyHomePageState() {
     query.$().listen((newResults) {
-      print("SSSSSSSSSSSSSSSSSSSS got new results");
-      print(newResults);
-      documents = newResults;
+      setState(() {
+        documents = newResults;
+      });
     });
   }
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
+  void saveNewHero() async {
+    print("saveNewHero() called");
+    var collection = RxDatabaseState.collection;
+    var document = await collection.insert({
+      "id": "zflutter-" + new DateTime.now().toString(),
+      "name": nameController.text,
+      "color": colorController.text
     });
+    nameController.clear();
+    colorController.clear();
   }
 
   @override
@@ -120,23 +92,45 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have clicked the button this many times:',
+      body: Column(
+        children: [
+          Container(
+            height: 400,
+            child: ListView.builder(
+                scrollDirection: Axis.vertical,
+                itemCount: documents.length,
+                itemBuilder: (BuildContext ctxt, int index) {
+                  return ListTile(
+                      leading: Text(documents[index].data['name']),
+                      title: Text('color: ' + documents[index].data['color']));
+                }),
+          ),
+          Container(
+            width: 300,
+            height: 100,
+            child: TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Name',
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+          ),
+          Container(
+            width: 300,
+            child: TextField(
+              controller: colorController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Color',
+              ),
             ),
-          ],
-        ),
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        onPressed: saveNewHero,
+        tooltip: 'Save',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
