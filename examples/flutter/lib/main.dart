@@ -77,8 +77,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void saveNewHero() async {
     print("saveNewHero() called");
     var collection = RxDatabaseState.collection;
-    var document = await collection.insert({
-      "id": "zflutter-" + new DateTime.now().toString(),
+    await collection.insert({
+      "id": "zflutter-${DateTime.now()}",
       "name": nameController.text,
       "color": colorController.text
     });
@@ -99,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: [
-          Container(
+          SizedBox(
             height: 400,
             child: ListView.builder(
                 scrollDirection: Axis.vertical,
@@ -114,8 +114,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             title: Text(
                                 'color: ' + documents[index].data['color'])),
                       ),
-                      new IconButton(
-                        icon: Icon(Icons.remove_circle),
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle),
                         onPressed: () {
                           documents[index].remove();
                         },
@@ -124,22 +124,22 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 }),
           ),
-          Container(
+          SizedBox(
             width: 300,
             height: 100,
             child: TextField(
               controller: nameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Name',
               ),
             ),
           ),
-          Container(
+          SizedBox(
             width: 300,
             child: TextField(
               controller: colorController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Color',
               ),
