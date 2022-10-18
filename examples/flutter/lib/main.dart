@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_interpolation_to_compose_strings
+
 import 'package:flutter/material.dart';
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +8,7 @@ import 'package:my_app/rxdb.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await RxDatabaseState.init();
+  await RxDatabaseState.init('flutter-rxdb-heroes');
   const app = MyApp();
   runApp(app);
 }
@@ -25,12 +27,12 @@ class RxDatabaseState {
   static bool initDone = false;
   static late RxCollection<RxHeroDocType> collection;
 
-  static Future<RxDatabase> init() async {
+  static Future<RxDatabase> init(String databaseName) async {
     if (initDone) {
       return database;
     }
     initDone = true;
-    database = await getRxDatabase("javascript/dist/main.js");
+    database = await getRxDatabase("javascript/dist/main.js", databaseName);
     collection = database.getCollection<RxHeroDocType>('heroes');
     return database;
   }
@@ -110,11 +112,15 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       Expanded(
                         child: ListTile(
+                            key: Key(
+                                'list-tile-' + documents[index].data['name']),
                             leading: Text(documents[index].data['name']),
                             title: Text(
                                 'color: ' + documents[index].data['color'])),
                       ),
                       IconButton(
+                        key: Key(
+                            'button-delete-' + documents[index].data['name']),
                         icon: const Icon(Icons.remove_circle),
                         onPressed: () {
                           documents[index].remove();
@@ -127,7 +133,8 @@ class _MyHomePageState extends State<MyHomePage> {
           SizedBox(
             width: 300,
             height: 100,
-            child: TextField(
+            child: TextFormField(
+              key: const Key('input-name'),
               controller: nameController,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
@@ -137,7 +144,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           SizedBox(
             width: 300,
-            child: TextField(
+            child: TextFormField(
+              key: const Key('input-color'),
               controller: colorController,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
@@ -148,10 +156,11 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        key: const Key('button-save'),
         onPressed: saveNewHero,
         tooltip: 'Save',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }

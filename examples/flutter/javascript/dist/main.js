@@ -9784,9 +9784,7 @@ function pluginMissing(pluginKey) {
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
  * @return a string as hash-result
  */
-function fastUnsecureHash(inputString,
-// used to test the polyfill
-doNotUseTextEncoder) {
+function fastUnsecureHash(inputString) {
   var hashValue = 0,
     i,
     chr,
@@ -9799,23 +9797,7 @@ doNotUseTextEncoder) {
    * This is what makes the murmurhash implementation such fast.
    * @link https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L4
    */
-  var encoded;
-
-  /**
-   * All modern browsers support the TextEncoder
-   * @link https://caniuse.com/textencoder
-   * But to make RxDB work in other JavaScript runtimes,
-   * like when using it in flutter or QuickJS, we need to
-   * make it work even when there is no TextEncoder.
-   */
-  if (typeof TextEncoder !== 'undefined' && !doNotUseTextEncoder) {
-    encoded = new TextEncoder().encode(inputString);
-  } else {
-    encoded = [];
-    for (var _i = 0; _i < inputString.length; _i++) {
-      encoded.push(inputString.charCodeAt(_i));
-    }
-  }
+  var encoded = new TextEncoder().encode(inputString);
   for (i = 0, len = inputString.length; i < len; i++) {
     chr = encoded[i];
     hashValue = (hashValue << 5) - hashValue + chr;
@@ -10826,7 +10808,7 @@ function _clearHook(type, fun) {
 // EXTERNAL MODULE: ./node_modules/object-path/index.js
 var object_path = __webpack_require__(528);
 var object_path_default = /*#__PURE__*/__webpack_require__.n(object_path);
-;// CONCATENATED MODULE: ../../../../node_modules/tslib/tslib.es6.js
+;// CONCATENATED MODULE: ./node_modules/tslib/tslib.es6.js
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
 
@@ -11076,12 +11058,12 @@ function __classPrivateFieldIn(state, receiver) {
     return typeof state === "function" ? receiver === state : state.has(receiver);
 }
 
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/isFunction.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/isFunction.js
 function isFunction_isFunction(value) {
     return typeof value === 'function';
 }
 //# sourceMappingURL=isFunction.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/createErrorClass.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/createErrorClass.js
 function createErrorClass(createImpl) {
     var _super = function (instance) {
         Error.call(instance);
@@ -11093,7 +11075,7 @@ function createErrorClass(createImpl) {
     return ctorFunc;
 }
 //# sourceMappingURL=createErrorClass.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/UnsubscriptionError.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/UnsubscriptionError.js
 
 var UnsubscriptionError = createErrorClass(function (_super) {
     return function UnsubscriptionErrorImpl(errors) {
@@ -11106,7 +11088,7 @@ var UnsubscriptionError = createErrorClass(function (_super) {
     };
 });
 //# sourceMappingURL=UnsubscriptionError.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/arrRemove.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/arrRemove.js
 function arrRemove(arr, item) {
     if (arr) {
         var index = arr.indexOf(item);
@@ -11114,7 +11096,7 @@ function arrRemove(arr, item) {
     }
 }
 //# sourceMappingURL=arrRemove.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/Subscription.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/Subscription.js
 
 
 
@@ -11258,7 +11240,7 @@ function execFinalizer(finalizer) {
     }
 }
 //# sourceMappingURL=Subscription.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/config.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/config.js
 var config = {
     onUnhandledError: null,
     onStoppedNotification: null,
@@ -11267,7 +11249,7 @@ var config = {
     useDeprecatedNextContext: false,
 };
 //# sourceMappingURL=config.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/scheduler/timeoutProvider.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/scheduler/timeoutProvider.js
 
 var timeoutProvider = {
     setTimeout: function (handler, timeout) {
@@ -11288,7 +11270,7 @@ var timeoutProvider = {
     delegate: undefined,
 };
 //# sourceMappingURL=timeoutProvider.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/reportUnhandledError.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/reportUnhandledError.js
 
 
 function reportUnhandledError(err) {
@@ -11303,10 +11285,10 @@ function reportUnhandledError(err) {
     });
 }
 //# sourceMappingURL=reportUnhandledError.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/noop.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/noop.js
 function noop() { }
 //# sourceMappingURL=noop.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/NotificationFactories.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/NotificationFactories.js
 var COMPLETE_NOTIFICATION = (function () { return createNotification('C', undefined, undefined); })();
 function errorNotification(error) {
     return createNotification('E', undefined, error);
@@ -11322,7 +11304,7 @@ function createNotification(kind, value, error) {
     };
 }
 //# sourceMappingURL=NotificationFactories.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/errorContext.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/errorContext.js
 
 var context = null;
 function errorContext(cb) {
@@ -11351,7 +11333,7 @@ function captureError(err) {
     }
 }
 //# sourceMappingURL=errorContext.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/Subscriber.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/Subscriber.js
 
 
 
@@ -11536,15 +11518,15 @@ var EMPTY_OBSERVER = {
     complete: noop,
 };
 //# sourceMappingURL=Subscriber.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/symbol/observable.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/symbol/observable.js
 var observable = (function () { return (typeof Symbol === 'function' && Symbol.observable) || '@@observable'; })();
 //# sourceMappingURL=observable.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/identity.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/identity.js
 function identity(x) {
     return x;
 }
 //# sourceMappingURL=identity.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/pipe.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/pipe.js
 
 function pipe() {
     var fns = [];
@@ -11565,7 +11547,7 @@ function pipeFromArray(fns) {
     };
 }
 //# sourceMappingURL=pipe.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/Observable.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/Observable.js
 
 
 
@@ -11668,7 +11650,7 @@ function isSubscriber(value) {
     return (value && value instanceof Subscriber) || (isObserver(value) && isSubscription(value));
 }
 //# sourceMappingURL=Observable.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/ObjectUnsubscribedError.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/ObjectUnsubscribedError.js
 
 var ObjectUnsubscribedError = createErrorClass(function (_super) {
     return function ObjectUnsubscribedErrorImpl() {
@@ -11678,7 +11660,7 @@ var ObjectUnsubscribedError = createErrorClass(function (_super) {
     };
 });
 //# sourceMappingURL=ObjectUnsubscribedError.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/Subject.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/Subject.js
 
 
 
@@ -11841,7 +11823,7 @@ var AnonymousSubject = (function (_super) {
 }(Subject));
 
 //# sourceMappingURL=Subject.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/BehaviorSubject.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/BehaviorSubject.js
 
 
 var BehaviorSubject = (function (_super) {
@@ -11878,7 +11860,7 @@ var BehaviorSubject = (function (_super) {
 }(Subject));
 
 //# sourceMappingURL=BehaviorSubject.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/lift.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/lift.js
 
 function hasLift(source) {
     return isFunction_isFunction(source === null || source === void 0 ? void 0 : source.lift);
@@ -11899,7 +11881,7 @@ function operate(init) {
     };
 }
 //# sourceMappingURL=lift.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/OperatorSubscriber.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/OperatorSubscriber.js
 
 
 function createOperatorSubscriber(destination, onNext, onComplete, onError, onFinalize) {
@@ -11961,7 +11943,7 @@ var OperatorSubscriber = (function (_super) {
 }(Subscriber));
 
 //# sourceMappingURL=OperatorSubscriber.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/map.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/map.js
 
 
 function map(project, thisArg) {
@@ -11973,7 +11955,7 @@ function map(project, thisArg) {
     });
 }
 //# sourceMappingURL=map.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/distinctUntilChanged.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/distinctUntilChanged.js
 
 
 
@@ -13667,34 +13649,34 @@ function toTypedRxJsonSchema(schema) {
   return schema;
 }
 //# sourceMappingURL=rx-schema.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/isArrayLike.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/isArrayLike.js
 var isArrayLike = (function (x) { return x && typeof x.length === 'number' && typeof x !== 'function'; });
 //# sourceMappingURL=isArrayLike.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/isPromise.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/isPromise.js
 
 function isPromise(value) {
     return isFunction_isFunction(value === null || value === void 0 ? void 0 : value.then);
 }
 //# sourceMappingURL=isPromise.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/isInteropObservable.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/isInteropObservable.js
 
 
 function isInteropObservable(input) {
     return isFunction_isFunction(input[observable]);
 }
 //# sourceMappingURL=isInteropObservable.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/isAsyncIterable.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/isAsyncIterable.js
 
 function isAsyncIterable(obj) {
     return Symbol.asyncIterator && isFunction_isFunction(obj === null || obj === void 0 ? void 0 : obj[Symbol.asyncIterator]);
 }
 //# sourceMappingURL=isAsyncIterable.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/throwUnobservableError.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/throwUnobservableError.js
 function createInvalidObservableTypeError(input) {
     return new TypeError("You provided " + (input !== null && typeof input === 'object' ? 'an invalid object' : "'" + input + "'") + " where a stream was expected. You can provide an Observable, Promise, ReadableStream, Array, AsyncIterable, or Iterable.");
 }
 //# sourceMappingURL=throwUnobservableError.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/symbol/iterator.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/symbol/iterator.js
 function getSymbolIterator() {
     if (typeof Symbol !== 'function' || !Symbol.iterator) {
         return '@@iterator';
@@ -13703,14 +13685,14 @@ function getSymbolIterator() {
 }
 var iterator_iterator = getSymbolIterator();
 //# sourceMappingURL=iterator.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/isIterable.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/isIterable.js
 
 
 function isIterable(input) {
     return isFunction_isFunction(input === null || input === void 0 ? void 0 : input[iterator_iterator]);
 }
 //# sourceMappingURL=isIterable.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/isReadableStreamLike.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/isReadableStreamLike.js
 
 
 function readableStreamLikeToAsyncGenerator(readableStream) {
@@ -13750,7 +13732,7 @@ function isReadableStreamLike(obj) {
     return isFunction_isFunction(obj === null || obj === void 0 ? void 0 : obj.getReader);
 }
 //# sourceMappingURL=isReadableStreamLike.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/observable/innerFrom.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/observable/innerFrom.js
 
 
 
@@ -13894,7 +13876,7 @@ function innerFrom_process(asyncIterable, subscriber) {
     });
 }
 //# sourceMappingURL=innerFrom.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/executeSchedule.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/executeSchedule.js
 function executeSchedule(parentSubscription, scheduler, work, delay, repeat) {
     if (delay === void 0) { delay = 0; }
     if (repeat === void 0) { repeat = false; }
@@ -13913,7 +13895,7 @@ function executeSchedule(parentSubscription, scheduler, work, delay, repeat) {
     }
 }
 //# sourceMappingURL=executeSchedule.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/mergeInternals.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/mergeInternals.js
 
 
 
@@ -13975,7 +13957,7 @@ function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, e
     };
 }
 //# sourceMappingURL=mergeInternals.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/mergeMap.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/mergeMap.js
 
 
 
@@ -13992,7 +13974,7 @@ function mergeMap(project, resultSelector, concurrent) {
     return operate(function (source, subscriber) { return mergeInternals(source, subscriber, project, concurrent); });
 }
 //# sourceMappingURL=mergeMap.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/filter.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/filter.js
 
 
 function filter(predicate, thisArg) {
@@ -14002,7 +13984,7 @@ function filter(predicate, thisArg) {
     });
 }
 //# sourceMappingURL=filter.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/mergeAll.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/mergeAll.js
 
 
 function mergeAll(concurrent) {
@@ -14010,19 +13992,19 @@ function mergeAll(concurrent) {
     return mergeMap(identity, concurrent);
 }
 //# sourceMappingURL=mergeAll.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/concatAll.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/concatAll.js
 
 function concatAll() {
     return mergeAll(1);
 }
 //# sourceMappingURL=concatAll.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/isScheduler.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/isScheduler.js
 
 function isScheduler(value) {
     return value && isFunction_isFunction(value.schedule);
 }
 //# sourceMappingURL=isScheduler.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/args.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/args.js
 
 
 function last(arr) {
@@ -14038,7 +14020,7 @@ function popNumber(args, defaultValue) {
     return typeof last(args) === 'number' ? args.pop() : defaultValue;
 }
 //# sourceMappingURL=args.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/observeOn.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/observeOn.js
 
 
 
@@ -14049,7 +14031,7 @@ function observeOn(scheduler, delay) {
     });
 }
 //# sourceMappingURL=observeOn.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/subscribeOn.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/subscribeOn.js
 
 function subscribeOn(scheduler, delay) {
     if (delay === void 0) { delay = 0; }
@@ -14058,7 +14040,7 @@ function subscribeOn(scheduler, delay) {
     });
 }
 //# sourceMappingURL=subscribeOn.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/scheduled/scheduleObservable.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/scheduled/scheduleObservable.js
 
 
 
@@ -14066,7 +14048,7 @@ function scheduleObservable(input, scheduler) {
     return innerFrom(input).pipe(subscribeOn(scheduler), observeOn(scheduler));
 }
 //# sourceMappingURL=scheduleObservable.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/scheduled/schedulePromise.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/scheduled/schedulePromise.js
 
 
 
@@ -14074,7 +14056,7 @@ function schedulePromise(input, scheduler) {
     return innerFrom(input).pipe(subscribeOn(scheduler), observeOn(scheduler));
 }
 //# sourceMappingURL=schedulePromise.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/scheduled/scheduleArray.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/scheduled/scheduleArray.js
 
 function scheduleArray(input, scheduler) {
     return new Observable_Observable(function (subscriber) {
@@ -14093,7 +14075,7 @@ function scheduleArray(input, scheduler) {
     });
 }
 //# sourceMappingURL=scheduleArray.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/scheduled/scheduleIterable.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/scheduled/scheduleIterable.js
 
 
 
@@ -14126,7 +14108,7 @@ function scheduleIterable(input, scheduler) {
     });
 }
 //# sourceMappingURL=scheduleIterable.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/scheduled/scheduleAsyncIterable.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/scheduled/scheduleAsyncIterable.js
 
 
 function scheduleAsyncIterable(input, scheduler) {
@@ -14150,14 +14132,14 @@ function scheduleAsyncIterable(input, scheduler) {
     });
 }
 //# sourceMappingURL=scheduleAsyncIterable.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/scheduled/scheduleReadableStreamLike.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/scheduled/scheduleReadableStreamLike.js
 
 
 function scheduleReadableStreamLike(input, scheduler) {
     return scheduleAsyncIterable(readableStreamLikeToAsyncGenerator(input), scheduler);
 }
 //# sourceMappingURL=scheduleReadableStreamLike.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/scheduled/scheduled.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/scheduled/scheduled.js
 
 
 
@@ -14195,14 +14177,14 @@ function scheduled(input, scheduler) {
     throw createInvalidObservableTypeError(input);
 }
 //# sourceMappingURL=scheduled.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/observable/from.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/observable/from.js
 
 
 function from(input, scheduler) {
     return scheduler ? scheduled(input, scheduler) : innerFrom(input);
 }
 //# sourceMappingURL=from.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/observable/concat.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/observable/concat.js
 
 
 
@@ -14214,7 +14196,7 @@ function concat() {
     return concatAll()(from(args, popScheduler(args)));
 }
 //# sourceMappingURL=concat.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/startWith.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/startWith.js
 
 
 
@@ -14229,7 +14211,7 @@ function startWith() {
     });
 }
 //# sourceMappingURL=startWith.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/scheduler/dateTimestampProvider.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/scheduler/dateTimestampProvider.js
 var dateTimestampProvider = {
     now: function () {
         return (dateTimestampProvider.delegate || Date).now();
@@ -14237,7 +14219,7 @@ var dateTimestampProvider = {
     delegate: undefined,
 };
 //# sourceMappingURL=dateTimestampProvider.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/ReplaySubject.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/ReplaySubject.js
 
 
 
@@ -14296,7 +14278,7 @@ var ReplaySubject = (function (_super) {
 }(Subject));
 
 //# sourceMappingURL=ReplaySubject.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/share.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/share.js
 
 
 
@@ -14382,7 +14364,7 @@ function handleReset(reset, on) {
     return on.apply(void 0, __spreadArray([], __read(args))).subscribe(onSubscriber);
 }
 //# sourceMappingURL=share.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/shareReplay.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/shareReplay.js
 
 
 function shareReplay(configOrBufferSize, windowTime, scheduler) {
@@ -14906,7 +14888,7 @@ function fillObjectDataBeforeInsert(schema, data) {
   return useJson;
 }
 //# sourceMappingURL=rx-collection-helper.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/EmptyError.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/EmptyError.js
 
 var EmptyError = createErrorClass(function (_super) { return function EmptyErrorImpl() {
     _super(this);
@@ -14914,7 +14896,7 @@ var EmptyError = createErrorClass(function (_super) { return function EmptyError
     this.message = 'no elements in sequence';
 }; });
 //# sourceMappingURL=EmptyError.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/firstValueFrom.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/firstValueFrom.js
 
 
 function firstValueFrom(source, config) {
@@ -14939,7 +14921,7 @@ function firstValueFrom(source, config) {
     });
 }
 //# sourceMappingURL=firstValueFrom.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/observable/empty.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/observable/empty.js
 
 var EMPTY = new Observable_Observable(function (subscriber) { return subscriber.complete(); });
 function empty(scheduler) {
@@ -14949,7 +14931,7 @@ function emptyScheduled(scheduler) {
     return new Observable(function (subscriber) { return scheduler.schedule(function () { return subscriber.complete(); }); });
 }
 //# sourceMappingURL=empty.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/observable/merge.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/observable/merge.js
 
 
 
@@ -18971,13 +18953,13 @@ var LokiSaveQueue = /*#__PURE__*/function () {
   return LokiSaveQueue;
 }();
 //# sourceMappingURL=loki-save-queue.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/util/argsOrArgArray.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/util/argsOrArgArray.js
 var isArray = Array.isArray;
 function argsOrArgArray(args) {
     return args.length === 1 && isArray(args[0]) ? args[0] : args;
 }
 //# sourceMappingURL=argsOrArgArray.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/merge.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/merge.js
 
 
 
@@ -18997,7 +18979,7 @@ function merge_merge() {
     });
 }
 //# sourceMappingURL=merge.js.map
-;// CONCATENATED MODULE: ../../../../node_modules/rxjs/dist/esm5/internal/operators/mergeWith.js
+;// CONCATENATED MODULE: ./node_modules/rxjs/dist/esm5/internal/operators/mergeWith.js
 
 
 function mergeWith() {
@@ -21749,14 +21731,13 @@ function getRxStorageLoki() {
 function setFlutterRxDatabaseCreator(
     createDB
 ) {
-    process.init = async () => {
-        const db = await createDB();
+    process.init = async (databaseName) => {
+        const db = await createDB(databaseName);
         db.eventBulks$.subscribe(eventBulk => {
             // eslint-disable-next-line no-undef
             sendRxDBEvent(JSON.stringify(eventBulk));
         });
         process.db = db;
-        const databaseName = db.name;
         const collections = [];
         Object.entries(db.collections).forEach(([collectionName, collection]) => {
             collections.push({
@@ -21812,14 +21793,13 @@ const lokijsAdapterFlutter = {
 
 
 
-
 function test() {
     return 'test-success';
 }
 
-async function createDB() {
+async function createDB(databaseName) {
     const db = await createRxDatabase({
-        name: 'flutter-test-db',
+        name: databaseName,
         storage: getRxStorageLoki({
             adapter: lokijsAdapterFlutter
         }),

@@ -42,3 +42,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+javascript/rxdb-local.tgz
+javascript/node_modules
+javascript/dist

@@ -5,12 +5,14 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "bundle": "webpack --config ./webpack.config.js"
+    "preinstall": "(cd ../../../ && npx yarn@1.22.10 pack ../../ --filename ./examples/flutter/javascript/rxdb-local.tgz)",
+    "build": "webpack --config ./webpack.config.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "rxdb": "13.5.1"
+    "rxdb": "file:rxdb-local.tgz",
+    "rxjs": "7.5.7"
   },
   "devDependencies": {
     "webpack": "5.74.0",

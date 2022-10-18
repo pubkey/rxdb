@@ -1,14 +1,13 @@
 export function setFlutterRxDatabaseCreator(
     createDB
 ) {
-    process.init = async () => {
-        const db = await createDB();
+    process.init = async (databaseName) => {
+        const db = await createDB(databaseName);
         db.eventBulks$.subscribe(eventBulk => {
             // eslint-disable-next-line no-undef
             sendRxDBEvent(JSON.stringify(eventBulk));
         });
         process.db = db;
-        const databaseName = db.name;
         const collections = [];
         Object.entries(db.collections).forEach(([collectionName, collection]) => {
             collections.push({

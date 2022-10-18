@@ -82,7 +82,7 @@ Future<dynamic> patchJavaScriptRuntime(FlutterQjs engine) async {
   return setToGlobalObject;
 }
 
-Future<RxDatabase> getRxDatabase(String jsFilePath) async {
+Future<RxDatabase> getRxDatabase(String jsFilePath, String databaseName) async {
   String plainJsCode = await rootBundle.loadString(jsFilePath);
   FlutterQjs engine = FlutterQjs(stackSize: 1024 * 1024);
   engine.dispatch();
@@ -102,7 +102,8 @@ Future<RxDatabase> getRxDatabase(String jsFilePath) async {
 
   // run the RxDatabase creation JavaScript code
   await engine.evaluate(plainJsCode);
-  var databaseConfigPlain = await engine.evaluate('process.init();');
+  var databaseConfigPlain =
+      await engine.evaluate('process.init("' + databaseName + '");');
 
   // load the RxDatabase configuration and collection meta data.
   var databaseConfig = Map<String, dynamic>.from(databaseConfigPlain);

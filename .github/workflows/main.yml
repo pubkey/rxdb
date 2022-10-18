@@ -719,6 +719,47 @@ jobs:
       - name: npm run test:couchdb
         run: npm run test:couchdb
 
+  test-flutter:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'    
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.3.4'
+          channel: 'stable'
+      - run: flutter --version
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+            ./examples/flutter/javascript/node_modules
+          key: ${{ runner.os }}-npm-flutter-x7-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-flutter-x7-
+      - name: prepare core
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          rm -r node_modules
+      - name: flutter javascript build
+        working-directory: ./examples/flutter/javascript
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
+          npm run build
+      - name: flutter test
+        working-directory: ./examples/flutter
+        run: flutter test integration_test/basics_test.dart -d linux
+
+
   test-tutorials:
     runs-on: ubuntu-20.04
     steps:

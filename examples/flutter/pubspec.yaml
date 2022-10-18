@@ -41,6 +41,8 @@ dependencies:
   json_serializable: 6.5.2
 
 dev_dependencies:
+  integration_test:
+    sdk: flutter
   flutter_test:
     sdk: flutter
 

@@ -13,9 +13,9 @@ export function test() {
     return 'test-success';
 }
 
-async function createDB() {
+async function createDB(databaseName) {
     const db = await createRxDatabase({
-        name: 'flutter-test-db',
+        name: databaseName,
         storage: getRxStorageLoki({
             adapter: lokijsAdapterFlutter
         }),
