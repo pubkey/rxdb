@@ -1,17 +1,18 @@
+// ignore_for_file: prefer_interpolation_to_compose_strings
+
 import 'package:flutter/services.dart';
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:json_annotation/json_annotation.dart';
 
-Future<RxDatabase> getRxDatabase(String jsFilePath) async {
-  String plainJsCode = await rootBundle.loadString(jsFilePath);
-  FlutterQjs engine = FlutterQjs(stackSize: 1024 * 1024);
-  engine.dispatch();
+/**
+ * Extend the JavaScript runtime with some missing stuff
+ * so that it can work together with RxDB JavaScript code.
+ */
+Future<dynamic> patchJavaScriptRuntime(FlutterQjs engine) async {
   final prefs = await SharedPreferences.getInstance();
 
-  // extend the JavaScript runtime with some missing stuff.
   await engine.evaluate('process = {};');
   await engine.evaluate('window = {};');
   await engine.evaluate('console = {};');
@@ -78,6 +79,15 @@ Future<RxDatabase> getRxDatabase(String jsFilePath) async {
     }
   ]);
 
+  return setToGlobalObject;
+}
+
+Future<RxDatabase> getRxDatabase(String jsFilePath) async {
+  String plainJsCode = await rootBundle.loadString(jsFilePath);
+  FlutterQjs engine = FlutterQjs(stackSize: 1024 * 1024);
+  engine.dispatch();
+  final setToGlobalObject = await patchJavaScriptRuntime(engine);
+
   ReplaySubject<RxChangeEventBulk<dynamic>> events = ReplaySubject();
   await setToGlobalObject.invoke([
     "sendRxDBEvent",
@@ -90,28 +100,25 @@ Future<RxDatabase> getRxDatabase(String jsFilePath) async {
 
   setToGlobalObject.free();
 
+  // run the RxDatabase creation JavaScript code
   await engine.evaluate(plainJsCode);
   var databaseConfigPlain = await engine.evaluate('process.init();');
-  var databaseConfig = Map<String, dynamic>.from(databaseConfigPlain);
-  print("database config:");
-  print(databaseConfig);
 
+  // load the RxDatabase configuration and collection meta data.
+  var databaseConfig = Map<String, dynamic>.from(databaseConfigPlain);
   var configCollectionsMetaJson = databaseConfig['collections'];
   if (configCollectionsMetaJson == null) {
     throw Exception('no collection meta given');
   }
 
-  RxDatabase database = new RxDatabase(databaseConfig['databaseName'], engine,
+  RxDatabase database = RxDatabase(databaseConfig['databaseName'], engine,
       events, configCollectionsMetaJson);
-
-  print(configCollectionsMetaJson);
-
   return database;
 }
 
 class RxChangeEvent<RxDocType> {
   String operation;
-  dynamic? previousDocumentData;
+  dynamic previousDocumentData;
   String eventId;
   String documentId;
   String? collectionName;
@@ -189,7 +196,7 @@ class RxDatabase<CollectionsOfDatabase> {
   List<dynamic> collectionMeta;
   Map<String, RxCollection<dynamic>> collections = {};
   ReplaySubject<RxChangeEventBulk<dynamic>> eventBulks$;
-  RxDatabase(this.name, this.engine, this.eventBulks$, this.collectionMeta) {}
+  RxDatabase(this.name, this.engine, this.eventBulks$, this.collectionMeta);
 
   RxCollection<RxDocType> getCollection<RxDocType>(String name) {
     var meta = collectionMeta.firstWhere((meta) => meta['name'] == name);
@@ -242,6 +249,16 @@ class RxDocument<RxDocType> {
   RxCollection<RxDocType> collection;
   dynamic data;
   RxDocument(this.collection, this.data);
+
+  Future<RxDocument<RxDocType>> remove() async {
+    String id = data[collection.primaryKey];
+    await collection.database.engine.evaluate("process.db['" +
+        collection.name +
+        "'].findOne('" +
+        id +
+        "').exec().then(d => d.remove());");
+    return this;
+  }
 }
 
 class RxQuery<RxDocType> {
@@ -290,7 +307,7 @@ class DocCache<RxDocType> {
   DocCache(this.collection);
 
   RxDocument<RxDocType> getByDocData(dynamic data) {
-    String id = jsonDecode(jsonEncode(data))[collection.primaryKey];
+    String id = data[collection.primaryKey];
     var docInCache = map[id];
     if (docInCache != null) {
       return docInCache;

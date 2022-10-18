@@ -86,6 +86,11 @@ class _MyHomePageState extends State<MyHomePage> {
     colorController.clear();
   }
 
+  void removeHero(RxDocument<RxHeroDocType> heroDocument) async {
+    print("removeHero() called");
+    await heroDocument.remove();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,9 +105,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 scrollDirection: Axis.vertical,
                 itemCount: documents.length,
                 itemBuilder: (BuildContext ctxt, int index) {
-                  return ListTile(
-                      leading: Text(documents[index].data['name']),
-                      title: Text('color: ' + documents[index].data['color']));
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: ListTile(
+                            leading: Text(documents[index].data['name']),
+                            title: Text(
+                                'color: ' + documents[index].data['color'])),
+                      ),
+                      new IconButton(
+                        icon: Icon(Icons.remove_circle),
+                        onPressed: () {
+                          documents[index].remove();
+                        },
+                      )
+                    ],
+                  );
                 }),
           ),
           Container(

@@ -2,9 +2,6 @@ import {
     createRxDatabase
 } from 'rxdb';
 import {
-    getRxStorageMemory
-} from 'rxdb/plugins/memory';
-import {
     getRxStorageLoki
 } from 'rxdb/plugins/lokijs';
 import {
