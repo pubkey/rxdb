@@ -124,8 +124,8 @@ class RxChangeEvent<RxDocType> {
   String documentId;
   String? collectionName;
   bool isLocal;
-  int? startTime;
-  int? endTime;
+  double? startTime;
+  double? endTime;
   RxChangeEvent(
       this.operation,
       this.previousDocumentData,
