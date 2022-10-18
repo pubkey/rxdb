@@ -339,7 +339,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-angular-x7-
 
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -385,7 +385,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-test-builds-x7-
 
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -418,7 +418,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-test-code-style-x7-
 
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -445,7 +445,7 @@ jobs:
 
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -484,7 +484,7 @@ jobs:
           node-version-file: '.nvmrc'
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -512,7 +512,7 @@ jobs:
             # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
             node-version: 16.16.0
 
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -556,7 +556,7 @@ jobs:
           key: ${{ runner.os }}-buildx-supabase-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -595,7 +595,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -624,7 +624,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -652,7 +652,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -711,7 +711,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -744,7 +744,7 @@ jobs:
           key: ${{ runner.os }}-npm-flutter-x7-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-flutter-x7-
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -755,6 +755,10 @@ jobs:
           npm run preinstall
           npm install --legacy-peer-deps
           npm run build
+      - name: Add flutter linux dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build libgtk-3-dev
       - name: flutter test
         working-directory: ./examples/flutter
         run: flutter test integration_test/basics_test.dart -d linux
@@ -768,7 +772,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -786,7 +790,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -803,7 +807,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
