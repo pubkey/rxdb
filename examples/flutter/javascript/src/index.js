@@ -5,19 +5,15 @@ import {
     getRxStorageLoki
 } from 'rxdb/plugins/lokijs';
 import {
-    setFlutterRxDatabaseCreator,
-    lokijsAdapterFlutter
-} from './rxdb-flutter';
-
-export function test() {
-    return 'test-success';
-}
+    setFlutterRxDatabaseConnector,
+    getLokijsAdapterFlutter
+} from 'rxdb/plugins/flutter';
 
 async function createDB(databaseName) {
     const db = await createRxDatabase({
         name: databaseName,
         storage: getRxStorageLoki({
-            adapter: lokijsAdapterFlutter
+            adapter: getLokijsAdapterFlutter()
         }),
         multiInstance: false
     });
@@ -49,6 +45,6 @@ async function createDB(databaseName) {
     return db;
 }
 
-setFlutterRxDatabaseCreator(
+setFlutterRxDatabaseConnector(
     createDB
 );
