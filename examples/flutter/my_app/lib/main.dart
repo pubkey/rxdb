@@ -12,16 +12,15 @@ void main() async {
   app.initJavaScript();
 }
 
-
 class RxHeroDocType {
-  late String id;
-  late String name;
-  late String color;
+  final String id, name, color;
+
+  RxHeroDocType({required this.id, required this.name, required this.color});
 }
+
 class RxCollectionsOfDatabase {
   late RxCollection<RxHeroDocType> heroes;
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -36,15 +35,24 @@ class MyApp extends StatelessWidget {
 
     RxDatabase database = await getRxDatabase("javascript/dist/main.js");
     print(database);
-    RxCollection<RxHeroDocType> collection = database.getCollection<RxHeroDocType>('heroes');
-    
+    var collection = database.getCollection<RxHeroDocType>('heroes');
+
     var document = await collection.insert({
-      "id": "foo",
+      "id": "foo" + new DateTime.now().toString(),
       "name": "Alice",
       "color": "blue"
-    });    
+    });
 
-    print("doc value: " + document.data.color);
+
+    print("doc value: " + document.data['color']);
+
+    var query = collection.find({});
+    var existingDocs = await query.exec();
+    print("existing docs:");
+    print(existingDocs);
+    existingDocs.forEach((element) {
+      print("doc " + element.data['id']);
+    });
 
     print('EEEEEEEEEEEEEEEEEE');
     print('EEEEEEEEEEEEEEEEEE');

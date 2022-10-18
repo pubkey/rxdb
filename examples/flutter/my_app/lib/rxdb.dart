@@ -3,6 +3,7 @@ import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:json_annotation/json_annotation.dart';
 
 Future<RxDatabase> getRxDatabase(String jsFilePath) async {
   String plainJsCode = await rootBundle.loadString(jsFilePath);
@@ -94,21 +95,15 @@ Future<RxDatabase> getRxDatabase(String jsFilePath) async {
   print("database config:");
   print(databaseConfig);
 
-  RxDatabase database =
-      new RxDatabase(databaseConfig['databaseName'], engine, events);
-
   var configCollectionsMetaJson = databaseConfig['collections'];
   if (configCollectionsMetaJson == null) {
     throw Exception('no collection meta given');
   }
+
+  RxDatabase database = new RxDatabase(databaseConfig['databaseName'], engine,
+      events, configCollectionsMetaJson);
+
   print(configCollectionsMetaJson);
-  for (var collectionMeta in configCollectionsMetaJson) {
-    String collectionName = collectionMeta['name'];
-    String collectionPrimaryKey = collectionMeta['primaryKey'];
-    var collection =
-        RxCollection(collectionName, database, collectionPrimaryKey);
-    database.collections[collectionName] = collection;
-  }
 
   return database;
 }
@@ -116,14 +111,22 @@ Future<RxDatabase> getRxDatabase(String jsFilePath) async {
 class RxDatabase<CollectionsOfDatabase> {
   String name;
   FlutterQjs engine;
+  List<dynamic> collectionMeta;
   Map<String, RxCollection<dynamic>> collections = {};
   ReplaySubject events;
-  RxDatabase(this.name, this.engine, this.events);
+  RxDatabase(this.name, this.engine, this.events, this.collectionMeta);
 
   RxCollection<RxDocType> getCollection<RxDocType>(String name) {
-    var collection = collections[name];
-    assert(collection != null, "collection does not exist");
-    if (collection == null) {
+    var meta = collectionMeta.firstWhere((meta) => meta['name'] == name);
+    String collectionName = meta['name'];
+    String collectionPrimaryKey = meta['primaryKey'];
+
+    if (collections[collectionName] == null) {
+      collections[collectionName] =
+          RxCollection<RxDocType>(collectionName, this, collectionPrimaryKey);
+    }
+    var useCollection = collections[collectionName];
+    if (useCollection == null) {
       throw Exception('collection does not exist');
     } else {
       return collections[name] as RxCollection<RxDocType>;
@@ -138,16 +141,16 @@ class RxCollection<RxDocType> {
   late DocCache<RxDocType> docCache;
 
   RxCollection(this.name, this.database, this.primaryKey) {
-    docCache = DocCache(this);
+    docCache = DocCache<RxDocType>(this);
   }
 
-  RxQuery find(query) {
-    var query = RxQuery();
-    return query;
+  RxQuery<RxDocType> find(dynamic query) {
+    var rxQuery = RxQuery<RxDocType>(query, this);
+    return rxQuery;
   }
 
   Future<RxDocument<RxDocType>> insert(data) async {
-    var result = await database.engine.evaluate("process.db['" +
+    dynamic result = await database.engine.evaluate("process.db['" +
         name +
         "'].insert(" +
         jsonEncode(data) +
@@ -158,13 +161,31 @@ class RxCollection<RxDocType> {
 }
 
 class RxDocument<RxDocType> {
-  RxCollection collection;
-  RxDocType data;
+  RxCollection<RxDocType> collection;
+  dynamic data;
   RxDocument(this.collection, this.data);
 }
 
-class RxQuery {
-  exec() {}
+class RxQuery<RxDocType> {
+  dynamic query;
+  RxCollection<RxDocType> collection;
+  RxQuery(this.query, this.collection);
+  Future<List<RxDocument<RxDocType>>> exec() async {
+    List<dynamic> result = await collection.database.engine.evaluate(
+        "process.db['" +
+            collection.name +
+            "'].find(" +
+            jsonEncode(query) +
+            ").exec().then(docs => docs.map(d => d.toJSON(true)));");
+
+    var ret = result.map((docData) {
+      var doc = collection.docCache
+          .getByDocData(docData);
+      return doc;
+    }).toList();
+
+    return ret;
+  }
 }
 
 class DocCache<RxDocType> {
@@ -174,13 +195,22 @@ class DocCache<RxDocType> {
   DocCache(this.collection);
 
   RxDocument<RxDocType> getByDocData(dynamic data) {
-    String id = data[collection.primaryKey];
+    String id = jsonDecode(jsonEncode(data))[collection.primaryKey];
     var docInCache = map[id];
     if (docInCache != null) {
       return docInCache;
     } else {
       var doc = RxDocument<RxDocType>(collection, data);
+      map[id] = doc;
       return doc;
     }
   }
+}
+
+abstract class RxDocTypeParent<RxDocType> {
+  ///
+  /// Will call the [.fromJson] constructor and return a new instance of the
+  /// object
+  ///
+  RxDocType fromJson(dynamic json);
 }
