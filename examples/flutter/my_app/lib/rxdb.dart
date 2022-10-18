@@ -78,12 +78,13 @@ Future<RxDatabase> getRxDatabase(String jsFilePath) async {
     }
   ]);
 
-  ReplaySubject events = ReplaySubject();
+  ReplaySubject<RxChangeEventBulk<dynamic>> events = ReplaySubject();
   await setToGlobalObject.invoke([
     "sendRxDBEvent",
     (String eventJSON) async {
-      var data = jsonDecode(eventJSON);
-      events.add(data);
+      var parsedJSON = jsonDecode(eventJSON);
+      var eventBulk = RxChangeEventBulk.fromJSON(parsedJSON);
+      events.add(eventBulk);
     }
   ]);
 
@@ -108,13 +109,89 @@ Future<RxDatabase> getRxDatabase(String jsFilePath) async {
   return database;
 }
 
+class RxChangeEvent<RxDocType> {
+  String operation;
+  dynamic? previousDocumentData;
+  String eventId;
+  String documentId;
+  String? collectionName;
+  bool isLocal;
+  int? startTime;
+  int? endTime;
+  RxChangeEvent(
+      this.operation,
+      this.previousDocumentData,
+      this.eventId,
+      this.documentId,
+      this.collectionName,
+      this.isLocal,
+      this.startTime,
+      this.endTime);
+
+  static RxChangeEvent<RxDocType> fromJSON<RxDocType>(dynamic json) {
+    RxChangeEvent<RxDocType> ret = RxChangeEvent<RxDocType>(
+        json['operation'],
+        json['previousDocumentData'],
+        json['eventId'],
+        json['documentId'],
+        json['collectionName'],
+        json['isLocal'],
+        json['startTime'],
+        json['endTime']);
+    return ret;
+  }
+}
+
+class RxChangeEventBulk<RxDocType> {
+  String? collectionName;
+  String id;
+
+  String databaseToken;
+  String storageToken;
+  bool internal;
+  List<RxChangeEvent<RxDocType>> events;
+  dynamic checkpoint;
+  String context;
+
+  RxChangeEventBulk(
+      this.collectionName,
+      this.id,
+      this.databaseToken,
+      this.storageToken,
+      this.internal,
+      this.events,
+      this.checkpoint,
+      this.context);
+
+  static RxChangeEventBulk<RxDocType> fromJSON<RxDocType>(dynamic json) {
+    print("UUUUUUUUUUUUUUUUUUUUUUUUUUU");
+    print(json);
+    List<dynamic> eventsJson = json['events'];
+    List<RxChangeEvent<RxDocType>> events = eventsJson.map((row) {
+      var event = RxChangeEvent.fromJSON<RxDocType>(row);
+      return event;
+    }).toList();
+
+    RxChangeEventBulk<RxDocType> ret = RxChangeEventBulk<RxDocType>(
+        json['collectionName'],
+        json['id'],
+        json['databaseToken'],
+        json['storageToken'],
+        json['internal'],
+        events,
+        json['checkpoint'],
+        json['context']);
+    return ret;
+  }
+}
+
 class RxDatabase<CollectionsOfDatabase> {
   String name;
   FlutterQjs engine;
   List<dynamic> collectionMeta;
   Map<String, RxCollection<dynamic>> collections = {};
-  ReplaySubject events;
-  RxDatabase(this.name, this.engine, this.events, this.collectionMeta);
+  ReplaySubject<RxChangeEventBulk<dynamic>> eventBulks$;
+  RxDatabase(this.name, this.engine, this.eventBulks$, this.collectionMeta) {}
 
   RxCollection<RxDocType> getCollection<RxDocType>(String name) {
     var meta = collectionMeta.firstWhere((meta) => meta['name'] == name);
@@ -139,8 +216,10 @@ class RxCollection<RxDocType> {
   RxDatabase database;
   String primaryKey;
   late DocCache<RxDocType> docCache;
+  late Stream<RxChangeEventBulk<dynamic>> eventBulks$;
 
   RxCollection(this.name, this.database, this.primaryKey) {
+    eventBulks$ = database.eventBulks$.where((bulk) => bulk.collectionName == name);
     docCache = DocCache<RxDocType>(this);
   }
 
@@ -169,6 +248,10 @@ class RxDocument<RxDocType> {
 class RxQuery<RxDocType> {
   dynamic query;
   RxCollection<RxDocType> collection;
+
+  Stream<List<RxDocument<RxDocType>>> results$ = ReplaySubject();
+  bool subscribed = false;
+
   RxQuery(this.query, this.collection);
   Future<List<RxDocument<RxDocType>>> exec() async {
     List<dynamic> result = await collection.database.engine.evaluate(
@@ -179,12 +262,22 @@ class RxQuery<RxDocType> {
             ").exec().then(docs => docs.map(d => d.toJSON(true)));");
 
     var ret = result.map((docData) {
-      var doc = collection.docCache
-          .getByDocData(docData);
+      var doc = collection.docCache.getByDocData(docData);
       return doc;
     }).toList();
 
     return ret;
+  }
+
+  Stream<List<RxDocument<RxDocType>>> $() {
+    if(subscribed == false) {
+      subscribed = true;
+      results$ = collection.eventBulks$.asyncMap((event) async {
+        var newResults = await exec();
+        return newResults;
+      });
+    }
+    return results$;
   }
 }
 

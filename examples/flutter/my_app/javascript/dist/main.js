@@ -21751,9 +21751,9 @@ function setFlutterRxDatabaseCreator(
 ) {
     process.init = async () => {
         const db = await createDB();
-        db.$.subscribe(ev => {
+        db.eventBulks$.subscribe(eventBulk => {
             // eslint-disable-next-line no-undef
-            sendRxDBEvent(JSON.stringify(ev));
+            sendRxDBEvent(JSON.stringify(eventBulk));
         });
         process.db = db;
         const databaseName = db.name;
