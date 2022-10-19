@@ -318,6 +318,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.27.5"
+  rxdb:
+    dependency: "direct main"
+    description:
+      path: "../../src/plugins/flutter/dart"
+      relative: true
+    source: path
+    version: "0.0.1"
   shared_preferences:
     dependency: "direct main"
     description:

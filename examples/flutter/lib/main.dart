@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:flutter/services.dart';
-import 'package:my_app/rxdb.dart';
+import 'package:rxdb/rxdb.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

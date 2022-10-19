@@ -124,8 +124,8 @@ class RxChangeEvent<RxDocType> {
   String documentId;
   String? collectionName;
   bool isLocal;
-  double? startTime;
-  double? endTime;
+  num? startTime;
+  num? endTime;
   RxChangeEvent(
       this.operation,
       this.previousDocumentData,
@@ -326,4 +326,8 @@ abstract class RxDocTypeParent<RxDocType> {
   /// object
   ///
   RxDocType fromJson(dynamic json);
+}
+
+double toDouble(double val) {
+  return val.toDouble();
 }
