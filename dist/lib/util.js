@@ -76,7 +76,9 @@ function pluginMissing(pluginKey) {
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
  * @return a string as hash-result
  */
-function fastUnsecureHash(inputString) {
+function fastUnsecureHash(inputString,
+// used to test the polyfill
+doNotUseTextEncoder) {
   var hashValue = 0,
     i,
     chr,
@@ -89,7 +91,23 @@ function fastUnsecureHash(inputString) {
    * This is what makes the murmurhash implementation such fast.
    * @link https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L4
    */
-  var encoded = new TextEncoder().encode(inputString);
+  var encoded;
+
+  /**
+   * All modern browsers support the TextEncoder
+   * @link https://caniuse.com/textencoder
+   * But to make RxDB work in other JavaScript runtimes,
+   * like when using it in flutter or QuickJS, we need to
+   * make it work even when there is no TextEncoder.
+   */
+  if (typeof TextEncoder !== 'undefined' && !doNotUseTextEncoder) {
+    encoded = new TextEncoder().encode(inputString);
+  } else {
+    encoded = [];
+    for (var _i = 0; _i < inputString.length; _i++) {
+      encoded.push(inputString.charCodeAt(_i));
+    }
+  }
   for (i = 0, len = inputString.length; i < len; i++) {
     chr = encoded[i];
     hashValue = (hashValue << 5) - hashValue + chr;

@@ -167,18 +167,19 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
     }
 
     function traverse(currentObj: any, currentPath: any) {
-        if (typeof currentObj !== 'object') return;
+        if (!currentObj || typeof currentObj !== 'object') return;
         Object.keys(currentObj).forEach(attributeName => {
-            if (!currentObj.properties) {
+            const schemaObj = currentObj[attributeName];
+            if (!currentObj.properties && schemaObj && typeof schemaObj === 'object') {
                 checkField(
                     attributeName,
-                    currentObj[attributeName],
+                    schemaObj,
                     currentPath
                 );
             }
             let nextPath = currentPath;
             if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
-            traverse(currentObj[attributeName], nextPath);
+            traverse(schemaObj, nextPath);
         });
     }
     traverse(rxJsonSchema, '');

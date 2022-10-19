@@ -3,11 +3,16 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX Cannot read properties of null [#4055](https://github.com/pubkey/rxdb/pull/4055) Thanks [@Albert-Gao](https://github.com/Albert-Gao)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.5.1 (15 October 2022)
+
+- ADD in `fastUnsecureHash()` use polyfill if `TextEncoder` is not available
 
 ### 13.5.0 (12 October 2022)
 
