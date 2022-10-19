@@ -25,7 +25,7 @@ Object.keys(_nosqlQueryBuilder).forEach(function (key) {
 });
 var _rxQuery = require("../../rx-query");
 var _util = require("../../util");
-// if the query-builder plugin is used, we have to save it's last path
+// if the query-builder plugin is used, we have to save its last path
 var RXQUERY_OTHER_FLAG = 'queryBuilderPath';
 function runBuildingStep(rxQuery, functionName, value) {
   var queryBuilder = (0, _nosqlQueryBuilder.createQueryBuilder)((0, _util.clone)(rxQuery.mangoQuery));

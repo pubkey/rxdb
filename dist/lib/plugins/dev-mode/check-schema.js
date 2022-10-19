@@ -140,14 +140,15 @@ function validateFieldsDeep(rxJsonSchema) {
     }
   }
   function traverse(currentObj, currentPath) {
-    if (typeof currentObj !== 'object') return;
+    if (!currentObj || typeof currentObj !== 'object') return;
     Object.keys(currentObj).forEach(function (attributeName) {
-      if (!currentObj.properties) {
-        checkField(attributeName, currentObj[attributeName], currentPath);
+      var schemaObj = currentObj[attributeName];
+      if (!currentObj.properties && schemaObj && typeof schemaObj === 'object') {
+        checkField(attributeName, schemaObj, currentPath);
       }
       var nextPath = currentPath;
       if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
-      traverse(currentObj[attributeName], nextPath);
+      traverse(schemaObj, nextPath);
     });
   }
   traverse(rxJsonSchema, '');
