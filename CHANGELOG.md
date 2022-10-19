@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD example [how to use RxDB with Flutter](https://github.com/pubkey/rxdb/tree/master/examples/flutter)
 - FIX Cannot read properties of null [#4055](https://github.com/pubkey/rxdb/pull/4055) Thanks [@Albert-Gao](https://github.com/Albert-Gao)
 - FIX(sqlite) do not run pragma inside of transaction
 <!-- ADD new changes here! -->
