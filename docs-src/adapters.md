@@ -122,7 +122,7 @@ const database = await createRxDatabase({
 
 ## Node-Websql
 
-This adapter uses the [node-websql](https://github.com/nolanlawson/node-websql)-shim to store data on the filesystem. It's advantages are that it does not need a leveldb build and it can be used when multiple nodejs-processes use the same database-files.
+This adapter uses the [node-websql](https://github.com/nolanlawson/node-websql)-shim to store data on the filesystem. Its advantages are that it does not need a leveldb build and it can be used when multiple nodejs-processes use the same database-files.
 
 ```js
 // npm install pouchdb-adapter-node-websql --save
