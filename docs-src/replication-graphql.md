@@ -1,6 +1,6 @@
 # Replication with GraphQL
 
-The GraphQL replication provides handlers for GraphQL to run a [replication](./replication.md) with GraphQL as transportation layer.
+The GraphQL replication provides handlers for GraphQL to run [replication](./replication.md) with GraphQL as the transportation layer.
 
 **NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
 
