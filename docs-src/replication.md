@@ -28,7 +28,7 @@ A---B-----------D   master/server state
 
 ## Replication protocol on the transfer level
 
-When document states are transfered, all handlers are using bulks of documents for better performance.
+When document states are transfered, all handlers use batches of documents for better performance.
 The server has to implement the following methods to be compatible with the replication:
 
 - **pullHandler** Get the last checkpoint (or null) as input. Returns all documents that have been written **after** the given checkpoint. Also returns the checkpoint of the latest written returned document.
