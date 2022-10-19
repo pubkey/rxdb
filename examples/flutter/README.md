@@ -1,6 +1,6 @@
 # RxDB Flutter example
 
-This is an example of how to use RxDB inside of a [Flutter](https://flutter.dev/) application. It is able to insert documents and run and observe queries to create a reactive application that always renders the current database state.
+This is an example of how to use [RxDB](https://rxdb.info/) as a database inside of a [Flutter](https://flutter.dev/) application. It is able to insert documents and run and observe queries to create a reactive application that always renders the current database state.
 
 **IMPORTANT:** This is highly experimental, it works but many parts are missing. If you need any missing functionality, you are expected to make a pull request.
 
