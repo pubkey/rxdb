@@ -17,6 +17,6 @@
     - Github discussions: https://github.com/pubkey/rxdb/discussions
     - Stackoverflow: https://stackoverflow.com/questions/tagged/rxdb
 
-  ## Everything else will likely be autoclosed. The maintainers time is as same as valuable as yours. 
+  ## Everything else will likely be autoclosed. The maintainer's time is as same as valuable as yours. 
   You are also a developer! You can fix stuff by yourself.
 -->
