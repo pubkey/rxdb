@@ -12,7 +12,7 @@ RxDB is written in TypeScript and compiled to JavaScript. To run it in a Flutter
 
 ## In JavaScript
 
-To use RxDB, you have to create a compatible JavaScript file that creates your `RxDatabase` and starts some connectors which are used by Flutter to communicate with the JavaScript RxDB database.
+To use RxDB, you have to create a compatible JavaScript file that creates your `RxDatabase` and starts some connectors which are used by Flutter to communicate with the JavaScript RxDB database via `setFlutterRxDatabaseConnector()`.
 
 Use the [index.js](./javascript/src/index.js) as a reference.
 
@@ -73,6 +73,15 @@ setFlutterRxDatabaseConnector(
 );
 ```
 
+Before you can use the JavaScript code, you have to bundle it into a single `.js` file. In this example we do that with `webpack` in a npm script [here](./javascript/package.json) which bundles everything into the `javascript/dist/index.js` file.
+
+To allow Flutter to access that file during runtime, add it to the `assets` inside of your [pubspec.yaml](./pubspec.yaml):
+
+```yaml
+flutter:
+  assets:
+    - javascript/dist/index.js
+```
 
 ## In Flutter
 

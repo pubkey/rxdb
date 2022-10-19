@@ -32,7 +32,7 @@ class RxDatabaseState {
       return database;
     }
     initDone = true;
-    database = await getRxDatabase("javascript/dist/main.js", databaseName);
+    database = await getRxDatabase("javascript/dist/index.js", databaseName);
     collection = database.getCollection<RxHeroDocType>('heroes');
     return database;
   }
