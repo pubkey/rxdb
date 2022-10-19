@@ -5,7 +5,7 @@ This list contains things that have to be done but will create breaking changes.
 
 ### Rewrite prototype-merge
 
-Each collection creates it's own constructor for RxDocuments.
+Each collection creates its own constructor for RxDocuments.
 This has a performance-benefit over using the Proxy-API which is also not supported in IE11.
 To create the constructor, the collection merges prototypes from RxDocument, RxSchema and the ORM-functions.
 The current implementation of this prototype-merging is very complicated and has hacky workarrounds to work with vue-devtools.
