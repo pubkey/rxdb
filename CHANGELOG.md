@@ -3,18 +3,16 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD example [how to use RxDB with Flutter](https://github.com/pubkey/rxdb/tree/master/examples/flutter)
+- FIX many typos from the [TYPOFIX event](https://github.com/pubkey/rxdb/issues/4024)
+- FIX Cannot read properties of null [#4055](https://github.com/pubkey/rxdb/pull/4055) Thanks [@Albert-Gao](https://github.com/Albert-Gao)
+- FIX(sqlite) do not run pragma inside of transaction
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
 
-### 13.5.2 (19 October 2022)
-
-- ADD example [how to use RxDB with Flutter](https://github.com/pubkey/rxdb/tree/master/examples/flutter)
-- FIX many typos from the [TYPOFIX event](https://github.com/pubkey/rxdb/issues/4024)
-- FIX Cannot read properties of null [#4055](https://github.com/pubkey/rxdb/pull/4055) Thanks [@Albert-Gao](https://github.com/Albert-Gao)
-- FIX(sqlite) do not run pragma inside of transaction
 
 ### 13.5.1 (15 October 2022)
 
