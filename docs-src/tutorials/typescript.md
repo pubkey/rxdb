@@ -5,7 +5,7 @@
 In this tutorial you learn how to use RxDB with TypeScript.
 We will create a basic database with one collection and several ORM-methods, fully typed!
 
-RxDB directly comes with it's typings and you do not have to install anything else, however the latest version of RxDB (v9+) requires that you are using Typescript v3.8 or higher.
+RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB (v9+) requires that you are using Typescript v3.8 or higher.
 Our way to go is
 
 - First define how the documents look like
