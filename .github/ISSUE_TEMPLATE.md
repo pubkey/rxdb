@@ -8,7 +8,7 @@
      You can start by using the bug-report template: https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.ts
      Also read the bug checklist here: https://github.com/pubkey/rxdb/blob/master/orga/bug-checklist.md
 
-  ## You have a feature request?
+  ## Do you have a feature request?
   -> Create a pull request that shows how the RxDB API would change or how the new feature could be used.
 
   ## Do you have a common question which cannot be solved with a PR?
