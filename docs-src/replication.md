@@ -1,6 +1,6 @@
 # Replication
 
-The RxDB replication protocol allows to replicate the database state in **realtime** between the clients and the server.
+The RxDB replication protocol provides the ability to replicate the database state in **realtime** between the clients and the server.
 
 The backend server does not have to be a RxDB instance, you can build a replication with **any infrastructure**.
 For example you can replicate with a custom GraphQL endpoint or a http server on top of a PostgreSQL database.
