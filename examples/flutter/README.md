@@ -7,7 +7,7 @@ This is an example of how to use RxDB inside of a [Flutter](https://flutter.dev/
 
 ## How it works technically
 
-RxDB is written in TypeScript and compiled to JavaScript. To run it in a Flutter application, the [flutter_qjs](https://pub.dev/packages/flutter_qjs) library is used to spawn a QuickJS JavaScript runtime. RxDB itself run in that runtime and communicates with the flutter dart runtime. To store data persistend, the [LokiJS RxStorage](https://rxdb.info/rx-storage-lokijs.html) is used together with custom storage adapter.
+RxDB is written in TypeScript and compiled to JavaScript. To run it in a Flutter application, the [flutter_qjs](https://pub.dev/packages/flutter_qjs) library is used to spawn a QuickJS JavaScript runtime. RxDB itself runs in that runtime and communicates with the flutter dart runtime. To store data persistend, the [LokiJS RxStorage](https://rxdb.info/rx-storage-lokijs.html) is used together with a custom storage adapter that persists the database inside of the [shared_preferences](https://pub.dev/packages/shared_preferences) data.
 
 
 ## In JavaScript
@@ -85,7 +85,47 @@ flutter:
 
 ## In Flutter
 
+First you have to use the rxdb dart package as a flutter dependency. Currently the package is not published at the dart pub.dev. Instead you have to install it from the local filesystem inside of your RxDB npm installation.
+
+```yaml
+# inside of pubspec.yaml
+dependencies:
+  rxdb:
+    path: path/to/your/node_modules/rxdb/src/plugins/flutter/dart
+```
+
+Afterwards you can import the rxdb library in your dart code
+and connect to the JavaScript process from there. For reference, check out the [lib/main.dart](./lib/main.dart) file.
+
+```dart
+import 'package:rxdb/rxdb.dart';
+
+// start the javascript process and connect to the database
+RxDatabase myDatabase = await getRxDatabase("javascript/dist/index.js", databaseName);
+
+// get a collection
+RxCollection myCollection = database.getCollection('heroes');
+
+// insert a document
+RxDocument myDocument = await collection.insert({
+    "id": "zflutter-${DateTime.now()}",
+    "name": nameController.text,
+    "color": colorController.text
+});
+
+// create a query
+RxQuery<RxHeroDocType> myQuery = RxDatabaseState.collection.find();
+
+// subscribe to a query
+myQuery.$().listen((newResults) {
+    setState(() {
+        documents = newResults;
+    });
+});
+```
+
+
 ## Run the example
 
-- First you have to bundle the JavaScript by running `npm run install && npm run build` in the [/javascript](/javascript) directory.
+- First you have to bundle the JavaScript by running `npm run install && npm run build` in the [/javascript](/javascript) directory. You have to rerun this command each time you change the JavaScript code.
 - In your terminal, execute `flutter run` to start the example application.

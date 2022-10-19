@@ -92,19 +92,21 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png" />
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" />
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png" />
-  Browsers
+  <a href="./examples/angular">Browsers</a>
   <img height="13" src="docs-src/files/icons/nodejs.png" />
-  Node.js
+  <a href="./examples/node">Node.js</a>
   <img height="13" src="docs-src/files/icons/electron.png" />
-  Electron
+  <a href="./examples/electron">Electron</a>
   <img height="13" src="docs-src/files/icons/react-native.png" />
-  React Native
+  <a href="./examples/react-native">React Native</a>
   <img height="13" src="docs-src/files/icons/cordova.png" />
   Cordova/Phonegap
   <img height="13" src="docs-src/files/icons/capacitor.svg" />
   Capacitor
   <img height="13" src="docs-src/files/icons/nativescript.svg" />
-  NativeScript
+  <a href="https://github.com/herefishyfish/rxdb-nativescript">NativeScript</a>
+  <img height="13" src="docs-src/files/icons/flutter.svg" />
+  <a href="./examples/flutter">Flutter</a>
 </h4>
 
 
