@@ -29,7 +29,7 @@ A---B-----------D   master/server state
 ## Replication protocol on the transfer level
 
 When document states are transfered, all handlers are using bulks of documents for better performance.
-The server has to implement the following methods to be compatible with the replication:
+The server **must** implement the following methods to be compatible with the replication:
 
 - **pullHandler** Get the last checkpoint (or null) as input. Returns all documents that have been written **after** the given checkpoint. Also returns the checkpoint of the latest written returned document.
 - **pushHandler** a method that can be called by the client to send client side writes to the master. It gets an array with the the `assumedMasterState` and the `newForkState` of each document write as input. It must return an array that contains the master document states of all conflicts. If there are no conflicts, it must return an empty array.
