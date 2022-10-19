@@ -7,7 +7,7 @@ import type { RxPlugin, RxQuery } from '../../types';
 import { RxQueryBase, tunnelQueryCache } from '../../rx-query';
 import { clone } from '../../util';
 
-// if the query-builder plugin is used, we have to save it's last path
+// if the query-builder plugin is used, we have to save its last path
 const RXQUERY_OTHER_FLAG = 'queryBuilderPath';
 
 export function runBuildingStep<RxDocumentType, RxQueryResult>(
