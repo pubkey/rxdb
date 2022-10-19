@@ -19,7 +19,7 @@ require(['gitbook', 'jQuery'], function(gitbook, $) {
       });
 
     expand(lsItem());
-    //expand current selected chapter with it's parents
+    //expand current selected chapter with its parents
     var activeChapter = $(CHAPTER + '.active');
     expand(activeChapter);
     expand(activeChapter.parents(CHAPTER));
