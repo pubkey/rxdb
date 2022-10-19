@@ -11,7 +11,7 @@
   ## You have a feature request?
   -> Create a pull request that shows how the RxDB API would change or how the new feature could be used.
 
-  ## You have a common question which cannot be solved with a PR
+  ## Do you have a common question which cannot be solved with a PR?
   -> Ask it at one of these places:
     - Chat: https://discord.gg/tqt9ZttJfD
     - Github discussions: https://github.com/pubkey/rxdb/discussions
