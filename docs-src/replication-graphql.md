@@ -1,6 +1,6 @@
 # Replication with GraphQL
 
-The GraphQL replication provides handlers for GraphQL to run a [replication](./replication.md) with GraphQL as transportation layer.
+The GraphQL replication provides handlers for GraphQL to run [replication](./replication.md) with GraphQL as the transportation layer.
 
 **NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
 
@@ -131,7 +131,7 @@ addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 #### Pull replication
 
-For the pull-replication, you first need a `pullQueryBuilder`. This is a function that gets the last replication `checkpoint` and a `limit` as input and returns an object with a GraphQL-query and its variables (or a promise that resolves to the same object). RxDB will use the query builder to construct what is later send to the GraphQL endpoint.
+For the pull-replication, you first need a `pullQueryBuilder`. This is a function that gets the last replication `checkpoint` and a `limit` as input and returns an object with a GraphQL-query and its variables (or a promise that resolves to the same object). RxDB will use the query builder to construct what is later sent to the GraphQL endpoint.
 
 ```js
 const pullQueryBuilder = (checkpoint, limit) => {

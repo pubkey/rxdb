@@ -1,0 +1,21 @@
+{
+  "name": "javascript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "preinstall": "(cd ../../../ && npx yarn@1.22.10 pack ../../ --filename ./examples/flutter/javascript/rxdb-local.tgz)",
+    "build": "webpack --config ./webpack.config.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "rxdb": "file:rxdb-local.tgz",
+    "rxjs": "7.5.7"
+  },
+  "devDependencies": {
+    "webpack": "5.74.0",
+    "webpack-cli": "4.10.0"
+  }
+}

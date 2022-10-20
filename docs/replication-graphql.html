@@ -2119,7 +2119,7 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="replication-with-graphql">Replication with GraphQL</h1>
-<p>The GraphQL replication provides handlers for GraphQL to run a <a href="replication.html">replication</a> with GraphQL as transportation layer.</p>
+<p>The GraphQL replication provides handlers for GraphQL to run <a href="replication.html">replication</a> with GraphQL as the transportation layer.</p>
 <p><strong>NOTICE:</strong> To play around, check out the full example of the RxDB <a href="https://github.com/pubkey/rxdb/tree/master/examples/graphql" target="_blank">GraphQL replication with server and client</a></p>
 <h2 id="usage">Usage</h2>
 <p>Before you use the GraphQL replication, make sure you&apos;ve learned how the <a href="replication.html">RxDB replication</a> works.</p>
@@ -2230,7 +2230,7 @@ type Subscription {
 addRxPlugin(RxDBReplicationGraphQLPlugin);
 </code></pre>
 <h4 id="pull-replication">Pull replication</h4>
-<p>For the pull-replication, you first need a <code>pullQueryBuilder</code>. This is a function that gets the last replication <code>checkpoint</code> and a <code>limit</code> as input and returns an object with a GraphQL-query and its variables (or a promise that resolves to the same object). RxDB will use the query builder to construct what is later send to the GraphQL endpoint.</p>
+<p>For the pull-replication, you first need a <code>pullQueryBuilder</code>. This is a function that gets the last replication <code>checkpoint</code> and a <code>limit</code> as input and returns an object with a GraphQL-query and its variables (or a promise that resolves to the same object). RxDB will use the query builder to construct what is later sent to the GraphQL endpoint.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> pullQueryBuilder = (checkpoint, limit) =&gt; {
     <span class="hljs-comment">/**
      * The first pull does not have a checkpoint

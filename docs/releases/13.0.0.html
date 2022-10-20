@@ -2132,7 +2132,7 @@ When I first implemented the GraphQL replication a few years ago, I had a specif
 <ul>
 <li>Push- and Pull in parallel.</li>
 <li>Use the data in the changestream (optional) to decrease replication latency.</li>
-<li>Implement the conflict resolution into RxDB so that the <strong>client resolves it&apos;s own conflicts</strong> and does not rely on the backend.</li>
+<li>Implement the conflict resolution into RxDB so that the <strong>client resolves its own conflicts</strong> and does not rely on the backend.</li>
 <li>Decrease the complexity for a compatible backend implementation. The new protocol relies on a <em>dumb</em> backend. This will open compatibility with many other use cases like implementing <a href="https://github.com/supabase/supabase/discussions/357" target="_blank">Offline-First in Supabase</a> or using CouchDB but having a faster replication compared to the native CouchDB replication.</li>
 <li>Make it possible to use <a href="https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type" target="_blank">CRDTs</a> instead of a conflict resolution.</li>
 <li>Design a the protocol in a way to make it possible to add attachments replication in the future.</li>

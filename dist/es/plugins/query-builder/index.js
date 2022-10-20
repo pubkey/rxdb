@@ -2,7 +2,7 @@ import { createQueryBuilder, OTHER_MANGO_ATTRIBUTES, OTHER_MANGO_OPERATORS } fro
 import { RxQueryBase, tunnelQueryCache } from '../../rx-query';
 import { clone } from '../../util';
 
-// if the query-builder plugin is used, we have to save it's last path
+// if the query-builder plugin is used, we have to save its last path
 var RXQUERY_OTHER_FLAG = 'queryBuilderPath';
 export function runBuildingStep(rxQuery, functionName, value) {
   var queryBuilder = createQueryBuilder(clone(rxQuery.mangoQuery));
