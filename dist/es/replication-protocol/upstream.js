@@ -181,7 +181,8 @@ export function startReplicationUpstream(state) {
            * If we had conflicts during the inital sync,
            * it means that we likely have new writes to the fork
            * and so we have to run the initial sync again to upastream these new writes.
-           */return Promise.resolve(Promise.all(promises)).then(function (resolvedPromises) {
+           */
+          return Promise.resolve(Promise.all(promises)).then(function (resolvedPromises) {
             var hadConflicts = resolvedPromises.find(function (r) {
               return !!r;
             });
@@ -214,9 +215,10 @@ export function startReplicationUpstream(state) {
     } catch (e) {
       return Promise.reject(e);
     }
-  }; /**
-      * Takes all open tasks an processes them at once.
-      */
+  };
+  /**
+   * Takes all open tasks an processes them at once.
+   */
   var replicationHandler = state.input.replicationHandler;
   state.streamQueue.up = state.streamQueue.up.then(function () {
     return upstreamInitialSync().then(function () {

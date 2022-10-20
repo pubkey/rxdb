@@ -13,7 +13,8 @@ export var QueryCache = /*#__PURE__*/function () {
    * check if an equal query is in the cache,
    * if true, return the cached one,
    * if false, save the given one and return it
-   */_proto.getByQuery = function getByQuery(rxQuery) {
+   */
+  _proto.getByQuery = function getByQuery(rxQuery) {
     var stringRep = rxQuery.toString();
     if (!this._map.has(stringRep)) {
       this._map.set(stringRep, rxQuery);

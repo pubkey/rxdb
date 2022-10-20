@@ -59,7 +59,8 @@ export var RxStoragePouchStatics = {
   },
   /**
    * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
-   */getQueryMatcher: function getQueryMatcher(schema, query) {
+   */
+  getQueryMatcher: function getQueryMatcher(schema, query) {
     var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     var selector = query.selector ? query.selector : {};
     var massagedSelector = massageSelector(selector);
@@ -83,7 +84,8 @@ export var RxStoragePouchStatics = {
    * pouchdb has many bugs and strange behaviors
    * this functions takes a normal mango query
    * and transforms it to one that fits for pouchdb
-   */prepareQuery: function prepareQuery(schema, mutateableQuery) {
+   */
+  prepareQuery: function prepareQuery(schema, mutateableQuery) {
     return preparePouchDbQuery(schema, mutateableQuery);
   },
   checkpointSchema: POUCHDB_CHECKPOINT_SCHEMA

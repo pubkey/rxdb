@@ -278,29 +278,74 @@ header .logo img {
 
 
 
-
-.smartphone {
-    width: 200px;
-    height: 200px;
+.device {
+    display: flex;
+    flex-direction: column;
     background-repeat: no-repeat;
     background-size: contain;
-    background-image: url(../files/smartphone/tablet_white.svg);
+    position: absolute;
 }
 
-.smartphone .smartphone-color {
+.device .beating-color {
     -webkit-transition: background-color 100ms linear;
     -ms-transition: background-color 100ms linear;
     transition: background-color 100ms linear;
-
     background-color: #e6008d;
-    border-radius: 4px;
-
-    width: 65.4%;
-    height: 76.2%;
-    margin-top: 7.4%;
-    margin-left: 17.4%;
 }
 
+.device.tablet {
+    width: 200px;
+    height: 200px;
+    margin-left: -100px;
+    background-image: url(../files/smartphone/tablet_white.svg);
+}
+
+.device.tablet .beating-color {
+    width: 65.4%;
+    height: 76.2%;
+    margin-top: 7.8%;
+    margin-left: 17.4%;
+    border-radius: 4px;
+}
+
+
+.device.desktop {
+    width: 350px;
+    height: 350px;
+    margin-left: -175px;
+    background-image: url(../files/smartphone/desktop_white.svg);
+}
+
+.device.desktop .beating-color {
+    width: 91.4%;
+    height: 44.2%;
+    margin-top: 10.8%;
+    margin-left: 4.4%;
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+}
+
+.device.desktop .beating.logo {
+    width: 22%;
+    margin-left: 39%;
+    margin-top: 28px;
+}
+
+.device.server {
+    width: 150px;
+    height: 150px;
+    margin-left: -75px;
+    background-image: url(../files/smartphone/server_white.svg);
+}
+
+.device.server .beating-color {
+    width: 18.4%;
+    height: 19.2%;
+    margin-top: 7.5%;
+    margin-left: 9%;
+    margin-bottom: 7%;
+    border-radius: 50%;
+}
 
 
 
@@ -372,9 +417,10 @@ header .logo img {
 
 
 .block.second .content-canvas {
-    width: 60%;
-    margin-left: 20%;
-    margin-top: 120px;
+    width: 80%;
+    margin-left: 10%;
+    margin-top: 60px;
+    height: 400px;
 }
 
 @media (max-width: 800px) {
@@ -384,42 +430,19 @@ header .logo img {
     }
 }
 
-.block.second .logo {
-    width: 144px;
-}
-
-@media (max-width: 530px) {
-    .block.second .logo {
-        width: 100px;
+@media (max-width: 670px) {
+    .block.second .content-canvas {
+        transform: scale(0.8);
+        margin-top: 40px;
     }
 }
 
-@media (max-width: 530px) {
-    .block.second .smartphone {
-        width: 150px;
-        height: 150px;
+@media (max-width: 543px) {
+    .block.second .content-canvas {
+        transform: scale(0.6);
+        margin-top: 20px;
     }
 }
-
-
-.block.second .line {
-    width: 80%;
-    margin-left: 0%;
-    height: 3px;
-    background-color: white;
-    margin-top: 62px;
-}
-
-.block.second .arrow {
-    width: 60%;
-    margin-left: -20%;
-    margin-top: 45px;
-}
-
-.block.second .arrow.arrow-right {
-    margin-left: 20%;
-}
-
 
 
 
@@ -690,9 +713,10 @@ header .logo img {
 
 /* IPAD has 820px width, so we use 819px here */
 @media (max-width: 819px) {
-    .block.sixth .buy-options  {
+    .block.sixth .buy-options {
         grid-template-columns: repeat(1, minmax(0, 1fr));
     }
+
     .block.sixth .buy-option-inner {
         min-height: 425px;
     }

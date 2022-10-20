@@ -34,7 +34,8 @@ function _settle(pact, state, value) {
  * Because we internally use the findDocumentsById()
  * method, it is defined here because RxStorage wrappers
  * might swap out the function.
- */var pouchFindDocumentsById = function pouchFindDocumentsById(instance, ids, deleted) {
+ */
+var pouchFindDocumentsById = function pouchFindDocumentsById(instance, ids, deleted) {
   try {
     ensureNotClosed(instance);
     var ret = {};

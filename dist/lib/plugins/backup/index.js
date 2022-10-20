@@ -183,7 +183,8 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
 /**
  * Backups a single documents,
  * returns the paths to all written files
- */var backupSingleDocument = function backupSingleDocument(rxDocument, options) {
+ */
+var backupSingleDocument = function backupSingleDocument(rxDocument, options) {
   try {
     var data = rxDocument.toJSON(true);
     var writtenFiles = [];

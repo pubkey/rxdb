@@ -2136,7 +2136,7 @@ For example you can replicate with a custom GraphQL endpoint or a http server on
 <li>If the master also had changes and so the latest master change is different then the one that the client assumes, we have a conflict that has to be resolved on the client.</li>
 </ul>
 <h2 id="replication-protocol-on-the-transfer-level">Replication protocol on the transfer level</h2>
-<p>When document states are transfered, all handlers are using bulks of documents for better performance.
+<p>When document states are transfered, all handlers use batches of documents for better performance.
 The server <strong>must</strong> implement the following methods to be compatible with the replication:</p>
 <ul>
 <li><strong>pullHandler</strong> Get the last checkpoint (or null) as input. Returns all documents that have been written <strong>after</strong> the given checkpoint. Also returns the checkpoint of the latest written returned document.</li>

@@ -137,7 +137,8 @@ export function wrappedKeyEncryptionStorage(args) {
                     /**
                      * Even if the checks fail,
                      * we have to clean up.
-                     */return Promise.resolve(retInstance.close()).then(function () {
+                     */
+                    return Promise.resolve(retInstance.close()).then(function () {
                       throw err;
                     });
                   });

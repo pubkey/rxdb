@@ -21,7 +21,8 @@ export var RxSchema = /*#__PURE__*/function () {
    * Ensures that:
    * - final fields are not modified
    * @throws {Error} if not valid
-   */_proto.validateChange = function validateChange(dataBefore, dataAfter) {
+   */
+  _proto.validateChange = function validateChange(dataBefore, dataAfter) {
     var _this = this;
     this.finalFields.forEach(function (fieldName) {
       if (!deepEqual(dataBefore[fieldName], dataAfter[fieldName])) {

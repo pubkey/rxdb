@@ -103,7 +103,8 @@ export var RxQueryBase = /*#__PURE__*/function () {
   /**
    * set the new result-data as result-docs of the query
    * @param newResultData json-docs that were received from pouchdb
-   */_proto._setResultData = function _setResultData(newResultData) {
+   */
+  _proto._setResultData = function _setResultData(newResultData) {
     var docs = createRxDocuments(this.collection, newResultData);
 
     /**
@@ -184,7 +185,8 @@ export var RxQueryBase = /*#__PURE__*/function () {
   /**
    * returns a string that is used for equal-comparisons
    * @overwrites itself with the actual value
-   */_proto.toString = function toString() {
+   */
+  _proto.toString = function toString() {
     var stringObj = sortObject({
       op: this.op,
       query: this.mangoQuery,
@@ -255,7 +257,8 @@ export var RxQueryBase = /*#__PURE__*/function () {
   /**
    * updates all found documents
    * @overwritten by plugin (optional)
-   */_proto.update = function update(_updateObj) {
+   */
+  _proto.update = function update(_updateObj) {
     throw pluginMissing('update');
   }
 

@@ -17,7 +17,8 @@ function wrappedWorkerRxStorage(args) {
   var exposeMe = {
     /**
      * RxStorageInstance
-     */createStorageInstance: function createStorageInstance(params) {
+     */
+    createStorageInstance: function createStorageInstance(params) {
       try {
         var _instanceId = nextId++;
         return Promise.resolve(args.storage.createStorageInstance(params)).then(function (instance) {

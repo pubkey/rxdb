@@ -31,7 +31,8 @@ export var RxStorageLokiStatics = {
    * Because I am lazy, I do not copy paste and maintain that code.
    * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
    * same with Collection.
-   */getQueryMatcher: function getQueryMatcher(_schema, query) {
+   */
+  getQueryMatcher: function getQueryMatcher(_schema, query) {
     var fun = function fun(doc) {
       if (doc._deleted) {
         return false;

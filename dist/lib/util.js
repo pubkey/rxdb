@@ -609,7 +609,8 @@ var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
-   */createBlobBuffer: function createBlobBuffer(data, type) {
+   */
+  createBlobBuffer: function createBlobBuffer(data, type) {
     var blobBuffer = new Blob([data], {
       type: type
     });
@@ -618,7 +619,8 @@ var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
-   */createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
+   */
+  createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
     try {
       return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
         return Promise.resolve(base64Response.blob());

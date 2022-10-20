@@ -27,7 +27,8 @@ exports.createChangeEventBuffer = createChangeEventBuffer;
 var _operators = require("rxjs/operators");
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
- */var ChangeEventBuffer = /*#__PURE__*/function () {
+ */
+var ChangeEventBuffer = /*#__PURE__*/function () {
   /**
    * array with changeEvents
    * starts with oldest known event, ends with newest
@@ -926,7 +927,8 @@ var overwritable = {
    * if this method is overwritten with one
    * that returns true, we do additional checks
    * which help the developer but have bad performance
-   */isDevMode: function isDevMode() {
+   */
+  isDevMode: function isDevMode() {
     return false;
   },
   /**
@@ -934,12 +936,14 @@ var overwritable = {
    * Deep-Freezing has the same performance as deep-cloning, so we only do that in dev-mode.
    * Also, we can ensure the readonly state via typescript
    * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
-   */deepFreezeWhenDevMode: function deepFreezeWhenDevMode(obj) {
+   */
+  deepFreezeWhenDevMode: function deepFreezeWhenDevMode(obj) {
     return obj;
   },
   /**
    * overwritten to map error-codes to text-messages
-   */tunnelErrorMessage: function tunnelErrorMessage(message) {
+   */
+  tunnelErrorMessage: function tunnelErrorMessage(message) {
     return "RxDB Error-Code " + message + ".\n        Error messages are not included in RxDB core to reduce build size.\n        - To find out what this error means, either use the dev-mode-plugin https://rxdb.info/dev-mode.html\n        - or search for the error code here: https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
 };
@@ -1471,9 +1475,10 @@ var putAttachment = function putAttachment(attachmentData) {
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * get an attachment of the document by its id
-    */
+};
+/**
+ * get an attachment of the document by its id
+ */
 exports.putAttachment = putAttachment;
 /**
  * To be able to support PouchDB with attachments,
@@ -1763,7 +1768,8 @@ var _pouchdbHelper = require("./pouchdb-helper");
  * @link http://jsbin.com/pagebi/1/edit?js,output
  * @link https://github.com/pubkey/rxdb/blob/1f4115b69bdacbb853af9c637d70f5f184d4e474/src/rx-storage-pouchdb.ts#L273
  * @link https://hasura.io/blog/couchdb-style-conflict-resolution-rxdb-hasura/
- */var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDBInstance, primaryPath, emitData) {
+ */
+var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDBInstance, primaryPath, emitData) {
   try {
     var ret = [];
     var _temp12 = function () {
@@ -2587,7 +2593,8 @@ var RxStoragePouchStatics = {
   },
   /**
    * @link https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-selector-core/src/matches-selector.js
-   */getQueryMatcher: function getQueryMatcher(schema, query) {
+   */
+  getQueryMatcher: function getQueryMatcher(schema, query) {
     var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
     var selector = query.selector ? query.selector : {};
     var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(selector);
@@ -2611,7 +2618,8 @@ var RxStoragePouchStatics = {
    * pouchdb has many bugs and strange behaviors
    * this functions takes a normal mango query
    * and transforms it to one that fits for pouchdb
-   */prepareQuery: function prepareQuery(schema, mutateableQuery) {
+   */
+  prepareQuery: function prepareQuery(schema, mutateableQuery) {
     return preparePouchDbQuery(schema, mutateableQuery);
   },
   checkpointSchema: _pouchdbHelper.POUCHDB_CHECKPOINT_SCHEMA
@@ -3273,7 +3281,8 @@ function _for(test, update, body) {
  * Because we internally use the findDocumentsById()
  * method, it is defined here because RxStorage wrappers
  * might swap out the function.
- */var pouchFindDocumentsById = function pouchFindDocumentsById(instance, ids, deleted) {
+ */
+var pouchFindDocumentsById = function pouchFindDocumentsById(instance, ids, deleted) {
   try {
     ensureNotClosed(instance);
     var ret = {};
@@ -3717,7 +3726,8 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
  * Will skip indexes that already exist.
- */var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
+ */
+var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
   try {
     if (!schema.indexes) {
       return Promise.resolve();
@@ -3763,9 +3773,10 @@ var _rxStorageHelper = require("../../rx-storage-helper");
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * returns the pouchdb-database-name
-    */
+};
+/**
+ * returns the pouchdb-database-name
+ */
 exports.createIndexesOnPouch = createIndexesOnPouch;
 var RxStoragePouch = /*#__PURE__*/function () {
   function RxStoragePouch(adapter) {
@@ -3818,10 +3829,11 @@ var RxStoragePouch = /*#__PURE__*/function () {
     }
   };
   return RxStoragePouch;
-}(); /**
-      * Checks if all is ok with the given adapter,
-      * else throws an error.
-      */
+}();
+/**
+ * Checks if all is ok with the given adapter,
+ * else throws an error.
+ */
 exports.RxStoragePouch = RxStoragePouch;
 function checkPouchAdapter(adapter) {
   if (typeof adapter === 'string') {
@@ -3887,7 +3899,8 @@ var _util = require("./util");
 /**
  * the query-cache makes sure that on every query-state, exactly one instance can exist
  * if you use the same mango-query more then once, it will reuse the first RxQuery
- */var QueryCache = /*#__PURE__*/function () {
+ */
+var QueryCache = /*#__PURE__*/function () {
   function QueryCache() {
     this._map = new Map();
   }
@@ -3896,7 +3909,8 @@ var _util = require("./util");
    * check if an equal query is in the cache,
    * if true, return the cached one,
    * if false, save the given one and return it
-   */_proto.getByQuery = function getByQuery(rxQuery) {
+   */
+  _proto.getByQuery = function getByQuery(rxQuery) {
     var stringRep = rxQuery.toString();
     if (!this._map.has(stringRep)) {
       this._map.set(stringRep, rxQuery);
@@ -4340,7 +4354,8 @@ function _for(test, update, body) {
 /**
  * Sets the checkpoint,
  * automatically resolves conflicts that appear.
- */var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
+ */
+var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
   try {
     var _exit2 = false;
     var previousCheckpointDoc = state.lastCheckpointDoc[direction];
@@ -4455,7 +4470,8 @@ var _util = require("../util");
  * If document is not in conflict, returns undefined.
  * If error is non-409, it throws an error.
  * Conflicts are only solved in the upstream, never in the downstream.
- */var resolveConflictError = function resolveConflictError(state, input, forkState) {
+ */
+var resolveConflictError = function resolveConflictError(state, input, forkState) {
   try {
     var conflictHandler = state.input.conflictHandler;
     return Promise.resolve(conflictHandler(input, 'replication-resolve-conflict')).then(function (conflictHandlerOutput) {
@@ -5235,7 +5251,8 @@ function _for(test, update, body) {
  * These files contain the replication protocol.
  * It can be used to replicated RxStorageInstances or RxCollections
  * or even to do a client(s)-server replication.
- */var cancelRxStorageReplication = function cancelRxStorageReplication(replicationState) {
+ */
+var cancelRxStorageReplication = function cancelRxStorageReplication(replicationState) {
   try {
     replicationState.events.canceled.next(true);
     return Promise.resolve(replicationState.streamQueue.down).then(function () {
@@ -5268,11 +5285,12 @@ var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state
           if (down === state.streamQueue.down && up === state.streamQueue.up) {
             _exit = true;
           }
-        }); /**
-             * If the Promises have not been reasigned
-             * after awaiting them, we know that the replication
-             * is in idle state at this point in time.
-             */
+        });
+        /**
+         * If the Promises have not been reasigned
+         * after awaiting them, we know that the replication
+         * is in idle state at this point in time.
+         */
       });
     });
   } catch (e) {
@@ -5724,7 +5742,8 @@ function startReplicationUpstream(state) {
            * If we had conflicts during the inital sync,
            * it means that we likely have new writes to the fork
            * and so we have to run the initial sync again to upastream these new writes.
-           */return Promise.resolve(Promise.all(promises)).then(function (resolvedPromises) {
+           */
+          return Promise.resolve(Promise.all(promises)).then(function (resolvedPromises) {
             var hadConflicts = resolvedPromises.find(function (r) {
               return !!r;
             });
@@ -5757,9 +5776,10 @@ function startReplicationUpstream(state) {
     } catch (e) {
       return Promise.reject(e);
     }
-  }; /**
-      * Takes all open tasks an processes them at once.
-      */
+  };
+  /**
+   * Takes all open tasks an processes them at once.
+   */
   var replicationHandler = state.input.replicationHandler;
   state.streamQueue.up = state.streamQueue.up.then(function () {
     return upstreamInitialSync().then(function () {
@@ -6139,7 +6159,8 @@ var _rxStorageHelper = require("./rx-storage-helper");
 /**
  * Removes the main storage of the collection
  * and all connected storages like the ones from the replication meta etc.
- */var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
+ */
+var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
 /**
  * If no hash function is provided,
  * we assume that the whole internal store is removed anyway
@@ -6232,7 +6253,8 @@ hashFunction) {
 exports.removeCollectionStorages = removeCollectionStorages;
 /**
  * Creates the storage instances that are used internally in the collection
- */var createRxCollectionStorageInstance = function createRxCollectionStorageInstance(rxDatabase, storageInstanceCreationParams) {
+ */
+var createRxCollectionStorageInstance = function createRxCollectionStorageInstance(rxDatabase, storageInstanceCreationParams) {
   try {
     storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
     return Promise.resolve(rxDatabase.storage.createStorageInstance(storageInstanceCreationParams));
@@ -6543,9 +6565,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * same as bulkInsert but overwrites existing document with same primary
-     */;
+  }
+  /**
+   * same as bulkInsert but overwrites existing document with same primary
+   */
+  ;
   _proto.bulkUpsert = function bulkUpsert(docsData) {
     try {
       var _this10 = this;
@@ -6582,9 +6606,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * same as insert but overwrites existing document with same primary
-     */;
+  }
+  /**
+   * same as insert but overwrites existing document with same primary
+   */
+  ;
   _proto.upsert = function upsert(json) {
     return this.bulkUpsert([json]).then(function (result) {
       return result[0];
@@ -6700,10 +6726,12 @@ var RxCollectionBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * like this.findByIds but returns an observable
-     * that always emits the current state
-     */;
+  }
+  /**
+   * like this.findByIds but returns an observable
+   * that always emits the current state
+   */
+  ;
   _proto.findByIds$ = function findByIds$(ids) {
     var _this14 = this;
     var currentValue = null;
@@ -6767,7 +6795,8 @@ var RxCollectionBase = /*#__PURE__*/function () {
               /**
                * changeEventBuffer is of bounds -> we must re-execute over the database
                * because we cannot calculate the new results just from the events.
-               */return Promise.resolve(_this14.findByIds(ids)).then(function (newResult) {
+               */
+              return Promise.resolve(_this14.findByIds(ids)).then(function (newResult) {
                 lastChangeEvent = _this14._changeEventBuffer.counter;
                 _exit2 = true;
                 return newResult;
@@ -7036,10 +7065,11 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }
   }]);
   return RxCollectionBase;
-}(); /**
-      * adds the hook-functions to the collections prototype
-      * this runs only once
-      */
+}();
+/**
+ * adds the hook-functions to the collections prototype
+ * this runs only once
+ */
 exports.RxCollectionBase = RxCollectionBase;
 function _applyHookFunctions(collection) {
   if (hooksApplied) return; // already run
@@ -7406,10 +7436,11 @@ var addConnectedStorageToCollection = function addConnectedStorageToCollection(c
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * returns the primary for a given collection-data
-    * used in the internal store of a RxDatabase
-    */
+};
+/**
+ * returns the primary for a given collection-data
+ * used in the internal store of a RxDatabase
+ */
 exports.addConnectedStorageToCollection = addConnectedStorageToCollection;
 var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists(rxDatabase) {
   try {
@@ -7475,7 +7506,8 @@ exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
 /**
  * Returns all internal documents
  * with context 'collection'
- */var getAllCollectionDocuments = function getAllCollectionDocuments(storageStatics, storageInstance) {
+ */
+var getAllCollectionDocuments = function getAllCollectionDocuments(storageStatics, storageInstance) {
   try {
     var getAllQueryPrepared = storageStatics.prepareQuery(storageInstance.schema, {
       selector: {
@@ -7493,11 +7525,12 @@ exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * to not confuse multiInstance-messages with other databases that have the same
-    * name and adapter, but do not share state with this one (for example in-memory-instances),
-    * we set a storage-token and use it in the broadcast-channel
-    */
+};
+/**
+ * to not confuse multiInstance-messages with other databases that have the same
+ * name and adapter, but do not share state with this one (for example in-memory-instances),
+ * we set a storage-token and use it in the broadcast-channel
+ */
 exports.getAllCollectionDocuments = getAllCollectionDocuments;
 var INTERNAL_CONTEXT_COLLECTION = 'collection';
 exports.INTERNAL_CONTEXT_COLLECTION = INTERNAL_CONTEXT_COLLECTION;
@@ -7602,7 +7635,8 @@ var _rxCollectionHelper = require("./rx-collection-helper");
  * and are awaited later.
  * But we still have to ensure that there have been no errors
  * on database creation.
- */var ensureNoStartupErrors = function ensureNoStartupErrors(rxDatabase) {
+ */
+var ensureNoStartupErrors = function ensureNoStartupErrors(rxDatabase) {
   try {
     return Promise.resolve(rxDatabase.storageToken).then(function () {
       if (rxDatabase.startupErrors[0]) {
@@ -7620,7 +7654,8 @@ exports.ensureNoStartupErrors = ensureNoStartupErrors;
  * 
  * Can be used for some optimizations because on the first instantiation,
  * we can assume that no data was written before.
- */var isRxDatabaseFirstTimeInstantiated = function isRxDatabaseFirstTimeInstantiated(database) {
+ */
+var isRxDatabaseFirstTimeInstantiated = function isRxDatabaseFirstTimeInstantiated(database) {
   try {
     return Promise.resolve(database.storageTokenDocument).then(function (tokenDoc) {
       return tokenDoc.data.instanceToken === database.token;
@@ -7635,7 +7670,8 @@ exports.isRxDatabaseFirstTimeInstantiated = isRxDatabaseFirstTimeInstantiated;
  * with all known collections and all internal meta data.
  * 
  * Returns the names of the removed collections.
- */var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
+ */
+var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
   try {
     var databaseInstanceToken = (0, _util.randomCouchString)(10);
     return Promise.resolve(createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
@@ -7667,7 +7703,8 @@ exports.removeRxDatabase = removeRxDatabase;
 /**
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.
- */var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, options, multiInstance, password) {
+ */
+var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, options, multiInstance, password) {
   try {
     return Promise.resolve(storage.createStorageInstance({
       databaseInstanceToken: databaseInstanceToken,
@@ -7775,7 +7812,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    * RxDocument -> RxCollection -> RxDatabase.$emit -> MultiInstance
    * ChangeEvents created by other instances go:
    * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
-   */_proto.$emit = function $emit(changeEventBulk) {
+   */
+  _proto.$emit = function $emit(changeEventBulk) {
     if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
       return;
     }
@@ -7808,12 +7846,14 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * creates multiple RxCollections at once
-     * to be much faster by saving db txs and doing stuff in bulk-operations
-     * This function is not called often, but mostly in the critical path at the initial page load
-     * So it must be as fast as possible.
-     */;
+  }
+  /**
+   * creates multiple RxCollections at once
+   * to be much faster by saving db txs and doing stuff in bulk-operations
+   * This function is not called often, but mostly in the critical path at the initial page load
+   * So it must be as fast as possible.
+   */
+  ;
   _proto.addCollections = function addCollections(collectionCreators) {
     try {
       var _this5 = this;
@@ -7917,9 +7957,11 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * runs the given function between idleQueue-locking
-     */;
+  }
+  /**
+   * runs the given function between idleQueue-locking
+   */
+  ;
   _proto.lockedRun = function lockedRun(fn) {
     return this.idleQueue.wrapCall(fn);
   };
@@ -8021,10 +8063,12 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * deletes the database and its stored data.
-     * Returns the names of all removed collections.
-     */;
+  }
+  /**
+   * deletes the database and its stored data.
+   * Returns the names of all removed collections.
+   */
+  ;
   _proto.remove = function remove() {
     var _this8 = this;
     return this.destroy().then(function () {
@@ -8043,10 +8087,11 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     }
   }]);
   return RxDatabaseBase;
-}(); /**
-      * checks if an instance with same name and adapter already exists
-      * @throws {RxError} if used
-      */
+}();
+/**
+ * checks if an instance with same name and adapter already exists
+ * @throws {RxError} if used
+ */
 exports.RxDatabaseBase = RxDatabaseBase;
 function throwIfDatabaseNameUsed(name) {
   if (!USED_DATABASE_NAMES.has(name)) {
@@ -8515,7 +8560,8 @@ var basePrototype = {
   },
   /**
    * returns observable of the value of the given path
-   */get$: function get$(path) {
+   */
+  get$: function get$(path) {
     if (path.includes('.item.')) {
       throw (0, _rxError.newRxError)('DOC1', {
         path: path
@@ -8541,7 +8587,8 @@ var basePrototype = {
   },
   /**
    * populate the given path
-   */populate: function populate(path) {
+   */
+  populate: function populate(path) {
     var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(this.collection.schema.jsonSchema, path);
     var value = this.get(path);
     if (!value) {
@@ -8577,7 +8624,8 @@ var basePrototype = {
   },
   /**
    * get data by objectPath
-   */get: function get(objPath) {
+   */
+  get: function get(objPath) {
     if (!this._data) return undefined;
     var valueObj = _objectPath["default"].get(this._data, objPath);
 
@@ -8615,7 +8663,8 @@ var basePrototype = {
    * updates document
    * @overwritten by plugin (optinal)
    * @param updateObj mongodb-like syntax
-   */update: function update(_updateObj) {
+   */
+  update: function update(_updateObj) {
     throw (0, _util.pluginMissing)('update');
   },
   putAttachment: function putAttachment() {
@@ -8633,7 +8682,8 @@ var basePrototype = {
   /**
    * runs an atomic update over the document
    * @param function that takes the document-data and returns a new data-object
-   */atomicUpdate: function atomicUpdate(mutationFunction) {
+   */
+  atomicUpdate: function atomicUpdate(mutationFunction) {
     var _this2 = this;
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
@@ -8697,7 +8747,8 @@ var basePrototype = {
   },
   /**
    * patches the given properties
-   */atomicPatch: function atomicPatch(patch) {
+   */
+  atomicPatch: function atomicPatch(patch) {
     return this.atomicUpdate(function (docData) {
       Object.entries(patch).forEach(function (_ref) {
         var k = _ref[0],
@@ -8710,7 +8761,8 @@ var basePrototype = {
   /**
    * saves the new document-data
    * and handles the events
-   */_saveData: function _saveData(newData, oldData) {
+   */
+  _saveData: function _saveData(newData, oldData) {
     try {
       var _this4 = this;
       newData = (0, _util.flatClone)(newData);
@@ -8753,7 +8805,8 @@ var basePrototype = {
    * remove the document,
    * this not not equal to a pouchdb.remove(),
    * instead we keep the values and only set _deleted: true
-   */remove: function remove() {
+   */
+  remove: function remove() {
     var _this5 = this;
     var collection = this.collection;
     if (this.deleted) {
@@ -9165,7 +9218,8 @@ var _rxQueryHelper = require("./rx-query-helper");
  * of the collection.
  * Does some optimizations to ensuer findById is used
  * when specific queries are used.
- */var queryCollection = function queryCollection(rxQuery) {
+ */
+var queryCollection = function queryCollection(rxQuery) {
   try {
     var docs = [];
     var _collection = rxQuery.collection;
@@ -9198,14 +9252,15 @@ var _rxQueryHelper = require("./rx-query-helper");
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * Returns true if the given query
-    * selects exactly one document by its id.
-    * Used to optimize performance because these kind of
-    * queries do not have to run over an index and can use get-by-id instead.
-    * Returns false if no query of that kind.
-    * Returns the document id otherwise.
-    */
+};
+/**
+ * Returns true if the given query
+ * selects exactly one document by its id.
+ * Used to optimize performance because these kind of
+ * queries do not have to run over an index and can use get-by-id instead.
+ * Returns false if no query of that kind.
+ * Returns the document id otherwise.
+ */
 exports.queryCollection = queryCollection;
 var _queryCount = 0;
 var newQueryID = function newQueryID() {
@@ -9252,7 +9307,8 @@ var RxQueryBase = /*#__PURE__*/function () {
   /**
    * set the new result-data as result-docs of the query
    * @param newResultData json-docs that were received from pouchdb
-   */_proto._setResultData = function _setResultData(newResultData) {
+   */
+  _proto._setResultData = function _setResultData(newResultData) {
     var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, newResultData);
 
     /**
@@ -9333,7 +9389,8 @@ var RxQueryBase = /*#__PURE__*/function () {
   /**
    * returns a string that is used for equal-comparisons
    * @overwrites itself with the actual value
-   */_proto.toString = function toString() {
+   */
+  _proto.toString = function toString() {
     var stringObj = (0, _util.sortObject)({
       op: this.op,
       query: this.mangoQuery,
@@ -9404,7 +9461,8 @@ var RxQueryBase = /*#__PURE__*/function () {
   /**
    * updates all found documents
    * @overwritten by plugin (optional)
-   */_proto.update = function update(_updateObj) {
+   */
+  _proto.update = function update(_updateObj) {
     throw (0, _util.pluginMissing)('update');
   }
 
@@ -9953,7 +10011,8 @@ var RxSchema = /*#__PURE__*/function () {
    * Ensures that:
    * - final fields are not modified
    * @throws {Error} if not valid
-   */_proto.validateChange = function validateChange(dataBefore, dataAfter) {
+   */
+  _proto.validateChange = function validateChange(dataBefore, dataAfter) {
     var _this = this;
     this.finalFields.forEach(function (fieldName) {
       if (!(0, _fastDeepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
@@ -10116,12 +10175,13 @@ var writeSingle = function writeSingle(instance, writeRow, context) {
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * Checkpoints must be stackable over another.
-    * This is required form some RxStorage implementations
-    * like the sharding plugin, where a checkpoint only represents
-    * the document state from some, but not all shards.
-    */
+};
+/**
+ * Checkpoints must be stackable over another.
+ * This is required form some RxStorage implementations
+ * like the sharding plugin, where a checkpoint only represents
+ * the document state from some, but not all shards.
+ */
 exports.writeSingle = writeSingle;
 var getSingleDocument = function getSingleDocument(storageInstance, documentId) {
   try {
@@ -11439,7 +11499,8 @@ var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
-   */createBlobBuffer: function createBlobBuffer(data, type) {
+   */
+  createBlobBuffer: function createBlobBuffer(data, type) {
     var blobBuffer = new Blob([data], {
       type: type
     });
@@ -11448,7 +11509,8 @@ var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
-   */createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
+   */
+  createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
     try {
       return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
         return Promise.resolve(base64Response.blob());

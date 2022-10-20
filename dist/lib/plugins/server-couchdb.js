@@ -303,9 +303,10 @@ var spawnServer = function spawnServer(_ref) {
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * when a server is created, no more collections can be spawned
-    */
+};
+/**
+ * when a server is created, no more collections can be spawned
+ */
 exports.spawnServer = spawnServer;
 var ExpressPouchDB;
 try {

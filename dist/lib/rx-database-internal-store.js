@@ -218,10 +218,11 @@ var addConnectedStorageToCollection = function addConnectedStorageToCollection(c
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * returns the primary for a given collection-data
-    * used in the internal store of a RxDatabase
-    */
+};
+/**
+ * returns the primary for a given collection-data
+ * used in the internal store of a RxDatabase
+ */
 exports.addConnectedStorageToCollection = addConnectedStorageToCollection;
 var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists(rxDatabase) {
   try {
@@ -287,7 +288,8 @@ exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
 /**
  * Returns all internal documents
  * with context 'collection'
- */var getAllCollectionDocuments = function getAllCollectionDocuments(storageStatics, storageInstance) {
+ */
+var getAllCollectionDocuments = function getAllCollectionDocuments(storageStatics, storageInstance) {
   try {
     var getAllQueryPrepared = storageStatics.prepareQuery(storageInstance.schema, {
       selector: {
@@ -305,11 +307,12 @@ exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * to not confuse multiInstance-messages with other databases that have the same
-    * name and adapter, but do not share state with this one (for example in-memory-instances),
-    * we set a storage-token and use it in the broadcast-channel
-    */
+};
+/**
+ * to not confuse multiInstance-messages with other databases that have the same
+ * name and adapter, but do not share state with this one (for example in-memory-instances),
+ * we set a storage-token and use it in the broadcast-channel
+ */
 exports.getAllCollectionDocuments = getAllCollectionDocuments;
 var INTERNAL_CONTEXT_COLLECTION = 'collection';
 exports.INTERNAL_CONTEXT_COLLECTION = INTERNAL_CONTEXT_COLLECTION;

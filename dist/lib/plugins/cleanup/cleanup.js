@@ -177,7 +177,8 @@ var runCleanupAfterDelete = function runCleanupAfterDelete(rxCollection, cleanup
 exports.runCleanupAfterDelete = runCleanupAfterDelete;
 /**
  * Runs the cleanup for a single RxCollection
- */var cleanupRxCollection = function cleanupRxCollection(rxCollection, cleanupPolicy) {
+ */
+var cleanupRxCollection = function cleanupRxCollection(rxCollection, cleanupPolicy) {
   try {
     var _exit2 = false;
     var rxDatabase = rxCollection.database;
@@ -252,7 +253,8 @@ var startCleanupForRxCollection = function startCleanupForRxCollection(rxCollect
            * Afterwards we listen to deletes
            * and only re-run the cleanup after
            * minimumDeletedTime is reached.
-           */return Promise.resolve(runCleanupAfterDelete(rxCollection, cleanupPolicy)).then(function () {});
+           */
+          return Promise.resolve(runCleanupAfterDelete(rxCollection, cleanupPolicy)).then(function () {});
         });
       });
     });

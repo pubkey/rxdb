@@ -14,7 +14,8 @@ var _util = require("../util");
  * If document is not in conflict, returns undefined.
  * If error is non-409, it throws an error.
  * Conflicts are only solved in the upstream, never in the downstream.
- */var resolveConflictError = function resolveConflictError(state, input, forkState) {
+ */
+var resolveConflictError = function resolveConflictError(state, input, forkState) {
   try {
     var conflictHandler = state.input.conflictHandler;
     return Promise.resolve(conflictHandler(input, 'replication-resolve-conflict')).then(function (conflictHandlerOutput) {

@@ -161,13 +161,15 @@ var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData)
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * deletes this.storageInstance and removes it from the database.collectionsCollection
-    */
+};
+/**
+ * deletes this.storageInstance and removes it from the database.collectionsCollection
+ */
 exports._migrateDocuments = _migrateDocuments;
 /**
  * get an array with OldCollection-instances from all existing old storage-instances
- */var _getOldCollections = function _getOldCollections(dataMigrator) {
+ */
+var _getOldCollections = function _getOldCollections(dataMigrator) {
   try {
     return Promise.resolve(getOldCollectionDocs(dataMigrator)).then(function (oldColDocs) {
       return Promise.all(oldColDocs.map(function (colDoc) {
@@ -182,9 +184,10 @@ exports._migrateDocuments = _migrateDocuments;
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * returns true if a migration is needed
-    */
+};
+/**
+ * returns true if a migration is needed
+ */
 exports._getOldCollections = _getOldCollections;
 var createOldCollection = function createOldCollection(version, schemaObj, dataMigrator) {
   try {

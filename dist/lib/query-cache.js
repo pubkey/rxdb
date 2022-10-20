@@ -13,7 +13,8 @@ var _util = require("./util");
 /**
  * the query-cache makes sure that on every query-state, exactly one instance can exist
  * if you use the same mango-query more then once, it will reuse the first RxQuery
- */var QueryCache = /*#__PURE__*/function () {
+ */
+var QueryCache = /*#__PURE__*/function () {
   function QueryCache() {
     this._map = new Map();
   }
@@ -22,7 +23,8 @@ var _util = require("./util");
    * check if an equal query is in the cache,
    * if true, return the cached one,
    * if false, save the given one and return it
-   */_proto.getByQuery = function getByQuery(rxQuery) {
+   */
+  _proto.getByQuery = function getByQuery(rxQuery) {
     var stringRep = rxQuery.toString();
     if (!this._map.has(stringRep)) {
       this._map.set(stringRep, rxQuery);

@@ -130,12 +130,13 @@ function wrappedKeyCompressionStorage(args) {
         };
         var modifyFromStorage = function modifyFromStorage(docData) {
           return decompressDocumentData(compressionState, docData);
-        }; /**
-            * Because this wrapper resolves the key-compression,
-            * we can set the flag to false
-            * which allows underlying storages to detect wrong conficturations
-            * like when keyCompression is set to false but no key-compression module is used.
-            */
+        };
+        /**
+         * Because this wrapper resolves the key-compression,
+         * we can set the flag to false
+         * which allows underlying storages to detect wrong conficturations
+         * like when keyCompression is set to false but no key-compression module is used.
+         */
         if (!params.schema.keyCompression) {
           return Promise.resolve(args.storage.createStorageInstance(params));
         }

@@ -8,7 +8,8 @@ exports.createChangeEventBuffer = createChangeEventBuffer;
 var _operators = require("rxjs/operators");
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
- */var ChangeEventBuffer = /*#__PURE__*/function () {
+ */
+var ChangeEventBuffer = /*#__PURE__*/function () {
   /**
    * array with changeEvents
    * starts with oldest known event, ends with newest

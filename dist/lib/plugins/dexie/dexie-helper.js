@@ -21,7 +21,8 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
 /**
  * Returns all documents in the database.
  * Non-deleted plus deleted ones.
- */var getDocsInDb = function getDocsInDb(internals, docIds) {
+ */
+var getDocsInDb = function getDocsInDb(internals, docIds) {
   return Promise.resolve(internals).then(function (state) {
     return Promise.resolve(Promise.all([state.dexieTable.bulkGet(docIds), state.dexieDeletedTable.bulkGet(docIds)])).then(function (_ref3) {
       var nonDeletedDocsInDb = _ref3[0],

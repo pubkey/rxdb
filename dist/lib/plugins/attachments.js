@@ -106,9 +106,10 @@ var putAttachment = function putAttachment(attachmentData) {
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * get an attachment of the document by its id
-    */
+};
+/**
+ * get an attachment of the document by its id
+ */
 exports.putAttachment = putAttachment;
 /**
  * To be able to support PouchDB with attachments,

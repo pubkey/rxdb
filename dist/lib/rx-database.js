@@ -29,7 +29,8 @@ var _rxCollectionHelper = require("./rx-collection-helper");
  * and are awaited later.
  * But we still have to ensure that there have been no errors
  * on database creation.
- */var ensureNoStartupErrors = function ensureNoStartupErrors(rxDatabase) {
+ */
+var ensureNoStartupErrors = function ensureNoStartupErrors(rxDatabase) {
   try {
     return Promise.resolve(rxDatabase.storageToken).then(function () {
       if (rxDatabase.startupErrors[0]) {
@@ -47,7 +48,8 @@ exports.ensureNoStartupErrors = ensureNoStartupErrors;
  * 
  * Can be used for some optimizations because on the first instantiation,
  * we can assume that no data was written before.
- */var isRxDatabaseFirstTimeInstantiated = function isRxDatabaseFirstTimeInstantiated(database) {
+ */
+var isRxDatabaseFirstTimeInstantiated = function isRxDatabaseFirstTimeInstantiated(database) {
   try {
     return Promise.resolve(database.storageTokenDocument).then(function (tokenDoc) {
       return tokenDoc.data.instanceToken === database.token;
@@ -62,7 +64,8 @@ exports.isRxDatabaseFirstTimeInstantiated = isRxDatabaseFirstTimeInstantiated;
  * with all known collections and all internal meta data.
  * 
  * Returns the names of the removed collections.
- */var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
+ */
+var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
   try {
     var databaseInstanceToken = (0, _util.randomCouchString)(10);
     return Promise.resolve(createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false)).then(function (dbInternalsStorageInstance) {
@@ -94,7 +97,8 @@ exports.removeRxDatabase = removeRxDatabase;
 /**
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.
- */var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, options, multiInstance, password) {
+ */
+var createRxDatabaseStorageInstance = function createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, options, multiInstance, password) {
   try {
     return Promise.resolve(storage.createStorageInstance({
       databaseInstanceToken: databaseInstanceToken,
@@ -202,7 +206,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    * RxDocument -> RxCollection -> RxDatabase.$emit -> MultiInstance
    * ChangeEvents created by other instances go:
    * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
-   */_proto.$emit = function $emit(changeEventBulk) {
+   */
+  _proto.$emit = function $emit(changeEventBulk) {
     if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
       return;
     }
@@ -235,12 +240,14 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * creates multiple RxCollections at once
-     * to be much faster by saving db txs and doing stuff in bulk-operations
-     * This function is not called often, but mostly in the critical path at the initial page load
-     * So it must be as fast as possible.
-     */;
+  }
+  /**
+   * creates multiple RxCollections at once
+   * to be much faster by saving db txs and doing stuff in bulk-operations
+   * This function is not called often, but mostly in the critical path at the initial page load
+   * So it must be as fast as possible.
+   */
+  ;
   _proto.addCollections = function addCollections(collectionCreators) {
     try {
       var _this5 = this;
@@ -344,9 +351,11 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * runs the given function between idleQueue-locking
-     */;
+  }
+  /**
+   * runs the given function between idleQueue-locking
+   */
+  ;
   _proto.lockedRun = function lockedRun(fn) {
     return this.idleQueue.wrapCall(fn);
   };
@@ -448,10 +457,12 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * deletes the database and its stored data.
-     * Returns the names of all removed collections.
-     */;
+  }
+  /**
+   * deletes the database and its stored data.
+   * Returns the names of all removed collections.
+   */
+  ;
   _proto.remove = function remove() {
     var _this8 = this;
     return this.destroy().then(function () {
@@ -470,10 +481,11 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     }
   }]);
   return RxDatabaseBase;
-}(); /**
-      * checks if an instance with same name and adapter already exists
-      * @throws {RxError} if used
-      */
+}();
+/**
+ * checks if an instance with same name and adapter already exists
+ * @throws {RxError} if used
+ */
 exports.RxDatabaseBase = RxDatabaseBase;
 function throwIfDatabaseNameUsed(name) {
   if (!USED_DATABASE_NAMES.has(name)) {

@@ -254,7 +254,8 @@ export var startCleanupForRxCollection = function startCleanupForRxCollection(rx
            * Afterwards we listen to deletes
            * and only re-run the cleanup after
            * minimumDeletedTime is reached.
-           */return Promise.resolve(runCleanupAfterDelete(rxCollection, cleanupPolicy)).then(function () {});
+           */
+          return Promise.resolve(runCleanupAfterDelete(rxCollection, cleanupPolicy)).then(function () {});
         });
       });
     });
