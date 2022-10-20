@@ -260,11 +260,9 @@ window.onload = async function () {
         heartbeatListeners.push(function (idx: number) {
             const nextColor = colors[(idx + 1) % 3];
             console.log('nextColor: ' + nextColor);
-            setTimeout(function () {
-                beatColorDoc.atomicPatch({
-                    color: nextColor
-                });
-            }, heartbeatTimeToSecondBeat);
+            beatColorDoc.atomicPatch({
+                color: nextColor
+            });
         });
     });
     beatColorDoc.$.subscribe(docData => {

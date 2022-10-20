@@ -967,9 +967,9 @@ header .logo img {
 
 .beating-color {
     will-change: background-color;
-    -webkit-transition: background-color 100ms linear;
-    -ms-transition: background-color 100ms linear;
-    transition: background-color 100ms linear;
+    -webkit-transition: background-color 400ms linear;
+    -ms-transition: background-color 400ms linear;
+    transition: background-color 400ms linear;
     background-color: #e6008d;
 }
 
