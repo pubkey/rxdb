@@ -3,9 +3,9 @@
 
   It is very unlikely that you want to create an issue.
 
-  ## You have found a bug?
+  ## Have you found a bug?
   -> Create a pull request where you tried to reproduce the problem or at least have shown that you tried to do so.
-     You can start by using the bug-report template: https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.ts
+  You can start by using the bug-report template: https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.ts
      Also read the bug checklist here: https://github.com/pubkey/rxdb/blob/master/orga/bug-checklist.md
 
   ## Do you have a feature request?
