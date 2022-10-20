@@ -8,9 +8,9 @@ We will create a basic database with one collection and several ORM-methods, ful
 RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB (v9+) requires that you are using Typescript v3.8 or higher.
 Our way to go is
 
-- First define how the documents look like
-- Then define how the collections look like
-- Then define how the database looks like
+- First define what the documents look like
+- Then define what the collections look like
+- Then define what the database looks like
 
 ## Declare the types
 
