@@ -161,7 +161,8 @@ function _for(test, update, body) {
 /**
  * Sets the checkpoint,
  * automatically resolves conflicts that appear.
- */var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
+ */
+var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
   try {
     var _exit2 = false;
     var previousCheckpointDoc = state.lastCheckpointDoc[direction];

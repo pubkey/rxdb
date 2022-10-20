@@ -24,7 +24,8 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 /**
  * Creates the indexes of the schema inside of the pouchdb instance.
  * Will skip indexes that already exist.
- */var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
+ */
+var createIndexesOnPouch = function createIndexesOnPouch(pouch, schema) {
   try {
     if (!schema.indexes) {
       return Promise.resolve();
@@ -70,9 +71,10 @@ var _rxStorageHelper = require("../../rx-storage-helper");
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * returns the pouchdb-database-name
-    */
+};
+/**
+ * returns the pouchdb-database-name
+ */
 exports.createIndexesOnPouch = createIndexesOnPouch;
 var RxStoragePouch = /*#__PURE__*/function () {
   function RxStoragePouch(adapter) {
@@ -125,10 +127,11 @@ var RxStoragePouch = /*#__PURE__*/function () {
     }
   };
   return RxStoragePouch;
-}(); /**
-      * Checks if all is ok with the given adapter,
-      * else throws an error.
-      */
+}();
+/**
+ * Checks if all is ok with the given adapter,
+ * else throws an error.
+ */
 exports.RxStoragePouch = RxStoragePouch;
 function checkPouchAdapter(adapter) {
   if (typeof adapter === 'string') {

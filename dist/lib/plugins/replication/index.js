@@ -467,16 +467,18 @@ var RxReplicationState = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * Returns a promise that resolves when:
-     * - All local data is replicated with the remote
-     * - No replication cycle is running or in retry-state
-     *
-     * WARNING: USing this function directly in a multi-tab browser application
-     * is dangerous because only the leading instance will ever be replicated,
-     * so this promise will not resolve in the other tabs.
-     * For multi-tab support you should set and observe a flag in a local document.
-     */;
+  }
+  /**
+   * Returns a promise that resolves when:
+   * - All local data is replicated with the remote
+   * - No replication cycle is running or in retry-state
+   *
+   * WARNING: USing this function directly in a multi-tab browser application
+   * is dangerous because only the leading instance will ever be replicated,
+   * so this promise will not resolve in the other tabs.
+   * For multi-tab support you should set and observe a flag in a local document.
+   */
+  ;
   _proto.awaitInSync = function awaitInSync() {
     try {
       var _this7 = this;
@@ -487,7 +489,8 @@ var RxReplicationState = /*#__PURE__*/function () {
            * like in the unit tests.
            * So we first have to await the idleness to ensure that all RxChangeEvents
            * are processed already.
-           */return Promise.resolve(_this7.collection.database.requestIdlePromise()).then(function () {
+           */
+          return Promise.resolve(_this7.collection.database.requestIdlePromise()).then(function () {
             return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationInSync)((0, _util.ensureNotFalsy)(_this7.internalReplicationState))).then(function () {
               return true;
             });

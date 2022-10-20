@@ -191,7 +191,8 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
    * RxDocument -> RxCollection -> RxDatabase.$emit -> MultiInstance
    * ChangeEvents created by other instances go:
    * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
-   */_proto.$emit = function $emit(changeEventBulk) {
+   */
+  _proto.$emit = function $emit(changeEventBulk) {
     if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
       return;
     }
@@ -224,12 +225,14 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * creates multiple RxCollections at once
-     * to be much faster by saving db txs and doing stuff in bulk-operations
-     * This function is not called often, but mostly in the critical path at the initial page load
-     * So it must be as fast as possible.
-     */;
+  }
+  /**
+   * creates multiple RxCollections at once
+   * to be much faster by saving db txs and doing stuff in bulk-operations
+   * This function is not called often, but mostly in the critical path at the initial page load
+   * So it must be as fast as possible.
+   */
+  ;
   _proto.addCollections = function addCollections(collectionCreators) {
     try {
       var _this5 = this;
@@ -333,9 +336,11 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * runs the given function between idleQueue-locking
-     */;
+  }
+  /**
+   * runs the given function between idleQueue-locking
+   */
+  ;
   _proto.lockedRun = function lockedRun(fn) {
     return this.idleQueue.wrapCall(fn);
   };
@@ -437,10 +442,12 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * deletes the database and its stored data.
-     * Returns the names of all removed collections.
-     */;
+  }
+  /**
+   * deletes the database and its stored data.
+   * Returns the names of all removed collections.
+   */
+  ;
   _proto.remove = function remove() {
     var _this8 = this;
     return this.destroy().then(function () {

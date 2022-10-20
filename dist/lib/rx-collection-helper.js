@@ -14,7 +14,8 @@ var _rxStorageHelper = require("./rx-storage-helper");
 /**
  * Removes the main storage of the collection
  * and all connected storages like the ones from the replication meta etc.
- */var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
+ */
+var removeCollectionStorages = function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
 /**
  * If no hash function is provided,
  * we assume that the whole internal store is removed anyway
@@ -107,7 +108,8 @@ hashFunction) {
 exports.removeCollectionStorages = removeCollectionStorages;
 /**
  * Creates the storage instances that are used internally in the collection
- */var createRxCollectionStorageInstance = function createRxCollectionStorageInstance(rxDatabase, storageInstanceCreationParams) {
+ */
+var createRxCollectionStorageInstance = function createRxCollectionStorageInstance(rxDatabase, storageInstanceCreationParams) {
   try {
     storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
     return Promise.resolve(rxDatabase.storage.createStorageInstance(storageInstanceCreationParams));

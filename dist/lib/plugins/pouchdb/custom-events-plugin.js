@@ -23,7 +23,8 @@ var _pouchdbHelper = require("./pouchdb-helper");
  * @link http://jsbin.com/pagebi/1/edit?js,output
  * @link https://github.com/pubkey/rxdb/blob/1f4115b69bdacbb853af9c637d70f5f184d4e474/src/rx-storage-pouchdb.ts#L273
  * @link https://hasura.io/blog/couchdb-style-conflict-resolution-rxdb-hasura/
- */var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDBInstance, primaryPath, emitData) {
+ */
+var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDBInstance, primaryPath, emitData) {
   try {
     var ret = [];
     var _temp12 = function () {

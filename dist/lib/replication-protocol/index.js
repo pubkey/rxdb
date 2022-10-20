@@ -245,7 +245,8 @@ function _for(test, update, body) {
  * These files contain the replication protocol.
  * It can be used to replicated RxStorageInstances or RxCollections
  * or even to do a client(s)-server replication.
- */var cancelRxStorageReplication = function cancelRxStorageReplication(replicationState) {
+ */
+var cancelRxStorageReplication = function cancelRxStorageReplication(replicationState) {
   try {
     replicationState.events.canceled.next(true);
     return Promise.resolve(replicationState.streamQueue.down).then(function () {
@@ -278,11 +279,12 @@ var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state
           if (down === state.streamQueue.down && up === state.streamQueue.up) {
             _exit = true;
           }
-        }); /**
-             * If the Promises have not been reasigned
-             * after awaiting them, we know that the replication
-             * is in idle state at this point in time.
-             */
+        });
+        /**
+         * If the Promises have not been reasigned
+         * after awaiting them, we know that the replication
+         * is in idle state at this point in time.
+         */
       });
     });
   } catch (e) {

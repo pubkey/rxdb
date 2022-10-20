@@ -192,11 +192,12 @@ export var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdl
           if (down === state.streamQueue.down && up === state.streamQueue.up) {
             _exit = true;
           }
-        }); /**
-             * If the Promises have not been reasigned
-             * after awaiting them, we know that the replication
-             * is in idle state at this point in time.
-             */
+        });
+        /**
+         * If the Promises have not been reasigned
+         * after awaiting them, we know that the replication
+         * is in idle state at this point in time.
+         */
       });
     });
   } catch (e) {

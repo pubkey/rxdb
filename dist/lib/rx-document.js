@@ -266,7 +266,8 @@ var basePrototype = {
   },
   /**
    * returns observable of the value of the given path
-   */get$: function get$(path) {
+   */
+  get$: function get$(path) {
     if (path.includes('.item.')) {
       throw (0, _rxError.newRxError)('DOC1', {
         path: path
@@ -292,7 +293,8 @@ var basePrototype = {
   },
   /**
    * populate the given path
-   */populate: function populate(path) {
+   */
+  populate: function populate(path) {
     var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(this.collection.schema.jsonSchema, path);
     var value = this.get(path);
     if (!value) {
@@ -328,7 +330,8 @@ var basePrototype = {
   },
   /**
    * get data by objectPath
-   */get: function get(objPath) {
+   */
+  get: function get(objPath) {
     if (!this._data) return undefined;
     var valueObj = _objectPath["default"].get(this._data, objPath);
 
@@ -366,7 +369,8 @@ var basePrototype = {
    * updates document
    * @overwritten by plugin (optinal)
    * @param updateObj mongodb-like syntax
-   */update: function update(_updateObj) {
+   */
+  update: function update(_updateObj) {
     throw (0, _util.pluginMissing)('update');
   },
   putAttachment: function putAttachment() {
@@ -384,7 +388,8 @@ var basePrototype = {
   /**
    * runs an atomic update over the document
    * @param function that takes the document-data and returns a new data-object
-   */atomicUpdate: function atomicUpdate(mutationFunction) {
+   */
+  atomicUpdate: function atomicUpdate(mutationFunction) {
     var _this2 = this;
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
@@ -448,7 +453,8 @@ var basePrototype = {
   },
   /**
    * patches the given properties
-   */atomicPatch: function atomicPatch(patch) {
+   */
+  atomicPatch: function atomicPatch(patch) {
     return this.atomicUpdate(function (docData) {
       Object.entries(patch).forEach(function (_ref) {
         var k = _ref[0],
@@ -461,7 +467,8 @@ var basePrototype = {
   /**
    * saves the new document-data
    * and handles the events
-   */_saveData: function _saveData(newData, oldData) {
+   */
+  _saveData: function _saveData(newData, oldData) {
     try {
       var _this4 = this;
       newData = (0, _util.flatClone)(newData);
@@ -504,7 +511,8 @@ var basePrototype = {
    * remove the document,
    * this not not equal to a pouchdb.remove(),
    * instead we keep the values and only set _deleted: true
-   */remove: function remove() {
+   */
+  remove: function remove() {
     var _this5 = this;
     var collection = this.collection;
     if (this.deleted) {

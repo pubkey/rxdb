@@ -182,7 +182,8 @@ function _for(test, update, body) {
 /**
  * If the local state must be used, that one is returned.
  * Returns false if a remote instance must be used.
- */var mustUseLocalState = function mustUseLocalState(instance) {
+ */
+var mustUseLocalState = function mustUseLocalState(instance) {
   try {
     if (instance.closed) {
       /**
@@ -249,7 +250,8 @@ exports.waitUntilHasLeader = waitUntilHasLeader;
 /**
  * Handles a request that came from a remote instance via requestRemoteInstance()
  * Runs the requested operation over the local db instance and sends back the result.
- */var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
+ */
+var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
   try {
     var _temp9 = function () {
       if (msg.type === LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE && msg.requestId && msg.databaseName === instance.databaseName && msg.collectionName === instance.collectionName && !msg.response) {
@@ -291,7 +293,8 @@ exports.handleRemoteRequest = handleRemoteRequest;
 /**
  * For multi-instance usage, we send requests to the RxStorage
  * to the current leading instance over the BroadcastChannel.
- */var requestRemoteInstance = function requestRemoteInstance(instance, operation, params) {
+ */
+var requestRemoteInstance = function requestRemoteInstance(instance, operation, params) {
   try {
     var isRxStorageInstanceLoki = typeof instance.query === 'function';
     var messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
@@ -400,10 +403,11 @@ var closeLokiCollections = function closeLokiCollections(databaseName, collectio
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * This function is at lokijs-helper
-    * because we need it in multiple places.
-    */
+};
+/**
+ * This function is at lokijs-helper
+ * because we need it in multiple places.
+ */
 exports.closeLokiCollections = closeLokiCollections;
 var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 exports.CHANGES_COLLECTION_SUFFIX = CHANGES_COLLECTION_SUFFIX;

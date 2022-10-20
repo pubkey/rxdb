@@ -11,7 +11,8 @@ var _util = require("../../util");
  * more important tasks are running.
  * So instead we use a custom save queue that ensures we
  * only run loki.saveDatabase() when nothing else is running.
- */var LokiSaveQueue = /*#__PURE__*/function () {
+ */
+var LokiSaveQueue = /*#__PURE__*/function () {
   /**
    * Ensures that we do not run multiple saves
    * in parallel
@@ -47,7 +48,8 @@ var _util = require("../../util");
          * Always wait until the JavaScript process is idle.
          * This ensures that CPU blocking writes are finished
          * before we proceed.
-         */return Promise.resolve((0, _util.requestIdlePromise)()).then(function () {
+         */
+        return Promise.resolve((0, _util.requestIdlePromise)()).then(function () {
           // no write happened since the last save call
           if (_this.writesSinceLastRun === 0) {
             return;

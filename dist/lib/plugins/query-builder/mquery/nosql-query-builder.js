@@ -12,7 +12,8 @@ var _rxError = require("../../../rx-error");
 /**
  * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
- */var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
+ */
+var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
   /**
    * MQuery constructor used for building queries.
    *

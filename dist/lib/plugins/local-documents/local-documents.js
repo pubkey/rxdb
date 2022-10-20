@@ -38,7 +38,8 @@ exports.getLocal = getLocal;
 /**
  * save the local-document-data
  * throws if already exists
- */var insertLocal = function insertLocal(id, data) {
+ */
+var insertLocal = function insertLocal(id, data) {
   try {
     var _this2 = this;
     return Promise.resolve((0, _localDocumentsHelper.getLocalDocStateByParent)(_this2)).then(function (state) {
@@ -63,10 +64,11 @@ exports.getLocal = getLocal;
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * save the local-document-data
-    * overwrites existing if exists
-    */
+};
+/**
+ * save the local-document-data
+ * overwrites existing if exists
+ */
 exports.insertLocal = insertLocal;
 function upsertLocal(id, data) {
   var _this3 = this;

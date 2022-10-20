@@ -9,7 +9,8 @@ var _dexieHelper = require("./dexie-helper");
 var _rxStorageDexie = require("./rx-storage-dexie");
 /**
  * Runs mango queries over the Dexie.js database.
- */var dexieQuery = function dexieQuery(instance, preparedQuery) {
+ */
+var dexieQuery = function dexieQuery(instance, preparedQuery) {
   try {
     return Promise.resolve(instance.internals).then(function (state) {
       var query = preparedQuery.query;

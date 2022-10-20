@@ -27,7 +27,8 @@ var _rxQueryHelper = require("./rx-query-helper");
  * of the collection.
  * Does some optimizations to ensuer findById is used
  * when specific queries are used.
- */var queryCollection = function queryCollection(rxQuery) {
+ */
+var queryCollection = function queryCollection(rxQuery) {
   try {
     var docs = [];
     var _collection = rxQuery.collection;
@@ -60,14 +61,15 @@ var _rxQueryHelper = require("./rx-query-helper");
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * Returns true if the given query
-    * selects exactly one document by its id.
-    * Used to optimize performance because these kind of
-    * queries do not have to run over an index and can use get-by-id instead.
-    * Returns false if no query of that kind.
-    * Returns the document id otherwise.
-    */
+};
+/**
+ * Returns true if the given query
+ * selects exactly one document by its id.
+ * Used to optimize performance because these kind of
+ * queries do not have to run over an index and can use get-by-id instead.
+ * Returns false if no query of that kind.
+ * Returns the document id otherwise.
+ */
 exports.queryCollection = queryCollection;
 var _queryCount = 0;
 var newQueryID = function newQueryID() {
@@ -114,7 +116,8 @@ var RxQueryBase = /*#__PURE__*/function () {
   /**
    * set the new result-data as result-docs of the query
    * @param newResultData json-docs that were received from pouchdb
-   */_proto._setResultData = function _setResultData(newResultData) {
+   */
+  _proto._setResultData = function _setResultData(newResultData) {
     var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, newResultData);
 
     /**
@@ -195,7 +198,8 @@ var RxQueryBase = /*#__PURE__*/function () {
   /**
    * returns a string that is used for equal-comparisons
    * @overwrites itself with the actual value
-   */_proto.toString = function toString() {
+   */
+  _proto.toString = function toString() {
     var stringObj = (0, _util.sortObject)({
       op: this.op,
       query: this.mangoQuery,
@@ -266,7 +270,8 @@ var RxQueryBase = /*#__PURE__*/function () {
   /**
    * updates all found documents
    * @overwritten by plugin (optional)
-   */_proto.update = function update(_updateObj) {
+   */
+  _proto.update = function update(_updateObj) {
     throw (0, _util.pluginMissing)('update');
   }
 

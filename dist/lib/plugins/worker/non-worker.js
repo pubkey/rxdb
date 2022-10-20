@@ -15,7 +15,8 @@ var _util = require("../../util");
  * many RxStorage instances, then it might happen
  * that some calls to createStorageInstance() time out,
  * because the worker thread is in the closing state.
- */var removeWorkerRef = function removeWorkerRef(instance) {
+ */
+var removeWorkerRef = function removeWorkerRef(instance) {
   try {
     var workerState = (0, _util.getFromMapOrThrow)(WORKER_BY_INSTANCE, instance.storage);
     workerState.refs["delete"](instance);

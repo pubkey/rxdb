@@ -270,9 +270,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * same as bulkInsert but overwrites existing document with same primary
-     */;
+  }
+  /**
+   * same as bulkInsert but overwrites existing document with same primary
+   */
+  ;
   _proto.bulkUpsert = function bulkUpsert(docsData) {
     try {
       var _this10 = this;
@@ -309,9 +311,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * same as insert but overwrites existing document with same primary
-     */;
+  }
+  /**
+   * same as insert but overwrites existing document with same primary
+   */
+  ;
   _proto.upsert = function upsert(json) {
     return this.bulkUpsert([json]).then(function (result) {
       return result[0];
@@ -427,10 +431,12 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     } catch (e) {
       return Promise.reject(e);
     }
-  } /**
-     * like this.findByIds but returns an observable
-     * that always emits the current state
-     */;
+  }
+  /**
+   * like this.findByIds but returns an observable
+   * that always emits the current state
+   */
+  ;
   _proto.findByIds$ = function findByIds$(ids) {
     var _this14 = this;
     var currentValue = null;
@@ -494,7 +500,8 @@ export var RxCollectionBase = /*#__PURE__*/function () {
               /**
                * changeEventBuffer is of bounds -> we must re-execute over the database
                * because we cannot calculate the new results just from the events.
-               */return Promise.resolve(_this14.findByIds(ids)).then(function (newResult) {
+               */
+              return Promise.resolve(_this14.findByIds(ids)).then(function (newResult) {
                 lastChangeEvent = _this14._changeEventBuffer.counter;
                 _exit2 = true;
                 return newResult;

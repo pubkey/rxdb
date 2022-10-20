@@ -43,12 +43,13 @@ var writeSingle = function writeSingle(instance, writeRow, context) {
   } catch (e) {
     return Promise.reject(e);
   }
-}; /**
-    * Checkpoints must be stackable over another.
-    * This is required form some RxStorage implementations
-    * like the sharding plugin, where a checkpoint only represents
-    * the document state from some, but not all shards.
-    */
+};
+/**
+ * Checkpoints must be stackable over another.
+ * This is required form some RxStorage implementations
+ * like the sharding plugin, where a checkpoint only represents
+ * the document state from some, but not all shards.
+ */
 exports.writeSingle = writeSingle;
 var getSingleDocument = function getSingleDocument(storageInstance, documentId) {
   try {
