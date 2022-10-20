@@ -423,7 +423,7 @@ rxJsonSchema) {
 
     /**
      * Yes we really want to set the revision here.
-     * If you make a plugin that relies on having it's own revision
+     * If you make a plugin that relies on having its own revision
      * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
      */
     data._rev = createRevision(database.hashFunction, data, writeRow.previous);

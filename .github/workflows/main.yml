@@ -339,7 +339,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-angular-x7-
 
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -385,7 +385,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-test-builds-x7-
 
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -418,7 +418,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-test-code-style-x7-
 
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -445,7 +445,7 @@ jobs:
 
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -484,7 +484,7 @@ jobs:
           node-version-file: '.nvmrc'
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -512,7 +512,7 @@ jobs:
             # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
             node-version: 16.16.0
 
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -556,7 +556,7 @@ jobs:
           key: ${{ runner.os }}-buildx-supabase-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -595,7 +595,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -624,7 +624,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -652,7 +652,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
           npm run build
@@ -711,13 +711,62 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
         
       - name: npm run test:couchdb
         run: npm run test:couchdb
+
+  test-flutter:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'    
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.3.4'
+          channel: 'stable'
+      - run: flutter --version
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+            ./examples/flutter/javascript/node_modules
+          key: ${{ runner.os }}-npm-flutter-x8-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-flutter-x8-
+      - name: prepare RxDB core
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          rm -r node_modules
+      - name: flutter javascript build
+        working-directory: ./examples/flutter/javascript
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
+          npm run build
+      - name: Add flutter linux dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build libgtk-3-dev
+      - name: flutter test
+        uses: GabrielBB/xvfb-action@v1.6
+        with:
+          working-directory: ./examples/flutter
+          run: |
+            flutter config --enable-linux-desktop
+            flutter test integration_test/basics_test.dart -d linux
+
 
   test-tutorials:
     runs-on: ubuntu-20.04
@@ -727,7 +776,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -745,7 +794,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build
@@ -762,7 +811,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: prepare core
+      - name: prepare RxDB core
         run: |
           npm install
           npm run build

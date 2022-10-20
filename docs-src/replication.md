@@ -1,8 +1,8 @@
 # Replication
 
-The RxDB replication protocol allows to replicate the database state in **realtime** between the clients and the server.
+The RxDB replication protocol provides the ability to replicate the database state in **realtime** between the clients and the server.
 
-The backend server does not have to be a RxDB instance, you can build a replication with **any infrastructure**.
+The backend server does not have to be a RxDB instance; you can build a replication with **any infrastructure**.
 For example you can replicate with a custom GraphQL endpoint or a http server on top of a PostgreSQL database.
 
 The replication is made to support the [Offline-First](http://offlinefirst.org/) paradigm, so that when the client goes offline, the RxDB database can still read and write locally and will continue the replication when the client goes online again.
@@ -29,7 +29,7 @@ A---B-----------D   master/server state
 ## Replication protocol on the transfer level
 
 When document states are transfered, all handlers use batches of documents for better performance.
-The server has to implement the following methods to be compatible with the replication:
+The server **must** implement the following methods to be compatible with the replication:
 
 - **pullHandler** Get the last checkpoint (or null) as input. Returns all documents that have been written **after** the given checkpoint. Also returns the checkpoint of the latest written returned document.
 - **pushHandler** a method that can be called by the client to send client side writes to the master. It gets an array with the the `assumedMasterState` and the `newForkState` of each document write as input. It must return an array that contains the master document states of all conflicts. If there are no conflicts, it must return an empty array.
