@@ -33,6 +33,15 @@ type HeadingTextType = {
     text2: string;
 };
 
+type BeatColorType = {
+    color: string;
+}
+
+const colors = [
+    '#e6008d',
+    '#8d2089',
+    '#5f2688'
+];
 
 
 window.onload = async function () {
@@ -48,6 +57,9 @@ window.onload = async function () {
         text2: 'you deserve'
     });
 
+    const beatColorDoc = await database.upsertLocal<BeatColorType>('beatingcolor', {
+        color: colors[0]
+    });
 
     // track mouse position
     const mousePointerDoc = await database.upsertLocal<MousePositionType>('mousepos', {
@@ -244,26 +256,23 @@ window.onload = async function () {
     });
 
     // tablet swap color on heartbeat
-    const colors = [
-        '#e6008d',
-        '#8d2089',
-        '#5f2688'
-    ];
-    const lastColorByElementIndex: any = {};
-    heartbeatListeners.push(function () {
-        setTimeout(function () {
-            Array.from($$beatingColor).forEach(function (element, idx) {
-                let isColor = lastColorByElementIndex[idx];
-                if (!isColor) {
-                    isColor = colors[0];
-                }
-                const newColor = randomOfArray(colors, isColor);
-                lastColorByElementIndex[idx] = newColor;
-                element.style.backgroundColor = newColor;
-            });
-        }, heartbeatTimeToSecondBeat);
+    database.waitForLeadership().then(() => {
+        heartbeatListeners.push(function (idx: number) {
+            const nextColor = colors[(idx + 1) % 3];
+            console.log('nextColor: ' + nextColor);
+            setTimeout(function () {
+                beatColorDoc.atomicPatch({
+                    color: nextColor
+                });
+            }, heartbeatTimeToSecondBeat);
+        });
     });
-
+    beatColorDoc.$.subscribe(docData => {
+        const color = docData.data.color;
+        Array.from($$beatingColor).forEach(function (element) {
+            element.style.backgroundColor = color;
+        });
+    });
 };
 
 
