@@ -210,6 +210,7 @@ export const ERROR_MESSAGES = {
     // plugins/crdt/
     CRDT1: 'CRDT operations cannot be used because the crdt options are not set in the schema.',
     CRDT2: 'RxDocument.atomicUpdate() cannot be used when CRDTs are activated.',
+    CRDT3: 'To use CRDTs you MUST NOT set a conflictHandler because the default CRDT conflict handler must be used',
 
     /**
      * Should never be thrown, use this for

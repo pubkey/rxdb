@@ -770,8 +770,8 @@ export function sortDocumentsByLastWriteTime<RxDocType>(
  * Instead we use a monad that can prepare some stuff up front
  * and we can re-use the generated function.
  */
-export type ObjectPathMonadFunction<T> = (obj: T) => any;
-export function objectPathMonad<T>(objectPath: string): ObjectPathMonadFunction<T> {
+export type ObjectPathMonadFunction<T, R = any> = (obj: T) => R;
+export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonadFunction<T, R> {
     const splitted = objectPath.split('.');
 
     /**

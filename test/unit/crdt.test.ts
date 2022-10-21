@@ -12,14 +12,16 @@ import {
     RxJsonSchema,
     ensureNotFalsy,
     RxCollection,
-    CRDTDocumentField
+    CRDTDocumentField,
+    fillWithDefaultSettings
 } from '../../';
 
 
 
 import {
     getCRDTSchemaPart,
-    RxDDcrdtPlugin
+    RxDDcrdtPlugin,
+    getCRDTConflictHandler
 } from '../../plugins/crdt';
 addRxPlugin(RxDDcrdtPlugin);
 import config from './config';
@@ -63,6 +65,28 @@ config.parallel('crdt.test.js', () => {
 
         return db.docs;
     }
+
+    describe('collection creation', () => {
+        it('should throw if the wrong conflict handler is set', async () => {
+            const useSchema = enableCRDTinSchema(schemas.human as any);
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false
+            });
+            await AsyncTestUtil.assertThrows(
+                () => db.addCollections({
+                    docs: {
+                        schema: useSchema,
+                        conflictHandler: ((() => { }) as any)
+                    }
+                }),
+                'RxError',
+                'CRDT3'
+            );
+            db.destroy();
+        });
+    });
 
 
     describe('.insert()', () => {
@@ -195,6 +219,42 @@ config.parallel('crdt.test.js', () => {
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
 
             collection.database.destroy();
+        });
+    });
+
+    describe('conflict handling', () => {
+        const schema = enableCRDTinSchema(fillWithDefaultSettings(schemas.human));
+        const conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(schema);
+        describe('.getCRDTConflictHandler()', () => {
+            it('should merge 2 inserts correctly', async () => {
+                const writeData = schemaObjects.human();
+                async function getDoc() {
+                    const c = await getCRDTCollection();
+                    const doc = await c.insert(writeData);
+                    return doc;
+                }
+                const doc1 = await getDoc();
+                const doc2 = await getDoc();
+
+
+                const mustBeEqual = await conflictHandler({
+                    newDocumentState: doc1.toMutableJSON(true),
+                    realMasterState: doc1.toMutableJSON(true)
+                }, 'text-crdt');
+                assert.strictEqual(mustBeEqual.isEqual, true);
+
+
+
+                const resolved = await conflictHandler({
+                    newDocumentState: doc1.toMutableJSON(true),
+                    realMasterState: doc2.toMutableJSON(true)
+                }, 'text-crdt');
+                console.dir(resolved);
+                process.exit();
+
+                doc1.collection.database.destroy();
+                doc2.collection.database.destroy();
+            });
         });
     });
 });

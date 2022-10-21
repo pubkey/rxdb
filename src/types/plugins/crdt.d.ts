@@ -40,4 +40,9 @@ export type CRDTDocumentField<RxDocType> = {
      * sort order to make everything deterministic.
      */
     operations: CRDTOperation<RxDocType>[][];
+
+    /**
+     * A hash to uniquely define the whole operations state.
+     */
+    hash: string;
 }

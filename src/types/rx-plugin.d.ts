@@ -108,7 +108,9 @@ export interface RxPlugin {
             collection: RxCollection;
             creator: RxCollectionCreator;
         }>;
-        preCreateRxCollection?: RxPluginHooks<any>;
+        preCreateRxCollection?: RxPluginHooks<RxCollectionCreator<any> & {
+            name: string;
+        }>;
         postDestroyRxCollection?: RxPluginHooks<RxCollection>;
         postRemoveRxCollection?: RxPluginHooks<{
             storage: RxStorage<any, any>;

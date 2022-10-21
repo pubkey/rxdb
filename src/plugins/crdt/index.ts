@@ -4,12 +4,16 @@ import type {
     CRDTDocumentField,
     CRDTEntry,
     CRDTOperation,
+    HashFunction,
     JsonSchema,
+    RxConflictHandler,
+    RxConflictHandlerInput,
     RxDocument,
     RxDocumentData,
     RxJsonSchema,
     RxPlugin,
-    RxStorageStatics
+    RxStorageStatics,
+    WithDeleted
 } from '../../types';
 import {
     clone,
@@ -48,6 +52,7 @@ export async function updateCRDT<RxDocType>(
             time: now()
         };
         addOperationToField(
+            this.collection.database.hashFunction,
             crdtDocField,
             operation,
             currentRevision.height
@@ -61,14 +66,13 @@ export async function updateCRDT<RxDocType>(
             operation
         );
         (fullDocData as any)[crdtOptions.field] = crdtDocField;
-        console.dir(fullDocData);
-        console.log('--------------------------------');
         return fullDocData;
     }, RX_CRDT_CONTEXT);
 }
 
 
 function addOperationToField<RxDocType>(
+    hashFunction: HashFunction,
     crdtDocField: CRDTDocumentField<RxDocType>,
     operation: CRDTOperation<RxDocType>,
     currentRevisionHeight: number
@@ -81,6 +85,7 @@ function addOperationToField<RxDocType>(
         operation,
         (a: CRDTOperation<RxDocType>, b: CRDTOperation<RxDocType>) => ((a.creator > b.creator) ? 1 : -1)
     );
+    updateCRDTOperationsHash(hashFunction, crdtDocField);
 }
 
 function runOperationOnDocument<RxDocType>(
@@ -114,6 +119,18 @@ function runOperationOnDocument<RxDocType>(
         }
     });
     return docData;
+}
+
+export function updateCRDTOperationsHash(
+    hashFunction: HashFunction,
+    crdts: CRDTDocumentField<any>
+): CRDTDocumentField<any> {
+    const hashObj = crdts.operations.map((operations, operationRevisionHeight) => {
+        return operations.map(op => op.creator);
+    });
+    const hash = hashFunction(JSON.stringify(hashObj));
+    crdts.hash = hash;
+    return crdts;
 }
 
 export function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxDocType>> {
@@ -165,12 +182,42 @@ export function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxD
                     type: 'array',
                     items: operationSchema
                 }
+            },
+            hash: {
+                type: 'string'
             }
         },
         additionalProperties: false,
-        required: ['operations']
+        required: ['operations', 'hash']
     };
 }
+
+export function getCRDTConflictHandler<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>
+): RxConflictHandler<RxDocType> {
+    const crdtOptions = ensureNotFalsy(schema.crdt);
+    const crdtField = crdtOptions.field;
+    const getCRDTValue = objectPathMonad<WithDeleted<RxDocType>, CRDTDocumentField<RxDocType>>(crdtField);
+
+    const conflictHandler: RxConflictHandler<RxDocType> = (
+        i: RxConflictHandlerInput<RxDocType>,
+        context: string
+    ) => {
+
+        console.dir(i);
+
+        if (getCRDTValue(i.newDocumentState).hash === getCRDTValue(i.realMasterState).hash) {
+            return Promise.resolve({
+                isEqual: true
+            });
+        }
+
+        return {} as any;
+    };
+
+    return conflictHandler;
+}
+
 
 export const RX_CRDT_CONTEXT = 'rx-crdt';
 
@@ -224,6 +271,20 @@ export const RxDDcrdtPlugin: RxPlugin = {
     },
     overwritable: {},
     hooks: {
+        preCreateRxCollection: {
+            after: (data) => {
+                if (!data.schema.crdt) {
+                    return;
+                }
+                if (data.conflictHandler) {
+                    throw newRxError('CRDT3', {
+                        collection: data.name,
+                        schema: data.schema
+                    });
+                }
+                data.conflictHandler = getCRDTConflictHandler(data.schema);
+            }
+        },
         createRxCollection: {
             after: ({ collection }) => {
                 if (!collection.schema.jsonSchema.crdt) {
@@ -260,6 +321,7 @@ export const RxDDcrdtPlugin: RxPlugin = {
                             }]
                         ]
                     };
+                    updateCRDTOperationsHash(collection.database.hashFunction, crdtOperations);
                     objectPath.set(docData, crdtField, crdtOperations);
                 }, false);
             }
