@@ -117,12 +117,12 @@ export const basePrototype = {
             case 'INSERT':
                 break;
             case 'UPDATE':
-                const newData = changeEvent.documentData;
-                this._dataSync$.next(newData);
+                this._dataSync$.next(changeEvent.documentData);
                 break;
             case 'DELETE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
                 this.collection._docCache.delete(this.primary);
+                this._dataSync$.next(changeEvent.documentData);
                 this._isDeleted$.next(true);
                 break;
         }

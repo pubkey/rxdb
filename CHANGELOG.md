@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX calling `.remove()` on an `RxDocument` must update the internal data of the document with the deleted state.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
