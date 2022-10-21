@@ -8,16 +8,22 @@ import {
 import * as path from 'path';
 import parallel from 'mocha.parallel';
 import type { RxTestStorage } from '../../';
-import { getRxStoragePouch, addPouchPlugin } from '../../plugins/pouchdb';
+import {
+    getRxStoragePouch,
+    addPouchPlugin
+} from '../../plugins/pouchdb';
 import { getRxStorageLoki } from '../../plugins/lokijs';
-import { getRxStorageDexie, RxStorageDexieStatics } from '../../plugins/dexie';
+import {
+    getRxStorageDexie,
+    RxStorageDexieStatics
+} from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
 import { getRxStorageMemory } from '../../plugins/memory';
 import { CUSTOM_STORAGE } from './custom-storage';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
+import { isPromise } from 'async-test-util';
 
 const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
-
 
 function isFastMode(): boolean {
     try {
@@ -26,6 +32,31 @@ function isFastMode(): boolean {
         return false;
     }
 }
+
+
+/**
+ * Overwrite the console for easier debugging
+ */
+const oldConsoleLog = console.log.bind(console);
+const oldConsoleDir = console.dir.bind(console);
+function newLog(this: typeof console, value: any) {
+    if (isPromise(value)) {
+        throw new Error('cannot log Promise(), you should await it first');
+    }
+    if (typeof value === 'string' || typeof value === 'number') {
+        oldConsoleLog(value);
+        return;
+    }
+    try {
+        JSON.stringify(value);
+        oldConsoleLog(JSON.stringify(value, null, 4));
+    } catch (err) {
+        oldConsoleDir(value);
+    }
+}
+console.log = newLog.bind(console);
+console.dir = newLog.bind(console);
+
 
 let useParallel = describe;
 try {

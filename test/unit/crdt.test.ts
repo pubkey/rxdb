@@ -55,10 +55,6 @@ config.parallel('crdt.test.js', () => {
             }),
             multiInstance: false
         });
-
-        console.log('AAAAAAAAAAAAAAAAA');
-        console.dir(useSchema);
-
         await db.addCollections({
             docs: {
                 schema: useSchema
@@ -73,16 +69,14 @@ config.parallel('crdt.test.js', () => {
         it('should insert a document and initialize the crdt state', async () => {
             const collection = await getCRDTCollection();
             console.log(JSON.stringify(collection.schema.jsonSchema, null, 4));
-            const doc = await collection.insert(schemaObjects.human());
+            const writeData = schemaObjects.human();
+            const doc = await collection.insert(writeData);
             assert.ok(doc);
-
-
             const docData = doc.toJSON(true);
-
             assert.ok(docData.crdts);
-
-            console.log(JSON.stringify(docData, null, 4));
-            process.exit();
+            const firstOp = docData.crdts.operations[0][0];
+            assert.ok(firstOp);
+            assert.strictEqual(firstOp.body[0].ifMatch?.$set?.passportId, writeData.passportId);
 
             collection.database.destroy();
         });
@@ -92,14 +86,7 @@ config.parallel('crdt.test.js', () => {
     describe('.updateCRDT()', () => {
         it('should update the document via CRDT', async () => {
             const collection = await getCRDTCollection();
-            const doc = await collection.insert({
-                passportId: 'foobar',
-                firstName: 'alice',
-                lastName: 'Whatever',
-                age: 1
-            });
-
-            process.exit();
+            const doc = await collection.insert(schemaObjects.human('foobar', 1));
             await doc.updateCRDT({
                 ifMatch: {
                     $inc: {
@@ -107,10 +94,43 @@ config.parallel('crdt.test.js', () => {
                     }
                 }
             });
+            console.log(doc.toJSON());
             assert.strictEqual(
                 doc.age,
                 2
             );
+
+            const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
+            assert.ok(secondOp);
+            assert.strictEqual(secondOp.body[0].ifMatch?.$inc?.age, 1);
+
+            collection.database.destroy();
+        });
+        it('should delete the document via CRDT', async () => {
+            const collection = await getCRDTCollection();
+            const doc = await collection.insert(schemaObjects.human('foobar', 1));
+            await doc.updateCRDT({
+                ifMatch: {
+                    $set: {
+                        _deleted: true
+                    }
+                }
+            });
+
+
+            console.log('8888888888888888');
+            console.dir(await collection.storageInstance.findDocumentsById(['foobar'], true));
+
+            const docsAfter = await collection.find().exec();
+            assert.deepStrictEqual(docsAfter.map(d => d.toJSON(true)), []);
+
+            console.log(doc.toJSON(true));
+            const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
+            console.dir(secondOp);
+            assert.ok(secondOp);
+            assert.strictEqual(secondOp.body[0].ifMatch?.$inc?.age, 1);
+
+            process.exit();
             collection.database.destroy();
         });
     });

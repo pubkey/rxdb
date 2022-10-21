@@ -29,13 +29,15 @@ export type CRDTOperation<RxDocType> = {
 
 
 export type CRDTDocumentField<RxDocType> = {
-    operations: {
-        /**
-         * Sorted by revision height.
-         * If we have a conflict and need a rebuild,
-         * the operations will be run in the revision height
-         * sort order to make everything deterministic.
-         */
-        [revHeight: number]: CRDTOperation<RxDocType>[];
-    }
+    /**
+     * An array with arrays of CRDT operations.
+     * The index of the top level array is equal
+     * to the revision height where the operations
+     * belong to.
+     * Sorted by revision height ascending.
+     * If we have a conflict and we need a rebuild,
+     * the operations will be run in the revision height
+     * sort order to make everything deterministic.
+     */
+    operations: CRDTOperation<RxDocType>[][];
 }

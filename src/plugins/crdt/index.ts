@@ -12,6 +12,7 @@ import type {
     RxStorageStatics
 } from '../../types';
 import {
+    clone,
     ensureNotFalsy,
     now,
     objectPathMonad,
@@ -38,8 +39,8 @@ export async function updateCRDT<RxDocType>(
 
     const storageToken = await this.collection.database.storageToken;
 
-    this.atomicUpdate((docData, rxDoc) => {
-        const crdtDocField: CRDTDocumentField<RxDocType> = objectPath.get(docData as any, crdtOptions.field);
+    return this.atomicUpdate((docData, rxDoc) => {
+        const crdtDocField: CRDTDocumentField<RxDocType> = clone(objectPath.get(docData as any, crdtOptions.field));
         const currentRevision = parseRevision(rxDoc.revision);
         const operation: CRDTOperation<RxDocType> = {
             body: Array.isArray(entry) ? entry : [entry],
@@ -51,7 +52,7 @@ export async function updateCRDT<RxDocType>(
             operation,
             currentRevision.height
         );
-        crdtDocField.operations[currentRevision.height].push();
+        crdtDocField.operations[currentRevision.height].push(operation);
         let fullDocData = rxDoc.toMutableJSON(true);
         fullDocData = runOperationOnDocument(
             this.collection.database.storage.statics,
@@ -59,6 +60,9 @@ export async function updateCRDT<RxDocType>(
             fullDocData,
             operation
         );
+        (fullDocData as any)[crdtOptions.field] = crdtDocField;
+        console.dir(fullDocData);
+        console.log('--------------------------------');
         return fullDocData;
     });
 }
@@ -156,9 +160,10 @@ export function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxD
         type: 'object',
         properties: {
             operations: {
-                type: 'object',
-                patternProperties: {
-                    '^[0-9]+$': operationSchema
+                type: 'array',
+                items: {
+                    type: 'array',
+                    items: operationSchema
                 }
             }
         },
@@ -201,8 +206,8 @@ export const RxDDcrdtPlugin: RxPlugin = {
                     });
 
                     const crdtOperations: CRDTDocumentField<any> = {
-                        operations: {
-                            0: [{
+                        operations: [
+                            [{
                                 creator: storageToken,
                                 body: [{
                                     ifMatch: {
@@ -211,7 +216,7 @@ export const RxDDcrdtPlugin: RxPlugin = {
                                 }],
                                 time: now()
                             }]
-                        }
+                        ]
                     };
                     objectPath.set(docData, crdtField, crdtOperations);
                 }, false);
