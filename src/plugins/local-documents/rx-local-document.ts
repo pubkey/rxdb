@@ -58,14 +58,13 @@ const RxLocalDocumentPrototype: any = {
         }
         switch (changeEvent.operation) {
             case 'UPDATE':
-                const newData = changeEvent.documentData;
-                this._dataSync$.next(newData);
+                this._dataSync$.next(changeEvent.documentData);
                 break;
             case 'DELETE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
                 const docCache = this.state.docCache;
                 docCache.delete(this.primary);
-                this._isDeleted$.next(true);
+                this._dataSync$.next(changeEvent.documentData);
                 break;
         }
     },
