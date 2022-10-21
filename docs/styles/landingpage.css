@@ -309,6 +309,12 @@ header .logo img {
 }
 
 
+.device.tablet .beating.logo {
+    width: 36%;
+    margin-left: 32%;
+    margin-top: 43px;
+}
+
 .device.desktop {
     width: 350px;
     height: 350px;
@@ -343,7 +349,7 @@ header .logo img {
     height: 19.2%;
     margin-top: 7.5%;
     margin-left: 9%;
-    margin-bottom: 7%;
+    margin-bottom: 6%;
     border-radius: 50%;
 }
 
@@ -420,7 +426,7 @@ header .logo img {
     width: 80%;
     margin-left: 10%;
     margin-top: 60px;
-    height: 400px;
+    height: 380px;
 }
 
 @media (max-width: 800px) {
@@ -433,14 +439,24 @@ header .logo img {
 @media (max-width: 670px) {
     .block.second .content-canvas {
         transform: scale(0.8);
-        margin-top: 40px;
+        margin-top: 30px;
+        height: 300px;
     }
 }
 
 @media (max-width: 543px) {
     .block.second .content-canvas {
         transform: scale(0.6);
-        margin-top: 20px;
+        margin-top: 10px;
+        height: 300px;
+    }
+}
+
+@media (max-width: 430px) {
+    .block.second .content-canvas {
+        transform: scale(0.4);
+        margin-top: 0px;
+        height: 200px;
     }
 }
 
@@ -609,6 +625,12 @@ header .logo img {
     margin-left: -47.5px;
 }
 
+.block.frameworks .below-text {
+    display: block;
+    width: 100%;
+    position: relative;
+    min-height: 200px;
+}
 
 
 
@@ -967,9 +989,9 @@ header .logo img {
 
 .beating-color {
     will-change: background-color;
-    -webkit-transition: background-color 100ms linear;
-    -ms-transition: background-color 100ms linear;
-    transition: background-color 100ms linear;
+    -webkit-transition: background-color 400ms linear;
+    -ms-transition: background-color 400ms linear;
+    transition: background-color 400ms linear;
     background-color: #e6008d;
 }
 

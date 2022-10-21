@@ -129,7 +129,6 @@ window.onload = async function () {
     let heartbeatIndex = 0;
     const heartbeatDuration = 851.088;
     const heartbeatTimeToFirstBeat = 105;
-    const heartbeatTimeToSecondBeat = 324;
 
     console.log('heartbeatDuration: ' + heartbeatDuration);
 
@@ -177,8 +176,8 @@ window.onload = async function () {
             'for Electron',
             'for hybrid apps',
             'for PWAs',
-            'for react native',
-            'for nativescript',
+            'for React Native',
+            'for NativeScript',
             'for UI apps',
             'you deserve',
             'that syncs',
@@ -260,11 +259,9 @@ window.onload = async function () {
         heartbeatListeners.push(function (idx: number) {
             const nextColor = colors[(idx + 1) % 3];
             console.log('nextColor: ' + nextColor);
-            setTimeout(function () {
-                beatColorDoc.atomicPatch({
-                    color: nextColor
-                });
-            }, heartbeatTimeToSecondBeat);
+            beatColorDoc.atomicPatch({
+                color: nextColor
+            });
         });
     });
     beatColorDoc.$.subscribe(docData => {
