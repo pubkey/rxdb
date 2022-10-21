@@ -178,6 +178,22 @@ export const RxDDcrdtPlugin: RxPlugin = {
     prototypes: {
         RxDocument: (proto: any) => {
             proto.updateCRDT = updateCRDT;
+            proto.remove = function (this: RxDocument) {
+                return this.updateCRDT({
+                    ifMatch: {
+                        $set: {
+                            _deleted: true
+                        }
+                    }
+                });
+            }
+            proto.atomicPatch = function (this: RxDocument, patch: any) {
+                return this.updateCRDT({
+                    ifMatch: {
+                        $set: patch
+                    }
+                });
+            }
         }
     },
     overwritable: {},

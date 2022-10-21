@@ -81,6 +81,44 @@ config.parallel('crdt.test.js', () => {
             collection.database.destroy();
         });
     });
+    describe('.remove()', () => {
+        it('should delete the document via .remove', async () => {
+            const collection = await getCRDTCollection();
+            const doc = await collection.insert(schemaObjects.human('foobar', 1));
+            await doc.remove();
+
+            const docsAfter = await collection.find().exec();
+            assert.deepStrictEqual(docsAfter.map(d => d.toJSON(true)), []);
+
+            console.log(doc.toJSON(true));
+            const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
+            console.dir(secondOp);
+            assert.ok(secondOp);
+            assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
+
+            collection.database.destroy();
+        });
+    });
+
+    describe('.atomicPatch()', () => {
+        it('should update the document', async () => {
+            const collection = await getCRDTCollection();
+            const doc = await collection.insert(schemaObjects.human('foobar', 1));
+            await doc.atomicPatch({
+                age: 10
+            });
+            assert.strictEqual(
+                doc.age,
+                10
+            );
+
+            const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
+            assert.ok(secondOp);
+            assert.strictEqual(secondOp.body[0].ifMatch?.$set?.age, 10);
+
+            collection.database.destroy();
+        });
+    });
 
 
     describe('.updateCRDT()', () => {
@@ -94,7 +132,6 @@ config.parallel('crdt.test.js', () => {
                     }
                 }
             });
-            console.log(doc.toJSON());
             assert.strictEqual(
                 doc.age,
                 2
@@ -117,10 +154,6 @@ config.parallel('crdt.test.js', () => {
                 }
             });
 
-
-            console.log('8888888888888888');
-            console.dir(await collection.storageInstance.findDocumentsById(['foobar'], true));
-
             const docsAfter = await collection.find().exec();
             assert.deepStrictEqual(docsAfter.map(d => d.toJSON(true)), []);
 
@@ -128,7 +161,7 @@ config.parallel('crdt.test.js', () => {
             const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
             console.dir(secondOp);
             assert.ok(secondOp);
-            assert.strictEqual(secondOp.body[0].ifMatch?.$inc?.age, 1);
+            assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
 
             process.exit();
             collection.database.destroy();
