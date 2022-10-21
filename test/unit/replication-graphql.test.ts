@@ -549,6 +549,41 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.destroy();
             });
+            it('should stop retrying when canceled', async () => {
+                const amount = batchSize * 4;
+                const testData = getTestData(amount);
+
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(testData)
+                ]);
+
+                const replicationState = c.syncGraphQL({
+                    url: {
+                        http: ERROR_URL
+                    },
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder
+                    },
+                    deletedField: 'deleted',
+                    retryTime: 100
+                });
+
+                await replicationState.error$.pipe(
+                    first()
+                ).toPromise().then(() => {
+                    replicationState.cancel()
+                });
+
+                const timeout = new Promise((resolve, _) => setTimeout(resolve, 500, 'timeout'));
+
+                assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',)
+
+                server.close();
+                c.database.destroy();
+            });
+
         });
         config.parallel('live:true pull only', () => {
             it('should also get documents that come in afterwards', async () => {
@@ -871,6 +906,36 @@ describe('replication-graphql.test.ts', () => {
 
                 server.close();
                 db.destroy();
+            });
+            it('should stop retrying when canceled', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(batchSize),
+                    SpawnServer.spawn()
+                ]);
+
+                const replicationState = c.syncGraphQL({
+                    url: { http: ERROR_URL },
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder
+                    },
+                    live: false,
+                    retryTime: 100,
+                    deletedField: 'deleted'
+                });
+
+                await replicationState.error$.pipe(
+                    first()
+                ).toPromise().then(() => {
+                    replicationState.cancel()
+                });
+
+                const timeout = new Promise((resolve, _) => setTimeout(resolve, 500, 'timeout'));
+
+                assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',)
+
+                server.close();
+                c.database.destroy();
             });
         });
         config.parallel('push and pull', () => {
