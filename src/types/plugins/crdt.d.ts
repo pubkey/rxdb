@@ -2,17 +2,16 @@ import { MangoQuerySelector } from '../rx-query';
 import { UpdateQuery } from './update';
 
 
-export type CRDTEntryPart<RxDocType> = {
+export type CRDTEntry<RxDocType> = {
     selector?: MangoQuerySelector<RxDocType>;
     ifMatch?: UpdateQuery<RxDocType>;
     ifNotMatch?: UpdateQuery<RxDocType>;
 };
 
-export type CRDTEntry<RxDocType> = CRDTEntryPart<RxDocType> | CRDTEntryPart<RxDocType>[];
 
 
 export type CRDTOperation<RxDocType> = {
-    body: CRDTEntry<RxDocType>;
+    body: CRDTEntry<RxDocType>[];
     /**
      * A string to uniquely represent the creator
      * of this operation.
@@ -30,7 +29,7 @@ export type CRDTOperation<RxDocType> = {
 
 
 export type CRDTDocumentField<RxDocType> = {
-    ops: {
+    operations: {
         /**
          * Sorted by revision height.
          * If we have a conflict and need a rebuild,

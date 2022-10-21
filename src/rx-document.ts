@@ -263,7 +263,7 @@ export const basePrototype = {
     update(_updateObj: UpdateQuery<any>) {
         throw pluginMissing('update');
     },
-    updateCRDT(_updateObj: CRDTEntry<any>) {
+    updateCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]) {
         throw pluginMissing('crdt');
     },
     putAttachment() {

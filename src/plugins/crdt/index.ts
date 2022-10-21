@@ -4,18 +4,28 @@ import type {
     CRDTDocumentField,
     CRDTEntry,
     CRDTOperation,
+    JsonSchema,
     RxDocument,
-    RxPlugin
+    RxDocumentData,
+    RxJsonSchema,
+    RxPlugin,
+    RxStorageStatics
 } from '../../types';
-import { ensureNotFalsy, now, parseRevision } from '../../util';
+import {
+    ensureNotFalsy,
+    now,
+    objectPathMonad,
+    parseRevision
+} from '../../util';
 import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
+import modifyjs from 'modifyjs';
 
 
 export async function updateCRDT<RxDocType>(
     this: RxDocument<RxDocType>,
-    entry: CRDTEntry<RxDocType>
+    entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]
 ) {
     const jsonSchema = this.collection.schema.jsonSchema;
     if (!jsonSchema.crdt) {
@@ -32,7 +42,7 @@ export async function updateCRDT<RxDocType>(
         const crdtDocField: CRDTDocumentField<RxDocType> = objectPath.get(docData as any, crdtOptions.field);
         const currentRevision = parseRevision(rxDoc.revision);
         const operation: CRDTOperation<RxDocType> = {
-            body: entry,
+            body: Array.isArray(entry) ? entry : [entry],
             creator: storageToken,
             time: now()
         };
@@ -41,8 +51,15 @@ export async function updateCRDT<RxDocType>(
             operation,
             currentRevision.height
         );
-        crdtDocField.ops[currentRevision.height].push();
-        return docData;
+        crdtDocField.operations[currentRevision.height].push();
+        let fullDocData = rxDoc.toMutableJSON(true);
+        fullDocData = runOperationOnDocument(
+            this.collection.database.storage.statics,
+            this.collection.schema.jsonSchema,
+            fullDocData,
+            operation
+        );
+        return fullDocData;
     });
 }
 
@@ -52,14 +69,102 @@ function addOperationToField<RxDocType>(
     operation: CRDTOperation<RxDocType>,
     currentRevisionHeight: number
 ) {
-    if (!crdtDocField.ops[currentRevisionHeight]) {
-        crdtDocField.ops[currentRevisionHeight] = [];
+    if (!crdtDocField.operations[currentRevisionHeight]) {
+        crdtDocField.operations[currentRevisionHeight] = [];
     }
     pushAtSortPosition(
-        crdtDocField.ops[currentRevisionHeight],
+        crdtDocField.operations[currentRevisionHeight],
         operation,
         (a: CRDTOperation<RxDocType>, b: CRDTOperation<RxDocType>) => ((a.creator > b.creator) ? 1 : -1)
     );
+}
+
+function runOperationOnDocument<RxDocType>(
+    storageStatics: RxStorageStatics,
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    docData: RxDocumentData<RxDocType>,
+    operation: CRDTOperation<RxDocType>
+): RxDocumentData<RxDocType> {
+    const entryParts = operation.body;
+    entryParts.forEach(entryPart => {
+        let isMatching: boolean;
+        if (entryPart.selector) {
+            const preparedQuery = storageStatics.prepareQuery(schema, {
+                selector: ensureNotFalsy(entryPart.selector),
+                sort: [],
+                skip: 0
+            });
+            const matcher = storageStatics.getQueryMatcher(schema, preparedQuery);
+            isMatching = matcher(docData);
+        } else {
+            isMatching = true;
+        }
+        if (isMatching) {
+            if (entryPart.ifMatch) {
+                docData = modifyjs(docData, entryPart.ifMatch);
+            }
+        } else {
+            if (entryPart.ifNotMatch) {
+                docData = modifyjs(docData, entryPart.ifNotMatch);
+            }
+        }
+    });
+    return docData;
+}
+
+export function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxDocType>> {
+    const operationSchema: JsonSchema<CRDTOperation<RxDocType>> = {
+        type: 'object',
+        properties: {
+            body: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        selector: {
+                            type: 'object'
+                        },
+                        ifMatch: {
+                            type: 'object'
+                        },
+                        ifNotMatch: {
+                            type: 'object'
+                        }
+                    },
+                    additionalProperties: false
+                },
+                minItems: 1
+            },
+            creator: {
+                type: 'string'
+            },
+            time: {
+                type: 'number',
+                minimum: 1,
+                maximum: 1000000000000000,
+                multipleOf: 0.01
+            }
+        },
+        additionalProperties: false,
+        required: [
+            'body',
+            'creator',
+            'time'
+        ]
+    };
+    return {
+        type: 'object',
+        properties: {
+            operations: {
+                type: 'object',
+                patternProperties: {
+                    '^[0-9]+$': operationSchema
+                }
+            }
+        },
+        additionalProperties: false,
+        required: ['operations']
+    };
 }
 
 export const RxDDcrdtPlugin: RxPlugin = {
@@ -72,5 +177,45 @@ export const RxDDcrdtPlugin: RxPlugin = {
     },
     overwritable: {},
     hooks: {
+        createRxCollection: {
+            after: ({ collection }) => {
+                if (!collection.schema.jsonSchema.crdt) {
+                    return;
+                }
+                const crdtOptions = ensureNotFalsy(collection.schema.jsonSchema.crdt);
+                const crdtField = crdtOptions.field;
+                const getCrdt = objectPathMonad(crdtOptions.field);
+
+                collection.preInsert(async (docData: RxDocumentData<any>) => {
+                    ensureNotFalsy(!getCrdt(docData));
+                    const storageToken = await collection.database.storageToken;
+
+                    const setMe: Partial<RxDocumentData<any>> = {};
+                    Object.entries(docData).forEach(([key, value]) => {
+                        if (
+                            !key.startsWith('_') &&
+                            key !== crdtField
+                        ) {
+                            setMe[key] = value;
+                        }
+                    });
+
+                    const crdtOperations: CRDTDocumentField<any> = {
+                        operations: {
+                            0: [{
+                                creator: storageToken,
+                                body: [{
+                                    ifMatch: {
+                                        $set: setMe
+                                    }
+                                }],
+                                time: now()
+                            }]
+                        }
+                    };
+                    objectPath.set(docData, crdtField, crdtOperations);
+                }, false);
+            }
+        }
     }
 };

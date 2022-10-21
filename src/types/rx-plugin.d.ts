@@ -105,20 +105,20 @@ export interface RxPlugin {
             storage: RxStorage<any, any>
         }>,
         createRxCollection?: RxPluginHooks<{
-            collection: RxCollection,
-            creator: RxCollectionCreator
-        }>,
-        preCreateRxCollection?: RxPluginHooks<any>,
-        postDestroyRxCollection?: RxPluginHooks<RxCollection>,
+            collection: RxCollection;
+            creator: RxCollectionCreator;
+        }>;
+        preCreateRxCollection?: RxPluginHooks<any>;
+        postDestroyRxCollection?: RxPluginHooks<RxCollection>;
         postRemoveRxCollection?: RxPluginHooks<{
             storage: RxStorage<any, any>;
             databaseName: string;
             collectionName: string;
-        }>,
-        preCreateRxSchema?: RxPluginHooks<any>,
-        createRxSchema?: RxPluginHooks<any>,
-        preCreateRxQuery?: RxPluginHooks<RxPluginPreCreateRxQueryArgs>,
-        prePrepareQuery?: RxPluginHooks<RxPluginPrePrepareQueryArgs>,
+        }>;
+        preCreateRxSchema?: RxPluginHooks<any>;
+        createRxSchema?: RxPluginHooks<any>;
+        preCreateRxQuery?: RxPluginHooks<RxPluginPreCreateRxQueryArgs>;
+        prePrepareQuery?: RxPluginHooks<RxPluginPrePrepareQueryArgs>;
         createRxQuery?: RxPluginHooks<RxQuery>;
         createRxDocument?: RxPluginHooks<any>;
         postCreateRxDocument?: RxPluginHooks<any>;
