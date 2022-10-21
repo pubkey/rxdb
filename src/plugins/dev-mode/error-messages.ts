@@ -207,6 +207,9 @@ export const ERROR_MESSAGES = {
     // plugins/replication/
     REP1: 'Replication: _deleted field not provided',
 
+    // plugins/crdt/
+    CRDT1: 'CRDT operations cannot be used because the crdt options are not set in the schema.',
+
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

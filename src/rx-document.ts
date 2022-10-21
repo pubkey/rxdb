@@ -30,7 +30,9 @@ import type {
     RxCollection,
     RxDocumentData,
     RxDocumentWriteData,
-    RxChangeEvent
+    RxChangeEvent,
+    UpdateQuery,
+    CRDTEntry
 } from './types';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 import { overwritable } from './overwritable';
@@ -258,8 +260,11 @@ export const basePrototype = {
      * @overwritten by plugin (optinal)
      * @param updateObj mongodb-like syntax
      */
-    update(_updateObj: any) {
+    update(_updateObj: UpdateQuery<any>) {
         throw pluginMissing('update');
+    },
+    updateCRDT(_updateObj: CRDTEntry<any>) {
+        throw pluginMissing('crdt');
     },
     putAttachment() {
         throw pluginMissing('attachments');

@@ -7,7 +7,8 @@ import modifyjs from 'modifyjs';
 import type {
     RxDocument,
     RxQuery,
-    RxPlugin
+    RxPlugin,
+    UpdateQuery
 } from '../types';
 
 export function update(this: RxDocument, updateObj: any) {
@@ -18,7 +19,7 @@ export function update(this: RxDocument, updateObj: any) {
 
 export function RxQueryUpdate(
     this: RxQuery,
-    updateObj: any
+    updateObj: UpdateQuery<any>
 ): Promise<any> {
     return this.exec()
         .then(docs => {

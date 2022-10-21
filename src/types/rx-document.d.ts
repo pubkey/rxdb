@@ -13,6 +13,8 @@ import {
 import { RxDocumentData } from './rx-storage';
 import { RxChangeEvent } from './rx-change-event';
 import { DeepReadonly, PlainJsonValue } from './util';
+import { UpdateQuery } from './plugins/update';
+import { CRDTEntry } from './plugins/crdt';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
@@ -38,47 +40,48 @@ export type RxDocumentMeta = {
     [k: string]: PlainJsonValue;
 };
 
-export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
+export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     isInstanceOfRxDocument: true;
-    collection: RxCollection<RxDocumentType, OrmMethods>;
+    collection: RxCollection<RxDocType, OrmMethods>;
     readonly deleted: boolean;
 
     readonly $: Observable<DeepReadonly<any>>;
     readonly deleted$: Observable<boolean>;
 
     readonly primary: string;
-    readonly allAttachments$: Observable<RxAttachment<RxDocumentType, OrmMethods>[]>;
+    readonly allAttachments$: Observable<RxAttachment<RxDocType, OrmMethods>[]>;
 
     // internal things
-    _dataSync$: BehaviorSubject<DeepReadonly<RxDocumentType>>;
-    _data: RxDocumentData<RxDocumentType>;
+    _dataSync$: BehaviorSubject<DeepReadonly<RxDocType>>;
+    _data: RxDocumentData<RxDocType>;
     _isDeleted$: BehaviorSubject<boolean>;
     primaryPath: string;
     revision: string;
     _atomicQueue: Promise<any>;
-    $emit(cE: RxChangeEvent<RxDocumentType>): void;
+    $emit(cE: RxChangeEvent<RxDocType>): void;
     _saveData(newData: any, oldData: any): Promise<void>;
     // /internal things
 
     get$(path: string): Observable<any>;
     get(objPath: string): DeepReadonly<any>;
-    populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any | null>;
+    populate(objPath: string): Promise<RxDocument<RxDocType, OrmMethods> | any | null>;
 
     /**
      * mutate the document with a function
      */
-    atomicUpdate(mutationFunction: AtomicUpdateFunction<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    atomicUpdate(mutationFunction: AtomicUpdateFunction<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods>>;
     /**
      * patches the given properties
      */
-    atomicPatch(patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    atomicPatch(patch: Partial<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods>>;
 
-    update(updateObj: any): Promise<any>;
+    update(updateObj: UpdateQuery<RxDocType>): Promise<any>;
+    updateCRDT(updateObj: CRDTEntry<RxDocType>): Promise<any>;
     remove(): Promise<boolean>;
     _handleChangeEvent(cE: any): void;
 
     // only for temporary documents
-    set(objPath: string, value: any): RxDocument<RxDocumentType, OrmMethods>;
+    set(objPath: string, value: any): RxDocument<RxDocType, OrmMethods>;
     save(): Promise<boolean>;
 
     // attachments
@@ -92,17 +95,17 @@ export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
          * (default = true)
          */
         skipIfSame?: boolean
-    ): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
-    getAttachment(id: string): RxAttachment<RxDocumentType, OrmMethods> | null;
-    allAttachments(): RxAttachment<RxDocumentType, OrmMethods>[];
+    ): Promise<RxAttachment<RxDocType, OrmMethods>>;
+    getAttachment(id: string): RxAttachment<RxDocType, OrmMethods> | null;
+    allAttachments(): RxAttachment<RxDocType, OrmMethods>[];
 
-    toJSON(): DeepReadonly<RxDocumentType>;
-    toJSON(withRevAndAttachments: true): DeepReadonly<RxDocumentData<RxDocumentType>>;
-    toJSON(withRevAndAttachments: false): DeepReadonly<RxDocumentType>;
+    toJSON(): DeepReadonly<RxDocType>;
+    toJSON(withRevAndAttachments: true): DeepReadonly<RxDocumentData<RxDocType>>;
+    toJSON(withRevAndAttachments: false): DeepReadonly<RxDocType>;
 
-    toMutableJSON(): RxDocumentType;
-    toMutableJSON(withRevAndAttachments: true): RxDocumentData<RxDocumentType>;
-    toMutableJSON(withRevAndAttachments: false): RxDocumentType;
+    toMutableJSON(): RxDocType;
+    toMutableJSON(withRevAndAttachments: true): RxDocumentData<RxDocType>;
+    toMutableJSON(withRevAndAttachments: false): RxDocType;
 
     destroy(): void;
 }
