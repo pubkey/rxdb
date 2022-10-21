@@ -162,6 +162,14 @@ describe('rx-document.test.js', () => {
                 });
                 c.database.destroy();
             });
+            it('should update the data of the RxDocument instance', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+                await doc.remove();
+
+                assert.strictEqual(doc.toJSON(true)._deleted, true);
+                c.database.destroy();
+            });
             it('should remove all revisions', async () => {
                 const c = await humansCollection.create(1);
                 const doc: any = await c.findOne().exec();

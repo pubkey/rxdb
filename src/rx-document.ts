@@ -80,18 +80,20 @@ export const basePrototype = {
         return _this._data._rev;
     },
     get deleted$() {
-        const _this: RxDocument = this as any;
+        const _this: RxDocument<any> = this as any;
         if (!_this.isInstanceOfRxDocument) {
             return undefined;
         }
-        return _this._isDeleted$.asObservable();
+        return _this._dataSync$.pipe(
+            map((d: any) => d._deleted)
+        );
     },
     get deleted() {
         const _this: RxDocument = this as any;
         if (!_this.isInstanceOfRxDocument) {
             return undefined;
         }
-        return _this._isDeleted$.getValue();
+        return _this._data._deleted;
     },
 
     /**
@@ -119,13 +121,12 @@ export const basePrototype = {
             case 'INSERT':
                 break;
             case 'UPDATE':
-                const newData = changeEvent.documentData;
-                this._dataSync$.next(newData);
+                this._dataSync$.next(changeEvent.documentData);
                 break;
             case 'DELETE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
                 this.collection._docCache.delete(this.primary);
-                this._isDeleted$.next(true);
+                this._dataSync$.next(changeEvent.documentData);
                 break;
         }
     },
@@ -366,7 +367,7 @@ export const basePrototype = {
         newData = flatClone(newData);
 
         // deleted documents cannot be changed
-        if (this._isDeleted$.getValue()) {
+        if (this._data._deleted) {
             throw newRxError('DOC11', {
                 id: this.primary,
                 document: this
@@ -450,7 +451,6 @@ export function createRxDocumentConstructor(proto = basePrototype) {
 
         // assume that this is always equal to the doc-data in the database
         this._dataSync$ = new BehaviorSubject(jsonData);
-        this._isDeleted$ = new BehaviorSubject(false) as any;
 
         this._atomicQueue = PROMISE_RESOLVE_VOID;
 

@@ -54,7 +54,6 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     // internal things
     _dataSync$: BehaviorSubject<DeepReadonly<RxDocType>>;
     _data: RxDocumentData<RxDocType>;
-    _isDeleted$: BehaviorSubject<boolean>;
     primaryPath: string;
     revision: string;
     _atomicQueue: Promise<any>;
