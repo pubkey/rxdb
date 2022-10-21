@@ -129,7 +129,6 @@ window.onload = async function () {
     let heartbeatIndex = 0;
     const heartbeatDuration = 851.088;
     const heartbeatTimeToFirstBeat = 105;
-    const heartbeatTimeToSecondBeat = 324;
 
     console.log('heartbeatDuration: ' + heartbeatDuration);
 
