@@ -122,7 +122,7 @@
     "docs:remove:time": "node ./scripts/docs-remove-time.js",
     "disc": "npm run transpile && npm run build:es && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
     "preversion": "npm run lint && npm run test",
-    "dev": "watch 'npm run test:fast' src/ test/",
+    "dev": "watch 'npm run test:node:memory' src/ test/",
     "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/"
   },
   "pre-commit": [

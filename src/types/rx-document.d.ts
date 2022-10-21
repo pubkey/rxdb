@@ -68,7 +68,7 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     /**
      * mutate the document with a function
      */
-    atomicUpdate(mutationFunction: AtomicUpdateFunction<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods>>;
+    atomicUpdate(mutationFunction: AtomicUpdateFunction<RxDocType>, context?: string): Promise<RxDocument<RxDocType, OrmMethods>>;
     /**
      * patches the given properties
      */

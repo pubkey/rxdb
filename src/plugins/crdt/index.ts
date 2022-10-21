@@ -64,7 +64,7 @@ export async function updateCRDT<RxDocType>(
         console.dir(fullDocData);
         console.log('--------------------------------');
         return fullDocData;
-    });
+    }, RX_CRDT_CONTEXT);
 }
 
 
@@ -172,13 +172,20 @@ export function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxD
     };
 }
 
+export const RX_CRDT_CONTEXT = 'rx-crdt';
+
 export const RxDDcrdtPlugin: RxPlugin = {
     name: 'crdt',
     rxdb: true,
     prototypes: {
         RxDocument: (proto: any) => {
             proto.updateCRDT = updateCRDT;
+
+            const oldRemove = proto.remove;
             proto.remove = function (this: RxDocument) {
+                if (!this.collection.schema.jsonSchema.crdt) {
+                    return oldRemove.bind(this)();
+                }
                 return this.updateCRDT({
                     ifMatch: {
                         $set: {
@@ -187,13 +194,32 @@ export const RxDDcrdtPlugin: RxPlugin = {
                     }
                 });
             }
+
+            const oldAtomicPatch = proto.atomicPatch;
             proto.atomicPatch = function (this: RxDocument, patch: any) {
+                if (!this.collection.schema.jsonSchema.crdt) {
+                    return oldAtomicPatch.bind(this)(patch);
+                }
                 return this.updateCRDT({
                     ifMatch: {
                         $set: patch
                     }
                 });
             }
+            const oldAtomicUpdate = proto.atomicUpdate;
+            proto.atomicUpdate = function (fn: any, context: string) {
+                if (!this.collection.schema.jsonSchema.crdt) {
+                    return oldAtomicUpdate.bind(this)(fn);
+                }
+                if (context === RX_CRDT_CONTEXT) {
+                    return oldAtomicUpdate.bind(this)(fn);
+                } else {
+                    throw newRxError('CRDT2', {
+                        id: this.primary,
+                        args: { context }
+                    });
+                }
+            };
         }
     },
     overwritable: {},

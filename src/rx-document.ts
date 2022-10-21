@@ -285,7 +285,12 @@ export const basePrototype = {
      * runs an atomic update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    atomicUpdate(this: RxDocument, mutationFunction: Function): Promise<RxDocument> {
+    atomicUpdate(
+        this: RxDocument,
+        mutationFunction: Function,
+        // used by some plugins that wrap the method
+        _context?: string
+    ): Promise<RxDocument> {
         return new Promise((res, rej) => {
             this._atomicQueue = this
                 ._atomicQueue

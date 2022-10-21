@@ -68,9 +68,23 @@ config.parallel('crdt.test.js', () => {
     describe('.insert()', () => {
         it('should insert a document and initialize the crdt state', async () => {
             const collection = await getCRDTCollection();
-            console.log(JSON.stringify(collection.schema.jsonSchema, null, 4));
             const writeData = schemaObjects.human();
             const doc = await collection.insert(writeData);
+            assert.ok(doc);
+            const docData = doc.toJSON(true);
+            assert.ok(docData.crdts);
+            const firstOp = docData.crdts.operations[0][0];
+            assert.ok(firstOp);
+            assert.strictEqual(firstOp.body[0].ifMatch?.$set?.passportId, writeData.passportId);
+
+            collection.database.destroy();
+        });
+        it('should insert document via bulkInsert', async () => {
+            const collection = await getCRDTCollection();
+            console.log(JSON.stringify(collection.schema.jsonSchema, null, 4));
+            const writeData = schemaObjects.human();
+            await collection.bulkInsert([writeData]);
+            const doc = await collection.findOne().exec(true);
             assert.ok(doc);
             const docData = doc.toJSON(true);
             assert.ok(docData.crdts);
@@ -120,6 +134,25 @@ config.parallel('crdt.test.js', () => {
         });
     });
 
+    /**
+     * For some method it is no longer allowed to
+     * call them because it might break the document state
+     * when the operations are not CRDTs.
+     */
+    describe('dissallowed methods', () => {
+        it('should throw the correct errors', async () => {
+            const collection = await getCRDTCollection();
+            const doc = await collection.insert(schemaObjects.human('foobar', 1));
+
+            await AsyncTestUtil.assertThrows(
+                () => doc.atomicUpdate(d => d),
+                'RxError',
+                'CRDT2'
+            );
+
+            collection.database.destroy();
+        });
+    });
 
     describe('.updateCRDT()', () => {
         it('should update the document via CRDT', async () => {
@@ -157,13 +190,10 @@ config.parallel('crdt.test.js', () => {
             const docsAfter = await collection.find().exec();
             assert.deepStrictEqual(docsAfter.map(d => d.toJSON(true)), []);
 
-            console.log(doc.toJSON(true));
             const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
-            console.dir(secondOp);
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
 
-            process.exit();
             collection.database.destroy();
         });
     });
