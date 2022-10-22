@@ -9,7 +9,7 @@ The schema validation is **not a plugin** but comes in as a wrapper around any o
 
 **NOTICE:** Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. For most use cases, you **should not** use a validation in production for better performance.
 
-When no validation is used, any document data can be safed but there might be **undefined behavior** when saving data that does not comply to the schema of a `RxCollection`.
+When no validation is used, any document data can be saved but there might be **undefined behavior** when saving data that does not comply to the schema of a `RxCollection`.
 
 
 RxDB has different implementations to validate data, each of them is based on a different [JSON Schema library](https://json-schema.org/implementations.html). In this example we use the [Dexie.js RxStorage](./rx-storage-dexie.md), but you can wrap the validation around **any other** [RxStorage](./rx-storage.md).

@@ -2,10 +2,10 @@
 
 The dev-mode plugin adds many checks and validations to RxDB.
 This ensures that you use the RxDB API properly and so the dev-mode plugin should always be used when
-using RxDB in developement mode.
+using RxDB in development mode.
 
 - Adds readable error messages.
-- Ensures that `readonly` JavaScript objects are not accidentially mutated.
+- Ensures that `readonly` JavaScript objects are not accidentally mutated.
 - Adds validation check for validity of schemas, queries, ORM methods and document fields.
   - **NOTICE**: The `dev-mode` plugin does not perform schema checks against the data see [schema validation](./schema-validation.md) for that.
 

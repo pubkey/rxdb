@@ -1,6 +1,6 @@
 # Worker RxStorage
 
-With the worker plugin, you can put the `RxStorage` of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the percieved performance of your application. RxDB uses [threads.js](https://github.com/andywer/threads.js/) to create the Worker process an to communicate with it.
+With the worker plugin, you can put the `RxStorage` of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. RxDB uses [threads.js](https://github.com/andywer/threads.js/) to create the Worker process an to communicate with it.
 
 ## On the worker process
 

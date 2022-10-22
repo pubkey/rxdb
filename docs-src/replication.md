@@ -28,7 +28,7 @@ A---B-----------D   master/server state
 
 ## Replication protocol on the transfer level
 
-When document states are transfered, all handlers use batches of documents for better performance.
+When document states are transferred, all handlers use batches of documents for better performance.
 The server **must** implement the following methods to be compatible with the replication:
 
 - **pullHandler** Get the last checkpoint (or null) as input. Returns all documents that have been written **after** the given checkpoint. Also returns the checkpoint of the latest written returned document.
@@ -104,7 +104,7 @@ For example if your documents look like this:
 }
 ```
 
-Then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes via `pullHandler()`, it can send the latest `updatedAt+id` checkpoint to the remote endpoint and then recieve all newer documents.
+Then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes via `pullHandler()`, it can send the latest `updatedAt+id` checkpoint to the remote endpoint and then receive all newer documents.
 
 By default, the field is `_deleted`. If your remote endpoint uses a different field to mark deleted documents, you can set the `deletedField` in the replication options which will automatically map the field on all pull and push requests.
 
@@ -128,7 +128,7 @@ A---B1---C1---X---D    master/server state
       B1---C2---D      fork/client state
 ```
 
-The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentially overwrite other peoples changes when they go online again.
+The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentally overwrite other peoples changes when they go online again.
 You can specify a custom conflict handler by setting the property `conflictHandler` when calling `addCollection()`.
 
 
@@ -151,7 +151,7 @@ const replicationState = await replicateRxCollection({
      */
     replicationIdentifier: 'my-rest-replication-to-https://example.com/api/sync',
     /**
-     * By default it will do an ongoing realtime replicatino.
+     * By default it will do an ongoing realtime replication.
      * By settings live: false the replication will run once until the local state
      * is in sync with the remote state, then it will cancel itself.
      * (optional), default is true.
@@ -260,7 +260,7 @@ const replicationState = await replicateRxCollection({
                 /**
                  * The last checkpoint of the returned documents.
                  * On the next call to the pull handler,
-                 * this checkoint will be passed as 'lastCheckpoint'
+                 * this checkpoint will be passed as 'lastCheckpoint'
                  */
                 checkpoint: documentsFromRemote.length === 0 ? lastCheckpoint : {
                     id: lastOfArray(documentsFromRemote).id,
@@ -315,7 +315,7 @@ function connectSocket() {
      */
     socket.onmessage = event => pullStream$.next(event.data);
     /**
-     * Automatically reconned the socket on close and error.
+     * Automatically reconnect the socket on close and error.
      */
     socket.onclose = () => connectSocket();
     socket.onerror = () => socket.close();
@@ -326,7 +326,7 @@ function connectSocket() {
         } else {
             /**
              * When the client is offline and goes online again,
-             * it might have missed out events that happend on the server.
+             * it might have missed out events that happened on the server.
              * So we have to emit a RESYNC so that the replication goes
              * into 'Checkpoint iteration' mode until the client is in sync
              * and then it will go back into 'Event observation' mode again.
@@ -359,7 +359,7 @@ When sending a document to the remote fails for any reason, RxDB will send it ag
 This happens for **all** errors. The document write could have already reached the remote instance and be processed, while only the answering fails.
 The remote instance must be designed to handle this properly and to not crash on duplicate data transmissions. 
 Depending on your use case, it might be ok to just write the duplicate document data again.
-But for a more resilent error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-send data.
+But for a more resilient error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-send data.
 
 Also the replication has an `.error$` stream that emits all `RxError` objects that arise during replication.
 Notice that these errors are contain an inner `.parameters.errors` field that contains the original error. Also they contain a `.parameters.direction` field that indicates if the error was thrown during `pull` or `push`. You can use these to properly handle errors. For example when the client is outdated, the server might respond with a `426 Upgrade Required` error code that can then be used to force a page reload.
@@ -391,7 +391,7 @@ The function `replicateRxCollection()` returns a `RxReplicationState` that can b
 To observe the replication, the `RxReplicationState` has some `Observable` properties:
 
 ```ts
-// emits each document that was recieved from the remote
+// emits each document that was received from the remote
 myRxReplicationState.received$.subscribe(doc => console.dir(doc));
 
 // emits each document that was send to the remote

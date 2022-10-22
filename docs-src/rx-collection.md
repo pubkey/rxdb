@@ -27,7 +27,7 @@ const myCollections = await myDatabase.addCollections({
 
 ### name
 
-The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: `^[a-z][a-z0-9]*$`.
+The name uniquely identifies the collection and should be used to refine the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: `^[a-z][a-z0-9]*$`.
 
 ### schema
 
@@ -271,7 +271,7 @@ await myCollection.remove();
 ```
 
 ### destroy()
-Destroys the collection's object instance. This is to free up memory and stop all observings and replications.
+Destroys the collection's object instance. This is to free up memory and stop all observers and replications.
 ```js
 await myCollection.destroy();
 ```

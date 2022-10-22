@@ -1,7 +1,7 @@
 # Encryption
 
 With the encryption plugin you can define properties of your documents to be stored encrypted. This ensure that when your users device is stolen, the encrypted data cannot be read out of the hard drive.
-The encryption and decription happens internally, so when you work with a `RxDocument`, you can access any propertly like normal. **But** encrypted fields cannot be used inside of a query.
+The encryption and decryption happens internally, so when you work with a `RxDocument`, you can access any property like normal. **But** encrypted fields cannot be used inside of a query.
 
 The encryption-module is using the `AES` algorithm of the [crypto-js](https://www.npmjs.com/package/crypto-js) library.
 

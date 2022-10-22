@@ -118,7 +118,7 @@ if(needed == false) return;
 
 // starting the migration
 
-const migrationState$ = messageCol.migrate(10); // 10 is the batch-size, how many docs will run at parrallel
+const migrationState$ = messageCol.migrate(10); // 10 is the batch-size, how many docs will run at parallel
 
 // 'start' the observable
 migrationState$.subscribe(

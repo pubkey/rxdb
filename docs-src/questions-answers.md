@@ -17,6 +17,6 @@ To change the schema in **production**-mode, do the following steps:
 
 In **development**-mode, the schema-change can be simplified by **one of these** strategies:
 
--   Use the memory-storage so your db resets on restart and your schema is not safed permanently
+-   Use the memory-storage so your db resets on restart and your schema is not saved permanently
 -   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new RxDatabase-instance
 -   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'heroesDB' + new Date().getTime()`

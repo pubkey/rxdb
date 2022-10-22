@@ -1,6 +1,6 @@
 # RxDatabase
 
-A RxDatabase-Object contains your collections and handles the synchronisation of change-events.
+A RxDatabase-Object contains your collections and handles the synchronization of change-events.
 
 ## Creation
 
@@ -28,7 +28,7 @@ Depending on the storage or adapter this can also be used to define the filesyst
 
 ### storage
 
-RxDB works on top of an implementation of the [RxStorage](./rx-storage.md) interface. This interface is an abstraction that allows you to use different underlaying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
+RxDB works on top of an implementation of the [RxStorage](./rx-storage.md) interface. This interface is an abstraction that allows you to use different underlying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
 
 There are many `RxStorage` implementations that can be used depending on the JavaScript environment and performance requirements.
 For example you can use the PouchDB storage with an IndexedDB adapter in the browser. Or use the LokiJS storage with the filesystem adapter in Node.js.
@@ -171,7 +171,7 @@ myDatabase.requestIdlePromise(1000 /* time in ms */).then(() => {
 ```
 
 ### destroy()
-Destroys the databases object-instance. This is to free up memory and stop all observings and replications.
+Destroys the databases object-instance. This is to free up memory and stop all observers and replications.
 Returns a `Promise` that resolves when the database is destroyed.
 ```javascript
 await myDatabase.destroy();

@@ -1,12 +1,12 @@
 # Memory Synced RxStorage
 
-The memory synced [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlaying storage for persistence.
-The main reason to use this is to improve initial page load and query/write times. This is mostly usefull in browser based applications.
+The memory synced [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
+The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications.
 
 ## Pros
 
 - Improves read/write performance because these operations run against the in-memory storage.
-- Decreases initial page load because it load all data in a single bulk request. It even detects if the datbase is used for the first time and then it does not have to await the creation of the persistend storage.
+- Decreases initial page load because it load all data in a single bulk request. It even detects if the database is used for the first time and then it does not have to await the creation of the persistent storage.
 
 
 ## Cons
@@ -102,5 +102,5 @@ const storage = getMemorySyncedRxStorage({
 ## Comparison with the LokiJS RxStorage
 
 The [LokiJS RxStorage](./rx-storage-lokijs.md) also loads the whole database state into the memory to improve operation time.
-In comparison to LokiJS, the `Memory Synced` RxStorage has many improvements and performance optimizations to reduce initial load time. Also it uses replication instead of the leader election to handle multi-tab usage. This alone decreases the inital page load by about 200 milliseconds.
+In comparison to LokiJS, the `Memory Synced` RxStorage has many improvements and performance optimizations to reduce initial load time. Also it uses replication instead of the leader election to handle multi-tab usage. This alone decreases the initial page load by about 200 milliseconds.
 

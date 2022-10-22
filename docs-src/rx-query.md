@@ -231,7 +231,7 @@ myCollection.find().where('name').eq('foo')
 ```
 
 ## NOTICE: RxDB will always append the primary key to the sort parameters
-For several performance optimizations, like the [EventReduce algoritm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic odering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
+For several performance optimizations, like the [EventReduce algoritm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
 This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.
 
 

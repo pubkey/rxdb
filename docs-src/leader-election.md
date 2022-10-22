@@ -58,7 +58,7 @@ db.waitForLeadership()
 
 ## Handle Duplicate Leaders
 
-On rare occassions, it can happen that [more then one leader](https://github.com/pubkey/broadcast-channel/blob/master/.github/README.md#handle-duplicate-leaders) is elected. This can happen when the CPU is on 100% or for any other reason the JavaScript process is fully blocked for a long time.
+On rare occasions, it can happen that [more then one leader](https://github.com/pubkey/broadcast-channel/blob/master/.github/README.md#handle-duplicate-leaders) is elected. This can happen when the CPU is on 100% or for any other reason the JavaScript process is fully blocked for a long time.
 For most cases this is not really problem because on duplicate leaders, both browser tabs replicate with the same backend anyways.
 To handle the duplicate leader event, you can access the leader elector and set a handler:
 
@@ -87,4 +87,4 @@ Run the [vanillaJS-example](https://github.com/pubkey/rxdb/tree/master/examples/
 ## Notice
 
 The leader election is implemented via the  [broadcast-channel module](https://github.com/pubkey/broadcast-channel#using-the-leaderelection).
-The leader is elected between different processes on the same javascript-runtime. Like multiple tabs in the same browser or mupltiple NodeJs-processes on the same machine. It will not run between different replicated instances.
+The leader is elected between different processes on the same javascript-runtime. Like multiple tabs in the same browser or multiple NodeJs-processes on the same machine. It will not run between different replicated instances.
