@@ -937,6 +937,56 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.destroy();
             });
+            it('should resend cancelled documents', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(batchSize),
+                    SpawnServer.spawn()
+                ]);
+
+                server.requireHeader('Authorization', 'Bearer 1234');
+
+                let replicationState = c.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder
+                    },
+                    live: false,
+                    retryTime: 100,
+                    deletedField: 'deleted'
+                });
+
+                await replicationState.error$.pipe(
+                    first()
+                ).toPromise().then(() => {
+                    replicationState.cancel()
+                });
+
+                const timeout = new Promise((resolve, _) => setTimeout(resolve, 500, 'timeout'));
+
+                assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',)
+
+                replicationState = c.syncGraphQL({
+                    url: server.url,
+                    headers: { Authorization: 'Bearer 1234' },
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder
+                    },
+                    live: false,
+                    retryTime: 1000,
+                    deletedField: 'deleted'
+                });
+
+                ensureReplicationHasNoErrors(replicationState);
+                await replicationState.awaitInitialReplication();
+
+                const docsOnServer = server.getDocuments();
+                assert.strictEqual(docsOnServer.length, batchSize);
+
+                server.close();
+                c.database.destroy();
+            });
         });
         config.parallel('push and pull', () => {
             it('should push and pull all docs; live: false', async () => {
