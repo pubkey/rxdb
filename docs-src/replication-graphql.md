@@ -12,7 +12,7 @@ Before you use the GraphQL replication, make sure you've learned how the [RxDB r
 
 At the server-side, there must exist an endpoint which returns newer rows when the last `checkpoint` is used as input. For example lets say you create a `Query` `pullHuman` which returns a list of document writes that happened after the given checkpoint.
 
-For the push-replication, you also need a `Mutation` `pushHuman` which lets RxDB update data of documents by sending the previous doucment state and the new client document state.
+For the push-replication, you also need a `Mutation` `pushHuman` which lets RxDB update data of documents by sending the previous document state and the new client document state.
 Also for being able to stream all ongoing events, we need a `Subscription` called `streamHuman`.
 
 ```graphql
@@ -180,7 +180,7 @@ const replicationState = myCollection.syncGraphQL({
     },
     pull: {
         queryBuilder: pullQueryBuilder, // the queryBuilder from above
-        modifier: doc => doc, // (optional) modifies all pulled documents before they are handeled by RxDB
+        modifier: doc => doc, // (optional) modifies all pulled documents before they are handled by RxDB
         dataPath: undefined, // (optional) specifies the object path to access the document(s). Otherwise, the first result of the response data is used.
         /**
          * Amount of documents that the remote will send in one request.
@@ -210,7 +210,7 @@ const replicationState = myCollection.syncGraphQL({
 
 #### Push replication
 
-For the push-replication, you also need a `queryBuilder`. Here, the builder recieves a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.
+For the push-replication, you also need a `queryBuilder`. Here, the builder receives a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.
 
 ```js
 const pushQueryBuilder = rows => {
@@ -329,7 +329,7 @@ const replicationState = c.syncGraphQL({
 
 ### Transforming null to undefined in optional fields
 
-GraphQL fills up non-existend optional values with `null` while RxDB required them to be `undefined`.
+GraphQL fills up non-existent optional values with `null` while RxDB required them to be `undefined`.
 Therefore, if your schema contains optional properties, you have to transform the pulled data to switch out `null` to `undefined`
 ```js
 const replicationState: RxGraphQLReplicationState<RxDocType> = collection.syncGraphQL({
@@ -399,7 +399,7 @@ RxDB provides the helper functions `graphQLSchemaFromRxSchema()`, `pullQueryBuil
 
 ### RxGraphQLReplicationState
 
-When you call `myCollection.syncGraphQL()` it returns a `RxGraphQLReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./replication.md) with some GraphQL specifict methods.
+When you call `myCollection.syncGraphQL()` it returns a `RxGraphQLReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./replication.md) with some GraphQL specific methods.
 
 #### .setHeaders()
 

@@ -29,7 +29,7 @@ But most of the time is not so easy. Your user clicks around, data gets replicat
 
 Another solution is to just not care about performance at all. In a few releases the browser vendors will have optimized IndexedDB and everything is fast again. Well, IndexedDB was slow [in 2013](https://www.researchgate.net/publication/281065948_Performance_Testing_and_Comparison_of_Client_Side_Databases_Versus_Server_Side) and it is still slow today. If this trend continues, it will still be slow in a few years from now. Waiting is not an option. The chromium devs made [a statement](https://bugs.chromium.org/p/chromium/issues/detail?id=1025456#c15) to focus on optimizing read performance, not write performance.
 
-Switching to WebSQL (even if it is deprecated) is also not an option because, like [the comparsion tool shows](https://pubkey.github.io/client-side-databases/database-comparison/index.html), it has even slower transactions.
+Switching to WebSQL (even if it is deprecated) is also not an option because, like [the comparison tool shows](https://pubkey.github.io/client-side-databases/database-comparison/index.html), it has even slower transactions.
 
 So you need a way to **make IndexedDB faster**. In the following I lay out some performance optimizations than can be made to have faster reads and writes in IndexedDB.
 
@@ -108,7 +108,7 @@ console.dir(result);
   <img src="./files/indexeddb-batched-cursor.png" alt="IndexedDB batched cursor" width="100%" />
 </p>
 
-As the performance test results show, using a batched cursor can give a huge improvement. Intererstingly the choosing a hight batch size is important. When you known that all results of a given `IDBKeyRange` are needed, you should not set a batch size at all and just directly query all documents via `getAll()`.
+As the performance test results show, using a batched cursor can give a huge improvement. Interestingly choosing a high batch size is important. When you known that all results of a given `IDBKeyRange` are needed, you should not set a batch size at all and just directly query all documents via `getAll()`.
 
 RxDB uses batched cursors in the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
 
@@ -240,7 +240,7 @@ There are some libraries that already do that:
 
 ### In-Memory: Persistence
 
-One downside of not directly using IndexedDB, is that your data is not persistend all the time. And when the JavaScript process exists without having persisted to IndexedDB, data can be lost. To prevent this from happening, we have to ensure that the in-memory state is written down to the disc. One point is make persisting as fast as possible. LokiJS for example has the `incremental-indexeddb-adapter` which only saves new writes to the disc instead of persisting the whole state. Another point is to run the persisting at the correct point in time. For example the RxDB [LokiJS storage](https://rxdb.info/rx-storage-lokijs.html) persists in the following situations:
+One downside of not directly using IndexedDB, is that your data is not persistent all the time. And when the JavaScript process exists without having persisted to IndexedDB, data can be lost. To prevent this from happening, we have to ensure that the in-memory state is written down to the disc. One point is make persisting as fast as possible. LokiJS for example has the `incremental-indexeddb-adapter` which only saves new writes to the disc instead of persisting the whole state. Another point is to run the persisting at the correct point in time. For example the RxDB [LokiJS storage](https://rxdb.info/rx-storage-lokijs.html) persists in the following situations:
 
 - When the database is idle and no write or query is running. In that time we can persist the state if any new writes appeared before.
 - When the `window` fires the [beforeunload event](https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload) we can assume that the JavaScript process is exited any moment and we have to persist the state. After `beforeunload` there are several seconds time which are sufficient to store all new changes. This has shown to work quite reliable.

@@ -5,7 +5,7 @@ It starts a server that is compatible with the [CouchDB replication protocol](ht
 
 **NOTICE**: The CouchDB server plugin can only be used with the [PouchDB RxStorage](../rx-storage-pouchdb.md).
 
-The CouchDB server plugin is usefull
+The CouchDB server plugin is useful
 
 - To simulate the couchdb in developer-mode without setting up a real one
 - To replicate data between the renderer and the node-process in an electron-app

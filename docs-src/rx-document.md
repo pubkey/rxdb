@@ -155,7 +155,7 @@ console.log(myDocument.deleted);
 
 ### toJSON()
 
-Returns the document's data as plain json object. This will return an **immutable** object. To get something that can be modiefied, use `toMutableJSON()` instead.
+Returns the document's data as plain json object. This will return an **immutable** object. To get something that can be modified, use `toMutableJSON()` instead.
 
 ```js
 const json = myDocument.toJSON();

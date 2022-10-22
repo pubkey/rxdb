@@ -1,6 +1,6 @@
 # Storage Migration
 
-The storage migration plugin can be used to migrate all data from one existing RxStorage into another. This is usefull when:
+The storage migration plugin can be used to migrate all data from one existing RxStorage into another. This is useful when:
 
 - You want to migration from one [RxStorage](./rx-storage.md) to another one.
 - You want to migrate to a new major RxDB version while keeping the previous saved data.

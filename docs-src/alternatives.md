@@ -135,7 +135,7 @@ CouchDB has a changestream and a query syntax similar to MongoDB.
 </p>
 
 
-PouchDB is a JavaScript database that is compatible with most of the CouchDB API. It has an adapter system that allows you to switch out the underlaying storage layer. There are many adapters like for IndexedDB, SQLite, the Filesystem and so on. The main benefit is to be able to replicate data with any CouchDB compatible endpoint.
+PouchDB is a JavaScript database that is compatible with most of the CouchDB API. It has an adapter system that allows you to switch out the underlying storage layer. There are many adapters like for IndexedDB, SQLite, the Filesystem and so on. The main benefit is to be able to replicate data with any CouchDB compatible endpoint.
 Because of the CouchDB compatibility, PouchDB has to do a lot of overhead in handling the revision tree of document, which is why it can show bad performance for bigger datasets.
 RxDB was originally build around PouchDB until the storage layer was abstracted out in version [10.0.0](https://github.com/pubkey/rxdb/blob/master/orga/releases/10.0.0.md) so it now allows to use different `RxStorage` implementations. PouchDB has some performance issues because of how it has to store the document revision tree to stay compatible with the CouchDB API.
 
@@ -147,7 +147,7 @@ It uses the N1QL query language which is more SQL like compared to other NoSQL q
 ### Cloudant
 
 Cloudant is a cloud-based service that is based on CouchDB and has mostly the same features.
-It was originally designed for cloud computing where data can automatically be distributed between servers. But it can also be used to replicate with frontend PouchDB instances to create scaleable web applications.
+It was originally designed for cloud computing where data can automatically be distributed between servers. But it can also be used to replicate with frontend PouchDB instances to create scalable web applications.
 It was bought by IBM in 2014 and since 2018 the Cloudant Shared Plan is retired and migrated to IBM Cloud.
 
 ### Hoodie

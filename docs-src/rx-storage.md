@@ -1,6 +1,6 @@
 # RxStorage
 
-RxDB is not a self contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to switch out the underlaying data layer, depending on the JavaScript environment and performance requirements. For example you can use the PouchDB storage with the SQLite adapter for a capacitor app. Or you can use the LokiJS RxStorage with the IndexedDB adapter for a browser based application. For Node.js, there are filesystem based adapters.
+RxDB is not a self contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to switch out the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the PouchDB storage with the SQLite adapter for a capacitor app. Or you can use the LokiJS RxStorage with the IndexedDB adapter for a browser based application. For Node.js, there are filesystem based adapters.
 
 ## Implementations
 
@@ -36,7 +36,7 @@ To use RxDB on the server side, the FoundationDB RxStorage provides a way of hav
 
 ### Worker
 
-The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the percieved performance of your application. [Read more](./rx-storage-worker.md)
+The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. [Read more](./rx-storage-worker.md)
 
 ### Sharding
 
@@ -44,8 +44,8 @@ On some `RxStorage` implementations (like IndexedDB), a huge performance improve
 
 ### Memory Synced
 
-The memory synced [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlaying storage for persistence.
-The main reason to use this is to improve initial page load and query/write times. This is mostly usefull in browser based applications. [Read more](./rx-storage-memory-synced.md)
+The memory synced [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
+The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications. [Read more](./rx-storage-memory-synced.md)
 
 
 
@@ -55,7 +55,7 @@ A big difference in the RxStorage implementations is the performance. In differe
 
 **LokiJS** stores all data in memory and only saves to disc occasionally (or on exit). Therefore it has a very fast read/write performance, but loading all data into memory on the first page load can take longer for big amounts of documents. Also this storage can only be used when all data fits into the memory at least once.
 
-The Premium **sharding** RxStorage is only usefull when big amounts of documents have to be stored or queries. In the CI performance test, we only insert a small amount of documents so that the performance actually decreases when sharding is used.
+The Premium **sharding** RxStorage is only useful when big amounts of documents have to be stored or queries. In the CI performance test, we only insert a small amount of documents so that the performance actually decreases when sharding is used.
 
 The **PouchDB** RxStorage is slow because it has to handle all revisions of a document on writes and queries. This makes PouchDB the only storage where it is possible to replicate with a CouchDB compatible endpoint.
 

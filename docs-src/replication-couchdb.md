@@ -136,7 +136,7 @@ const replicationState = await myCollection.syncCouchDB({
     options: {
         retry: true,
         batch_size: 1, // only transfer one document per batch
-        batches_limit: 1 // only one batch in parrallel
+        batches_limit: 1 // only one batch in parallel
     }
 }); 
 ```

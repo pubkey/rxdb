@@ -3,7 +3,7 @@
 With the websocket replication plugin, you can spawn a websocket server from a RxDB database in Node.js and replicated with it.
 
 
-**NOTICE**: The websocket repliction plugin does not have any concept for authentication or permission handling. It is designed to create an easy **server-to-server** replication. It is **not** made for client-server replication at the moment.
+**NOTICE**: The websocket replication plugin does not have any concept for authentication or permission handling. It is designed to create an easy **server-to-server** replication. It is **not** made for client-server replication at the moment.
 
 
 ## Starting the Websocket Server
