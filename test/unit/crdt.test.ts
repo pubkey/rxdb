@@ -13,7 +13,9 @@ import {
     RxCollection,
     CRDTDocumentField,
     fillWithDefaultSettings,
-    defaultHashFunction
+    defaultHashFunction,
+    RxConflictHandlerOutput,
+    RxDocumentData
 } from '../../';
 
 
@@ -253,12 +255,13 @@ config.parallel('crdt.test.js', () => {
                 console.log('XXXXXXXXXXXXXXXXXXXXX');
                 console.log('XXXXXXXXXXXXXXXXXXXXX');
 
-                const resolved = await conflictHandler({
+                const resolved: RxConflictHandlerOutput<any> = await conflictHandler({
                     newDocumentState: doc1.toMutableJSON(true),
                     realMasterState: doc2.toMutableJSON(true)
                 }, 'text-crdt');
-                console.dir(resolved);
-                process.exit();
+                assert.strictEqual(resolved.isEqual, false);
+                const crdtData: CRDTDocumentField<any> = (resolved as any).documentData.crdts;
+                assert.strictEqual(crdtData.operations[0].length, 2);
 
                 doc1.collection.database.destroy();
                 doc2.collection.database.destroy();
