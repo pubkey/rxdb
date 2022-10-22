@@ -110,6 +110,7 @@ export interface RxPlugin {
         }>;
         preCreateRxCollection?: RxPluginHooks<RxCollectionCreator<any> & {
             name: string;
+            database: RxDatabase;
         }>;
         postDestroyRxCollection?: RxPluginHooks<RxCollection>;
         postRemoveRxCollection?: RxPluginHooks<{

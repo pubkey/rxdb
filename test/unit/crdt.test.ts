@@ -1,7 +1,6 @@
 import assert from 'assert';
-import AsyncTestUtil, { wait, waitUntil, randomString, clone } from 'async-test-util';
+import AsyncTestUtil, { clone } from 'async-test-util';
 
-import * as humansCollection from '../helper/humans-collection';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -13,7 +12,8 @@ import {
     ensureNotFalsy,
     RxCollection,
     CRDTDocumentField,
-    fillWithDefaultSettings
+    fillWithDefaultSettings,
+    defaultHashFunction
 } from '../../';
 
 
@@ -224,7 +224,11 @@ config.parallel('crdt.test.js', () => {
 
     describe('conflict handling', () => {
         const schema = enableCRDTinSchema(fillWithDefaultSettings(schemas.human));
-        const conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(schema);
+        const conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
+            defaultHashFunction,
+            config.storage.getStorage().statics,
+            schema
+        );
         describe('.getCRDTConflictHandler()', () => {
             it('should merge 2 inserts correctly', async () => {
                 const writeData = schemaObjects.human();
@@ -244,6 +248,10 @@ config.parallel('crdt.test.js', () => {
                 assert.strictEqual(mustBeEqual.isEqual, true);
 
 
+                console.log('XXXXXXXXXXXXXXXXXXXXX');
+                console.log('XXXXXXXXXXXXXXXXXXXXX');
+                console.log('XXXXXXXXXXXXXXXXXXXXX');
+                console.log('XXXXXXXXXXXXXXXXXXXXX');
 
                 const resolved = await conflictHandler({
                     newDocumentState: doc1.toMutableJSON(true),
