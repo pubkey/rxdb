@@ -576,7 +576,8 @@ describe('replication-graphql.test.ts', () => {
                     replicationState.cancel()
                 });
 
-                const timeout = new Promise((resolve, _) => setTimeout(resolve, 500, 'timeout'));
+
+                const timeout = wait(500).then(() => 'timeout');
 
                 assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',)
 
@@ -930,7 +931,7 @@ describe('replication-graphql.test.ts', () => {
                     replicationState.cancel()
                 });
 
-                const timeout = new Promise((resolve, _) => setTimeout(resolve, 500, 'timeout'));
+                const timeout = wait(500).then(() => 'timeout');
 
                 assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',)
 
@@ -962,7 +963,7 @@ describe('replication-graphql.test.ts', () => {
                     replicationState.cancel()
                 });
 
-                const timeout = new Promise((resolve, _) => setTimeout(resolve, 500, 'timeout'));
+                const timeout = wait(500).then(() => 'timeout');
 
                 assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',)
 
