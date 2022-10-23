@@ -20,12 +20,8 @@ import {
     clone,
     ensureNotFalsy,
     now,
-    objectPathMonad,
-    parseRevision
+    objectPathMonad
 } from '../../util';
-import {
-    pushAtSortPosition
-} from 'array-push-at-sort-position';
 import modifyjs from 'modifyjs';
 import { overwritable } from '../..';
 
@@ -47,19 +43,20 @@ export async function updateCRDT<RxDocType>(
 
     return this.atomicUpdate((docData, rxDoc) => {
         const crdtDocField: CRDTDocumentField<RxDocType> = clone(objectPath.get(docData as any, crdtOptions.field));
-        const currentRevision = parseRevision(rxDoc.revision);
         const operation: CRDTOperation<RxDocType> = {
             body: Array.isArray(entry) ? entry : [entry],
             creator: storageToken,
             time: now()
         };
-        addOperationToField(
-            this.collection.database.hashFunction,
-            crdtDocField,
-            operation,
-            currentRevision.height
-        );
-        crdtDocField.operations[currentRevision.height].push(operation);
+
+        /**
+         * A new write will ALWAYS be an operation in the last
+         * array which was non existing before.
+         */
+        const lastAr: CRDTOperation<RxDocType>[] = [operation];
+        crdtDocField.operations.push(lastAr);
+        crdtDocField.hash = hashCRDTOperations(this.collection.database.hashFunction, crdtDocField);
+
         let newDocData: WithDeleted<RxDocType> = clone(rxDoc.toJSON()) as any;
         newDocData._deleted = rxDoc._data._deleted;
         newDocData = runOperationOnDocument(
@@ -79,24 +76,6 @@ export async function updateCRDT<RxDocType>(
 
         return fullDocData;
     }, RX_CRDT_CONTEXT);
-}
-
-
-function addOperationToField<RxDocType>(
-    hashFunction: HashFunction,
-    crdtDocField: CRDTDocumentField<RxDocType>,
-    operation: CRDTOperation<RxDocType>,
-    currentRevisionHeight: number
-) {
-    if (!crdtDocField.operations[currentRevisionHeight]) {
-        crdtDocField.operations[currentRevisionHeight] = [];
-    }
-    pushAtSortPosition(
-        crdtDocField.operations[currentRevisionHeight],
-        operation,
-        sortOperationComparator
-    );
-    crdtDocField.hash = hashCRDTOperations(hashFunction, crdtDocField);
 }
 
 export function sortOperationComparator<RxDocType>(a: CRDTOperation<RxDocType>, b: CRDTOperation<RxDocType>) {
@@ -141,10 +120,14 @@ export function hashCRDTOperations(
     hashFunction: HashFunction,
     crdts: CRDTDocumentField<any>
 ): string {
-    const hashObj = crdts.operations.map((operations, operationRevisionHeight) => {
+    const hashObj = crdts.operations.map((operations) => {
         return operations.map(op => op.creator);
     });
     const hash = hashFunction(JSON.stringify(hashObj));
+
+    console.log('hashCRDTOperations():');
+    console.log(hash + ' || ' + JSON.stringify(hashObj));
+
     return hash;
 }
 
@@ -283,7 +266,7 @@ export function getCRDTConflictHandler<RxDocType>(
 
     const conflictHandler: RxConflictHandler<RxDocType> = (
         i: RxConflictHandlerInput<RxDocType>,
-        context: string
+        _context: string
     ) => {
 
         console.log('RUN getCRDTConflictHandler()()');

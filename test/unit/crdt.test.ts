@@ -15,7 +15,6 @@ import {
     fillWithDefaultSettings,
     defaultHashFunction,
     RxConflictHandlerOutput,
-    RxDocumentData,
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
     defaultConflictHandler
@@ -350,12 +349,6 @@ config.parallel('crdt.test.js', () => {
                 ensureReplicationHasNoErrors(replicationState);
 
                 await replicationState.awaitInSync();
-
-                const evAfter = await ensureNotFalsy(replicationState.internalReplicationState)
-                    .input.metaInstance.getChangedDocumentsSince(1000).then();
-                console.dir(await evAfter);
-
-
                 await replicationState.cancel();
             }
             it('should merge the +1 increments', async () => {
@@ -387,42 +380,20 @@ config.parallel('crdt.test.js', () => {
                         }
                     }))
                 );
-                console.dir('FROM STORAGE 3:');
-                console.dir(await clientACollection.storageInstance.findDocumentsById(['foobar'], true));
-
 
                 assert.strictEqual(docA.age, 1);
                 assert.strictEqual(docB.age, 1);
 
                 await replicateOnce(clientACollection, serverCollection);
-
-                
-                console.dir('FROM STORAGE 5:');
-                console.dir(await clientACollection.storageInstance.findDocumentsById(['foobar'], true));
-                
                 await replicateOnce(clientBCollection, serverCollection);
-                console.dir('FROM STORAGE 6:');
-                console.dir(await clientBCollection.storageInstance.findDocumentsById(['foobar'], true));
-                await wait(2000);
-
-                process.exit();
-
-
                 await replicateOnce(clientACollection, serverCollection);
 
-
-                console.dir('FROM STORAGE 4:');
-                console.dir(await clientACollection.storageInstance.findDocumentsById(['foobar'], true));
-
-                console.log('AAAAAAAAAAAAA');
                 assert.strictEqual(docA.age, 2);
-                console.log('BBBBBBBBBBBBb');
                 assert.strictEqual(docB.age, 2);
 
+                // must have both $inc operations
+                assert.strictEqual(docB.toJSON().crdts?.operations[1].length, 2);
 
-
-
-                process.exit();
                 clientACollection.destroy();
                 clientBCollection.destroy();
                 serverCollection.destroy();
