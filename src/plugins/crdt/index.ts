@@ -1,4 +1,5 @@
 import { newRxError } from '../../rx-error';
+import deepEqual from 'fast-deep-equal';
 import objectPath from 'object-path';
 import type {
     CRDTDocumentField,
@@ -26,6 +27,7 @@ import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
 import modifyjs from 'modifyjs';
+import { overwritable } from '../..';
 
 
 export async function updateCRDT<RxDocType>(
@@ -94,7 +96,7 @@ function addOperationToField<RxDocType>(
         operation,
         sortOperationComparator
     );
-    updateCRDTOperationsHash(hashFunction, crdtDocField);
+    crdtDocField.hash = hashCRDTOperations(hashFunction, crdtDocField);
 }
 
 export function sortOperationComparator<RxDocType>(a: CRDTOperation<RxDocType>, b: CRDTOperation<RxDocType>) {
@@ -135,21 +137,15 @@ function runOperationOnDocument<RxDocType>(
     return docData;
 }
 
-export function updateCRDTOperationsHash(
+export function hashCRDTOperations(
     hashFunction: HashFunction,
     crdts: CRDTDocumentField<any>
-): CRDTDocumentField<any> {
+): string {
     const hashObj = crdts.operations.map((operations, operationRevisionHeight) => {
         return operations.map(op => op.creator);
     });
     const hash = hashFunction(JSON.stringify(hashObj));
-    crdts.hash = hash;
-
-
-    console.log('UDPATE hash: ' + hash);
-    console.log(JSON.stringify(hashObj));
-
-    return crdts;
+    return hash;
 }
 
 export function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxDocType>> {
@@ -248,7 +244,7 @@ export function mergeCRDTFields<RxDocType>(
     });
 
 
-    updateCRDTOperationsHash(hashFunction, ret);
+    ret.hash = hashCRDTOperations(hashFunction, ret);
     return ret;
 }
 
@@ -403,9 +399,58 @@ export const RxDDcrdtPlugin: RxPlugin = {
                 if (!collection.schema.jsonSchema.crdt) {
                     return;
                 }
+
                 const crdtOptions = ensureNotFalsy(collection.schema.jsonSchema.crdt);
                 const crdtField = crdtOptions.field;
-                const getCrdt = objectPathMonad(crdtOptions.field);
+                const getCrdt = objectPathMonad<any, CRDTDocumentField<any>>(crdtOptions.field);
+
+                /**
+                 * In dev-mode we have to ensure that all document writes
+                 * have the correct crdt state so that nothing is missed out
+                 * or could accidentially do non-crdt writes to the document.
+                 */
+                if (overwritable.isDevMode()) {
+                    const bulkWriteBefore = collection.storageInstance.bulkWrite.bind(collection.storageInstance);
+                    collection.storageInstance.bulkWrite = function (writes, context) {
+
+                        writes.forEach(write => {
+                            const newDocState: typeof write.document = clone(write.document);
+                            const crdts = getCrdt(newDocState);
+
+                            const rebuild = rebuildFromCRDT(
+                                collection.database.storage.statics,
+                                collection.schema.jsonSchema,
+                                newDocState,
+                                crdts
+                            );
+
+                            function docWithoutMeta(doc: any) {
+                                const ret: any = {};
+                                Object.entries(doc).forEach(([k, v]) => {
+                                    if (!k.startsWith('_')) {
+                                        ret[k] = v;
+                                    }
+                                });
+                                return ret;
+                            }
+                            if (!deepEqual(docWithoutMeta(newDocState), docWithoutMeta(rebuild))) {
+                                throw newRxError('SNH', {
+                                    document: newDocState
+                                });
+                            }
+                            const recalculatedHash = hashCRDTOperations(collection.database.hashFunction, crdts);
+                            if (crdts.hash !== recalculatedHash) {
+                                throw newRxError('SNH', {
+                                    document: newDocState,
+                                    args: { hash: crdts.hash, recalculatedHash }
+                                });
+                            }
+                        });
+
+                        return bulkWriteBefore(writes, context);
+                    }
+                }
+
 
                 collection.preInsert(async (docData: RxDocumentData<any>) => {
                     ensureNotFalsy(!getCrdt(docData));
@@ -435,7 +480,7 @@ export const RxDDcrdtPlugin: RxPlugin = {
                         ],
                         hash: ''
                     };
-                    updateCRDTOperationsHash(collection.database.hashFunction, crdtOperations);
+                    crdtOperations.hash = hashCRDTOperations(collection.database.hashFunction, crdtOperations);
                     objectPath.set(docData, crdtField, crdtOperations);
                 }, false);
             }
