@@ -179,6 +179,9 @@ await myDocument.updateCRDT([
 ]);
 ```
 
+
+## Conflicts on inserts
+
 ## Deleting documents
 
 You can delete a document with a CRDT operation by setting `_deleted` to true. Calling `RxDocument.remove()` will do exactly the same when CRDTs are activated.
@@ -198,7 +201,6 @@ await doc.remove();
 ```
 
 
-## Conflicts on inserts
 
 ## CRDTs with replication
 

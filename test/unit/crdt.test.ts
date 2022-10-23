@@ -1,5 +1,5 @@
 import assert from 'assert';
-import AsyncTestUtil, { clone, wait } from 'async-test-util';
+import AsyncTestUtil, { clone } from 'async-test-util';
 
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 import * as schemas from '../helper/schemas';
