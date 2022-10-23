@@ -392,6 +392,7 @@ config.parallel('crdt.test.js', () => {
                 assert.strictEqual(docB.age, 2);
 
                 // must have both $inc operations
+                assert.strictEqual(docA.toJSON().crdts?.operations[1].length, 2);
                 assert.strictEqual(docB.toJSON().crdts?.operations[1].length, 2);
 
                 clientACollection.destroy();
