@@ -1,4 +1,5 @@
 import { AsTyped } from 'as-typed';
+import { CRDTSchemaOptions } from './plugins/crdt';
 import { StringKeys } from './util';
 
 /**
@@ -148,34 +149,7 @@ export type RxJsonSchema<
          */
         mode: 'database' | 'collection';
     }
-
-
-    /**
-     * Options for the crdt plugin.
-     * We set these in the schema because changing them
-     * is not possible on the fly because it would
-     * destroy the document state in an unpredictable way.
-     */
-    crdt?: {
-        /**
-         * Determines which field of the document must be used
-         * to store the crdt operations.
-         * The given field must exist with the content of "CRDT_FIELD_SCHEMA" in the
-         * properties part of your schema.
-         */
-        field: string;
-
-        /**
-         * After BOTH of the limits
-         * maxOperations/maxTTL is reached,
-         * the document will clean up the stored operations
-         * and merged them together to ensure
-         * that not too many operations are stored which could slow down the
-         * database operations.
-         */
-        maxOperations: number;
-        maxTTL: number;
-    }
+    crdt?: CRDTSchemaOptions<RxDocType>;
 }
 
 /**
