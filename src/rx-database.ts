@@ -93,7 +93,7 @@ export class RxDatabaseBase<
     Internals,
     InstanceCreationOptions,
     Collections = CollectionsOfDatabase,
-    > {
+> {
 
     public readonly idleQueue: IdleQueue = new IdleQueue();
 
@@ -303,7 +303,7 @@ export class RxDatabaseBase<
                 document: collectionDocData
             });
 
-            const useArgs = Object.assign(
+            const useArgs: any = Object.assign(
                 {},
                 args,
                 {
@@ -319,6 +319,7 @@ export class RxDatabaseBase<
             (hookData as any).database = this;
             hookData.name = name;
             runPluginHooks('preCreateRxCollection', hookData);
+            useArgs.conflictHandler = hookData.conflictHandler;
 
             useArgsByCollectionName[collectionName] = useArgs;
         });
@@ -351,6 +352,10 @@ export class RxDatabaseBase<
         await Promise.all(
             Object.keys(collectionCreators).map(async (collectionName) => {
                 const useArgs = useArgsByCollectionName[collectionName];
+
+                console.log('FFFFFFFFFFFFFFF');
+                console.dir(useArgs.schema);
+
                 const collection = await createRxCollection(useArgs);
                 (ret as any)[collectionName] = collection;
 

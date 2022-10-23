@@ -277,7 +277,7 @@ export function getCRDTConflictHandler<RxDocType>(
         context: string
     ) => {
 
-        console.dir(i);
+        console.log('RUN getCRDTConflictHandler()()');
 
         const newDocCrdt = getCRDTValue(i.newDocumentState);
         const masterDocCrdt = getCRDTValue(i.realMasterState);

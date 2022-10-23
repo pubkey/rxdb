@@ -1026,6 +1026,10 @@ export function createRxCollection(
         storageInstanceCreationParams
     );
 
+
+        console.log('MMMMMMMMMMMM');
+        console.dir(schema.jsonSchema);
+
     return createRxCollectionStorageInstance(
         database,
         storageInstanceCreationParams

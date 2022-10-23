@@ -15,7 +15,10 @@ import {
     fillWithDefaultSettings,
     defaultHashFunction,
     RxConflictHandlerOutput,
-    RxDocumentData
+    RxDocumentData,
+    rxStorageInstanceToReplicationHandler,
+    RxReplicationWriteToMasterRow,
+    defaultConflictHandler
 } from '../../';
 
 
@@ -27,6 +30,8 @@ import {
 } from '../../plugins/crdt';
 addRxPlugin(RxDDcrdtPlugin);
 import config from './config';
+import { replicateRxCollection } from '../../plugins/replication';
+import { ReplicationPullHandler, ReplicationPushHandler } from '../../src/types';
 
 config.parallel('crdt.test.js', () => {
     type WithCRDTs<RxDocType> = RxDocType & {
@@ -87,6 +92,11 @@ config.parallel('crdt.test.js', () => {
                 'CRDT3'
             );
             db.destroy();
+        });
+        it('should automatically set the CRDT conflict handler', async () => {
+            const collection = await getCRDTCollection();
+            assert.ok(collection.conflictHandler !== defaultConflictHandler);
+            collection.database.destroy();
         });
     });
 
@@ -265,6 +275,135 @@ config.parallel('crdt.test.js', () => {
 
                 doc1.collection.database.destroy();
                 doc2.collection.database.destroy();
+            });
+        });
+        describe('conflicts during replication', () => {
+            const REPLICATION_IDENTIFIER_TEST = 'replication-crdt-tests';
+            type TestDocType = WithCRDTs<schemas.HumanDocumentType>;
+            type CheckpointType = any;
+            function getPullHandler(
+                remoteCollection: RxCollection<TestDocType>
+            ): ReplicationPullHandler<TestDocType, CheckpointType> {
+                const helper = rxStorageInstanceToReplicationHandler(
+                    remoteCollection.storageInstance,
+                    remoteCollection.database.conflictHandler as any,
+                    remoteCollection.database.hashFunction
+                );
+                const handler: ReplicationPullHandler<TestDocType, CheckpointType> = async (
+                    latestPullCheckpoint: CheckpointType | null,
+                    batchSize: number
+                ) => {
+                    const result = await helper.masterChangesSince(latestPullCheckpoint, batchSize);
+                    return result;
+                };
+                return handler;
+            }
+            function getPushHandler(
+                remoteCollection: RxCollection<TestDocType>
+            ): ReplicationPushHandler<TestDocType> {
+                const helper = rxStorageInstanceToReplicationHandler(
+                    remoteCollection.storageInstance,
+                    remoteCollection.conflictHandler,
+                    remoteCollection.database.hashFunction
+                );
+                const handler: ReplicationPushHandler<TestDocType> = async (
+                    rows: RxReplicationWriteToMasterRow<TestDocType>[]
+                ) => {
+                    const result = await helper.masterWrite(rows);
+                    return result;
+                }
+                return handler;
+            }
+            async function replicateOnce(
+                clientCollection: RxCollection<TestDocType>,
+                serverCollection: RxCollection<TestDocType>
+            ) {
+                const pullHandler = getPullHandler(serverCollection);
+                const pushHandler = getPushHandler(serverCollection);
+                const replicationState = replicateRxCollection({
+                    collection: clientCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: false,
+                    pull: {
+                        batchSize: 10,
+                        async handler(lastPulledCheckpoint, batchSize) {
+                            console.log('pull send:');
+                            console.dir(lastPulledCheckpoint);
+                            const ret = await pullHandler(lastPulledCheckpoint, batchSize);
+                            console.log('pull ret:');
+                            console.dir(ret);
+                            return ret;
+                        }
+                    },
+                    push: {
+                        batchSize: 10,
+                        async handler(docs) {
+                            console.log('push send:');
+                            console.dir(docs);
+                            const ret = await pushHandler(docs);
+                            console.log('push ret:');
+                            console.dir(ret);
+                            return ret;
+                        }
+                    }
+                });
+                await replicationState.awaitInSync();
+            }
+            it('should merge the +1 increments', async () => {
+                const clientACollection = await getCRDTCollection();
+                const clientBCollection = await getCRDTCollection();
+                const serverCollection = await getCRDTCollection();
+
+                // first replicate the document once
+                const writeData = schemaObjects.human('foobar', 0);
+                await clientACollection.insert(writeData);
+                await replicateOnce(clientACollection, serverCollection);
+                await replicateOnce(clientBCollection, serverCollection);
+                const docA = await clientACollection.findOne().exec(true);
+                const docB = await clientBCollection.findOne().exec(true);
+                assert.ok(docB);
+
+
+                // update on both sides while 'offline'
+                await Promise.all(
+                    [docA, docB].map(doc => doc.updateCRDT({
+                        ifMatch: {
+                            $inc: {
+                                age: 1
+                            }
+                        }
+                    }))
+                );
+                console.dir('FROM STORAGE 3:');
+                console.dir(await clientACollection.storageInstance.findDocumentsById(['foobar'], true));
+                await replicateOnce(clientACollection, serverCollection);
+                console.dir('FROM STORAGE 3.5:');
+                console.dir(await clientACollection.storageInstance.findDocumentsById(['foobar'], true));
+
+
+                assert.strictEqual(docA.age, 1);
+                assert.strictEqual(docB.age, 1);
+
+                await replicateOnce(clientBCollection, serverCollection);
+                await replicateOnce(clientACollection, serverCollection);
+                await replicateOnce(clientBCollection, serverCollection);
+
+
+                console.dir('FROM STORAGE 4:');
+                console.dir(await clientACollection.storageInstance.findDocumentsById(['foobar'], true));
+
+                console.log('AAAAAAAAAAAAA');
+                assert.strictEqual(docA.age, 2);
+                console.log('BBBBBBBBBBBBb');
+                assert.strictEqual(docB.age, 2);
+
+
+
+
+                process.exit();
+                clientACollection.destroy();
+                clientBCollection.destroy();
+                serverCollection.destroy();
             });
         });
     });
