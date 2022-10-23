@@ -12,6 +12,7 @@ import './unit/adapter-check.test';
 import './unit/custom-index.test';
 import './unit/query-planner.test';
 
+import './unit/crdt.test';
 
 /**
  * Move these tests around so that
@@ -24,7 +25,6 @@ import './unit/rx-storage-pouchdb.test';
 import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 
-import './unit/crdt.test';
 
 import './unit/instance-of-check.test';
 import './unit/rx-schema.test';

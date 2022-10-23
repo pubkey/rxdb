@@ -1,5 +1,5 @@
 import assert from 'assert';
-import AsyncTestUtil, { clone } from 'async-test-util';
+import AsyncTestUtil, { clone, wait } from 'async-test-util';
 
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 import * as schemas from '../helper/schemas';
@@ -30,7 +30,7 @@ import {
 } from '../../plugins/crdt';
 addRxPlugin(RxDDcrdtPlugin);
 import config from './config';
-import { replicateRxCollection } from '../../plugins/replication';
+import { replicateRxCollection, RxReplicationState } from '../../plugins/replication';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../src/types';
 
 config.parallel('crdt.test.js', () => {
@@ -117,7 +117,6 @@ config.parallel('crdt.test.js', () => {
         });
         it('should insert document via bulkInsert', async () => {
             const collection = await getCRDTCollection();
-            console.log(JSON.stringify(collection.schema.jsonSchema, null, 4));
             const writeData = schemaObjects.human();
             await collection.bulkInsert([writeData]);
             const doc = await collection.findOne().exec(true);
@@ -140,9 +139,7 @@ config.parallel('crdt.test.js', () => {
             const docsAfter = await collection.find().exec();
             assert.deepStrictEqual(docsAfter.map(d => d.toJSON(true)), []);
 
-            console.log(doc.toJSON(true));
             const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
-            console.dir(secondOp);
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
 
@@ -259,12 +256,6 @@ config.parallel('crdt.test.js', () => {
                 }, 'text-crdt');
                 assert.strictEqual(mustBeEqual.isEqual, true);
 
-
-                console.log('XXXXXXXXXXXXXXXXXXXXX');
-                console.log('XXXXXXXXXXXXXXXXXXXXX');
-                console.log('XXXXXXXXXXXXXXXXXXXXX');
-                console.log('XXXXXXXXXXXXXXXXXXXXX');
-
                 const resolved: RxConflictHandlerOutput<any> = await conflictHandler({
                     newDocumentState: doc1.toMutableJSON(true),
                     realMasterState: doc2.toMutableJSON(true)
@@ -314,6 +305,13 @@ config.parallel('crdt.test.js', () => {
                 }
                 return handler;
             }
+            function ensureReplicationHasNoErrors(replicationState: RxReplicationState<any, any>) {
+                replicationState.error$.subscribe(err => {
+                    console.error('ensureReplicationHasNoErrors() has error:');
+                    console.dir(err);
+                    throw err;
+                });
+            }
             async function replicateOnce(
                 clientCollection: RxCollection<TestDocType>,
                 serverCollection: RxCollection<TestDocType>
@@ -343,11 +341,22 @@ config.parallel('crdt.test.js', () => {
                             const ret = await pushHandler(docs);
                             console.log('push ret:');
                             console.dir(ret);
+
+
                             return ret;
                         }
                     }
                 });
+                ensureReplicationHasNoErrors(replicationState);
+
                 await replicationState.awaitInSync();
+
+                const evAfter = await ensureNotFalsy(replicationState.internalReplicationState)
+                    .input.metaInstance.getChangedDocumentsSince(1000).then();
+                console.dir(await evAfter);
+
+
+                await replicationState.cancel();
             }
             it('should merge the +1 increments', async () => {
                 const clientACollection = await getCRDTCollection();
@@ -358,7 +367,11 @@ config.parallel('crdt.test.js', () => {
                 const writeData = schemaObjects.human('foobar', 0);
                 await clientACollection.insert(writeData);
                 await replicateOnce(clientACollection, serverCollection);
+
+
+                console.log('first replication b to server');
                 await replicateOnce(clientBCollection, serverCollection);
+
                 const docA = await clientACollection.findOne().exec(true);
                 const docB = await clientBCollection.findOne().exec(true);
                 assert.ok(docB);
@@ -376,17 +389,26 @@ config.parallel('crdt.test.js', () => {
                 );
                 console.dir('FROM STORAGE 3:');
                 console.dir(await clientACollection.storageInstance.findDocumentsById(['foobar'], true));
-                await replicateOnce(clientACollection, serverCollection);
-                console.dir('FROM STORAGE 3.5:');
-                console.dir(await clientACollection.storageInstance.findDocumentsById(['foobar'], true));
 
 
                 assert.strictEqual(docA.age, 1);
                 assert.strictEqual(docB.age, 1);
 
-                await replicateOnce(clientBCollection, serverCollection);
                 await replicateOnce(clientACollection, serverCollection);
+
+                
+                console.dir('FROM STORAGE 5:');
+                console.dir(await clientACollection.storageInstance.findDocumentsById(['foobar'], true));
+                
                 await replicateOnce(clientBCollection, serverCollection);
+                console.dir('FROM STORAGE 6:');
+                console.dir(await clientBCollection.storageInstance.findDocumentsById(['foobar'], true));
+                await wait(2000);
+
+                process.exit();
+
+
+                await replicateOnce(clientACollection, serverCollection);
 
 
                 console.dir('FROM STORAGE 4:');

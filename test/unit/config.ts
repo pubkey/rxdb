@@ -41,6 +41,7 @@ const oldConsoleLog = console.log.bind(console);
 const oldConsoleDir = console.dir.bind(console);
 function newLog(this: typeof console, value: any) {
     if (isPromise(value)) {
+        oldConsoleDir(value);
         throw new Error('cannot log Promise(), you should await it first');
     }
     if (typeof value === 'string' || typeof value === 'number') {

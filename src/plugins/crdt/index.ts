@@ -144,6 +144,11 @@ export function updateCRDTOperationsHash(
     });
     const hash = hashFunction(JSON.stringify(hashObj));
     crdts.hash = hash;
+
+
+    console.log('UDPATE hash: ' + hash);
+    console.log(JSON.stringify(hashObj));
+
     return crdts;
 }
 
@@ -214,11 +219,17 @@ export function mergeCRDTFields<RxDocType>(
     crdtsA: CRDTDocumentField<RxDocType>,
     crdtsB: CRDTDocumentField<RxDocType>
 ): CRDTDocumentField<RxDocType> {
+
+    // the value with most operations must be A to
+    // ensure we not miss out rows when iterating over both fields.
+    if (crdtsA.operations.length < crdtsB.operations.length) {
+        [crdtsA, crdtsB] = [crdtsB, crdtsA];
+    }
+
     const ret: CRDTDocumentField<RxDocType> = {
         operations: [],
         hash: ''
     };
-
     crdtsA.operations.forEach((row, index) => {
         let mergedOps: CRDTOperation<RxDocType>[] = [];
         const ids = new Set<string>(); // used to deduplicate
@@ -227,7 +238,7 @@ export function mergeCRDTFields<RxDocType>(
             ids.add(op.creator);
             mergedOps.push(op);
         });
-        crdtsB.operations[index].forEach(op => {
+        crdtsB.operations[index] && crdtsB.operations[index].forEach(op => {
             if (!ids.has(op.creator)) {
                 mergedOps.push(op);
             }
@@ -235,6 +246,8 @@ export function mergeCRDTFields<RxDocType>(
         mergedOps = mergedOps.sort(sortOperationComparator);
         ret.operations[index] = mergedOps;
     });
+
+
     updateCRDTOperationsHash(hashFunction, ret);
     return ret;
 }
@@ -288,6 +301,9 @@ export function getCRDTConflictHandler<RxDocType>(
             });
         }
 
+        console.log('getCRDTConflictHandler not equal:');
+        console.dir(i);
+
 
         const mergedCrdt = mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
         const mergedDoc = rebuildFromCRDT(
@@ -296,6 +312,10 @@ export function getCRDTConflictHandler<RxDocType>(
             i.newDocumentState,
             mergedCrdt
         );
+
+
+        console.log('getCRDTConflictHandler mergedCrdt:');
+        console.dir(mergedCrdt);
 
         return Promise.resolve({
             isEqual: false,
