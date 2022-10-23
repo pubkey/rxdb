@@ -190,7 +190,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                      */
                     let done = false;
                     let result: ReplicationPullHandlerResult<RxDocType, CheckpointType> = {} as any;
-                    while (!done) {
+                    while (!done && !this.isStopped()) {
                         try {
                             result = await this.pull.handler(
                                 checkpoint,
@@ -206,6 +206,13 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             this.subjects.error.next(emitError);
                             await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
                         }
+                    }
+
+                    if (this.isStopped()) {
+                        return {
+                            checkpoint: null,
+                            documents: []
+                        };
                     }
 
                     const useResult = flatClone(result);
@@ -244,7 +251,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     );
 
                     let result: WithDeleted<RxDocType>[] = {} as any;
-                    while (!done) {
+                    while (!done && !this.isStopped()) {
                         try {
                             result = await this.push.handler(useRows);
                             done = true;
@@ -259,6 +266,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         }
                     }
 
+                    if (this.isStopped()) {
+                        return [];
+                    }
 
                     const conflicts = ensureNotFalsy(result).map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
                     return conflicts;
