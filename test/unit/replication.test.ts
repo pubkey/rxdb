@@ -497,9 +497,7 @@ describe('replication.test.js', () => {
                 autoStart: false
             });
             await replicationState2.start();
-
             const docsInMetaAfter = await docsInMeta(replicationState2);
-            console.log('docsInMetaAfter: ' + docsInMetaAfter);
 
             /**
              * Because in the localCollection2 we do not insert any documents,

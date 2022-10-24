@@ -1057,7 +1057,6 @@ describe('rx-collection.test.ts', () => {
                     const c = await humansCollection.create(10);
                     const query = c.find();
 
-
                     const removed = await query.remove();
                     assert.strictEqual(removed.length, 10);
                     removed.forEach(doc => {

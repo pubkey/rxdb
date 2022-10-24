@@ -17,8 +17,6 @@ export const defaultConflictHandler: RxConflictHandler<any> = function (
     i: RxConflictHandlerInput<any>,
     _context: string
 ): Promise<RxConflictHandlerOutput<any>> {
-
-
     /**
      * If the documents are deep equal,
      * we have no conflict.

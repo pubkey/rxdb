@@ -152,7 +152,7 @@ export type {
     RxStorageInstance,
     RxStorageDefaultCheckpoint,
     CategorizeBulkWriteRowsOutput,
-    DexiePreparedQuery, 
+    DexiePreparedQuery,
 
     // conflict handling
     RxConflictHandler,
@@ -170,6 +170,12 @@ export type {
     DocumentsWithCheckpoint,
     RxReplicationPullStreamItem,
     ReplicationPullHandlerResult,
+
+    // crdt
+    UpdateQuery,
+    CRDTEntry,
+    CRDTOperation,
+    CRDTDocumentField,
 
     // other stuff
     RxDumpCollectionBase,

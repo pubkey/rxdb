@@ -30,7 +30,9 @@ import type {
     RxCollection,
     RxDocumentData,
     RxDocumentWriteData,
-    RxChangeEvent
+    RxChangeEvent,
+    UpdateQuery,
+    CRDTEntry
 } from './types';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 import { overwritable } from './overwritable';
@@ -259,8 +261,11 @@ export const basePrototype = {
      * @overwritten by plugin (optinal)
      * @param updateObj mongodb-like syntax
      */
-    update(_updateObj: any) {
+    update(_updateObj: UpdateQuery<any>) {
         throw pluginMissing('update');
+    },
+    updateCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]) {
+        throw pluginMissing('crdt');
     },
     putAttachment() {
         throw pluginMissing('attachments');
@@ -280,7 +285,12 @@ export const basePrototype = {
      * runs an atomic update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    atomicUpdate(this: RxDocument, mutationFunction: Function): Promise<RxDocument> {
+    atomicUpdate(
+        this: RxDocument,
+        mutationFunction: Function,
+        // used by some plugins that wrap the method
+        _context?: string
+    ): Promise<RxDocument> {
         return new Promise((res, rej) => {
             this._atomicQueue = this
                 ._atomicQueue

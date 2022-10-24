@@ -140,6 +140,8 @@
 
 * [LocalDocuments](./rx-local-document.md)
 
+* [CRDT](./crdt.md)
+
 * [Third Party Plugins](./third-party-plugins.md)
 
 * [Creating Plugins](./plugins.md)

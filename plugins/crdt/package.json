@@ -1,0 +1,8 @@
+{
+    "name": "rxdb-plugin-crdt",
+    "main": "../../dist/lib/plugins/crdt/index.js",
+    "jsnext:main": "../../dist/es/plugins/crdt/index.js",
+    "module": "../../dist/es/plugins/crdt/index.js",
+    "types": "../../dist/types/plugins/crdt/index.d.ts",
+    "sideEffects": false
+}

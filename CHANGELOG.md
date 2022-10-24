@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD [CRDT Plugin](./docs-src/crdt.md)
 - FIX calling `.remove()` on an `RxDocument` must update the internal data of the document with the deleted state.
 - FIX Stop retries when replication gets canceled [#4088](https://github.com/pubkey/rxdb/pull/4088) Thanks [@Whoops](https://github.com/Whoops)
 <!-- ADD new changes here! -->
