@@ -39,9 +39,7 @@ config.parallel('crdt.test.js', () => {
     function enableCRDTinSchema<RxDocType>(schema: RxJsonSchema<RxDocType>): RxJsonSchema<WithCRDTs<RxDocType>> {
         const ret: RxJsonSchema<WithCRDTs<RxDocType>> = clone(schema);
         ret.crdt = {
-            field: 'crdts',
-            maxOperations: 100,
-            maxTTL: 1000 * 60 * 60
+            field: 'crdts'
         };
         ret.properties.crdts = getCRDTSchemaPart();
         return ret;
@@ -125,6 +123,57 @@ config.parallel('crdt.test.js', () => {
             const firstOp = docData.crdts.operations[0][0];
             assert.ok(firstOp);
             assert.strictEqual(firstOp.body[0].ifMatch?.$set?.passportId, writeData.passportId);
+
+            collection.database.destroy();
+        });
+    });
+    describe('.insertCRDT()', () => {
+        it('should insert the document', async () => {
+            const collection = await getCRDTCollection();
+            const writeData = schemaObjects.human();
+
+            const doc1 = await collection.insertCRDT({
+                ifMatch: {
+                    $set: writeData
+                }
+            });
+            const doc2 = await collection.insertCRDT({
+                ifMatch: {
+                    $set: Object.assign({}, writeData, { firstName: 'foobar' })
+                }
+            });
+            assert.strictEqual(doc2.firstName, 'foobar');
+
+            assert.ok(doc1 === doc2);
+
+            collection.database.destroy();
+        });
+        it('should respect the if-else logic', async () => {
+            const collection = await getCRDTCollection();
+            const writeData = schemaObjects.human('foobar', 1);
+
+            const doc1 = await collection.insert(writeData);
+            const doc2 = await collection.insertCRDT({
+                selector: {
+                    passportId: {
+                        $exists: false
+                    }
+                },
+                ifMatch: {
+                    $set: {
+                        // set to negative here to cause a schema error if not matching
+                        age: -100
+                    }
+                },
+                ifNotMatch: {
+                    $inc: {
+                        age: 1
+                    }
+                }
+            });
+            assert.strictEqual(doc2.age, 2);
+
+            assert.ok(doc1 === doc2);
 
             collection.database.destroy();
         });

@@ -23,13 +23,21 @@ import {
     objectPathMonad
 } from '../../util';
 import modifyjs from 'modifyjs';
-import { overwritable } from '../..';
+import {
+    overwritable,
+    RxCollection,
+    RxDocumentWriteData,
+    RxError
+} from '../..';
+
 
 
 export async function updateCRDT<RxDocType>(
     this: RxDocument<RxDocType>,
     entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]
 ) {
+    entry = overwritable.deepFreezeWhenDevMode(entry) as any;
+
     const jsonSchema = this.collection.schema.jsonSchema;
     if (!jsonSchema.crdt) {
         throw newRxError('CRDT1', {
@@ -38,7 +46,6 @@ export async function updateCRDT<RxDocType>(
         });
     }
     const crdtOptions = ensureNotFalsy(jsonSchema.crdt);
-
     const storageToken = await this.collection.database.storageToken;
 
     return this.atomicUpdate((docData, rxDoc) => {
@@ -77,6 +84,58 @@ export async function updateCRDT<RxDocType>(
         return fullDocData;
     }, RX_CRDT_CONTEXT);
 }
+
+
+export async function insertCRDT<RxDocType>(
+    this: RxCollection<RxDocType>,
+    entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]
+) {
+    entry = overwritable.deepFreezeWhenDevMode(entry) as any;
+
+    const jsonSchema = this.schema.jsonSchema;
+    if (!jsonSchema.crdt) {
+        throw newRxError('CRDT1', {
+            schema: jsonSchema,
+            queryObj: entry
+        });
+    }
+    const crdtOptions = ensureNotFalsy(jsonSchema.crdt);
+    const storageToken = await this.database.storageToken;
+    const operation: CRDTOperation<RxDocType> = {
+        body: Array.isArray(entry) ? entry : [entry],
+        creator: storageToken,
+        time: now()
+    };
+
+    let insertData: RxDocumentWriteData<RxDocType> = {} as any;
+    insertData = runOperationOnDocument(
+        this.database.storage.statics,
+        this.schema.jsonSchema,
+        insertData as any,
+        operation
+    ) as any;
+    const crdtDocField: CRDTDocumentField<RxDocType> = {
+        operations: [],
+        hash: ''
+    };
+    objectPath.set(insertData as any, crdtOptions.field, crdtDocField);
+
+    const lastAr: CRDTOperation<RxDocType>[] = [operation];
+    crdtDocField.operations.push(lastAr);
+    crdtDocField.hash = hashCRDTOperations(this.database.hashFunction, crdtDocField);
+
+    const result = await this.insert(insertData).catch(async (err: RxError) => {
+        if (err.code === 'COL19') {
+            // was a conflict, update document instead of inserting
+            const doc = await this.findOne(err.parameters.id).exec(true);
+            return doc.updateCRDT(entry);
+        } else {
+            throw err;
+        }
+    });
+    return result;
+}
+
 
 export function sortOperationComparator<RxDocType>(a: CRDTOperation<RxDocType>, b: CRDTOperation<RxDocType>) {
     return a.creator > b.creator ? 1 : -1;
@@ -355,6 +414,9 @@ export const RxDDcrdtPlugin: RxPlugin = {
                     });
                 }
             };
+        },
+        RxCollection: (proto: any) => {
+            proto.insertCRDT = insertCRDT;
         }
     },
     overwritable: {},
@@ -435,37 +497,40 @@ export const RxDDcrdtPlugin: RxPlugin = {
                 }
 
 
-                collection.preInsert(async (docData: RxDocumentData<any>) => {
-                    ensureNotFalsy(!getCrdt(docData));
+                const bulkInsertBefore = collection.bulkInsert.bind(collection);
+                collection.bulkInsert = async function (docsData: any[]) {
                     const storageToken = await collection.database.storageToken;
+                    const useDocsData = docsData.map(docData => {
+                        const setMe: Partial<RxDocumentData<any>> = {};
+                        Object.entries(docData).forEach(([key, value]) => {
+                            if (
+                                !key.startsWith('_') &&
+                                key !== crdtField
+                            ) {
+                                setMe[key] = value;
+                            }
+                        });
 
-                    const setMe: Partial<RxDocumentData<any>> = {};
-                    Object.entries(docData).forEach(([key, value]) => {
-                        if (
-                            !key.startsWith('_') &&
-                            key !== crdtField
-                        ) {
-                            setMe[key] = value;
-                        }
+                        const crdtOperations: CRDTDocumentField<any> = {
+                            operations: [
+                                [{
+                                    creator: storageToken,
+                                    body: [{
+                                        ifMatch: {
+                                            $set: setMe
+                                        }
+                                    }],
+                                    time: now()
+                                }]
+                            ],
+                            hash: ''
+                        };
+                        crdtOperations.hash = hashCRDTOperations(collection.database.hashFunction, crdtOperations);
+                        objectPath.set(docData, crdtOptions.field, crdtOperations);
+                        return docData;
                     });
-
-                    const crdtOperations: CRDTDocumentField<any> = {
-                        operations: [
-                            [{
-                                creator: storageToken,
-                                body: [{
-                                    ifMatch: {
-                                        $set: setMe
-                                    }
-                                }],
-                                time: now()
-                            }]
-                        ],
-                        hash: ''
-                    };
-                    crdtOperations.hash = hashCRDTOperations(collection.database.hashFunction, crdtOperations);
-                    objectPath.set(docData, crdtField, crdtOperations);
-                }, false);
+                    return bulkInsertBefore(useDocsData);
+                }
             }
         }
     }

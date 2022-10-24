@@ -182,6 +182,52 @@ await myDocument.updateCRDT([
 
 ## Conflicts on inserts
 
+When CRDTs are enabled with the plugin, all insert operations are automatically mapped as CRDT operation with the `$set` operator.
+
+```ts
+// Calling RxCollection.insert()
+await myRxCollection.insert({
+    id: 'foo'
+    points: 1
+});
+// is exactly equal to calling insertCRDT()
+await myRxCollection.insertCRDT({
+    ifMatch: {
+        $set: {
+            id: 'foo'
+            points: 1
+        }
+    }
+});
+```
+
+When the same document is inserted in multiple client instances and then replicated, a conflict will emerge and the insert-CRDTs will overwrite each other in a deterministic order.
+You can use `insertCRDT()` to make conditional insert operations with any logic. To check for the previous existence of a document, use the `$exists` query operation on the primary key of the document.
+
+```ts
+await myRxCollection.insertCRDT({
+    selector: {
+        // only run if the document did not exists before.
+        id: { $exists: false }
+    }, 
+    ifMatch: {
+        // if the document did not exist, insert it
+        $set: {
+            id: 'foo'
+            points: 1
+        }
+    },
+    ifNotMatch: {
+        // if document existed already, increment the points by +1
+        $inc: {
+            points: 1
+        }
+    }
+});
+```
+
+
+
 ## Deleting documents
 
 You can delete a document with a CRDT operation by setting `_deleted` to true. Calling `RxDocument.remove()` will do exactly the same when CRDTs are activated.

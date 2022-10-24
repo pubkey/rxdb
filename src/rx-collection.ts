@@ -88,7 +88,8 @@ import type {
     RxLocalDocumentData,
     RxDocumentBase,
     RxConflictHandler,
-    MaybePromise
+    MaybePromise,
+    CRDTEntry
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -119,7 +120,7 @@ export class RxCollectionBase<
     RxDocumentType = { [prop: string]: any },
     OrmMethods = {},
     StaticMethods = { [key: string]: any }
-    > {
+> {
 
 
     /**
@@ -290,7 +291,10 @@ export class RxCollectionBase<
     async insert(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+
+        // TODO do we need fillObjectDataBeforeInsert() here because it is also run at bulkInsert() later
         const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this.schema, json);
+
         const writeResult = await this.bulkInsert([useJson]);
 
         const isError = writeResult.error[0];
@@ -730,6 +734,10 @@ export class RxCollectionBase<
      */
     importJSON(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void> {
         throw pluginMissing('json-dump');
+    }
+
+    insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods> {
+        throw pluginMissing('crdt');
     }
 
     /**

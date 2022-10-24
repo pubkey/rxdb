@@ -352,10 +352,6 @@ export class RxDatabaseBase<
         await Promise.all(
             Object.keys(collectionCreators).map(async (collectionName) => {
                 const useArgs = useArgsByCollectionName[collectionName];
-
-                console.log('FFFFFFFFFFFFFFF');
-                console.dir(useArgs.schema);
-
                 const collection = await createRxCollection(useArgs);
                 (ret as any)[collectionName] = collection;
 
