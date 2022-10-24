@@ -5,7 +5,7 @@ Whenever there are multiple instances in a distributed system, data writes can c
 In [RXDB](./), conflicts are normally resolved by setting a `conflictHandler` when creating a collection. The conflict handler is a JavaScript function that gets the two conflicting states of the same document and it will return the resolved document state.
 The [default conflict handler](./replication.md#conflict-handling) will always drop the fork state and use the master state to ensure that clients that have been offline for a long time, do not overwrite other clients changes when they go online again.
 
-With the CRDT [Conflict-free replicated data type](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) plugin, all document writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the opertions in a deterministic way. Using CRDTs is an easy way to "magically" handle all conflict problems in your application.
+With CRDTs (short for [Conflict-free replicated data type](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)), all document writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the opertions in a deterministic way. Using CRDTs is an easy way to "magically" handle all conflict problems in your application by storing the deltas of writes together with the document data.
 
 
 ## RxDB CRDT operations
@@ -13,7 +13,7 @@ With the CRDT [Conflict-free replicated data type](https://en.wikipedia.org/wiki
 In RXDB, a CRDT operation is defined with NoSQL update operators, like you might know them from [MongoDB update operations](https://www.mongodb.com/docs/manual/reference/operator/update/) or the [RxDB update plugin](./rx-document.md#update).
 To run the operators, RxDB uses the [modifyjs library](https://github.com/lgandecki/modifyjs).
 
-Example:
+A CRDT operator example:
 
 ```js
 const myCRDTOperation = {
