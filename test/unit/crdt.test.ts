@@ -156,19 +156,16 @@ config.parallel('crdt.test.js', () => {
             const doc2 = await collection.insertCRDT({
                 selector: {
                     passportId: {
-                        $exists: false
+                        $exists: true
                     }
                 },
                 ifMatch: {
-                    $set: {
-                        // set to negative here to cause a schema error if not matching
-                        age: -100
-                    }
-                },
-                ifNotMatch: {
                     $inc: {
                         age: 1
                     }
+                },
+                ifNotMatch: {
+                    $set: writeData
                 }
             });
             assert.strictEqual(doc2.age, 2);

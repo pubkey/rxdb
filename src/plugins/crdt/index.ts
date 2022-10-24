@@ -183,10 +183,6 @@ export function hashCRDTOperations(
         return operations.map(op => op.creator);
     });
     const hash = hashFunction(JSON.stringify(hashObj));
-
-    console.log('hashCRDTOperations():');
-    console.log(hash + ' || ' + JSON.stringify(hashObj));
-
     return hash;
 }
 
