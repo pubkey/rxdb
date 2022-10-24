@@ -49,6 +49,10 @@ type DeepMutable<T> = (
  */
 export type StringKeys<X> = Extract<keyof X, string>;
 
+export type AnyKeys<T> = { [P in keyof T]?: T[P] | any };
+export interface AnyObject {
+    [k: string]: any
+}
 
 /**
  * @link https://dev.to/vborodulin/ts-how-to-override-properties-with-type-intersection-554l

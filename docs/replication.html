@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2136,7 +2149,7 @@ For example you can replicate with a custom GraphQL endpoint or a http server on
 <li>If the master also had changes and so the latest master change is different then the one that the client assumes, we have a conflict that has to be resolved on the client.</li>
 </ul>
 <h2 id="replication-protocol-on-the-transfer-level">Replication protocol on the transfer level</h2>
-<p>When document states are transfered, all handlers use batches of documents for better performance.
+<p>When document states are transferred, all handlers use batches of documents for better performance.
 The server <strong>must</strong> implement the following methods to be compatible with the replication:</p>
 <ul>
 <li><strong>pullHandler</strong> Get the last checkpoint (or null) as input. Returns all documents that have been written <strong>after</strong> the given checkpoint. Also returns the checkpoint of the latest written returned document.</li>
@@ -2193,7 +2206,7 @@ For example if your documents contain an <code>id</code> and an <code>updatedAt<
     <span class="hljs-string">&quot;_deleted&quot;</span>: <span class="hljs-literal">false</span>
 }
 </code></pre>
-<p>Then your data is always sortable by <code>updatedAt</code>. This ensures that when RxDB fetches &apos;new&apos; changes via <code>pullHandler()</code>, it can send the latest <code>updatedAt+id</code> checkpoint to the remote endpoint and then recieve all newer documents.</p>
+<p>Then your data is always sortable by <code>updatedAt</code>. This ensures that when RxDB fetches &apos;new&apos; changes via <code>pullHandler()</code>, it can send the latest <code>updatedAt+id</code> checkpoint to the remote endpoint and then receive all newer documents.</p>
 <p>By default, the field is <code>_deleted</code>. If your remote endpoint uses a different field to mark deleted documents, you can set the <code>deletedField</code> in the replication options which will automatically map the field on all pull and push requests.</p>
 <h2 id="conflict-handling">Conflict handling</h2>
 <p>When multiple clients (or the server) modify the same document at the same time (or when they are offline), it can happen that a conflict arises during the replication.</p>
@@ -2205,7 +2218,7 @@ For example if your documents contain an <code>id</code> and an <code>updatedAt<
 <pre><code>A---B1---C1---X---D    master/server state
      \       / \ /
       B1---C2---D      fork/client state
-</code></pre><p>The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentially overwrite other peoples changes when they go online again.
+</code></pre><p>The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentally overwrite other peoples changes when they go online again.
 You can specify a custom conflict handler by setting the property <code>conflictHandler</code> when calling <code>addCollection()</code>.</p>
 <h2 id="replicaterxcollection">replicateRxCollection()</h2>
 <p>You can start the replication of a single <code>RxCollection</code> by calling <code>replicateRxCollection()</code> like in the following:</p>
@@ -2223,7 +2236,7 @@ You can specify a custom conflict handler by setting the property <code>conflict
      */</span>
     replicationIdentifier: <span class="hljs-string">&apos;my-rest-replication-to-https://example.com/api/sync&apos;</span>,
     <span class="hljs-comment">/**
-     * By default it will do an ongoing realtime replicatino.
+     * By default it will do an ongoing realtime replication.
      * By settings live: false the replication will run once until the local state
      * is in sync with the remote state, then it will cancel itself.
      * (optional), default is true.
@@ -2332,7 +2345,7 @@ You can specify a custom conflict handler by setting the property <code>conflict
                 <span class="hljs-comment">/**
                  * The last checkpoint of the returned documents.
                  * On the next call to the pull handler,
-                 * this checkoint will be passed as &apos;lastCheckpoint&apos;
+                 * this checkpoint will be passed as &apos;lastCheckpoint&apos;
                  */</span>
                 checkpoint: documentsFromRemote.length === <span class="hljs-number">0</span> ? lastCheckpoint : {
                     id: lastOfArray(documentsFromRemote).id,
@@ -2387,7 +2400,7 @@ You can specify a custom conflict handler by setting the property <code>conflict
      */</span>
     socket.onmessage = event =&gt; pullStream$.next(event.data);
     <span class="hljs-comment">/**
-     * Automatically reconned the socket on close and error.
+     * Automatically reconnect the socket on close and error.
      */</span>
     socket.onclose = () =&gt; connectSocket();
     socket.onerror = () =&gt; socket.close();
@@ -2398,7 +2411,7 @@ You can specify a custom conflict handler by setting the property <code>conflict
         } <span class="hljs-keyword">else</span> {
             <span class="hljs-comment">/**
              * When the client is offline and goes online again,
-             * it might have missed out events that happend on the server.
+             * it might have missed out events that happened on the server.
              * So we have to emit a RESYNC so that the replication goes
              * into &apos;Checkpoint iteration&apos; mode until the client is in sync
              * and then it will go back into &apos;Event observation&apos; mode again.
@@ -2423,7 +2436,7 @@ you need to import the <a href="leader-election.html">leader election plugin</a>
 This happens for <strong>all</strong> errors. The document write could have already reached the remote instance and be processed, while only the answering fails.
 The remote instance must be designed to handle this properly and to not crash on duplicate data transmissions. 
 Depending on your use case, it might be ok to just write the duplicate document data again.
-But for a more resilent error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-send data.</p>
+But for a more resilient error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-send data.</p>
 <p>Also the replication has an <code>.error$</code> stream that emits all <code>RxError</code> objects that arise during replication.
 Notice that these errors are contain an inner <code>.parameters.errors</code> field that contains the original error. Also they contain a <code>.parameters.direction</code> field that indicates if the error was thrown during <code>pull</code> or <code>push</code>. You can use these to properly handle errors. For example when the client is outdated, the server might respond with a <code>426 Upgrade Required</code> error code that can then be used to force a page reload.</p>
 <pre><code class="lang-ts">replicationState.error$.subscribe((error) =&gt; {
@@ -2443,7 +2456,7 @@ Notice that these errors are contain an inner <code>.parameters.errors</code> fi
 <p>The function <code>replicateRxCollection()</code> returns a <code>RxReplicationState</code> that can be used to manage and observe the replication.</p>
 <h3 id="observable">Observable</h3>
 <p>To observe the replication, the <code>RxReplicationState</code> has some <code>Observable</code> properties:</p>
-<pre><code class="lang-ts"><span class="hljs-comment">// emits each document that was recieved from the remote</span>
+<pre><code class="lang-ts"><span class="hljs-comment">// emits each document that was received from the remote</span>
 myRxReplicationState.received$.subscribe(doc =&gt; <span class="hljs-built_in">console</span>.dir(doc));
 
 <span class="hljs-comment">// emits each document that was send to the remote</span>

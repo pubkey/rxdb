@@ -28,4 +28,6 @@ export * from './plugins/backup';
 export * from './plugins/cleanup';
 export * from './plugins/lokijs';
 export * from './plugins/dexie';
+export * from './plugins/update';
+export * from './plugins/crdt';
 //# sourceMappingURL=index.d.js.map

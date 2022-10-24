@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2119,7 +2132,7 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="rxstorage">RxStorage</h1>
-<p>RxDB is not a self contained database. Instead the data is stored in an implementation of the <a href="https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts" target="_blank">RxStorage interface</a>. This allows you to switch out the underlaying data layer, depending on the JavaScript environment and performance requirements. For example you can use the PouchDB storage with the SQLite adapter for a capacitor app. Or you can use the LokiJS RxStorage with the IndexedDB adapter for a browser based application. For Node.js, there are filesystem based adapters.</p>
+<p>RxDB is not a self contained database. Instead the data is stored in an implementation of the <a href="https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts" target="_blank">RxStorage interface</a>. This allows you to switch out the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the PouchDB storage with the SQLite adapter for a capacitor app. Or you can use the LokiJS RxStorage with the IndexedDB adapter for a browser based application. For Node.js, there are filesystem based adapters.</p>
 <h2 id="implementations">Implementations</h2>
 <h3 id="pouchdb">PouchDB</h3>
 <p>The PouchDB RxStorage is based on the <a href="https://github.com/pouchdb/pouchdb" target="_blank">PouchDB</a> database. It is the most battle proven RxStorage and has a big ecosystem of adapters. It is the only RxStorage that allows to do replication with a CouchDB endpoint. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. <a href="rx-storage-pouchdb.html">Read more</a></p>
@@ -2138,16 +2151,16 @@ It stores the data inside of a browsers IndexedDB database and has a very small 
 <h3 id="foundationdb">FoundationDB</h3>
 <p>To use RxDB on the server side, the FoundationDB RxStorage provides a way of having a secure, fault-tolerant and performant storage. <a href="rx-storage-foundationdb.html">Read more</a></p>
 <h3 id="worker">Worker</h3>
-<p>The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker&apos;s process which can improve the percieved performance of your application. <a href="rx-storage-worker.html">Read more</a></p>
+<p>The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker&apos;s process which can improve the perceived performance of your application. <a href="rx-storage-worker.html">Read more</a></p>
 <h3 id="sharding">Sharding</h3>
 <p>On some <code>RxStorage</code> implementations (like IndexedDB), a huge performance improvement can be done by sharding the documents into multiple database instances. With the sharding plugin you can wrap any other <code>RxStorage</code> into a sharded storage. <a href="rx-storage-sharding.html">Read more</a></p>
 <h3 id="memory-synced">Memory Synced</h3>
-<p>The memory synced <a href="rx-storage.html">RxStorage</a> is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlaying storage for persistence.
-The main reason to use this is to improve initial page load and query/write times. This is mostly usefull in browser based applications. <a href="rx-storage-memory-synced.html">Read more</a></p>
+<p>The memory synced <a href="rx-storage.html">RxStorage</a> is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
+The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications. <a href="rx-storage-memory-synced.html">Read more</a></p>
 <h2 id="performance-comparison">Performance comparison</h2>
 <p>A big difference in the RxStorage implementations is the performance. In difference to a server side database, RxDB is bound to the limits of the JavaScript runtime. For example in the browser it is only possible to store data in a <a href="slow-indexeddb.html">slow IndexedDB</a> instead of a filesystem.</p>
 <p><strong>LokiJS</strong> stores all data in memory and only saves to disc occasionally (or on exit). Therefore it has a very fast read/write performance, but loading all data into memory on the first page load can take longer for big amounts of documents. Also this storage can only be used when all data fits into the memory at least once.</p>
-<p>The Premium <strong>sharding</strong> RxStorage is only usefull when big amounts of documents have to be stored or queries. In the CI performance test, we only insert a small amount of documents so that the performance actually decreases when sharding is used.</p>
+<p>The Premium <strong>sharding</strong> RxStorage is only useful when big amounts of documents have to be stored or queries. In the CI performance test, we only insert a small amount of documents so that the performance actually decreases when sharding is used.</p>
 <p>The <strong>PouchDB</strong> RxStorage is slow because it has to handle all revisions of a document on writes and queries. This makes PouchDB the only storage where it is possible to replicate with a CouchDB compatible endpoint.</p>
 <p>Many storages run lazy, so it makes no sense to compare the time which is required to create a database with collections. Instead we measure the <strong>time-to-first-insert</strong> which is the whole timespan from database creation until the first single document write is done.</p>
 <p align="center">

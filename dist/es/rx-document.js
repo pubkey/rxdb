@@ -211,14 +211,16 @@ export var basePrototype = {
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-    return _this._isDeleted$.asObservable();
+    return _this._dataSync$.pipe(map(function (d) {
+      return d._deleted;
+    }));
   },
   get deleted() {
     var _this = this;
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-    return _this._isDeleted$.getValue();
+    return _this._data._deleted;
   },
   /**
    * returns the observable which emits the plain-data of this document
@@ -243,13 +245,12 @@ export var basePrototype = {
       case 'INSERT':
         break;
       case 'UPDATE':
-        var newData = changeEvent.documentData;
-        this._dataSync$.next(newData);
+        this._dataSync$.next(changeEvent.documentData);
         break;
       case 'DELETE':
         // remove from docCache to assure new upserted RxDocuments will be a new instance
         this.collection._docCache["delete"](this.primary);
-        this._isDeleted$.next(true);
+        this._dataSync$.next(changeEvent.documentData);
         break;
     }
   },
@@ -362,6 +363,9 @@ export var basePrototype = {
   update: function update(_updateObj) {
     throw pluginMissing('update');
   },
+  updateCRDT: function updateCRDT(_updateObj) {
+    throw pluginMissing('crdt');
+  },
   putAttachment: function putAttachment() {
     throw pluginMissing('attachments');
   },
@@ -378,7 +382,9 @@ export var basePrototype = {
    * runs an atomic update over the document
    * @param function that takes the document-data and returns a new data-object
    */
-  atomicUpdate: function atomicUpdate(mutationFunction) {
+  atomicUpdate: function atomicUpdate(mutationFunction,
+  // used by some plugins that wrap the method
+  _context) {
     var _this2 = this;
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
@@ -463,7 +469,7 @@ export var basePrototype = {
       newData = flatClone(newData);
 
       // deleted documents cannot be changed
-      if (_this4._isDeleted$.getValue()) {
+      if (_this4._data._deleted) {
         throw newRxError('DOC11', {
           id: _this4.primary,
           document: _this4
@@ -542,7 +548,6 @@ export function createRxDocumentConstructor() {
 
     // assume that this is always equal to the doc-data in the database
     this._dataSync$ = new BehaviorSubject(jsonData);
-    this._isDeleted$ = new BehaviorSubject(false);
     this._atomicQueue = PROMISE_RESOLVE_VOID;
 
     /**

@@ -1734,7 +1734,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="../third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="../crdt.html">
+            
+                <a href="../crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="../third-party-plugins.html">
             
                 <a href="../third-party-plugins.html">
             
@@ -1747,7 +1760,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="../plugins.html">
+        <li class="chapter " data-level="1.27" data-path="../plugins.html">
             
                 <a href="../plugins.html">
             
@@ -1760,7 +1773,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="../query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="../query-optimizer.html">
             
                 <a href="../query-optimizer.html">
             
@@ -1773,7 +1786,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="../storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="../storage-migration.html">
             
                 <a href="../storage-migration.html">
             
@@ -1786,7 +1799,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="../transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="../transactions-conflicts-revisions.html">
             
                 <a href="../transactions-conflicts-revisions.html">
             
@@ -1799,7 +1812,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="../premium.html">
+        <li class="chapter " data-level="1.31" data-path="../premium.html">
             
                 <a href="../premium.html">
             
@@ -2141,7 +2154,7 @@ When I first implemented the GraphQL replication a few years ago, I had a specif
 <pre><code>A---B1---C1---X    master/server state
      \       /
       B1---C2      fork/client state
-</code></pre><p>For more details, read the <a href="../replication.html">documention about the new replication protocol</a>.</p>
+</code></pre><p>For more details, read the <a href="../replication.html">documentation about the new replication protocol</a>.</p>
 <p>Backends that have been compatible with the previous RxDB versions <code>12</code> and older, will not work with the new replication protocol. To learn how to do that, either read the <a href="../replication.html">docs</a> or check out the <a href="https://github.com/pubkey/rxdb/tree/master/examples/graphql" target="_blank">GraphQL example</a>.</p>
 <h2 id="other-breaking-changes">Other breaking changes</h2>
 <ul>
@@ -2156,7 +2169,7 @@ When I first implemented the GraphQL replication a few years ago, I had a specif
 </li>
 <li><p>REFACTORED the <a href="../key-compression.html">key compression plugin</a>, it is no longer a plugin but now a wrapper around any other RxStorage.</p>
 <ul>
-<li>It allows to run the key-compresion inside of a <a href="rx-storage-worker.md">Worker RxStorage</a> instead of running it in the main JavaScript process.</li>
+<li>It allows to run the key-compression inside of a <a href="rx-storage-worker.md">Worker RxStorage</a> instead of running it in the main JavaScript process.</li>
 </ul>
 </li>
 <li><p>REFACTORED the encryption plugin, it is no longer a plugin but now a wrapper around any other RxStorage.</p>
@@ -2173,7 +2186,7 @@ When I first implemented the GraphQL replication a few years ago, I had a specif
 </li>
 </ul>
 <ul>
-<li><p>Removed the <code>liveInterval</code> option of the replication plugins. It was an edge case feature with wrong defaults. If you want to run the pull replication on internval, you can send a <code>RESYNC</code> event manually in a loop.</p>
+<li><p>Removed the <code>liveInterval</code> option of the replication plugins. It was an edge case feature with wrong defaults. If you want to run the pull replication on interval, you can send a <code>RESYNC</code> event manually in a loop.</p>
 </li>
 <li><p>REPLACED <code>RxReplicationPullError</code> and <code>RxReplicationPushError</code> with normal <code>RxError</code> like in the rest of the RxDB code.</p>
 </li>

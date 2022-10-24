@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2143,7 +2156,7 @@ But as soon as your app gets bigger, more complex or just handles more data, you
 Sometimes this is easy, as instead of iterating over a documents list and calling single inserts, with RxDB you could use the <a href="https://rxdb.info/rx-collection.html#bulkinsert" target="_blank">bulk methods</a> to store many document at once.
 But most of the time is not so easy. Your user clicks around, data gets replicated from the backend, another browser tab writes data. All these things can happen at random time and you cannot crunch all that data in a single transaction.</p>
 <p>Another solution is to just not care about performance at all. In a few releases the browser vendors will have optimized IndexedDB and everything is fast again. Well, IndexedDB was slow <a href="https://www.researchgate.net/publication/281065948_Performance_Testing_and_Comparison_of_Client_Side_Databases_Versus_Server_Side" target="_blank">in 2013</a> and it is still slow today. If this trend continues, it will still be slow in a few years from now. Waiting is not an option. The chromium devs made <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1025456#c15" target="_blank">a statement</a> to focus on optimizing read performance, not write performance.</p>
-<p>Switching to WebSQL (even if it is deprecated) is also not an option because, like <a href="https://pubkey.github.io/client-side-databases/database-comparison/index.html" target="_blank">the comparsion tool shows</a>, it has even slower transactions.</p>
+<p>Switching to WebSQL (even if it is deprecated) is also not an option because, like <a href="https://pubkey.github.io/client-side-databases/database-comparison/index.html" target="_blank">the comparison tool shows</a>, it has even slower transactions.</p>
 <p>So you need a way to <strong>make IndexedDB faster</strong>. In the following I lay out some performance optimizations than can be made to have faster reads and writes in IndexedDB.</p>
 <p><strong>HINT:</strong> You can reproduce all performance tests <a href="https://github.com/pubkey/indexeddb-performance-tests" target="_blank">in this repo</a>. In all tests we work on a dataset of 40000 <code>human</code> documents with a random <code>age</code> between <code>1</code> and <code>100</code>.</p>
 <h2 id="batched-cursor">Batched Cursor</h2>
@@ -2208,7 +2221,7 @@ To implement a fast batched cursor that only needs calls to <code>getAll()</code
   <img src="files/indexeddb-batched-cursor.png" alt="IndexedDB batched cursor" width="100%">
 </p>
 
-<p>As the performance test results show, using a batched cursor can give a huge improvement. Intererstingly the choosing a hight batch size is important. When you known that all results of a given <code>IDBKeyRange</code> are needed, you should not set a batch size at all and just directly query all documents via <code>getAll()</code>.</p>
+<p>As the performance test results show, using a batched cursor can give a huge improvement. Interestingly choosing a high batch size is important. When you known that all results of a given <code>IDBKeyRange</code> are needed, you should not set a batch size at all and just directly query all documents via <code>getAll()</code>.</p>
 <p>RxDB uses batched cursors in the <a href="rx-storage-indexeddb.html">IndexedDB RxStorage</a>.</p>
 <h2 id="indexeddb-sharding">IndexedDB Sharding</h2>
 <p>Sharding is a technique, normally used in server side databases, where the database is partitioned horizontally. Instead of storing all documents at one table/collection, the documents are split into so called <strong>shards</strong> and each shard is stored on one table/collection. This is done in server side architectures to spread the load between multiple physical servers which <strong>increases scalability</strong>.</p>
@@ -2299,7 +2312,7 @@ myIndexedDBObjectStore.createIndex(
 <li><a href="https://duckdb.org/2021/10/29/duckdb-wasm.html" target="_blank">DuckDB Wasm</a></li>
 </ul>
 <h3 id="in-memory-persistence">In-Memory: Persistence</h3>
-<p>One downside of not directly using IndexedDB, is that your data is not persistend all the time. And when the JavaScript process exists without having persisted to IndexedDB, data can be lost. To prevent this from happening, we have to ensure that the in-memory state is written down to the disc. One point is make persisting as fast as possible. LokiJS for example has the <code>incremental-indexeddb-adapter</code> which only saves new writes to the disc instead of persisting the whole state. Another point is to run the persisting at the correct point in time. For example the RxDB <a href="https://rxdb.info/rx-storage-lokijs.html" target="_blank">LokiJS storage</a> persists in the following situations:</p>
+<p>One downside of not directly using IndexedDB, is that your data is not persistent all the time. And when the JavaScript process exists without having persisted to IndexedDB, data can be lost. To prevent this from happening, we have to ensure that the in-memory state is written down to the disc. One point is make persisting as fast as possible. LokiJS for example has the <code>incremental-indexeddb-adapter</code> which only saves new writes to the disc instead of persisting the whole state. Another point is to run the persisting at the correct point in time. For example the RxDB <a href="https://rxdb.info/rx-storage-lokijs.html" target="_blank">LokiJS storage</a> persists in the following situations:</p>
 <ul>
 <li>When the database is idle and no write or query is running. In that time we can persist the state if any new writes appeared before.</li>
 <li>When the <code>window</code> fires the <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload" target="_blank">beforeunload event</a> we can assume that the JavaScript process is exited any moment and we have to persist the state. After <code>beforeunload</code> there are several seconds time which are sufficient to store all new changes. This has shown to work quite reliable.</li>

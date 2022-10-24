@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxDocument, RxCollection, RxDocumentData, RxDocumentWriteData, RxChangeEvent } from './types';
+import type { RxDocument, RxCollection, RxDocumentData, RxDocumentWriteData, RxChangeEvent, UpdateQuery, CRDTEntry } from './types';
 export declare const basePrototype: {
     /**
      * TODO
@@ -10,7 +10,7 @@ export declare const basePrototype: {
     readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
     readonly primary: any;
     readonly revision: string | undefined;
-    readonly deleted$: Observable<boolean> | undefined;
+    readonly deleted$: any;
     readonly deleted: boolean | undefined;
     /**
      * returns the observable which emits the plain-data of this document
@@ -33,11 +33,7 @@ export declare const basePrototype: {
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
-        }; /**
-         * TODO
-         * instead of appliying the _this-hack
-         * we should make these accesors functions instead of getters.
-         */
+        };
         _rev: string;
         _meta: import("./types").RxDocumentMeta;
     }>;
@@ -45,11 +41,7 @@ export declare const basePrototype: {
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
-        }; /**
-         * TODO
-         * instead of appliying the _this-hack
-         * we should make these accesors functions instead of getters.
-         */
+        };
         _rev: string;
         _meta: import("./types").RxDocumentMeta;
     };
@@ -58,7 +50,8 @@ export declare const basePrototype: {
      * @overwritten by plugin (optinal)
      * @param updateObj mongodb-like syntax
      */
-    update(_updateObj: any): never;
+    update(_updateObj: UpdateQuery<any>): never;
+    updateCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): never;
     putAttachment(): never;
     getAttachment(): never;
     allAttachments(): never;
@@ -67,7 +60,7 @@ export declare const basePrototype: {
      * runs an atomic update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: Function): Promise<RxDocument>;
+    atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: Function, _context?: string): Promise<RxDocument>;
     /**
      * patches the given properties
      */
@@ -95,7 +88,7 @@ export declare function createRxDocumentConstructor(proto?: {
     readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
     readonly primary: any;
     readonly revision: string | undefined;
-    readonly deleted$: Observable<boolean> | undefined;
+    readonly deleted$: any;
     readonly deleted: boolean | undefined;
     /**
      * returns the observable which emits the plain-data of this document
@@ -118,11 +111,7 @@ export declare function createRxDocumentConstructor(proto?: {
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
-        }; /**
-         * TODO
-         * instead of appliying the _this-hack
-         * we should make these accesors functions instead of getters.
-         */
+        };
         _rev: string;
         _meta: import("./types").RxDocumentMeta;
     }>;
@@ -130,11 +119,7 @@ export declare function createRxDocumentConstructor(proto?: {
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types").RxAttachmentData;
-        }; /**
-         * TODO
-         * instead of appliying the _this-hack
-         * we should make these accesors functions instead of getters.
-         */
+        };
         _rev: string;
         _meta: import("./types").RxDocumentMeta;
     };
@@ -143,7 +128,8 @@ export declare function createRxDocumentConstructor(proto?: {
      * @overwritten by plugin (optinal)
      * @param updateObj mongodb-like syntax
      */
-    update(_updateObj: any): never;
+    update(_updateObj: UpdateQuery<any>): never;
+    updateCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): never;
     putAttachment(): never;
     getAttachment(): never;
     allAttachments(): never;
@@ -152,7 +138,7 @@ export declare function createRxDocumentConstructor(proto?: {
      * runs an atomic update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: Function): Promise<import("./types").RxDocumentBase<{}, {}>>;
+    atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: Function, _context?: string | undefined): Promise<import("./types").RxDocumentBase<{}, {}>>;
     /**
      * patches the given properties
      */
@@ -181,7 +167,7 @@ export declare function createRxDocumentConstructor(proto?: {
         readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
         readonly primary: any;
         readonly revision: string | undefined;
-        readonly deleted$: Observable<boolean> | undefined;
+        readonly deleted$: any;
         readonly deleted: boolean | undefined;
         /**
          * returns the observable which emits the plain-data of this document
@@ -204,11 +190,7 @@ export declare function createRxDocumentConstructor(proto?: {
             _deleted: boolean;
             _attachments: {
                 [attachmentId: string]: import("./types").RxAttachmentData;
-            }; /**
-             * TODO
-             * instead of appliying the _this-hack
-             * we should make these accesors functions instead of getters.
-             */
+            };
             _rev: string;
             _meta: import("./types").RxDocumentMeta;
         }>;
@@ -216,11 +198,7 @@ export declare function createRxDocumentConstructor(proto?: {
             _deleted: boolean;
             _attachments: {
                 [attachmentId: string]: import("./types").RxAttachmentData;
-            }; /**
-             * TODO
-             * instead of appliying the _this-hack
-             * we should make these accesors functions instead of getters.
-             */
+            };
             _rev: string;
             _meta: import("./types").RxDocumentMeta;
         };
@@ -229,7 +207,8 @@ export declare function createRxDocumentConstructor(proto?: {
          * @overwritten by plugin (optinal)
          * @param updateObj mongodb-like syntax
          */
-        update(_updateObj: any): never;
+        update(_updateObj: UpdateQuery<any>): never;
+        updateCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): never;
         putAttachment(): never;
         getAttachment(): never;
         allAttachments(): never;
@@ -238,7 +217,7 @@ export declare function createRxDocumentConstructor(proto?: {
          * runs an atomic update over the document
          * @param function that takes the document-data and returns a new data-object
          */
-        atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: Function): Promise<import("./types").RxDocumentBase<{}, {}>>;
+        atomicUpdate(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: Function, _context?: string | undefined): Promise<import("./types").RxDocumentBase<{}, {}>>;
         /**
          * patches the given properties
          */

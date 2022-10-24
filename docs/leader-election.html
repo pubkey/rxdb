@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2161,7 +2174,7 @@ db.waitForLeadership()
   });
 </code></pre>
 <h2 id="handle-duplicate-leaders">Handle Duplicate Leaders</h2>
-<p>On rare occassions, it can happen that <a href="https://github.com/pubkey/broadcast-channel/blob/master/.github/README.md#handle-duplicate-leaders" target="_blank">more then one leader</a> is elected. This can happen when the CPU is on 100% or for any other reason the JavaScript process is fully blocked for a long time.
+<p>On rare occasions, it can happen that <a href="https://github.com/pubkey/broadcast-channel/blob/master/.github/README.md#handle-duplicate-leaders" target="_blank">more then one leader</a> is elected. This can happen when the CPU is on 100% or for any other reason the JavaScript process is fully blocked for a long time.
 For most cases this is not really problem because on duplicate leaders, both browser tabs replicate with the same backend anyways.
 To handle the duplicate leader event, you can access the leader elector and set a handler:</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
@@ -2181,7 +2194,7 @@ leaderElector.onduplicate = async () =&gt; {
 <p>Run the <a href="https://github.com/pubkey/rxdb/tree/master/examples/vanilla" target="_blank">vanillaJS-example</a> where the leading tab is marked with a crown on the top-right-corner.</p>
 <h2 id="notice">Notice</h2>
 <p>The leader election is implemented via the  <a href="https://github.com/pubkey/broadcast-channel#using-the-leaderelection" target="_blank">broadcast-channel module</a>.
-The leader is elected between different processes on the same javascript-runtime. Like multiple tabs in the same browser or mupltiple NodeJs-processes on the same machine. It will not run between different replicated instances.</p>
+The leader is elected between different processes on the same javascript-runtime. Like multiple tabs in the same browser or multiple NodeJs-processes on the same machine. It will not run between different replicated instances.</p>
 
                                 
                                 </section>

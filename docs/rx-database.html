@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2119,7 +2132,7 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="rxdatabase">RxDatabase</h1>
-<p>A RxDatabase-Object contains your collections and handles the synchronisation of change-events.</p>
+<p>A RxDatabase-Object contains your collections and handles the synchronization of change-events.</p>
 <h2 id="creation">Creation</h2>
 <p>The database is created by the asynchronous <code>.createRxDatabase()</code> function of the core RxDB module. It has the following parameters:</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { createRxDatabase } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
@@ -2138,7 +2151,7 @@
 <p>The database-name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same <code>RxStorage</code>, their data can be assumed as equal and they will share events between each other.
 Depending on the storage or adapter this can also be used to define the filesystem folder of your data.</p>
 <h3 id="storage">storage</h3>
-<p>RxDB works on top of an implementation of the <a href="rx-storage.html">RxStorage</a> interface. This interface is an abstraction that allows you to use different underlaying databases that actually handle the documents. Depending on your use case you might use a different <code>storage</code> with different tradeoffs in performance, bundle size or supported runtimes.</p>
+<p>RxDB works on top of an implementation of the <a href="rx-storage.html">RxStorage</a> interface. This interface is an abstraction that allows you to use different underlying databases that actually handle the documents. Depending on your use case you might use a different <code>storage</code> with different tradeoffs in performance, bundle size or supported runtimes.</p>
 <p>There are many <code>RxStorage</code> implementations that can be used depending on the JavaScript environment and performance requirements.
 For example you can use the PouchDB storage with an IndexedDB adapter in the browser. Or use the LokiJS storage with the filesystem adapter in Node.js.</p>
 <ul>
@@ -2246,7 +2259,7 @@ myDatabase.requestIdlePromise(<span class="hljs-number">1000</span> <span class=
 });
 </code></pre>
 <h3 id="destroy">destroy()</h3>
-<p>Destroys the databases object-instance. This is to free up memory and stop all observings and replications.
+<p>Destroys the databases object-instance. This is to free up memory and stop all observers and replications.
 Returns a <code>Promise</code> that resolves when the database is destroyed.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">await</span> myDatabase.destroy();
 </code></pre>

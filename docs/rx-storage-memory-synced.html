@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2119,12 +2132,12 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="memory-synced-rxstorage">Memory Synced RxStorage</h1>
-<p>The memory synced <a href="rx-storage.html">RxStorage</a> is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlaying storage for persistence.
-The main reason to use this is to improve initial page load and query/write times. This is mostly usefull in browser based applications.</p>
+<p>The memory synced <a href="rx-storage.html">RxStorage</a> is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
+The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications.</p>
 <h2 id="pros">Pros</h2>
 <ul>
 <li>Improves read/write performance because these operations run against the in-memory storage.</li>
-<li>Decreases initial page load because it load all data in a single bulk request. It even detects if the datbase is used for the first time and then it does not have to await the creation of the persistend storage.</li>
+<li>Decreases initial page load because it load all data in a single bulk request. It even detects if the database is used for the first time and then it does not have to await the creation of the persistent storage.</li>
 </ul>
 <h2 id="cons">Cons</h2>
 <ul>
@@ -2204,7 +2217,7 @@ const db = await createRxDatabase({
 </code></pre>
 <h2 id="comparison-with-the-lokijs-rxstorage">Comparison with the LokiJS RxStorage</h2>
 <p>The <a href="rx-storage-lokijs.html">LokiJS RxStorage</a> also loads the whole database state into the memory to improve operation time.
-In comparison to LokiJS, the <code>Memory Synced</code> RxStorage has many improvements and performance optimizations to reduce initial load time. Also it uses replication instead of the leader election to handle multi-tab usage. This alone decreases the inital page load by about 200 milliseconds.</p>
+In comparison to LokiJS, the <code>Memory Synced</code> RxStorage has many improvements and performance optimizations to reduce initial load time. Also it uses replication instead of the leader election to handle multi-tab usage. This alone decreases the initial page load by about 200 milliseconds.</p>
 
                                 
                                 </section>

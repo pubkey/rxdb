@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2125,7 +2138,7 @@
 <p>Before you use the GraphQL replication, make sure you&apos;ve learned how the <a href="replication.html">RxDB replication</a> works.</p>
 <h3 id="creating-a-compatible-graphql-server">Creating a compatible GraphQL Server</h3>
 <p>At the server-side, there must exist an endpoint which returns newer rows when the last <code>checkpoint</code> is used as input. For example lets say you create a <code>Query</code> <code>pullHuman</code> which returns a list of document writes that happened after the given checkpoint.</p>
-<p>For the push-replication, you also need a <code>Mutation</code> <code>pushHuman</code> which lets RxDB update data of documents by sending the previous doucment state and the new client document state.
+<p>For the push-replication, you also need a <code>Mutation</code> <code>pushHuman</code> which lets RxDB update data of documents by sending the previous document state and the new client document state.
 Also for being able to stream all ongoing events, we need a <code>Subscription</code> called <code>streamHuman</code>.</p>
 <pre><code class="lang-graphql">input HumanInput {
     id: ID!,
@@ -2274,7 +2287,7 @@ addRxPlugin(RxDBReplicationGraphQLPlugin);
     },
     pull: {
         queryBuilder: pullQueryBuilder, <span class="hljs-comment">// the queryBuilder from above</span>
-        modifier: doc =&gt; doc, <span class="hljs-comment">// (optional) modifies all pulled documents before they are handeled by RxDB</span>
+        modifier: doc =&gt; doc, <span class="hljs-comment">// (optional) modifies all pulled documents before they are handled by RxDB</span>
         dataPath: <span class="hljs-literal">undefined</span>, <span class="hljs-comment">// (optional) specifies the object path to access the document(s). Otherwise, the first result of the response data is used.</span>
         <span class="hljs-comment">/**
          * Amount of documents that the remote will send in one request.
@@ -2302,7 +2315,7 @@ addRxPlugin(RxDBReplicationGraphQLPlugin);
 });
 </code></pre>
 <h4 id="push-replication">Push replication</h4>
-<p>For the push-replication, you also need a <code>queryBuilder</code>. Here, the builder recieves a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.</p>
+<p>For the push-replication, you also need a <code>queryBuilder</code>. Here, the builder receives a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> pushQueryBuilder = rows =&gt; {
     <span class="hljs-keyword">const</span> query = <span class="hljs-string">`
     mutation PushHuman($writeRows: [HumanInputPushRow!]) {
@@ -2404,7 +2417,7 @@ The pull stream gets the <code>headers</code> of the <code>RxReplicationState</c
 </code></pre>
 <p><strong>NOTICE</strong>: If it is not possible to create a websocket server on your backend, you can use any other method of pull out the ongoing events from the backend and then you can send them into <code>RxReplicationState.emitEvent()</code>.</p>
 <h3 id="transforming-null-to-undefined-in-optional-fields">Transforming null to undefined in optional fields</h3>
-<p>GraphQL fills up non-existend optional values with <code>null</code> while RxDB required them to be <code>undefined</code>.
+<p>GraphQL fills up non-existent optional values with <code>null</code> while RxDB required them to be <code>undefined</code>.
 Therefore, if your schema contains optional properties, you have to transform the pulled data to switch out <code>null</code> to <code>undefined</code></p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> replicationState: RxGraphQLReplicationState&lt;RxDocType&gt; = collection.syncGraphQL({
     url: {<span class="hljs-comment">/* ... */</span>},
@@ -2462,7 +2475,7 @@ For example if your endpoint is not capable of returning a valid checkpoint, but
 <h4 id="helper-functions">Helper Functions</h4>
 <p>RxDB provides the helper functions <code>graphQLSchemaFromRxSchema()</code>, <code>pullQueryBuilderFromRxSchema()</code>, <code>pullStreamBuilderFromRxSchema()</code> and <code>pushQueryBuilderFromRxSchema()</code> that can be used to generate handlers and schemas from the <code>RxJsonSchema</code>. To learn how to use them, please inspect the <a href="https://github.com/pubkey/rxdb/tree/master/examples/graphql" target="_blank">GraphQL Example</a>.</p>
 <h3 id="rxgraphqlreplicationstate">RxGraphQLReplicationState</h3>
-<p>When you call <code>myCollection.syncGraphQL()</code> it returns a <code>RxGraphQLReplicationState</code> which can be used to subscribe to events, for debugging or other functions. It extends the <a href="replication.html">RxReplicationState</a> with some GraphQL specifict methods.</p>
+<p>When you call <code>myCollection.syncGraphQL()</code> it returns a <code>RxGraphQLReplicationState</code> which can be used to subscribe to events, for debugging or other functions. It extends the <a href="replication.html">RxReplicationState</a> with some GraphQL specific methods.</p>
 <h4 id="setheaders">.setHeaders()</h4>
 <p>Changes the headers for the replication after it has been set up.</p>
 <pre><code class="lang-js">replicationState.setHeaders({
