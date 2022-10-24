@@ -5,7 +5,7 @@ Whenever there are multiple instances in a distributed system, data writes can c
 In [RXDB](./), conflicts are normally resolved by setting a `conflictHandler` when creating a collection. The conflict handler is a JavaScript function that gets the two conflicting states of the same document and it will return the resolved document state.
 The [default conflict handler](./replication.md#conflict-handling) will always drop the fork state and use the master state to ensure that clients that have been offline for a long time, do not overwrite other clients changes when they go online again.
 
-With the CRDT (Conflict-free replicated data type) plugin, all document writes are represented as CRDT operations as plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the opertions in a deterministic way. Using CRDTs is an easy way to "magically" handle all conflict problems in your application.
+With the CRDT [Conflict-free replicated data type](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) plugin, all document writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the opertions in a deterministic way. Using CRDTs is an easy way to "magically" handle all conflict problems in your application.
 
 
 ## RxDB CRDT operations
@@ -180,7 +180,7 @@ await myDocument.updateCRDT([
 ```
 
 
-## Conflicts on inserts
+## CRDTs on inserts
 
 When CRDTs are enabled with the plugin, all insert operations are automatically mapped as CRDT operation with the `$set` operator.
 
@@ -207,7 +207,7 @@ You can use `insertCRDT()` to make conditional insert operations with any logic.
 ```ts
 await myRxCollection.insertCRDT({
     selector: {
-        // only run if the document did not exists before.
+        // only run if the document did not exist before.
         id: { $exists: false }
     }, 
     ifMatch: {
@@ -246,13 +246,31 @@ await doc.remove();
 
 ```
 
-
-
 ## CRDTs with replication
+
+CRDT operations are stored inside of a special field besides your 'normal' document fields.
+When replicating document data with the [RxDB replication](./replication.md) or the [CouchDB replication](./replication-couchdb.md) or even any custom replication, the CRDT operations must be replicated together with the document data as if they would be 'normal' a document property.
+
+When any instances makes a write to the document, it is required to update the CRDT operations accordingly. For example if your custom backend updates a document, it must also do that by adding a CRDT operation. In [dev-mode](./dev-mode.md) RxDB will refuse to store any document data where the document properties do not match the result of the CRDT operations.
+
 
 ## Why not automerge.js or yjs?
 
-- Easy to implement on custom backend
+There are already CRDT libraries out there that have been considered to be used with RxDB. The biggeste ones are [automerge](https://github.com/automerge/automerge) and [yjs](https://github.com/yjs/yjs). The decision was made to not use thoese but instead go for a more NoSQL way of designing the CRDT format because:
+
+- Users do not have to learn a new syntax but instead can use the NoSQL operations which they already know.
+- RxDB is often used to [replicat](./replication.md) data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on theses backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.
 
 
 ## When to not use CRDTs
+
+CRDT can only be use when your business logic allows to represent document changes via static json operators.
+If you can have cases where user interaction is required to correctly merge conflicting document states, you cannot use CRDTs for that.
+
+Also when CRDTs are used, it is no longer allowed to do non-CRDT writes to the document properties.
+
+
+## TODOs
+
+- Clean up old CRDT operations by crunching them together
+- CRDT streaming replication

@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD [CRDT Plugin](./docs-src/crdt.md)
 - FIX calling `.remove()` on an `RxDocument` must update the internal data of the document with the deleted state.
 <!-- ADD new changes here! -->
 

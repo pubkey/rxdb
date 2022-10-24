@@ -408,8 +408,6 @@ export class RxCollectionBase<
                 return this._runHooks('pre', 'remove', doc, rxDocumentMap.get(primary));
             })
         );
-
-
         const removeDocs: BulkWriteRow<RxDocumentType>[] = docsData.map(doc => {
             const writeDoc = flatClone(doc);
             writeDoc._deleted = true;
