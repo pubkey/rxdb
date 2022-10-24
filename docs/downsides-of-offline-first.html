@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2154,7 +2167,7 @@ Of course, this does not work for state that is not stored at the backend. So if
 </li>
 <li><p>Instead of the solving conflict once at every client, it can be made a bit easier by solely relying on the backend. This can be done when all of your clients replicate with the same single backend server. With <a href="replication-graphql.html">RxDB&apos;s Graphql Replication</a> each client side change is sent to the server where conflicts can be resolved and the winning document can be sent back to the clients.</p>
 </li>
-<li><p>Sometimes there is no way to solve a conflict with code. If your users edit text based documents or images, often only the user&apos;s themself can decide how the winning revision has to look. For these cases, you have to implement complex UI parts where the users can inspect the conflict and manage its resolution.</p>
+<li><p>Sometimes there is no way to solve a conflict with code. If your users edit text based documents or images, often only the users themselves can decide how the winning revision has to look. For these cases, you have to implement complex UI parts where the users can inspect the conflict and manage its resolution.</p>
 </li>
 <li><p>You do not have to handle conflicts if they cannot happen in the first place. You can achieve that by designing a write only database where existing documents cannot be touched. Instead of storing the current state in a single document, you store all the events that lead to the current state. Sometimes called the <a href="https://pouchdb.com/guides/conflicts.html#accountants-dont-use-erasers" target="_blank">&quot;everything is a delta&quot;</a> strategy, others would call it <a href="https://martinfowler.com/eaaDev/EventSourcing.html" target="_blank">Event Sourcing</a>. Like an accountant that does not need an eraser, you append all changes and afterwards aggregate the current state at the client.</p>
 <pre><code class="lang-ts"><span class="hljs-comment">// create one new document for each change to the users balance</span>

@@ -300,4 +300,26 @@ Object.keys(_dexie).forEach(function (key) {
     }
   });
 });
+var _update = require("./plugins/update");
+Object.keys(_update).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _update[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _update[key];
+    }
+  });
+});
+var _crdt = require("./plugins/crdt");
+Object.keys(_crdt).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _crdt[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _crdt[key];
+    }
+  });
+});
 //# sourceMappingURL=index.d.js.map

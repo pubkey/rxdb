@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2161,12 +2174,12 @@ LokiJS has the main benefit of having a better performance. It can do this becau
 <p>Like PouchDB, LokiJS is based on adapters that determine where to store persistend data. For LokiJS there are adapters for IndexedDB, AWS S3, the NodeJS filesystem or NativeScript.
 Find more about the possible adapters at the <a href="https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md" target="_blank">LokiJS docs</a>.</p>
 <h2 id="multi-tab-support">Multi-Tab support</h2>
-<p>When you use plain LokiJS, you cannot build an app that can be used in multiple browser tabs. The reason is that LokiJS loads data in bulk and then only regulary persists the in-memory state to disc. When opened in multiple tabs, it would happen that the LokiJS instances overwrite each other and data is lost.
+<p>When you use plain LokiJS, you cannot build an app that can be used in multiple browser tabs. The reason is that LokiJS loads data in bulk and then only regularly persists the in-memory state to disc. When opened in multiple tabs, it would happen that the LokiJS instances overwrite each other and data is lost.
 With the RxDB LokiJS-plugin, this problem is fixed with the <a href="https://github.com/pubkey/broadcast-channel#using-the-leaderelection" target="_blank">LeaderElection</a> module. Between all open tabs, a leading tab is elected and only in this tab a database is created. All other tabs do not run queries against their own database, but instead call the leading tab to send and retrieve data. When the leading tab is closed, a new leader is elected that reopens the database and processes queries. You can disable this by setting <code>multiInstance: false</code> when creating the <code>RxDatabase</code>.</p>
 <h2 id="autosave-and-autoload">Autosave and autoload</h2>
 <p>When using plain LokiJS, you could set the <code>autosave</code> option to <code>true</code> to make sure that LokiJS persists the database state after each write into the persistence adapter. Same goes to <code>autoload</code> which loads the persisted state on database creation.
 But RxDB knows better when to persist the database state and when to load it, so it has its own autosave logic. This will ensure that running the persistence handler does not affect the performance of more important tasks. Instead RxDB will always wait until the database is idle and then runs the persistence handler.
-A load of the persisted state is done on database or collection creation and it is ensured that multiple load calls do not run in parallel and interfer with each other or with <code>saveDatabase()</code> calls.</p>
+A load of the persisted state is done on database or collection creation and it is ensured that multiple load calls do not run in parallel and interfere with each other or with <code>saveDatabase()</code> calls.</p>
 <h2 id="known-problems">Known problems</h2>
 <p>When you bundle the LokiJS Plugin with webpack, you might get the error <code>Cannot find module &quot;fs&quot;</code>. This is because LokiJS uses a <code>require(&apos;fs&apos;)</code> statement that cannot work in the browser.
 You can fix that by telling webpack to not resolve the <code>fs</code> module with the following block in your webpack config:</p>

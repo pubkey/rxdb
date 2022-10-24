@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2120,7 +2133,7 @@
                                 
                                 <h1 id="rxstorage-localstorage-meta-optimizer">RxStorage Localstorage Meta Optimizer</h1>
 <p>The <a href="rx-storage.html">RxStorage</a> Localstorage Meta Optimizer is a wrapper around any other RxStorage. The wrapper uses the original RxStorage for normal collection documents. But to optimize the initial page load time, it uses <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage?retiredLocale=de" target="_blank">localstorage</a> to store the plain key-value metadata that RxDB needs to create databases and collections. This plugin can only be used in browsers.</p>
-<p>Depending on your database usage and the collection amount, this can save about 200 milliseconds on the initial pageload. It is recommened to use this when you create more then 4 RxCollections.</p>
+<p>Depending on your database usage and the collection amount, this can save about 200 milliseconds on the initial pageload. It is recommended to use this when you create more then 4 RxCollections.</p>
 <p><strong>NOTICE:</strong> This plugin is part of <a href="premium.html">RxDB premium</a>. It is not part of the default RxDB module.</p>
 <h2 id="usage">Usage</h2>
 <p>The meta optimizer gets wrapper around any other RxStorage. It will then automatically detect if an RxDB internal storage instance is created, and replace that with a localstorage based instance.</p>

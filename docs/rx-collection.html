@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2141,7 +2154,7 @@
 });
 </code></pre>
 <h3 id="name">name</h3>
-<p>The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: <code>^[a-z][a-z0-9]*$</code>.</p>
+<p>The name uniquely identifies the collection and should be used to refine the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: <code>^[a-z][a-z0-9]*$</code>.</p>
 <h3 id="schema">schema</h3>
 <p>The schema defines how the documents of the collection are structured. RxDB uses a schema format, similar to <a href="https://json-schema.org/" target="_blank">JSON schema</a>. Read more about the RxDB schema format <a href="rx-schema.html">here</a>.</p>
 <h3 id="orm-functions">ORM-functions</h3>
@@ -2317,7 +2330,7 @@ This removes the documents, the schemas, and older schemaVersions.</p>
 <span class="hljs-comment">// collection is now removed and can be re-created</span>
 </code></pre>
 <h3 id="destroy">destroy()</h3>
-<p>Destroys the collection&apos;s object instance. This is to free up memory and stop all observings and replications.</p>
+<p>Destroys the collection&apos;s object instance. This is to free up memory and stop all observers and replications.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">await</span> myCollection.destroy();
 </code></pre>
 <h3 id="isrxcollection">isRxCollection</h3>

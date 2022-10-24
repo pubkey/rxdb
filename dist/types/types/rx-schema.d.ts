@@ -1,4 +1,5 @@
 import { AsTyped } from 'as-typed';
+import { CRDTSchemaOptions } from './plugins/crdt';
 import { StringKeys } from './util';
 
 /**
@@ -86,69 +87,70 @@ export type RxJsonSchema<
      * would be optional when the type of the document is not known.
      */
     RxDocType
-    > = {
-        title?: string;
-        description?: string;
-        version: number;
+> = {
+    title?: string;
+    description?: string;
+    version: number;
 
-        /**
-         * The primary key of the documents.
-         * Must be in the top level of the properties of the schema
-         * and that property must have the type 'string'
-         */
-        primaryKey: PrimaryKey<RxDocType>;
+    /**
+     * The primary key of the documents.
+     * Must be in the top level of the properties of the schema
+     * and that property must have the type 'string'
+     */
+    primaryKey: PrimaryKey<RxDocType>;
 
-        /**
-         * TODO this looks like a typescript-bug
-         * we have to allows all string because the 'object'-literal is not recognized
-         * retry this in later typescript-versions
-         */
-        type: 'object' | string;
-        properties: { [key in StringKeys<RxDocType>]: TopLevelProperty };
+    /**
+     * TODO this looks like a typescript-bug
+     * we have to allows all string because the 'object'-literal is not recognized
+     * retry this in later typescript-versions
+     */
+    type: 'object' | string;
+    properties: { [key in StringKeys<RxDocType>]: TopLevelProperty };
 
-        /**
-         * On the top level the required-array must be set
-         * because we always have to set the primary key to required.
-         * 
-         * TODO required should be made non-optional on the top level
-         */
-        required?: StringKeys<RxDocType>[] | readonly StringKeys<RxDocType>[];
+    /**
+     * On the top level the required-array must be set
+     * because we always have to set the primary key to required.
+     * 
+     * TODO required should be made non-optional on the top level
+     */
+    required?: StringKeys<RxDocType>[] | readonly StringKeys<RxDocType>[];
 
 
-        indexes?: (string | string[])[] | (string | readonly string[])[] | readonly (string | string[])[] | readonly (string | readonly string[])[];
-        encrypted?: string[];
-        keyCompression?: boolean;
+    indexes?: (string | string[])[] | (string | readonly string[])[] | readonly (string | string[])[] | readonly (string | readonly string[])[];
+    encrypted?: string[];
+    keyCompression?: boolean;
+    /**
+     * if not set, rxdb will set 'false' as default
+     * Having additionalProperties: true is not allwed on the root level to ensure
+     * that property names do not clash with properties of the RxDocument class
+     * or ORM methods.
+     */
+    additionalProperties?: false;
+    attachments?: {
+        encrypted?: boolean;
+    };
+    /**
+     * Options for the sharding plugin of rxdb-premium.
+     * We set these on the schema because changing the shard amount or mode
+     * will require a migration.
+     * @link https://rxdb.info/rx-storage-sharding.html
+     */
+    sharding?: {
         /**
-         * if not set, rxdb will set 'false' as default
-         * Having additionalProperties: true is not allwed on the root level to ensure
-         * that property names do not clash with properties of the RxDocument class
-         * or ORM methods.
+         * Amount of shards. 
+         * This value cannot be changed after you have stored data,
+         * if you change it anyway, you will loose the existing data.
          */
-        additionalProperties?: false;
-        attachments?: {
-            encrypted?: boolean;
-        };
+        shards: number;
         /**
-         * Options for the sharding plugin of rxdb-premium.
-         * We set these on the schema because changing the shard amount or mode
-         * will require a migration.
-         * @link https://rxdb.info/rx-storage-sharding.html
+         * Either shard by collection or by database.
+         * For most use cases (IndexedDB based storages), sharding by collection is the way to go
+         * because it has a faster initial load time.
          */
-        sharding?: {
-            /**
-             * Amount of shards. 
-             * This value cannot be changed after you have stored data,
-             * if you change it anyway, you will loose the existing data.
-             */
-            shards: number;
-            /**
-             * Either shard by collection or by database.
-             * For most use cases (IndexedDB based storages), sharding by collection is the way to go
-             * because it has a faster initial load time.
-             */
-            mode: 'database' | 'collection';
-        }
+        mode: 'database' | 'collection';
     }
+    crdt?: CRDTSchemaOptions<RxDocType>;
+}
 
 /**
  * Used to aggregate the document type from the schema.

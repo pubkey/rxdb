@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
+            
+                <a href="crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
             
                 <a href="third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="plugins.html">
+        <li class="chapter " data-level="1.27" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
             
                 <a href="storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
             
                 <a href="transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="premium.html">
+        <li class="chapter " data-level="1.31" data-path="premium.html">
             
                 <a href="premium.html">
             
@@ -2311,7 +2324,7 @@ myCollection.find().where(<span class="hljs-string">&apos;name&apos;</span>).eq(
 .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
 </code></pre>
 <h2 id="notice-rxdb-will-always-append-the-primary-key-to-the-sort-parameters">NOTICE: RxDB will always append the primary key to the sort parameters</h2>
-<p>For several performance optimizations, like the <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce algoritm</a>, RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic odering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
+<p>For several performance optimizations, like the <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce algoritm</a>, RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
 This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.</p>
 <h2 id="notice-rxquerys-are-immutable">NOTICE: RxQuery&apos;s are immutable</h2>
 <p>Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQuery&apos;s have to be immutable.

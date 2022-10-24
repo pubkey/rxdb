@@ -147,6 +147,9 @@ export declare const ERROR_MESSAGES: {
     GQL1: string;
     GQL3: string;
     REP1: string;
+    CRDT1: string;
+    CRDT2: string;
+    CRDT3: string;
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

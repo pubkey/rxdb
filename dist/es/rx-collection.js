@@ -140,6 +140,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   _proto.insert = function insert(json) {
     try {
       var _this4 = this;
+      // TODO do we need fillObjectDataBeforeInsert() here because it is also run at bulkInsert() later
       var useJson = fillObjectDataBeforeInsert(_this4.schema, json);
       return Promise.resolve(_this4.bulkInsert([useJson])).then(function (writeResult) {
         var isError = writeResult.error[0];
@@ -559,6 +560,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    */;
   _proto.importJSON = function importJSON(_exportedJSON) {
     throw pluginMissing('json-dump');
+  };
+  _proto.insertCRDT = function insertCRDT(_updateObj) {
+    throw pluginMissing('crdt');
   }
 
   /**

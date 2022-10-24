@@ -3,7 +3,7 @@ import { DocCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
 import { Subscription, Observable } from 'rxjs';
-import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise } from './types';
+import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise, CRDTEntry } from './types';
 import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import { RxSchema } from './rx-schema';
 declare const HOOKS_WHEN: readonly ["pre", "post"];
@@ -107,6 +107,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * @param _exportedJSON The previously exported data from the `<collection>.exportJSON()` method.
      */
     importJSON(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void>;
+    insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods>;
     /**
      * sync with a CouchDB endpoint
      */

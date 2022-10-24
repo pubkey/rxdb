@@ -1734,7 +1734,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="../third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="../crdt.html">
+            
+                <a href="../crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="../third-party-plugins.html">
             
                 <a href="../third-party-plugins.html">
             
@@ -1747,7 +1760,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="../plugins.html">
+        <li class="chapter " data-level="1.27" data-path="../plugins.html">
             
                 <a href="../plugins.html">
             
@@ -1760,7 +1773,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="../query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="../query-optimizer.html">
             
                 <a href="../query-optimizer.html">
             
@@ -1773,7 +1786,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="../storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="../storage-migration.html">
             
                 <a href="../storage-migration.html">
             
@@ -1786,7 +1799,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="../transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="../transactions-conflicts-revisions.html">
             
                 <a href="../transactions-conflicts-revisions.html">
             
@@ -1799,7 +1812,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="../premium.html">
+        <li class="chapter " data-level="1.31" data-path="../premium.html">
             
                 <a href="../premium.html">
             
@@ -2142,9 +2155,9 @@ But there was the problem that we have no weak pointers in javascript and theref
 }, <span class="hljs-literal">false</span>);
 </code></pre>
 <h2 id="multiinstance-is-now-done-via-broadcast-channel">multiInstance is now done via broadcast-channel</h2>
-<p>Because the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API" target="_blank">BroadcastChannel-API</a> is not useable in all browsers and also not in NodeJs, multiInstance-communication was hard. The hacky workarround was to use a pseudo-socket and regulary check if an other instance has emitted a <code>RxChangeEvent</code>.
+<p>Because the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API" target="_blank">BroadcastChannel-API</a> is not useable in all browsers and also not in NodeJs, multiInstance-communication was hard. The hacky workaround was to use a pseudo-socket and regularly check if an other instance has emitted a <code>RxChangeEvent</code>.
 This was expensive because even when the database did nothing, we wasted disk-IO and CPU by handling this.</p>
-<p>To solve this waste, I spend one month creating <a href="https://github.com/pubkey/broadcast-channel" target="_blank">a module that polyfills the broadcast-channel-api</a> so it works on old browsers, new browsers and even NodeJs. This does not only waste less ressources but also has a lower latency. Also the module is used by more projects than RxDB which allows use the fix bugs and improve performance together.</p>
+<p>To solve this waste, I spend one month creating <a href="https://github.com/pubkey/broadcast-channel" target="_blank">a module that polyfills the broadcast-channel-api</a> so it works on old browsers, new browsers and even NodeJs. This does not only waste less resources but also has a lower latency. Also the module is used by more projects than RxDB which allows use the fix bugs and improve performance together.</p>
 <h2 id="set-querychangedetection-via-rxdatabase-option">Set QueryChangeDetection via RxDatabase-option</h2>
 <p>In the past, the QueryChangeDetection had to be enabled by importing the QueryChangeDetection and calling a function on it. This was strange and also did not allow to toggle the QueryChangeDetection on specific databases.
 Now we set the QueryChangeDetection by adding the boolean field <code>queryChangeDetection: true</code> when creating the database.</p>
@@ -2156,7 +2169,7 @@ Now we set the QueryChangeDetection by adding the boolean field <code>queryChang
 <span class="hljs-built_in">console</span>.dir(db);
 </code></pre>
 <h2 id="reuse-an-rxdocument-protoptye-per-collection-instead-of-adding-getterssetters-to-each-document">Reuse an RxDocument-protoptye per collection instead of adding getters/setters to each document</h2>
-<p>Because the fields of an <code>RxDocument</code> are defined dynamically by the schema and we could not use the <code>Proxy</code>-Object because it is not supported in IE11, there was one workarround used: Each time a document is created, all getters and setters where applied on it. This was expensive and now we use a different approach.
+<p>Because the fields of an <code>RxDocument</code> are defined dynamically by the schema and we could not use the <code>Proxy</code>-Object because it is not supported in IE11, there was one workaround used: Each time a document is created, all getters and setters where applied on it. This was expensive and now we use a different approach.
 Once per collection, a custom RxDocument-protoptype and constructor is created and each RxDocument of this collection is created with the constructor. This change is a rewrite internally and should not change anything for RxDB-users. If you use RxDB with vuejs, you might get some problems that can be fixed by upgrading vuejs to the latest version.</p>
 <h2 id="rewritten-the-inmemory-plugin">Rewritten the inMemory-plugin</h2>
 <p>The inMemory-plugin was written with some wrong estimations. I rewrote it and added much more tests. Also <code>awaitPersistence()</code> can now be used to check if all writes have already been replicated into the parent collection. Also <code>RxCollection.watchForChanges()</code> got split out from the <code>replication</code>-plugin into its own <code>watch-for-changes</code>-plugin because it is used in the inMemory and the replication functionality.</p>

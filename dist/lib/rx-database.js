@@ -301,6 +301,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         hookData.database = _this5;
         hookData.name = name;
         (0, _hooks.runPluginHooks)('preCreateRxCollection', hookData);
+        useArgs.conflictHandler = hookData.conflictHandler;
         useArgsByCollectionName[collectionName] = useArgs;
       });
       return Promise.resolve(_this5.internalStore.bulkWrite(bulkPutDocs, 'rx-database-add-collection')).then(function (putDocsResult) {

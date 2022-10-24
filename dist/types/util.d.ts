@@ -221,6 +221,6 @@ export declare function sortDocumentsByLastWriteTime<RxDocType>(primaryPath: str
  * Instead we use a monad that can prepare some stuff up front
  * and we can re-use the generated function.
  */
-export declare type ObjectPathMonadFunction<T> = (obj: T) => any;
-export declare function objectPathMonad<T>(objectPath: string): ObjectPathMonadFunction<T>;
+export declare type ObjectPathMonadFunction<T, R = any> = (obj: T) => R;
+export declare function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonadFunction<T, R>;
 export {};

@@ -1736,7 +1736,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.25" data-path="../third-party-plugins.html">
+        <li class="chapter " data-level="1.25" data-path="../crdt.html">
+            
+                <a href="../crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="../third-party-plugins.html">
             
                 <a href="../third-party-plugins.html">
             
@@ -1749,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.26" data-path="../plugins.html">
+        <li class="chapter " data-level="1.27" data-path="../plugins.html">
             
                 <a href="../plugins.html">
             
@@ -1762,7 +1775,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.27" data-path="../query-optimizer.html">
+        <li class="chapter " data-level="1.28" data-path="../query-optimizer.html">
             
                 <a href="../query-optimizer.html">
             
@@ -1775,7 +1788,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.28" data-path="../storage-migration.html">
+        <li class="chapter " data-level="1.29" data-path="../storage-migration.html">
             
                 <a href="../storage-migration.html">
             
@@ -1788,7 +1801,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.29" data-path="../transactions-conflicts-revisions.html">
+        <li class="chapter " data-level="1.30" data-path="../transactions-conflicts-revisions.html">
             
                 <a href="../transactions-conflicts-revisions.html">
             
@@ -1801,7 +1814,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.30" data-path="../premium.html">
+        <li class="chapter " data-level="1.31" data-path="../premium.html">
             
                 <a href="../premium.html">
             
@@ -2125,7 +2138,7 @@
 <h2 id="breaking-changes">Breaking changes</h2>
 <p>You have to apply these changes to your codebase when upgrading RxDB.</p>
 <h3 id="all-default-exports-have-been-removed">All default exports have been removed</h3>
-<p>Using default exports and imports can be helpfull when you want to write code fast.
+<p>Using default exports and imports can be helpful when you want to write code fast.
 But using them also disabled the tree-shaking of your bundler which means you added much code to your bundle that was not even used. To prevent this common behavior, I removed all default exports and renamed functions so that they are more unlikely to clash with other non-RxDB function names.</p>
 <p>Instead of doing</p>
 <pre><code class="lang-typescript"><span class="hljs-keyword">import</span> RxDB from <span class="hljs-string">&apos;rxdb&apos;</span>;
@@ -2181,7 +2194,7 @@ To fix this the indexes are now specified at the top level of the schema like</p
 addRxPlugin(RxDBDevModePlugin);
 </code></pre>
 <h3 id="new-migration-plugin">New migration plugin</h3>
-<p>The data migration was not used by all users of this project. Often it was easier to just wipe the local data store and let the client sync everything from the server. Because the migration has so much code, it is now in a seperate plugin so that you do not have to ship this code to the clients if not necessary.</p>
+<p>The data migration was not used by all users of this project. Often it was easier to just wipe the local data store and let the client sync everything from the server. Because the migration has so much code, it is now in a separate plugin so that you do not have to ship this code to the clients if not necessary.</p>
 <pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { RxDBMigrationPlugin } from <span class="hljs-string">&apos;rxdb/plugins/migration&apos;</span>;
 addRxPlugin(RxDBMigrationPlugin);
 </code></pre>
@@ -2214,7 +2227,7 @@ addRxPlugin(RxDBMigrationPlugin);
 });
 </code></pre>
 <h3 id="moved-query-builder-to-own-plugin">moved query builder to own plugin</h3>
-<p>The query builder that allowed to create queries like <code>.where(&apos;foo&apos;).eq(&apos;bar&apos;)</code> etc. was not really used by many people. Most of the time it is better to just pass the full query as simple json object. Also the code for the query builder was big and increased the build size much more then its value added. Only some edge-cases where recursive query modification was needed made the query builder usefull. If you still want to use the query builder, you have to import the plugin.</p>
+<p>The query builder that allowed to create queries like <code>.where(&apos;foo&apos;).eq(&apos;bar&apos;)</code> etc. was not really used by many people. Most of the time it is better to just pass the full query as simple json object. Also the code for the query builder was big and increased the build size much more then its value added. Only some edge-cases where recursive query modification was needed made the query builder useful. If you still want to use the query builder, you have to import the plugin.</p>
 <pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { RxDBQueryBuilderPlugin } from <span class="hljs-string">&apos;rxdb/plugins/query-builder&apos;</span>;
 addRxPlugin(RxDBQueryBuilderPlugin);
 </code></pre>

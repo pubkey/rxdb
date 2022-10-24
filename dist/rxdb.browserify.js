@@ -6435,6 +6435,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto.insert = function insert(json) {
     try {
       var _this4 = this;
+      // TODO do we need fillObjectDataBeforeInsert() here because it is also run at bulkInsert() later
       var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this4.schema, json);
       return Promise.resolve(_this4.bulkInsert([useJson])).then(function (writeResult) {
         var isError = writeResult.error[0];
@@ -6854,6 +6855,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
    */;
   _proto.importJSON = function importJSON(_exportedJSON) {
     throw (0, _util.pluginMissing)('json-dump');
+  };
+  _proto.insertCRDT = function insertCRDT(_updateObj) {
+    throw (0, _util.pluginMissing)('crdt');
   }
 
   /**
@@ -7907,6 +7911,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         hookData.database = _this5;
         hookData.name = name;
         (0, _hooks.runPluginHooks)('preCreateRxCollection', hookData);
+        useArgs.conflictHandler = hookData.conflictHandler;
         useArgsByCollectionName[collectionName] = useArgs;
       });
       return Promise.resolve(_this5.internalStore.bulkWrite(bulkPutDocs, 'rx-database-add-collection')).then(function (putDocsResult) {
@@ -8516,14 +8521,16 @@ var basePrototype = {
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-    return _this._isDeleted$.asObservable();
+    return _this._dataSync$.pipe((0, _operators.map)(function (d) {
+      return d._deleted;
+    }));
   },
   get deleted() {
     var _this = this;
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-    return _this._isDeleted$.getValue();
+    return _this._data._deleted;
   },
   /**
    * returns the observable which emits the plain-data of this document
@@ -8548,13 +8555,12 @@ var basePrototype = {
       case 'INSERT':
         break;
       case 'UPDATE':
-        var newData = changeEvent.documentData;
-        this._dataSync$.next(newData);
+        this._dataSync$.next(changeEvent.documentData);
         break;
       case 'DELETE':
         // remove from docCache to assure new upserted RxDocuments will be a new instance
         this.collection._docCache["delete"](this.primary);
-        this._isDeleted$.next(true);
+        this._dataSync$.next(changeEvent.documentData);
         break;
     }
   },
@@ -8667,6 +8673,9 @@ var basePrototype = {
   update: function update(_updateObj) {
     throw (0, _util.pluginMissing)('update');
   },
+  updateCRDT: function updateCRDT(_updateObj) {
+    throw (0, _util.pluginMissing)('crdt');
+  },
   putAttachment: function putAttachment() {
     throw (0, _util.pluginMissing)('attachments');
   },
@@ -8683,7 +8692,9 @@ var basePrototype = {
    * runs an atomic update over the document
    * @param function that takes the document-data and returns a new data-object
    */
-  atomicUpdate: function atomicUpdate(mutationFunction) {
+  atomicUpdate: function atomicUpdate(mutationFunction,
+  // used by some plugins that wrap the method
+  _context) {
     var _this2 = this;
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
@@ -8768,7 +8779,7 @@ var basePrototype = {
       newData = (0, _util.flatClone)(newData);
 
       // deleted documents cannot be changed
-      if (_this4._isDeleted$.getValue()) {
+      if (_this4._data._deleted) {
         throw (0, _rxError.newRxError)('DOC11', {
           id: _this4.primary,
           document: _this4
@@ -8848,7 +8859,6 @@ function createRxDocumentConstructor() {
 
     // assume that this is always equal to the doc-data in the database
     this._dataSync$ = new _rxjs.BehaviorSubject(jsonData);
-    this._isDeleted$ = new _rxjs.BehaviorSubject(false);
     this._atomicQueue = _util.PROMISE_RESOLVE_VOID;
 
     /**

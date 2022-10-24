@@ -303,6 +303,12 @@ var RxReplicationState = /*#__PURE__*/function () {
             masterChangesSince: function (checkpoint, batchSize) {
               try {
                 var _temp6 = function _temp6() {
+                  if (_this3.isStopped()) {
+                    return {
+                      checkpoint: null,
+                      documents: []
+                    };
+                  }
                   var useResult = (0, _util.flatClone)(result);
                   if (_this3.deletedField !== '_deleted') {
                     useResult.documents = useResult.documents.map(function (doc) {
@@ -331,7 +337,7 @@ var RxReplicationState = /*#__PURE__*/function () {
                 var done = false;
                 var result = {};
                 var _temp7 = _for(function () {
-                  return !done;
+                  return !done && !_this3.isStopped();
                 }, void 0, function () {
                   var _temp3 = _catch(function () {
                     return Promise.resolve(_this3.pull.handler(checkpoint, batchSize)).then(function (_this3$pull$handler) {
@@ -387,6 +393,9 @@ var RxReplicationState = /*#__PURE__*/function () {
                   }
                 }))).then(function (useRows) {
                   function _temp10() {
+                    if (_this3.isStopped()) {
+                      return [];
+                    }
                     var conflicts = (0, _util.ensureNotFalsy)(result).map(function (doc) {
                       return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this3.deletedField, doc);
                     });
@@ -394,7 +403,7 @@ var RxReplicationState = /*#__PURE__*/function () {
                   }
                   var result = {};
                   var _temp9 = _for(function () {
-                    return !done;
+                    return !done && !_this3.isStopped();
                   }, void 0, function () {
                     var _temp8 = _catch(function () {
                       return Promise.resolve(_this3.push.handler(useRows)).then(function (_this3$push$handler) {
