@@ -323,9 +323,6 @@ export function getCRDTConflictHandler<RxDocType>(
         i: RxConflictHandlerInput<RxDocType>,
         _context: string
     ) => {
-
-        console.log('RUN getCRDTConflictHandler()()');
-
         const newDocCrdt = getCRDTValue(i.newDocumentState);
         const masterDocCrdt = getCRDTValue(i.realMasterState);
 
@@ -335,10 +332,6 @@ export function getCRDTConflictHandler<RxDocType>(
             });
         }
 
-        console.log('getCRDTConflictHandler not equal:');
-        console.dir(i);
-
-
         const mergedCrdt = mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
         const mergedDoc = rebuildFromCRDT(
             storageStatics,
@@ -346,16 +339,10 @@ export function getCRDTConflictHandler<RxDocType>(
             i.newDocumentState,
             mergedCrdt
         );
-
-
-        console.log('getCRDTConflictHandler mergedCrdt:');
-        console.dir(mergedCrdt);
-
         return Promise.resolve({
             isEqual: false,
             documentData: mergedDoc
         });
-
     };
 
     return conflictHandler;
