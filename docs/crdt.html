@@ -2343,7 +2343,7 @@ When replicating document data with the <a href="replication.html">RxDB replicat
 <p>There are already CRDT libraries out there that have been considered to be used with RxDB. The biggeste ones are <a href="https://github.com/automerge/automerge" target="_blank">automerge</a> and <a href="https://github.com/yjs/yjs" target="_blank">yjs</a>. The decision was made to not use thoese but instead go for a more NoSQL way of designing the CRDT format because:</p>
 <ul>
 <li>Users do not have to learn a new syntax but instead can use the NoSQL operations which they already know.</li>
-<li>RxDB is often used to <a href="replication.html">replicat</a> data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on theses backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.</li>
+<li>RxDB is often used to <a href="replication.html">replicate</a> data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on theses backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.</li>
 </ul>
 <h2 id="when-to-not-use-crdts">When to not use CRDTs</h2>
 <p>CRDT can only be use when your business logic allows to represent document changes via static json operators.
