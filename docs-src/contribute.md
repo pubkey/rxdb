@@ -8,7 +8,7 @@ We are open to, and grateful for, any contributions made by the community.
 
 Before you can start developing, do the following:
 
-1. Make sure you have installed nodejs with the version stated in the [.nvmrc](../.nvmrc)
+1. Make sure you have installed nodejs with the version stated in the [.nvmrc](https://github.com/pubkey/rxdb/blob/master/.nvmrc)
 2. Clone the repository `git clone https://github.com/pubkey/rxdb.git`
 3. Install the dependencies `cd rxdb && npm install`
 4. Make sure that the tests work for you `npm run test`
