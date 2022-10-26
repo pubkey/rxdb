@@ -2133,10 +2133,10 @@
                                 
                                 <h1 id="1100">11.0.0</h1>
 <p>The last major release was only about <a href="10.0.0.html">6 month ago</a>. But to further improve RxDB, it was necessary to make some more breaking changes and release the next major version.
-In the last version <code>10.0.0</code> the storage layer was abstracted in a way to make it possible to not only use PouchDB as storage, but instead we can use different storage engines like the one based on <a href="../../docs-src/rx-storage-lokijs.md">LokiJS</a> or any custom implementation of the <code>RxStorage</code> interface.</p>
+In the last version <code>10.0.0</code> the storage layer was abstracted in a way to make it possible to not only use PouchDB as storage, but instead we can use different storage engines like the one based on <a href="../rx-storage-lokijs.html">LokiJS</a> or any custom implementation of the <code>RxStorage</code> interface.</p>
 <p>In the new version <code>11.0.0</code> the focus is on making it possible to put the RxStorage into a <strong>WebWorker</strong> to take CPU load from the main process into the worker&apos;s process. This can improve the perceived performance of your application, especially when you have to handle many documents or when you need the main process CPU cycles to manage the DOM with your frontend framework.</p>
 <h2 id="worker-plugin">Worker plugin</h2>
-<p>Performance was always something RxDB had a struggle with. Not because RxDB itself is slow, but because the underlying storage engine (mostly PouchDB) or <a href="../../docs-src/slow-indexeddb.md">IndexedDB is slow</a>. This never was a problem for &apos;normal&apos; applications that have to store some documents. But on big applications with much data, there was a bottleneck.</p>
+<p>Performance was always something RxDB had a struggle with. Not because RxDB itself is slow, but because the underlying storage engine (mostly PouchDB) or <a href="../slow-indexeddb.html">IndexedDB is slow</a>. This never was a problem for &apos;normal&apos; applications that have to store some documents. But on big applications with much data, there was a bottleneck.</p>
 <p>With the Worker plugin, you can move the <code>RxStorage</code> out of the main JavaScript process. This makes it pretty easy to utilize more then one CPU core and speed up your application.</p>
 <pre><code class="lang-ts"><span class="hljs-comment">// worker.ts</span>
 <span class="hljs-keyword">import</span> { wrappedRxStorage } from <span class="hljs-string">&apos;rxdb/plugins/worker&apos;</span>;
@@ -2158,7 +2158,7 @@ wrappedRxStorage({
     )
 });
 </code></pre>
-<p>The whole documentation about the worker plugin can be found <a href="../../docs-src/rx-storage-worker.md">here</a>.</p>
+<p>The whole documentation about the worker plugin can be found <a href="../rx-storage-worker.html">here</a>.</p>
 <h2 id="transpile-asyncawait-to-promises-instead-of-generators">Transpile <code>async</code>/<code>await</code> to promises instead of generators</h2>
 <p>The RxDB source-code is transpiled from TypeScript to es5/es6 JavaScript code via babel.
 In the past we transpiled the <code>async</code> and <code>await</code> keywords with the babel plugin <code>plugin-transform-async-to-generator</code>.

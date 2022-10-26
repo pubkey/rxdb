@@ -2163,7 +2163,7 @@ When I first implemented the GraphQL replication a few years ago, I had a specif
 </li>
 <li><p>REFACTORED the <a href="https://rxdb.info/schema-validation.html" target="_blank">schema validation plugins</a>, they are no longer plugins but now they get wrapped around any other RxStorage.</p>
 <ul>
-<li>It allows us to run the validation inside of a <a href="rx-storage-worker.md">Worker RxStorage</a> instead of running it in the main JavaScript process.</li>
+<li>It allows us to run the validation inside of a <a href="../rx-storage-worker.html">Worker RxStorage</a> instead of running it in the main JavaScript process.</li>
 <li>It allows us to configure which <code>RxDatabase</code> instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.</li>
 </ul>
 </li>
