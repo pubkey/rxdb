@@ -5,8 +5,17 @@ Whenever there are multiple instances in a distributed system, data writes can c
 In [RXDB](./), conflicts are normally resolved by setting a `conflictHandler` when creating a collection. The conflict handler is a JavaScript function that gets the two conflicting states of the same document and it will return the resolved document state.
 The [default conflict handler](./replication.md#conflict-handling) will always drop the fork state and use the master state to ensure that clients that have been offline for a long time, do not overwrite other clients changes when they go online again.
 
-With CRDTs (short for [Conflict-free replicated data type](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)), all document writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the opertions in a deterministic way. Using CRDTs is an easy way to "magically" handle all conflict problems in your application by storing the deltas of writes together with the document data.
+<p align="center">
+  <img src="./files/document-replication-conflict.svg" alt="document replication conflict" width="300" />
+</p>
 
+
+With CRDTs (short for [Conflict-free replicated data type](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)), all document 
+writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the opertions in a deterministic way. Using CRDTs is an easy way to "magically" handle all conflict problems in your application by storing the deltas of writes together with the document data.
+
+<p align="center">
+  <img src="./files/crdt-conflict-free-replicated-data-type.svg" alt="CRDT Conflict-free replicated data type" width="300" />
+</p>
 
 ## RxDB CRDT operations
 
