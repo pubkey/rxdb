@@ -6,7 +6,7 @@ In [RXDB](./), conflicts are normally resolved by setting a `conflictHandler` wh
 The [default conflict handler](./replication.md#conflict-handling) will always drop the fork state and use the master state to ensure that clients that have been offline for a long time, do not overwrite other clients changes when they go online again.
 
 <p align="center">
-  <img src="./files/document-replication-conflict.svg" alt="document replication conflict" width="300" />
+  <img src="./files/document-replication-conflict.svg" alt="document replication conflict" width="250" />
 </p>
 
 

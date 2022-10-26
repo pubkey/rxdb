@@ -39,6 +39,10 @@ Of course, this does not work for state that is not stored at the backend. So if
 
 Imagine two of your users modify the same JSON document, while both are offline. After they go online again, their clients replicate the modified document to the server. Now you have two conflicting versions of the same document, and you need a way to determine how the correct new version of that document should look like. This process is called **conflict resolution**.
 
+<p align="center">
+  <img src="./files/document-replication-conflict.svg" alt="document replication conflict" width="250" />
+</p>
+
   1. The default in [many](https://docs.couchdb.org/en/main/replication/conflicts.html#couchdb-replication) offline first databases is a deterministic conflict resolution strategy. Both conflicting versions of the document are kept in the storage and when you query for the document, a winner is determined by comparing the hashes of the document and only the winning document is returned. Because the comparison is deterministic, all clients and servers will always pick the same winner. This kind of resolution only works when it is not that important that one of the document changes gets dropped. Because conflicts are rare, this might be a viable solution for some use cases.
 
   2. A better resolution can be applied by listening to the changestream of the database. The changestream emits an event each time a write happens to the database. The event contains information about the written document and also a flag if there is a conflicting version. For each event with a conflict, you fetch all versions for that document and create a new document that contains the winning state. With that you can implement pretty complex conflict resolution strategies, but you have to manually code it for each collection of documents.
