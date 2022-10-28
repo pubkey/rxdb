@@ -2391,7 +2391,7 @@ Final fields cannot be observed because they will not change.</p>
 </code></pre>
 <h2 id="notice-not-everything-within-the-jsonschema-spec-is-allowed">NOTICE: Not everything within the jsonschema-spec is allowed</h2>
 <p>The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of <a href="http://json-schema.org/" target="_blank">json-schema.org</a>.
-For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$</code> and <code>additionalProperties</code> is always set to <code>false</code>. But don&apos;t worry, RxDB will instantly throw an error when you pass a invalid schema into it.</p>
+For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$</code> and <code>additionalProperties</code> is always set to <code>false</code>. But don&apos;t worry, RxDB will instantly throw an error when you pass an invalid schema into it.</p>
 
                                 
                                 </section>
