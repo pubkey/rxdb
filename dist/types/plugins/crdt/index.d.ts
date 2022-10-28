@@ -9,4 +9,4 @@ export declare function mergeCRDTFields<RxDocType>(hashFunction: HashFunction, c
 export declare function rebuildFromCRDT<RxDocType>(storageStatics: RxStorageStatics, schema: RxJsonSchema<RxDocumentData<RxDocType>>, docData: WithDeleted<RxDocType>, crdts: CRDTDocumentField<RxDocType>): WithDeleted<RxDocType>;
 export declare function getCRDTConflictHandler<RxDocType>(hashFunction: HashFunction, storageStatics: RxStorageStatics, schema: RxJsonSchema<RxDocumentData<RxDocType>>): RxConflictHandler<RxDocType>;
 export declare const RX_CRDT_CONTEXT = "rx-crdt";
-export declare const RxDDcrdtPlugin: RxPlugin;
+export declare const RxDBcrdtPlugin: RxPlugin;
