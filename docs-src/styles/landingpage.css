@@ -961,9 +961,55 @@ header .logo img {
 
 
 
+.start-at-github {
+    float: right;
+    padding: 3px;
+    border-radius: 40px;
+    margin-top: 8px;
+
+    transition: all .2s ease-in-out;
+}
+
+.start-at-github:hover {
+    transform: scale(1.1);
+}
+
+.start-at-github .start-at-github-inner {
+    background-color: var(--bg-color);
+    padding: 8px;
+    border-radius: 40px;
+}
+
+.start-at-github .start-at-github-inner img {
+    margin-top: 3px;
+    margin-left: 3px;
+    margin-right: 6px;
+    width: 17px;
+}
+
+.start-at-github .start-at-github-text {
+    display: inline;
+    margin-top: 2px;
+    float: right;
+}
+
+@media (max-width: 450px) {
+    .start-at-github {
+        display: none;
+    }
+}
+
 /*
  * ANIMATION STUFF
  */
+
+.tilt-to-mouse {
+    will-change: transform;
+}
+
+.enlarge-on-mouse {
+    will-change: transform;
+}
 
 /*
  * Every element with this class
