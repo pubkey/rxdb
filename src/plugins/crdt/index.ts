@@ -351,7 +351,7 @@ export function getCRDTConflictHandler<RxDocType>(
 
 export const RX_CRDT_CONTEXT = 'rx-crdt';
 
-export const RxDDcrdtPlugin: RxPlugin = {
+export const RxDBcrdtPlugin: RxPlugin = {
     name: 'crdt',
     rxdb: true,
     prototypes: {

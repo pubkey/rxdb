@@ -24,10 +24,10 @@ import {
 
 import {
     getCRDTSchemaPart,
-    RxDDcrdtPlugin,
+    RxDBcrdtPlugin,
     getCRDTConflictHandler
 } from '../../plugins/crdt';
-addRxPlugin(RxDDcrdtPlugin);
+addRxPlugin(RxDBcrdtPlugin);
 import config from './config';
 import { replicateRxCollection, RxReplicationState } from '../../plugins/replication';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../src/types';
