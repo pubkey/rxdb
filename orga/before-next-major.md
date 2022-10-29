@@ -27,9 +27,9 @@ This feature is great when you use a RxDocument with some change-detection like 
 
 However this behavior is also confusing many times. When the state in the database is changed, it is not clear at which exact point of time the objects attribute changes. Also the self-mutating behavior created some problem with vue- and react-devtools because of how they clone objects.
 
-Also, to not confuse with fast changes that happen directly after each other, the whole json-data-to-RxDocument-piple has to be synchronous. With the change, this can be async which will allow us to have async post-result-transformations, like an asynchronous encryption plugin (with the Web Crypto API) or also move things into a webworker.
-
 The change would make all RxDocuments immutable. When you subscribe to a query and the same document is returned in the results, this will always be a new javascript object.
+
+Related: https://discord.com/channels/969553741705539624/994394488694898840/1036030989006274561
 
 ## Use exports field in package.json
 
