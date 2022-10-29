@@ -5,6 +5,11 @@
   THESE CONTAIN GENERATED FILES THAT SHOULD NOT BE EDITED MANUALLY.
 -->
 
+<!--
+  TO LEARN HOW TO MAKE THE PERFECT PULL REQUEST, READ THIS:
+  https://simonwillison.net/2022/Oct/29/the-perfect-commit/
+-->
+
 ## This PR contains:
 <!--
  - IMPROVED DOCS
