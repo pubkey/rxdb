@@ -22,6 +22,7 @@ import type {
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
+    RxStorageCountResult,
     RxStorageDefaultCheckpoint,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
@@ -241,6 +242,11 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 break;
             }
 
+            /**
+             * TODO if the used index fully match the selector,
+             * we do not have to run a queryMatch here for better performance.
+             * Also add this to the other RxStorage implementations.
+             */
             if (queryMatcher(currentDoc.doc)) {
                 rows.push(currentDoc.doc);
             }
@@ -265,6 +271,16 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         return Promise.resolve({
             documents: rows
         });
+    }
+
+    async count(
+        preparedQuery: MemoryPreparedQuery<RxDocType>
+    ): Promise<RxStorageCountResult> {
+        const result = await this.query(preparedQuery);
+        return {
+            count: result.documents.length,
+            mode: 'fast'
+        };
     }
 
     getChangedDocumentsSince(
