@@ -8,7 +8,7 @@ import {
     randomCouchString,
     RxCollection,
     RxDocument,
-    MangoQuery,
+    MangoQuery
 } from '../../';
 
 import {
@@ -63,16 +63,21 @@ describe('event-reduce.test.js', () => {
         );
     }
     async function testQueryResultForEqualness<RxDocType>(
-        col1: RxCollection<RxDocType>,
-        col2: RxCollection<RxDocType>,
+        col1: RxCollection<RxDocType, {}, {}>,
+        col2: RxCollection<RxDocType, {}, {}>,
         queries: MangoQuery<RxDocType>[]
     ) {
         for (const query of queries) {
-            const [res1, res2] = await Promise.all([
-                col1.find(query).exec(),
-                col2.find(query).exec()
-            ]);
-            ensureResultsEqual(res1, res2);
+            const res1 = await col1.find(query).exec();
+            const res2 = await col2.find(query).exec();
+            try {
+                ensureResultsEqual(res1, res2);
+            } catch (err) {
+                console.error('NOT EQUAL FOR QUERY:');
+                console.dir(query);
+                console.dir(col1.find(query).getPreparedQuery());
+                throw err;
+            }
         }
     }
 
@@ -202,6 +207,7 @@ describe('event-reduce.test.js', () => {
         };
         await colNoEventReduce.insert(insertForSortTest);
         await colWithEventReduce.insert(insertForSortTest);
+
         await testQueryResultForEqualness(
             colNoEventReduce,
             colWithEventReduce,
@@ -232,7 +238,8 @@ describe('event-reduce.test.js', () => {
                 {
                     selector: {
                         age: {
-                            $gt: 20
+                            $gt: 20,
+                            $lt: 80
                         }
                     },
                     // TODO it should also work without the sorting
@@ -251,15 +258,11 @@ describe('event-reduce.test.js', () => {
             );
 
             // add some
-            await Promise.all(
-                new Array(3)
-                    .fill(0)
-                    .map(async () => {
-                        const doc = schemaObjects.human();
-                        await colNoEventReduce.insert(doc);
-                        await colWithEventReduce.insert(doc);
-                    })
-            );
+            const docsData = new Array(3).fill(0).map(() => schemaObjects.human());
+            docsData.push(schemaObjects.human('age-is-20', 20));
+            docsData.push(schemaObjects.human('age-is-80', 80));
+            await colNoEventReduce.bulkInsert(docsData);
+            await colWithEventReduce.bulkInsert(docsData);
 
             await testQueryResultForEqualness(
                 colNoEventReduce,

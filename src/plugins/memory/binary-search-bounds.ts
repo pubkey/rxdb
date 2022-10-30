@@ -24,7 +24,8 @@ function ge<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
 function gt<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
     let i = h + 1;
     while (l <= h) {
-        const m = (l + h) >>> 1, x = a[m];
+        const m = (l + h) >>> 1;
+        const x = a[m];
         const p: any = (c !== undefined) ? c(x, y) : ((x as any) - (y as any));
         if (p > 0) { i = m; h = m - 1 } else { l = m + 1 }
     }

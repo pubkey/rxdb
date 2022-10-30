@@ -1,5 +1,7 @@
+import { QueryMatcher } from 'event-reduce-js';
 import type {
     DexiePreparedQuery,
+    RxDocumentData,
     RxQueryPlan,
     RxStorageQueryResult
 } from '../../types';
@@ -24,26 +26,27 @@ export function getKeyRangeByQueryPlan(
         }
     }
 
+    let ret: any;
     /**
      * If index has only one field,
      * we have to pass the keys directly, not the key arrays.
      */
     if (queryPlan.index.length === 1) {
-        return IDBKeyRange.bound(
+        ret = IDBKeyRange.bound(
             queryPlan.startKeys[0],
             queryPlan.endKeys[0],
             queryPlan.inclusiveStart,
             queryPlan.inclusiveEnd
         );
+    } else {
+        ret = IDBKeyRange.bound(
+            queryPlan.startKeys,
+            queryPlan.endKeys,
+            queryPlan.inclusiveStart,
+            queryPlan.inclusiveEnd
+        );
     }
-
-    return IDBKeyRange.bound(
-        queryPlan.startKeys,
-        queryPlan.endKeys,
-        queryPlan.inclusiveStart,
-        queryPlan.inclusiveEnd
-    );
-
+    return ret;
 }
 
 
@@ -56,16 +59,19 @@ export async function dexieQuery<RxDocType>(
 ): Promise<RxStorageQueryResult<RxDocType>> {
     const state = await instance.internals;
     const query = preparedQuery.query;
-    const queryMatcher = RxStorageDexieStatics.getQueryMatcher(
-        instance.schema,
-        preparedQuery
-    );
-    const sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
 
     const skip = query.skip ? query.skip : 0;
     const limit = query.limit ? query.limit : Infinity;
     const skipPlusLimit = skip + limit;
     const queryPlan = preparedQuery.queryPlan;
+
+    let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;
+    if (!queryPlan.selectorSatisfiedByIndex) {
+        queryMatcher = RxStorageDexieStatics.getQueryMatcher(
+            instance.schema,
+            preparedQuery
+        );
+    }
 
     const keyRange = getKeyRangeByQueryPlan(
         queryPlan,
@@ -118,7 +124,8 @@ export async function dexieQuery<RxDocType>(
                         // We have a record in cursor.value
                         const docData = fromDexieToStorage(cursor.value);
                         if (
-                            queryMatcher(docData)
+                            !docData._deleted &&
+                            (!queryMatcher || queryMatcher(docData))
                         ) {
                             rows.push(docData);
                         }
@@ -150,6 +157,7 @@ export async function dexieQuery<RxDocType>(
 
 
     if (!queryPlan.sortFieldsSameAsIndexFields) {
+        const sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
         rows = rows.sort(sortComparator);
     }
 

@@ -307,7 +307,8 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                  * because 1 is the minimum value for _meta.lwt
                  */
                 1
-            ]
+            ],
+            false
         );
         const upperBoundString = getStartIndexStringFromUpperBound(
             this.schema,
@@ -315,7 +316,8 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             [
                 true,
                 maxDeletionTime
-            ]
+            ],
+            true
         );
         let noMoreUndeleted: boolean = true;
         await dbs.root.doTransaction(async (tx: any) => {

@@ -24,11 +24,18 @@ export type RxQueryPlan = {
     sortFieldsSameAsIndexFields: boolean;
 
     /**
+     * If the whole selector matching is satisfied
+     * by the index, we do not have to run a does-document-data-match-query
+     * stuff.
+     */
+    selectorSatisfiedByIndex: boolean;
+
+    /**
      * TODO add a flag that determines
      * if we have to run the selector matching on all results
      * or if the used index anyway matches ALL operators.
      */
-    
+
     startKeys: RxQueryPlanKey[];
     endKeys: RxQueryPlanKey[];
     /**

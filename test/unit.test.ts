@@ -26,7 +26,6 @@ import './unit/rx-storage-pouchdb.test';
 import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 
-
 import './unit/instance-of-check.test';
 import './unit/rx-schema.test';
 import './unit/bug-report.test';
@@ -68,5 +67,4 @@ import './unit/import-export.test';
 import './unit/dexie-helper.test';
 import './unit/plugin.test';
 import './unit/last.test';
-
 

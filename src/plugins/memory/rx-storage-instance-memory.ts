@@ -1,3 +1,4 @@
+import { QueryMatcher } from 'event-reduce-js';
 import {
     Observable,
     Subject
@@ -39,7 +40,8 @@ import {
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
 import {
     boundGE,
-    boundGT
+    boundGT,
+    boundLE
 } from './binary-search-bounds';
 import {
     attachmentMapKey,
@@ -195,11 +197,13 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const limit = query.limit ? query.limit : Infinity;
         const skipPlusLimit = skip + limit;
 
-        const queryMatcher = RxStorageDexieStatics.getQueryMatcher(
-            this.schema,
-            preparedQuery
-        );
-        const sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
+        let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;
+        if (!queryPlan.selectorSatisfiedByIndex) {
+            queryMatcher = RxStorageDexieStatics.getQueryMatcher(
+                this.schema,
+                preparedQuery
+            );
+        }
 
         const queryPlanFields: string[] = queryPlan.index;
         const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
@@ -209,7 +213,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const lowerBoundString = getStartIndexStringFromLowerBound(
             this.schema,
             index,
-            lowerBound
+            lowerBound,
+            queryPlan.inclusiveStart
         );
 
         let upperBound: any[] = queryPlan.endKeys;
@@ -217,7 +222,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const upperBoundString = getStartIndexStringFromUpperBound(
             this.schema,
             index,
-            upperBound
+            upperBound,
+            queryPlan.inclusiveEnd
         );
         const indexName = getMemoryIndexName(index);
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
@@ -225,6 +231,13 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             docsWithIndex,
             {
                 indexString: lowerBoundString
+            } as any,
+            compareDocsWithIndex
+        );
+        const indexOfUpper = boundLE(
+            docsWithIndex,
+            {
+                indexString: upperBoundString
             } as any,
             compareDocsWithIndex
         );
@@ -237,12 +250,12 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
             if (
                 !currentDoc ||
-                currentDoc.indexString > upperBoundString
+                indexOfLower > indexOfUpper
             ) {
                 break;
             }
 
-            if (queryMatcher(currentDoc.doc)) {
+            if (!queryMatcher || queryMatcher(currentDoc.doc)) {
                 rows.push(currentDoc.doc);
             }
 
@@ -257,12 +270,12 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         }
 
         if (mustManuallyResort) {
+            const sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
             rows = rows.sort(sortComparator);
         }
 
         // apply skip and limit boundaries.
         rows = rows.slice(skip, skipPlusLimit);
-
         return Promise.resolve({
             documents: rows
         });
@@ -287,7 +300,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             [
                 sinceLwt,
                 sinceId
-            ]
+            ],
+            false
         );
 
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
@@ -333,7 +347,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 true,
                 0,
                 ''
-            ]
+            ],
+            false
         );
 
         let indexOfLower = boundGT(
