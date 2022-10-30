@@ -8,7 +8,7 @@ import {
     randomCouchString,
     RxCollection,
     RxDocument,
-    MangoQuery,
+    MangoQuery
 } from '../../';
 
 import {
@@ -63,8 +63,8 @@ describe('event-reduce.test.js', () => {
         );
     }
     async function testQueryResultForEqualness<RxDocType>(
-        col1: RxCollection<RxDocType>,
-        col2: RxCollection<RxDocType>,
+        col1: RxCollection<RxDocType, {}, {}>,
+        col2: RxCollection<RxDocType, {}, {}>,
         queries: MangoQuery<RxDocType>[]
     ) {
         for (const query of queries) {
@@ -75,6 +75,7 @@ describe('event-reduce.test.js', () => {
             } catch (err) {
                 console.error('NOT EQUAL FOR QUERY:');
                 console.dir(query);
+                console.dir(col1.find(query).getPreparedQuery());
                 throw err;
             }
         }
@@ -206,6 +207,14 @@ describe('event-reduce.test.js', () => {
         };
         await colNoEventReduce.insert(insertForSortTest);
         await colWithEventReduce.insert(insertForSortTest);
+
+
+        console.log('##################################');
+        console.log('##################################');
+        console.log('##################################');
+        console.log('##################################');
+        console.log('##################################');
+
         await testQueryResultForEqualness(
             colNoEventReduce,
             colWithEventReduce,

@@ -226,7 +226,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             queryPlan.inclusiveEnd
         );
         const indexName = getMemoryIndexName(index);
+        console.log('indexName: ' + indexName);
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+        console.log('lowerBoundString: ' + lowerBoundString);
         let indexOfLower = boundGE(
             docsWithIndex,
             {
@@ -241,6 +243,11 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             } as any,
             compareDocsWithIndex
         );
+        console.log('upperBoundString: ' + upperBoundString);
+        console.log('mustManuallyResort: ' + mustManuallyResort);
+
+        console.log('docsWithIndex:');
+        console.dir(docsWithIndex);
 
         let rows: RxDocumentData<RxDocType>[] = [];
         let done = false;
@@ -275,6 +282,10 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         // apply skip and limit boundaries.
         rows = rows.slice(skip, skipPlusLimit);
+
+
+        console.log('rows:');
+        console.dir(rows);
 
         return Promise.resolve({
             documents: rows
