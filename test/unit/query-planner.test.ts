@@ -146,6 +146,67 @@ config.parallel('query-planner.test.js', () => {
             assert.deepStrictEqual(queryPlan.endKeys[0], 'asdf');
         });
     });
+    describe('.isSelectorSatisfiedByIndex()', () => {
+        const schema = getHumanSchemaWithIndexes([['age']]);
+        it('should be true if satisfied', () => {
+            const query = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {
+                        age: {
+                            $gt: 10,
+                            $lt: 100
+                        }
+                    }
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
+            assert.ok(queryPlan.selectorSatisfiedByIndex);
+        });
+        it('should be false if non logic operator is used', () => {
+            const query = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {
+                        age: {
+                            $gt: 10,
+                            $lt: 100,
+                            $elemMatch: {
+                                foo: 'bar'
+                            }
+                        }
+                    }
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
+            assert.strictEqual(queryPlan.selectorSatisfiedByIndex, false);
+        });
+        it('should be false if non-index field is queried operator is used', () => {
+            const query = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {
+                        age: {
+                            $gt: 10
+                        },
+                        lastName: 'foo'
+                    },
+                    index: ['age']
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
+            assert.strictEqual(queryPlan.selectorSatisfiedByIndex, false);
+        });
+    });
 
     describe('always prefer the better index', () => {
         it('should prefer the default index over one that has no fields of the query', () => {

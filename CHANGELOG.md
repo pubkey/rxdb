@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- REFACTOR index boundary usage for better performance.
 - FIX Typo in CRDT Plugin: `RxDDcrdtPlugin` is now `RxDBcrdtPlugin` [#4094](https://github.com/pubkey/rxdb/pull/4094) Thanks [@jwallet](https://github.com/jwallet)
 <!-- ADD new changes here! -->
 

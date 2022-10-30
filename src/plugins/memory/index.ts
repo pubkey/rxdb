@@ -45,6 +45,7 @@ export function getRxStorageMemory(
 
 
 export * from './memory-helper';
+export * from './binary-search-bounds';
 export * from './memory-types';
 export * from './memory-indexes';
 export * from './rx-storage-instance-memory';

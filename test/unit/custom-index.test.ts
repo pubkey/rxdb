@@ -316,7 +316,8 @@ config.parallel('custom-index.test.ts', () => {
                 index,
                 [
                     undefined
-                ]
+                ],
+                true
             );
 
             const matchingDocs = docs.filter(doc => {

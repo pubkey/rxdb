@@ -990,3 +990,22 @@ AFTER:
 
 
 
+## 30 October 2022
+
+test:performance:memory:node
+
+BEFORE:
+
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 600,
+    "time-to-first-insert": 3.745738666659842,
+    "insert-documents": 26.05025925001246,
+    "find-by-ids": 0.36593841669188504,
+    "find-by-query": 4.35889441667435
+}
+
+AFTER:
+

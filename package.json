@@ -62,6 +62,7 @@
     "test:node:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:pouchdb:loop": "npm run test:node:pouchdb && npm run test:node:pouchdb:loop",
     "test:node:lokijs:loop": "npm run test:node:lokijs && npm run test:node:lokijs:loop",
+    "test:node:memory:loop": "npm run test:node:memory && npm run test:node:memory:loop",
     "test:node:dexie:loop": "npm run test:node:dexie && npm run test:node:dexie:loop",
     "test:node:dexie-worker:loop": "npm run test:node:dexie-worker && npm run test:node:dexie-worker:loop",
     "test:node:custom": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",

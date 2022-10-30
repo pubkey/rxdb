@@ -72,7 +72,13 @@ describe('event-reduce.test.js', () => {
                 col1.find(query).exec(),
                 col2.find(query).exec()
             ]);
-            ensureResultsEqual(res1, res2);
+            try {
+                ensureResultsEqual(res1, res2);
+            } catch (err) {
+                console.error('NOT EQUAL FOR QUERY:');
+                console.dir(query);
+                throw err;
+            }
         }
     }
 
@@ -219,6 +225,14 @@ describe('event-reduce.test.js', () => {
      */
     new Array(config.isFastMode() ? 1 : 5).fill(0).forEach(() => {
         it('random data: should have the same results as without event-reduce', async () => {
+
+
+            console.log('#################################');
+            console.log('#################################');
+            console.log('#################################');
+            console.log('#################################');
+            console.log('#################################');
+
             const colNoEventReduce = await createCollection(false);
             const colWithEventReduce = await createCollection(true);
 
@@ -232,7 +246,8 @@ describe('event-reduce.test.js', () => {
                 {
                     selector: {
                         age: {
-                            $gt: 20
+                            $gt: 20,
+                            $lt: 80
                         }
                     },
                     // TODO it should also work without the sorting
@@ -251,15 +266,13 @@ describe('event-reduce.test.js', () => {
             );
 
             // add some
-            await Promise.all(
-                new Array(3)
-                    .fill(0)
-                    .map(async () => {
-                        const doc = schemaObjects.human();
-                        await colNoEventReduce.insert(doc);
-                        await colWithEventReduce.insert(doc);
-                    })
-            );
+            const docsData = new Array(3).fill(0).map(() => schemaObjects.human());
+            docsData.push(schemaObjects.human('age-is-20', 20));
+            docsData.push(schemaObjects.human('age-is-80', 80));
+            console.log('docsData: ');
+            console.dir(docsData);
+            await colNoEventReduce.bulkInsert(docsData);
+            await colWithEventReduce.bulkInsert(docsData);
 
             await testQueryResultForEqualness(
                 colNoEventReduce,
