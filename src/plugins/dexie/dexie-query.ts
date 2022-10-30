@@ -123,7 +123,10 @@ export async function dexieQuery<RxDocType>(
                     if (cursor) {
                         // We have a record in cursor.value
                         const docData = fromDexieToStorage(cursor.value);
-                        if (!queryMatcher || queryMatcher(docData)) {
+                        if (
+                            !docData._deleted &&
+                            (!queryMatcher || queryMatcher(docData))
+                        ) {
                             rows.push(docData);
                         }
 
