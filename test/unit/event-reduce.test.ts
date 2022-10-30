@@ -225,14 +225,6 @@ describe('event-reduce.test.js', () => {
      */
     new Array(config.isFastMode() ? 1 : 5).fill(0).forEach(() => {
         it('random data: should have the same results as without event-reduce', async () => {
-
-
-            console.log('#################################');
-            console.log('#################################');
-            console.log('#################################');
-            console.log('#################################');
-            console.log('#################################');
-
             const colNoEventReduce = await createCollection(false);
             const colWithEventReduce = await createCollection(true);
 
