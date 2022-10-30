@@ -89,7 +89,8 @@ import type {
     RxDocumentBase,
     RxConflictHandler,
     MaybePromise,
-    CRDTEntry
+    CRDTEntry,
+    MangoQuerySelectorAndIndex
 } from './types';
 import type {
     RxGraphQLReplicationState
@@ -532,7 +533,7 @@ export class RxCollectionBase<
             queryObj = _getDefaultQuery();
         }
 
-        const query = createRxQuery('find', queryObj, this as any);
+        const query = createRxQuery('find', queryObj, this.asRxCollection);
         return query as any;
     }
 
@@ -561,7 +562,7 @@ export class RxCollectionBase<
             }
 
             (queryObj as any).limit = 1;
-            query = createRxQuery('findOne', queryObj, this as any);
+            query = createRxQuery('findOne', queryObj, this.asRxCollection);
         }
 
         if (
@@ -573,6 +574,17 @@ export class RxCollectionBase<
             });
         }
 
+        return query as any;
+    }
+
+    count(queryObj?: MangoQuerySelectorAndIndex<RxDocumentType>): RxQuery<
+        RxDocumentType,
+        number
+    > {
+        if (!queryObj) {
+            queryObj = _getDefaultQuery();
+        }
+        const query = createRxQuery('count', queryObj, this.asRxCollection);
         return query as any;
     }
 

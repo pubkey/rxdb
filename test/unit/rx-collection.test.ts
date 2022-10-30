@@ -1355,6 +1355,16 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
+        describe('.count()', () => {
+            describe('basics', () => {
+                it('should count one document', async () => {
+                    const c = await humansCollection.create(1);
+                    const count = await c.count().exec();
+                    assert.strictEqual(count, 1);
+                    c.database.destroy();
+                });
+            })
+        });
         config.parallel('.bulkUpsert()', () => {
             it('insert and update', async () => {
                 const c = await humansCollection.create(0);

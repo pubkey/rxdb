@@ -61,7 +61,7 @@ export class RxQueryBase<
     RxDocumentType = any,
     // TODO also pass DocMethods here
     RxQueryResult = RxDocument<RxDocumentType>[] | RxDocument<RxDocumentType>
-    > {
+> {
 
     public id: number = newQueryID();
 
@@ -94,6 +94,7 @@ export class RxQueryBase<
         // A key->document map, used in the event reduce optimization.
         docsDataMap: Map<string, RxDocumentType>;
         docs: RxDocument<RxDocumentType>[];
+        count: number;
         /**
          * Time at which the current _result state was created.
          * Used to determine if the result set has changed since X
@@ -205,7 +206,19 @@ export class RxQueryBase<
      * set the new result-data as result-docs of the query
      * @param newResultData json-docs that were received from pouchdb
      */
-    _setResultData(newResultData: RxDocumentData<RxDocumentType[]>): void {
+    _setResultData(newResultData: RxDocumentData<RxDocumentType[]> | number): void {
+
+        if (typeof newResultData === 'number') {
+            this._result = {
+                docsData: [],
+                docsDataMap: new Map(),
+                count: newResultData,
+                docs: [],
+                time: now()
+            }
+            return;
+        }
+
         const docs = createRxDocuments<RxDocumentType, {}>(
             this.collection,
             newResultData
@@ -228,6 +241,7 @@ export class RxQueryBase<
         this._result = {
             docsData,
             docsDataMap,
+            count: docsData.length,
             docs,
             time: now()
         }
@@ -237,9 +251,25 @@ export class RxQueryBase<
      * executes the query on the database
      * @return results-array with document-data
      */
-    _execOverDatabase(): Promise<RxDocumentData<RxDocumentType>[]> {
+    _execOverDatabase(): Promise<RxDocumentData<RxDocumentType>[] | number> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
         this._lastExecStart = now();
+
+
+        if (this.op === 'count') {
+            const preparedQuery = this.getPreparedQuery();
+            return this.collection.storageInstance.count(preparedQuery).then(result => {
+                if (result.mode === 'slow' && !this.collection.database.allowSlowCount) {
+                    throw newRxError('QU14', {
+                        collection: this.collection,
+                        queryObj: this.mangoQuery
+                    });
+                } else {
+                    return result.count;
+                }
+
+            });
+        }
 
         const docsPromise = queryCollection<RxDocumentType>(this as any);
         return docsPromise.then(docs => {
@@ -535,17 +565,39 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
 
-            const eventReduceResult = calculateNewResults(
-                rxQuery as any,
-                runChangeEvents
-            );
-            if (eventReduceResult.runFullQueryAgain) {
-                // could not calculate the new results, execute must be done
-                mustReExec = true;
-            } else if (eventReduceResult.changed) {
-                // we got the new results, we do not have to re-execute, mustReExec stays false
-                ret = true; // true because results changed
-                rxQuery._setResultData(eventReduceResult.newResults as any);
+            if (rxQuery.op === 'count') {
+                // 'count' query
+                const previousCount = ensureNotFalsy(rxQuery._result).count;
+                let newCount = previousCount;
+                runChangeEvents.forEach(cE => {
+                    const didMatchBefore = cE.previousDocumentData && rxQuery.doesDocumentDataMatch(cE.previousDocumentData);
+                    const doesMatchNow = rxQuery.doesDocumentDataMatch(cE.documentData);
+
+                    if (!didMatchBefore && doesMatchNow) {
+                        newCount++;
+                    }
+                    if (didMatchBefore && !doesMatchNow) {
+                        newCount--;
+                    }
+                });
+                if (newCount !== previousCount) {
+                    ret = true; // true because results changed
+                    rxQuery._setResultData(newCount as any);
+                }
+            } else {
+                // 'find' or 'findOne' query
+                const eventReduceResult = calculateNewResults(
+                    rxQuery as any,
+                    runChangeEvents
+                );
+                if (eventReduceResult.runFullQueryAgain) {
+                    // could not calculate the new results, execute must be done
+                    mustReExec = true;
+                } else if (eventReduceResult.changed) {
+                    // we got the new results, we do not have to re-execute, mustReExec stays false
+                    ret = true; // true because results changed
+                    rxQuery._setResultData(eventReduceResult.newResults as any);
+                }
             }
         }
     }

@@ -39,6 +39,8 @@ export const ERROR_MESSAGES = {
     QU11: 'RxQuery: no valid query params given',
     QU12: 'Given index is not in schema',
     QU13: 'A top level field of the query is not included in the schema',
+    QU14: 'Running a count() query in slow mode is now allowed. Either run a count() query with a selector that fully matches an index ' +
+        'or set allowSlowCount=true when calling the createRxDatabase',
 
     // mquery.js
     MQ1: 'path must be a string or object',
