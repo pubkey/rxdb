@@ -25,7 +25,8 @@ import type {
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
-    CategorizeBulkWriteRowsOutput
+    CategorizeBulkWriteRowsOutput,
+    RxStorageCountResult
 } from '../../types';
 import {
     DexiePreparedQuery,
@@ -41,7 +42,7 @@ import {
     getDocsInDb,
     RX_STORAGE_NAME_DEXIE
 } from './dexie-helper';
-import { dexieQuery } from './dexie-query';
+import { dexieCount, dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
@@ -210,6 +211,15 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             this,
             preparedQuery
         );
+    }
+    async count(
+        preparedQuery: DexiePreparedQuery<RxDocType>
+    ): Promise<RxStorageCountResult> {
+        const result = await dexieCount(this, preparedQuery);
+        return {
+            count: result,
+            mode: 'fast'
+        };
     }
 
     async getChangedDocumentsSince(
