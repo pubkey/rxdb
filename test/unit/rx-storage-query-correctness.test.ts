@@ -8,7 +8,8 @@ import {
     fillWithDefaultSettings,
     normalizeMangoQuery,
     now,
-    getPrimaryFieldOfPrimaryKey
+    getPrimaryFieldOfPrimaryKey,
+    clone
 } from '../../';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
@@ -25,6 +26,14 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
             expectedResultDocIds: string[];
         }[]
     };
+    function withIndexes<RxDocType>(
+        schema: RxJsonSchema<RxDocType>,
+        indexes: string[][]
+    ): RxJsonSchema<RxDocType> {
+        schema = clone(schema);
+        schema.indexes = indexes;
+        return schema;
+    }
     function testCorrectQueries<RxDocType>(
         input: TestCorrectQueriesInput<RxDocType>
     ) {
@@ -168,6 +177,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
         ],
-        schema: schemas.human
+        schema: withIndexes(schemas.human, [
+            ['age']
+        ])
     });
 });
