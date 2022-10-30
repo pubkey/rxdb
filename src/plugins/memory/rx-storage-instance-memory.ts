@@ -234,6 +234,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         while (!done) {
             const currentDoc = docsWithIndex[indexOfLower];
 
+
             if (
                 !currentDoc ||
                 currentDoc.indexString > upperBoundString

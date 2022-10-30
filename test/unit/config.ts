@@ -76,12 +76,21 @@ const config: {
     rootPath: string;
     isFastMode: () => boolean;
     storage: RxTestStorage;
+    isNotOneOfTheseStorages: (names: string[]) => boolean;
 } = {
     platform: detect(),
     parallel: useParallel,
     rootPath: '',
     isFastMode,
-    storage: {} as any
+    storage: {} as any,
+    isNotOneOfTheseStorages(storageNames: string[]) {
+        const isName = this.storage.name;
+        if (storageNames.includes(isName)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 };
 
 const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;

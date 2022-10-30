@@ -83,7 +83,7 @@ export function getIndexableStringMonad<RxDocType>(
                 if (!fieldValue) {
                     fieldValue = '';
                 }
-                str += fieldValue.padStart(schemaPart.maxLength as number, ' ');
+                str += fieldValue.padEnd(schemaPart.maxLength as number, ' ');
             } else if (type === 'boolean') {
                 const boolToStr = fieldValue ? '1' : '0';
                 str += boolToStr;
@@ -164,9 +164,9 @@ export function getStartIndexStringFromLowerBound(
             case 'string':
                 const maxLength = ensureNotFalsy(schemaPart.maxLength);
                 if (typeof bound === 'string') {
-                    str += (bound as string).padStart(maxLength, ' ');
+                    str += (bound as string).padEnd(maxLength, ' ');
                 } else {
-                    str += ''.padStart(maxLength, ' ');
+                    str += ''.padEnd(maxLength, ' ');
                 }
                 break;
             case 'boolean':
@@ -218,9 +218,9 @@ export function getStartIndexStringFromUpperBound(
             case 'string':
                 const maxLength = ensureNotFalsy(schemaPart.maxLength);
                 if (typeof bound === 'string') {
-                    str += (bound as string).padStart(maxLength, INDEX_MAX);
+                    str += (bound as string).padEnd(maxLength, INDEX_MAX);
                 } else {
-                    str += ''.padStart(maxLength, INDEX_MAX);
+                    str += ''.padEnd(maxLength, INDEX_MAX);
                 }
                 break;
             case 'boolean':
