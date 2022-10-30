@@ -20,6 +20,8 @@ import './unit/query-planner.test';
  * Do not commit this file if you modified the order.
  */
 import './unit/rx-storage-implementations.test';
+import './unit/rx-storage-query-correctness.test';
+
 import './unit/rx-storage-pouchdb.test';
 import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
@@ -35,7 +37,6 @@ import './unit/attachments.test';
 import './unit/encryption.test';
 import './unit/rx-document.test';
 import './unit/rx-query.test';
-import './unit/query-correctness.test';
 import './unit/primary.test';
 import './unit/local-documents.test';
 import './unit/change-event-buffer.test';

@@ -229,10 +229,15 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             compareDocsWithIndex
         );
 
+
+        console.log('docsWithIndex:');
+        console.dir(docsWithIndex);
+
         let rows: RxDocumentData<RxDocType>[] = [];
         let done = false;
         while (!done) {
             const currentDoc = docsWithIndex[indexOfLower];
+
 
             if (
                 !currentDoc ||
