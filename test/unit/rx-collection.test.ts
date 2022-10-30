@@ -1363,6 +1363,14 @@ describe('rx-collection.test.ts', () => {
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
+                it('should not count deleted documents', async () => {
+                    const c = await humansCollection.create(2);
+                    const doc = await c.findOne().exec(true);
+                    await doc.remove();
+                    const count = await c.count().exec();
+                    assert.strictEqual(count, 1);
+                    c.database.destroy();
+                });
             })
         });
         config.parallel('.bulkUpsert()', () => {

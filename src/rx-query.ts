@@ -153,7 +153,9 @@ export class RxQueryBase<
                  */
                 map((result) => {
                     const useResult = ensureNotFalsy(result);
-                    if (this.op === 'findOne') {
+                    if (this.op === 'count') {
+                        return useResult.count;
+                    } else if (this.op === 'findOne') {
                         // findOne()-queries emit RxDocument or null
                         return useResult.docs.length === 0 ? null : useResult.docs[0];
                     } else {

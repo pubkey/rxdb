@@ -1643,10 +1643,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
                 await ensureCountIs(1);
 
-
                 storageInstance.close();
-
-                process.exit();
             });
         });
         describe('.findDocumentsById()', () => {
