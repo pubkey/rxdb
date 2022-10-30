@@ -208,13 +208,6 @@ describe('event-reduce.test.js', () => {
         await colNoEventReduce.insert(insertForSortTest);
         await colWithEventReduce.insert(insertForSortTest);
 
-
-        console.log('##################################');
-        console.log('##################################');
-        console.log('##################################');
-        console.log('##################################');
-        console.log('##################################');
-
         await testQueryResultForEqualness(
             colNoEventReduce,
             colWithEventReduce,

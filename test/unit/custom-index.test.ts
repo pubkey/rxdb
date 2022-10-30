@@ -321,7 +321,6 @@ config.parallel('custom-index.test.ts', () => {
                 ],
                 true
             );
-
             const matchingDocs = docs.filter(doc => {
                 const isIndexStr = getIndexableStringMonad(
                     schema,
@@ -338,6 +337,8 @@ config.parallel('custom-index.test.ts', () => {
                 docs.length,
                 matchingDocs.length
             );
+
+            // process.exit();
         });
         /**
          * This index is used by some RxStorage implementations

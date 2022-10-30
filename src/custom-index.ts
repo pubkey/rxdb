@@ -15,7 +15,7 @@ import {
     objectPathMonad,
     ObjectPathMonadFunction
 } from './util';
-import { INDEX_MAX } from './query-planner';
+import { INDEX_MAX, INDEX_MIN } from './query-planner';
 
 
 /**
@@ -184,7 +184,7 @@ export function getStartIndexStringFromLowerBound(
                 const parsedLengths = getStringLengthOfIndexNumber(
                     schemaPart
                 );
-                if (bound === null) {
+                if (bound === null || bound === INDEX_MIN) {
                     const fillChar = inclusiveStart ? '0' : INDEX_MAX;
                     str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
                 } else {
@@ -209,7 +209,6 @@ export function getStartIndexStringFromUpperBound(
     inclusiveEnd: boolean
 ): string {
     let str = '';
-
     index.forEach((fieldName, idx) => {
         const schemaPart = getSchemaByObjectPath(
             schema,
@@ -221,14 +220,10 @@ export function getStartIndexStringFromUpperBound(
         switch (type) {
             case 'string':
                 const maxLength = ensureNotFalsy(schemaPart.maxLength);
-                // if (typeof bound === 'string' && bound !== INDEX_MAX) {
-                //     str += (bound as string).padStart(maxLength, INDEX_MAX);
-                // } else {
-                //     str += ''.padStart(maxLength, inclusiveEnd ? INDEX_MAX : ' ');
                 if (typeof bound === 'string') {
-                    str += (bound as string).padEnd(maxLength, INDEX_MAX);
+                    str += (bound as string).padEnd(maxLength, inclusiveEnd ? INDEX_MAX : ' ');
                 } else {
-                    str += ''.padEnd(maxLength, INDEX_MAX);
+                    str += ''.padEnd(maxLength, inclusiveEnd ? INDEX_MAX : ' ');
                 }
                 break;
             case 'boolean':
