@@ -264,7 +264,8 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     true,
                     30
-                ]
+                ],
+                false
             );
 
             const matchingDocs = docs.filter(doc => {
@@ -292,7 +293,8 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     false,
                     30
-                ]
+                ],
+                false
             );
             const matchingDocs = docs.filter(doc => {
                 const isIndexStr = getIndexableStringMonad(
@@ -316,9 +318,9 @@ config.parallel('custom-index.test.ts', () => {
                 index,
                 [
                     undefined
-                ]
+                ],
+                true
             );
-
             const matchingDocs = docs.filter(doc => {
                 const isIndexStr = getIndexableStringMonad(
                     schema,
@@ -335,6 +337,8 @@ config.parallel('custom-index.test.ts', () => {
                 docs.length,
                 matchingDocs.length
             );
+
+            // process.exit();
         });
         /**
          * This index is used by some RxStorage implementations
@@ -351,7 +355,8 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     true,
                     1
-                ]
+                ],
+                false
             );
 
             const doc = getIndexTestDoc();
@@ -368,7 +373,8 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     true,
                     now() + 1000 * 10
-                ]
+                ],
+                false
             );
             assert.ok(upperBoundString.startsWith('1'));
             assert.ok(docIndexString < upperBoundString);
@@ -378,7 +384,8 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     true,
                     now() + 1000 * 100
-                ]
+                ],
+                false
             );
             assert.ok(upperBoundString2 > upperBoundString);
         });

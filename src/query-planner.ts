@@ -1,6 +1,7 @@
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     FilledMangoQuery,
+    MangoQuerySelector,
     RxDocumentData,
     RxJsonSchema,
     RxQueryPlan,
@@ -44,29 +45,33 @@ export function getQueryPlan<RxDocType>(
     let currentBestQueryPlan: RxQueryPlan | undefined;
 
     indexes.forEach((index) => {
+        let inclusiveEnd = true;
+        let inclusiveStart = true;
         const opts: RxQueryPlanerOpts[] = index.map(indexField => {
             const matcher = selector[indexField];
             const operators = matcher ? Object.keys(matcher) : [];
+
+            let matcherOpts: RxQueryPlanerOpts = {} as any;
+
             if (
                 !matcher ||
                 !operators.length
             ) {
-                return {
-                    startKey: INDEX_MIN,
-                    endKey: INDEX_MAX,
+                matcherOpts = {
+                    startKey: inclusiveStart ? INDEX_MIN : INDEX_MAX,
+                    endKey: inclusiveEnd ? INDEX_MAX : INDEX_MIN,
                     inclusiveStart: true,
                     inclusiveEnd: true
                 };
+            } else {
+                operators.forEach(operator => {
+                    if (isLogicalOperator(operator)) {
+                        const operatorValue = matcher[operator];
+                        const partialOpts = getMatcherQueryOpts(operator, operatorValue);
+                        matcherOpts = Object.assign(matcherOpts, partialOpts);
+                    }
+                });
             }
-
-            let matcherOpts: RxQueryPlanerOpts = {} as any;
-            operators.forEach(operator => {
-                if (isLogicalOperator(operator)) {
-                    const operatorValue = matcher[operator];
-                    const partialOpts = getMatcherQueryOpts(operator, operatorValue);
-                    matcherOpts = Object.assign(matcherOpts, partialOpts);
-                }
-            });
 
             // fill missing attributes
             if (typeof matcherOpts.startKey === 'undefined') {
@@ -82,6 +87,14 @@ export function getQueryPlan<RxDocType>(
                 matcherOpts.inclusiveEnd = true;
             }
 
+
+            if (inclusiveStart && !matcherOpts.inclusiveStart) {
+                inclusiveStart = false;
+            }
+            if (inclusiveEnd && !matcherOpts.inclusiveEnd) {
+                inclusiveEnd = false;
+            }
+
             return matcherOpts;
         });
 
@@ -89,9 +102,10 @@ export function getQueryPlan<RxDocType>(
             index,
             startKeys: opts.map(opt => opt.startKey),
             endKeys: opts.map(opt => opt.endKey),
-            inclusiveEnd: !opts.find(opt => !opt.inclusiveEnd),
-            inclusiveStart: !opts.find(opt => !opt.inclusiveStart),
-            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(',')
+            inclusiveEnd,
+            inclusiveStart,
+            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(','),
+            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
         };
         const quality = rateQueryPlan(
             schema,
@@ -114,13 +128,14 @@ export function getQueryPlan<RxDocType>(
      * No index found, use the default index
      */
     if (!currentBestQueryPlan) {
-        return {
+        currentBestQueryPlan = {
             index: [primaryPath],
             startKeys: [INDEX_MIN],
             endKeys: [INDEX_MAX],
             inclusiveEnd: true,
             inclusiveStart: true,
-            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath
+            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath,
+            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex([primaryPath], query.selector)
         }
     }
 
@@ -132,7 +147,36 @@ export function isLogicalOperator(operator: string): boolean {
     return LOGICAL_OPERATORS.has(operator);
 }
 
-export function getMatcherQueryOpts(operator: string, operatorValue: any): Partial<RxQueryPlanerOpts> {
+export function isSelectorSatisfiedByIndex(
+    index: string[],
+    selector: MangoQuerySelector
+): boolean {
+    const nonMatching = Object.entries(selector)
+        .find(([field, operation]) => {
+            if (!index.includes(field)) {
+                return true;
+            }
+            const hasNonLogicOperator = Object.entries(operation)
+                .find(([op, _value]) => {
+                    if (!isLogicalOperator(op)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+            return hasNonLogicOperator;
+        });
+    if (nonMatching) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+export function getMatcherQueryOpts(
+    operator: string,
+    operatorValue: any
+): Partial<RxQueryPlanerOpts> {
     switch (operator) {
         case '$eq':
             return {

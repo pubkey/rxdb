@@ -371,24 +371,14 @@ config.parallel('crdt.test.js', () => {
                     pull: {
                         batchSize: 10,
                         async handler(lastPulledCheckpoint, batchSize) {
-                            console.log('pull send:');
-                            console.dir(lastPulledCheckpoint);
                             const ret = await pullHandler(lastPulledCheckpoint, batchSize);
-                            console.log('pull ret:');
-                            console.dir(ret);
                             return ret;
                         }
                     },
                     push: {
                         batchSize: 10,
                         async handler(docs) {
-                            console.log('push send:');
-                            console.dir(docs);
                             const ret = await pushHandler(docs);
-                            console.log('push ret:');
-                            console.dir(ret);
-
-
                             return ret;
                         }
                     }

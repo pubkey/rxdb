@@ -1,3 +1,4 @@
+import { QueryMatcher } from 'event-reduce-js';
 import {
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
@@ -26,11 +27,15 @@ export async function queryFoundationDB<RxDocType>(
     const queryPlanFields: string[] = queryPlan.index;
     const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
 
-    const queryMatcher = RxStorageDexieStatics.getQueryMatcher(
-        instance.schema,
-        preparedQuery
-    );
-    const sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
+
+    let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;
+    if (!queryPlan.selectorSatisfiedByIndex) {
+        queryMatcher = RxStorageDexieStatics.getQueryMatcher(
+            instance.schema,
+            preparedQuery
+        );
+    }
+
     const dbs = await instance.internals.dbsPromise;
 
 
@@ -44,7 +49,8 @@ export async function queryFoundationDB<RxDocType>(
     const lowerBoundString = getStartIndexStringFromLowerBound(
         instance.schema,
         indexForName,
-        lowerBound
+        lowerBound,
+        queryPlan.inclusiveStart
     );
 
     let upperBound: any[] = queryPlan.endKeys;
@@ -52,7 +58,8 @@ export async function queryFoundationDB<RxDocType>(
     const upperBoundString = getStartIndexStringFromUpperBound(
         instance.schema,
         indexForName,
-        upperBound
+        upperBound,
+        queryPlan.inclusiveEnd
     );
     let result = await dbs.root.doTransaction(async (tx: any) => {
         const innerResult: RxDocumentData<RxDocType>[] = [];
@@ -79,9 +86,7 @@ export async function queryFoundationDB<RxDocType>(
             const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map((docId: string) => mainTx.get(docId)));
             docsData.forEach((docData) => {
                 if (!done) {
-                    if (
-                        queryMatcher(docData)
-                    ) {
+                    if (!queryMatcher || queryMatcher(docData)) {
                         innerResult.push(docData);
                     }
                 }
@@ -97,6 +102,7 @@ export async function queryFoundationDB<RxDocType>(
         return innerResult;
     });
     if (mustManuallyResort) {
+        const sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
         result = result.sort(sortComparator);
     }
 
