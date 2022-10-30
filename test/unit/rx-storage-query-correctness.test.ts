@@ -160,7 +160,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'ee'
                 ]
             },
-            // sort by sth that is not in the selector
+            // sort by something that is not in the selector
             {
                 query: {
                     selector: {
