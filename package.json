@@ -65,6 +65,7 @@
     "test:node:memory:loop": "npm run test:node:memory && npm run test:node:memory:loop",
     "test:node:dexie:loop": "npm run test:node:dexie && npm run test:node:dexie:loop",
     "test:node:dexie-worker:loop": "npm run test:node:dexie-worker && npm run test:node:dexie-worker:loop",
+    "test:node:foundationdb:loop": "npm run test:node:foundationdb && npm run test:node:foundationdb:loop",
     "test:node:custom": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "// test:node:loop": "runs tests in node in a loop. Use this to debug tests that only fail sometimes",
     "test:node:loop": "npm run test:node && npm run test:node:loop",

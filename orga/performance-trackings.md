@@ -1009,3 +1009,15 @@ BEFORE:
 
 AFTER:
 
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 600,
+    "time-to-first-insert": 3.2232383333321195,
+    "insert-documents": 23.658734166664846,
+    "find-by-ids": 0.3708604166846878,
+    "find-by-query": 1.4871898333367426
+}
+
+

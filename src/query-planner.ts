@@ -45,29 +45,33 @@ export function getQueryPlan<RxDocType>(
     let currentBestQueryPlan: RxQueryPlan | undefined;
 
     indexes.forEach((index) => {
+        let inclusiveEnd = true;
+        let inclusiveStart = true;
         const opts: RxQueryPlanerOpts[] = index.map(indexField => {
             const matcher = selector[indexField];
             const operators = matcher ? Object.keys(matcher) : [];
+
+            let matcherOpts: RxQueryPlanerOpts = {} as any;
+
             if (
                 !matcher ||
                 !operators.length
             ) {
-                return {
-                    startKey: INDEX_MIN,
-                    endKey: INDEX_MAX,
+                matcherOpts = {
+                    startKey: inclusiveStart ? INDEX_MIN : INDEX_MAX,
+                    endKey: inclusiveEnd ? INDEX_MAX : INDEX_MIN,
                     inclusiveStart: true,
                     inclusiveEnd: true
                 };
+            } else {
+                operators.forEach(operator => {
+                    if (isLogicalOperator(operator)) {
+                        const operatorValue = matcher[operator];
+                        const partialOpts = getMatcherQueryOpts(operator, operatorValue);
+                        matcherOpts = Object.assign(matcherOpts, partialOpts);
+                    }
+                });
             }
-
-            let matcherOpts: RxQueryPlanerOpts = {} as any;
-            operators.forEach(operator => {
-                if (isLogicalOperator(operator)) {
-                    const operatorValue = matcher[operator];
-                    const partialOpts = getMatcherQueryOpts(operator, operatorValue);
-                    matcherOpts = Object.assign(matcherOpts, partialOpts);
-                }
-            });
 
             // fill missing attributes
             if (typeof matcherOpts.startKey === 'undefined') {
@@ -83,6 +87,14 @@ export function getQueryPlan<RxDocType>(
                 matcherOpts.inclusiveEnd = true;
             }
 
+
+            if (inclusiveStart && !matcherOpts.inclusiveStart) {
+                inclusiveStart = false;
+            }
+            if (inclusiveEnd && !matcherOpts.inclusiveEnd) {
+                inclusiveEnd = false;
+            }
+
             return matcherOpts;
         });
 
@@ -90,8 +102,8 @@ export function getQueryPlan<RxDocType>(
             index,
             startKeys: opts.map(opt => opt.startKey),
             endKeys: opts.map(opt => opt.endKey),
-            inclusiveEnd: !opts.find(opt => !opt.inclusiveEnd),
-            inclusiveStart: !opts.find(opt => !opt.inclusiveStart),
+            inclusiveEnd,
+            inclusiveStart,
             sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(','),
             selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
         };
@@ -126,6 +138,7 @@ export function getQueryPlan<RxDocType>(
             selectorSatisfiedByIndex: isSelectorSatisfiedByIndex([primaryPath], query.selector)
         }
     }
+
     return currentBestQueryPlan;
 }
 
@@ -160,7 +173,10 @@ export function isSelectorSatisfiedByIndex(
     }
 }
 
-export function getMatcherQueryOpts(operator: string, operatorValue: any): Partial<RxQueryPlanerOpts> {
+export function getMatcherQueryOpts(
+    operator: string,
+    operatorValue: any
+): Partial<RxQueryPlanerOpts> {
     switch (operator) {
         case '$eq':
             return {

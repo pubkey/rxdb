@@ -68,10 +68,8 @@ describe('event-reduce.test.js', () => {
         queries: MangoQuery<RxDocType>[]
     ) {
         for (const query of queries) {
-            const [res1, res2] = await Promise.all([
-                col1.find(query).exec(),
-                col2.find(query).exec()
-            ]);
+            const res1 = await col1.find(query).exec();
+            const res2 = await col2.find(query).exec();
             try {
                 ensureResultsEqual(res1, res2);
             } catch (err) {
@@ -261,8 +259,6 @@ describe('event-reduce.test.js', () => {
             const docsData = new Array(3).fill(0).map(() => schemaObjects.human());
             docsData.push(schemaObjects.human('age-is-20', 20));
             docsData.push(schemaObjects.human('age-is-80', 80));
-            console.log('docsData: ');
-            console.dir(docsData);
             await colNoEventReduce.bulkInsert(docsData);
             await colWithEventReduce.bulkInsert(docsData);
 

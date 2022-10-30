@@ -11,7 +11,9 @@ import {
     RxJsonSchema,
     getQueryPlan,
     normalizeMangoQuery,
-    INDEX_MAX
+    INDEX_MAX,
+    lastOfArray,
+    INDEX_MIN
 } from '../../';
 
 
@@ -126,6 +128,34 @@ config.parallel('query-planner.test.js', () => {
             assert.strictEqual(queryPlan.startKeys[0], 20);
             assert.strictEqual(queryPlan.endKeys[0], INDEX_MAX);
             assert.ok(queryPlan.inclusiveStart);
+        });
+        it('should have the correct start- and end keys when inclusiveStart and inclusiveEnd are false', () => {
+            const schema = getHumanSchemaWithIndexes([['age']]);
+            const query = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {
+                        age: {
+                            $gt: 20,
+                            $lt: 80
+                        }
+                    },
+                    index: ['age']
+                }
+            );
+            const queryPlan = getQueryPlan<HumanDocumentType>(
+                schema,
+                query
+            );
+            assert.deepStrictEqual(queryPlan.index, ['age', 'passportId']);
+            assert.strictEqual(queryPlan.startKeys[0], 20);
+            assert.strictEqual(queryPlan.endKeys[0], 80);
+
+            assert.strictEqual(queryPlan.inclusiveStart, false);
+            assert.strictEqual(queryPlan.inclusiveEnd, false);
+
+            assert.strictEqual(lastOfArray(queryPlan.startKeys), INDEX_MAX);
+            assert.strictEqual(lastOfArray(queryPlan.endKeys), INDEX_MIN);
         });
         it('should use the best plan for an equals comparison', () => {
             const schema = getHumanSchemaWithIndexes([]);
