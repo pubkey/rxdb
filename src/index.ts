@@ -153,6 +153,7 @@ export type {
     RxStorageDefaultCheckpoint,
     CategorizeBulkWriteRowsOutput,
     DexiePreparedQuery,
+    RxStorageCountResult,
 
     // conflict handling
     RxConflictHandler,
@@ -206,6 +207,5 @@ export type {
     WithAttachmentsData,
     RxTestStorage,
     ById,
-
     RxQueryPlan
 } from './types';

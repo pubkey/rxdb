@@ -24,6 +24,7 @@ import { DeepReadonly } from '../../types/util';
 
 export * from './check-schema';
 export * from './unallowed-properties';
+export * from './check-query';
 
 import deepFreeze from 'deep-freeze';
 

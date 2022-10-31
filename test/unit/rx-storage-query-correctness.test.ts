@@ -11,6 +11,9 @@ import {
     getPrimaryFieldOfPrimaryKey,
     clone
 } from '../../';
+import {
+    areSelectorsSatisfiedByIndex
+} from '../../plugins/dev-mode';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
 import { human } from '../helper/schema-objects';
@@ -85,16 +88,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     normalizedQuery
                 );
 
-                // Test output of RxStorageInstance.query();
-                const resultFromStorage = await storageInstance.query(preparedQuery);
-                const resultIds = resultFromStorage.documents.map(d => (d as any)[primaryPath]);
-                try {
-                    assert.deepStrictEqual(resultIds, queryData.expectedResultDocIds);
-                } catch (err) {
-                    console.log('WRONG QUERY RESULTS FROM .query():');
-                    console.dir(queryData);
-                    throw err;
-                }
 
                 // Test output of RxStorageStatics
                 const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(schema, preparedQuery);
@@ -110,6 +103,36 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     console.log('WRONG QUERY RESULTS FROM STATICS:');
                     console.dir(queryData);
                     throw err;
+                }
+
+                // Test output of RxStorageInstance.query();
+                const resultFromStorage = await storageInstance.query(preparedQuery);
+                const resultIds = resultFromStorage.documents.map(d => (d as any)[primaryPath]);
+                try {
+                    assert.deepStrictEqual(resultIds, queryData.expectedResultDocIds);
+                } catch (err) {
+                    console.log('WRONG QUERY RESULTS FROM .query():');
+                    console.dir(queryData);
+                    throw err;
+                }
+
+                // Test output of .count()
+                if (
+                    !queryData.query.limit &&
+                    !queryData.query.skip &&
+                    areSelectorsSatisfiedByIndex(schema, normalizedQuery)
+                ) {
+                    const countResult = await storageInstance.count(preparedQuery);
+                    try {
+                        assert.strictEqual(
+                            countResult.count,
+                            queryData.expectedResultDocIds.length
+                        );
+                    } catch (err) {
+                        console.log('WRONG QUERY RESULTS FROM .count():');
+                        console.dir(queryData);
+                        throw err;
+                    }
                 }
             }
 
@@ -131,6 +154,9 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
             human('dd', 40),
             human('ee', 50)
         ],
+        schema: withIndexes(schemas.human, [
+            ['age']
+        ]),
         queries: [
             /**
              * TODO using $gte in pouchdb returns the wrong results,
@@ -183,10 +209,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'ee'
                 ]
             },
-        ],
-        schema: withIndexes(schemas.human, [
-            ['age']
-        ])
+        ]
     });
     testCorrectQueries<schemas.HumanDocumentType>({
         testTitle: '$lt/$lte with number',
