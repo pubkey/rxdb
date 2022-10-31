@@ -158,6 +158,53 @@ myCollection.find({
 ```
 
 
+
+
+## Query Examples
+Here some examples to fast learn how to write queries without reading the docs.
+- [Pouch-find-docs](https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md) - learn how to use mango-queries
+- [mquery-docs](https://github.com/aheckmann/mquery/blob/master/README.md) - learn how to use chained-queries
+
+
+```js
+// directly pass search-object
+myCollection.find({
+  selector: {
+    name: { $eq: 'foo' }
+  }
+})
+.exec().then(documents => console.dir(documents));
+
+// find by using sql equivalent '%like%' syntax
+// This example will fe: match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
+myCollection.find({
+  selector: {
+    name: { $regex: '.*foo.*' }
+  }
+})
+.exec().then(documents => console.dir(documents));
+
+// find using a composite statement eg: $or
+// This example checks where name is either foo or if name is not existant on the document
+myCollection.find({
+  selector: { $or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }] }
+})
+.exec().then(documents => console.dir(documents));
+
+// do a case insensitive search
+// This example will match 'foo' or 'FOO' or 'FoO' etc...
+var regexp = new RegExp('^foo$', 'i');
+myCollection.find({
+  selector: { name: { $regex: regexp } }
+})
+.exec().then(documents => console.dir(documents));
+
+// chained queries
+myCollection.find().where('name').eq('foo')
+.exec().then(documents => console.dir(documents));
+```
+
+
 ## Setting a specific index
 
 By default, the query will be send to the RxStorage, where a query planner will determine which one of the available indexes must be used.
@@ -209,7 +256,7 @@ query.$.subscribe(amount => {
 });
 ```
 
-**IMPORTANT:** It is **not** possible to run a `count()` query with a selector that **does not** fully match an index of the schema. These queries would have no performance benefit compared to normal queries but have the tradeoff not not using the fetched document data for caching.
+**IMPORTANT:** count queries have a better performance then normal queries because they do not have to fetch the full document data out of the storage. Therefore it is **not** possible to run a `count()` query with a selector that requires to fetch and compared the document data. So if your query selector **does not** fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff not not using the fetched document data for caching.
 
 ```ts
 /**
@@ -246,7 +293,7 @@ const query = myCollection.count({
 If you want to count these kind of queries, you should do a normal query instead and use the length of the result set as counter. This has the same performance as running a non-fully-indexed count which has to fetch all document data from the database and run a query matcher.
 
 ```ts
-
+// get count manually once
 const resultSet = await myCollection.find({
   selector: {
     age: {
@@ -256,6 +303,16 @@ const resultSet = await myCollection.find({
 }).exec();
 const count = resultSet.length;
 
+// observe count manually
+const count$ = myCollection.find({
+  selector: {
+    age: {
+      $regex: 'foobar'
+    }
+  }
+}).$.pipe(
+  map(result => result.length)
+);
 
 /**
  * To allow non-fully-indexed count queries,
@@ -267,51 +324,6 @@ const database = await createRxDatabase({
     allowSlowCount: true, // set this to true [default=false]
     /* ... */
 });
-```
-
-
-## Query Examples
-Here some examples to fast learn how to write queries without reading the docs.
-- [Pouch-find-docs](https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md) - learn how to use mango-queries
-- [mquery-docs](https://github.com/aheckmann/mquery/blob/master/README.md) - learn how to use chained-queries
-
-
-```js
-// directly pass search-object
-myCollection.find({
-  selector: {
-    name: { $eq: 'foo' }
-  }
-})
-.exec().then(documents => console.dir(documents));
-
-// find by using sql equivalent '%like%' syntax
-// This example will fe: match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
-myCollection.find({
-  selector: {
-    name: { $regex: '.*foo.*' }
-  }
-})
-.exec().then(documents => console.dir(documents));
-
-// find using a composite statement eg: $or
-// This example checks where name is either foo or if name is not existant on the document
-myCollection.find({
-  selector: { $or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }] }
-})
-.exec().then(documents => console.dir(documents));
-
-// do a case insensitive search
-// This example will match 'foo' or 'FOO' or 'FoO' etc...
-var regexp = new RegExp('^foo$', 'i');
-myCollection.find({
-  selector: { name: { $regex: regexp } }
-})
-.exec().then(documents => console.dir(documents));
-
-// chained queries
-myCollection.find().where('name').eq('foo')
-.exec().then(documents => console.dir(documents));
 ```
 
 ## NOTICE: RxDB will always append the primary key to the sort parameters

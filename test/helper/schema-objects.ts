@@ -341,20 +341,26 @@ export interface AverageSchemaDocumentType {
         deep2: string;
     }[];
 }
-export function averageSchema(): AverageSchemaDocumentType {
-    return {
-        id: randomString(12),
-        var1: randomString(12),
-        var2: randomNumber(100, 50000),
-        deep: {
-            deep1: randomString(5),
-            deep2: randomString(8)
+export function averageSchema(
+    partial: Partial<AverageSchemaDocumentType> = {}
+): AverageSchemaDocumentType {
+    return Object.assign(
+        {},
+        {
+            id: randomString(12),
+            var1: randomString(12),
+            var2: randomNumber(100, 50000),
+            deep: {
+                deep1: randomString(5),
+                deep2: randomString(8)
+            },
+            list: new Array(5).fill(0).map(() => ({
+                deep1: randomString(5),
+                deep2: randomString(8)
+            }))
         },
-        list: new Array(5).fill(0).map(() => ({
-            deep1: randomString(5),
-            deep2: randomString(8)
-        }))
-    };
+        partial
+    );
 }
 
 export interface PointDocumentType {

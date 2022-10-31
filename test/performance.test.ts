@@ -106,8 +106,9 @@ describe('performance.test.ts', () => {
             const docIds: string[] = [];
             const docsData = new Array(docsAmount)
                 .fill(0)
-                .map(() => {
-                    const data = schemaObjects.averageSchema();
+                .map((_v, idx) => {
+                    const var1 = idx % 2;
+                    const data = schemaObjects.averageSchema({ var1: var1 + '' });
                     docIds.push(data.id);
                     return data;
                 });
@@ -143,6 +144,21 @@ describe('performance.test.ts', () => {
             const queryResult = await query.exec();
             updateTime('find-by-query');
             assert.strictEqual(queryResult.length, docsAmount + 1);
+
+
+            // run count query
+            updateTime();
+            const countQuery = collection.count({
+                selector: {
+                    var1: {
+                        $eq: '1'
+                    }
+                }
+            });
+            const countQueryResult = await countQuery.exec();
+            updateTime('count');
+            assert.ok(countQueryResult >= (docsAmount / 2));
+            assert.ok(countQueryResult < (docsAmount * 0.8));
 
             await db.remove();
         }

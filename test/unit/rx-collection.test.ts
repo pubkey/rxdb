@@ -1367,13 +1367,25 @@ describe('rx-collection.test.ts', () => {
                     const c = await humansCollection.create(2);
                     const emitted: number[] = [];
                     c.count().$.subscribe(nr => emitted.push(nr));
-
-
                     const doc = await c.findOne().exec(true);
                     await doc.remove();
                     const count = await c.count().exec();
                     assert.strictEqual(count, 1);
                     assert.deepStrictEqual(emitted, [2, 1]);
+                    c.database.destroy();
+                });
+                it('count matching only', async () => {
+                    const c = await humansCollection.createAgeIndex(0);
+                    await c.insert(schemaObjects.human('aa', 1));
+                    await c.insert(schemaObjects.human('bb', 2));
+                    const count = await c.count({
+                        selector: {
+                            age: {
+                                $eq: 1
+                            }
+                        }
+                    }).exec();
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
             });
