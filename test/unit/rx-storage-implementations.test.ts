@@ -1618,11 +1618,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 await ensureCountIs(0);
 
 
-                await storageInstance.bulkWrite([{ document: getWriteData() }]);
+                await storageInstance.bulkWrite([{ document: getWriteData() }], testContext);
                 await ensureCountIs(1);
 
                 const writeData = getWriteData();
-                const insertResult = await storageInstance.bulkWrite([{ document: writeData }]);
+                const insertResult = await storageInstance.bulkWrite([{ document: writeData }], testContext);
                 await ensureCountIs(2);
 
 
