@@ -23,6 +23,7 @@ import type {
     RxStorageBulkWriteError,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
+    RxStorageCountResult,
     RxStorageInstance,
     RxStorageQueryResult,
     StringKeys
@@ -273,6 +274,19 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             })
         };
         return ret;
+    }
+    async count(
+        preparedQuery: PreparedQuery<RxDocType>
+    ): Promise<RxStorageCountResult> {
+        /**
+         * There is no count method in PouchDB,
+         * so we have to run a normal query and use the result length.
+         */
+        const result = await this.query(preparedQuery);
+        return {
+            count: result.documents.length,
+            mode: 'fast'
+        };
     }
 
     async getAttachmentData(
