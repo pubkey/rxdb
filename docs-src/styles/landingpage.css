@@ -606,6 +606,12 @@ header .logo img {
     position: relative;
     height: 530px;
 }
+@media (max-width: 600px) {
+    .block.frameworks .content {
+        height: 570px;
+    }
+}
+
 
 .block.frameworks .circle {
     font-size: 85%;
