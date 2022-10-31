@@ -257,7 +257,7 @@ export function getCRDTConflictHandler(hashFunction, storageStatics, schema) {
   return conflictHandler;
 }
 export var RX_CRDT_CONTEXT = 'rx-crdt';
-export var RxDDcrdtPlugin = {
+export var RxDBcrdtPlugin = {
   name: 'crdt',
   rxdb: true,
   prototypes: {

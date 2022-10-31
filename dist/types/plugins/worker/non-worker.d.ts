@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageInstance, BulkWriteRow, RxDocumentData, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageQueryResult, EventBulk, RxStorageStatics, RxDocumentDataById, RxConflictResultionTask, RxConflictResultionTaskSolution } from '../../types';
+import type { RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageInstance, BulkWriteRow, RxDocumentData, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageQueryResult, EventBulk, RxStorageStatics, RxDocumentDataById, RxConflictResultionTask, RxConflictResultionTaskSolution, RxStorageCountResult } from '../../types';
 import { InWorkerStorage } from './in-worker';
 declare type WorkerStorageInternals = {
     rxStorage: RxStorageWorker;
@@ -36,6 +36,7 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>>;
+    count(preparedQuery: any): Promise<RxStorageCountResult>;
     getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
     getChangedDocumentsSince(limit: number, checkpoint?: any): Promise<{
         documents: RxDocumentData<RxDocType>[];

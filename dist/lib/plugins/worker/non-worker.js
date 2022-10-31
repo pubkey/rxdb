@@ -107,6 +107,9 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
   _proto2.query = function query(preparedQuery) {
     return this.internals.worker.query(this.internals.instanceId, preparedQuery);
   };
+  _proto2.count = function count(preparedQuery) {
+    return this.internals.worker.count(this.internals.instanceId, preparedQuery);
+  };
   _proto2.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     return this.internals.worker.getAttachmentData(this.internals.instanceId, documentId, attachmentId);
   };

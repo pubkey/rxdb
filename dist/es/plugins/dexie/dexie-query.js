@@ -1,5 +1,53 @@
 import { dexieReplaceIfStartsWithPipe, DEXIE_DOCS_TABLE_NAME, fromDexieToStorage } from './dexie-helper';
 import { RxStorageDexieStatics } from './rx-storage-dexie';
+export var dexieCount = function dexieCount(instance, preparedQuery) {
+  try {
+    return Promise.resolve(instance.internals).then(function (state) {
+      var queryPlan = preparedQuery.queryPlan;
+      var queryPlanFields = queryPlan.index;
+      var keyRange = getKeyRangeByQueryPlan(queryPlan, state.dexieDb._options.IDBKeyRange);
+      var count = -1;
+      return Promise.resolve(state.dexieDb.transaction('r', state.dexieTable, function (dexieTx) {
+        try {
+          var tx = dexieTx.idbtrans;
+          var store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
+          var index;
+          if (queryPlanFields.length === 1 && queryPlanFields[0] === instance.primaryPath) {
+            index = store;
+          } else {
+            var indexName;
+            if (queryPlanFields.length === 1) {
+              indexName = dexieReplaceIfStartsWithPipe(queryPlanFields[0]);
+            } else {
+              indexName = '[' + queryPlanFields.map(function (field) {
+                return dexieReplaceIfStartsWithPipe(field);
+              }).join('+') + ']';
+            }
+            index = store.index(indexName);
+          }
+          var request = index.count(keyRange);
+          return Promise.resolve(new Promise(function (res, rej) {
+            request.onsuccess = function () {
+              var count = request.result;
+              res(count);
+            };
+            request.onerror = function (err) {
+              return rej(err);
+            };
+          })).then(function (_Promise) {
+            count = _Promise;
+          });
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      })).then(function () {
+        return count;
+      });
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 /**
  * Runs mango queries over the Dexie.js database.
  */
@@ -7,12 +55,14 @@ export var dexieQuery = function dexieQuery(instance, preparedQuery) {
   try {
     return Promise.resolve(instance.internals).then(function (state) {
       var query = preparedQuery.query;
-      var queryMatcher = RxStorageDexieStatics.getQueryMatcher(instance.schema, preparedQuery);
-      var sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
       var skip = query.skip ? query.skip : 0;
       var limit = query.limit ? query.limit : Infinity;
       var skipPlusLimit = skip + limit;
       var queryPlan = preparedQuery.queryPlan;
+      var queryMatcher = false;
+      if (!queryPlan.selectorSatisfiedByIndex) {
+        queryMatcher = RxStorageDexieStatics.getQueryMatcher(instance.schema, preparedQuery);
+      }
       var keyRange = getKeyRangeByQueryPlan(queryPlan, state.dexieDb._options.IDBKeyRange);
       var queryPlanFields = queryPlan.index;
       var rows = [];
@@ -51,7 +101,7 @@ export var dexieQuery = function dexieQuery(instance, preparedQuery) {
               if (cursor) {
                 // We have a record in cursor.value
                 var docData = fromDexieToStorage(cursor.value);
-                if (queryMatcher(docData)) {
+                if (!docData._deleted && (!queryMatcher || queryMatcher(docData))) {
                   rows.push(docData);
                 }
 
@@ -77,6 +127,7 @@ export var dexieQuery = function dexieQuery(instance, preparedQuery) {
         }
       })).then(function () {
         if (!queryPlan.sortFieldsSameAsIndexFields) {
+          var sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
           rows = rows.sort(sortComparator);
         }
 
@@ -114,14 +165,16 @@ export function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
       IDBKeyRange = window.IDBKeyRange;
     }
   }
-
+  var ret;
   /**
    * If index has only one field,
    * we have to pass the keys directly, not the key arrays.
    */
   if (queryPlan.index.length === 1) {
-    return IDBKeyRange.bound(queryPlan.startKeys[0], queryPlan.endKeys[0], queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
+    ret = IDBKeyRange.bound(queryPlan.startKeys[0], queryPlan.endKeys[0], queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
+  } else {
+    ret = IDBKeyRange.bound(queryPlan.startKeys, queryPlan.endKeys, queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
   }
-  return IDBKeyRange.bound(queryPlan.startKeys, queryPlan.endKeys, queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
+  return ret;
 }
 //# sourceMappingURL=dexie-query.js.map

@@ -23,6 +23,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>;
     readonly hashFunction: HashFunction;
     readonly cleanupPolicy?: Partial<RxCleanupPolicy> | undefined;
+    readonly allowSlowCount?: boolean | undefined;
     readonly idleQueue: IdleQueue;
     constructor(name: string, 
     /**
@@ -33,7 +34,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     /**
      * Stores information documents about the collections of the database
      */
-    internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>, hashFunction: HashFunction, cleanupPolicy?: Partial<RxCleanupPolicy> | undefined);
+    internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>, hashFunction: HashFunction, cleanupPolicy?: Partial<RxCleanupPolicy> | undefined, allowSlowCount?: boolean | undefined);
     get $(): Observable<RxChangeEvent<any>>;
     _subs: Subscription[];
     /**
@@ -144,7 +145,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
 export declare function createRxDatabaseStorageInstance<Internals, InstanceCreationOptions>(databaseInstanceToken: string, storage: RxStorage<Internals, InstanceCreationOptions>, databaseName: string, options: InstanceCreationOptions, multiInstance: boolean, password?: string): Promise<RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>>;
 export declare function createRxDatabase<Collections = {
     [key: string]: RxCollection;
-}, Internals = any, InstanceCreationOptions = any>({ storage, instanceCreationOptions, name, password, multiInstance, eventReduce, ignoreDuplicate, options, cleanupPolicy, localDocuments, hashFunction }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections, Internals, InstanceCreationOptions>>;
+}, Internals = any, InstanceCreationOptions = any>({ storage, instanceCreationOptions, name, password, multiInstance, eventReduce, ignoreDuplicate, options, cleanupPolicy, allowSlowCount, localDocuments, hashFunction }: RxDatabaseCreator<Internals, InstanceCreationOptions>): Promise<RxDatabase<Collections, Internals, InstanceCreationOptions>>;
 /**
  * Removes the database and all its known data
  * with all known collections and all internal meta data.

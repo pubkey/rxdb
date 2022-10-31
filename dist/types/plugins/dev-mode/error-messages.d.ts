@@ -22,6 +22,8 @@ export declare const ERROR_MESSAGES: {
     QU11: string;
     QU12: string;
     QU13: string;
+    QU14: string;
+    QU15: string;
     MQ1: string;
     MQ2: string;
     MQ3: string;

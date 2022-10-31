@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types';
-import type { FoundationDBStorageInternals, RxStorageFoundationDB, RxStorageFoundationDBInstanceCreationOptions, RxStorageFoundationDBSettings } from './foundationdb-types';
+import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types';
+import type { FoundationDBPreparedQuery, FoundationDBStorageInternals, RxStorageFoundationDB, RxStorageFoundationDBInstanceCreationOptions, RxStorageFoundationDBSettings } from './foundationdb-types';
 export declare class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstance<RxDocType, FoundationDBStorageInternals<RxDocType>, RxStorageFoundationDBInstanceCreationOptions, RxStorageDefaultCheckpoint> {
     readonly storage: RxStorageFoundationDB;
     readonly databaseName: string;
@@ -15,7 +15,8 @@ export declare class RxStorageInstanceFoundationDB<RxDocType> implements RxStora
     constructor(storage: RxStorageFoundationDB, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: FoundationDBStorageInternals<RxDocType>, options: Readonly<RxStorageFoundationDBInstanceCreationOptions>, settings: RxStorageFoundationDBSettings);
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
-    query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>>;
+    query(preparedQuery: FoundationDBPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
+    count(preparedQuery: FoundationDBPreparedQuery<RxDocType>): Promise<RxStorageCountResult>;
     getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
     getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{
         documents: RxDocumentData<RxDocType>[];

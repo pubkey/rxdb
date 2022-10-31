@@ -24,6 +24,7 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
         docsData: RxDocumentType[];
         docsDataMap: Map<string, RxDocumentType>;
         docs: RxDocument<RxDocumentType>[];
+        count: number;
         /**
          * Time at which the current _result state was created.
          * Used to determine if the result set has changed since X
@@ -53,12 +54,12 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
      * set the new result-data as result-docs of the query
      * @param newResultData json-docs that were received from pouchdb
      */
-    _setResultData(newResultData: RxDocumentData<RxDocumentType[]>): void;
+    _setResultData(newResultData: RxDocumentData<RxDocumentType[]> | number): void;
     /**
      * executes the query on the database
      * @return results-array with document-data
      */
-    _execOverDatabase(): Promise<RxDocumentData<RxDocumentType>[]>;
+    _execOverDatabase(): Promise<RxDocumentData<RxDocumentType>[] | number>;
     /**
      * Execute the query
      * To have an easier implementations,

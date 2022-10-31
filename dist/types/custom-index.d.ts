@@ -23,6 +23,6 @@ declare type ParsedLengths = {
 };
 export declare function getStringLengthOfIndexNumber(schemaPart: JsonSchema): ParsedLengths;
 export declare function getNumberIndexString(parsedLengths: ParsedLengths, fieldValue: number): string;
-export declare function getStartIndexStringFromLowerBound(schema: RxJsonSchema<any>, index: string[], lowerBound: (string | boolean | number | null | undefined)[]): string;
-export declare function getStartIndexStringFromUpperBound(schema: RxJsonSchema<any>, index: string[], upperBound: (string | boolean | number | null | undefined)[]): string;
+export declare function getStartIndexStringFromLowerBound(schema: RxJsonSchema<any>, index: string[], lowerBound: (string | boolean | number | null | undefined)[], inclusiveStart: boolean): string;
+export declare function getStartIndexStringFromUpperBound(schema: RxJsonSchema<any>, index: string[], upperBound: (string | boolean | number | null | undefined)[], inclusiveEnd: boolean): string;
 export {};

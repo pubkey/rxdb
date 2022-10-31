@@ -201,6 +201,17 @@ export type RxStorageQueryResult<RxDocType> = {
     documents: RxDocumentData<RxDocType>[];
 }
 
+export type RxStorageCountResult = {
+    count: number;
+    /**
+     * Returns the mode which was used by the storage
+     * to count the documents.
+     * If this returns 'slow', RxDB will throw by default
+     * if 'allowSlowCount' is not set.
+     */
+    mode: 'fast' | 'slow';
+}
+
 export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> = {
 
     /**

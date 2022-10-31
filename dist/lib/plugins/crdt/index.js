@@ -4,7 +4,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDDcrdtPlugin = exports.RX_CRDT_CONTEXT = void 0;
+exports.RxDBcrdtPlugin = exports.RX_CRDT_CONTEXT = void 0;
 exports.getCRDTConflictHandler = getCRDTConflictHandler;
 exports.getCRDTSchemaPart = getCRDTSchemaPart;
 exports.hashCRDTOperations = hashCRDTOperations;
@@ -275,7 +275,7 @@ function getCRDTConflictHandler(hashFunction, storageStatics, schema) {
 }
 var RX_CRDT_CONTEXT = 'rx-crdt';
 exports.RX_CRDT_CONTEXT = RX_CRDT_CONTEXT;
-var RxDDcrdtPlugin = {
+var RxDBcrdtPlugin = {
   name: 'crdt',
   rxdb: true,
   prototypes: {
@@ -433,5 +433,5 @@ var RxDDcrdtPlugin = {
     }
   }
 };
-exports.RxDDcrdtPlugin = RxDDcrdtPlugin;
+exports.RxDBcrdtPlugin = RxDBcrdtPlugin;
 //# sourceMappingURL=index.js.map

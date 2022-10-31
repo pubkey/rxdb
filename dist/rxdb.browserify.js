@@ -193,7 +193,7 @@ function getIndexableStringMonad(schema, index) {
         if (!fieldValue) {
           fieldValue = '';
         }
-        str += fieldValue.padStart(schemaPart.maxLength, ' ');
+        str += fieldValue.padEnd(schemaPart.maxLength, ' ');
       } else if (type === 'boolean') {
         var boolToStr = fieldValue ? '1' : '0';
         str += boolToStr;
@@ -235,7 +235,7 @@ function getNumberIndexString(parsedLengths, fieldValue) {
   str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
   return str;
 }
-function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
+function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveStart) {
   var str = '';
   index.forEach(function (fieldName, idx) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
@@ -245,14 +245,15 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
       case 'string':
         var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
         if (typeof bound === 'string') {
-          str += bound.padStart(maxLength, ' ');
+          str += bound.padEnd(maxLength, ' ');
         } else {
-          str += ''.padStart(maxLength, ' ');
+          // str += ''.padStart(maxLength, inclusiveStart ? ' ' : INDEX_MAX);
+          str += ''.padEnd(maxLength, ' ');
         }
         break;
       case 'boolean':
         if (bound === null) {
-          str += '0';
+          str += inclusiveStart ? '0' : _queryPlanner.INDEX_MAX;
         } else {
           var boolToStr = bound ? '1' : '0';
           str += boolToStr;
@@ -261,8 +262,9 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
       case 'number':
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
-        if (bound === null) {
-          str += '0'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+        if (bound === null || bound === _queryPlanner.INDEX_MIN) {
+          var fillChar = inclusiveStart ? '0' : _queryPlanner.INDEX_MAX;
+          str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);
         }
@@ -273,7 +275,7 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
   });
   return str;
 }
-function getStartIndexStringFromUpperBound(schema, index, upperBound) {
+function getStartIndexStringFromUpperBound(schema, index, upperBound, inclusiveEnd) {
   var str = '';
   index.forEach(function (fieldName, idx) {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
@@ -283,14 +285,14 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
       case 'string':
         var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
         if (typeof bound === 'string') {
-          str += bound.padStart(maxLength, _queryPlanner.INDEX_MAX);
+          str += bound.padEnd(maxLength, inclusiveEnd ? _queryPlanner.INDEX_MAX : ' ');
         } else {
-          str += ''.padStart(maxLength, _queryPlanner.INDEX_MAX);
+          str += ''.padEnd(maxLength, inclusiveEnd ? _queryPlanner.INDEX_MAX : ' ');
         }
         break;
       case 'boolean':
         if (bound === null) {
-          str += '1';
+          str += inclusiveEnd ? '0' : '1';
         } else {
           var boolToStr = bound ? '1' : '0';
           str += boolToStr;
@@ -300,7 +302,8 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound) {
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
         if (bound === null || bound === _queryPlanner.INDEX_MAX) {
-          str += '9'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+          var fillChar = inclusiveEnd ? '9' : '0';
+          str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);
         }
@@ -3564,11 +3567,28 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
+  _proto.count = function count(preparedQuery) {
     try {
       var _this9 = this;
-      ensureNotClosed(_this9);
-      return Promise.resolve(_this9.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
+      /**
+       * There is no count method in PouchDB,
+       * so we have to run a normal query and use the result length.
+       */
+      return Promise.resolve(_this9.query(preparedQuery)).then(function (result) {
+        return {
+          count: result.documents.length,
+          mode: 'fast'
+        };
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
+    try {
+      var _this11 = this;
+      ensureNotClosed(_this11);
+      return Promise.resolve(_this11.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
         /**
          * In Node.js, PouchDB works with Buffers because it is old and Node.js did
          * not support Blob at the time is was coded.
@@ -3606,7 +3626,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
       var _temp9 = function _temp9() {
-        return Promise.resolve(pouchFindDocumentsById(_this11, changedDocuments.map(function (o) {
+        return Promise.resolve(pouchFindDocumentsById(_this13, changedDocuments.map(function (o) {
           return o.id;
         }), true)).then(function (documentsData) {
           if (Object.keys(documentsData).length > 0 && checkpoint && checkpoint.sequence === lastSequence) {
@@ -3630,8 +3650,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
           };
         });
       };
-      var _this11 = this;
-      ensureNotClosed(_this11);
+      var _this13 = this;
+      ensureNotClosed(_this13);
       if (!limit || typeof limit !== 'number') {
         throw new Error('wrong limit');
       }
@@ -3655,7 +3675,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
       }, void 0, function () {
         first = false;
         skippedDesignDocuments = 0;
-        return Promise.resolve(_this11.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
+        return Promise.resolve(_this13.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
           var addChangedDocuments = pouchResults.results.filter(function (row) {
             var isDesignDoc = row.id.startsWith(_pouchdbHelper.POUCHDB_DESIGN_PREFIX);
             if (isDesignDoc) {
@@ -4020,6 +4040,7 @@ exports.INDEX_MIN = exports.INDEX_MAX = void 0;
 exports.getMatcherQueryOpts = getMatcherQueryOpts;
 exports.getQueryPlan = getQueryPlan;
 exports.isLogicalOperator = isLogicalOperator;
+exports.isSelectorSatisfiedByIndex = isSelectorSatisfiedByIndex;
 exports.rateQueryPlan = rateQueryPlan;
 var _rxSchemaHelper = require("./rx-schema-helper");
 var INDEX_MAX = String.fromCharCode(65535);
@@ -4057,25 +4078,28 @@ function getQueryPlan(schema, query) {
   var currentBestQuality = -1;
   var currentBestQueryPlan;
   indexes.forEach(function (index) {
+    var inclusiveEnd = true;
+    var inclusiveStart = true;
     var opts = index.map(function (indexField) {
       var matcher = selector[indexField];
       var operators = matcher ? Object.keys(matcher) : [];
+      var matcherOpts = {};
       if (!matcher || !operators.length) {
-        return {
-          startKey: INDEX_MIN,
-          endKey: INDEX_MAX,
+        matcherOpts = {
+          startKey: inclusiveStart ? INDEX_MIN : INDEX_MAX,
+          endKey: inclusiveEnd ? INDEX_MAX : INDEX_MIN,
           inclusiveStart: true,
           inclusiveEnd: true
         };
+      } else {
+        operators.forEach(function (operator) {
+          if (isLogicalOperator(operator)) {
+            var operatorValue = matcher[operator];
+            var partialOpts = getMatcherQueryOpts(operator, operatorValue);
+            matcherOpts = Object.assign(matcherOpts, partialOpts);
+          }
+        });
       }
-      var matcherOpts = {};
-      operators.forEach(function (operator) {
-        if (isLogicalOperator(operator)) {
-          var operatorValue = matcher[operator];
-          var partialOpts = getMatcherQueryOpts(operator, operatorValue);
-          matcherOpts = Object.assign(matcherOpts, partialOpts);
-        }
-      });
 
       // fill missing attributes
       if (typeof matcherOpts.startKey === 'undefined') {
@@ -4090,6 +4114,12 @@ function getQueryPlan(schema, query) {
       if (typeof matcherOpts.inclusiveEnd === 'undefined') {
         matcherOpts.inclusiveEnd = true;
       }
+      if (inclusiveStart && !matcherOpts.inclusiveStart) {
+        inclusiveStart = false;
+      }
+      if (inclusiveEnd && !matcherOpts.inclusiveEnd) {
+        inclusiveEnd = false;
+      }
       return matcherOpts;
     });
     var queryPlan = {
@@ -4100,13 +4130,10 @@ function getQueryPlan(schema, query) {
       endKeys: opts.map(function (opt) {
         return opt.endKey;
       }),
-      inclusiveEnd: !opts.find(function (opt) {
-        return !opt.inclusiveEnd;
-      }),
-      inclusiveStart: !opts.find(function (opt) {
-        return !opt.inclusiveStart;
-      }),
-      sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(',')
+      inclusiveEnd: inclusiveEnd,
+      inclusiveStart: inclusiveStart,
+      sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(','),
+      selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
     };
     var quality = rateQueryPlan(schema, query, queryPlan);
     if (quality > 0 && quality > currentBestQuality || query.index) {
@@ -4119,13 +4146,14 @@ function getQueryPlan(schema, query) {
    * No index found, use the default index
    */
   if (!currentBestQueryPlan) {
-    return {
+    currentBestQueryPlan = {
       index: [primaryPath],
       startKeys: [INDEX_MIN],
       endKeys: [INDEX_MAX],
       inclusiveEnd: true,
       inclusiveStart: true,
-      sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath
+      sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath,
+      selectorSatisfiedByIndex: isSelectorSatisfiedByIndex([primaryPath], query.selector)
     };
   }
   return currentBestQueryPlan;
@@ -4133,6 +4161,30 @@ function getQueryPlan(schema, query) {
 var LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
 function isLogicalOperator(operator) {
   return LOGICAL_OPERATORS.has(operator);
+}
+function isSelectorSatisfiedByIndex(index, selector) {
+  var nonMatching = Object.entries(selector).find(function (_ref) {
+    var field = _ref[0],
+      operation = _ref[1];
+    if (!index.includes(field)) {
+      return true;
+    }
+    var hasNonLogicOperator = Object.entries(operation).find(function (_ref2) {
+      var op = _ref2[0],
+        _value = _ref2[1];
+      if (!isLogicalOperator(op)) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    return hasNonLogicOperator;
+  });
+  if (nonMatching) {
+    return false;
+  } else {
+    return true;
+  }
 }
 function getMatcherQueryOpts(operator, operatorValue) {
   switch (operator) {
@@ -6659,7 +6711,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     if (!queryObj) {
       queryObj = (0, _rxQuery._getDefaultQuery)();
     }
-    var query = (0, _rxQuery.createRxQuery)('find', queryObj, this);
+    var query = (0, _rxQuery.createRxQuery)('find', queryObj, this.asRxCollection);
     return query;
   };
   _proto.findOne = function findOne(queryObj) {
@@ -6680,13 +6732,20 @@ var RxCollectionBase = /*#__PURE__*/function () {
         throw (0, _rxError.newRxError)('QU6');
       }
       queryObj.limit = 1;
-      query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this);
+      query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this.asRxCollection);
     }
     if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
       throw (0, _rxError.newRxTypeError)('COL6', {
         queryObj: queryObj
       });
     }
+    return query;
+  };
+  _proto.count = function count(queryObj) {
+    if (!queryObj) {
+      queryObj = (0, _rxQuery._getDefaultQuery)();
+    }
+    var query = (0, _rxQuery.createRxQuery)('count', queryObj, this.asRxCollection);
     return query;
   }
 
@@ -7747,6 +7806,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     internalStore = arguments.length > 8 ? arguments[8] : undefined;
     var hashFunction = arguments.length > 9 ? arguments[9] : undefined;
     var cleanupPolicy = arguments.length > 10 ? arguments[10] : undefined;
+    var allowSlowCount = arguments.length > 11 ? arguments[11] : undefined;
     this.idleQueue = new _customIdleQueue.IdleQueue();
     this._subs = [];
     this.startupErrors = [];
@@ -7771,6 +7831,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     this.internalStore = internalStore;
     this.hashFunction = hashFunction;
     this.cleanupPolicy = cleanupPolicy;
+    this.allowSlowCount = allowSlowCount;
     DB_COUNT++;
 
     /**
@@ -8122,6 +8183,8 @@ function createRxDatabase(_ref3) {
     _ref3$options = _ref3.options,
     options = _ref3$options === void 0 ? {} : _ref3$options,
     cleanupPolicy = _ref3.cleanupPolicy,
+    _ref3$allowSlowCount = _ref3.allowSlowCount,
+    allowSlowCount = _ref3$allowSlowCount === void 0 ? false : _ref3$allowSlowCount,
     _ref3$localDocuments = _ref3.localDocuments,
     localDocuments = _ref3$localDocuments === void 0 ? false : _ref3$localDocuments,
     _ref3$hashFunction = _ref3.hashFunction,
@@ -8153,7 +8216,7 @@ function createRxDatabase(_ref3) {
     USED_DATABASE_NAMES["delete"](name);
     throw err;
   }).then(function (storageInstance) {
-    var rxDatabase = new RxDatabaseBase(name, databaseInstanceToken, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, storageInstance, hashFunction, cleanupPolicy);
+    var rxDatabase = new RxDatabaseBase(name, databaseInstanceToken, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, storageInstance, hashFunction, cleanupPolicy, allowSlowCount);
     return (0, _hooks.runAsyncPluginHooks)('createRxDatabase', {
       database: rxDatabase,
       creator: {
@@ -9319,6 +9382,16 @@ var RxQueryBase = /*#__PURE__*/function () {
    * @param newResultData json-docs that were received from pouchdb
    */
   _proto._setResultData = function _setResultData(newResultData) {
+    if (typeof newResultData === 'number') {
+      this._result = {
+        docsData: [],
+        docsDataMap: new Map(),
+        count: newResultData,
+        docs: [],
+        time: (0, _util.now)()
+      };
+      return;
+    }
     var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, newResultData);
 
     /**
@@ -9337,6 +9410,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     this._result = {
       docsData: docsData,
       docsDataMap: docsDataMap,
+      count: docsData.length,
       docs: docs,
       time: (0, _util.now)()
     };
@@ -9350,6 +9424,19 @@ var RxQueryBase = /*#__PURE__*/function () {
     var _this = this;
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
     this._lastExecStart = (0, _util.now)();
+    if (this.op === 'count') {
+      var preparedQuery = this.getPreparedQuery();
+      return this.collection.storageInstance.count(preparedQuery).then(function (result) {
+        if (result.mode === 'slow' && !_this.collection.database.allowSlowCount) {
+          throw (0, _rxError.newRxError)('QU14', {
+            collection: _this.collection,
+            queryObj: _this.mangoQuery
+          });
+        } else {
+          return result.count;
+        }
+      });
+    }
     var docsPromise = queryCollection(this);
     return docsPromise.then(function (docs) {
       _this._lastExecEnd = (0, _util.now)();
@@ -9535,7 +9622,9 @@ var RxQueryBase = /*#__PURE__*/function () {
          */
         (0, _operators.map)(function (result) {
           var useResult = (0, _util.ensureNotFalsy)(result);
-          if (_this3.op === 'findOne') {
+          if (_this3.op === 'count') {
+            return useResult.count;
+          } else if (_this3.op === 'findOne') {
             // findOne()-queries emit RxDocument or null
             return useResult.docs.length === 0 ? null : useResult.docs[0];
           } else {
@@ -9671,14 +9760,35 @@ function __ensureEqual(rxQuery) {
     } else {
       rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
       var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-      var eventReduceResult = (0, _eventReduce.calculateNewResults)(rxQuery, runChangeEvents);
-      if (eventReduceResult.runFullQueryAgain) {
-        // could not calculate the new results, execute must be done
-        mustReExec = true;
-      } else if (eventReduceResult.changed) {
-        // we got the new results, we do not have to re-execute, mustReExec stays false
-        ret = true; // true because results changed
-        rxQuery._setResultData(eventReduceResult.newResults);
+      if (rxQuery.op === 'count') {
+        // 'count' query
+        var previousCount = (0, _util.ensureNotFalsy)(rxQuery._result).count;
+        var newCount = previousCount;
+        runChangeEvents.forEach(function (cE) {
+          var didMatchBefore = cE.previousDocumentData && rxQuery.doesDocumentDataMatch(cE.previousDocumentData);
+          var doesMatchNow = rxQuery.doesDocumentDataMatch(cE.documentData);
+          if (!didMatchBefore && doesMatchNow) {
+            newCount++;
+          }
+          if (didMatchBefore && !doesMatchNow) {
+            newCount--;
+          }
+        });
+        if (newCount !== previousCount) {
+          ret = true; // true because results changed
+          rxQuery._setResultData(newCount);
+        }
+      } else {
+        // 'find' or 'findOne' query
+        var eventReduceResult = (0, _eventReduce.calculateNewResults)(rxQuery, runChangeEvents);
+        if (eventReduceResult.runFullQueryAgain) {
+          // could not calculate the new results, execute must be done
+          mustReExec = true;
+        } else if (eventReduceResult.changed) {
+          // we got the new results, we do not have to re-execute, mustReExec stays false
+          ret = true; // true because results changed
+          rxQuery._setResultData(eventReduceResult.newResults);
+        }
       }
     }
   }
@@ -10651,6 +10761,11 @@ rxJsonSchema) {
     query: function query(preparedQuery) {
       return database.lockedRun(function () {
         return storageInstance.query(preparedQuery);
+      });
+    },
+    count: function count(preparedQuery) {
+      return database.lockedRun(function () {
+        return storageInstance.count(preparedQuery);
       });
     },
     findDocumentsById: function findDocumentsById(ids, deleted) {

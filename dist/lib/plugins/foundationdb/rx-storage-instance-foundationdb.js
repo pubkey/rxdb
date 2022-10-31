@@ -173,10 +173,28 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   _proto.query = function query(preparedQuery) {
     return (0, _foundationdbQuery.queryFoundationDB)(this, preparedQuery);
   };
-  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
+  _proto.count = function count(preparedQuery) {
     try {
       var _this6 = this;
-      return Promise.resolve(_this6.internals.dbsPromise).then(function (dbs) {
+      /**
+       * At this point in time (end 2022), FoundationDB does not support
+       * range counts. So we have to run a normal query and use the result set length.
+       * @link https://github.com/apple/foundationdb/issues/5981
+       */
+      return Promise.resolve(_this6.query(preparedQuery)).then(function (result) {
+        return {
+          count: result.documents.length,
+          mode: 'fast'
+        };
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
+    try {
+      var _this8 = this;
+      return Promise.resolve(_this8.internals.dbsPromise).then(function (dbs) {
         return Promise.resolve(dbs.attachments.get((0, _memory.attachmentMapKey)(documentId, attachmentId))).then(function (attachment) {
           return attachment.data;
         });
@@ -187,18 +205,18 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
-      var _this8 = this;
+      var _this10 = this;
       var _require = require('foundationdb'),
         keySelector = _require.keySelector,
         StreamingMode = _require.StreamingMode;
-      return Promise.resolve(_this8.internals.dbsPromise).then(function (dbs) {
-        var index = ['_meta.lwt', _this8.primaryPath];
+      return Promise.resolve(_this10.internals.dbsPromise).then(function (dbs) {
+        var index = ['_meta.lwt', _this10.primaryPath];
         var indexName = (0, _foundationdbHelpers.getFoundationDBIndexName)(index);
         var indexMeta = dbs.indexes[indexName];
         var lowerBoundString = '';
         if (checkpoint) {
           var _checkpointPartialDoc;
-          var checkpointPartialDoc = (_checkpointPartialDoc = {}, _checkpointPartialDoc[_this8.primaryPath] = checkpoint.id, _checkpointPartialDoc._meta = {
+          var checkpointPartialDoc = (_checkpointPartialDoc = {}, _checkpointPartialDoc[_this10.primaryPath] = checkpoint.id, _checkpointPartialDoc._meta = {
             lwt: checkpoint.lwt
           }, _checkpointPartialDoc);
           lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
@@ -230,7 +248,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
           return {
             documents: result,
             checkpoint: lastDoc ? {
-              id: lastDoc[_this8.primaryPath],
+              id: lastDoc[_this10.primaryPath],
               lwt: lastDoc._meta.lwt
             } : checkpoint ? checkpoint : {
               id: '',
@@ -248,13 +266,13 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.remove = function remove() {
     try {
-      var _this10 = this;
-      return Promise.resolve(_this10.internals.dbsPromise).then(function (dbs) {
+      var _this12 = this;
+      return Promise.resolve(_this12.internals.dbsPromise).then(function (dbs) {
         return Promise.resolve(dbs.root.doTransaction(function (tx) {
           tx.clearRange('', _queryPlanner.INDEX_MAX);
           return _util.PROMISE_RESOLVE_VOID;
         })).then(function () {
-          return _this10.close();
+          return _this12.close();
         });
       });
     } catch (e) {
@@ -263,26 +281,26 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     try {
-      var _this12 = this;
+      var _this14 = this;
       var _require2 = require('foundationdb'),
         keySelector = _require2.keySelector,
         StreamingMode = _require2.StreamingMode;
       var maxDeletionTime = (0, _util.now)() - minimumDeletedTime;
-      return Promise.resolve(_this12.internals.dbsPromise).then(function (dbs) {
+      return Promise.resolve(_this14.internals.dbsPromise).then(function (dbs) {
         var index = _foundationdbHelpers.CLEANUP_INDEX;
         var indexName = (0, _foundationdbHelpers.getFoundationDBIndexName)(index);
         var indexMeta = dbs.indexes[indexName];
-        var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(_this12.schema, index, [true,
+        var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(_this14.schema, index, [true,
         /**
          * Do not use 0 here,
          * because 1 is the minimum value for _meta.lwt
          */
-        1]);
-        var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(_this12.schema, index, [true, maxDeletionTime]);
+        1], false);
+        var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(_this14.schema, index, [true, maxDeletionTime], true);
         var noMoreUndeleted = true;
         return Promise.resolve(dbs.root.doTransaction(function (tx) {
           try {
-            var batchSize = (0, _util.ensureNotFalsy)(_this12.settings.batchSize);
+            var batchSize = (0, _util.ensureNotFalsy)(_this14.settings.batchSize);
             var indexTx = tx.at(indexMeta.db.subspace);
             var mainTx = tx.at(dbs.main.subspace);
             return Promise.resolve(indexTx.getRangeAll(keySelector.firstGreaterThan(lowerBoundString), upperBoundString, {
@@ -331,16 +349,16 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.close = function close() {
     try {
-      var _this14 = this;
-      if (_this14.closed) {
+      var _this16 = this;
+      if (_this16.closed) {
         return Promise.reject((0, _rxError.newRxError)('SNH', {
-          database: _this14.databaseName,
-          collection: _this14.collectionName
+          database: _this16.databaseName,
+          collection: _this16.collectionName
         }));
       }
-      _this14.closed = true;
-      _this14.changes$.complete();
-      return Promise.resolve(_this14.internals.dbsPromise).then(function (dbs) {
+      _this16.closed = true;
+      _this16.changes$.complete();
+      return Promise.resolve(_this16.internals.dbsPromise).then(function (dbs) {
         dbs.root.close();
 
         // TODO shouldnt we close the index databases?

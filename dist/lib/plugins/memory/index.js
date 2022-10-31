@@ -34,6 +34,18 @@ Object.keys(_memoryHelper).forEach(function (key) {
     }
   });
 });
+var _binarySearchBounds = require("./binary-search-bounds");
+Object.keys(_binarySearchBounds).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _binarySearchBounds[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _binarySearchBounds[key];
+    }
+  });
+});
 var _memoryTypes = require("./memory-types");
 Object.keys(_memoryTypes).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
