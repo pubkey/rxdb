@@ -1245,7 +1245,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describe('.findOne()', () => {
+        config.parallel('.findOne()', () => {
             describe('positive', () => {
                 it('find a single document', async () => {
                     const c = await humansCollection.create();
@@ -1355,7 +1355,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describe('.count()', () => {
+        config.parallel('.count()', () => {
             describe('basics', () => {
                 it('should count one document', async () => {
                     const c = await humansCollection.create(1);
@@ -1365,13 +1365,35 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should not count deleted documents', async () => {
                     const c = await humansCollection.create(2);
+                    const emitted: number[] = [];
+                    c.count().$.subscribe(nr => emitted.push(nr));
+
+
                     const doc = await c.findOne().exec(true);
                     await doc.remove();
                     const count = await c.count().exec();
                     assert.strictEqual(count, 1);
+                    assert.deepStrictEqual(emitted, [2, 1]);
                     c.database.destroy();
                 });
-            })
+            });
+            describe('disallowed usage', () => {
+                it('must throw when query has property of selectorSatisfiedByIndex=false', async () => {
+                    const c = await humansCollection.create(0);
+                    await AsyncTestUtil.assertThrows(
+                        () => c.count({
+                            selector: {
+                                age: {
+                                    $regex: 'foobar'
+                                }
+                            }
+                        }).exec(),
+                        'RxError',
+                        'QU14'
+                    );
+                    c.database.destroy();
+                });
+            });
         });
         config.parallel('.bulkUpsert()', () => {
             it('insert and update', async () => {

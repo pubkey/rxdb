@@ -12,6 +12,7 @@ import {
 } from './rx-storage';
 import type {
     DeepReadonly,
+    FilledMangoQuery,
     RxDatabase,
     RxDatabaseCreator,
     RxDocument,
@@ -34,7 +35,7 @@ export type RxPluginPreAddRxPluginArgs = {
 
 export type RxPluginPrePrepareQueryArgs = {
     rxQuery: RxQuery<any>;
-    mangoQuery: MangoQuery<any>;
+    mangoQuery: FilledMangoQuery<any>;
 };
 
 
