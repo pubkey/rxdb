@@ -19,11 +19,12 @@ export interface SimpleHumanDocumentType {
 
 export function human(
     passportId: string = randomString(12),
-    age: number = randomNumber(10, 50)
+    age: number = randomNumber(10, 50),
+    firstName: string = faker.name.firstName()
 ): HumanDocumentType {
     return {
         passportId: passportId,
-        firstName: faker.name.firstName(),
+        firstName,
         lastName: faker.name.lastName(),
         age
     };

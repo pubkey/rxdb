@@ -25,6 +25,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         schema: RxJsonSchema<RxDocType>;
         data: RxDocType[];
         queries: ({
+            info: string;
             query: MangoQuery<RxDocType>;
             expectedResultDocIds: string[];
         } | undefined)[]
@@ -100,7 +101,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 try {
                     assert.deepStrictEqual(resultStaticsIds, queryData.expectedResultDocIds);
                 } catch (err) {
-                    console.log('WRONG QUERY RESULTS FROM STATICS:');
+                    console.log('WRONG QUERY RESULTS FROM STATICS: ' + queryData.info);
                     console.dir(queryData);
                     throw err;
                 }
@@ -111,7 +112,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 try {
                     assert.deepStrictEqual(resultIds, queryData.expectedResultDocIds);
                 } catch (err) {
-                    console.log('WRONG QUERY RESULTS FROM .query():');
+                    console.log('WRONG QUERY RESULTS FROM .query(): ' + queryData.info);
                     console.dir(queryData);
                     throw err;
                 }
@@ -129,7 +130,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                             queryData.expectedResultDocIds.length
                         );
                     } catch (err) {
-                        console.log('WRONG QUERY RESULTS FROM .count():');
+                        console.log('WRONG QUERY RESULTS FROM .count(): ' + queryData.info);
                         console.dir(queryData);
                         throw err;
                     }
@@ -141,21 +142,23 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
     }
 
     testCorrectQueries<schemas.HumanDocumentType>({
-        testTitle: '$gt/$gte with number',
+        testTitle: '$gt/$gte',
         data: [
-            human('aa', 10),
-            human('bb', 20),
+            human('aa', 10, 'alice'),
+            human('bb', 20, 'bob'),
             /**
              * One must have a longer id
              * because we had many bugs around how padLeft
              * works on custom indexes.
              */
-            human('cc-looong-id', 30),
-            human('dd', 40),
-            human('ee', 50)
+            human('cc-looong-id', 30, 'carol'),
+            human('dd', 40, 'dave'),
+            human('ee', 50, 'eve')
         ],
         schema: withIndexes(schemas.human, [
-            ['age']
+            ['age'],
+            ['age', 'firstName'],
+            ['firstName']
         ]),
         queries: [
             /**
@@ -163,6 +166,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
              * create an issue at the PouchDB repo.
              */
             config.isNotOneOfTheseStorages(['pouchdb']) ? {
+                info: 'normal $gt',
                 query: {
                     selector: {
                         age: {
@@ -178,6 +182,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             } : undefined,
             {
+                info: 'normal $gte',
                 query: {
                     selector: {
                         age: {
@@ -193,8 +198,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'ee'
                 ]
             },
-            // sort by something that is not in the selector
             {
+                info: 'sort by something that is not in the selector',
                 query: {
                     selector: {
                         age: {
@@ -209,24 +214,63 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'ee'
                 ]
             },
+            {
+                info: 'with string comparison',
+                query: {
+                    selector: {
+                        firstName: {
+                            $gt: 'bb'
+                        }
+                    }
+                },
+                expectedResultDocIds: [
+                    'cc-looong-id',
+                    'dd',
+                    'ee'
+                ]
+            },
+            {
+                info: 'compare more then one field',
+                query: {
+                    selector: {
+                        age: {
+                            $gt: 20
+                        },
+                        firstName: {
+                            $gt: 'd'
+                        }
+                    }
+                },
+                expectedResultDocIds: [
+                    'cc-looong-id',
+                    'dd',
+                    'ee'
+                ]
+            },
         ]
     });
     testCorrectQueries<schemas.HumanDocumentType>({
-        testTitle: '$lt/$lte with number',
+        testTitle: '$lt/$lte',
         data: [
-            human('aa', 10),
-            human('bb', 20),
+            human('aa', 10, 'alice'),
+            human('bb', 20, 'bob'),
             /**
              * One must have a longer id
              * because we had many bugs around how padLeft
              * works on custom indexes.
              */
-            human('cc-looong-id', 30),
-            human('dd', 40),
-            human('ee', 50)
+            human('cc-looong-id', 30, 'carol'),
+            human('dd', 40, 'dave'),
+            human('ee', 50, 'eve')
         ],
+        schema: withIndexes(schemas.human, [
+            ['age'],
+            ['firstName', 'lastName'],
+            ['firstName']
+        ]),
         queries: [
             {
+                info: 'normal $lt',
                 query: {
                     selector: {
                         age: {
@@ -242,6 +286,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
+                info: 'normal $lte',
                 query: {
                     selector: {
                         age: {
@@ -257,8 +302,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'dd'
                 ]
             },
-            // sort by something that is not in the selector
             {
+                info: 'sort by something that is not in the selector',
                 query: {
                     selector: {
                         age: {
@@ -273,9 +318,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'cc-looong-id'
                 ]
             },
-        ],
-        schema: withIndexes(schemas.human, [
-            ['age']
-        ])
+        ]
     });
 });
