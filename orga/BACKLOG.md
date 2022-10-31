@@ -3,29 +3,6 @@
 This file contains a list with things that should be implemented in the future. If you want to create a PR with one of these things, please create an issue before starting your work, so we can prevent duplication.
 
 
-## RxQuery.count()
-
-There is currently no count-method for queries.
-
-Goal-API:
-
-```javascript
-// single-exec
-const amount = await myCollection.count().where('foo').gt(10). /* .. */.exec();
-console.log(amount);
-// > 5
-
-// subscription
-myCollection.count().where('foo').gt(10). /* .. */.$.subscribe(nr => console.log(nr));
-// > 5
-await myCollection.insert({/* any docData */});
-// > 6
-```
-
-There should be an optimisation to determine if the amount is needed once or many times (if we subscribe). The first case should do a pouch-find-count-query, the second case should use the QueryChangeDetection for better performance.
-
-
-
 ## default and custom [conflict-strategies](https://pouchdb.com/guides/conflicts.html)
 Pouchdb requires the developer to solve [conflicts manually](https://pouchdb.com/guides/conflicts.html).
 
