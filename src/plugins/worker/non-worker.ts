@@ -153,6 +153,12 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<
             preparedQuery
         );
     }
+    count(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {
+        return this.internals.worker.count(
+            this.internals.instanceId,
+            preparedQuery
+        );
+    }
     getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
         return this.internals.worker.getAttachmentData(
             this.internals.instanceId,
