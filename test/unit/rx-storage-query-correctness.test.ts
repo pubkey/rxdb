@@ -219,7 +219,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 query: {
                     selector: {
                         firstName: {
-                            $gt: 'bb'
+                            $gt: 'bob'
                         }
                     }
                 },
@@ -237,7 +237,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                             $gt: 20
                         },
                         firstName: {
-                            $gt: 'd'
+                            $gt: 'a'
                         }
                     }
                 },
