@@ -2343,7 +2343,7 @@ query.$.subscribe(amount =&gt; {
   <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;Currently has &apos;</span> + amount + <span class="hljs-string">&apos; documents&apos;</span>);
 });
 </code></pre>
-<p><strong>IMPORTANT:</strong> count queries have a better performance then normal queries because they do not have to fetch the full document data out of the storage. Therefore it is <strong>not</strong> possible to run a <code>count()</code> query with a selector that requires to fetch and compared the document data. So if your query selector <strong>does not</strong> fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff not not using the fetched document data for caching.</p>
+<p><strong>IMPORTANT:</strong> count queries have a better performance than normal queries because they do not have to fetch the full document data out of the storage. Therefore it is <strong>not</strong> possible to run a <code>count()</code> query with a selector that requires to fetch and compare the document data. So if your query selector <strong>does not</strong> fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff not not using the fetched document data for caching.</p>
 <pre><code class="lang-ts"><span class="hljs-comment">/**
  * The following will throw an error because
  * the count operation cannot run on any specific index range
