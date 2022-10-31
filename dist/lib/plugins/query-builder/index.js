@@ -25,6 +25,7 @@ Object.keys(_nosqlQueryBuilder).forEach(function (key) {
 });
 var _rxQuery = require("../../rx-query");
 var _util = require("../../util");
+var _hooks = require("../../hooks");
 // if the query-builder plugin is used, we have to save its last path
 var RXQUERY_OTHER_FLAG = 'queryBuilderPath';
 function runBuildingStep(rxQuery, functionName, value) {
@@ -35,6 +36,11 @@ function runBuildingStep(rxQuery, functionName, value) {
   queryBuilder[functionName](value); // run
 
   var queryBuilderJson = queryBuilder.toJSON();
+  (0, _hooks.runPluginHooks)('preCreateRxQuery', {
+    op: rxQuery.op,
+    queryObj: queryBuilderJson.query,
+    collection: rxQuery.collection
+  });
   var newQuery = new _rxQuery.RxQueryBase(rxQuery.op, queryBuilderJson.query, rxQuery.collection);
   if (queryBuilderJson.path) {
     newQuery.other[RXQUERY_OTHER_FLAG] = queryBuilderJson.path;

@@ -364,7 +364,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     if (!queryObj) {
       queryObj = _getDefaultQuery();
     }
-    var query = createRxQuery('find', queryObj, this);
+    var query = createRxQuery('find', queryObj, this.asRxCollection);
     return query;
   };
   _proto.findOne = function findOne(queryObj) {
@@ -385,13 +385,20 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         throw newRxError('QU6');
       }
       queryObj.limit = 1;
-      query = createRxQuery('findOne', queryObj, this);
+      query = createRxQuery('findOne', queryObj, this.asRxCollection);
     }
     if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
       throw newRxTypeError('COL6', {
         queryObj: queryObj
       });
     }
+    return query;
+  };
+  _proto.count = function count(queryObj) {
+    if (!queryObj) {
+      queryObj = _getDefaultQuery();
+    }
+    var query = createRxQuery('count', queryObj, this.asRxCollection);
     return query;
   }
 

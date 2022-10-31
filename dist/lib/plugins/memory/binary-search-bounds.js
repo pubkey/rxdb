@@ -34,8 +34,8 @@ function ge(a, y, c, l, h) {
 function gt(a, y, c, l, h) {
   var i = h + 1;
   while (l <= h) {
-    var m = l + h >>> 1,
-      x = a[m];
+    var m = l + h >>> 1;
+    var x = a[m];
     var p = c !== undefined ? c(x, y) : x - y;
     if (p > 0) {
       i = m;

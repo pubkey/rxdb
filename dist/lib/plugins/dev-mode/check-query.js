@@ -9,6 +9,7 @@ exports.checkQuery = checkQuery;
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 var _rxError = require("../../rx-error");
 var _pouchdbSelectorCore = require("pouchdb-selector-core");
+var _dexie = require("../dexie");
 /**
  * accidentially passing a non-valid object into the query params
  * is very hard to debug especially when queries are observed
@@ -37,6 +38,14 @@ function checkQuery(args) {
       });
     }
   });
+
+  // do not allow skip or limit for count queries
+  if (args.op === 'count' && (args.queryObj.limit || args.queryObj.skip)) {
+    throw (0, _rxError.newRxError)('QU15', {
+      collection: args.collection.name,
+      query: args.queryObj
+    });
+  }
 }
 function checkMangoQuery(args) {
   var schema = args.rxQuery.collection.schema.jsonSchema;
@@ -80,6 +89,20 @@ function checkMangoQuery(args) {
         collection: args.rxQuery.collection.name,
         query: args.mangoQuery,
         schema: schema
+      });
+    }
+  }
+
+  /**
+   * Ensure that a count() query can only be used
+   * with selectors that are fully satisfied by the used index.
+   */
+  if (args.rxQuery.op === 'count') {
+    var preparedQuery = _dexie.RxStorageDexieStatics.prepareQuery(args.rxQuery.collection.schema.jsonSchema, args.mangoQuery);
+    if (!preparedQuery.queryPlan.selectorSatisfiedByIndex && !args.rxQuery.collection.database.allowSlowCount) {
+      throw (0, _rxError.newRxError)('QU14', {
+        collection: args.rxQuery.collection,
+        query: args.mangoQuery
       });
     }
   }

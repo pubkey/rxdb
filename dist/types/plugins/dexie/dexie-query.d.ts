@@ -5,3 +5,4 @@ export declare function getKeyRangeByQueryPlan(queryPlan: RxQueryPlan, IDBKeyRan
  * Runs mango queries over the Dexie.js database.
  */
 export declare function dexieQuery<RxDocType>(instance: RxStorageInstanceDexie<RxDocType>, preparedQuery: DexiePreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
+export declare function dexieCount<RxDocType>(instance: RxStorageInstanceDexie<RxDocType>, preparedQuery: DexiePreparedQuery<RxDocType>): Promise<number>;

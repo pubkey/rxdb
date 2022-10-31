@@ -42,24 +42,13 @@ export type MangoQuerySortPart<RxDocType = any> = {
     [k in StringKeys<RxDocType> | string]: MangoQuerySortDirection;
 };
 
-export type MangoQueryNoLimit<RxDocType = any> = {
+export type MangoQuerySelectorAndIndex<RxDocType = any> = {
     /**
      * Selector is optional,
      * if not given, the query matches all documents
      * that are not _deleted=true.
      */
     selector?: MangoQuerySelector<RxDocType>;
-    skip?: number;
-    /**
-     * Sorting of the results.
-     * If no sort is set, RxDB will sort by the primary key.
-     * Also if sort is set, RxDB will add primaryKey sorting
-     * if the primaryKey was not in the sort parameters before.
-     * This ensures that there is a deterministic sorting of the 
-     * results, not mather at which order the documents have been
-     * inserted into the storage.
-     */
-    sort?: MangoQuerySortPart<RxDocType>[];
     /**
      * By default, the RxStorage implementation
      * decides which index to use when running the query.
@@ -70,13 +59,27 @@ export type MangoQueryNoLimit<RxDocType = any> = {
      * depends on the RxStorage implementation.
      */
     index?: string | string[];
+}
+
+export type MangoQueryNoLimit<RxDocType = any> = MangoQuerySelectorAndIndex<RxDocType> & {
+    /**
+     * Sorting of the results.
+     * If no sort is set, RxDB will sort by the primary key.
+     * Also if sort is set, RxDB will add primaryKey sorting
+     * if the primaryKey was not in the sort parameters before.
+     * This ensures that there is a deterministic sorting of the 
+     * results, not mather at which order the documents have been
+     * inserted into the storage.
+     */
+    sort?: MangoQuerySortPart<RxDocType>[];
 };
 
 export type MangoQuery<RxDocType = any> = MangoQueryNoLimit<RxDocType> & {
+    skip?: number;
     limit?: number;
 };
 
-export type RxQueryOP = 'find' | 'findOne';
+export type RxQueryOP = 'find' | 'findOne' | 'count';
 
 export declare class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentType | RxDocumentType[]> extends RxQueryBase<RxDocumentType, RxQueryResult> {
     equals(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;

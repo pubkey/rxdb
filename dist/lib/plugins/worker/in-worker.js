@@ -41,6 +41,10 @@ function wrappedWorkerRxStorage(args) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
       return instance.query(preparedQuery);
     },
+    count: function count(instanceId, preparedQuery) {
+      var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
+      return instance.count(preparedQuery);
+    },
     getAttachmentData: function getAttachmentData(instanceId, documentId, attachmentId) {
       var instance = (0, _util.getFromMapOrThrow)(instanceById, instanceId);
       return instance.getAttachmentData(documentId, attachmentId);

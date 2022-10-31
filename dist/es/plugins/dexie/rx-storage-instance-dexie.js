@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import { now, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWriteTime, lastOfArray, ensureNotFalsy } from '../../util';
 import { closeDexieDb, fromDexieToStorage, fromStorageToDexie, getDexieDbWithTables, getDocsInDb, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
-import { dexieQuery } from './dexie-query';
+import { dexieCount, dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
@@ -156,16 +156,29 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
     ensureNotClosed(this);
     return dexieQuery(this, preparedQuery);
   };
-  _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
+  _proto.count = function count(preparedQuery) {
     try {
       var _this6 = this;
-      ensureNotClosed(_this6);
+      return Promise.resolve(dexieCount(_this6, preparedQuery)).then(function (result) {
+        return {
+          count: result,
+          mode: 'fast'
+        };
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+  _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
+    try {
+      var _this8 = this;
+      ensureNotClosed(_this8);
       var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
       var sinceId = checkpoint ? checkpoint.id : '';
-      return Promise.resolve(_this6.internals).then(function (state) {
+      return Promise.resolve(_this8.internals).then(function (state) {
         return Promise.resolve(Promise.all([state.dexieTable, state.dexieDeletedTable].map(function (table) {
           try {
-            var query = table.where('[_meta.lwt+' + _this6.primaryPath + ']').above([sinceLwt, sinceId]).limit(limit);
+            var query = table.where('[_meta.lwt+' + _this8.primaryPath + ']').above([sinceLwt, sinceId]).limit(limit);
             return Promise.resolve(query.toArray()).then(function (changedDocuments) {
               return changedDocuments.map(function (d) {
                 return fromDexieToStorage(d);
@@ -178,13 +191,13 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
           var changedDocsNormal = _ref[0],
             changedDocsDeleted = _ref[1];
           var changedDocs = changedDocsNormal.concat(changedDocsDeleted);
-          changedDocs = sortDocumentsByLastWriteTime(_this6.primaryPath, changedDocs);
+          changedDocs = sortDocumentsByLastWriteTime(_this8.primaryPath, changedDocs);
           changedDocs = changedDocs.slice(0, limit);
           var lastDoc = lastOfArray(changedDocs);
           return {
             documents: changedDocs,
             checkpoint: lastDoc ? {
-              id: lastDoc[_this6.primaryPath],
+              id: lastDoc[_this8.primaryPath],
               lwt: lastDoc._meta.lwt
             } : checkpoint ? checkpoint : {
               id: '',
@@ -199,11 +212,11 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   };
   _proto.remove = function remove() {
     try {
-      var _this8 = this;
-      ensureNotClosed(_this8);
-      return Promise.resolve(_this8.internals).then(function (state) {
+      var _this10 = this;
+      ensureNotClosed(_this10);
+      return Promise.resolve(_this10.internals).then(function (state) {
         return Promise.resolve(Promise.all([state.dexieDeletedTable.clear(), state.dexieTable.clear()])).then(function () {
-          return _this8.close();
+          return _this10.close();
         });
       });
     } catch (e) {
@@ -216,15 +229,15 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   };
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     try {
-      var _this10 = this;
-      ensureNotClosed(_this10);
-      return Promise.resolve(_this10.internals).then(function (state) {
+      var _this12 = this;
+      ensureNotClosed(_this12);
+      return Promise.resolve(_this12.internals).then(function (state) {
         return Promise.resolve(state.dexieDb.transaction('rw', state.dexieDeletedTable, function () {
           try {
             var maxDeletionTime = now() - minimumDeletedTime;
             return Promise.resolve(state.dexieDeletedTable.where('_meta.lwt').below(maxDeletionTime).toArray()).then(function (toRemove) {
               var removeIds = toRemove.map(function (doc) {
-                return doc[_this10.primaryPath];
+                return doc[_this12.primaryPath];
               });
               return Promise.resolve(state.dexieDeletedTable.bulkDelete(removeIds)).then(function () {});
             });

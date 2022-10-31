@@ -2258,30 +2258,7 @@ myCollection.find({
   }
 }).doesDocumentDataMatch(documentData); <span class="hljs-comment">// &gt; false</span>
 </code></pre>
-<h2 id="setting-a-specific-index">Setting a specific index</h2>
-<p>By default, the query will be send to the RxStorage, where a query planner will determine which one of the available indexes must be used.
-But the query planner cannot know everything and sometimes will not pick the most optimal index.
-To improve query performance, you can specify which index must be used, when running the query.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> query = myCollection
-    .findOne({
-      selector: {
-        age: {
-          $gt: <span class="hljs-number">18</span>
-        },
-        gender: {
-          $eq: <span class="hljs-string">&apos;m&apos;</span>
-        }
-      },
-      <span class="hljs-comment">/**
-       * Because the developer knows that 50% of the documents are &apos;male&apos;,
-       * but only 20% are below age 18,
-       * it makes sense to enforce using the [&apos;gender&apos;, &apos;age&apos;] index to improve performance.
-       * This could not be known by the query planer which might have choosen [&apos;age&apos;, &apos;gender&apos;] instead.
-       */</span>
-      index: [<span class="hljs-string">&apos;gender&apos;</span>, <span class="hljs-string">&apos;age&apos;</span>]
-    });
-</code></pre>
-<h2 id="examples">Examples</h2>
+<h2 id="query-examples">Query Examples</h2>
 <p>Here some examples to fast learn how to write queries without reading the docs.</p>
 <ul>
 <li><a href="https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md" target="_blank">Pouch-find-docs</a> - learn how to use mango-queries</li>
@@ -2322,6 +2299,113 @@ myCollection.find({
 <span class="hljs-comment">// chained queries</span>
 myCollection.find().where(<span class="hljs-string">&apos;name&apos;</span>).eq(<span class="hljs-string">&apos;foo&apos;</span>)
 .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
+</code></pre>
+<h2 id="setting-a-specific-index">Setting a specific index</h2>
+<p>By default, the query will be send to the RxStorage, where a query planner will determine which one of the available indexes must be used.
+But the query planner cannot know everything and sometimes will not pick the most optimal index.
+To improve query performance, you can specify which index must be used, when running the query.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> query = myCollection
+    .findOne({
+      selector: {
+        age: {
+          $gt: <span class="hljs-number">18</span>
+        },
+        gender: {
+          $eq: <span class="hljs-string">&apos;m&apos;</span>
+        }
+      },
+      <span class="hljs-comment">/**
+       * Because the developer knows that 50% of the documents are &apos;male&apos;,
+       * but only 20% are below age 18,
+       * it makes sense to enforce using the [&apos;gender&apos;, &apos;age&apos;] index to improve performance.
+       * This could not be known by the query planer which might have choosen [&apos;age&apos;, &apos;gender&apos;] instead.
+       */</span>
+      index: [<span class="hljs-string">&apos;gender&apos;</span>, <span class="hljs-string">&apos;age&apos;</span>]
+    });
+</code></pre>
+<h2 id="count">Count</h2>
+<p>When you only need the amount of documents that match a query, but you do not need the document data itself, you can use a count query for <strong>better performance</strong>.
+The performance difference compared to a normal query differs depending on which <a href="rx-storage.html">RxStorage</a> implementation is used.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> query = myCollection.count({
+  selector: {
+    age: {
+      $gt: <span class="hljs-number">18</span>
+    }
+  }
+  <span class="hljs-comment">// &apos;limit&apos; and &apos;skip&apos; MUST NOT be set for count queries.</span>
+});
+
+<span class="hljs-comment">// get the count result once</span>
+<span class="hljs-keyword">const</span> matchingAmount = await query.exec(); <span class="hljs-comment">// &gt; number</span>
+
+<span class="hljs-comment">// observe the result</span>
+query.$.subscribe(amount =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;Currently has &apos;</span> + amount + <span class="hljs-string">&apos; documents&apos;</span>);
+});
+</code></pre>
+<p><strong>IMPORTANT:</strong> count queries have a better performance then normal queries because they do not have to fetch the full document data out of the storage. Therefore it is <strong>not</strong> possible to run a <code>count()</code> query with a selector that requires to fetch and compared the document data. So if your query selector <strong>does not</strong> fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff not not using the fetched document data for caching.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">/**
+ * The following will throw an error because
+ * the count operation cannot run on any specific index range
+ * because the $regex operator is used.
+ */</span>
+<span class="hljs-keyword">const</span> query = myCollection.count({
+  selector: {
+    age: {
+      $regex: <span class="hljs-string">&apos;foobar&apos;</span>
+    }
+  }
+});
+
+<span class="hljs-comment">/**
+ * The following will throw an error because
+ * the count operation cannot run on any specific index range
+ * because there is no [&apos;age&apos; ,&apos;otherNumber&apos;] index
+ * defined in the schema.
+ */</span>
+<span class="hljs-keyword">const</span> query = myCollection.count({
+  selector: {
+    age: {
+      $gt: <span class="hljs-number">20</span>
+    },
+    otherNumber: {
+      $gt: <span class="hljs-number">10</span>
+    }
+  }
+});
+</code></pre>
+<p>If you want to count these kind of queries, you should do a normal query instead and use the length of the result set as counter. This has the same performance as running a non-fully-indexed count which has to fetch all document data from the database and run a query matcher.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">// get count manually once</span>
+<span class="hljs-keyword">const</span> resultSet = await myCollection.find({
+  selector: {
+    age: {
+      $regex: <span class="hljs-string">&apos;foobar&apos;</span>
+    }
+  }
+}).exec();
+<span class="hljs-keyword">const</span> count = resultSet.length;
+
+<span class="hljs-comment">// observe count manually</span>
+<span class="hljs-keyword">const</span> count$ = myCollection.find({
+  selector: {
+    age: {
+      $regex: <span class="hljs-string">&apos;foobar&apos;</span>
+    }
+  }
+}).$.pipe(
+  map(result =&gt; result.length)
+);
+
+<span class="hljs-comment">/**
+ * To allow non-fully-indexed count queries,
+ * you can also specify that by setting allowSlowCount=true
+ * when creating the database.
+ */</span>
+<span class="hljs-keyword">const</span> database = await createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    allowSlowCount: <span class="hljs-literal">true</span>, <span class="hljs-comment">// set this to true [default=false]</span>
+    <span class="hljs-comment">/* ... */</span>
+});
 </code></pre>
 <h2 id="notice-rxdb-will-always-append-the-primary-key-to-the-sort-parameters">NOTICE: RxDB will always append the primary key to the sort parameters</h2>
 <p>For several performance optimizations, like the <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce algoritm</a>, RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.

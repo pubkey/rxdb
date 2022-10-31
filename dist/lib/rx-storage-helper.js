@@ -511,6 +511,11 @@ rxJsonSchema) {
         return storageInstance.query(preparedQuery);
       });
     },
+    count: function count(preparedQuery) {
+      return database.lockedRun(function () {
+        return storageInstance.count(preparedQuery);
+      });
+    },
     findDocumentsById: function findDocumentsById(ids, deleted) {
       return database.lockedRun(function () {
         return storageInstance.findDocumentsById(ids, deleted);

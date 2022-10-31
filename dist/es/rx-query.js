@@ -105,6 +105,16 @@ export var RxQueryBase = /*#__PURE__*/function () {
    * @param newResultData json-docs that were received from pouchdb
    */
   _proto._setResultData = function _setResultData(newResultData) {
+    if (typeof newResultData === 'number') {
+      this._result = {
+        docsData: [],
+        docsDataMap: new Map(),
+        count: newResultData,
+        docs: [],
+        time: now()
+      };
+      return;
+    }
     var docs = createRxDocuments(this.collection, newResultData);
 
     /**
@@ -123,6 +133,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     this._result = {
       docsData: docsData,
       docsDataMap: docsDataMap,
+      count: docsData.length,
       docs: docs,
       time: now()
     };
@@ -136,6 +147,19 @@ export var RxQueryBase = /*#__PURE__*/function () {
     var _this = this;
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
     this._lastExecStart = now();
+    if (this.op === 'count') {
+      var preparedQuery = this.getPreparedQuery();
+      return this.collection.storageInstance.count(preparedQuery).then(function (result) {
+        if (result.mode === 'slow' && !_this.collection.database.allowSlowCount) {
+          throw newRxError('QU14', {
+            collection: _this.collection,
+            queryObj: _this.mangoQuery
+          });
+        } else {
+          return result.count;
+        }
+      });
+    }
     var docsPromise = queryCollection(this);
     return docsPromise.then(function (docs) {
       _this._lastExecEnd = now();
@@ -321,7 +345,9 @@ export var RxQueryBase = /*#__PURE__*/function () {
          */
         map(function (result) {
           var useResult = ensureNotFalsy(result);
-          if (_this3.op === 'findOne') {
+          if (_this3.op === 'count') {
+            return useResult.count;
+          } else if (_this3.op === 'findOne') {
             // findOne()-queries emit RxDocument or null
             return useResult.docs.length === 0 ? null : useResult.docs[0];
           } else {
@@ -456,14 +482,35 @@ function __ensureEqual(rxQuery) {
     } else {
       rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
       var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-      var eventReduceResult = calculateNewResults(rxQuery, runChangeEvents);
-      if (eventReduceResult.runFullQueryAgain) {
-        // could not calculate the new results, execute must be done
-        mustReExec = true;
-      } else if (eventReduceResult.changed) {
-        // we got the new results, we do not have to re-execute, mustReExec stays false
-        ret = true; // true because results changed
-        rxQuery._setResultData(eventReduceResult.newResults);
+      if (rxQuery.op === 'count') {
+        // 'count' query
+        var previousCount = ensureNotFalsy(rxQuery._result).count;
+        var newCount = previousCount;
+        runChangeEvents.forEach(function (cE) {
+          var didMatchBefore = cE.previousDocumentData && rxQuery.doesDocumentDataMatch(cE.previousDocumentData);
+          var doesMatchNow = rxQuery.doesDocumentDataMatch(cE.documentData);
+          if (!didMatchBefore && doesMatchNow) {
+            newCount++;
+          }
+          if (didMatchBefore && !doesMatchNow) {
+            newCount--;
+          }
+        });
+        if (newCount !== previousCount) {
+          ret = true; // true because results changed
+          rxQuery._setResultData(newCount);
+        }
+      } else {
+        // 'find' or 'findOne' query
+        var eventReduceResult = calculateNewResults(rxQuery, runChangeEvents);
+        if (eventReduceResult.runFullQueryAgain) {
+          // could not calculate the new results, execute must be done
+          mustReExec = true;
+        } else if (eventReduceResult.changed) {
+          // we got the new results, we do not have to re-execute, mustReExec stays false
+          ret = true; // true because results changed
+          rxQuery._setResultData(eventReduceResult.newResults);
+        }
       }
     }
   }
