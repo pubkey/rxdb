@@ -185,8 +185,68 @@ const query = myCollection
     });
 ```
 
+## Count
 
-## Examples
+When you only need the amount of documents that match a query, but you do not need the document data itself, you can use a count query for **better performance**.
+The performance difference compared to a normal query differs depending on which [RxStorage](./rx-storage.md) implementation is used.
+
+```ts
+const query = myCollection.count({
+  selector: {
+    age: {
+      $gt: 18
+    }
+  }
+  // 'limit' and 'skip' MUST NOT be set for count queries.
+});
+
+// get the count result once
+const matchingAmount = await query.exec(); // > number
+
+// observe the result
+query.$.subscribe(amount => {
+  console.log('Currently has ' + amount + ' documents');
+});
+```
+
+It is not possible to run a `count()` query with a selector that **does not ** fully match an index of the schema.
+
+```ts
+/**
+ * The following will throw an error because
+ * the count operation cannot run on any specific index range
+ * because the $regex operator is used.
+ */
+const query = myCollection.count({
+  selector: {
+    age: {
+      $regex: 'foobar'
+    }
+  }
+});
+
+/**
+ * The following will throw an error because
+ * the count operation cannot run on any specific index range
+ * because there is no ['age' ,'otherNumber'] index
+ * defined in the schema.
+ */
+const query = myCollection.count({
+  selector: {
+    age: {
+      $gt: 20
+    },
+    otherNumber: {
+      $gt: 10
+    }
+  }
+});
+```
+
+
+
+
+## Query Examples
 Here some examples to fast learn how to write queries without reading the docs.
 - [Pouch-find-docs](https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md) - learn how to use mango-queries
 - [mquery-docs](https://github.com/aheckmann/mquery/blob/master/README.md) - learn how to use chained-queries
