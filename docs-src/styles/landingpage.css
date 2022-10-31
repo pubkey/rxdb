@@ -967,7 +967,7 @@ header .logo img {
 
 
 
-.start-at-github {
+.star-at-github {
     float: right;
     padding: 3px;
     border-radius: 40px;
@@ -976,31 +976,31 @@ header .logo img {
     transition: all .2s ease-in-out;
 }
 
-.start-at-github:hover {
+.star-at-github:hover {
     transform: scale(1.1);
 }
 
-.start-at-github .start-at-github-inner {
+.star-at-github .star-at-github-inner {
     background-color: var(--bg-color);
     padding: 8px;
     border-radius: 40px;
 }
 
-.start-at-github .start-at-github-inner img {
+.star-at-github .star-at-github-inner img {
     margin-top: 3px;
     margin-left: 3px;
     margin-right: 6px;
     width: 17px;
 }
 
-.start-at-github .start-at-github-text {
+.star-at-github .star-at-github-text {
     display: inline;
     margin-top: 2px;
     float: right;
 }
 
-@media (max-width: 450px) {
-    .start-at-github {
+@media (max-width: 460px) {
+    .star-at-github {
         display: none;
     }
 }
