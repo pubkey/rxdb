@@ -5,7 +5,6 @@ import {
 } from '../../custom-index';
 import type {
     RxDocumentData,
-    RxStorageCountResult,
     RxStorageQueryResult
 } from '../../types';
 import { ensureNotFalsy } from '../../util';
