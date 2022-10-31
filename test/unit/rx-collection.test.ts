@@ -1393,6 +1393,23 @@ describe('rx-collection.test.ts', () => {
                     );
                     c.database.destroy();
                 });
+                it('must throw on limit and skip', async () => {
+                    const c = await humansCollection.create(0);
+                    const query = c.count();
+                    await AsyncTestUtil.assertThrows(
+                        () => query.limit(11),
+                        'RxError',
+                        'QU15'
+                    );
+
+                    await AsyncTestUtil.assertThrows(
+                        () => query.skip(11),
+                        'RxError',
+                        'QU15'
+                    );
+
+                    c.database.destroy();
+                });
             });
         });
         config.parallel('.bulkUpsert()', () => {
