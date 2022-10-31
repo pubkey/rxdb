@@ -398,8 +398,6 @@ config.parallel('crdt.test.js', () => {
                 await clientACollection.insert(writeData);
                 await replicateOnce(clientACollection, serverCollection);
 
-
-                console.log('first replication b to server');
                 await replicateOnce(clientBCollection, serverCollection);
 
                 const docA = await clientACollection.findOne().exec(true);

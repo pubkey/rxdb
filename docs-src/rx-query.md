@@ -158,35 +158,9 @@ myCollection.find({
 ```
 
 
-## Setting a specific index
-
-By default, the query will be send to the RxStorage, where a query planner will determine which one of the available indexes must be used.
-But the query planner cannot know everything and sometimes will not pick the most optimal index.
-To improve query performance, you can specify which index must be used, when running the query.
-
-```ts
-const query = myCollection
-    .findOne({
-      selector: {
-        age: {
-          $gt: 18
-        },
-        gender: {
-          $eq: 'm'
-        }
-      },
-      /**
-       * Because the developer knows that 50% of the documents are 'male',
-       * but only 20% are below age 18,
-       * it makes sense to enforce using the ['gender', 'age'] index to improve performance.
-       * This could not be known by the query planer which might have choosen ['age', 'gender'] instead.
-       */
-      index: ['gender', 'age']
-    });
-```
 
 
-## Examples
+## Query Examples
 Here some examples to fast learn how to write queries without reading the docs.
 - [Pouch-find-docs](https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md) - learn how to use mango-queries
 - [mquery-docs](https://github.com/aheckmann/mquery/blob/master/README.md) - learn how to use chained-queries
@@ -228,6 +202,128 @@ myCollection.find({
 // chained queries
 myCollection.find().where('name').eq('foo')
 .exec().then(documents => console.dir(documents));
+```
+
+
+## Setting a specific index
+
+By default, the query will be send to the RxStorage, where a query planner will determine which one of the available indexes must be used.
+But the query planner cannot know everything and sometimes will not pick the most optimal index.
+To improve query performance, you can specify which index must be used, when running the query.
+
+```ts
+const query = myCollection
+    .findOne({
+      selector: {
+        age: {
+          $gt: 18
+        },
+        gender: {
+          $eq: 'm'
+        }
+      },
+      /**
+       * Because the developer knows that 50% of the documents are 'male',
+       * but only 20% are below age 18,
+       * it makes sense to enforce using the ['gender', 'age'] index to improve performance.
+       * This could not be known by the query planer which might have choosen ['age', 'gender'] instead.
+       */
+      index: ['gender', 'age']
+    });
+```
+
+## Count
+
+When you only need the amount of documents that match a query, but you do not need the document data itself, you can use a count query for **better performance**.
+The performance difference compared to a normal query differs depending on which [RxStorage](./rx-storage.md) implementation is used.
+
+```ts
+const query = myCollection.count({
+  selector: {
+    age: {
+      $gt: 18
+    }
+  }
+  // 'limit' and 'skip' MUST NOT be set for count queries.
+});
+
+// get the count result once
+const matchingAmount = await query.exec(); // > number
+
+// observe the result
+query.$.subscribe(amount => {
+  console.log('Currently has ' + amount + ' documents');
+});
+```
+
+**IMPORTANT:** count queries have a better performance then normal queries because they do not have to fetch the full document data out of the storage. Therefore it is **not** possible to run a `count()` query with a selector that requires to fetch and compared the document data. So if your query selector **does not** fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff not not using the fetched document data for caching.
+
+```ts
+/**
+ * The following will throw an error because
+ * the count operation cannot run on any specific index range
+ * because the $regex operator is used.
+ */
+const query = myCollection.count({
+  selector: {
+    age: {
+      $regex: 'foobar'
+    }
+  }
+});
+
+/**
+ * The following will throw an error because
+ * the count operation cannot run on any specific index range
+ * because there is no ['age' ,'otherNumber'] index
+ * defined in the schema.
+ */
+const query = myCollection.count({
+  selector: {
+    age: {
+      $gt: 20
+    },
+    otherNumber: {
+      $gt: 10
+    }
+  }
+});
+```
+
+If you want to count these kind of queries, you should do a normal query instead and use the length of the result set as counter. This has the same performance as running a non-fully-indexed count which has to fetch all document data from the database and run a query matcher.
+
+```ts
+// get count manually once
+const resultSet = await myCollection.find({
+  selector: {
+    age: {
+      $regex: 'foobar'
+    }
+  }
+}).exec();
+const count = resultSet.length;
+
+// observe count manually
+const count$ = myCollection.find({
+  selector: {
+    age: {
+      $regex: 'foobar'
+    }
+  }
+}).$.pipe(
+  map(result => result.length)
+);
+
+/**
+ * To allow non-fully-indexed count queries,
+ * you can also specify that by setting allowSlowCount=true
+ * when creating the database.
+ */
+const database = await createRxDatabase({
+    name: 'mydatabase',
+    allowSlowCount: true, // set this to true [default=false]
+    /* ... */
+});
 ```
 
 ## NOTICE: RxDB will always append the primary key to the sort parameters

@@ -1588,6 +1588,64 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 storageInstance.close();
             });
         });
+        describe('.count()', () => {
+            it('should count the correct amount', async () => {
+                const schema = getTestDataSchema();
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
+                const preparedQueryAll = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+                    schema,
+                    {
+                        selector: {},
+                        sort: [
+                            { key: 'asc' }
+                        ],
+                        skip: 0
+                    }
+                );
+                async function ensureCountIs(nr: number) {
+                    const result = await storageInstance.count(preparedQueryAll);
+                    assert.strictEqual(result.count, nr);
+                }
+                await ensureCountIs(0);
+
+
+                await storageInstance.bulkWrite([{ document: getWriteData() }], testContext);
+                await ensureCountIs(1);
+
+                const writeData = getWriteData();
+                const insertResult = await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                await ensureCountIs(2);
+
+
+                // DELETE
+                const previous = getFromObjectOrThrow(insertResult.success, writeData.key);
+                await storageInstance.bulkWrite(
+                    [{
+                        previous,
+                        document: Object.assign({}, writeData, {
+                            _rev: EXAMPLE_REVISION_2,
+                            _deleted: true,
+                            _meta: {
+                                lwt: now()
+                            }
+                        })
+                    }],
+                    testContext
+                );
+                await ensureCountIs(1);
+
+                storageInstance.close();
+            });
+        });
         describe('.findDocumentsById()', () => {
             it('should find the documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({

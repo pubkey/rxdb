@@ -33,7 +33,8 @@ import type {
     DeepReadonly,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
-    RxStorageDefaultCheckpoint
+    RxStorageDefaultCheckpoint,
+    RxStorageCountResult
 } from '../../types';
 import {
     closeLokiCollections,
@@ -98,6 +99,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 cleanup: this.cleanup.bind(this),
                 close: this.close.bind(this),
                 query: this.query.bind(this),
+                count: this.count.bind(this),
                 findDocumentsById: this.findDocumentsById.bind(this),
                 collectionName: this.collectionName,
                 databaseName: this.databaseName,
@@ -244,6 +246,15 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         const foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
         return {
             documents: foundDocuments
+        };
+    }
+    async count(
+        preparedQuery: MangoQuery<RxDocType>
+    ): Promise<RxStorageCountResult> {
+        const result = await this.query(preparedQuery);
+        return {
+            count: result.documents.length,
+            mode: 'fast'
         };
     }
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {

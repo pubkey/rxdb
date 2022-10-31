@@ -115,7 +115,8 @@ export class RxDatabaseBase<
          */
         public readonly internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>,
         public readonly hashFunction: HashFunction,
-        public readonly cleanupPolicy?: Partial<RxCleanupPolicy>
+        public readonly cleanupPolicy?: Partial<RxCleanupPolicy>,
+        public readonly allowSlowCount?: boolean
     ) {
         DB_COUNT++;
 
@@ -550,6 +551,7 @@ export function createRxDatabase<
         ignoreDuplicate = false,
         options = {},
         cleanupPolicy,
+        allowSlowCount = false,
         localDocuments = false,
         hashFunction = defaultHashFunction
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
@@ -608,7 +610,8 @@ export function createRxDatabase<
                 options,
                 storageInstance,
                 hashFunction,
-                cleanupPolicy
+                cleanupPolicy,
+                allowSlowCount
             ) as any;
 
             return runAsyncPluginHooks('createRxDatabase', {

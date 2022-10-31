@@ -2,6 +2,9 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+
+
+- Added [RxCollection.count()](https://rxdb.info/rx-query.html#count) queries. [#4096](https://github.com/pubkey/rxdb/pull/4096)
 - REFACTOR index boundary usage for better performance.
 - FIX critical bug in query correctness. **IMPORTANT:** If you use the RxStorage [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html) or [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html), you have to rebuild the indexes by increasing your schema version and running a migration. [#4098](https://github.com/pubkey/rxdb/pull/4098)
 - FIX Typo in CRDT Plugin: `RxDDcrdtPlugin` is now `RxDBcrdtPlugin` [#4094](https://github.com/pubkey/rxdb/pull/4094) Thanks [@jwallet](https://github.com/jwallet)

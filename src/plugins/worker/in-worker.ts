@@ -12,6 +12,7 @@ import type {
     RxStorage,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
+    RxStorageCountResult,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
 } from '../../types';
@@ -37,6 +38,10 @@ export type InWorkerStorage<RxDocType, CheckpointType> = {
         instanceId: number,
         preparedQuery: any
     ): Promise<RxStorageQueryResult<RxDocType>>;
+    count(
+        instanceId: number,
+        preparedQuery: any
+    ): Promise<RxStorageCountResult>;
     getAttachmentData(
         instanceId: number,
         documentId: string,
@@ -106,6 +111,13 @@ export function wrappedWorkerRxStorage<T, D, CheckpointType = any>(
         ): Promise<RxStorageQueryResult<DocumentData>> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.query(preparedQuery);
+        },
+        count(
+            instanceId: number,
+            preparedQuery: any
+        ): Promise<RxStorageCountResult> {
+            const instance = getFromMapOrThrow(instanceById, instanceId);
+            return instance.count(preparedQuery);
         },
         getAttachmentData(
             instanceId: number,

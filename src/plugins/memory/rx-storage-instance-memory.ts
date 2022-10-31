@@ -23,6 +23,7 @@ import type {
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
+    RxStorageCountResult,
     RxStorageDefaultCheckpoint,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
@@ -279,6 +280,16 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         return Promise.resolve({
             documents: rows
         });
+    }
+
+    async count(
+        preparedQuery: MemoryPreparedQuery<RxDocType>
+    ): Promise<RxStorageCountResult> {
+        const result = await this.query(preparedQuery);
+        return {
+            count: result.documents.length,
+            mode: 'fast'
+        };
     }
 
     getChangedDocumentsSince(

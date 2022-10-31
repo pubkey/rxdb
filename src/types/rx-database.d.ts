@@ -31,6 +31,11 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
     localDocuments?: boolean;
 
     hashFunction?: HashFunction;
+
+    /**
+     * By default, count() queries in 'slow' mode are not allowed.
+     */
+    allowSlowCount?: boolean;
 }
 
 // options for the server-plugin

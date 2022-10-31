@@ -221,12 +221,12 @@ export function rateQueryPlan<RxDocType>(
     const pointsPerMatchingKey = 10;
     const idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === INDEX_MIN);
     if (idxOfFirstMinStartKey > 0) {
-        quality = quality + (idxOfFirstMinStartKey * pointsPerMatchingKey)
+        quality = quality + (idxOfFirstMinStartKey * pointsPerMatchingKey);
     }
 
     const idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === INDEX_MAX);
     if (idxOfFirstMaxEndKey > 0) {
-        quality = quality + (idxOfFirstMaxEndKey * pointsPerMatchingKey)
+        quality = quality + (idxOfFirstMaxEndKey * pointsPerMatchingKey);
     }
 
     const pointsIfNoReSortMustBeDone = 5;

@@ -184,3 +184,56 @@ export async function dexieQuery<RxDocType>(
         documents: rows
     };
 }
+
+
+export async function dexieCount<RxDocType>(
+    instance: RxStorageInstanceDexie<RxDocType>,
+    preparedQuery: DexiePreparedQuery<RxDocType>
+): Promise<number> {
+    const state = await instance.internals;
+    const queryPlan = preparedQuery.queryPlan;
+    const queryPlanFields: string[] = queryPlan.index;
+
+    const keyRange = getKeyRangeByQueryPlan(
+        queryPlan,
+        (state.dexieDb as any)._options.IDBKeyRange
+    );
+    let count: number = -1;
+    await state.dexieDb.transaction(
+        'r',
+        state.dexieTable,
+        async (dexieTx) => {
+            const tx = (dexieTx as any).idbtrans;
+            const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
+            let index: any;
+            if (
+                queryPlanFields.length === 1 &&
+                queryPlanFields[0] === instance.primaryPath
+            ) {
+                index = store;
+            } else {
+                let indexName: string;
+                if (queryPlanFields.length === 1) {
+                    indexName = dexieReplaceIfStartsWithPipe(queryPlanFields[0]);
+                } else {
+                    indexName = '[' +
+                        queryPlanFields
+                            .map(field => dexieReplaceIfStartsWithPipe(field))
+                            .join('+')
+                        + ']';
+                }
+                index = store.index(indexName);
+            }
+
+            const request = index.count(keyRange);
+            count = await new Promise<number>((res, rej) => {
+                request.onsuccess = function () {
+                    const count = request.result;
+                    res(count);
+                }
+                request.onerror = (err: any) => rej(err);
+            });
+        }
+    );
+    return count;
+}

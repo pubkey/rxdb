@@ -10,6 +10,7 @@ import type {
     RxDocumentDataById,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
+    RxStorageCountResult,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
 } from './rx-storage';
@@ -181,7 +182,7 @@ export interface RxStorageInstance<
     Internals,
     InstanceCreationOptions,
     CheckpointType = any
-    > {
+> {
     readonly databaseName: string;
     /**
      * Returns the internal data that is used by the storage engine.
@@ -259,6 +260,15 @@ export interface RxStorageInstance<
          */
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>>;
+
+    /**
+     * Returns the amount of non-deleted documents
+     * that match the given query.
+     * Sort, skip and limit of the query must be ignored!
+     */
+    count(
+        preparedQuery: PreparedQuery<RxDocType>
+    ): Promise<RxStorageCountResult>;
 
     /**
      * Returns the plain data of a single attachment.
