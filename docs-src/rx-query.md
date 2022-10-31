@@ -209,7 +209,7 @@ query.$.subscribe(amount => {
 });
 ```
 
-It is not possible to run a `count()` query with a selector that **does not ** fully match an index of the schema.
+**IMPORTANT:** It is **not** possible to run a `count()` query with a selector that **does not** fully match an index of the schema. These queries would have no performance benefit compared to normal queries but have the tradeoff not not using the fetched document data for caching.
 
 ```ts
 /**
@@ -243,7 +243,31 @@ const query = myCollection.count({
 });
 ```
 
+If you want to count these kind of queries, you should do a normal query instead and use the length of the result set as counter. This has the same performance as running a non-fully-indexed count which has to fetch all document data from the database and run a query matcher.
 
+```ts
+
+const resultSet = await myCollection.find({
+  selector: {
+    age: {
+      $regex: 'foobar'
+    }
+  }
+}).exec();
+const count = resultSet.length;
+
+
+/**
+ * To allow non-fully-indexed count queries,
+ * you can also specify that by setting allowSlowCount=true
+ * when creating the database.
+ */
+const database = await createRxDatabase({
+    name: 'mydatabase',
+    allowSlowCount: true, // set this to true [default=false]
+    /* ... */
+});
+```
 
 
 ## Query Examples
