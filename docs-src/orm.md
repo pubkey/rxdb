@@ -88,7 +88,7 @@ console.log(doc.whoAmI());
 
 ## attachment-methods
 
-Attachment-methods are defined collection-wide. They can be called on the RxAttachemnts of the RxDocuments of the collection.
+Attachment-methods are defined collection-wide. They can be called on the RxAttachments of the RxDocuments of the collection.
 
 ```javascript
 const heroes = await myDatabase.addCollections({
