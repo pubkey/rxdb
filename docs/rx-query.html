@@ -2282,7 +2282,7 @@ myCollection.find({
 .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
 
 <span class="hljs-comment">// find using a composite statement eg: $or</span>
-<span class="hljs-comment">// This example checks where name is either foo or if name is not existant on the document</span>
+<span class="hljs-comment">// This example checks where name is either foo or if name is not existent on the document</span>
 myCollection.find({
   selector: { $or: [ { name: { $eq: <span class="hljs-string">&apos;foo&apos;</span> } }, { name: { $exists: <span class="hljs-literal">false</span> } }] }
 })
@@ -2318,7 +2318,7 @@ To improve query performance, you can specify which index must be used, when run
        * Because the developer knows that 50% of the documents are &apos;male&apos;,
        * but only 20% are below age 18,
        * it makes sense to enforce using the [&apos;gender&apos;, &apos;age&apos;] index to improve performance.
-       * This could not be known by the query planer which might have choosen [&apos;age&apos;, &apos;gender&apos;] instead.
+       * This could not be known by the query planer which might have chosen [&apos;age&apos;, &apos;gender&apos;] instead.
        */</span>
       index: [<span class="hljs-string">&apos;gender&apos;</span>, <span class="hljs-string">&apos;age&apos;</span>]
     });
@@ -2408,7 +2408,7 @@ query.$.subscribe(amount =&gt; {
 });
 </code></pre>
 <h2 id="notice-rxdb-will-always-append-the-primary-key-to-the-sort-parameters">NOTICE: RxDB will always append the primary key to the sort parameters</h2>
-<p>For several performance optimizations, like the <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce algoritm</a>, RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
+<p>For several performance optimizations, like the <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce algorithm</a>, RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
 This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.</p>
 <h2 id="notice-rxquerys-are-immutable">NOTICE: RxQuery&apos;s are immutable</h2>
 <p>Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQuery&apos;s have to be immutable.

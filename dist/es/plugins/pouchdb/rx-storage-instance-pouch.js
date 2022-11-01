@@ -256,7 +256,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
     /**
      * Instead of listening to pouch.changes,
      * we have overwritten pouchdbs bulkDocs()
-     * and create our own event stream, this will work more relyable
+     * and create our own event stream, this will work more reliable
      * and does not mix up with write events from other sources.
      */
     var emitter = getCustomEventEmitterByPouch(this.internals.pouch);

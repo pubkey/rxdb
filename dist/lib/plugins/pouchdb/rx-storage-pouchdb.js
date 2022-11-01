@@ -96,7 +96,7 @@ var RxStoragePouch = /*#__PURE__*/function () {
     var pouch = new _pouchDb.PouchDB(pouchDbParameters.location, pouchDBOptions);
 
     /**
-     * In the past we found some errors where the PouchDB is not directly useable
+     * In the past we found some errors where the PouchDB is not directly usable
      * so we we had to call .info() first to ensure it can be used.
      * I commented this out for now to get faster database/collection creation.
      * We might have to add this again if something fails.

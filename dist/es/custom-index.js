@@ -88,8 +88,8 @@ export function getNumberIndexString(parsedLengths, fieldValue) {
   var str = '';
   var nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
   str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
-  var splittedByDecimalPoint = fieldValue.toString().split('.');
-  var decimalValueAsString = splittedByDecimalPoint.length > 1 ? splittedByDecimalPoint[1] : '0';
+  var splitByDecimalPoint = fieldValue.toString().split('.');
+  var decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
   str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
   return str;
 }

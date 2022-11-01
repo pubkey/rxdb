@@ -172,7 +172,7 @@ export var basePrototype = {
   /**
    * TODO
    * instead of appliying the _this-hack
-   * we should make these accesors functions instead of getters.
+   * we should make these accessors functions instead of getters.
    */
   get _data() {
     var _this = this;
@@ -357,7 +357,7 @@ export var basePrototype = {
   },
   /**
    * updates document
-   * @overwritten by plugin (optinal)
+   * @overwritten by plugin (optional)
    * @param updateObj mongodb-like syntax
    */
   update: function update(_updateObj) {

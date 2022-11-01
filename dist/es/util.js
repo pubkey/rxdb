@@ -86,7 +86,7 @@ export function defaultHashFunction(input) {
 /**
  * Returns the current unix time in milliseconds (with two decmials!)
  * Because the accuracy of getTime() in javascript is bad,
- * and we cannot rely on performance.now() on all plattforms,
+ * and we cannot rely on performance.now() on all platforms,
  * this method implements a way to never return the same value twice.
  * This ensures that when now() is called often, we do not loose the information
  * about which call came first and which came after.
@@ -687,14 +687,14 @@ export function sortDocumentsByLastWriteTime(primaryPath, docs) {
  */
 
 export function objectPathMonad(objectPath) {
-  var splitted = objectPath.split('.');
+  var split = objectPath.split('.');
 
   /**
    * Performance shortcut,
    * if no nested path is used,
    * directly return the field of the object.
    */
-  if (splitted.length === 1) {
+  if (split.length === 1) {
     return function (obj) {
       return obj[objectPath];
     };
@@ -702,8 +702,8 @@ export function objectPathMonad(objectPath) {
   return function (obj) {
     var currentVal = obj;
     var t = 0;
-    while (t < splitted.length) {
-      var subPath = splitted[t];
+    while (t < split.length) {
+      var subPath = split[t];
       currentVal = currentVal[subPath];
       if (typeof currentVal === 'undefined') {
         return currentVal;

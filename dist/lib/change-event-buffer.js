@@ -41,7 +41,7 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
 
   /**
    * gets the array-index for the given pointer
-   * @return arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
+   * @return arrayIndex which can be used to iterate from there. If null, pointer is out of lower bound
    */;
   _proto.getArrayIndexByPointer = function getArrayIndexByPointer(pointer) {
     var oldestEvent = this.buffer[0];
@@ -54,7 +54,7 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
 
   /**
    * get all changeEvents which came in later than the pointer-event
-   * @return array with change-events. Iif null, pointer out of bounds
+   * @return array with change-events. If null, pointer out of bounds
    */;
   _proto.getFrom = function getFrom(pointer) {
     var ret = [];

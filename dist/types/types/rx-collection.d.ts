@@ -53,7 +53,7 @@ export interface MigrationState {
     done: boolean; // true if finished
     total: number; // will be the doc-count
     handled: number; // amount of handled docs
-    success: number; // handled docs which successed
+    success: number; // handled docs which succeeded
     deleted: number; // handled docs which got deleted
     percent: number; // percentage
 }

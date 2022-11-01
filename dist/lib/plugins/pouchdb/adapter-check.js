@@ -9,7 +9,7 @@ var _pouchDb = require("./pouch-db");
 var _util = require("../../util");
 /**
  * this plugin adds the checkAdapter-function to rxdb
- * you can use it to check if the given adapter is working in the current environmet
+ * you can use it to check if the given adapter is working in the current environment
  */
 
 /**
@@ -32,7 +32,7 @@ function checkAdapter(adapter) {
     return _util.PROMISE_RESOLVE_FALSE;
   }
   var recoveredDoc;
-  return pouch.info() // ensure that we wait until db is useable
+  return pouch.info() // ensure that we wait until db is usable
   // ensure write works
   .then(function () {
     return pouch.put({

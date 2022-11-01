@@ -149,7 +149,7 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
     try {
       /**
        * when complete fires, it might be that not all changeEvents
-       * have passed throught, because of the delay of .wachtForChanges()
+       * have passed through, because of the delay of .wachtForChanges()
        * Therefore we have to first ensure that all previous changeEvents have been handled
        */
       return Promise.resolve((0, _util.promiseWait)(100)).then(function () {

@@ -55,7 +55,7 @@ export function normalizeMangoQuery(schema, mangoQuery) {
    * we have to ensure the primary key is always part
    * of the sort query.
    * Primary sorting is added as last sort parameter,
-   * similiar to how we add the primary key to indexes that do not have it.
+   * similar to how we add the primary key to indexes that do not have it.
    * 
    */
   if (!normalizedMangoQuery.sort) {

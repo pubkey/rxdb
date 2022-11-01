@@ -345,7 +345,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       });
     }
 
-    // ensure that it wont try 2 parallel runs
+    // ensure that it won't try 2 parallel runs
     var queue = this._atomicUpsertQueues.get(primary);
     if (!queue) {
       queue = _util.PROMISE_RESOLVE_VOID;
@@ -471,7 +471,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     return this.$.pipe((0, _operators.startWith)(null),
     /**
      * Optimization shortcut.
-     * Do not proceed if the emited RxChangeEvent
+     * Do not proceed if the emitted RxChangeEvent
      * is not relevant for the query.
      */
     (0, _operators.filter)(function (changeEvent) {

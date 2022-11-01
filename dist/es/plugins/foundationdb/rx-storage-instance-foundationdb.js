@@ -354,7 +354,7 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       return Promise.resolve(_this16.internals.dbsPromise).then(function (dbs) {
         dbs.root.close();
 
-        // TODO shouldnt we close the index databases?
+        // TODO shouldn't we close the index databases?
         // Object.values(dbs.indexes).forEach(db => db.close());
       });
     } catch (e) {

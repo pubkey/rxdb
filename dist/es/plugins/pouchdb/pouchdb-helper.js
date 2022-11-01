@@ -113,7 +113,7 @@ export function pouchSwapIdToPrimaryString(primaryKey, str) {
 export function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
   var useDoc = pouchSwapIdToPrimary(primaryKey, pouchDoc);
 
-  // always flat clone becaues we mutate the _attachments property.
+  // always flat clone because we mutate the _attachments property.
   useDoc = flatClone(useDoc);
   delete useDoc._revisions;
 
@@ -146,7 +146,7 @@ export function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
 export function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
   var pouchDoc = pouchSwapPrimaryToId(primaryKey, doc);
 
-  // always flat clone becaues we mutate the _attachments property.
+  // always flat clone because we mutate the _attachments property.
   pouchDoc = flatClone(pouchDoc);
   pouchDoc._attachments = {};
   if (doc._attachments) {
@@ -278,7 +278,7 @@ export function pouchChangeRowToChangeStreamEvent(primaryKey, pouchRow) {
 }
 
 /**
- * Runs a primary swap with transform all custom primaryKey occurences
+ * Runs a primary swap with transform all custom primaryKey occurrences
  * into '_id'
  * @recursive
  */

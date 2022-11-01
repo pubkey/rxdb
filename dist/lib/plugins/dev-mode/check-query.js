@@ -12,7 +12,7 @@ var _rxError = require("../../rx-error");
 var _pouchdbSelectorCore = require("pouchdb-selector-core");
 var _dexie = require("../dexie");
 /**
- * accidentially passing a non-valid object into the query params
+ * accidentally passing a non-valid object into the query params
  * is very hard to debug especially when queries are observed
  * This is why we do some checks here in dev-mode
  */

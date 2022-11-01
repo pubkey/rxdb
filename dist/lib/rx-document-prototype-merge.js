@@ -15,7 +15,7 @@ var _overwritable = require("./overwritable");
  * For the ORM capabilities,
  * we have to merge the document prototype
  * with the ORM functions and the data
- * We do this itterating over the properties and
+ * We do this iterating over the properties and
  * adding them to a new object.
  * In the future we should do this by chaining the __proto__ objects
  */
@@ -36,7 +36,7 @@ function getDocumentPrototype(rxCollection) {
 
         /**
          * When enumerable is true, it will show on console.dir(instance)
-         * To not polute the output, only getters and methods are enumerable
+         * To not pollute the output, only getters and methods are enumerable
          */
         var enumerable = true;
         if (key.startsWith('_') || key.endsWith('_') || key.startsWith('$') || key.endsWith('$')) enumerable = false;

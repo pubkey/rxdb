@@ -59,7 +59,7 @@ window.renderLogo = function (selector, showText = true) {
      * All elements have to be added to both groups,
      * so we can add the stroke the the bordered group
      * and overlay it with the non-bordered group.
-     * This ensure we have to ugly stroke blinking throught
+     * This ensure we have to ugly stroke blinking through
      * and we do not have to work with svg masks.
      */
     const borderedGroup = svg
@@ -160,11 +160,9 @@ function getTextPaths(cb) {
         console.log('paths:');
         console.dir(paths);
 
-        const datas = paths.map(path => path.toPathData(5));
+        const data = paths.map(path => path.toPathData(5));
         console.log('svg-data:');
-        console.dir(datas);
-
-        cb(datas);
-
+        console.dir(data);
+        cb(data);
     });
 }

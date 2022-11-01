@@ -425,7 +425,7 @@ function startReplicationDownstream(state) {
       }).then(function () {
         /**
          * For better performance we do not await checkpoint writes,
-         * but to ensure order on parrallel checkpoint writes,
+         * but to ensure order on parallel checkpoint writes,
          * we have to use a queue.
          */
         state.checkpointQueue = state.checkpointQueue.then(function () {

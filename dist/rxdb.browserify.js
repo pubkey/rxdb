@@ -8,7 +8,7 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 /**
  * this is the index for a browserify-build
- * which produces a single file that can be embeded into the html
+ * which produces a single file that can be embedded into the html
  * and used via window.RxDB
  */
 
@@ -60,7 +60,7 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
 
   /**
    * gets the array-index for the given pointer
-   * @return arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
+   * @return arrayIndex which can be used to iterate from there. If null, pointer is out of lower bound
    */;
   _proto.getArrayIndexByPointer = function getArrayIndexByPointer(pointer) {
     var oldestEvent = this.buffer[0];
@@ -73,7 +73,7 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
 
   /**
    * get all changeEvents which came in later than the pointer-event
-   * @return array with change-events. Iif null, pointer out of bounds
+   * @return array with change-events. If null, pointer out of bounds
    */;
   _proto.getFrom = function getFrom(pointer) {
     var ret = [];
@@ -230,8 +230,8 @@ function getNumberIndexString(parsedLengths, fieldValue) {
   var str = '';
   var nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
   str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
-  var splittedByDecimalPoint = fieldValue.toString().split('.');
-  var decimalValueAsString = splittedByDecimalPoint.length > 1 ? splittedByDecimalPoint[1] : '0';
+  var splitByDecimalPoint = fieldValue.toString().split('.');
+  var decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
   str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
   return str;
 }
@@ -531,7 +531,7 @@ var HOOKS = {
    * runs on the document-data before the document is migrated
    * {
    *   doc: Object, // originam doc-data
-   *   migrated: // migrated doc-data after run throught migration-strategies
+   *   migrated: // migrated doc-data after run through migration-strategies
    * }
    */
   preMigrateDocument: [],
@@ -1626,7 +1626,7 @@ function allAttachments() {
 function postMigrateDocument(_action) {
   /**
    * No longer needed because
-   * we store the attachemnts data buffers directly in the document.
+   * we store the attachments data buffers directly in the document.
    */
   return _util.PROMISE_RESOLVE_VOID;
 }
@@ -1683,7 +1683,7 @@ var _pouchDb = require("./pouch-db");
 var _util = require("../../util");
 /**
  * this plugin adds the checkAdapter-function to rxdb
- * you can use it to check if the given adapter is working in the current environmet
+ * you can use it to check if the given adapter is working in the current environment
  */
 
 /**
@@ -1706,7 +1706,7 @@ function checkAdapter(adapter) {
     return _util.PROMISE_RESOLVE_FALSE;
   }
   var recoveredDoc;
-  return pouch.info() // ensure that we wait until db is useable
+  return pouch.info() // ensure that we wait until db is usable
   // ensure write works
   .then(function () {
     return pouch.put({
@@ -1993,7 +1993,7 @@ var BULK_DOC_RUN_QUEUE = new WeakMap();
 
 /**
  * PouchDB is like a minefield,
- * where stuff randomly does not work dependend on some conditions.
+ * where stuff randomly does not work dependent on some conditions.
  * So instead of doing plain writes,
  * we hack into the bulkDocs() function
  * and adjust the behavior accordingly.
@@ -2641,7 +2641,7 @@ function preparePouchDbQuery(schema, mutateableQuery) {
   }
 
   /**
-   * because sort wont work on unused keys we have to workaround
+   * because sort won't work on unused keys we have to workaround
    * so we add the key to the selector if necessary
    * @link https://github.com/nolanlawson/pouchdb-find/issues/204
    */
@@ -2889,7 +2889,7 @@ function pouchSwapIdToPrimaryString(primaryKey, str) {
 function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
   var useDoc = pouchSwapIdToPrimary(primaryKey, pouchDoc);
 
-  // always flat clone becaues we mutate the _attachments property.
+  // always flat clone because we mutate the _attachments property.
   useDoc = (0, _util.flatClone)(useDoc);
   delete useDoc._revisions;
 
@@ -2922,7 +2922,7 @@ function pouchDocumentDataToRxDocumentData(primaryKey, pouchDoc) {
 function rxDocumentDataToPouchDocumentData(primaryKey, doc) {
   var pouchDoc = pouchSwapPrimaryToId(primaryKey, doc);
 
-  // always flat clone becaues we mutate the _attachments property.
+  // always flat clone because we mutate the _attachments property.
   pouchDoc = (0, _util.flatClone)(pouchDoc);
   pouchDoc._attachments = {};
   if (doc._attachments) {
@@ -3054,7 +3054,7 @@ function pouchChangeRowToChangeStreamEvent(primaryKey, pouchRow) {
 }
 
 /**
- * Runs a primary swap with transform all custom primaryKey occurences
+ * Runs a primary swap with transform all custom primaryKey occurrences
  * into '_id'
  * @recursive
  */
@@ -3384,7 +3384,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
     /**
      * Instead of listening to pouch.changes,
      * we have overwritten pouchdbs bulkDocs()
-     * and create our own event stream, this will work more relyable
+     * and create our own event stream, this will work more reliable
      * and does not mix up with write events from other sources.
      */
     var emitter = (0, _customEventsPlugin.getCustomEventEmitterByPouch)(this.internals.pouch);
@@ -3820,7 +3820,7 @@ var RxStoragePouch = /*#__PURE__*/function () {
     var pouch = new _pouchDb.PouchDB(pouchDbParameters.location, pouchDBOptions);
 
     /**
-     * In the past we found some errors where the PouchDB is not directly useable
+     * In the past we found some errors where the PouchDB is not directly usable
      * so we we had to call .info() first to ensure it can be used.
      * I commented this out for now to get faster database/collection creation.
      * We might have to add this again if something fails.
@@ -5050,7 +5050,7 @@ function startReplicationDownstream(state) {
       }).then(function () {
         /**
          * For better performance we do not await checkpoint writes,
-         * but to ensure order on parrallel checkpoint writes,
+         * but to ensure order on parallel checkpoint writes,
          * we have to use a queue.
          */
         state.checkpointQueue = state.checkpointQueue.then(function () {
@@ -5809,7 +5809,7 @@ function _for(test, update, body) {
 /**
  * Writes all document changes from the fork to the master.
  * The upstream runs on two modes:
- * - For inital replication, a checkpoint-iteration is used
+ * - For initial replication, a checkpoint-iteration is used
  * - For ongoing local writes, we just subscribe to the changeStream of the fork.
  *   In contrast to the master, the fork can be assumed to never loose connection,
  *   so we do not have to prepare for missed out events.
@@ -5828,7 +5828,7 @@ function startReplicationUpstream(state) {
         var _interrupt = false;
         function _temp13() {
           /**
-           * If we had conflicts during the inital sync,
+           * If we had conflicts during the initial sync,
            * it means that we likely have new writes to the fork
            * and so we have to run the initial sync again to upastream these new writes.
            */
@@ -5917,8 +5917,8 @@ function startReplicationUpstream(state) {
       while (openTasks.length > 0) {
         var taskWithTime = (0, _util.ensureNotFalsy)(openTasks.shift());
         /**
-         * If the task came in before the last time the inital sync fetching
-         * has run, we can ignore the task because the inital sync already processed
+         * If the task came in before the last time the initial sync fetching
+         * has run, we can ignore the task because the initial sync already processed
          * these documents.
          */
         if (taskWithTime.time < initialSyncStartTime) {
@@ -6043,7 +6043,7 @@ function startReplicationUpstream(state) {
                 function _temp4() {
                   /**
                    * For better performance we do not await checkpoint writes,
-                   * but to ensure order on parrallel checkpoint writes,
+                   * but to ensure order on parallel checkpoint writes,
                    * we have to use a queue.
                    */
                   state.checkpointQueue = state.checkpointQueue.then(function () {
@@ -6170,7 +6170,7 @@ function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
 /**
  * Might return null which means an
  * already deleted document got modified but still is deleted.
- * Theses kind of events are not relevant for the event-reduce algorithm
+ * These kind of events are not relevant for the event-reduce algorithm
  * and must be filtered out.
  */
 function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
@@ -6720,7 +6720,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       });
     }
 
-    // ensure that it wont try 2 parallel runs
+    // ensure that it won't try 2 parallel runs
     var queue = this._atomicUpsertQueues.get(primary);
     if (!queue) {
       queue = _util.PROMISE_RESOLVE_VOID;
@@ -6846,7 +6846,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     return this.$.pipe((0, _operators.startWith)(null),
     /**
      * Optimization shortcut.
-     * Do not proceed if the emited RxChangeEvent
+     * Do not proceed if the emitted RxChangeEvent
      * is not relevant for the query.
      */
     (0, _operators.filter)(function (changeEvent) {
@@ -8297,7 +8297,7 @@ var _overwritable = require("./overwritable");
  * For the ORM capabilities,
  * we have to merge the document prototype
  * with the ORM functions and the data
- * We do this itterating over the properties and
+ * We do this iterating over the properties and
  * adding them to a new object.
  * In the future we should do this by chaining the __proto__ objects
  */
@@ -8318,7 +8318,7 @@ function getDocumentPrototype(rxCollection) {
 
         /**
          * When enumerable is true, it will show on console.dir(instance)
-         * To not polute the output, only getters and methods are enumerable
+         * To not pollute the output, only getters and methods are enumerable
          */
         var enumerable = true;
         if (key.startsWith('_') || key.endsWith('_') || key.startsWith('$') || key.endsWith('$')) enumerable = false;
@@ -8582,7 +8582,7 @@ var basePrototype = {
   /**
    * TODO
    * instead of appliying the _this-hack
-   * we should make these accesors functions instead of getters.
+   * we should make these accessors functions instead of getters.
    */
   get _data() {
     var _this = this;
@@ -8767,7 +8767,7 @@ var basePrototype = {
   },
   /**
    * updates document
-   * @overwritten by plugin (optinal)
+   * @overwritten by plugin (optional)
    * @param updateObj mongodb-like syntax
    */
   update: function update(_updateObj) {
@@ -9218,7 +9218,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
    * we have to ensure the primary key is always part
    * of the sort query.
    * Primary sorting is added as last sort parameter,
-   * similiar to how we add the primary key to indexes that do not have it.
+   * similar to how we add the primary key to indexes that do not have it.
    * 
    */
   if (!normalizedMangoQuery.sort) {
@@ -9666,7 +9666,7 @@ var RxQueryBase = /*#__PURE__*/function () {
             return useResult.docs.length === 0 ? null : useResult.docs[0];
           } else {
             // find()-queries emit RxDocument[]
-            // Flat copy the array so it wont matter if the user modifies it.
+            // Flat copy the array so it won't matter if the user modifies it.
             return useResult.docs.slice(0);
           }
         }));
@@ -9775,7 +9775,7 @@ function __ensureEqual(rxQuery) {
   if (
   // db is closed
   rxQuery.collection.database.destroyed ||
-  // nothing happend since last run
+  // nothing happened since last run
   _isResultsInSync(rxQuery)) {
     return _util.PROMISE_RESOLVE_FALSE;
   }
@@ -9964,7 +9964,7 @@ function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
  * 
  * - Orders the schemas attributes by alphabetical order
  * - Adds the primaryKey to all indexes that do not contain the primaryKey
- * - We need this for determinstic sort order on all queries, which is required for event-reduce to work.
+ * - We need this for deterministic sort order on all queries, which is required for event-reduce to work.
  *
  * @return RxJsonSchema - ordered and filled
  */
@@ -11190,7 +11190,7 @@ function defaultHashFunction(input) {
 /**
  * Returns the current unix time in milliseconds (with two decmials!)
  * Because the accuracy of getTime() in javascript is bad,
- * and we cannot rely on performance.now() on all plattforms,
+ * and we cannot rely on performance.now() on all platforms,
  * this method implements a way to never return the same value twice.
  * This ensures that when now() is called often, we do not loose the information
  * about which call came first and which came after.
@@ -11799,14 +11799,14 @@ function sortDocumentsByLastWriteTime(primaryPath, docs) {
  */
 
 function objectPathMonad(objectPath) {
-  var splitted = objectPath.split('.');
+  var split = objectPath.split('.');
 
   /**
    * Performance shortcut,
    * if no nested path is used,
    * directly return the field of the object.
    */
-  if (splitted.length === 1) {
+  if (split.length === 1) {
     return function (obj) {
       return obj[objectPath];
     };
@@ -11814,8 +11814,8 @@ function objectPathMonad(objectPath) {
   return function (obj) {
     var currentVal = obj;
     var t = 0;
-    while (t < splitted.length) {
-      var subPath = splitted[t];
+    while (t < split.length) {
+      var subPath = split[t];
       currentVal = currentVal[subPath];
       if (typeof currentVal === 'undefined') {
         return currentVal;

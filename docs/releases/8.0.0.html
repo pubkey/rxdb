@@ -2131,7 +2131,7 @@
                                 
                                 <h1 id="800">8.0.0</h1>
 <p>When I created RxDB, two years ago, there where some things that I did not consider and other things that I just decided wrong.
-With the breaking version <code>8.0.0</code> I rewrote some parts of RxDB and changed the API a bit. The focus layed on <strong>better defaults</strong> and <strong>better performance</strong>.</p>
+With the breaking version <code>8.0.0</code> I rewrote some parts of RxDB and changed the API a bit. The focus laid on <strong>better defaults</strong> and <strong>better performance</strong>.</p>
 <h2 id="disablekeycompression-by-default">disableKeyCompression by default</h2>
 <p>Because the keyCompression was confusing and most users do not use it, it is now disabled by default. Also the naming was bad, so <code>disableKeyCompression</code> is now renamed to <code>keyCompression</code> which defaults to <code>false</code>.</p>
 <h2 id="collection-now-only-accepts-a-rxjsonschema-as-schema">collection() now only accepts a RxJsonSchema as schema</h2>
@@ -2155,7 +2155,7 @@ But there was the problem that we have no weak pointers in javascript and theref
 }, <span class="hljs-literal">false</span>);
 </code></pre>
 <h2 id="multiinstance-is-now-done-via-broadcast-channel">multiInstance is now done via broadcast-channel</h2>
-<p>Because the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API" target="_blank">BroadcastChannel-API</a> is not useable in all browsers and also not in NodeJs, multiInstance-communication was hard. The hacky workaround was to use a pseudo-socket and regularly check if an other instance has emitted a <code>RxChangeEvent</code>.
+<p>Because the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API" target="_blank">BroadcastChannel-API</a> is not usable in all browsers and also not in NodeJs, multiInstance-communication was hard. The hacky workaround was to use a pseudo-socket and regularly check if an other instance has emitted a <code>RxChangeEvent</code>.
 This was expensive because even when the database did nothing, we wasted disk-IO and CPU by handling this.</p>
 <p>To solve this waste, I spend one month creating <a href="https://github.com/pubkey/broadcast-channel" target="_blank">a module that polyfills the broadcast-channel-api</a> so it works on old browsers, new browsers and even NodeJs. This does not only waste less resources but also has a lower latency. Also the module is used by more projects than RxDB which allows use the fix bugs and improve performance together.</p>
 <h2 id="set-querychangedetection-via-rxdatabase-option">Set QueryChangeDetection via RxDatabase-option</h2>

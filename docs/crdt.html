@@ -2141,7 +2141,7 @@ The <a href="replication.html#conflict-handling">default conflict handler</a> wi
 
 
 <p>With CRDTs (short for <a href="https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type" target="_blank">Conflict-free replicated data type</a>), all document 
-writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the opertions in a deterministic way. Using CRDTs is an easy way to &quot;magically&quot; handle all conflict problems in your application by storing the deltas of writes together with the document data.</p>
+writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the operations in a deterministic way. Using CRDTs is an easy way to &quot;magically&quot; handle all conflict problems in your application by storing the deltas of writes together with the document data.</p>
 <p align="center">
   <img src="files/crdt-conflict-free-replicated-data-type.svg" alt="CRDT Conflict-free replicated data type" width="300">
 </p>
@@ -2350,10 +2350,10 @@ await doc.remove();
 When replicating document data with the <a href="replication.html">RxDB replication</a> or the <a href="replication-couchdb.html">CouchDB replication</a> or even any custom replication, the CRDT operations must be replicated together with the document data as if they would be &apos;normal&apos; a document property.</p>
 <p>When any instances makes a write to the document, it is required to update the CRDT operations accordingly. For example if your custom backend updates a document, it must also do that by adding a CRDT operation. In <a href="dev-mode.html">dev-mode</a> RxDB will refuse to store any document data where the document properties do not match the result of the CRDT operations.</p>
 <h2 id="why-not-automergejs-or-yjs">Why not automerge.js or yjs?</h2>
-<p>There are already CRDT libraries out there that have been considered to be used with RxDB. The biggeste ones are <a href="https://github.com/automerge/automerge" target="_blank">automerge</a> and <a href="https://github.com/yjs/yjs" target="_blank">yjs</a>. The decision was made to not use thoese but instead go for a more NoSQL way of designing the CRDT format because:</p>
+<p>There are already CRDT libraries out there that have been considered to be used with RxDB. The biggeste ones are <a href="https://github.com/automerge/automerge" target="_blank">automerge</a> and <a href="https://github.com/yjs/yjs" target="_blank">yjs</a>. The decision was made to not use these but instead go for a more NoSQL way of designing the CRDT format because:</p>
 <ul>
 <li>Users do not have to learn a new syntax but instead can use the NoSQL operations which they already know.</li>
-<li>RxDB is often used to <a href="replication.html">replicate</a> data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on theses backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.</li>
+<li>RxDB is often used to <a href="replication.html">replicate</a> data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on these backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.</li>
 </ul>
 <h2 id="when-to-not-use-crdts">When to not use CRDTs</h2>
 <p>CRDT can only be use when your business logic allows to represent document changes via static json operators.
