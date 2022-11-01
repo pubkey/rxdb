@@ -437,14 +437,17 @@ jobs:
       - name: spelling src
         uses: codespell-project/actions-codespell@v1.0
         with:
+          ignore_words_file: config/codespellignore.txt
           path: src
       - name: spelling docs-src
         uses: codespell-project/actions-codespell@v1.0
         with:
+          ignore_words_file: config/codespellignore.txt
           path: docs-src
       - name: spelling test
         uses: codespell-project/actions-codespell@v1.0
         with:
+          ignore_words_file: config/codespellignore.txt
           path: test
 
   electron:
