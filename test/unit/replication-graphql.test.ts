@@ -193,7 +193,8 @@ describe('replication-graphql.test.ts', () => {
                 const res = await graphQLRequest(
                     ensureNotFalsy(server.url.http),
                     {
-                        headers: {}
+                        headers: {},
+                        credentials: undefined
                     },
                     {
                         query: '{ info }',
