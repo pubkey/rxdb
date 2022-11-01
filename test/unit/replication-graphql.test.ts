@@ -821,8 +821,8 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.awaitInitialReplication();
                 const docsOnServer = server.getDocuments();
 
-                const shouldBeDeleted = docsOnServer.find((d: any) => d.id === doc.primary);
-                assert.strictEqual((shouldBeDeleted as any).deleted, true);
+                const shouldDeleted = docsOnServer.find((d: any) => d.id === doc.primary);
+                assert.strictEqual((shouldDeleted as any).deleted, true);
 
                 server.close();
                 await c.database.destroy();
@@ -863,8 +863,8 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.awaitInSync();
                 await waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
-                    const oneShouldBeDeleted = docsOnServer2.find((d: any) => d.deleted === true);
-                    return !!oneShouldBeDeleted;
+                    const oneshouldDeleted = docsOnServer2.find((d: any) => d.deleted === true);
+                    return !!oneshouldDeleted;
                 }, 1000, 100);
 
                 server.close();
@@ -1113,8 +1113,8 @@ describe('replication-graphql.test.ts', () => {
                 await waitUntil(async () => {
                     await replicationState.reSync();
                     docsOnServer = server.getDocuments();
-                    const shouldBe = (amount * 2) + 2;
-                    return docsOnServer.length === shouldBe;
+                    const should = (amount * 2) + 2;
+                    return docsOnServer.length === should;
                 });
                 await waitUntil(async () => {
                     await replicationState.reSync();
@@ -1173,8 +1173,8 @@ describe('replication-graphql.test.ts', () => {
                      */
                     await replicationState.reSync();
                     const docsOnServer2 = server.getDocuments();
-                    const shouldBe = (amount * 2) + 2;
-                    return docsOnServer2.length === shouldBe;
+                    const should = (amount * 2) + 2;
+                    return docsOnServer2.length === should;
                 });
                 await waitUntil(() => {
                     const docsOnDb2 = server.getDocuments();

@@ -754,7 +754,7 @@ describe('replication-couchdb.test.ts', () => {
 
 
             await waitUntil(async () => {
-                // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
+                // query for all documents on db2-collection2 again (result is read from cache which doesn't contain replicated doc)
                 // collection2._queryCache.destroy();
                 const newDocs = await collection2.find().exec();
                 return newDocs.length === 1;
