@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX wrong query results in some cases with many operators.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
