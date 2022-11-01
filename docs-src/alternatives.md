@@ -74,7 +74,7 @@ In React Native, WatermelonDB uses the provided SQLite database. In a browser, L
   <img src="./files/alternatives/aws-amplify.svg" alt="AWS Amplify alternative" height="60" class="img-padding" />
 </p>
 
-AWS Amplify is a collection of tools and libraries to develope web- and mobile frontend applications. Similar to firebase, it provides everything needed like authentication, analytics, a REST API, storage and so on. Everything hosted in the AWS Cloud, even when they state that *"AWS Amplify is designed to be open and pluggable for any custom backend or service"*. For realtime replication, AWS Amplify can connect to an AWS App-Sync GraphQL endpoint.
+AWS Amplify is a collection of tools and libraries to develop web- and mobile frontend applications. Similar to firebase, it provides everything needed like authentication, analytics, a REST API, storage and so on. Everything hosted in the AWS Cloud, even when they state that *"AWS Amplify is designed to be open and pluggable for any custom backend or service"*. For realtime replication, AWS Amplify can connect to an AWS App-Sync GraphQL endpoint.
 
 ### AWS Datastore
 
@@ -204,7 +204,7 @@ Now Realm is made for replication with the MongoDB Realm Sync based on the Mongo
 
 The Apollo GraphQL platform is made to transfer data between a server to UI applications over GraphQL endpoints. It contains several tools like GraphQL clients in different languages or libraries to create GraphQL endpoints.
 
-While it is has different caching features for offline usage, compared to RxDB it is not fully offline first because caching alone does not mean your application is fully useable when the user is offline.
+While it is has different caching features for offline usage, compared to RxDB it is not fully offline first because caching alone does not mean your application is fully usable when the user is offline.
 
 
 # Read further

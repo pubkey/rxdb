@@ -42,7 +42,7 @@ const mySchema = {
             description: 'age in years',
             type: 'integer',
 
-            // number fields that are used in an index, must have set minium, maximum and multipleOf
+            // number fields that are used in an index, must have set minimum, maximum and multipleOf
             minimum: 0,
             maximum: 150,
             multipleOf: 1

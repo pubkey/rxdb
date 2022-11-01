@@ -185,7 +185,7 @@ myCollection.find({
 .exec().then(documents => console.dir(documents));
 
 // find using a composite statement eg: $or
-// This example checks where name is either foo or if name is not existant on the document
+// This example checks where name is either foo or if name is not existent on the document
 myCollection.find({
   selector: { $or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }] }
 })
@@ -226,7 +226,7 @@ const query = myCollection
        * Because the developer knows that 50% of the documents are 'male',
        * but only 20% are below age 18,
        * it makes sense to enforce using the ['gender', 'age'] index to improve performance.
-       * This could not be known by the query planer which might have choosen ['age', 'gender'] instead.
+       * This could not be known by the query planer which might have chosen ['age', 'gender'] instead.
        */
       index: ['gender', 'age']
     });
@@ -327,7 +327,7 @@ const database = await createRxDatabase({
 ```
 
 ## NOTICE: RxDB will always append the primary key to the sort parameters
-For several performance optimizations, like the [EventReduce algoritm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
+For several performance optimizations, like the [EventReduce algorithm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
 This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.
 
 

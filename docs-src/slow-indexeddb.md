@@ -1,6 +1,6 @@
 # Why IndexedDB is slow and what to use instead
 
-So you have a JavaScript web application that needs to store data at the client side, either to make it offline useable, just for caching purposes or for other reasons.
+So you have a JavaScript web application that needs to store data at the client side, either to make it offline usable, just for caching purposes or for other reasons.
 
 For in-browser data storage, you have some options:
 

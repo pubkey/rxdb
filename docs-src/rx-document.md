@@ -53,7 +53,7 @@ All properties of a `RxDocument` are assigned as getters so you can also directl
   // Can also get nested values.
   var nestedValue = myDocument.whatever.nestedfield;
 
-  // Also useable with observables:
+  // Also usable with observables:
   myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
   // > 'name is: Stefe'
   await myDocument.atomicPatch({firstName: 'Steve'});

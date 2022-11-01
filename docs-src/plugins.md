@@ -96,7 +96,7 @@ const collection = myDatabase.addCollections({
     }
 })
 
-// Afterwards you can use theses options in your plugin.
+// Afterwards you can use these options in your plugin.
 
 collection.options.foo(); // 'bar'
 ```
