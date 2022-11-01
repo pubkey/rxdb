@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX wrong query results in some cases with many operators.
+- REMOVE `deep-freeze` npm dependency because it has no author.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

@@ -1,4 +1,4 @@
-import { isLogicalOperator } from './query-planner';
+import { LOGICAL_OPERATORS } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     FilledMangoQuery,
@@ -93,7 +93,7 @@ export function normalizeMangoQuery<RxDocType>(
                 Object.entries(normalizedMangoQuery.selector).forEach(([field, matcher]) => {
                     let hasLogical = false;
                     if (typeof matcher === 'object' && matcher !== null) {
-                        hasLogical = !!Object.keys(matcher).find(operator => isLogicalOperator(operator));
+                        hasLogical = !!Object.keys(matcher).find(operator => LOGICAL_OPERATORS.has(operator));
                     } else {
                         hasLogical = true;
                     }

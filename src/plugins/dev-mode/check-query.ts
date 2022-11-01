@@ -2,7 +2,10 @@ import type {
     RxPluginPreCreateRxQueryArgs,
     MangoQuery,
     RxPluginPrePrepareQueryArgs,
-    DexiePreparedQuery
+    DexiePreparedQuery,
+    FilledMangoQuery,
+    RxJsonSchema,
+    RxDocumentData
 } from '../../types';
 import deepEqual from 'fast-deep-equal';
 import { newRxError, newRxTypeError } from '../../rx-error';
@@ -117,12 +120,11 @@ export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
      * with selectors that are fully satisfied by the used index.
      */
     if (args.rxQuery.op === 'count') {
-        const preparedQuery: DexiePreparedQuery<any> = RxStorageDexieStatics.prepareQuery(
-            args.rxQuery.collection.schema.jsonSchema,
-            args.mangoQuery
-        );
         if (
-            !preparedQuery.queryPlan.selectorSatisfiedByIndex &&
+            !areSelectorsSatisfiedByIndex(
+                args.rxQuery.collection.schema.jsonSchema,
+                args.mangoQuery
+            ) &&
             !args.rxQuery.collection.database.allowSlowCount
         ) {
             throw newRxError('QU14', {
@@ -131,4 +133,16 @@ export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
             });
         }
     }
+}
+
+
+export function areSelectorsSatisfiedByIndex<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    query: FilledMangoQuery<RxDocType>
+): boolean {
+    const preparedQuery: DexiePreparedQuery<any> = RxStorageDexieStatics.prepareQuery(
+        schema,
+        query
+    );
+    return preparedQuery.queryPlan.selectorSatisfiedByIndex;
 }

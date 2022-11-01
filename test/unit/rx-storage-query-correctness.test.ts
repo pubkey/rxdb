@@ -9,8 +9,13 @@ import {
     normalizeMangoQuery,
     now,
     getPrimaryFieldOfPrimaryKey,
-    clone
+    clone,
+    getQueryPlan,
+    deepFreeze
 } from '../../';
+import {
+    areSelectorsSatisfiedByIndex
+} from '../../plugins/dev-mode';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
 import { human } from '../helper/schema-objects';
@@ -22,8 +27,15 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         schema: RxJsonSchema<RxDocType>;
         data: RxDocType[];
         queries: ({
+            info: string;
             query: MangoQuery<RxDocType>;
             expectedResultDocIds: string[];
+            /**
+             * If this is set, we expect the output
+             * of the RxDB query planner to have
+             * set selectorSatisfiedByIndex as the given value.
+             */
+            selectorSatisfiedByIndex?: boolean;
         } | undefined)[]
     };
     function withIndexes<RxDocType>(
@@ -75,7 +87,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 if (!queryData) {
                     continue;
                 }
-                const normalizedQuery = normalizeMangoQuery(schema, queryData.query);
+                const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryData.query));
                 const skip = normalizedQuery.skip ? normalizedQuery.skip : 0;
                 const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
                 const skipPlusLimit = skip + limit;
@@ -85,16 +97,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     normalizedQuery
                 );
 
-                // Test output of RxStorageInstance.query();
-                const resultFromStorage = await storageInstance.query(preparedQuery);
-                const resultIds = resultFromStorage.documents.map(d => (d as any)[primaryPath]);
-                try {
-                    assert.deepStrictEqual(resultIds, queryData.expectedResultDocIds);
-                } catch (err) {
-                    console.log('WRONG QUERY RESULTS FROM .query():');
-                    console.dir(queryData);
-                    throw err;
-                }
 
                 // Test output of RxStorageStatics
                 const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(schema, preparedQuery);
@@ -107,9 +109,56 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 try {
                     assert.deepStrictEqual(resultStaticsIds, queryData.expectedResultDocIds);
                 } catch (err) {
-                    console.log('WRONG QUERY RESULTS FROM STATICS:');
+                    console.log('WRONG QUERY RESULTS FROM STATICS: ' + queryData.info);
                     console.dir(queryData);
                     throw err;
+                }
+
+
+                // Test correct selectorSatisfiedByIndex
+                if (typeof queryData.selectorSatisfiedByIndex !== 'undefined') {
+                    const queryPlan = getQueryPlan(schema, normalizedQuery);
+                    try {
+                        assert.strictEqual(
+                            queryPlan.selectorSatisfiedByIndex,
+                            queryData.selectorSatisfiedByIndex
+                        );
+                    } catch (err) {
+                        console.log('WRONG selectorSatisfiedByIndex IN QUERY PLAN: ' + queryData.info);
+                        console.dir(queryData);
+                        console.dir(queryPlan);
+                        throw err;
+                    }
+                }
+
+                // Test output of RxStorageInstance.query();
+                const resultFromStorage = await storageInstance.query(preparedQuery);
+                const resultIds = resultFromStorage.documents.map(d => (d as any)[primaryPath]);
+                try {
+                    assert.deepStrictEqual(resultIds, queryData.expectedResultDocIds);
+                } catch (err) {
+                    console.log('WRONG QUERY RESULTS FROM .query(): ' + queryData.info);
+                    console.dir(queryData);
+                    throw err;
+                }
+
+                // Test output of .count()
+                if (
+                    !queryData.query.limit &&
+                    !queryData.query.skip &&
+                    areSelectorsSatisfiedByIndex(schema, normalizedQuery)
+                ) {
+                    const countResult = await storageInstance.count(preparedQuery);
+                    try {
+                        assert.strictEqual(
+                            countResult.count,
+                            queryData.expectedResultDocIds.length
+                        );
+                    } catch (err) {
+                        console.log('WRONG QUERY RESULTS FROM .count(): ' + queryData.info);
+                        console.dir(queryData);
+                        throw err;
+                    }
                 }
             }
 
@@ -118,25 +167,31 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
     }
 
     testCorrectQueries<schemas.HumanDocumentType>({
-        testTitle: '$gt/$gte with number',
+        testTitle: '$gt/$gte',
         data: [
-            human('aa', 10),
-            human('bb', 20),
+            human('aa', 10, 'alice'),
+            human('bb', 20, 'bob'),
             /**
              * One must have a longer id
              * because we had many bugs around how padLeft
              * works on custom indexes.
              */
-            human('cc-looong-id', 30),
-            human('dd', 40),
-            human('ee', 50)
+            human('cc-looong-id', 30, 'carol'),
+            human('dd', 40, 'dave'),
+            human('ee', 50, 'eve')
         ],
+        schema: withIndexes(schemas.human, [
+            ['age'],
+            ['age', 'firstName'],
+            ['firstName']
+        ]),
         queries: [
             /**
              * TODO using $gte in pouchdb returns the wrong results,
              * create an issue at the PouchDB repo.
              */
             config.isNotOneOfTheseStorages(['pouchdb']) ? {
+                info: 'normal $gt',
                 query: {
                     selector: {
                         age: {
@@ -145,6 +200,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ age: 'asc' }]
                 },
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'cc-looong-id',
                     'dd',
@@ -152,6 +208,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             } : undefined,
             {
+                info: 'normal $gte',
                 query: {
                     selector: {
                         age: {
@@ -160,6 +217,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ age: 'asc' }]
                 },
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'bb',
                     'cc-looong-id',
@@ -167,8 +225,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'ee'
                 ]
             },
-            // sort by something that is not in the selector
             {
+                info: 'sort by something that is not in the selector',
                 query: {
                     selector: {
                         age: {
@@ -177,33 +235,72 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ passportId: 'asc' }]
                 },
+                selectorSatisfiedByIndex: false,
                 expectedResultDocIds: [
                     'cc-looong-id',
                     'dd',
                     'ee'
                 ]
             },
-        ],
-        schema: withIndexes(schemas.human, [
-            ['age']
-        ])
+            config.isNotOneOfTheseStorages(['pouchdb']) ? {
+                info: 'with string comparison',
+                query: {
+                    selector: {
+                        firstName: {
+                            $gt: 'bob'
+                        }
+                    }
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: [
+                    'cc-looong-id',
+                    'dd',
+                    'ee'
+                ]
+            } : undefined,
+            config.isNotOneOfTheseStorages(['pouchdb']) ? {
+                info: 'compare more then one field',
+                query: {
+                    selector: {
+                        age: {
+                            $gt: 20
+                        },
+                        firstName: {
+                            $gt: 'a'
+                        }
+                    }
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'cc-looong-id',
+                    'dd',
+                    'ee'
+                ]
+            } : undefined,
+        ]
     });
     testCorrectQueries<schemas.HumanDocumentType>({
-        testTitle: '$lt/$lte with number',
+        testTitle: '$lt/$lte',
         data: [
-            human('aa', 10),
-            human('bb', 20),
+            human('aa', 10, 'alice'),
+            human('bb', 20, 'bob'),
             /**
              * One must have a longer id
              * because we had many bugs around how padLeft
              * works on custom indexes.
              */
-            human('cc-looong-id', 30),
-            human('dd', 40),
-            human('ee', 50)
+            human('cc-looong-id', 30, 'carol'),
+            human('dd', 40, 'dave'),
+            human('ee', 50, 'eve')
         ],
+        schema: withIndexes(schemas.human, [
+            ['age'],
+            ['age', 'firstName'],
+            ['firstName']
+        ]),
         queries: [
             {
+                info: 'normal $lt',
                 query: {
                     selector: {
                         age: {
@@ -219,6 +316,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
+                info: 'normal $lte',
                 query: {
                     selector: {
                         age: {
@@ -234,8 +332,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'dd'
                 ]
             },
-            // sort by something that is not in the selector
             {
+                info: 'sort by something that is not in the selector',
                 query: {
                     selector: {
                         age: {
@@ -250,9 +348,26 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'cc-looong-id'
                 ]
             },
-        ],
-        schema: withIndexes(schemas.human, [
-            ['age']
-        ])
+            // TODO why does this query not use the age+firstName index?
+            {
+                info: 'compare more then one field',
+                query: {
+                    selector: {
+                        age: {
+                            $lt: 40
+                        },
+                        firstName: {
+                            $lt: 'd'
+                        }
+                    }
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'aa',
+                    'bb',
+                    'cc-looong-id'
+                ]
+            }
+        ]
     });
 });

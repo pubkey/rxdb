@@ -23,14 +23,14 @@ import {
     flatCloneDocWithMeta,
     ById,
     stackCheckpoints,
-    defaultHashFunction
+    defaultHashFunction,
+    deepFreeze
 } from '../../';
 import Ajv from 'ajv';
 import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression';
 import * as schemas from '../helper/schemas';
-
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import {
     clone,
@@ -922,6 +922,42 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(docFromDb._rev, EXAMPLE_REVISION_4);
 
                 storageInstance.close();
+            });
+        });
+        describe('.prepareQuery()', () => {
+            it('must not crash', () => {
+                const query: FilledMangoQuery<any> = {
+                    selector: {
+                        value: {
+                            $gt: ''
+                        }
+                    },
+                    limit: 1000,
+                    sort: [{ value: 'asc' }],
+                    skip: 0
+                };
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                    getTestDataSchema(),
+                    query
+                );
+                assert.ok(preparedQuery);
+            });
+            it('must not mutate the input', () => {
+                const query: FilledMangoQuery<any> = {
+                    selector: {
+                        value: {
+                            $gt: ''
+                        }
+                    },
+                    limit: 1000,
+                    sort: [{ value: 'asc' }],
+                    skip: 0
+                };
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                    deepFreeze(getTestDataSchema()),
+                    deepFreeze(query)
+                );
+                assert.ok(preparedQuery);
             });
         });
         describe('.getSortComparator()', () => {

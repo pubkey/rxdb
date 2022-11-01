@@ -21,11 +21,12 @@ import {
 import { checkMangoQuery, checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 import { DeepReadonly } from '../../types/util';
+import { deepFreeze } from '../../util';
 
 export * from './check-schema';
 export * from './unallowed-properties';
+export * from './check-query';
 
-import deepFreeze from 'deep-freeze';
 
 /**
  * Deep freezes and object when in dev-mode.
@@ -43,7 +44,7 @@ export function deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T> {
         return obj as any;
     }
 
-    return deepFreeze(obj);
+    return deepFreeze(obj) as any;
 }
 
 

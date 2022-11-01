@@ -34,6 +34,7 @@ export const RxStorageLokiStatics: RxStorageStatics = {
         _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: MangoQuery<RxDocType>
     ) {
+        mutateableQuery = flatClone(mutateableQuery);
         if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
             mutateableQuery.selector = {
                 $and: [
