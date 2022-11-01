@@ -311,7 +311,7 @@ export function pouchChangeRowToChangeStreamEvent<DocumentData>(
 
 
 /**
- * Runs a primary swap with transform all custom primaryKey occurences
+ * Runs a primary swap with transform all custom primaryKey occurrences
  * into '_id'
  * @recursive
  */

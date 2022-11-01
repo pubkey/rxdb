@@ -40,7 +40,7 @@ export function checkAdapter(adapter: any): Promise<any> {
     }
 
     let recoveredDoc: any;
-    return pouch.info() // ensure that we wait until db is useable
+    return pouch.info() // ensure that we wait until db is usable
         // ensure write works
         .then(() => pouch.put({
             _id,

@@ -150,7 +150,7 @@ export function preparePouchDbQuery<RxDocType>(
     }
 
     /**
-     * because sort wont work on unused keys we have to workaround
+     * because sort won't work on unused keys we have to workaround
      * so we add the key to the selector if necessary
      * @link https://github.com/nolanlawson/pouchdb-find/issues/204
      */

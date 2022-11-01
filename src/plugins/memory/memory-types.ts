@@ -52,7 +52,7 @@ export type MemoryStorageInternals<RxDocType> = {
          * of each document is unique, because it contains the primaryKey
          * as last index part.
          * So we do not have to store the index-position when we want to do fast
-         * writes. Instead we can do a binary search over the exisiting array
+         * writes. Instead we can do a binary search over the existing array
          * because RxDB also knows the previous state of the document when we do a bulkWrite().
          */
         [indexName: string]: MemoryStorageInternalsByIndex<RxDocType>;

@@ -99,7 +99,7 @@ export const ERROR_MESSAGES = {
     DOC8: 'RxDocument.set(): primary-key cannot be modified',
     DOC9: 'final fields cannot be modified',
     DOC10: 'RxDocument.set(): cannot set childpath when rootPath not selected',
-    DOC11: 'RxDocument.save(): cant save deleted document',
+    DOC11: 'RxDocument.save(): can\'t save deleted document',
     // removed in 10.0.0 DOC12: 'RxDocument.save(): error',
     DOC13: 'RxDocument.remove(): Document is already deleted',
     DOC14: 'RxDocument.destroy() does not exist',
@@ -130,12 +130,12 @@ export const ERROR_MESSAGES = {
     // plugins/leader-election.js
 
     // plugins/local-documents.js
-    LD1: 'RxDocument.allAttachments$ cant use attachments on local documents',
+    LD1: 'RxDocument.allAttachments$ can\'t use attachments on local documents',
     LD2: 'RxDocument.get(): objPath must be a string',
     LD3: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',
     LD4: 'cannot observe primary path',
     LD5: 'RxDocument.set() id cannot be modified',
-    LD6: 'LocalDocument: Function is not useable on local documents',
+    LD6: 'LocalDocument: Function is not usable on local documents',
     LD7: 'Local document already exists',
     LD8: 'localDocuments not activated. Set localDocuments=true on creation, when you want to store local documents on the RxDatabase or RxCollection.',
 

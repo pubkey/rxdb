@@ -27,7 +27,7 @@ export declare class RxCouchDBReplicationState extends RxCouchDBReplicationState
      */
     awaitInitialReplication(): Promise<void>;
 
-    // can be used for debuging or custom event-handling
+    // can be used for debugging or custom event-handling
     // will be set some time after sync() is called
     _pouchEventEmitterObject: PouchSyncHandler | null;
 

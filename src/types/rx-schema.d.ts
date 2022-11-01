@@ -83,7 +83,7 @@ export interface TopLevelProperty extends JsonSchema {
 export type RxJsonSchema<
     /**
      * The doctype must be given, and '=any' cannot be used,
-     * otherwhise the keyof of primaryKey
+     * otherwise the keyof of primaryKey
      * would be optional when the type of the document is not known.
      */
     RxDocType

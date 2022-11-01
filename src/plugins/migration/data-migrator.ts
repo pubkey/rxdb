@@ -95,7 +95,7 @@ export class DataMigrator {
             done: false, // true if finished
             total: 0, // will be the doc-count
             handled: 0, // amount of handled docs
-            success: 0, // handled docs which successed
+            success: 0, // handled docs which succeeded
             deleted: 0, // handled docs which got deleted
             percent: 0 // percentage
         };

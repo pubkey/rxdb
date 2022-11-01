@@ -78,7 +78,7 @@ export type RxReplicationPullStreamItem<RxDocType, MasterCheckpointType> = Docum
  * to interact with the master instance.
  * This is an abstraction so that we can use different
  * handlers for GraphQL, REST or any other transportation layer.
- * Even a RxStorageInstance can be wrapped in a way to represend a replication handler.
+ * Even a RxStorageInstance can be wrapped in a way to represent a replication handler.
  * 
  * The RxStorage instance of the master branch that is
  * replicated with the fork branch.
@@ -154,7 +154,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * This can improve performance because the persistence will not affect UI
      * renders.
      * 
-     * But: The longer you wait here, the higher is the risk of loosing fork
+     * But: The longer you wait here, the higher is the risk of losing fork
      * writes when the replicatoin is destroyed unexpected.
      */
     waitBeforePersist?: () => Promise<any>;
@@ -169,7 +169,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
 
     events: {
         /**
-         * Streams all document writes that have successfulY
+         * Streams all document writes that have successfully
          * been written in one direction.
          */
         processed: {
@@ -195,7 +195,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
             [direction in RxStorageReplicationDirection]: BehaviorSubject<boolean>;
         },
         /**
-         * All errors that would otherwhise be unhandled,
+         * All errors that would otherwise be unhandled,
          * get emitted here.
          */
         error: Subject<RxError | RxTypeError>

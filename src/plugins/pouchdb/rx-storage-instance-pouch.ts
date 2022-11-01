@@ -88,7 +88,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         /**
          * Instead of listening to pouch.changes,
          * we have overwritten pouchdbs bulkDocs()
-         * and create our own event stream, this will work more relyable
+         * and create our own event stream, this will work more reliable
          * and does not mix up with write events from other sources.
          */
         const emitter = getCustomEventEmitterByPouch<RxDocType>(this.internals.pouch);

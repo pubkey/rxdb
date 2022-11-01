@@ -390,7 +390,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         const dbs = await this.internals.dbsPromise;
         dbs.root.close();
 
-        // TODO shouldnt we close the index databases?
+        // TODO shouldn't we close the index databases?
         // Object.values(dbs.indexes).forEach(db => db.close());
     }
 }

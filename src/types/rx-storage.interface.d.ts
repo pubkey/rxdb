@@ -53,7 +53,7 @@ import type {
 export interface RxStorage<Internals, InstanceCreationOptions> {
     /**
      * name of the storage engine
-     * used to detect if plugins do not work so we can throw propper errors.
+     * used to detect if plugins do not work so we can throw proper errors.
      */
     readonly name: string;
 
@@ -112,7 +112,7 @@ export type FilledMangoQuery<RxDocType> = Override<
 /**
  * Static functions of the RxStorage.
  * Can be used without creating an instance of any kind.
- * These functions are not directy childs of RxStorage because
+ * These functions are not directly childs of RxStorage because
  * we might need them without having to import the whole storage engine.
  * For example when the Worker plugin is used, the main process only needs the
  * static functions, while the worker process needs the whole storage engine.

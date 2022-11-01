@@ -34,7 +34,7 @@ export type InternalStoreCollectionDocType = InternalStoreDocType<{
      * so that when the collection is removed,
      * these storages must also be removed.
      * For example the replication meta storage
-     * must be resetted when the collection is removed.
+     * must be reset when the collection is removed.
      */
     connectedStorages: {
         collectionName: string;

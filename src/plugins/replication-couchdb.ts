@@ -57,7 +57,7 @@ const INTERNAL_POUCHDBS = new WeakSet();
 export class RxCouchDBReplicationStateBase {
     public _subs: Subscription[] = [];
 
-    // can be used for debuging or custom event-handling
+    // can be used for debugging or custom event-handling
     // will be set some time after sync() is called
     public _pouchEventEmitterObject?: PouchSyncHandler | null;
     public _subjects = {
