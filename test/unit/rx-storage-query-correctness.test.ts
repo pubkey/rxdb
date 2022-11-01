@@ -9,7 +9,8 @@ import {
     normalizeMangoQuery,
     now,
     getPrimaryFieldOfPrimaryKey,
-    clone
+    clone,
+    getQueryPlan
 } from '../../';
 import {
     areSelectorsSatisfiedByIndex
@@ -28,6 +29,12 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
             info: string;
             query: MangoQuery<RxDocType>;
             expectedResultDocIds: string[];
+            /**
+             * If this is set, we expect the output
+             * of the RxDB query planner to have
+             * set selectorSatisfiedByIndex as the given value.
+             */
+            selectorSatisfiedByIndex?: boolean;
         } | undefined)[]
     };
     function withIndexes<RxDocType>(
@@ -106,6 +113,23 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     throw err;
                 }
 
+
+                // Test correct selectorSatisfiedByIndex
+                if (typeof queryData.selectorSatisfiedByIndex !== 'undefined') {
+                    const queryPlan = getQueryPlan(schema, normalizedQuery);
+                    try {
+                        assert.strictEqual(
+                            queryPlan.selectorSatisfiedByIndex,
+                            queryData.selectorSatisfiedByIndex
+                        );
+                    } catch (err) {
+                        console.log('WRONG selectorSatisfiedByIndex IN QUERY PLAN: ' + queryData.info);
+                        console.dir(queryData);
+                        console.dir(queryPlan);
+                        throw err;
+                    }
+                }
+
                 // Test output of RxStorageInstance.query();
                 const resultFromStorage = await storageInstance.query(preparedQuery);
                 const resultIds = resultFromStorage.documents.map(d => (d as any)[primaryPath]);
@@ -175,6 +199,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ age: 'asc' }]
                 },
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'cc-looong-id',
                     'dd',
@@ -191,6 +216,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ age: 'asc' }]
                 },
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'bb',
                     'cc-looong-id',
@@ -208,6 +234,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ passportId: 'asc' }]
                 },
+                selectorSatisfiedByIndex: false,
                 expectedResultDocIds: [
                     'cc-looong-id',
                     'dd',
@@ -223,6 +250,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                         }
                     }
                 },
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'cc-looong-id',
                     'dd',
@@ -241,6 +269,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                         }
                     }
                 },
+                selectorSatisfiedByIndex: false,
                 expectedResultDocIds: [
                     'cc-looong-id',
                     'dd',
@@ -265,7 +294,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         ],
         schema: withIndexes(schemas.human, [
             ['age'],
-            ['firstName', 'lastName'],
+            ['age', 'firstName'],
             ['firstName']
         ]),
         queries: [
@@ -318,6 +347,26 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'cc-looong-id'
                 ]
             },
+            // TODO why does this query not use the age+firstName index?
+            {
+                info: 'compare more then one field',
+                query: {
+                    selector: {
+                        age: {
+                            $lt: 40
+                        },
+                        firstName: {
+                            $lt: 'd'
+                        }
+                    }
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'aa',
+                    'bb',
+                    'cc-looong-id'
+                ]
+            }
         ]
     });
 });

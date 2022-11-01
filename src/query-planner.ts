@@ -65,7 +65,7 @@ export function getQueryPlan<RxDocType>(
                 };
             } else {
                 operators.forEach(operator => {
-                    if (isLogicalOperator(operator)) {
+                    if (LOGICAL_OPERATORS.has(operator)) {
                         const operatorValue = matcher[operator];
                         const partialOpts = getMatcherQueryOpts(operator, operatorValue);
                         matcherOpts = Object.assign(matcherOpts, partialOpts);
@@ -142,35 +142,66 @@ export function getQueryPlan<RxDocType>(
     return currentBestQueryPlan;
 }
 
-const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
-export function isLogicalOperator(operator: string): boolean {
-    return LOGICAL_OPERATORS.has(operator);
-}
+export const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
+export const LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
+export const UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
 
 export function isSelectorSatisfiedByIndex(
     index: string[],
     selector: MangoQuerySelector
 ): boolean {
-    const nonMatching = Object.entries(selector)
-        .find(([field, operation]) => {
-            if (!index.includes(field)) {
+    const selectorEntries = Object.entries(selector);
+    const hasNonMatchingOperator = selectorEntries
+        .find(([fieldName, operation]) => {
+            if (!index.includes(fieldName)) {
                 return true;
             }
             const hasNonLogicOperator = Object.entries(operation)
-                .find(([op, _value]) => {
-                    if (!isLogicalOperator(op)) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                });
+                .find(([op, _value]) => !LOGICAL_OPERATORS.has(op));
             return hasNonLogicOperator;
         });
-    if (nonMatching) {
+    if (hasNonMatchingOperator) {
         return false;
-    } else {
-        return true;
     }
+
+
+    let prevLowerBoundaryField: any;
+    const hasMoreThenOneLowerBoundaryField = index.find(fieldName => {
+        const operation = selector[fieldName];
+        if (!operation) {
+            return false;
+        }
+        const hasLowerLogicOp = Object.keys(operation).find(key => LOWER_BOUND_LOGICAL_OPERATORS.has(key));
+        if (prevLowerBoundaryField && hasLowerLogicOp) {
+            return true;
+        } else if (hasLowerLogicOp !== '$eq') {
+            prevLowerBoundaryField = hasLowerLogicOp;
+        }
+        return false;
+    });
+    if (hasMoreThenOneLowerBoundaryField) {
+        return false;
+    }
+
+    let prevUpperBoundaryField: any;
+    const hasMoreThenOneUpperBoundaryField = index.find(fieldName => {
+        const operation = selector[fieldName];
+        if (!operation) {
+            return false;
+        }
+        const hasUpperLogicOp = Object.keys(operation).find(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
+        if (prevUpperBoundaryField && hasUpperLogicOp) {
+            return true;
+        } else if (hasUpperLogicOp !== '$eq') {
+            prevUpperBoundaryField = hasUpperLogicOp;
+        }
+        return false;
+    });
+    if (hasMoreThenOneUpperBoundaryField) {
+        return false;
+    }
+
+    return true;
 }
 
 export function getMatcherQueryOpts(
