@@ -178,7 +178,6 @@
     "reconnecting-websocket": "4.4.0",
     "threads": "1.7.0",
     "unload": "2.3.1",
-    "url": "^0.11.0",
     "util": "0.12.4",
     "ws": "8.8.1",
     "z-schema": "5.0.4"
