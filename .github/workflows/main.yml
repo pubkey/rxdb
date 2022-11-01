@@ -434,10 +434,18 @@ jobs:
       - name: check types
         run: npm run check-types
 
-      - name: spelling
+      - name: spelling src
         uses: codespell-project/actions-codespell@v1.0
         with:
-          path: src,docs-src,test
+          path: src
+      - name: spelling docs-src
+        uses: codespell-project/actions-codespell@v1.0
+        with:
+          path: docs-src
+      - name: spelling test
+        uses: codespell-project/actions-codespell@v1.0
+        with:
+          path: test
 
   electron:
     runs-on: ubuntu-20.04
