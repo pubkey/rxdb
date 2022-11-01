@@ -18,6 +18,7 @@ import {
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
 import { human } from '../helper/schema-objects';
+import deepFreeze from 'deep-freeze';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 config.parallel('rx-storage-query-correctness.test.ts', () => {
@@ -86,7 +87,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 if (!queryData) {
                     continue;
                 }
-                const normalizedQuery = normalizeMangoQuery(schema, queryData.query);
+                const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryData.query));
                 const skip = normalizedQuery.skip ? normalizedQuery.skip : 0;
                 const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
                 const skipPlusLimit = skip + limit;
@@ -241,7 +242,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'ee'
                 ]
             },
-            {
+            config.isNotOneOfTheseStorages(['pouchdb']) ? {
                 info: 'with string comparison',
                 query: {
                     selector: {
@@ -256,8 +257,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'dd',
                     'ee'
                 ]
-            },
-            {
+            } : undefined,
+            config.isNotOneOfTheseStorages(['pouchdb']) ? {
                 info: 'compare more then one field',
                 query: {
                     selector: {
@@ -275,7 +276,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'dd',
                     'ee'
                 ]
-            },
+            } : undefined,
         ]
     });
     testCorrectQueries<schemas.HumanDocumentType>({
