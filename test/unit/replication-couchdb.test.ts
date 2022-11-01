@@ -65,7 +65,7 @@ describe('replication-couchdb.test.ts', () => {
             path.pop();
             path = path.join('/');
             const res = await fetch(path);
-            const json = JSON.parse(await res.json());
+            const json = await res.json();
             assert.strictEqual(typeof json.uuid, 'string');
             server.close();
         });
@@ -76,7 +76,7 @@ describe('replication-couchdb.test.ts', () => {
             path.pop();
             path = path.join('/');
             const res = await fetch(path);
-            const json = JSON.parse(await res.json());
+            const json = await res.json();
             assert.strictEqual(typeof json.uuid, 'string');
             server.close();
         });

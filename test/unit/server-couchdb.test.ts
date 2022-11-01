@@ -62,7 +62,7 @@ config.parallel('server-couchdb.test.ts', () => {
         // check access to path
         const colUrl = 'http://0.0.0.0:' + port + '/db/human';
         const res = await fetch(colUrl);
-        const got = JSON.parse(await res.json());
+        const got = await res.json();
 
         assert.strictEqual(got.doc_count, 1);
 
@@ -122,7 +122,7 @@ config.parallel('server-couchdb.test.ts', () => {
         // check access to path
         const colUrl = 'http://0.0.0.0:' + port + '/rxdb/human';
         const res = await fetch(colUrl);
-        const got = JSON.parse(await res.json());
+        const got = await res.json();
         assert.strictEqual(got.doc_count, 1);
 
         const clientCollection = await humansCollection.create(0);
@@ -161,15 +161,11 @@ config.parallel('server-couchdb.test.ts', () => {
         const colUrl = 'http://0.0.0.0:' + port + '/db/human';
 
         const response = await fetch(colUrl);
-        const responseHeaders: any = Object.keys(response.headers).reduce((acc, header) => ({
-            ...acc,
-            [header.toLowerCase()]: (response as any).headers[header]
-        }), {});
         const originHeaderName = 'Access-Control-Allow-Origin'.toLowerCase();
         const credentialsHeaderName = 'Access-Control-Allow-Credentials'.toLowerCase();
 
-        const hasOriginHeader = responseHeaders[originHeaderName] === '*';
-        const hasCredentialsHeader = responseHeaders[credentialsHeaderName] === 'true';
+        const hasOriginHeader = response.headers.get(originHeaderName) === '*';
+        const hasCredentialsHeader = response.headers.get(credentialsHeaderName) === 'true';
 
         if (!hasOriginHeader || !hasCredentialsHeader) {
             throw new Error(
@@ -195,15 +191,11 @@ config.parallel('server-couchdb.test.ts', () => {
                 'Origin': origin,
             }
         });
-        const responseHeaders: any = Object.keys(response.headers).reduce((acc, header) => ({
-            ...acc,
-            [header.toLowerCase()]: (response as any).headers[header]
-        }), {});
         const originHeaderName = 'Access-Control-Allow-Origin'.toLowerCase();
         const credentialsHeaderName = 'Access-Control-Allow-Credentials'.toLowerCase();
 
-        const hasOriginHeader = responseHeaders[originHeaderName] === origin;
-        const hasCredentialsHeader = responseHeaders[credentialsHeaderName] === 'true';
+        const hasOriginHeader = response.headers.get(originHeaderName) === origin;
+        const hasCredentialsHeader = response.headers.get(credentialsHeaderName) === 'true';
 
         if (!hasOriginHeader || !hasCredentialsHeader) {
             throw new Error(
@@ -392,7 +384,7 @@ config.parallel('server-couchdb.test.ts', () => {
         // check access to path
         const colUrl = 'http://0.0.0.0:' + port + '/db/human';
         const res = await fetch(colUrl);
-        const got = JSON.parse(await res.json());
+        const got = await res.json();
         assert.strictEqual(got.doc_count, 1);
 
         const clientCollection = await humansCollection.createMigrationCollection(0);
@@ -480,7 +472,7 @@ config.parallel('server-couchdb.test.ts', () => {
         await AsyncTestUtil.waitUntil(async () => {
             try {
                 const res = await fetch('http://0.0.0.0:' + port + '/db/');
-                JSON.parse(await res.json());
+                await res.json();
                 return true;
             } catch (err) {
                 return false;
@@ -697,7 +689,7 @@ config.parallel('server-couchdb.test.ts', () => {
 
                 const colUrl = 'http://0.0.0.0:' + port + path + '/human';
                 const res = await fetch(colUrl);
-                const got = JSON.parse(await res.json());
+                const got = await res.json();
                 assert.strictEqual(got.doc_count, 1);
 
                 serverCollection.database.destroy();
@@ -714,7 +706,7 @@ config.parallel('server-couchdb.test.ts', () => {
 
                 const colUrl = 'http://0.0.0.0:' + port + path + 'human';
                 const res = await fetch(colUrl);
-                const got = JSON.parse(await res.json());
+                const got = await res.json();
                 assert.strictEqual(got.doc_count, 1);
 
                 serverCollection.database.destroy();
@@ -731,7 +723,7 @@ config.parallel('server-couchdb.test.ts', () => {
 
                 const colUrl = 'http://0.0.0.0:' + port + path + 'human';
                 const res = await fetch(colUrl);
-                const got = JSON.parse(await res.json());
+                const got = await res.json();
                 assert.strictEqual(got.doc_count, 1);
 
                 serverCollection.database.destroy();
@@ -757,7 +749,7 @@ config.parallel('server-couchdb.test.ts', () => {
                 await AsyncTestUtil.waitUntil(async () => {
                     try {
                         const res = await fetch('http://localhost:' + port + '/db/' + col.name);
-                        const got = JSON.parse(await res.json());
+                        const got = await res.json();
                         return !!got.doc_count;
                     } catch (err) {
                         console.dir(err);

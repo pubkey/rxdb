@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - UPDATE `fake-indexeddb` to version `4.0.0`
+- REFACTOR use `webpack` instead of `browserify` in karma tests.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
