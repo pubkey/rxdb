@@ -1,1 +1,0 @@
-{"version":3,"file":"graphql-client.d.js","names":[],"sources":["../../../../src/types/modules/graphql-client.d.ts"],"sourcesContent":["declare module 'graphql-client';"],"mappings":""}

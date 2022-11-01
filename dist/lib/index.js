@@ -173,7 +173,6 @@ Object.defineProperty(exports, "toTypedRxJsonSchema", {
     return _rxSchema.toTypedRxJsonSchema;
   }
 });
-require("./types/modules/graphql-client.d");
 require("./types/modules/mocha.parallel.d");
 require("./types/modules/modifiyjs.d");
 var _plugin = require("./plugin");

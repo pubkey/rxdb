@@ -1,7 +1,6 @@
 import { getRxStorageDexie } from '../../dexie';
 import { wrappedWorkerRxStorage } from '../../worker';
-var indexedDB = require('fake-indexeddb');
-var IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+import { indexedDB, IDBKeyRange } from 'fake-indexeddb';
 var storage = getRxStorageDexie({
   indexedDB: indexedDB,
   IDBKeyRange: IDBKeyRange

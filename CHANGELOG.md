@@ -2,15 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- UPDATE `fake-indexeddb` to version `4.0.0`
-- REFACTOR use `webpack` instead of `browserify` in karma tests.
-- REMOVE `graphql-client` dependency [#3497](https://github.com/pubkey/rxdb/pull/3497)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.8.2 (1 November 2022)
+
+- UPDATE `fake-indexeddb` to version `4.0.0`
+- REFACTOR use `webpack` instead of `browserify` in karma tests.
+- REMOVE `graphql-client` dependency [#3497](https://github.com/pubkey/rxdb/pull/3497)
 
 ### 13.8.1 (1 November 2022)
 

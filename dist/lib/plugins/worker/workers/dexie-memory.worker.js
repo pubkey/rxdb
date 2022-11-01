@@ -2,11 +2,10 @@
 
 var _dexie = require("../../dexie");
 var _worker = require("../../worker");
-var indexedDB = require('fake-indexeddb');
-var IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+var _fakeIndexeddb = require("fake-indexeddb");
 var storage = (0, _dexie.getRxStorageDexie)({
-  indexedDB: indexedDB,
-  IDBKeyRange: IDBKeyRange
+  indexedDB: _fakeIndexeddb.indexedDB,
+  IDBKeyRange: _fakeIndexeddb.IDBKeyRange
 });
 (0, _worker.wrappedWorkerRxStorage)({
   storage: storage

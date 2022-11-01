@@ -12,7 +12,6 @@ var _exportNames = {
 exports.RxGraphQLReplicationState = exports.RxDBReplicationGraphQLPlugin = void 0;
 exports.syncGraphQL = syncGraphQL;
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
-var _graphqlClient = _interopRequireDefault(require("graphql-client"));
 var _objectPath = _interopRequireDefault(require("object-path"));
 var _util = require("../../util");
 var _helper = require("./helper");
@@ -91,19 +90,12 @@ var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   var _proto = RxGraphQLReplicationState.prototype;
   _proto.setHeaders = function setHeaders(headers) {
     this.clientState.headers = headers;
-    this.clientState.client = (0, _graphqlClient["default"])({
-      url: this.url.http,
-      headers: headers,
-      credentials: this.clientState.credentials
-    });
   };
   _proto.setCredentials = function setCredentials(credentials) {
     this.clientState.credentials = credentials;
-    this.clientState.client = (0, _graphqlClient["default"])({
-      url: this.url.http,
-      headers: this.clientState.headers,
-      credentials: credentials
-    });
+  };
+  _proto.graphQLRequest = function graphQLRequest(queryParams) {
+    return (0, _helper.graphQLRequest)((0, _util.ensureNotFalsy)(this.url.http), this.clientState, queryParams);
   };
   return RxGraphQLReplicationState;
 }(_replication.RxReplicationState);
@@ -133,12 +125,7 @@ function syncGraphQL(_ref) {
    */
   var mutateableClientState = {
     headers: headers,
-    credentials: credentials,
-    client: (0, _graphqlClient["default"])({
-      url: url.http,
-      headers: headers,
-      credentials: credentials
-    })
+    credentials: credentials
   };
   var pullStream$ = new _rxjs.Subject();
   var replicationPrimitivesPull;
@@ -148,7 +135,7 @@ function syncGraphQL(_ref) {
       handler: function handler(lastPulledCheckpoint) {
         try {
           return Promise.resolve(pull.queryBuilder(lastPulledCheckpoint, pullBatchSize)).then(function (pullGraphQL) {
-            return Promise.resolve(mutateableClientState.client.query(pullGraphQL.query, pullGraphQL.variables)).then(function (result) {
+            return Promise.resolve(graphqlReplicationState.graphQLRequest(pullGraphQL)).then(function (result) {
               function _temp2() {
                 var docsData = data.documents;
                 var newCheckpoint = data.checkpoint;
@@ -187,7 +174,7 @@ function syncGraphQL(_ref) {
       handler: function handler(rows) {
         try {
           return Promise.resolve(push.queryBuilder(rows)).then(function (pushObj) {
-            return Promise.resolve(mutateableClientState.client.query(pushObj.query, pushObj.variables)).then(function (result) {
+            return Promise.resolve(graphqlReplicationState.graphQLRequest(pushObj)).then(function (result) {
               if (result.errors) {
                 throw result.errors;
               }
