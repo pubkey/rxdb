@@ -19,7 +19,6 @@ import { RxDBReplicationCouchDBPlugin } from '../plugins/replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 addPouchPlugin(require('pouchdb-adapter-http'));
-import request from 'request-promise-native';
 
 import * as humansCollection from './helper/humans-collection';
 import * as schemaObjects from './helper/schema-objects';
@@ -37,7 +36,8 @@ describe('couchdb-db-integration.test.js', () => {
 
         await waitUntil(async () => {
             try {
-                const gotJson = await request(COUCHDB_URL);
+                const res = await fetch(COUCHDB_URL);
+                const gotJson = await JSON.parse(await res.json());
                 // ensure json is parseable
                 JSON.parse(gotJson);
                 return true;

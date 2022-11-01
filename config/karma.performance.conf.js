@@ -4,19 +4,18 @@ const configuration = {
     basePath: '',
     frameworks: [
         'mocha',
-        'browserify',
+        'webpack',
         'detectBrowsers'
     ],
-    browserify: {
-        debug: true,
-        insertGlobalVars: {
-            Buffer: (file) => file.includes('node_modules') ? 'require("buffer").Buffer' : undefined,
-            'Buffer.isBuffer': undefined
-        }
-    },
+    webpack: require('./karma.webpack.conf'),
     files: [
         '../test_tmp/performance.test.js'
     ],
+    // Source files that you wanna generate coverage for.
+    // Do not include tests or libraries (these files will be instrumented by Istanbul)
+    preprocessors: {
+        '../test_tmp/performance.test.js': ['webpack']
+    },
     port: 9876,
     colors: true,
     autoWatch: false,
@@ -37,7 +36,7 @@ const configuration = {
     // Karma plugins loaded
     plugins: [
         'karma-mocha',
-        'karma-browserify',
+        'karma-webpack',
         'karma-chrome-launcher',
         'karma-safari-launcher',
         'karma-firefox-launcher',
@@ -47,11 +46,6 @@ const configuration = {
         'karma-spec-reporter'
     ],
 
-    // Source files that you wanna generate coverage for.
-    // Do not include tests or libraries (these files will be instrumented by Istanbul)
-    preprocessors: {
-        '../test_tmp/performance.test.js': ['browserify']
-    },
 
     client: {
         mocha: {

@@ -23,6 +23,7 @@ import { CUSTOM_STORAGE } from './custom-storage';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 import { isPromise } from 'async-test-util';
 
+
 const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
 
 function isFastMode(): boolean {

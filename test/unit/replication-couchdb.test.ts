@@ -40,13 +40,11 @@ import {
 } from 'rxjs/operators';
 import { HumanDocumentType } from '../helper/schemas';
 
-let request: any;
 let SpawnServer: any;
 
 
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
-    request = require('request-promise');
     addPouchPlugin(require('pouchdb-adapter-http'));
 }
 
@@ -66,8 +64,8 @@ describe('replication-couchdb.test.ts', () => {
             path.pop();
             path.pop();
             path = path.join('/');
-            const res = await request(path);
-            const json = JSON.parse(res);
+            const res = await fetch(path);
+            const json = JSON.parse(await res.json());
             assert.strictEqual(typeof json.uuid, 'string');
             server.close();
         });
@@ -77,8 +75,8 @@ describe('replication-couchdb.test.ts', () => {
             path.pop();
             path.pop();
             path = path.join('/');
-            const res = await request(path);
-            const json = JSON.parse(res);
+            const res = await fetch(path);
+            const json = JSON.parse(await res.json());
             assert.strictEqual(typeof json.uuid, 'string');
             server.close();
         });
