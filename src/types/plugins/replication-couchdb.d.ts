@@ -22,7 +22,7 @@ export declare class RxCouchDBReplicationState extends RxCouchDBReplicationState
     error$: Observable<any>;
 
     /**
-     * waits until the inital replication is done
+     * waits until the initial replication is done
      * and the client can be expected to have the same data as the server
      */
     awaitInitialReplication(): Promise<void>;

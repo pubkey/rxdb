@@ -49,17 +49,17 @@ const DBS_WITH_SERVER = new WeakSet();
 
 
 const normalizeDbName = function (db: RxDatabase) {
-    const splitted = db.name.split('/').filter((str: string) => str !== '');
-    return splitted.pop();
+    const split = db.name.split('/').filter((str: string) => str !== '');
+    return split.pop();
 };
 
 const getPrefix = function (db: RxDatabase) {
-    const splitted = db.name.split('/').filter((str: string) => str !== '');
-    splitted.pop(); // last was the name
-    if (splitted.length === 0) {
+    const split = db.name.split('/').filter((str: string) => str !== '');
+    split.pop(); // last was the name
+    if (split.length === 0) {
         return '';
     }
-    let ret = splitted.join('/') + '/';
+    let ret = split.join('/') + '/';
     if (db.name.startsWith('/')) {
         ret = '/' + ret;
     }
@@ -145,7 +145,7 @@ export async function spawnServer(
 
     /**
      * Overwrite the defaults of PouchDBExpressServerOptions.
-     * In RxDB the defaults should not polute anything with folders so we store the config in memory
+     * In RxDB the defaults should not pollute anything with folders so we store the config in memory
      * and the logs in the tmp folder of the os.
      */
     const usePouchExpressOptions: PouchDBExpressServerOptions = flatClone(pouchdbExpressOptions);

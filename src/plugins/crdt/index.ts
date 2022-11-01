@@ -238,7 +238,7 @@ export function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxD
             },
             hash: {
                 type: 'string',
-                // set a minLength to not accidentially store an empty string
+                // set a minLength to not accidentally store an empty string
                 minLength: 2
             }
         },
@@ -435,7 +435,7 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 /**
                  * In dev-mode we have to ensure that all document writes
                  * have the correct crdt state so that nothing is missed out
-                 * or could accidentially do non-crdt writes to the document.
+                 * or could accidentally do non-crdt writes to the document.
                  */
                 if (overwritable.isDevMode()) {
                     const bulkWriteBefore = collection.storageInstance.bulkWrite.bind(collection.storageInstance);

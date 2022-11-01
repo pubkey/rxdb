@@ -169,7 +169,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
 
     events: {
         /**
-         * Streams all document writes that have SUCCESSFULLY
+         * Streams all document writes that have successfulY
          * been written in one direction.
          */
         processed: {

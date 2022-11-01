@@ -500,7 +500,7 @@ export class RxCollectionBase<
             });
         }
 
-        // ensure that it wont try 2 parallel runs
+        // ensure that it won't try 2 parallel runs
         let queue = this._atomicUpsertQueues.get(primary);
         if (!queue) {
             queue = PROMISE_RESOLVE_VOID;
@@ -645,7 +645,7 @@ export class RxCollectionBase<
             startWith(null),
             /**
              * Optimization shortcut.
-             * Do not proceed if the emited RxChangeEvent
+             * Do not proceed if the emitted RxChangeEvent
              * is not relevant for the query.
              */
             filter(changeEvent => {

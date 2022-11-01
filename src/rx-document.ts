@@ -44,7 +44,7 @@ export const basePrototype = {
     /**
      * TODO
      * instead of appliying the _this-hack
-     * we should make these accesors functions instead of getters.
+     * we should make these accessors functions instead of getters.
      */
     get _data() {
         const _this: RxDocument = this as any;
@@ -258,7 +258,7 @@ export const basePrototype = {
 
     /**
      * updates document
-     * @overwritten by plugin (optinal)
+     * @overwritten by plugin (optional)
      * @param updateObj mongodb-like syntax
      */
     update(_updateObj: UpdateQuery<any>) {

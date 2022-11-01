@@ -397,7 +397,7 @@ export function migrateDocumentData(
 
     let nextVersion = oldCollection.version + 1;
 
-    // run the document throught migrationStrategies
+    // run the document through migrationStrategies
     let currentPromise = Promise.resolve(mutateableDocData);
     while (nextVersion <= oldCollection.newestCollection.schema.version) {
         const version = nextVersion;

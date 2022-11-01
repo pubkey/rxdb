@@ -160,7 +160,7 @@ export class RxQueryBase<
                         return useResult.docs.length === 0 ? null : useResult.docs[0];
                     } else {
                         // find()-queries emit RxDocument[]
-                        // Flat copy the array so it wont matter if the user modifies it.
+                        // Flat copy the array so it won't matter if the user modifies it.
                         return useResult.docs.slice(0);
                     }
                 })
@@ -539,7 +539,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
     if (
         // db is closed
         rxQuery.collection.database.destroyed ||
-        // nothing happend since last run
+        // nothing happened since last run
         _isResultsInSync(rxQuery)
     ) {
         return PROMISE_RESOLVE_FALSE;

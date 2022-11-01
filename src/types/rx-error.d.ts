@@ -11,14 +11,14 @@ export type RxErrorKey = KeyOf<typeof ERROR_MESSAGES>;
 
 export declare class RxError extends Error {
     readonly rxdb: boolean; // always true, use this to detect if its an rxdb-error
-    readonly parameters: RxErrorParameters; // an object with parameters to use the programatically
+    readonly parameters: RxErrorParameters; // an object with parameters to use the programmatically
     readonly code: RxErrorKey; // error-code
     readonly typeError: false; // true if is TypeError
 }
 
 export declare class RxTypeError extends TypeError {
     readonly rxdb: boolean; // always true, use this to detect if its an rxdb-error
-    readonly parameters: RxErrorParameters; // an object with parameters to use the programatically
+    readonly parameters: RxErrorParameters; // an object with parameters to use the programmatically
     readonly code: RxErrorKey; // error-code
     readonly typeError: true; // true if is TypeError
 }
@@ -99,7 +99,7 @@ export interface RxErrorParameters {
     // used in the replication plugin
 
     /**
-     * The checkpoint of the response from the last successfull
+     * The checkpoint of the response from the last successful
      * pull by the client.
      * Null if there was no pull operation before
      * so that there is no last pulled checkpoint.

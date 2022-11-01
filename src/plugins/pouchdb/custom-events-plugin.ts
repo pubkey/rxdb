@@ -99,7 +99,7 @@ const BULK_DOC_RUN_QUEUE: WeakMap<PouchDBInstance, Promise<any>> = new WeakMap()
 
 /**
  * PouchDB is like a minefield,
- * where stuff randomly does not work dependend on some conditions.
+ * where stuff randomly does not work dependent on some conditions.
  * So instead of doing plain writes,
  * we hack into the bulkDocs() function
  * and adjust the behavior accordingly.

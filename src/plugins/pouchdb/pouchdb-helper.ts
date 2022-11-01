@@ -112,7 +112,7 @@ export function pouchDocumentDataToRxDocumentData<T>(
 ): RxDocumentData<T> {
     let useDoc: RxDocumentData<T> = pouchSwapIdToPrimary(primaryKey, pouchDoc);
 
-    // always flat clone becaues we mutate the _attachments property.
+    // always flat clone because we mutate the _attachments property.
     useDoc = flatClone(useDoc);
     delete (useDoc as any)._revisions;
 
@@ -150,7 +150,7 @@ export function rxDocumentDataToPouchDocumentData<T>(
 ): WithAttachments<T & { _id: string; }> {
     let pouchDoc: WithAttachments<T> = pouchSwapPrimaryToId(primaryKey, doc);
 
-    // always flat clone becaues we mutate the _attachments property.
+    // always flat clone because we mutate the _attachments property.
     pouchDoc = flatClone(pouchDoc);
 
     pouchDoc._attachments = {};

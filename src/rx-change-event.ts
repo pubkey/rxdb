@@ -27,7 +27,7 @@ export function getDocumentDataOfRxChangeEvent<T>(
 /**
  * Might return null which means an
  * already deleted document got modified but still is deleted.
- * Theses kind of events are not relevant for the event-reduce algorithm
+ * These kind of events are not relevant for the event-reduce algorithm
  * and must be filtered out.
  */
 export function rxChangeEventToEventReduceChangeEvent<DocType>(

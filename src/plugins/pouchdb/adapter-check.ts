@@ -1,6 +1,6 @@
 /**
  * this plugin adds the checkAdapter-function to rxdb
- * you can use it to check if the given adapter is working in the current environmet
+ * you can use it to check if the given adapter is working in the current environment
  */
 import {
     PouchDB

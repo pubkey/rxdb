@@ -143,11 +143,11 @@ export const ERROR_MESSAGES = {
     RC1: 'Replication: already added',
     RC2: 'RxCollection.syncCouchDB() query must be from the same RxCollection',
     RC3: 'RxCollection.syncCouchDB() Do not use a collection\'s pouchdb as remote, use the collection instead',
-    RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication when live: true',
-    RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication if multiInstance because the replication might run on another instance',
-    RC_PULL: 'RxReplication pull handler throwed an error - see .errors for more details',
-    RC_STREAM: 'RxReplication pull stream$ throwed an error - see .errors for more details',
-    RC_PUSH: 'RxReplication push handler throwed an error - see .errors for more details',
+    RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication when live: true',
+    RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication if multiInstance because the replication might run on another instance',
+    RC_PULL: 'RxReplication pull handler threw an error - see .errors for more details',
+    RC_STREAM: 'RxReplication pull stream$ threw an error - see .errors for more details',
+    RC_PUSH: 'RxReplication push handler threw an error - see .errors for more details',
 
     // plugins/dev-mode/check-schema.js
     SC1: 'fieldnames do not match the regex',
@@ -183,7 +183,7 @@ export const ERROR_MESSAGES = {
     SC34: 'Fields of type string that are used in an index, must have set the maxLength attribute in the schema',
     SC35: 'Fields of type number/integer that are used in an index, must have set the multipleOf attribute in the schema',
     SC36: 'A field of this type cannot be used as index',
-    SC37: 'Fields of type number that are used in an index, must have set the minimum and maxiumum attribute in the schema',
+    SC37: 'Fields of type number that are used in an index, must have set the minimum and maximum attribute in the schema',
     SC38: 'Fields of type boolean that are used in an index, must be required in the schema',
     SC39: 'The primary key must have the maxLength attribute set',
 

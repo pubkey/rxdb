@@ -220,7 +220,7 @@ export interface RxStorageInstance<
         context: string
     ): Promise<
         /**
-         * returns the response, splitted into success and error lists.
+         * returns the response, split into success and error lists.
          */
         RxStorageBulkWriteResponse<RxDocType>
     >;
