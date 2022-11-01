@@ -5,12 +5,14 @@ import {
     wait,
     waitUntil
 } from 'async-test-util';
-import GraphQLClient from 'graphql-client';
 import { WebSocket as IsomorphicWebSocket } from 'isomorphic-ws';
 
 import {
     first
 } from 'rxjs/operators';
+import {
+    firstValueFrom
+} from 'rxjs';
 
 import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
@@ -40,7 +42,8 @@ import {
     pullQueryBuilderFromRxSchema,
     pushQueryBuilderFromRxSchema,
     RxGraphQLReplicationState,
-    pullStreamBuilderFromRxSchema
+    pullStreamBuilderFromRxSchema,
+    graphQLRequest
 } from '../../plugins/replication-graphql';
 import {
     wrappedKeyCompressionStorage
@@ -187,9 +190,16 @@ describe('replication-graphql.test.ts', () => {
         config.parallel('graphql-server.js', () => {
             it('spawn, reach and close a server', async () => {
                 const server = await SpawnServer.spawn();
-                const res = await server.client.query(`{
-                    info
-                }`);
+                const res = await graphQLRequest(
+                    ensureNotFalsy(server.url.http),
+                    {
+                        headers: {}
+                    },
+                    {
+                        query: '{ info }',
+                        variables: {}
+                    }
+                );
                 if (!res.data) {
                     console.log(JSON.stringify(res, null, 4));
                     throw new Error('res has error');
@@ -532,16 +542,8 @@ describe('replication-graphql.test.ts', () => {
                 replicationState.retryTime = 100;
 
 
-                // on the first error, we switch out the graphql-client
-                await replicationState.error$.pipe(
-                    first()
-                ).toPromise().then(() => {
-                    const client = GraphQLClient({
-                        url: server.url.http
-                    });
-                    replicationState.clientState.client = client;
-                });
-
+                // on the first error, we switch out the url to the correct one
+                replicationState.url.http = server.url.http;
                 await replicationState.awaitInitialReplication();
                 const docs = await c.find().exec();
                 assert.strictEqual(docs.length, amount);
@@ -935,8 +937,10 @@ describe('replication-graphql.test.ts', () => {
 
                 assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',)
 
-                server.close();
-                c.database.destroy();
+                await Promise.all([
+                    server.close(),
+                    c.database.destroy()
+                ]);
             });
             it('should resend cancelled documents', async () => {
                 const [c, server] = await Promise.all([
@@ -957,11 +961,8 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
 
-                await replicationState.error$.pipe(
-                    first()
-                ).toPromise().then(() => {
-                    replicationState.cancel()
-                });
+                await firstValueFrom(replicationState.error$);
+                replicationState.cancel()
 
                 const timeout = wait(500).then(() => 'timeout');
 
@@ -1939,11 +1940,11 @@ describe('replication-graphql.test.ts', () => {
                         originalHeader: '1'
 
                     },
-                    credentials: 'none',
+                    credentials: undefined,
                     live: true,
                     deletedField: 'deleted'
                 });
-                assert.strictEqual(replicationState.clientState.credentials, 'none')
+                assert.strictEqual(replicationState.clientState.credentials, undefined);
 
                 replicationState.setCredentials('same-origin')
 

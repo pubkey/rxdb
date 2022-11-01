@@ -1,11 +1,16 @@
 import { RxReplicationWriteToMasterRow } from '../replication-protocol';
-import { MaybePromise } from '../util';
+import { ById, MaybePromise } from '../util';
 import { ReplicationOptions, ReplicationPullHandlerResult, ReplicationPullOptions, ReplicationPushOptions } from './replication';
 
 export interface RxGraphQLReplicationQueryBuilderResponseObject {
     query: string;
     variables: any;
 }
+
+export type RxGraphQLReplicationClientState = {
+    headers: ById<string>;
+    credentials: RequestCredentials | undefined;
+};
 
 export type RxGraphQLReplicationQueryBuilderResponse =
     RxGraphQLReplicationQueryBuilderResponseObject |
@@ -58,7 +63,7 @@ export type SyncOptionsGraphQL<RxDocType, CheckpointType> = Omit<
 > & {
     url: GraphQLServerUrl;
     headers?: { [k: string]: string }; // send with all requests to the endpoint
-    credentials?: string;
+    credentials?: RequestCredentials;
     pull?: GraphQLSyncPullOptions<RxDocType, CheckpointType>;
     push?: GraphQLSyncPushOptions<RxDocType>;
 }

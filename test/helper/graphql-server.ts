@@ -4,7 +4,6 @@
  * @link https://graphql.org/graphql-js/running-an-express-graphql-server/
  */
 
-import graphQlClient from 'graphql-client';
 import { PubSub } from 'graphql-subscriptions';
 import {
     buildSchema,
@@ -28,8 +27,12 @@ import {
 import { ensureNotFalsy, lastOfArray } from 'event-reduce-js';
 import { RxReplicationWriteToMasterRow } from '../../src';
 import { HumanWithTimestampDocumentType } from './schema-objects';
-import { GraphQLServerUrl } from '../../src/types';
+import { GraphQLServerUrl, RxGraphQLReplicationClientState } from '../../src/types';
 import { nextPort } from './port-manager';
+
+import {
+    graphQLRequest
+} from '../../plugins/replication-graphql';
 
 function sortByUpdatedAtAndPrimary(
     a: any,
@@ -50,7 +53,6 @@ export interface GraphqlServer<T> {
     port: number;
     wsPort: number;
     subServer: any;
-    client: any;
     url: GraphQLServerUrl;
     setDocument(doc: T): Promise<{ data: any }>;
     overwriteDocuments(docs: T[]): void;
@@ -288,9 +290,10 @@ export async function spawn(
     }));
 
     const httpUrl = 'http://localhost:' + port + GRAPHQL_PATH;
-    let client = graphQlClient({
-        url: httpUrl
-    });
+    const clientState: RxGraphQLReplicationClientState = {
+        headers: {},
+        credentials: undefined
+    };
     const retServer: Promise<GraphqlServer<Human>> = new Promise(res => {
         const server = app.listen(port, function () {
 
@@ -315,15 +318,14 @@ export async function spawn(
                                 humanChanged: root.humanChanged,
                             },
                         },
-                    }, 
-                    wsServer    
+                    },
+                    wsServer
                 );
 
                 res({
                     port,
                     wsPort,
                     subServer,
-                    client,
                     url: {
                         http: httpUrl,
                         ws: websocketUrl
@@ -337,13 +339,19 @@ export async function spawn(
                         };
 
 
-                        const result = await client.query(
-                            `
-                            mutation CreateHumans($writeRows: [HumanWriteRow!]) {
-                                writeHumans(writeRows: $writeRows) { id }
-                            }`,
+                        const result = await graphQLRequest(
+                            httpUrl,
+                            clientState,
                             {
-                                writeRows: [row]
+
+                                query: `
+                                    mutation CreateHumans($writeRows: [HumanWriteRow!]) {
+                                        writeHumans(writeRows: $writeRows) { id }
+                                    }
+                                `,
+                                variables: {
+                                    writeRows: [row]
+                                }
                             }
                         );
                         if (result.data.writeHumans.length > 0) {
@@ -358,21 +366,17 @@ export async function spawn(
                         return documents.slice(0);
                     },
                     requireHeader(name: string, value: string) {
+                        reqHeaderName = name;
+                        reqHeaderValue = value;
                         if (!name) {
                             reqHeaderName = '';
                             reqHeaderValue = '';
-                            client = graphQlClient({
-                                url: httpUrl
-                            });
+
+                            clientState.headers = {};
                         } else {
-                            reqHeaderName = name;
-                            reqHeaderValue = value;
-                            const headers: { [key: string]: string } = {};
-                            headers[name] = value;
-                            client = graphQlClient({
-                                url: httpUrl,
-                                headers
-                            });
+                            clientState.headers = {
+                                [name]: value
+                            };
                         }
                     },
                     close(now = false) {
