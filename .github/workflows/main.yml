@@ -434,6 +434,11 @@ jobs:
       - name: check types
         run: npm run check-types
 
+      - name: spelling readme
+        uses: codespell-project/actions-codespell@v1.0
+        with:
+          ignore_words_file: config/codespellignore.txt
+          path: README.md
       - name: spelling src
         uses: codespell-project/actions-codespell@v1.0
         with:
