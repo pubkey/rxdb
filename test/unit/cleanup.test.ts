@@ -88,7 +88,7 @@ config.parallel('cleanup.test.js', () => {
             pull: {
                 async handler() {
                     await wait(50);
-                    throw new Error('never sucess');
+                    throw new Error('never success');
                 }
             },
             live: true

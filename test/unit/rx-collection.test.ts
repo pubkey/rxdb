@@ -1470,7 +1470,7 @@ describe('rx-collection.test.ts', () => {
                     assert.strictEqual(doc.firstName, 'foobar');
                     db.destroy();
                 });
-                it('overwrite exisiting document', async () => {
+                it('overwrite existing document', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
                         storage: config.storage.getStorage(),
@@ -2286,7 +2286,7 @@ describe('rx-collection.test.ts', () => {
             /**
              * Each emitted result must have a different result set
              * because findByIds$ must only emit when data has actually changed.
-             * We cannot just cound the updates.length here because some RxStorage implementations
+             * We cannot just count the updates.length here because some RxStorage implementations
              * might return multiple RxChangeEventBulks for a single bulkWrite() operation
              * or do additional writes. So we have to check for the revisions+docId strings.
              */

@@ -340,7 +340,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
-            // check inital doc
+            // check initial doc
             const docsOnFork = await runQuery(forkInstance);
             assert.strictEqual(docsOnFork.length, 1);
 
@@ -376,7 +376,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
-            // check inital doc
+            // check initial doc
             const docsOnMaster = await runQuery(masterInstance);
             assert.strictEqual(docsOnMaster.length, 1);
 

@@ -1,6 +1,6 @@
 /**
  * this tests some basic behavior and then exits with zero-code
- * this is run in a seperate node-process via plugin.test.js
+ * this is run in a separate node-process via plugin.test.js
  */
 
 import assert from 'assert';
@@ -87,7 +87,7 @@ const run = async function () {
         collection,
         replicationIdentifier: 'my-custom-rest-replication',
         live: true,
-        // use realy high values to ensure that the CI fails if the node process does not exit by itself.
+        // use really high values to ensure that the CI fails if the node process does not exit by itself.
         retryTime: 50000,
         pull: {
             handler() {

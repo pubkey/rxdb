@@ -329,7 +329,7 @@ config.parallel('cross-instance.test.js', () => {
     });
     describe('AutoPull', () => {
         describe('positive', () => {
-            it('should recieve events on the other side', async () => {
+            it('should receive events on the other side', async () => {
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
@@ -344,7 +344,7 @@ config.parallel('cross-instance.test.js', () => {
                 c1.database.destroy();
                 c2.database.destroy();
             });
-            it('should recieve 2 events', async () => {
+            it('should receive 2 events', async () => {
                 const name = randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);

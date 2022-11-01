@@ -409,7 +409,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             assert.strictEqual((x as any).length, 0);
 
             /**
-             * If this test ever throws, it means we can remove the hacky workarround in
+             * If this test ever throws, it means we can remove the hacky workaround in
              * src/plugins/in-memory.js
              * Where we add the emitFlag to 'doNotEmitSet'
              */
@@ -522,7 +522,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             await AsyncTestUtil.wait(100);
 
             /**
-             * If this test ever throws, it means we can remove the hacky workarround in
+             * If this test ever throws, it means we can remove the hacky workaround in
              * src/plugins/in-memory.js
              * Where we add the emitFlag to 'doNotEmitSet'
              */

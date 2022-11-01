@@ -298,7 +298,7 @@ config.parallel('query-planner.test.js', () => {
             );
             assert.deepStrictEqual(queryPlan.index, ['age', 'firstName', 'passportId']);
         });
-        it('should prefer the index that matches the sort order, if selector for both fiels is used', () => {
+        it('should prefer the index that matches the sort order, if selector for both fields is used', () => {
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],
                 ['age', 'firstName']

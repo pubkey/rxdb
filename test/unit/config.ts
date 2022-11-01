@@ -155,7 +155,7 @@ export function setDefaultStorage(storageKey: string) {
         /**
          * We run the tests once together
          * with a validation plugin
-         * to ensure we do not accidentially use non-valid data
+         * to ensure we do not accidentally use non-valid data
          * in the tests.
          */
         case 'memory-validation':

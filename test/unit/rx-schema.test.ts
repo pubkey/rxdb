@@ -207,7 +207,7 @@ config.parallel('rx-schema.test.js', () => {
                 it('break compoundIndex key is no string', () => {
                     assert.throws(() => checkSchema(schemas.compoundIndexNoString), Error);
                 });
-                it('break on wrong formated compundIndex', () => {
+                it('break on wrong formatted compundIndex', () => {
                     assert.throws(() => checkSchema(schemas.wrongCompoundFormat), Error);
                 });
                 it('break when dots in fieldname', () => {

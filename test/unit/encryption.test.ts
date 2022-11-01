@@ -72,7 +72,7 @@ config.parallel('encryption.test.ts', () => {
                 const decrypted = decryptString(encrypted, 'mypw');
                 assert.deepStrictEqual(decrypted, value);
             });
-            it('should encrypt and decrypt an extremly long string', () => {
+            it('should encrypt and decrypt an extremely long string', () => {
                 const value = randomCouchString(5000);
                 const pwd = 'pwd';
                 const encrypted = encryptString(value, pwd);
@@ -82,7 +82,7 @@ config.parallel('encryption.test.ts', () => {
                 assert.strictEqual(typeof encrypted, 'string');
                 assert.strictEqual(value, decrypted);
             });
-            it('should encrypt and decrypt an extremly long password', () => {
+            it('should encrypt and decrypt an extremely long password', () => {
                 const value = 'foobar';
                 const pwd = randomCouchString(5000);
                 const encrypted = encryptString(value, pwd);

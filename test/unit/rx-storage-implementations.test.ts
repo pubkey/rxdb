@@ -197,7 +197,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 await Promise.all(instances.map(instance => instance.close()));
             });
             /**
-             * This test ensures that people do not accidentially set
+             * This test ensures that people do not accidentally set
              * keyCompression: true in the schema but then forget to use
              * the key-compression RxStorage wrapper.
              */
@@ -222,7 +222,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.ok(hasThrown);
             });
             /**
-             * This test ensures that people do not accidentially set
+             * This test ensures that people do not accidentally set
              * encrypted stuff in the schema but then forget to use
              * the encryption RxStorage wrapper.
              */
@@ -1414,7 +1414,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     indexes: [
                         /**
-                         * RxDB wil always append the primaryKey to an index
+                         * RxDB will always append the primaryKey to an index
                          * if the primaryKey was not used in the index before.
                          * This ensures we have a deterministic sorting when querying documents
                          * from that index.
@@ -2025,7 +2025,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
-            it('should be able to correctly itterate over the checkpoints', async () => {
+            it('should be able to correctly iterate over the checkpoints', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),

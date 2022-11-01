@@ -65,7 +65,7 @@ describe('performance.test.ts', () => {
                 eventReduce: true,
                 /**
                  * A RxStorage implementation (like LokiJS)
-                 * might need a full leader election cycle to be useable.
+                 * might need a full leader election cycle to be usable.
                  * So we disable multiInstance here because it would make no sense
                  * to measure the leader election time instead of the database
                  * creation time.
@@ -120,7 +120,7 @@ describe('performance.test.ts', () => {
 
             /**
              * Find by id,
-             * here we run the query agains the storage because
+             * here we run the query against the storage because
              * if we would do collection.findByIds(), it would
              * just return the documents from the cache.
              * 
@@ -186,12 +186,12 @@ export function averageOfTimeValues(
     /**
      * To better account for anomalies
      * during time measurements,
-     * we strip the heighest x percent.
+     * we strip the highest x percent.
      */
-    stripHeighestXPercent: number
+    striphighestXPercent: number
 ): number {
     times = times.sort((a, b) => a - b);
-    const stripAmount = Math.floor(times.length * (stripHeighestXPercent * 0.01));
+    const stripAmount = Math.floor(times.length * (striphighestXPercent * 0.01));
     const useNumbers = times.slice(0, times.length - stripAmount);
     let total = 0;
     useNumbers.forEach(nr => total = total + nr);

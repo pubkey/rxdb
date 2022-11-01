@@ -217,7 +217,7 @@ describe('replication-graphql.test.ts', () => {
                 const res = await server.setDocument(doc);
 
                 /**
-                 * Because no conflicts have arised,
+                 * Because no conflicts have arose,
                  * an empty array must be returned.
                  */
                 assert.strictEqual(

@@ -2,7 +2,7 @@
  * this is a template for a test.
  * If you found a bug, edit this test to reproduce it
  * and than make a pull-request with that failing test.
- * The maintainer will later move your test to the correct possition in the test-suite.
+ * The maintainer will later move your test to the correct position in the test-suite.
  *
  * To run this test do:
  * - 'npm run test:node' so it runs in nodejs
@@ -22,7 +22,7 @@ describe('bug-report.test.js', () => {
 
         /**
          * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and addapt the if statement.
+         * you should comment in the return operator and adapt the if statement.
          */
         if (
             !config.platform.isNode() // runs only in node

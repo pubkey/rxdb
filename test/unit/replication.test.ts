@@ -502,7 +502,7 @@ describe('replication.test.js', () => {
             /**
              * Because in the localCollection2 we do not insert any documents,
              * there must be less documents in the meta collection
-             * becaues it only contains the checkpoints.
+             * because it only contains the checkpoints.
              */
             assert.strictEqual(docsInMetaAfter, 0);
             ensureNotFalsy(continueReplication)();
