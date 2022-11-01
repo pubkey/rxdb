@@ -434,6 +434,11 @@ jobs:
       - name: check types
         run: npm run check-types
 
+      - name: spelling
+        uses: codespell-project/actions-codespell@v1.0
+        with:
+          path: src,docs-src,test
+
   electron:
     runs-on: ubuntu-20.04
     steps:
