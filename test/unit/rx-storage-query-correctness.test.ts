@@ -10,7 +10,8 @@ import {
     now,
     getPrimaryFieldOfPrimaryKey,
     clone,
-    getQueryPlan
+    getQueryPlan,
+    deepFreeze
 } from '../../';
 import {
     areSelectorsSatisfiedByIndex
@@ -18,7 +19,6 @@ import {
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
 import { human } from '../helper/schema-objects';
-import deepFreeze from 'deep-freeze';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 config.parallel('rx-storage-query-correctness.test.ts', () => {

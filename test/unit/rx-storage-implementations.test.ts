@@ -23,14 +23,14 @@ import {
     flatCloneDocWithMeta,
     ById,
     stackCheckpoints,
-    defaultHashFunction
+    defaultHashFunction,
+    deepFreeze
 } from '../../';
 import Ajv from 'ajv';
 import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression';
 import * as schemas from '../helper/schemas';
-import deepFreeze from 'deep-freeze';
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import {
     clone,

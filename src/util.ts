@@ -798,3 +798,26 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
         return currentVal;
     }
 }
+
+
+export function deepFreeze<T>(o: T): T {
+    Object.freeze(o);
+    Object.getOwnPropertyNames(o).forEach(function (prop) {
+        if (
+            (o as any).hasOwnProperty(prop)
+            &&
+            (o as any)[prop] !== null
+            &&
+            (
+                typeof (o as any)[prop] === 'object'
+                ||
+                typeof (o as any)[prop] === 'function'
+            )
+            &&
+            !Object.isFrozen((o as any)[prop])
+        ) {
+            deepFreeze((o as any)[prop]);
+        }
+    });
+    return o;
+}
