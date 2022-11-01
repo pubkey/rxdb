@@ -4,6 +4,8 @@
 <!-- CHANGELOG NEWEST -->
 - UPDATE `fake-indexeddb` to version `4.0.0`
 - REFACTOR use `webpack` instead of `browserify` in karma tests.
+- REMOVE `graphql-client` dependency [#3497](https://github.com/pubkey/rxdb/pull/3497)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
