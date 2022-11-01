@@ -93,7 +93,7 @@ async function run() {
 
     // check access to path
     const res = await fetch(colUrl);
-    const got = JSON.parse(await res.json());
+    const got = await res.json();
     assert.strictEqual(got.doc_count, 1);
 
     /**
