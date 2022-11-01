@@ -233,7 +233,7 @@
     "exists-file": "3.0.2",
     "express-graphql": "0.12.0",
     "express-pouchdb": "4.2.0",
-    "fake-indexeddb": "3.1.8",
+    "fake-indexeddb": "4.0.0",
     "faker": "5.5.3",
     "get-port": "5.1.1",
     "gitbook-cli": "2.3.2",

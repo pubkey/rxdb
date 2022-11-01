@@ -1,8 +1,10 @@
 import { getRxStorageDexie } from '../../dexie';
 import { wrappedWorkerRxStorage } from '../../worker';
 
-const indexedDB = require('fake-indexeddb');
-const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+import {
+    indexedDB,
+    IDBKeyRange
+} from 'fake-indexeddb';
 
 const storage = getRxStorageDexie({
     indexedDB,

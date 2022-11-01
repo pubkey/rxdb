@@ -213,8 +213,7 @@ export function setDefaultStorage(storageKey: string) {
                 name: 'dexie',
                 getStorage: () => {
                     if (config.platform.name === 'node' || config.isFastMode()) {
-                        const indexedDB = require('fake-indexeddb');
-                        const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+                        const {indexedDB, IDBKeyRange} = require('fake-indexeddb');
                         return getRxStorageDexie({
                             indexedDB,
                             IDBKeyRange
@@ -225,8 +224,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 getPerformanceStorage() {
                     if (config.platform.name === 'node') {
-                        const indexedDB = require('fake-indexeddb');
-                        const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+                        const {indexedDB, IDBKeyRange} = require('fake-indexeddb');
                         return {
                             storage: getRxStorageDexie({
                                 indexedDB,

@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- UPDATE `fake-indexeddb` to version `4.0.0`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
