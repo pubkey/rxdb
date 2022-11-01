@@ -1,1 +1,0 @@
-{"version":3,"file":"deep-freeze.d.js","names":[],"sources":["../../../../src/types/modules/deep-freeze.d.ts"],"sourcesContent":["declare module 'deep-freeze';\n"],"mappings":""}

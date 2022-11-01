@@ -13,6 +13,7 @@ exports.b64EncodeUnicode = b64EncodeUnicode;
 exports.batchArray = batchArray;
 exports.clone = exports.blobBufferUtil = void 0;
 exports.createRevision = createRevision;
+exports.deepFreeze = deepFreeze;
 exports.defaultHashFunction = defaultHashFunction;
 exports.ensureInteger = ensureInteger;
 exports.ensureNotFalsy = ensureNotFalsy;
@@ -774,5 +775,14 @@ function objectPathMonad(objectPath) {
     }
     return currentVal;
   };
+}
+function deepFreeze(o) {
+  Object.freeze(o);
+  Object.getOwnPropertyNames(o).forEach(function (prop) {
+    if (o.hasOwnProperty(prop) && o[prop] !== null && (typeof o[prop] === 'object' || typeof o[prop] === 'function') && !Object.isFrozen(o[prop])) {
+      deepFreeze(o[prop]);
+    }
+  });
+  return o;
 }
 //# sourceMappingURL=util.js.map

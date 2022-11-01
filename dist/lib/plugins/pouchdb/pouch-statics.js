@@ -106,7 +106,10 @@ var RxStoragePouchStatics = {
 exports.RxStoragePouchStatics = RxStoragePouchStatics;
 function preparePouchDbQuery(schema, mutateableQuery) {
   var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
-  var query = mutateableQuery;
+  var query = (0, _util.flatClone)(mutateableQuery);
+  if (query.selector) {
+    query.selector = (0, _util.flatClone)(query.selector);
+  }
 
   /**
    * because sort wont work on unused keys we have to workaround
@@ -205,8 +208,8 @@ function preparePouchDbQuery(schema, mutateableQuery) {
       }
     });
     var indexName = (0, _pouchdbHelper.getPouchIndexDesignDocNameByIndex)(indexArray);
-    delete mutateableQuery.index;
-    mutateableQuery.use_index = indexName;
+    delete query.index;
+    query.use_index = indexName;
   }
   query.selector = (0, _pouchdbHelper.primarySwapPouchDbQuerySelector)(query.selector, primaryKey);
   return query;

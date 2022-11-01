@@ -89,7 +89,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
           var hasLogical = false;
           if (typeof matcher === 'object' && matcher !== null) {
             hasLogical = !!Object.keys(matcher).find(function (operator) {
-              return (0, _queryPlanner.isLogicalOperator)(operator);
+              return _queryPlanner.LOGICAL_OPERATORS.has(operator);
             });
           } else {
             hasLogical = true;

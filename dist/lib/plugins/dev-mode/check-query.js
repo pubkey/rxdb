@@ -4,6 +4,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.areSelectorsSatisfiedByIndex = areSelectorsSatisfiedByIndex;
 exports.checkMangoQuery = checkMangoQuery;
 exports.checkQuery = checkQuery;
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
@@ -98,13 +99,16 @@ function checkMangoQuery(args) {
    * with selectors that are fully satisfied by the used index.
    */
   if (args.rxQuery.op === 'count') {
-    var preparedQuery = _dexie.RxStorageDexieStatics.prepareQuery(args.rxQuery.collection.schema.jsonSchema, args.mangoQuery);
-    if (!preparedQuery.queryPlan.selectorSatisfiedByIndex && !args.rxQuery.collection.database.allowSlowCount) {
+    if (!areSelectorsSatisfiedByIndex(args.rxQuery.collection.schema.jsonSchema, args.mangoQuery) && !args.rxQuery.collection.database.allowSlowCount) {
       throw (0, _rxError.newRxError)('QU14', {
         collection: args.rxQuery.collection,
         query: args.mangoQuery
       });
     }
   }
+}
+function areSelectorsSatisfiedByIndex(schema, query) {
+  var preparedQuery = _dexie.RxStorageDexieStatics.prepareQuery(schema, query);
+  return preparedQuery.queryPlan.selectorSatisfiedByIndex;
 }
 //# sourceMappingURL=check-query.js.map

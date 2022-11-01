@@ -91,13 +91,16 @@ export function checkMangoQuery(args) {
    * with selectors that are fully satisfied by the used index.
    */
   if (args.rxQuery.op === 'count') {
-    var preparedQuery = RxStorageDexieStatics.prepareQuery(args.rxQuery.collection.schema.jsonSchema, args.mangoQuery);
-    if (!preparedQuery.queryPlan.selectorSatisfiedByIndex && !args.rxQuery.collection.database.allowSlowCount) {
+    if (!areSelectorsSatisfiedByIndex(args.rxQuery.collection.schema.jsonSchema, args.mangoQuery) && !args.rxQuery.collection.database.allowSlowCount) {
       throw newRxError('QU14', {
         collection: args.rxQuery.collection,
         query: args.mangoQuery
       });
     }
   }
+}
+export function areSelectorsSatisfiedByIndex(schema, query) {
+  var preparedQuery = RxStorageDexieStatics.prepareQuery(schema, query);
+  return preparedQuery.queryPlan.selectorSatisfiedByIndex;
 }
 //# sourceMappingURL=check-query.js.map

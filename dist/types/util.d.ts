@@ -223,4 +223,5 @@ export declare function sortDocumentsByLastWriteTime<RxDocType>(primaryPath: str
  */
 export declare type ObjectPathMonadFunction<T, R = any> = (obj: T) => R;
 export declare function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonadFunction<T, R>;
+export declare function deepFreeze<T>(o: T): T;
 export {};

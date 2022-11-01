@@ -14,6 +14,7 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var RxStorageLokiStatics = {
   prepareQuery: function prepareQuery(_schema, mutateableQuery) {
+    mutateableQuery = (0, _util.flatClone)(mutateableQuery);
     if (Object.keys((0, _util.ensureNotFalsy)(mutateableQuery.selector)).length > 0) {
       mutateableQuery.selector = {
         $and: [{

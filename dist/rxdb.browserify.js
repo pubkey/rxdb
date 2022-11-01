@@ -2636,7 +2636,10 @@ var RxStoragePouchStatics = {
 exports.RxStoragePouchStatics = RxStoragePouchStatics;
 function preparePouchDbQuery(schema, mutateableQuery) {
   var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
-  var query = mutateableQuery;
+  var query = (0, _util.flatClone)(mutateableQuery);
+  if (query.selector) {
+    query.selector = (0, _util.flatClone)(query.selector);
+  }
 
   /**
    * because sort wont work on unused keys we have to workaround
@@ -2735,8 +2738,8 @@ function preparePouchDbQuery(schema, mutateableQuery) {
       }
     });
     var indexName = (0, _pouchdbHelper.getPouchIndexDesignDocNameByIndex)(indexArray);
-    delete mutateableQuery.index;
-    mutateableQuery.use_index = indexName;
+    delete query.index;
+    query.use_index = indexName;
   }
   query.selector = (0, _pouchdbHelper.primarySwapPouchDbQuerySelector)(query.selector, primaryKey);
   return query;
@@ -4036,10 +4039,9 @@ function triggerCacheReplacement(rxCollection) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.INDEX_MIN = exports.INDEX_MAX = void 0;
+exports.UPPER_BOUND_LOGICAL_OPERATORS = exports.LOWER_BOUND_LOGICAL_OPERATORS = exports.LOGICAL_OPERATORS = exports.INDEX_MIN = exports.INDEX_MAX = void 0;
 exports.getMatcherQueryOpts = getMatcherQueryOpts;
 exports.getQueryPlan = getQueryPlan;
-exports.isLogicalOperator = isLogicalOperator;
 exports.isSelectorSatisfiedByIndex = isSelectorSatisfiedByIndex;
 exports.rateQueryPlan = rateQueryPlan;
 var _rxSchemaHelper = require("./rx-schema-helper");
@@ -4093,7 +4095,7 @@ function getQueryPlan(schema, query) {
         };
       } else {
         operators.forEach(function (operator) {
-          if (isLogicalOperator(operator)) {
+          if (LOGICAL_OPERATORS.has(operator)) {
             var operatorValue = matcher[operator];
             var partialOpts = getMatcherQueryOpts(operator, operatorValue);
             matcherOpts = Object.assign(matcherOpts, partialOpts);
@@ -4159,32 +4161,68 @@ function getQueryPlan(schema, query) {
   return currentBestQueryPlan;
 }
 var LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
-function isLogicalOperator(operator) {
-  return LOGICAL_OPERATORS.has(operator);
-}
+exports.LOGICAL_OPERATORS = LOGICAL_OPERATORS;
+var LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
+exports.LOWER_BOUND_LOGICAL_OPERATORS = LOWER_BOUND_LOGICAL_OPERATORS;
+var UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
+exports.UPPER_BOUND_LOGICAL_OPERATORS = UPPER_BOUND_LOGICAL_OPERATORS;
 function isSelectorSatisfiedByIndex(index, selector) {
-  var nonMatching = Object.entries(selector).find(function (_ref) {
-    var field = _ref[0],
+  var selectorEntries = Object.entries(selector);
+  var hasNonMatchingOperator = selectorEntries.find(function (_ref) {
+    var fieldName = _ref[0],
       operation = _ref[1];
-    if (!index.includes(field)) {
+    if (!index.includes(fieldName)) {
       return true;
     }
     var hasNonLogicOperator = Object.entries(operation).find(function (_ref2) {
       var op = _ref2[0],
         _value = _ref2[1];
-      if (!isLogicalOperator(op)) {
-        return true;
-      } else {
-        return false;
-      }
+      return !LOGICAL_OPERATORS.has(op);
     });
     return hasNonLogicOperator;
   });
-  if (nonMatching) {
+  if (hasNonMatchingOperator) {
     return false;
-  } else {
-    return true;
   }
+  var prevLowerBoundaryField;
+  var hasMoreThenOneLowerBoundaryField = index.find(function (fieldName) {
+    var operation = selector[fieldName];
+    if (!operation) {
+      return false;
+    }
+    var hasLowerLogicOp = Object.keys(operation).find(function (key) {
+      return LOWER_BOUND_LOGICAL_OPERATORS.has(key);
+    });
+    if (prevLowerBoundaryField && hasLowerLogicOp) {
+      return true;
+    } else if (hasLowerLogicOp !== '$eq') {
+      prevLowerBoundaryField = hasLowerLogicOp;
+    }
+    return false;
+  });
+  if (hasMoreThenOneLowerBoundaryField) {
+    return false;
+  }
+  var prevUpperBoundaryField;
+  var hasMoreThenOneUpperBoundaryField = index.find(function (fieldName) {
+    var operation = selector[fieldName];
+    if (!operation) {
+      return false;
+    }
+    var hasUpperLogicOp = Object.keys(operation).find(function (key) {
+      return UPPER_BOUND_LOGICAL_OPERATORS.has(key);
+    });
+    if (prevUpperBoundaryField && hasUpperLogicOp) {
+      return true;
+    } else if (hasUpperLogicOp !== '$eq') {
+      prevUpperBoundaryField = hasUpperLogicOp;
+    }
+    return false;
+  });
+  if (hasMoreThenOneUpperBoundaryField) {
+    return false;
+  }
+  return true;
 }
 function getMatcherQueryOpts(operator, operatorValue) {
   switch (operator) {
@@ -9210,7 +9248,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
           var hasLogical = false;
           if (typeof matcher === 'object' && matcher !== null) {
             hasLogical = !!Object.keys(matcher).find(function (operator) {
-              return (0, _queryPlanner.isLogicalOperator)(operator);
+              return _queryPlanner.LOGICAL_OPERATORS.has(operator);
             });
           } else {
             hasLogical = true;
@@ -11028,6 +11066,7 @@ exports.b64EncodeUnicode = b64EncodeUnicode;
 exports.batchArray = batchArray;
 exports.clone = exports.blobBufferUtil = void 0;
 exports.createRevision = createRevision;
+exports.deepFreeze = deepFreeze;
 exports.defaultHashFunction = defaultHashFunction;
 exports.ensureInteger = ensureInteger;
 exports.ensureNotFalsy = ensureNotFalsy;
@@ -11789,6 +11828,15 @@ function objectPathMonad(objectPath) {
     }
     return currentVal;
   };
+}
+function deepFreeze(o) {
+  Object.freeze(o);
+  Object.getOwnPropertyNames(o).forEach(function (prop) {
+    if (o.hasOwnProperty(prop) && o[prop] !== null && (typeof o[prop] === 'object' || typeof o[prop] === 'function') && !Object.isFrozen(o[prop])) {
+      deepFreeze(o[prop]);
+    }
+  });
+  return o;
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)

@@ -1,4 +1,4 @@
-import { isLogicalOperator } from './query-planner';
+import { LOGICAL_OPERATORS } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import { firstPropertyNameOfObject, flatClone, isMaybeReadonlyArray } from './util';
 
@@ -84,7 +84,7 @@ export function normalizeMangoQuery(schema, mangoQuery) {
           var hasLogical = false;
           if (typeof matcher === 'object' && matcher !== null) {
             hasLogical = !!Object.keys(matcher).find(function (operator) {
-              return isLogicalOperator(operator);
+              return LOGICAL_OPERATORS.has(operator);
             });
           } else {
             hasLogical = true;

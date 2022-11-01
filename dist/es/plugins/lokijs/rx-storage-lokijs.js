@@ -6,6 +6,7 @@ import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper
 import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
 export var RxStorageLokiStatics = {
   prepareQuery: function prepareQuery(_schema, mutateableQuery) {
+    mutateableQuery = flatClone(mutateableQuery);
     if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
       mutateableQuery.selector = {
         $and: [{

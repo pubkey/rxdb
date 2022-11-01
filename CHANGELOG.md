@@ -3,13 +3,16 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX wrong query results in some cases with many operators.
-- REMOVE `deep-freeze` npm dependency because it has no author.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.8.1 (1 November 2022)
+
+- FIX wrong query results in some cases with many operators.
+- REMOVE `deep-freeze` npm dependency because it has no author.
 
 ### 13.8.0 (31 October 2022)
 

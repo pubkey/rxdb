@@ -47,7 +47,7 @@ export function getQueryPlan(schema, query) {
         };
       } else {
         operators.forEach(function (operator) {
-          if (isLogicalOperator(operator)) {
+          if (LOGICAL_OPERATORS.has(operator)) {
             var operatorValue = matcher[operator];
             var partialOpts = getMatcherQueryOpts(operator, operatorValue);
             matcherOpts = Object.assign(matcherOpts, partialOpts);
@@ -112,33 +112,66 @@ export function getQueryPlan(schema, query) {
   }
   return currentBestQueryPlan;
 }
-var LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
-export function isLogicalOperator(operator) {
-  return LOGICAL_OPERATORS.has(operator);
-}
+export var LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
+export var LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
+export var UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
 export function isSelectorSatisfiedByIndex(index, selector) {
-  var nonMatching = Object.entries(selector).find(function (_ref) {
-    var field = _ref[0],
+  var selectorEntries = Object.entries(selector);
+  var hasNonMatchingOperator = selectorEntries.find(function (_ref) {
+    var fieldName = _ref[0],
       operation = _ref[1];
-    if (!index.includes(field)) {
+    if (!index.includes(fieldName)) {
       return true;
     }
     var hasNonLogicOperator = Object.entries(operation).find(function (_ref2) {
       var op = _ref2[0],
         _value = _ref2[1];
-      if (!isLogicalOperator(op)) {
-        return true;
-      } else {
-        return false;
-      }
+      return !LOGICAL_OPERATORS.has(op);
     });
     return hasNonLogicOperator;
   });
-  if (nonMatching) {
+  if (hasNonMatchingOperator) {
     return false;
-  } else {
-    return true;
   }
+  var prevLowerBoundaryField;
+  var hasMoreThenOneLowerBoundaryField = index.find(function (fieldName) {
+    var operation = selector[fieldName];
+    if (!operation) {
+      return false;
+    }
+    var hasLowerLogicOp = Object.keys(operation).find(function (key) {
+      return LOWER_BOUND_LOGICAL_OPERATORS.has(key);
+    });
+    if (prevLowerBoundaryField && hasLowerLogicOp) {
+      return true;
+    } else if (hasLowerLogicOp !== '$eq') {
+      prevLowerBoundaryField = hasLowerLogicOp;
+    }
+    return false;
+  });
+  if (hasMoreThenOneLowerBoundaryField) {
+    return false;
+  }
+  var prevUpperBoundaryField;
+  var hasMoreThenOneUpperBoundaryField = index.find(function (fieldName) {
+    var operation = selector[fieldName];
+    if (!operation) {
+      return false;
+    }
+    var hasUpperLogicOp = Object.keys(operation).find(function (key) {
+      return UPPER_BOUND_LOGICAL_OPERATORS.has(key);
+    });
+    if (prevUpperBoundaryField && hasUpperLogicOp) {
+      return true;
+    } else if (hasUpperLogicOp !== '$eq') {
+      prevUpperBoundaryField = hasUpperLogicOp;
+    }
+    return false;
+  });
+  if (hasMoreThenOneUpperBoundaryField) {
+    return false;
+  }
+  return true;
 }
 export function getMatcherQueryOpts(operator, operatorValue) {
   switch (operator) {
