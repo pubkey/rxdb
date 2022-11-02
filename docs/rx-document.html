@@ -2170,7 +2170,7 @@ myDocument.get$(<span class="hljs-string">&apos;name&apos;</span>)
   <span class="hljs-comment">// Can also get nested values.</span>
   <span class="hljs-keyword">var</span> nestedValue = myDocument.whatever.nestedfield;
 
-  <span class="hljs-comment">// Also useable with observables:</span>
+  <span class="hljs-comment">// Also usable with observables:</span>
   myDocument.firstName$.subscribe(newName =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;name is: &apos;</span> + newName));
   <span class="hljs-comment">// &gt; &apos;name is: Stefe&apos;</span>
   <span class="hljs-keyword">await</span> myDocument.atomicPatch({firstName: <span class="hljs-string">&apos;Steve&apos;</span>});

@@ -34,7 +34,7 @@ img {
     padding: 7px;
 }
 
-/* the gitter button overlayed the next-button on mobile */
+/* the gitter button overlaid the next-button on mobile */
 @media (max-width: 1150px) {
     .gitter-open-chat-button {
         display: none;

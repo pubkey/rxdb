@@ -23,6 +23,7 @@ import { CUSTOM_STORAGE } from './custom-storage';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 import { isPromise } from 'async-test-util';
 
+
 const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
 
 function isFastMode(): boolean {
@@ -76,12 +77,21 @@ const config: {
     rootPath: string;
     isFastMode: () => boolean;
     storage: RxTestStorage;
+    isNotOneOfTheseStorages: (names: string[]) => boolean;
 } = {
     platform: detect(),
     parallel: useParallel,
     rootPath: '',
     isFastMode,
-    storage: {} as any
+    storage: {} as any,
+    isNotOneOfTheseStorages(storageNames: string[]) {
+        const isName = this.storage.name;
+        if (storageNames.includes(isName)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 };
 
 const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
@@ -145,7 +155,7 @@ export function setDefaultStorage(storageKey: string) {
         /**
          * We run the tests once together
          * with a validation plugin
-         * to ensure we do not accidentially use non-valid data
+         * to ensure we do not accidentally use non-valid data
          * in the tests.
          */
         case 'memory-validation':
@@ -204,8 +214,7 @@ export function setDefaultStorage(storageKey: string) {
                 name: 'dexie',
                 getStorage: () => {
                     if (config.platform.name === 'node' || config.isFastMode()) {
-                        const indexedDB = require('fake-indexeddb');
-                        const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+                        const {indexedDB, IDBKeyRange} = require('fake-indexeddb');
                         return getRxStorageDexie({
                             indexedDB,
                             IDBKeyRange
@@ -216,8 +225,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 getPerformanceStorage() {
                     if (config.platform.name === 'node') {
-                        const indexedDB = require('fake-indexeddb');
-                        const IDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+                        const {indexedDB, IDBKeyRange} = require('fake-indexeddb');
                         return {
                             storage: getRxStorageDexie({
                                 indexedDB,

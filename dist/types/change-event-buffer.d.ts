@@ -14,12 +14,12 @@ export declare class ChangeEventBuffer {
     _handleChangeEvent(changeEvent: RxChangeEvent<any>): void;
     /**
      * gets the array-index for the given pointer
-     * @return arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
+     * @return arrayIndex which can be used to iterate from there. If null, pointer is out of lower bound
      */
     getArrayIndexByPointer(pointer: number): number | null;
     /**
      * get all changeEvents which came in later than the pointer-event
-     * @return array with change-events. Iif null, pointer out of bounds
+     * @return array with change-events. If null, pointer out of bounds
      */
     getFrom(pointer: number): RxChangeEvent<any>[] | null;
     runFrom(pointer: number, fn: Function): void;

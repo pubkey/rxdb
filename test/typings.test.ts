@@ -84,7 +84,7 @@ describe('typings.test.js', function () {
     };
 
     config.parallel('basic', () => {
-        it('should sucess on basic test', async () => {
+        it('should success on basic test', async () => {
             await transpileCode('console.log("Hello, world!")');
         });
         it('should fail on broken code', async () => {
@@ -369,7 +369,7 @@ describe('typings.test.js', function () {
                 `;
                 await transpileCode(code);
             });
-            it('use underlaying pouchdb', async () => {
+            it('use underlying pouchdb', async () => {
                 const code = codeBase + `
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({

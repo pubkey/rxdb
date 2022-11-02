@@ -3,7 +3,7 @@ import { newRxError } from '../../rx-error';
 import { getPouchIndexDesignDocNameByIndex, POUCHDB_CHECKPOINT_SCHEMA, pouchSwapPrimaryToId, primarySwapPouchDbQuerySelector } from './pouchdb-helper';
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import { overwritable } from '../../overwritable';
-import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
+import { ensureNotFalsy, flatClone, isMaybeReadonlyArray } from '../../util';
 export var RxStoragePouchStatics = {
   getSortComparator: function getSortComparator(schema, query) {
     var _ref;
@@ -98,10 +98,13 @@ export var RxStoragePouchStatics = {
  */
 export function preparePouchDbQuery(schema, mutateableQuery) {
   var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-  var query = mutateableQuery;
+  var query = flatClone(mutateableQuery);
+  if (query.selector) {
+    query.selector = flatClone(query.selector);
+  }
 
   /**
-   * because sort wont work on unused keys we have to workaround
+   * because sort won't work on unused keys we have to workaround
    * so we add the key to the selector if necessary
    * @link https://github.com/nolanlawson/pouchdb-find/issues/204
    */
@@ -197,8 +200,8 @@ export function preparePouchDbQuery(schema, mutateableQuery) {
       }
     });
     var indexName = getPouchIndexDesignDocNameByIndex(indexArray);
-    delete mutateableQuery.index;
-    mutateableQuery.use_index = indexName;
+    delete query.index;
+    query.use_index = indexName;
   }
   query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);
   return query;

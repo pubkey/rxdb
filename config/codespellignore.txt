@@ -1,0 +1,4 @@
+statics
+falsy
+nin
+shouldBe

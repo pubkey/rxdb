@@ -389,9 +389,9 @@ export function checkSchema(jsonSchema) {
   // remove backward-compatibility for index: true
   Object.keys(flattenObject(jsonSchema)).map(function (key) {
     // flattenObject returns only ending paths, we need all paths pointing to an object
-    var splitted = key.split('.');
-    splitted.pop(); // all but last
-    return splitted.join('.');
+    var split = key.split('.');
+    split.pop(); // all but last
+    return split.join('.');
   }).filter(function (key) {
     return key !== '';
   }).filter(function (elem, pos, arr) {
@@ -453,9 +453,9 @@ export function checkSchema(jsonSchema) {
    */
   Object.keys(flattenObject(jsonSchema)).map(function (key) {
     // flattenObject returns only ending paths, we need all paths pointing to an object
-    var splitted = key.split('.');
-    splitted.pop(); // all but last
-    return splitted.join('.');
+    var split = key.split('.');
+    split.pop(); // all but last
+    return split.join('.');
   }).filter(function (key) {
     return key !== '' && key !== 'attachments';
   }).filter(function (elem, pos, arr) {

@@ -434,7 +434,7 @@ config.parallel('reactive-query.test.js', () => {
             assert.strictEqual(last.state.providers, 9);
 
             // on own collection, all events should have propagated
-            // TODO this fails for unkonwn reason on slow device
+            // TODO this fails for unknown reason on slow device
             // assert.strictEqual(emittedOwn.length, 10);
 
             sub.unsubscribe();

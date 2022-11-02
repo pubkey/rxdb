@@ -22,7 +22,8 @@ import type {
     RxStorageStatics,
     RxDocumentDataById,
     RxConflictResultionTask,
-    RxConflictResultionTaskSolution
+    RxConflictResultionTaskSolution,
+    RxStorageCountResult
 } from '../../types';
 import {
     ensureNotFalsy,
@@ -149,6 +150,12 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<
     }
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {
         return this.internals.worker.query(
+            this.internals.instanceId,
+            preparedQuery
+        );
+    }
+    count(preparedQuery: any): Promise<RxStorageCountResult> {
+        return this.internals.worker.count(
             this.internals.instanceId,
             preparedQuery
         );

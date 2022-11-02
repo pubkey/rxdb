@@ -105,7 +105,7 @@ export function defaultHashFunction(input: string): string {
 /**
  * Returns the current unix time in milliseconds (with two decmials!)
  * Because the accuracy of getTime() in javascript is bad,
- * and we cannot rely on performance.now() on all plattforms,
+ * and we cannot rely on performance.now() on all platforms,
  * this method implements a way to never return the same value twice.
  * This ensures that when now() is called often, we do not loose the information
  * about which call came first and which came after.
@@ -772,14 +772,14 @@ export function sortDocumentsByLastWriteTime<RxDocType>(
  */
 export type ObjectPathMonadFunction<T, R = any> = (obj: T) => R;
 export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonadFunction<T, R> {
-    const splitted = objectPath.split('.');
+    const split = objectPath.split('.');
 
     /**
      * Performance shortcut,
      * if no nested path is used,
      * directly return the field of the object.
      */
-    if (splitted.length === 1) {
+    if (split.length === 1) {
         return (obj: T) => (obj as any)[objectPath];
     }
 
@@ -787,8 +787,8 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
     return (obj: T) => {
         let currentVal: any = obj;
         let t = 0;
-        while (t < splitted.length) {
-            const subPath = splitted[t];
+        while (t < split.length) {
+            const subPath = split[t];
             currentVal = currentVal[subPath];
             if (typeof currentVal === 'undefined') {
                 return currentVal;
@@ -797,4 +797,27 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
         }
         return currentVal;
     }
+}
+
+
+export function deepFreeze<T>(o: T): T {
+    Object.freeze(o);
+    Object.getOwnPropertyNames(o).forEach(function (prop) {
+        if (
+            (o as any).hasOwnProperty(prop)
+            &&
+            (o as any)[prop] !== null
+            &&
+            (
+                typeof (o as any)[prop] === 'object'
+                ||
+                typeof (o as any)[prop] === 'function'
+            )
+            &&
+            !Object.isFrozen((o as any)[prop])
+        ) {
+            deepFreeze((o as any)[prop]);
+        }
+    });
+    return o;
 }

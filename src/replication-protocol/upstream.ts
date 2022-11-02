@@ -31,7 +31,7 @@ import {
 /**
  * Writes all document changes from the fork to the master.
  * The upstream runs on two modes:
- * - For inital replication, a checkpoint-iteration is used
+ * - For initial replication, a checkpoint-iteration is used
  * - For ongoing local writes, we just subscribe to the changeStream of the fork.
  *   In contrast to the master, the fork can be assumed to never loose connection,
  *   so we do not have to prepare for missed out events.
@@ -112,7 +112,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         }
 
         /**
-         * If we had conflicts during the inital sync,
+         * If we had conflicts during the initial sync,
          * it means that we likely have new writes to the fork
          * and so we have to run the initial sync again to upastream these new writes.
          */
@@ -148,8 +148,8 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
             while (openTasks.length > 0) {
                 const taskWithTime = ensureNotFalsy(openTasks.shift());
                 /**
-                 * If the task came in before the last time the inital sync fetching
-                 * has run, we can ignore the task because the inital sync already processed
+                 * If the task came in before the last time the initial sync fetching
+                 * has run, we can ignore the task because the initial sync already processed
                  * these documents.
                  */
                 if (taskWithTime.time < initialSyncStartTime) {
@@ -394,7 +394,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
 
             /**
              * For better performance we do not await checkpoint writes,
-             * but to ensure order on parrallel checkpoint writes,
+             * but to ensure order on parallel checkpoint writes,
              * we have to use a queue.
              */
             state.checkpointQueue = state.checkpointQueue.then(() => setCheckpoint(

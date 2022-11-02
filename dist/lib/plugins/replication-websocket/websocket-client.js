@@ -17,7 +17,7 @@ var _rxError = require("../../rx-error");
  * Copied and adapter from the 'reconnecting-websocket' npm module.
  * Some bundlers have problems with bundling the isomorphic-ws plugin
  * so we directly check the correctness in RxDB to ensure that we can
- * throw a helpfull error.
+ * throw a helpful error.
  */
 function ensureIsWebsocket(w) {
   var is = typeof w !== 'undefined' && !!w && w.CLOSING === 2;

@@ -231,7 +231,7 @@ config.parallel('key-compression.test.js', () => {
                 createdAt: number;
                 read: boolean;
                 sender: string;
-                reciever: string;
+                receiver: string;
             };
             const schema: RxJsonSchema<RxMessageDocumentType> = {
                 title: 'messages schema',
@@ -255,7 +255,7 @@ config.parallel('key-compression.test.js', () => {
                         multipleOf: 1
                     },
                     read: {
-                        description: 'true if was read by the reciever',
+                        description: 'true if was read by the receiver',
                         type: 'boolean'
                     },
                     sender: {
@@ -263,7 +263,7 @@ config.parallel('key-compression.test.js', () => {
                         ref: 'users',
                         maxLength: 40
                     },
-                    reciever: {
+                    receiver: {
                         type: 'string',
                         ref: 'users',
                         maxLength: 40
@@ -277,7 +277,7 @@ config.parallel('key-compression.test.js', () => {
                     'createdAt',
                     'read',
                     'sender',
-                    'reciever'
+                    'receiver'
                 ]
             };
 
@@ -300,18 +300,18 @@ config.parallel('key-compression.test.js', () => {
                 createdAt: 100,
                 read: false,
                 sender: 'a',
-                reciever: 'b'
+                receiver: 'b'
             });
             const query = collection.findOne({
                 selector: {
                     $or: [
                         {
                             sender: 'a',
-                            reciever: 'b'
+                            receiver: 'b'
                         },
                         {
                             sender: 'b',
-                            reciever: 'a'
+                            receiver: 'a'
                         }
                     ]
                 },

@@ -232,7 +232,7 @@ export var spawnServer = function spawnServer(_ref) {
 
     /**
      * Overwrite the defaults of PouchDBExpressServerOptions.
-     * In RxDB the defaults should not polute anything with folders so we store the config in memory
+     * In RxDB the defaults should not pollute anything with folders so we store the config in memory
      * and the logs in the tmp folder of the os.
      */
     var usePouchExpressOptions = flatClone(pouchdbExpressOptions);
@@ -312,20 +312,20 @@ var APP_OF_DB = new WeakMap();
 var SERVERS_OF_DB = new WeakMap();
 var DBS_WITH_SERVER = new WeakSet();
 var normalizeDbName = function normalizeDbName(db) {
-  var splitted = db.name.split('/').filter(function (str) {
+  var split = db.name.split('/').filter(function (str) {
     return str !== '';
   });
-  return splitted.pop();
+  return split.pop();
 };
 var getPrefix = function getPrefix(db) {
-  var splitted = db.name.split('/').filter(function (str) {
+  var split = db.name.split('/').filter(function (str) {
     return str !== '';
   });
-  splitted.pop(); // last was the name
-  if (splitted.length === 0) {
+  split.pop(); // last was the name
+  if (split.length === 0) {
     return '';
   }
-  var ret = splitted.join('/') + '/';
+  var ret = split.join('/') + '/';
   if (db.name.startsWith('/')) {
     ret = '/' + ret;
   }

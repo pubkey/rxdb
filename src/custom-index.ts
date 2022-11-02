@@ -15,7 +15,7 @@ import {
     objectPathMonad,
     ObjectPathMonadFunction
 } from './util';
-import { INDEX_MAX } from './query-planner';
+import { INDEX_MAX, INDEX_MIN } from './query-planner';
 
 
 /**
@@ -83,7 +83,7 @@ export function getIndexableStringMonad<RxDocType>(
                 if (!fieldValue) {
                     fieldValue = '';
                 }
-                str += fieldValue.padStart(schemaPart.maxLength as number, ' ');
+                str += fieldValue.padEnd(schemaPart.maxLength as number, ' ');
             } else if (type === 'boolean') {
                 const boolToStr = fieldValue ? '1' : '0';
                 str += boolToStr;
@@ -139,8 +139,8 @@ export function getNumberIndexString(
     const nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
     str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
 
-    const splittedByDecimalPoint = fieldValue.toString().split('.');
-    const decimalValueAsString = splittedByDecimalPoint.length > 1 ? splittedByDecimalPoint[1] : '0';
+    const splitByDecimalPoint = fieldValue.toString().split('.');
+    const decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
 
     str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
     return str;
@@ -149,7 +149,8 @@ export function getNumberIndexString(
 export function getStartIndexStringFromLowerBound(
     schema: RxJsonSchema<any>,
     index: string[],
-    lowerBound: (string | boolean | number | null | undefined)[]
+    lowerBound: (string | boolean | number | null | undefined)[],
+    inclusiveStart: boolean
 ): string {
     let str = '';
     index.forEach((fieldName, idx) => {
@@ -164,14 +165,15 @@ export function getStartIndexStringFromLowerBound(
             case 'string':
                 const maxLength = ensureNotFalsy(schemaPart.maxLength);
                 if (typeof bound === 'string') {
-                    str += (bound as string).padStart(maxLength, ' ');
+                    str += (bound as string).padEnd(maxLength, ' ');
                 } else {
-                    str += ''.padStart(maxLength, ' ');
+                    // str += ''.padStart(maxLength, inclusiveStart ? ' ' : INDEX_MAX);
+                    str += ''.padEnd(maxLength, ' ');
                 }
                 break;
             case 'boolean':
                 if (bound === null) {
-                    str += '0';
+                    str += inclusiveStart ? '0' : INDEX_MAX;
                 } else {
                     const boolToStr = bound ? '1' : '0';
                     str += boolToStr;
@@ -182,8 +184,9 @@ export function getStartIndexStringFromLowerBound(
                 const parsedLengths = getStringLengthOfIndexNumber(
                     schemaPart
                 );
-                if (bound === null) {
-                    str += '0'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+                if (bound === null || bound === INDEX_MIN) {
+                    const fillChar = inclusiveStart ? '0' : INDEX_MAX;
+                    str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
                 } else {
                     str += getNumberIndexString(
                         parsedLengths,
@@ -202,10 +205,10 @@ export function getStartIndexStringFromLowerBound(
 export function getStartIndexStringFromUpperBound(
     schema: RxJsonSchema<any>,
     index: string[],
-    upperBound: (string | boolean | number | null | undefined)[]
+    upperBound: (string | boolean | number | null | undefined)[],
+    inclusiveEnd: boolean
 ): string {
     let str = '';
-
     index.forEach((fieldName, idx) => {
         const schemaPart = getSchemaByObjectPath(
             schema,
@@ -218,14 +221,14 @@ export function getStartIndexStringFromUpperBound(
             case 'string':
                 const maxLength = ensureNotFalsy(schemaPart.maxLength);
                 if (typeof bound === 'string') {
-                    str += (bound as string).padStart(maxLength, INDEX_MAX);
+                    str += (bound as string).padEnd(maxLength, inclusiveEnd ? INDEX_MAX : ' ');
                 } else {
-                    str += ''.padStart(maxLength, INDEX_MAX);
+                    str += ''.padEnd(maxLength, inclusiveEnd ? INDEX_MAX : ' ');
                 }
                 break;
             case 'boolean':
                 if (bound === null) {
-                    str += '1';
+                    str += inclusiveEnd ? '0' : '1';
                 } else {
                     const boolToStr = bound ? '1' : '0';
                     str += boolToStr;
@@ -237,7 +240,8 @@ export function getStartIndexStringFromUpperBound(
                     schemaPart
                 );
                 if (bound === null || bound === INDEX_MAX) {
-                    str += '9'.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+                    const fillChar = inclusiveEnd ? '9' : '0';
+                    str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
                 } else {
                     str += getNumberIndexString(
                         parsedLengths,

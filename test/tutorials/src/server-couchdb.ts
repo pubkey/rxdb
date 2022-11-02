@@ -26,7 +26,6 @@ import * as PouchHttpPlugin from 'pouchdb-adapter-http';
 addPouchPlugin(PouchHttpPlugin);
 
 import AsyncTestUtil from 'async-test-util';
-import * as request from 'request-promise-native';
 import * as assert from 'assert';
 
 import * as os from 'os';
@@ -93,8 +92,8 @@ async function run() {
     console.log('You can now open ' + colUrl);
 
     // check access to path
-    const gotJson = await request(colUrl);
-    const got = JSON.parse(gotJson);
+    const res = await fetch(colUrl);
+    const got = await res.json();
     assert.strictEqual(got.doc_count, 1);
 
     /**

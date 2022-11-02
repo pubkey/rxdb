@@ -306,7 +306,7 @@ describe('rx-storage-lokijs.test.js', () => {
          * When the leading tab is set to cpu throttling mode by the browsers,
          * running setTimeout takes way longer then the given time.
          * Because LokiJS is in-memory, we elect a leader and all requests go to that leader.
-         * This means when the leader is cpu-throttled, we have a realy slow response.
+         * This means when the leader is cpu-throttled, we have a really slow response.
          * 
          * So in this test we assure that the internals of the LokiJS RxStorage
          * do not use any setTimeout call.

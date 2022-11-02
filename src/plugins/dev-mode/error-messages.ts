@@ -39,6 +39,9 @@ export const ERROR_MESSAGES = {
     QU11: 'RxQuery: no valid query params given',
     QU12: 'Given index is not in schema',
     QU13: 'A top level field of the query is not included in the schema',
+    QU14: 'Running a count() query in slow mode is now allowed. Either run a count() query with a selector that fully matches an index ' +
+        'or set allowSlowCount=true when calling the createRxDatabase',
+    QU15: 'For count queries it is not allowed to use skip or limit',
 
     // mquery.js
     MQ1: 'path must be a string or object',
@@ -96,7 +99,7 @@ export const ERROR_MESSAGES = {
     DOC8: 'RxDocument.set(): primary-key cannot be modified',
     DOC9: 'final fields cannot be modified',
     DOC10: 'RxDocument.set(): cannot set childpath when rootPath not selected',
-    DOC11: 'RxDocument.save(): cant save deleted document',
+    DOC11: 'RxDocument.save(): can\'t save deleted document',
     // removed in 10.0.0 DOC12: 'RxDocument.save(): error',
     DOC13: 'RxDocument.remove(): Document is already deleted',
     DOC14: 'RxDocument.destroy() does not exist',
@@ -127,12 +130,12 @@ export const ERROR_MESSAGES = {
     // plugins/leader-election.js
 
     // plugins/local-documents.js
-    LD1: 'RxDocument.allAttachments$ cant use attachments on local documents',
+    LD1: 'RxDocument.allAttachments$ can\'t use attachments on local documents',
     LD2: 'RxDocument.get(): objPath must be a string',
     LD3: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',
     LD4: 'cannot observe primary path',
     LD5: 'RxDocument.set() id cannot be modified',
-    LD6: 'LocalDocument: Function is not useable on local documents',
+    LD6: 'LocalDocument: Function is not usable on local documents',
     LD7: 'Local document already exists',
     LD8: 'localDocuments not activated. Set localDocuments=true on creation, when you want to store local documents on the RxDatabase or RxCollection.',
 
@@ -140,11 +143,11 @@ export const ERROR_MESSAGES = {
     RC1: 'Replication: already added',
     RC2: 'RxCollection.syncCouchDB() query must be from the same RxCollection',
     RC3: 'RxCollection.syncCouchDB() Do not use a collection\'s pouchdb as remote, use the collection instead',
-    RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication when live: true',
-    RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await inital replication if multiInstance because the replication might run on another instance',
-    RC_PULL: 'RxReplication pull handler throwed an error - see .errors for more details',
-    RC_STREAM: 'RxReplication pull stream$ throwed an error - see .errors for more details',
-    RC_PUSH: 'RxReplication push handler throwed an error - see .errors for more details',
+    RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication when live: true',
+    RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication if multiInstance because the replication might run on another instance',
+    RC_PULL: 'RxReplication pull handler threw an error - see .errors for more details',
+    RC_STREAM: 'RxReplication pull stream$ threw an error - see .errors for more details',
+    RC_PUSH: 'RxReplication push handler threw an error - see .errors for more details',
 
     // plugins/dev-mode/check-schema.js
     SC1: 'fieldnames do not match the regex',
@@ -180,7 +183,7 @@ export const ERROR_MESSAGES = {
     SC34: 'Fields of type string that are used in an index, must have set the maxLength attribute in the schema',
     SC35: 'Fields of type number/integer that are used in an index, must have set the multipleOf attribute in the schema',
     SC36: 'A field of this type cannot be used as index',
-    SC37: 'Fields of type number that are used in an index, must have set the minimum and maxiumum attribute in the schema',
+    SC37: 'Fields of type number that are used in an index, must have set the minimum and maximum attribute in the schema',
     SC38: 'Fields of type boolean that are used in an index, must be required in the schema',
     SC39: 'The primary key must have the maxLength attribute set',
 

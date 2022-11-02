@@ -451,9 +451,9 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
     Object.keys(flattenObject(jsonSchema))
         .map(key => {
             // flattenObject returns only ending paths, we need all paths pointing to an object
-            const splitted = key.split('.');
-            splitted.pop(); // all but last
-            return splitted.join('.');
+            const split = key.split('.');
+            split.pop(); // all but last
+            return split.join('.');
         })
         .filter(key => key !== '')
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
@@ -516,9 +516,9 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
     Object.keys(flattenObject(jsonSchema))
         .map(key => {
             // flattenObject returns only ending paths, we need all paths pointing to an object
-            const splitted = key.split('.');
-            splitted.pop(); // all but last
-            return splitted.join('.');
+            const split = key.split('.');
+            split.pop(); // all but last
+            return split.join('.');
         })
         .filter(key => key !== '' && key !== 'attachments')
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique

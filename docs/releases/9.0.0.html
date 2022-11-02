@@ -2199,7 +2199,7 @@ addRxPlugin(RxDBDevModePlugin);
 addRxPlugin(RxDBMigrationPlugin);
 </code></pre>
 <h3 id="rewritten-key-compression">Rewritten key-compression</h3>
-<p>The key-compression logic was fully coded only for RxDB. This was a problem because it was not useable for other stuff and also badly tested. We had a known problem with nested arrays that caused much confusion because some queries did not find the correct documents.</p>
+<p>The key-compression logic was fully coded only for RxDB. This was a problem because it was not usable for other stuff and also badly tested. We had a known problem with nested arrays that caused much confusion because some queries did not find the correct documents.</p>
 <p>I now created a npm-package <a href="https://github.com/pubkey/jsonschema-key-compression" target="_blank">jsonschema-key-compression</a> that has cleaner code, better tests and can also be used for non-RxDB stuff.</p>
 <p>If you used the key-compression in the past and have clients out there with old data, you have to find a way to migrate that data by using the json-import or other solutions depending on your project.</p>
 <h3 id="rewritten-query-change-detection-to-event-reduce">Rewritten query-change-detection to event-reduce</h3>

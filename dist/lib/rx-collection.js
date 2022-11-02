@@ -345,7 +345,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       });
     }
 
-    // ensure that it wont try 2 parallel runs
+    // ensure that it won't try 2 parallel runs
     var queue = this._atomicUpsertQueues.get(primary);
     if (!queue) {
       queue = _util.PROMISE_RESOLVE_VOID;
@@ -373,7 +373,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     if (!queryObj) {
       queryObj = (0, _rxQuery._getDefaultQuery)();
     }
-    var query = (0, _rxQuery.createRxQuery)('find', queryObj, this);
+    var query = (0, _rxQuery.createRxQuery)('find', queryObj, this.asRxCollection);
     return query;
   };
   _proto.findOne = function findOne(queryObj) {
@@ -394,13 +394,20 @@ var RxCollectionBase = /*#__PURE__*/function () {
         throw (0, _rxError.newRxError)('QU6');
       }
       queryObj.limit = 1;
-      query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this);
+      query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this.asRxCollection);
     }
     if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
       throw (0, _rxError.newRxTypeError)('COL6', {
         queryObj: queryObj
       });
     }
+    return query;
+  };
+  _proto.count = function count(queryObj) {
+    if (!queryObj) {
+      queryObj = (0, _rxQuery._getDefaultQuery)();
+    }
+    var query = (0, _rxQuery.createRxQuery)('count', queryObj, this.asRxCollection);
     return query;
   }
 
@@ -464,7 +471,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     return this.$.pipe((0, _operators.startWith)(null),
     /**
      * Optimization shortcut.
-     * Do not proceed if the emited RxChangeEvent
+     * Do not proceed if the emitted RxChangeEvent
      * is not relevant for the query.
      */
     (0, _operators.filter)(function (changeEvent) {

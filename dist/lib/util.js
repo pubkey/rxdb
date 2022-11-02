@@ -13,6 +13,7 @@ exports.b64EncodeUnicode = b64EncodeUnicode;
 exports.batchArray = batchArray;
 exports.clone = exports.blobBufferUtil = void 0;
 exports.createRevision = createRevision;
+exports.deepFreeze = deepFreeze;
 exports.defaultHashFunction = defaultHashFunction;
 exports.ensureInteger = ensureInteger;
 exports.ensureNotFalsy = ensureNotFalsy;
@@ -140,7 +141,7 @@ function defaultHashFunction(input) {
 /**
  * Returns the current unix time in milliseconds (with two decmials!)
  * Because the accuracy of getTime() in javascript is bad,
- * and we cannot rely on performance.now() on all plattforms,
+ * and we cannot rely on performance.now() on all platforms,
  * this method implements a way to never return the same value twice.
  * This ensures that when now() is called often, we do not loose the information
  * about which call came first and which came after.
@@ -749,14 +750,14 @@ function sortDocumentsByLastWriteTime(primaryPath, docs) {
  */
 
 function objectPathMonad(objectPath) {
-  var splitted = objectPath.split('.');
+  var split = objectPath.split('.');
 
   /**
    * Performance shortcut,
    * if no nested path is used,
    * directly return the field of the object.
    */
-  if (splitted.length === 1) {
+  if (split.length === 1) {
     return function (obj) {
       return obj[objectPath];
     };
@@ -764,8 +765,8 @@ function objectPathMonad(objectPath) {
   return function (obj) {
     var currentVal = obj;
     var t = 0;
-    while (t < splitted.length) {
-      var subPath = splitted[t];
+    while (t < split.length) {
+      var subPath = split[t];
       currentVal = currentVal[subPath];
       if (typeof currentVal === 'undefined') {
         return currentVal;
@@ -774,5 +775,14 @@ function objectPathMonad(objectPath) {
     }
     return currentVal;
   };
+}
+function deepFreeze(o) {
+  Object.freeze(o);
+  Object.getOwnPropertyNames(o).forEach(function (prop) {
+    if (o.hasOwnProperty(prop) && o[prop] !== null && (typeof o[prop] === 'object' || typeof o[prop] === 'function') && !Object.isFrozen(o[prop])) {
+      deepFreeze(o[prop]);
+    }
+  });
+  return o;
 }
 //# sourceMappingURL=util.js.map

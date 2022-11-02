@@ -32,25 +32,28 @@ export function getQueryPlan(schema, query) {
   var currentBestQuality = -1;
   var currentBestQueryPlan;
   indexes.forEach(function (index) {
+    var inclusiveEnd = true;
+    var inclusiveStart = true;
     var opts = index.map(function (indexField) {
       var matcher = selector[indexField];
       var operators = matcher ? Object.keys(matcher) : [];
+      var matcherOpts = {};
       if (!matcher || !operators.length) {
-        return {
-          startKey: INDEX_MIN,
-          endKey: INDEX_MAX,
+        matcherOpts = {
+          startKey: inclusiveStart ? INDEX_MIN : INDEX_MAX,
+          endKey: inclusiveEnd ? INDEX_MAX : INDEX_MIN,
           inclusiveStart: true,
           inclusiveEnd: true
         };
+      } else {
+        operators.forEach(function (operator) {
+          if (LOGICAL_OPERATORS.has(operator)) {
+            var operatorValue = matcher[operator];
+            var partialOpts = getMatcherQueryOpts(operator, operatorValue);
+            matcherOpts = Object.assign(matcherOpts, partialOpts);
+          }
+        });
       }
-      var matcherOpts = {};
-      operators.forEach(function (operator) {
-        if (isLogicalOperator(operator)) {
-          var operatorValue = matcher[operator];
-          var partialOpts = getMatcherQueryOpts(operator, operatorValue);
-          matcherOpts = Object.assign(matcherOpts, partialOpts);
-        }
-      });
 
       // fill missing attributes
       if (typeof matcherOpts.startKey === 'undefined') {
@@ -65,6 +68,12 @@ export function getQueryPlan(schema, query) {
       if (typeof matcherOpts.inclusiveEnd === 'undefined') {
         matcherOpts.inclusiveEnd = true;
       }
+      if (inclusiveStart && !matcherOpts.inclusiveStart) {
+        inclusiveStart = false;
+      }
+      if (inclusiveEnd && !matcherOpts.inclusiveEnd) {
+        inclusiveEnd = false;
+      }
       return matcherOpts;
     });
     var queryPlan = {
@@ -75,13 +84,10 @@ export function getQueryPlan(schema, query) {
       endKeys: opts.map(function (opt) {
         return opt.endKey;
       }),
-      inclusiveEnd: !opts.find(function (opt) {
-        return !opt.inclusiveEnd;
-      }),
-      inclusiveStart: !opts.find(function (opt) {
-        return !opt.inclusiveStart;
-      }),
-      sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(',')
+      inclusiveEnd: inclusiveEnd,
+      inclusiveStart: inclusiveStart,
+      sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(','),
+      selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
     };
     var quality = rateQueryPlan(schema, query, queryPlan);
     if (quality > 0 && quality > currentBestQuality || query.index) {
@@ -94,20 +100,78 @@ export function getQueryPlan(schema, query) {
    * No index found, use the default index
    */
   if (!currentBestQueryPlan) {
-    return {
+    currentBestQueryPlan = {
       index: [primaryPath],
       startKeys: [INDEX_MIN],
       endKeys: [INDEX_MAX],
       inclusiveEnd: true,
       inclusiveStart: true,
-      sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath
+      sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath,
+      selectorSatisfiedByIndex: isSelectorSatisfiedByIndex([primaryPath], query.selector)
     };
   }
   return currentBestQueryPlan;
 }
-var LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
-export function isLogicalOperator(operator) {
-  return LOGICAL_OPERATORS.has(operator);
+export var LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
+export var LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
+export var UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
+export function isSelectorSatisfiedByIndex(index, selector) {
+  var selectorEntries = Object.entries(selector);
+  var hasNonMatchingOperator = selectorEntries.find(function (_ref) {
+    var fieldName = _ref[0],
+      operation = _ref[1];
+    if (!index.includes(fieldName)) {
+      return true;
+    }
+    var hasNonLogicOperator = Object.entries(operation).find(function (_ref2) {
+      var op = _ref2[0],
+        _value = _ref2[1];
+      return !LOGICAL_OPERATORS.has(op);
+    });
+    return hasNonLogicOperator;
+  });
+  if (hasNonMatchingOperator) {
+    return false;
+  }
+  var prevLowerBoundaryField;
+  var hasMoreThenOneLowerBoundaryField = index.find(function (fieldName) {
+    var operation = selector[fieldName];
+    if (!operation) {
+      return false;
+    }
+    var hasLowerLogicOp = Object.keys(operation).find(function (key) {
+      return LOWER_BOUND_LOGICAL_OPERATORS.has(key);
+    });
+    if (prevLowerBoundaryField && hasLowerLogicOp) {
+      return true;
+    } else if (hasLowerLogicOp !== '$eq') {
+      prevLowerBoundaryField = hasLowerLogicOp;
+    }
+    return false;
+  });
+  if (hasMoreThenOneLowerBoundaryField) {
+    return false;
+  }
+  var prevUpperBoundaryField;
+  var hasMoreThenOneUpperBoundaryField = index.find(function (fieldName) {
+    var operation = selector[fieldName];
+    if (!operation) {
+      return false;
+    }
+    var hasUpperLogicOp = Object.keys(operation).find(function (key) {
+      return UPPER_BOUND_LOGICAL_OPERATORS.has(key);
+    });
+    if (prevUpperBoundaryField && hasUpperLogicOp) {
+      return true;
+    } else if (hasUpperLogicOp !== '$eq') {
+      prevUpperBoundaryField = hasUpperLogicOp;
+    }
+    return false;
+  });
+  if (hasMoreThenOneUpperBoundaryField) {
+    return false;
+  }
+  return true;
 }
 export function getMatcherQueryOpts(operator, operatorValue) {
   switch (operator) {

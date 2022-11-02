@@ -4,7 +4,7 @@ export declare const basePrototype: {
     /**
      * TODO
      * instead of appliying the _this-hack
-     * we should make these accesors functions instead of getters.
+     * we should make these accessors functions instead of getters.
      */
     readonly _data: import("./types").DeepReadonlyObject<{}> | undefined;
     readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
@@ -47,7 +47,7 @@ export declare const basePrototype: {
     };
     /**
      * updates document
-     * @overwritten by plugin (optinal)
+     * @overwritten by plugin (optional)
      * @param updateObj mongodb-like syntax
      */
     update(_updateObj: UpdateQuery<any>): never;
@@ -82,7 +82,7 @@ export declare function createRxDocumentConstructor(proto?: {
     /**
      * TODO
      * instead of appliying the _this-hack
-     * we should make these accesors functions instead of getters.
+     * we should make these accessors functions instead of getters.
      */
     readonly _data: import("./types").DeepReadonlyObject<{}> | undefined;
     readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
@@ -125,7 +125,7 @@ export declare function createRxDocumentConstructor(proto?: {
     };
     /**
      * updates document
-     * @overwritten by plugin (optinal)
+     * @overwritten by plugin (optional)
      * @param updateObj mongodb-like syntax
      */
     update(_updateObj: UpdateQuery<any>): never;
@@ -161,7 +161,7 @@ export declare function createRxDocumentConstructor(proto?: {
         /**
          * TODO
          * instead of appliying the _this-hack
-         * we should make these accesors functions instead of getters.
+         * we should make these accessors functions instead of getters.
          */
         readonly _data: import("./types").DeepReadonlyObject<{}> | undefined;
         readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
@@ -204,7 +204,7 @@ export declare function createRxDocumentConstructor(proto?: {
         };
         /**
          * updates document
-         * @overwritten by plugin (optinal)
+         * @overwritten by plugin (optional)
          * @param updateObj mongodb-like syntax
          */
         update(_updateObj: UpdateQuery<any>): never;

@@ -1,9 +1,8 @@
 /**
- * this is the main entry-point for custom builds
- * it can be used as standalone but is also used in the batteries-included main-export
+ * this is the main entry-point
+ * for when the you call "import from 'rxdb'".
  */
 
-import './types/modules/graphql-client.d';
 import './types/modules/mocha.parallel.d';
 import './types/modules/modifiyjs.d';
 
@@ -153,6 +152,7 @@ export type {
     RxStorageDefaultCheckpoint,
     CategorizeBulkWriteRowsOutput,
     DexiePreparedQuery,
+    RxStorageCountResult,
 
     // conflict handling
     RxConflictHandler,
@@ -206,6 +206,5 @@ export type {
     WithAttachmentsData,
     RxTestStorage,
     ById,
-
     RxQueryPlan
 } from './types';

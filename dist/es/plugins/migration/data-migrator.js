@@ -229,7 +229,7 @@ export var DataMigrator = /*#__PURE__*/function () {
       handled: 0,
       // amount of handled docs
       success: 0,
-      // handled docs which successed
+      // handled docs which succeeded
       deleted: 0,
       // handled docs which got deleted
       percent: 0 // percentage
@@ -430,7 +430,7 @@ export function migrateDocumentData(oldCollection, docData) {
   mutateableDocData._attachments = attachmentsBefore;
   var nextVersion = oldCollection.version + 1;
 
-  // run the document throught migrationStrategies
+  // run the document through migrationStrategies
   var currentPromise = Promise.resolve(mutateableDocData);
   var _loop2 = function _loop2() {
     var version = nextVersion;

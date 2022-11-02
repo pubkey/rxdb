@@ -5,7 +5,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { getFromMapOrThrow, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM } from '../../util';
 import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
-import { boundGE, boundGT } from './binary-search-bounds';
+import { boundGE, boundGT, boundLE } from './binary-search-bounds';
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
 import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';
 export var RxStorageInstanceMemory = /*#__PURE__*/function () {
@@ -87,30 +87,35 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var skip = query.skip ? query.skip : 0;
     var limit = query.limit ? query.limit : Infinity;
     var skipPlusLimit = skip + limit;
-    var queryMatcher = RxStorageDexieStatics.getQueryMatcher(this.schema, preparedQuery);
-    var sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
+    var queryMatcher = false;
+    if (!queryPlan.selectorSatisfiedByIndex) {
+      queryMatcher = RxStorageDexieStatics.getQueryMatcher(this.schema, preparedQuery);
+    }
     var queryPlanFields = queryPlan.index;
     var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
     var index = ['_deleted'].concat(queryPlanFields);
     var lowerBound = queryPlan.startKeys;
     lowerBound = [false].concat(lowerBound);
-    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, index, lowerBound);
+    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, index, lowerBound, queryPlan.inclusiveStart);
     var upperBound = queryPlan.endKeys;
     upperBound = [false].concat(upperBound);
-    var upperBoundString = getStartIndexStringFromUpperBound(this.schema, index, upperBound);
+    var upperBoundString = getStartIndexStringFromUpperBound(this.schema, index, upperBound, queryPlan.inclusiveEnd);
     var indexName = getMemoryIndexName(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
     var indexOfLower = boundGE(docsWithIndex, {
       indexString: lowerBoundString
     }, compareDocsWithIndex);
+    var indexOfUpper = boundLE(docsWithIndex, {
+      indexString: upperBoundString
+    }, compareDocsWithIndex);
     var rows = [];
     var done = false;
     while (!done) {
       var currentDoc = docsWithIndex[indexOfLower];
-      if (!currentDoc || currentDoc.indexString > upperBoundString) {
+      if (!currentDoc || indexOfLower > indexOfUpper) {
         break;
       }
-      if (queryMatcher(currentDoc.doc)) {
+      if (!queryMatcher || queryMatcher(currentDoc.doc)) {
         rows.push(currentDoc.doc);
       }
       if (rows.length >= skipPlusLimit && !mustManuallyResort || indexOfLower >= docsWithIndex.length) {
@@ -119,6 +124,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       indexOfLower++;
     }
     if (mustManuallyResort) {
+      var sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
       rows = rows.sort(sortComparator);
     }
 
@@ -128,12 +134,25 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       documents: rows
     });
   };
+  _proto.count = function count(preparedQuery) {
+    try {
+      var _this4 = this;
+      return Promise.resolve(_this4.query(preparedQuery)).then(function (result) {
+        return {
+          count: result.documents.length,
+          mode: 'fast'
+        };
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
     var sinceId = checkpoint ? checkpoint.id : '';
     var index = ['_meta.lwt', this.primaryPath];
     var indexName = getMemoryIndexName(index);
-    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, ['_meta.lwt', this.primaryPath], [sinceLwt, sinceId]);
+    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, ['_meta.lwt', this.primaryPath], [sinceLwt, sinceId], false);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
     var indexOfLower = boundGT(docsWithIndex, {
       indexString: lowerBoundString
@@ -163,7 +182,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var index = ['_deleted', '_meta.lwt', this.primaryPath];
     var indexName = getMemoryIndexName(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, index, [true, 0, '']);
+    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, index, [true, 0, ''], false);
     var indexOfLower = boundGT(docsWithIndex, {
       indexString: lowerBoundString
     }, compareDocsWithIndex);
@@ -190,11 +209,11 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
   };
   _proto.remove = function remove() {
     try {
-      var _this4 = this;
-      ensureNotRemoved(_this4);
-      _this4.internals.removed = true;
-      _this4.storage.collectionStates["delete"](getMemoryCollectionKey(_this4.databaseName, _this4.collectionName));
-      return Promise.resolve(_this4.close()).then(function () {});
+      var _this6 = this;
+      ensureNotRemoved(_this6);
+      _this6.internals.removed = true;
+      _this6.storage.collectionStates["delete"](getMemoryCollectionKey(_this6.databaseName, _this6.collectionName));
+      return Promise.resolve(_this6.close()).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }

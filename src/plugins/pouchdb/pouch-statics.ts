@@ -30,7 +30,7 @@ import type {
     StringKeys
 } from '../../types';
 import { overwritable } from '../../overwritable';
-import { ensureNotFalsy, isMaybeReadonlyArray } from '../../util';
+import { ensureNotFalsy, flatClone, isMaybeReadonlyArray } from '../../util';
 
 export const RxStoragePouchStatics: RxStorageStatics = {
     getSortComparator<RxDocType>(
@@ -144,10 +144,13 @@ export function preparePouchDbQuery<RxDocType>(
     mutateableQuery: MangoQuery<RxDocType>
 ): PreparedQuery<RxDocType> {
     const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-    const query = mutateableQuery;
+    const query = flatClone(mutateableQuery);
+    if (query.selector) {
+        query.selector = flatClone(query.selector);
+    }
 
     /**
-     * because sort wont work on unused keys we have to workaround
+     * because sort won't work on unused keys we have to workaround
      * so we add the key to the selector if necessary
      * @link https://github.com/nolanlawson/pouchdb-find/issues/204
      */
@@ -249,8 +252,8 @@ export function preparePouchDbQuery<RxDocType>(
             }
         });
         const indexName = getPouchIndexDesignDocNameByIndex(indexArray);
-        delete mutateableQuery.index;
-        (mutateableQuery as any).use_index = indexName;
+        delete query.index;
+        (query as any).use_index = indexName;
     }
 
     query.selector = primarySwapPouchDbQuerySelector(query.selector, primaryKey);

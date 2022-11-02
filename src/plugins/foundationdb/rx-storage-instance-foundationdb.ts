@@ -12,6 +12,7 @@ import type {
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
+    RxStorageCountResult,
     RxStorageDefaultCheckpoint,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
@@ -21,6 +22,7 @@ import type {
 import type {
     FoundationDBDatabase,
     FoundationDBIndexMeta,
+    FoundationDBPreparedQuery,
     FoundationDBStorageInternals,
     RxStorageFoundationDB,
     RxStorageFoundationDBInstanceCreationOptions,
@@ -214,8 +216,22 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             return ret;
         });
     }
-    query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {
+    query(preparedQuery: FoundationDBPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
         return queryFoundationDB(this, preparedQuery);
+    }
+    async count(
+        preparedQuery: FoundationDBPreparedQuery<RxDocType>
+    ): Promise<RxStorageCountResult> {
+        /**
+         * At this point in time (end 2022), FoundationDB does not support
+         * range counts. So we have to run a normal query and use the result set length.
+         * @link https://github.com/apple/foundationdb/issues/5981
+         */
+        const result = await this.query(preparedQuery);
+        return {
+            count: result.documents.length,
+            mode: 'fast'
+        };
     }
     async getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
         const dbs = await this.internals.dbsPromise;
@@ -307,7 +323,8 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                  * because 1 is the minimum value for _meta.lwt
                  */
                 1
-            ]
+            ],
+            false
         );
         const upperBoundString = getStartIndexStringFromUpperBound(
             this.schema,
@@ -315,7 +332,8 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             [
                 true,
                 maxDeletionTime
-            ]
+            ],
+            true
         );
         let noMoreUndeleted: boolean = true;
         await dbs.root.doTransaction(async (tx: any) => {
@@ -372,7 +390,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         const dbs = await this.internals.dbsPromise;
         dbs.root.close();
 
-        // TODO shouldnt we close the index databases?
+        // TODO shouldn't we close the index databases?
         // Object.values(dbs.indexes).forEach(db => db.close());
     }
 }

@@ -60,7 +60,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
    * we have to ensure the primary key is always part
    * of the sort query.
    * Primary sorting is added as last sort parameter,
-   * similiar to how we add the primary key to indexes that do not have it.
+   * similar to how we add the primary key to indexes that do not have it.
    * 
    */
   if (!normalizedMangoQuery.sort) {
@@ -89,7 +89,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
           var hasLogical = false;
           if (typeof matcher === 'object' && matcher !== null) {
             hasLogical = !!Object.keys(matcher).find(function (operator) {
-              return (0, _queryPlanner.isLogicalOperator)(operator);
+              return _queryPlanner.LOGICAL_OPERATORS.has(operator);
             });
           } else {
             hasLogical = true;

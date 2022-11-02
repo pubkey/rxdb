@@ -184,7 +184,7 @@ export function getCRDTSchemaPart() {
       },
       hash: {
         type: 'string',
-        // set a minLength to not accidentially store an empty string
+        // set a minLength to not accidentally store an empty string
         minLength: 2
       }
     },
@@ -257,7 +257,7 @@ export function getCRDTConflictHandler(hashFunction, storageStatics, schema) {
   return conflictHandler;
 }
 export var RX_CRDT_CONTEXT = 'rx-crdt';
-export var RxDDcrdtPlugin = {
+export var RxDBcrdtPlugin = {
   name: 'crdt',
   rxdb: true,
   prototypes: {
@@ -337,7 +337,7 @@ export var RxDDcrdtPlugin = {
         /**
          * In dev-mode we have to ensure that all document writes
          * have the correct crdt state so that nothing is missed out
-         * or could accidentially do non-crdt writes to the document.
+         * or could accidentally do non-crdt writes to the document.
          */
         if (overwritable.isDevMode()) {
           var bulkWriteBefore = collection.storageInstance.bulkWrite.bind(collection.storageInstance);

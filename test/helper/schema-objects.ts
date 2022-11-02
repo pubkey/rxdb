@@ -19,11 +19,12 @@ export interface SimpleHumanDocumentType {
 
 export function human(
     passportId: string = randomString(12),
-    age: number = randomNumber(10, 50)
+    age: number = randomNumber(10, 50),
+    firstName: string = faker.name.firstName()
 ): HumanDocumentType {
     return {
         passportId: passportId,
-        firstName: faker.name.firstName(),
+        firstName,
         lastName: faker.name.lastName(),
         age
     };
@@ -341,20 +342,26 @@ export interface AverageSchemaDocumentType {
         deep2: string;
     }[];
 }
-export function averageSchema(): AverageSchemaDocumentType {
-    return {
-        id: randomString(12),
-        var1: randomString(12),
-        var2: randomNumber(100, 50000),
-        deep: {
-            deep1: randomString(5),
-            deep2: randomString(8)
+export function averageSchema(
+    partial: Partial<AverageSchemaDocumentType> = {}
+): AverageSchemaDocumentType {
+    return Object.assign(
+        {},
+        {
+            id: randomString(12),
+            var1: randomString(12),
+            var2: randomNumber(100, 50000),
+            deep: {
+                deep1: randomString(5),
+                deep2: randomString(8)
+            },
+            list: new Array(5).fill(0).map(() => ({
+                deep1: randomString(5),
+                deep2: randomString(8)
+            }))
         },
-        list: new Array(5).fill(0).map(() => ({
-            deep1: randomString(5),
-            deep2: randomString(8)
-        }))
-    };
+        partial
+    );
 }
 
 export interface PointDocumentType {

@@ -22,12 +22,12 @@ export declare class RxCouchDBReplicationState extends RxCouchDBReplicationState
     error$: Observable<any>;
 
     /**
-     * waits until the inital replication is done
+     * waits until the initial replication is done
      * and the client can be expected to have the same data as the server
      */
     awaitInitialReplication(): Promise<void>;
 
-    // can be used for debuging or custom event-handling
+    // can be used for debugging or custom event-handling
     // will be set some time after sync() is called
     _pouchEventEmitterObject: PouchSyncHandler | null;
 

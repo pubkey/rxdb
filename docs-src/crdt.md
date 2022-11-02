@@ -11,7 +11,7 @@ The [default conflict handler](./replication.md#conflict-handling) will always d
 
 
 With CRDTs (short for [Conflict-free replicated data type](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)), all document 
-writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the opertions in a deterministic way. Using CRDTs is an easy way to "magically" handle all conflict problems in your application by storing the deltas of writes together with the document data.
+writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the operations in a deterministic way. Using CRDTs is an easy way to "magically" handle all conflict problems in your application by storing the deltas of writes together with the document data.
 
 <p align="center">
   <img src="./files/crdt-conflict-free-replicated-data-type.svg" alt="CRDT Conflict-free replicated data type" width="300" />
@@ -265,10 +265,10 @@ When any instances makes a write to the document, it is required to update the C
 
 ## Why not automerge.js or yjs?
 
-There are already CRDT libraries out there that have been considered to be used with RxDB. The biggeste ones are [automerge](https://github.com/automerge/automerge) and [yjs](https://github.com/yjs/yjs). The decision was made to not use thoese but instead go for a more NoSQL way of designing the CRDT format because:
+There are already CRDT libraries out there that have been considered to be used with RxDB. The biggeste ones are [automerge](https://github.com/automerge/automerge) and [yjs](https://github.com/yjs/yjs). The decision was made to not use these but instead go for a more NoSQL way of designing the CRDT format because:
 
 - Users do not have to learn a new syntax but instead can use the NoSQL operations which they already know.
-- RxDB is often used to [replicate](./replication.md) data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on theses backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.
+- RxDB is often used to [replicate](./replication.md) data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on these backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.
 
 
 ## When to not use CRDTs

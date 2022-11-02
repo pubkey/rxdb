@@ -302,7 +302,7 @@ export async function preMigrateDocument<RxDocType>(
 export function postMigrateDocument(_action: any): Promise<void> {
     /**
      * No longer needed because
-     * we store the attachemnts data buffers directly in the document.
+     * we store the attachments data buffers directly in the document.
      */
     return PROMISE_RESOLVE_VOID;
 }

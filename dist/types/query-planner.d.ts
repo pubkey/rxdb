@@ -1,4 +1,4 @@
-import type { FilledMangoQuery, RxDocumentData, RxJsonSchema, RxQueryPlan, RxQueryPlanerOpts } from './types';
+import type { FilledMangoQuery, MangoQuerySelector, RxDocumentData, RxJsonSchema, RxQueryPlan, RxQueryPlanerOpts } from './types';
 export declare const INDEX_MAX: string;
 export declare const INDEX_MIN: number;
 /**
@@ -9,7 +9,10 @@ export declare const INDEX_MIN: number;
  * This is used in some storage like Memory, dexie.js and IndexedDB.
  */
 export declare function getQueryPlan<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: FilledMangoQuery<RxDocType>): RxQueryPlan;
-export declare function isLogicalOperator(operator: string): boolean;
+export declare const LOGICAL_OPERATORS: Set<string>;
+export declare const LOWER_BOUND_LOGICAL_OPERATORS: Set<string>;
+export declare const UPPER_BOUND_LOGICAL_OPERATORS: Set<string>;
+export declare function isSelectorSatisfiedByIndex(index: string[], selector: MangoQuerySelector): boolean;
 export declare function getMatcherQueryOpts(operator: string, operatorValue: any): Partial<RxQueryPlanerOpts>;
 /**
  * Returns a number that determines the quality of the query plan.

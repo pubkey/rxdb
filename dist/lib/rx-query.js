@@ -118,6 +118,16 @@ var RxQueryBase = /*#__PURE__*/function () {
    * @param newResultData json-docs that were received from pouchdb
    */
   _proto._setResultData = function _setResultData(newResultData) {
+    if (typeof newResultData === 'number') {
+      this._result = {
+        docsData: [],
+        docsDataMap: new Map(),
+        count: newResultData,
+        docs: [],
+        time: (0, _util.now)()
+      };
+      return;
+    }
     var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, newResultData);
 
     /**
@@ -136,6 +146,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     this._result = {
       docsData: docsData,
       docsDataMap: docsDataMap,
+      count: docsData.length,
       docs: docs,
       time: (0, _util.now)()
     };
@@ -149,6 +160,19 @@ var RxQueryBase = /*#__PURE__*/function () {
     var _this = this;
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
     this._lastExecStart = (0, _util.now)();
+    if (this.op === 'count') {
+      var preparedQuery = this.getPreparedQuery();
+      return this.collection.storageInstance.count(preparedQuery).then(function (result) {
+        if (result.mode === 'slow' && !_this.collection.database.allowSlowCount) {
+          throw (0, _rxError.newRxError)('QU14', {
+            collection: _this.collection,
+            queryObj: _this.mangoQuery
+          });
+        } else {
+          return result.count;
+        }
+      });
+    }
     var docsPromise = queryCollection(this);
     return docsPromise.then(function (docs) {
       _this._lastExecEnd = (0, _util.now)();
@@ -334,12 +358,14 @@ var RxQueryBase = /*#__PURE__*/function () {
          */
         (0, _operators.map)(function (result) {
           var useResult = (0, _util.ensureNotFalsy)(result);
-          if (_this3.op === 'findOne') {
+          if (_this3.op === 'count') {
+            return useResult.count;
+          } else if (_this3.op === 'findOne') {
             // findOne()-queries emit RxDocument or null
             return useResult.docs.length === 0 ? null : useResult.docs[0];
           } else {
             // find()-queries emit RxDocument[]
-            // Flat copy the array so it wont matter if the user modifies it.
+            // Flat copy the array so it won't matter if the user modifies it.
             return useResult.docs.slice(0);
           }
         }));
@@ -448,7 +474,7 @@ function __ensureEqual(rxQuery) {
   if (
   // db is closed
   rxQuery.collection.database.destroyed ||
-  // nothing happend since last run
+  // nothing happened since last run
   _isResultsInSync(rxQuery)) {
     return _util.PROMISE_RESOLVE_FALSE;
   }
@@ -470,14 +496,35 @@ function __ensureEqual(rxQuery) {
     } else {
       rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
       var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-      var eventReduceResult = (0, _eventReduce.calculateNewResults)(rxQuery, runChangeEvents);
-      if (eventReduceResult.runFullQueryAgain) {
-        // could not calculate the new results, execute must be done
-        mustReExec = true;
-      } else if (eventReduceResult.changed) {
-        // we got the new results, we do not have to re-execute, mustReExec stays false
-        ret = true; // true because results changed
-        rxQuery._setResultData(eventReduceResult.newResults);
+      if (rxQuery.op === 'count') {
+        // 'count' query
+        var previousCount = (0, _util.ensureNotFalsy)(rxQuery._result).count;
+        var newCount = previousCount;
+        runChangeEvents.forEach(function (cE) {
+          var didMatchBefore = cE.previousDocumentData && rxQuery.doesDocumentDataMatch(cE.previousDocumentData);
+          var doesMatchNow = rxQuery.doesDocumentDataMatch(cE.documentData);
+          if (!didMatchBefore && doesMatchNow) {
+            newCount++;
+          }
+          if (didMatchBefore && !doesMatchNow) {
+            newCount--;
+          }
+        });
+        if (newCount !== previousCount) {
+          ret = true; // true because results changed
+          rxQuery._setResultData(newCount);
+        }
+      } else {
+        // 'find' or 'findOne' query
+        var eventReduceResult = (0, _eventReduce.calculateNewResults)(rxQuery, runChangeEvents);
+        if (eventReduceResult.runFullQueryAgain) {
+          // could not calculate the new results, execute must be done
+          mustReExec = true;
+        } else if (eventReduceResult.changed) {
+          // we got the new results, we do not have to re-execute, mustReExec stays false
+          ret = true; // true because results changed
+          rxQuery._setResultData(eventReduceResult.newResults);
+        }
       }
     }
   }

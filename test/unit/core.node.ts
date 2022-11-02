@@ -1,6 +1,6 @@
 /**
- * this test checks if the core-module is useable without any plugins
- * this is run in a seperate node-process via plugin.test.js
+ * this test checks if the core-module is usable without any plugins
+ * this is run in a separate node-process via plugin.test.js
  */
 
 import assert from 'assert';

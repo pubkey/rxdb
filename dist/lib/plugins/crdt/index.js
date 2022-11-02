@@ -4,7 +4,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDDcrdtPlugin = exports.RX_CRDT_CONTEXT = void 0;
+exports.RxDBcrdtPlugin = exports.RX_CRDT_CONTEXT = void 0;
 exports.getCRDTConflictHandler = getCRDTConflictHandler;
 exports.getCRDTSchemaPart = getCRDTSchemaPart;
 exports.hashCRDTOperations = hashCRDTOperations;
@@ -201,7 +201,7 @@ function getCRDTSchemaPart() {
       },
       hash: {
         type: 'string',
-        // set a minLength to not accidentially store an empty string
+        // set a minLength to not accidentally store an empty string
         minLength: 2
       }
     },
@@ -275,7 +275,7 @@ function getCRDTConflictHandler(hashFunction, storageStatics, schema) {
 }
 var RX_CRDT_CONTEXT = 'rx-crdt';
 exports.RX_CRDT_CONTEXT = RX_CRDT_CONTEXT;
-var RxDDcrdtPlugin = {
+var RxDBcrdtPlugin = {
   name: 'crdt',
   rxdb: true,
   prototypes: {
@@ -355,7 +355,7 @@ var RxDDcrdtPlugin = {
         /**
          * In dev-mode we have to ensure that all document writes
          * have the correct crdt state so that nothing is missed out
-         * or could accidentially do non-crdt writes to the document.
+         * or could accidentally do non-crdt writes to the document.
          */
         if (_.overwritable.isDevMode()) {
           var bulkWriteBefore = collection.storageInstance.bulkWrite.bind(collection.storageInstance);
@@ -433,5 +433,5 @@ var RxDDcrdtPlugin = {
     }
   }
 };
-exports.RxDDcrdtPlugin = RxDDcrdtPlugin;
+exports.RxDBcrdtPlugin = RxDBcrdtPlugin;
 //# sourceMappingURL=index.js.map

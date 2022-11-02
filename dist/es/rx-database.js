@@ -122,6 +122,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     internalStore = arguments.length > 8 ? arguments[8] : undefined;
     var hashFunction = arguments.length > 9 ? arguments[9] : undefined;
     var cleanupPolicy = arguments.length > 10 ? arguments[10] : undefined;
+    var allowSlowCount = arguments.length > 11 ? arguments[11] : undefined;
     this.idleQueue = new IdleQueue();
     this._subs = [];
     this.startupErrors = [];
@@ -146,6 +147,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.internalStore = internalStore;
     this.hashFunction = hashFunction;
     this.cleanupPolicy = cleanupPolicy;
+    this.allowSlowCount = allowSlowCount;
     DB_COUNT++;
 
     /**
@@ -497,6 +499,8 @@ export function createRxDatabase(_ref3) {
     _ref3$options = _ref3.options,
     options = _ref3$options === void 0 ? {} : _ref3$options,
     cleanupPolicy = _ref3.cleanupPolicy,
+    _ref3$allowSlowCount = _ref3.allowSlowCount,
+    allowSlowCount = _ref3$allowSlowCount === void 0 ? false : _ref3$allowSlowCount,
     _ref3$localDocuments = _ref3.localDocuments,
     localDocuments = _ref3$localDocuments === void 0 ? false : _ref3$localDocuments,
     _ref3$hashFunction = _ref3.hashFunction,
@@ -528,7 +532,7 @@ export function createRxDatabase(_ref3) {
     USED_DATABASE_NAMES["delete"](name);
     throw err;
   }).then(function (storageInstance) {
-    var rxDatabase = new RxDatabaseBase(name, databaseInstanceToken, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, storageInstance, hashFunction, cleanupPolicy);
+    var rxDatabase = new RxDatabaseBase(name, databaseInstanceToken, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, storageInstance, hashFunction, cleanupPolicy, allowSlowCount);
     return runAsyncPluginHooks('createRxDatabase', {
       database: rxDatabase,
       creator: {

@@ -40,13 +40,11 @@ import {
 } from 'rxjs/operators';
 import { HumanDocumentType } from '../helper/schemas';
 
-let request: any;
 let SpawnServer: any;
 
 
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
-    request = require('request-promise');
     addPouchPlugin(require('pouchdb-adapter-http'));
 }
 
@@ -66,8 +64,8 @@ describe('replication-couchdb.test.ts', () => {
             path.pop();
             path.pop();
             path = path.join('/');
-            const res = await request(path);
-            const json = JSON.parse(res);
+            const res = await fetch(path);
+            const json = await res.json();
             assert.strictEqual(typeof json.uuid, 'string');
             server.close();
         });
@@ -77,8 +75,8 @@ describe('replication-couchdb.test.ts', () => {
             path.pop();
             path.pop();
             path = path.join('/');
-            const res = await request(path);
-            const json = JSON.parse(res);
+            const res = await fetch(path);
+            const json = await res.json();
             assert.strictEqual(typeof json.uuid, 'string');
             server.close();
         });
@@ -345,11 +343,11 @@ describe('replication-couchdb.test.ts', () => {
                     remote: c2,
                     waitForLeadership: false
                 });
-                const emited = [];
-                repState.change$.subscribe(cE => emited.push(cE));
-                await AsyncTestUtil.waitUntil(() => emited.length >= 1);
+                const emitted = [];
+                repState.change$.subscribe(cE => emitted.push(cE));
+                await AsyncTestUtil.waitUntil(() => emitted.length >= 1);
                 await c2.insert(schemaObjects.human());
-                await AsyncTestUtil.waitUntil(() => emited.length >= 2);
+                await AsyncTestUtil.waitUntil(() => emitted.length >= 2);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -363,9 +361,9 @@ describe('replication-couchdb.test.ts', () => {
                     remote: c2,
                     waitForLeadership: false
                 });
-                const emited: any[] = [];
-                repState.active$.subscribe(cE => emited.push(cE));
-                await AsyncTestUtil.waitUntil(() => emited.pop() === true);
+                const emitted: any[] = [];
+                repState.active$.subscribe(cE => emitted.push(cE));
+                await AsyncTestUtil.waitUntil(() => emitted.pop() === true);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -381,10 +379,10 @@ describe('replication-couchdb.test.ts', () => {
                     remote: server.url
                 });
 
-                const emited: any[] = [];
-                repState.alive$.subscribe(cE => emited.push(cE));
+                const emitted: any[] = [];
+                repState.alive$.subscribe(cE => emitted.push(cE));
 
-                assert.strictEqual(emited[emited.length - 1], false);
+                assert.strictEqual(emitted[emitted.length - 1], false);
 
                 c.database.destroy();
             });
@@ -396,18 +394,18 @@ describe('replication-couchdb.test.ts', () => {
                     remote: server.url
                 });
 
-                const emited: any[] = [];
-                repState.alive$.subscribe(cE => emited.push(cE));
-                await AsyncTestUtil.waitUntil(() => !!emited[emited.length - 1]);
+                const emitted: any[] = [];
+                repState.alive$.subscribe(cE => emitted.push(cE));
+                await AsyncTestUtil.waitUntil(() => !!emitted[emitted.length - 1]);
 
-                assert.strictEqual(emited[emited.length - 1], true);
+                assert.strictEqual(emitted[emitted.length - 1], true);
 
                 server.close(true);
                 const obj = schemaObjects.human();
                 await c.insert(obj);
 
-                await AsyncTestUtil.waitUntil(() => !emited[emited.length - 1]);
-                assert.strictEqual(emited[emited.length - 1], false);
+                await AsyncTestUtil.waitUntil(() => !emitted[emitted.length - 1]);
+                assert.strictEqual(emitted[emitted.length - 1], false);
 
                 c.database.destroy();
             });
@@ -442,10 +440,10 @@ describe('replication-couchdb.test.ts', () => {
                     }
                 });
 
-                const emited: any[] = [];
-                const sub = repState.complete$.subscribe(ev => emited.push(ev));
+                const emitted: any[] = [];
+                const sub = repState.complete$.subscribe(ev => emitted.push(ev));
                 await AsyncTestUtil.waitUntil(() => {
-                    const lastEv = emited[emited.length - 1];
+                    const lastEv = emitted[emitted.length - 1];
                     let ret = false;
                     try {
                         if (
@@ -469,11 +467,11 @@ describe('replication-couchdb.test.ts', () => {
                     remote: c2,
                     waitForLeadership: false
                 });
-                const emitedDocs: any[] = [];
-                repState.docs$.subscribe(doc => emitedDocs.push(doc));
+                const emittedDocs: any[] = [];
+                repState.docs$.subscribe(doc => emittedDocs.push(doc));
 
-                await AsyncTestUtil.waitUntil(() => emitedDocs.length === 10);
-                emitedDocs.forEach(doc => assert.ok(doc.firstName));
+                await AsyncTestUtil.waitUntil(() => emittedDocs.length === 10);
+                emittedDocs.forEach(doc => assert.ok(doc.firstName));
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -756,7 +754,7 @@ describe('replication-couchdb.test.ts', () => {
 
 
             await waitUntil(async () => {
-                // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
+                // query for all documents on db2-collection2 again (result is read from cache which doesn't contain replicated doc)
                 // collection2._queryCache.destroy();
                 const newDocs = await collection2.find().exec();
                 return newDocs.length === 1;

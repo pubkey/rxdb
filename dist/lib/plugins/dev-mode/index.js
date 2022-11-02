@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -38,8 +37,19 @@ Object.keys(_unallowedProperties).forEach(function (key) {
   });
 });
 var _checkQuery = require("./check-query");
+Object.keys(_checkQuery).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _checkQuery[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _checkQuery[key];
+    }
+  });
+});
 var _rxError = require("../../rx-error");
-var _deepFreeze = _interopRequireDefault(require("deep-freeze"));
+var _util = require("../../util");
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
@@ -51,7 +61,7 @@ function deepFreezeWhenDevMode(obj) {
   if (!obj || typeof obj === 'string' || typeof obj === 'number') {
     return obj;
   }
-  return (0, _deepFreeze["default"])(obj);
+  return (0, _util.deepFreeze)(obj);
 }
 var DEV_MODE_PLUGIN_NAME = 'dev-mode';
 var RxDBDevModePlugin = {

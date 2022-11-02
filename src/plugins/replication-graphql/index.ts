@@ -2,8 +2,6 @@
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with remote graphql endpoint
  */
-
-import GraphQLClient from 'graphql-client';
 import objectPath from 'object-path';
 import {
     ensureNotFalsy,
@@ -11,6 +9,7 @@ import {
 } from '../../util';
 
 import {
+    graphQLRequest,
     GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX
 } from './helper';
 
@@ -22,7 +21,9 @@ import type {
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow,
     GraphQLServerUrl,
-    RxReplicationPullStreamItem
+    RxReplicationPullStreamItem,
+    RxGraphQLReplicationQueryBuilderResponseObject,
+    RxGraphQLReplicationClientState
 } from '../../types';
 import {
     RxReplicationState,
@@ -40,10 +41,13 @@ import {
 } from './graphql-websocket';
 import { Subject } from 'rxjs';
 
+
+
+
 export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxReplicationState<RxDocType, CheckpointType> {
     constructor(
         public readonly url: GraphQLServerUrl,
-        public readonly clientState: { headers: any; client: any, credentials: string | undefined },
+        public readonly clientState: RxGraphQLReplicationClientState,
         public readonly replicationIdentifierHash: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly deletedField: string,
@@ -67,22 +71,23 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
 
     setHeaders(headers: { [k: string]: string }): void {
         this.clientState.headers = headers;
-        this.clientState.client = GraphQLClient({
-            url: this.url.http,
-            headers,
-            credentials: this.clientState.credentials
-        });
     }
 
-    setCredentials(credentials: string | undefined) {
+    setCredentials(credentials: RequestCredentials | undefined) {
         this.clientState.credentials = credentials
-        this.clientState.client = GraphQLClient({
-            url: this.url.http,
-            headers: this.clientState.headers,
-            credentials
-        });
+    }
+
+    graphQLRequest(
+        queryParams: RxGraphQLReplicationQueryBuilderResponseObject
+    ) {
+        return graphQLRequest(
+            ensureNotFalsy(this.url.http),
+            this.clientState,
+            queryParams
+        );
     }
 }
+
 
 export function syncGraphQL<RxDocType, CheckpointType>(
     this: RxCollection,
@@ -107,12 +112,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
      */
     const mutateableClientState = {
         headers,
-        credentials,
-        client: GraphQLClient({
-            url: url.http,
-            headers,
-            credentials
-        })
+        credentials
     };
 
 
@@ -126,7 +126,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 lastPulledCheckpoint: CheckpointType
             ) {
                 const pullGraphQL = await pull.queryBuilder(lastPulledCheckpoint, pullBatchSize);
-                const result = await mutateableClientState.client.query(pullGraphQL.query, pullGraphQL.variables);
+                const result = await graphqlReplicationState.graphQLRequest(pullGraphQL);
                 if (result.errors) {
                     throw result.errors;
                 }
@@ -162,7 +162,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
                 const pushObj = await push.queryBuilder(rows);
-                const result = await mutateableClientState.client.query(pushObj.query, pushObj.variables);
+                const result = await graphqlReplicationState.graphQLRequest(pushObj);
 
                 if (result.errors) {
                     throw result.errors;

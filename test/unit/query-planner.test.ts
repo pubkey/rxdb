@@ -11,7 +11,9 @@ import {
     RxJsonSchema,
     getQueryPlan,
     normalizeMangoQuery,
-    INDEX_MAX
+    INDEX_MAX,
+    lastOfArray,
+    INDEX_MIN
 } from '../../';
 
 
@@ -127,6 +129,34 @@ config.parallel('query-planner.test.js', () => {
             assert.strictEqual(queryPlan.endKeys[0], INDEX_MAX);
             assert.ok(queryPlan.inclusiveStart);
         });
+        it('should have the correct start- and end keys when inclusiveStart and inclusiveEnd are false', () => {
+            const schema = getHumanSchemaWithIndexes([['age']]);
+            const query = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {
+                        age: {
+                            $gt: 20,
+                            $lt: 80
+                        }
+                    },
+                    index: ['age']
+                }
+            );
+            const queryPlan = getQueryPlan<HumanDocumentType>(
+                schema,
+                query
+            );
+            assert.deepStrictEqual(queryPlan.index, ['age', 'passportId']);
+            assert.strictEqual(queryPlan.startKeys[0], 20);
+            assert.strictEqual(queryPlan.endKeys[0], 80);
+
+            assert.strictEqual(queryPlan.inclusiveStart, false);
+            assert.strictEqual(queryPlan.inclusiveEnd, false);
+
+            assert.strictEqual(lastOfArray(queryPlan.startKeys), INDEX_MAX);
+            assert.strictEqual(lastOfArray(queryPlan.endKeys), INDEX_MIN);
+        });
         it('should use the best plan for an equals comparison', () => {
             const schema = getHumanSchemaWithIndexes([]);
             const query = normalizeMangoQuery<HumanDocumentType>(
@@ -144,6 +174,67 @@ config.parallel('query-planner.test.js', () => {
             assert.deepStrictEqual(queryPlan.index, ['passportId']);
             assert.deepStrictEqual(queryPlan.startKeys[0], 'asdf');
             assert.deepStrictEqual(queryPlan.endKeys[0], 'asdf');
+        });
+    });
+    describe('.isSelectorSatisfiedByIndex()', () => {
+        const schema = getHumanSchemaWithIndexes([['age']]);
+        it('should be true if satisfied', () => {
+            const query = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {
+                        age: {
+                            $gt: 10,
+                            $lt: 100
+                        }
+                    }
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
+            assert.ok(queryPlan.selectorSatisfiedByIndex);
+        });
+        it('should be false if non logic operator is used', () => {
+            const query = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {
+                        age: {
+                            $gt: 10,
+                            $lt: 100,
+                            $elemMatch: {
+                                foo: 'bar'
+                            }
+                        }
+                    }
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
+            assert.strictEqual(queryPlan.selectorSatisfiedByIndex, false);
+        });
+        it('should be false if non-index field is queried operator is used', () => {
+            const query = normalizeMangoQuery<HumanDocumentType>(
+                schema,
+                {
+                    selector: {
+                        age: {
+                            $gt: 10
+                        },
+                        lastName: 'foo'
+                    },
+                    index: ['age']
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
+            assert.strictEqual(queryPlan.selectorSatisfiedByIndex, false);
         });
     });
 
@@ -207,7 +298,7 @@ config.parallel('query-planner.test.js', () => {
             );
             assert.deepStrictEqual(queryPlan.index, ['age', 'firstName', 'passportId']);
         });
-        it('should prefer the index that matches the sort order, if selector for both fiels is used', () => {
+        it('should prefer the index that matches the sort order, if selector for both fields is used', () => {
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],
                 ['age', 'firstName']

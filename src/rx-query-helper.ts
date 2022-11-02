@@ -1,4 +1,4 @@
-import { isLogicalOperator } from './query-planner';
+import { LOGICAL_OPERATORS } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     FilledMangoQuery,
@@ -70,7 +70,7 @@ export function normalizeMangoQuery<RxDocType>(
      * we have to ensure the primary key is always part
      * of the sort query.
      * Primary sorting is added as last sort parameter,
-     * similiar to how we add the primary key to indexes that do not have it.
+     * similar to how we add the primary key to indexes that do not have it.
      * 
      */
     if (!normalizedMangoQuery.sort) {
@@ -93,7 +93,7 @@ export function normalizeMangoQuery<RxDocType>(
                 Object.entries(normalizedMangoQuery.selector).forEach(([field, matcher]) => {
                     let hasLogical = false;
                     if (typeof matcher === 'object' && matcher !== null) {
-                        hasLogical = !!Object.keys(matcher).find(operator => isLogicalOperator(operator));
+                        hasLogical = !!Object.keys(matcher).find(operator => LOGICAL_OPERATORS.has(operator));
                     } else {
                         hasLogical = true;
                     }

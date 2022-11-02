@@ -23,14 +23,14 @@ import {
     flatCloneDocWithMeta,
     ById,
     stackCheckpoints,
-    defaultHashFunction
+    defaultHashFunction,
+    deepFreeze
 } from '../../';
 import Ajv from 'ajv';
 import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression';
 import * as schemas from '../helper/schemas';
-
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import {
     clone,
@@ -197,7 +197,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 await Promise.all(instances.map(instance => instance.close()));
             });
             /**
-             * This test ensures that people do not accidentially set
+             * This test ensures that people do not accidentally set
              * keyCompression: true in the schema but then forget to use
              * the key-compression RxStorage wrapper.
              */
@@ -222,7 +222,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.ok(hasThrown);
             });
             /**
-             * This test ensures that people do not accidentially set
+             * This test ensures that people do not accidentally set
              * encrypted stuff in the schema but then forget to use
              * the encryption RxStorage wrapper.
              */
@@ -924,6 +924,42 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 storageInstance.close();
             });
         });
+        describe('.prepareQuery()', () => {
+            it('must not crash', () => {
+                const query: FilledMangoQuery<any> = {
+                    selector: {
+                        value: {
+                            $gt: ''
+                        }
+                    },
+                    limit: 1000,
+                    sort: [{ value: 'asc' }],
+                    skip: 0
+                };
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                    getTestDataSchema(),
+                    query
+                );
+                assert.ok(preparedQuery);
+            });
+            it('must not mutate the input', () => {
+                const query: FilledMangoQuery<any> = {
+                    selector: {
+                        value: {
+                            $gt: ''
+                        }
+                    },
+                    limit: 1000,
+                    sort: [{ value: 'asc' }],
+                    skip: 0
+                };
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                    deepFreeze(getTestDataSchema()),
+                    deepFreeze(query)
+                );
+                assert.ok(preparedQuery);
+            });
+        });
         describe('.getSortComparator()', () => {
             it('should sort in the correct order', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{
@@ -1378,7 +1414,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     indexes: [
                         /**
-                         * RxDB wil always append the primaryKey to an index
+                         * RxDB will always append the primaryKey to an index
                          * if the primaryKey was not used in the index before.
                          * This ensures we have a deterministic sorting when querying documents
                          * from that index.
@@ -1584,6 +1620,64 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
                 const results = await storageInstance.query(preparedQuery);
                 assert.strictEqual(results.documents.length, amount);
+
+                storageInstance.close();
+            });
+        });
+        describe('.count()', () => {
+            it('should count the correct amount', async () => {
+                const schema = getTestDataSchema();
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
+                const preparedQueryAll = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+                    schema,
+                    {
+                        selector: {},
+                        sort: [
+                            { key: 'asc' }
+                        ],
+                        skip: 0
+                    }
+                );
+                async function ensureCountIs(nr: number) {
+                    const result = await storageInstance.count(preparedQueryAll);
+                    assert.strictEqual(result.count, nr);
+                }
+                await ensureCountIs(0);
+
+
+                await storageInstance.bulkWrite([{ document: getWriteData() }], testContext);
+                await ensureCountIs(1);
+
+                const writeData = getWriteData();
+                const insertResult = await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                await ensureCountIs(2);
+
+
+                // DELETE
+                const previous = getFromObjectOrThrow(insertResult.success, writeData.key);
+                await storageInstance.bulkWrite(
+                    [{
+                        previous,
+                        document: Object.assign({}, writeData, {
+                            _rev: EXAMPLE_REVISION_2,
+                            _deleted: true,
+                            _meta: {
+                                lwt: now()
+                            }
+                        })
+                    }],
+                    testContext
+                );
+                await ensureCountIs(1);
 
                 storageInstance.close();
             });
@@ -1931,7 +2025,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
-            it('should be able to correctly itterate over the checkpoints', async () => {
+            it('should be able to correctly iterate over the checkpoints', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),

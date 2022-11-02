@@ -5,9 +5,10 @@ import { checkMigrationStrategies } from './check-migration-strategies';
 import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowed-properties';
 import { checkMangoQuery, checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
+import { deepFreeze } from '../../util';
 export * from './check-schema';
 export * from './unallowed-properties';
-import deepFreeze from 'deep-freeze';
+export * from './check-query';
 
 /**
  * Deep freezes and object when in dev-mode.

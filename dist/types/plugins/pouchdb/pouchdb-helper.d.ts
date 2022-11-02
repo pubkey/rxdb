@@ -57,7 +57,7 @@ export declare function getEventKey(pouchDBInstance: PouchDBInstance, primary: s
 export declare function pouchChangeRowToChangeEvent<DocumentData>(primaryKey: StringKeys<DocumentData>, pouchDoc: any): ChangeEvent<RxDocumentData<DocumentData>>;
 export declare function pouchChangeRowToChangeStreamEvent<DocumentData>(primaryKey: StringKeys<DocumentData>, pouchRow: PouchChangeRow): ChangeStreamEvent<DocumentData>;
 /**
- * Runs a primary swap with transform all custom primaryKey occurences
+ * Runs a primary swap with transform all custom primaryKey occurrences
  * into '_id'
  * @recursive
  */

@@ -12,6 +12,7 @@ import {
 } from './rx-storage';
 import type {
     DeepReadonly,
+    FilledMangoQuery,
     RxDatabase,
     RxDatabaseCreator,
     RxDocument,
@@ -34,7 +35,7 @@ export type RxPluginPreAddRxPluginArgs = {
 
 export type RxPluginPrePrepareQueryArgs = {
     rxQuery: RxQuery<any>;
-    mangoQuery: MangoQuery<any>;
+    mangoQuery: FilledMangoQuery<any>;
 };
 
 
@@ -72,7 +73,7 @@ export interface RxPlugin {
     readonly rxdb: true;
 
     /**
-     * Init function where dependend plugins could be added.
+     * Init function where dependent plugins could be added.
      * (optional)
      */
     init?(): any;

@@ -95,7 +95,7 @@ export class DataMigrator {
             done: false, // true if finished
             total: 0, // will be the doc-count
             handled: 0, // amount of handled docs
-            success: 0, // handled docs which successed
+            success: 0, // handled docs which succeeded
             deleted: 0, // handled docs which got deleted
             percent: 0 // percentage
         };
@@ -397,7 +397,7 @@ export function migrateDocumentData(
 
     let nextVersion = oldCollection.version + 1;
 
-    // run the document throught migrationStrategies
+    // run the document through migrationStrategies
     let currentPromise = Promise.resolve(mutateableDocData);
     while (nextVersion <= oldCollection.newestCollection.schema.version) {
         const version = nextVersion;

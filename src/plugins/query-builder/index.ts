@@ -6,6 +6,7 @@ import {
 import type { RxPlugin, RxQuery } from '../../types';
 import { RxQueryBase, tunnelQueryCache } from '../../rx-query';
 import { clone } from '../../util';
+import { runPluginHooks } from '../../hooks';
 
 // if the query-builder plugin is used, we have to save its last path
 const RXQUERY_OTHER_FLAG = 'queryBuilderPath';
@@ -23,11 +24,23 @@ export function runBuildingStep<RxDocumentType, RxQueryResult>(
     (queryBuilder as any)[functionName](value); // run
 
     const queryBuilderJson = queryBuilder.toJSON();
+
+
+    runPluginHooks('preCreateRxQuery', {
+        op: rxQuery.op,
+        queryObj: queryBuilderJson.query,
+        collection: rxQuery.collection
+    });
+
+
     const newQuery = new RxQueryBase(
         rxQuery.op,
         queryBuilderJson.query,
         rxQuery.collection
     ) as RxQuery;
+
+
+
     if (queryBuilderJson.path) {
         newQuery.other[RXQUERY_OTHER_FLAG] = queryBuilderJson.path;
     }

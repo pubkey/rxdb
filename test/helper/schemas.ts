@@ -54,7 +54,8 @@ export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
             description: 'age in years',
             type: 'integer',
             minimum: 0,
-            maximum: 150
+            maximum: 150,
+            multipleOf: 1
         }
     },
     required: ['firstName', 'lastName', 'passportId'],

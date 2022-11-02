@@ -124,6 +124,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         cleanup: this.cleanup.bind(this),
         close: this.close.bind(this),
         query: this.query.bind(this),
+        count: this.count.bind(this),
         findDocumentsById: this.findDocumentsById.bind(this),
         collectionName: this.collectionName,
         databaseName: this.databaseName,
@@ -257,25 +258,38 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
+  _proto.count = function count(preparedQuery) {
+    try {
+      var _this9 = this;
+      return Promise.resolve(_this9.query(preparedQuery)).then(function (result) {
+        return {
+          count: result.documents.length,
+          mode: 'fast'
+        };
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
   _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
     throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
   };
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
-      var _this9 = this;
-      return Promise.resolve(mustUseLocalState(_this9)).then(function (localState) {
+      var _this11 = this;
+      return Promise.resolve(mustUseLocalState(_this11)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this9, 'getChangedDocumentsSince', [limit, checkpoint]);
+          return requestRemoteInstance(_this11, 'getChangedDocumentsSince', [limit, checkpoint]);
         }
         var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         var query = localState.collection.chain().find({
           '_meta.lwt': {
             $gte: sinceLwt
           }
-        }).sort(getSortDocumentsByLastWriteTimeComparator(_this9.primaryPath));
+        }).sort(getSortDocumentsByLastWriteTimeComparator(_this11.primaryPath));
         var changedDocs = query.data();
         var first = changedDocs[0];
-        if (checkpoint && first && first[_this9.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
+        if (checkpoint && first && first[_this11.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
           changedDocs.shift();
         }
         changedDocs = changedDocs.slice(0, limit);
@@ -285,7 +299,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
             return stripLokiKey(docData);
           }),
           checkpoint: lastDoc ? {
-            id: lastDoc[_this9.primaryPath],
+            id: lastDoc[_this11.primaryPath],
             lwt: lastDoc._meta.lwt
           } : checkpoint ? checkpoint : {
             id: '',
@@ -302,10 +316,10 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     try {
-      var _this11 = this;
-      return Promise.resolve(mustUseLocalState(_this11)).then(function (localState) {
+      var _this13 = this;
+      return Promise.resolve(mustUseLocalState(_this13)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this11, 'cleanup', [minimumDeletedTime]);
+          return requestRemoteInstance(_this13, 'cleanup', [minimumDeletedTime]);
         }
         var deleteAmountPerRun = 10;
         var maxDeletionTime = now() - minimumDeletedTime;
@@ -328,16 +342,16 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.close = function close() {
     try {
-      var _this13 = this;
-      _this13.closed = true;
-      _this13.changes$.complete();
-      OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this13);
+      var _this15 = this;
+      _this15.closed = true;
+      _this15.changes$.complete();
+      OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this15);
       var _temp2 = function () {
-        if (_this13.internals.localState) {
-          return Promise.resolve(_this13.internals.localState).then(function (localState) {
-            return Promise.resolve(getLokiDatabase(_this13.databaseName, _this13.databaseSettings)).then(function (dbState) {
+        if (_this15.internals.localState) {
+          return Promise.resolve(_this15.internals.localState).then(function (localState) {
+            return Promise.resolve(getLokiDatabase(_this15.databaseName, _this15.databaseSettings)).then(function (dbState) {
               return Promise.resolve(dbState.saveQueue.run()).then(function () {
-                return Promise.resolve(closeLokiCollections(_this13.databaseName, [localState.collection])).then(function () {});
+                return Promise.resolve(closeLokiCollections(_this15.databaseName, [localState.collection])).then(function () {});
               });
             });
           });
@@ -350,14 +364,14 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.remove = function remove() {
     try {
-      var _this15 = this;
-      return Promise.resolve(mustUseLocalState(_this15)).then(function (localState) {
+      var _this17 = this;
+      return Promise.resolve(mustUseLocalState(_this17)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this15, 'remove', []);
+          return requestRemoteInstance(_this17, 'remove', []);
         }
         localState.databaseState.database.removeCollection(localState.collection.name);
         return Promise.resolve(localState.databaseState.saveQueue.run()).then(function () {
-          return _this15.close();
+          return _this17.close();
         });
       });
     } catch (e) {

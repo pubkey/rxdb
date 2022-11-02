@@ -2,7 +2,7 @@
  * For the ORM capabilities,
  * we have to merge the document prototype
  * with the ORM functions and the data
- * We do this itterating over the properties and
+ * We do this iterating over the properties and
  * adding them to a new object.
  * In the future we should do this by chaining the __proto__ objects
  */

@@ -33,12 +33,12 @@ function checkMigrationStrategies(schema, migrationStrategies) {
       v: vNr,
       s: migrationStrategies[vNr + 1]
     };
-  }).filter(function (strat) {
-    return typeof strat.s !== 'function';
-  }).forEach(function (strat) {
+  }).filter(function (strategy) {
+    return typeof strategy.s !== 'function';
+  }).forEach(function (strategy) {
     throw (0, _rxError.newRxTypeError)('COL13', {
-      version: strat.v,
-      type: typeof strat,
+      version: strategy.v,
+      type: typeof strategy,
       schema: schema
     });
   });

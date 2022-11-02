@@ -36,7 +36,7 @@ config.parallel('query-builder.test.js', () => {
             const initialJson = builder.toJSON();
             assert.deepStrictEqual(startQuery, initialJson.query);
 
-            // check builded json
+            // check built json
             const builder2 = createQueryBuilder();
             builder2
                 .where('age').gt(4)
@@ -44,8 +44,8 @@ config.parallel('query-builder.test.js', () => {
                 .skip(startQuery.skip as number)
                 .limit(startQuery.limit as number)
                 .sort({ name: 'asc', lastname: 'desc' });
-            const buildedJson = builder2.toJSON();
-            assert.deepStrictEqual(startQuery, buildedJson.query);
+            const builtJson = builder2.toJSON();
+            assert.deepStrictEqual(startQuery, builtJson.query);
         });
         it('should work with only the selector', () => {
             const startQuery: MangoQuery = {
@@ -63,13 +63,13 @@ config.parallel('query-builder.test.js', () => {
             const initialJson = builder.toJSON();
             assert.deepStrictEqual(startQuery, initialJson.query);
 
-            // check builded json
+            // check built json
             const builder2 = createQueryBuilder();
             builder2
                 .where('age').gt(5)
                 .where('name').ne('alice');
-            const buildedJson = builder2.toJSON();
-            assert.deepStrictEqual(startQuery, buildedJson.query);
+            const builtJson = builder2.toJSON();
+            assert.deepStrictEqual(startQuery, builtJson.query);
         });
         it('should have path', () => {
             const path = 'foobar';
@@ -78,8 +78,8 @@ config.parallel('query-builder.test.js', () => {
                 .where('age').gt(6)
                 .where('name').ne('alice')
                 .where(path);
-            const buildedJson = builder2.toJSON();
-            assert.strictEqual(buildedJson.path, path);
+            const builtJson = builder2.toJSON();
+            assert.strictEqual(builtJson.path, path);
         });
         it('should work with big equal number', () => {
             const startQuery: MangoQuery = {
@@ -95,14 +95,14 @@ config.parallel('query-builder.test.js', () => {
             const initialJson = builder.toJSON();
             assert.deepStrictEqual(startQuery, initialJson.query);
 
-            // check builded json
+            // check built json
             const builder2 = createQueryBuilder();
             builder2
                 .where('age')
                 .gt(-9999999999999999999999999999)
                 .sort('age');
-            const buildedJson = builder2.toJSON();
-            assert.deepStrictEqual(startQuery, buildedJson.query);
+            const builtJson = builder2.toJSON();
+            assert.deepStrictEqual(startQuery, builtJson.query);
         });
 
     });

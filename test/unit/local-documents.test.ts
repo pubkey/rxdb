@@ -487,7 +487,7 @@ config.parallel('local-documents.test.js', () => {
              * was emitted. Otherwise we might miss the initial emit
              * because creating the db2 can take a long time
              * on some storages. So not awaiting here would make the test
-             * timing dependend.
+             * timing dependent.
              */
             await waitUntil(() => emitted.length === 1);
 

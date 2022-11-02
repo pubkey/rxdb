@@ -9,6 +9,24 @@
 
 <!-- RELEASE BELOW -->
 
+### 13.8.2 (1 November 2022)
+
+- UPDATE `fake-indexeddb` to version `4.0.0`
+- REFACTOR use `webpack` instead of `browserify` in karma tests.
+- REMOVE `graphql-client` dependency [#3497](https://github.com/pubkey/rxdb/pull/3497)
+
+### 13.8.1 (1 November 2022)
+
+- FIX wrong query results in some cases with many operators.
+- REMOVE `deep-freeze` npm dependency because it has no author.
+
+### 13.8.0 (31 October 2022)
+
+- Added [RxCollection.count()](https://rxdb.info/rx-query.html#count) queries. [#4096](https://github.com/pubkey/rxdb/pull/4096)
+- REFACTOR index boundary usage for better performance.
+- FIX critical bug in query correctness. **IMPORTANT:** If you use the RxStorage [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html) or [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html), you have to rebuild the indexes by increasing your schema version and running a migration. [#4098](https://github.com/pubkey/rxdb/pull/4098)
+- FIX Typo in CRDT Plugin: `RxDDcrdtPlugin` is now `RxDBcrdtPlugin` [#4094](https://github.com/pubkey/rxdb/pull/4094) Thanks [@jwallet](https://github.com/jwallet)
+
 ### 13.7.0 (24 October 2022)
 
 - ADD [CRDT Plugin](./docs-src/crdt.md)

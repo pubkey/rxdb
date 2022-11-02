@@ -53,15 +53,14 @@ const configuration = {
     basePath: '',
     frameworks: [
         'mocha',
-        'browserify',
+        'webpack',
         'detectBrowsers'
     ],
-    browserify: {
-        debug: true,
-        insertGlobalVars: {
-            Buffer: (file) => file.includes('node_modules') ? 'require("buffer").Buffer' : undefined,
-            'Buffer.isBuffer': undefined
-        }
+    webpack: require('./karma.webpack.conf'),
+    // Source files that you wanna generate coverage for.
+    // Do not include tests or libraries (these files will be instrumented by Istanbul)
+    preprocessors: {
+        '../test_tmp/unit.test.js': ['webpack', 'sourcemap']
     },
     files: [
         '../test_tmp/unit.test.js'
@@ -97,22 +96,16 @@ const configuration = {
     // Karma plugins loaded
     plugins: [
         'karma-mocha',
-        'karma-browserify',
+        'karma-webpack',
         'karma-chrome-launcher',
         'karma-safari-launcher',
         'karma-firefox-launcher',
         'karma-ie-launcher',
         'karma-opera-launcher',
         'karma-detect-browsers',
-        'karma-spec-reporter'
+        'karma-spec-reporter',
+        'karma-sourcemap-loader'
     ],
-
-    // Source files that you wanna generate coverage for.
-    // Do not include tests or libraries (these files will be instrumented by Istanbul)
-    preprocessors: {
-        '../test_tmp/unit.test.js': ['browserify']
-    },
-
     client: {
         mocha: {
             bail: true,

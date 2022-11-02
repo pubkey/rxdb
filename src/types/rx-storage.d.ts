@@ -179,7 +179,7 @@ export type RxStorageBulkWriteError<RxDocType> = {
 export type RxStorageBulkWriteResponse<RxDocType> = {
     /**
      * A map that is indexed by the documentId
-     * contains all succeded writes.
+     * contains all succeeded writes.
      */
     success: RxDocumentDataById<RxDocType>;
 
@@ -199,6 +199,17 @@ export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
 export type RxStorageQueryResult<RxDocType> = {
     // the found documents, sort order is important.
     documents: RxDocumentData<RxDocType>[];
+}
+
+export type RxStorageCountResult = {
+    count: number;
+    /**
+     * Returns the mode which was used by the storage
+     * to count the documents.
+     * If this returns 'slow', RxDB will throw by default
+     * if 'allowSlowCount' is not set.
+     */
+    mode: 'fast' | 'slow';
 }
 
 export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> = {
@@ -253,7 +264,7 @@ export type ChangeStreamOptions = {
 /**
  * In the past we handles each RxChangeEvent by its own.
  * But it has been shown that this take way more performance then needed,
- * especially when the events get transfered over a data layer
+ * especially when the events get transferred over a data layer
  * like with WebWorkers or the BroadcastChannel.
  * So we now process events as bulks internally.
  */

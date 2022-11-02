@@ -166,8 +166,10 @@ var queryFoundationDB = function queryFoundationDB(instance, preparedQuery) {
     var skipPlusLimit = skip + limit;
     var queryPlanFields = queryPlan.index;
     var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
-    var queryMatcher = _dexie.RxStorageDexieStatics.getQueryMatcher(instance.schema, preparedQuery);
-    var sortComparator = _dexie.RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
+    var queryMatcher = false;
+    if (!queryPlan.selectorSatisfiedByIndex) {
+      queryMatcher = _dexie.RxStorageDexieStatics.getQueryMatcher(instance.schema, preparedQuery);
+    }
     return Promise.resolve(instance.internals.dbsPromise).then(function (dbs) {
       var indexForName = queryPlanFields.slice(0);
       indexForName.unshift('_deleted');
@@ -175,10 +177,10 @@ var queryFoundationDB = function queryFoundationDB(instance, preparedQuery) {
       var indexDB = (0, _util.ensureNotFalsy)(dbs.indexes[indexName]).db;
       var lowerBound = queryPlan.startKeys;
       lowerBound = [false].concat(lowerBound);
-      var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(instance.schema, indexForName, lowerBound);
+      var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(instance.schema, indexForName, lowerBound, queryPlan.inclusiveStart);
       var upperBound = queryPlan.endKeys;
       upperBound = [false].concat(upperBound);
-      var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(instance.schema, indexForName, upperBound);
+      var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(instance.schema, indexForName, upperBound, queryPlan.inclusiveEnd);
       return Promise.resolve(dbs.root.doTransaction(function (tx) {
         try {
           var _interrupt2 = false;
@@ -208,7 +210,7 @@ var queryFoundationDB = function queryFoundationDB(instance, preparedQuery) {
               }))).then(function (docsData) {
                 docsData.forEach(function (docData) {
                   if (!done) {
-                    if (queryMatcher(docData)) {
+                    if (!queryMatcher || queryMatcher(docData)) {
                       innerResult.push(docData);
                     }
                   }
@@ -228,6 +230,7 @@ var queryFoundationDB = function queryFoundationDB(instance, preparedQuery) {
         }
       })).then(function (result) {
         if (mustManuallyResort) {
+          var sortComparator = _dexie.RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
           result = result.sort(sortComparator);
         }
 

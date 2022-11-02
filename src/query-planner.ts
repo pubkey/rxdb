@@ -1,6 +1,7 @@
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     FilledMangoQuery,
+    MangoQuerySelector,
     RxDocumentData,
     RxJsonSchema,
     RxQueryPlan,
@@ -44,29 +45,33 @@ export function getQueryPlan<RxDocType>(
     let currentBestQueryPlan: RxQueryPlan | undefined;
 
     indexes.forEach((index) => {
+        let inclusiveEnd = true;
+        let inclusiveStart = true;
         const opts: RxQueryPlanerOpts[] = index.map(indexField => {
             const matcher = selector[indexField];
             const operators = matcher ? Object.keys(matcher) : [];
+
+            let matcherOpts: RxQueryPlanerOpts = {} as any;
+
             if (
                 !matcher ||
                 !operators.length
             ) {
-                return {
-                    startKey: INDEX_MIN,
-                    endKey: INDEX_MAX,
+                matcherOpts = {
+                    startKey: inclusiveStart ? INDEX_MIN : INDEX_MAX,
+                    endKey: inclusiveEnd ? INDEX_MAX : INDEX_MIN,
                     inclusiveStart: true,
                     inclusiveEnd: true
                 };
+            } else {
+                operators.forEach(operator => {
+                    if (LOGICAL_OPERATORS.has(operator)) {
+                        const operatorValue = matcher[operator];
+                        const partialOpts = getMatcherQueryOpts(operator, operatorValue);
+                        matcherOpts = Object.assign(matcherOpts, partialOpts);
+                    }
+                });
             }
-
-            let matcherOpts: RxQueryPlanerOpts = {} as any;
-            operators.forEach(operator => {
-                if (isLogicalOperator(operator)) {
-                    const operatorValue = matcher[operator];
-                    const partialOpts = getMatcherQueryOpts(operator, operatorValue);
-                    matcherOpts = Object.assign(matcherOpts, partialOpts);
-                }
-            });
 
             // fill missing attributes
             if (typeof matcherOpts.startKey === 'undefined') {
@@ -82,6 +87,14 @@ export function getQueryPlan<RxDocType>(
                 matcherOpts.inclusiveEnd = true;
             }
 
+
+            if (inclusiveStart && !matcherOpts.inclusiveStart) {
+                inclusiveStart = false;
+            }
+            if (inclusiveEnd && !matcherOpts.inclusiveEnd) {
+                inclusiveEnd = false;
+            }
+
             return matcherOpts;
         });
 
@@ -89,9 +102,10 @@ export function getQueryPlan<RxDocType>(
             index,
             startKeys: opts.map(opt => opt.startKey),
             endKeys: opts.map(opt => opt.endKey),
-            inclusiveEnd: !opts.find(opt => !opt.inclusiveEnd),
-            inclusiveStart: !opts.find(opt => !opt.inclusiveStart),
-            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(',')
+            inclusiveEnd,
+            inclusiveStart,
+            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(','),
+            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
         };
         const quality = rateQueryPlan(
             schema,
@@ -114,25 +128,86 @@ export function getQueryPlan<RxDocType>(
      * No index found, use the default index
      */
     if (!currentBestQueryPlan) {
-        return {
+        currentBestQueryPlan = {
             index: [primaryPath],
             startKeys: [INDEX_MIN],
             endKeys: [INDEX_MAX],
             inclusiveEnd: true,
             inclusiveStart: true,
-            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath
+            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath,
+            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex([primaryPath], query.selector)
         }
     }
 
     return currentBestQueryPlan;
 }
 
-const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
-export function isLogicalOperator(operator: string): boolean {
-    return LOGICAL_OPERATORS.has(operator);
+export const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
+export const LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
+export const UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
+
+export function isSelectorSatisfiedByIndex(
+    index: string[],
+    selector: MangoQuerySelector
+): boolean {
+    const selectorEntries = Object.entries(selector);
+    const hasNonMatchingOperator = selectorEntries
+        .find(([fieldName, operation]) => {
+            if (!index.includes(fieldName)) {
+                return true;
+            }
+            const hasNonLogicOperator = Object.entries(operation)
+                .find(([op, _value]) => !LOGICAL_OPERATORS.has(op));
+            return hasNonLogicOperator;
+        });
+    if (hasNonMatchingOperator) {
+        return false;
+    }
+
+
+    let prevLowerBoundaryField: any;
+    const hasMoreThenOneLowerBoundaryField = index.find(fieldName => {
+        const operation = selector[fieldName];
+        if (!operation) {
+            return false;
+        }
+        const hasLowerLogicOp = Object.keys(operation).find(key => LOWER_BOUND_LOGICAL_OPERATORS.has(key));
+        if (prevLowerBoundaryField && hasLowerLogicOp) {
+            return true;
+        } else if (hasLowerLogicOp !== '$eq') {
+            prevLowerBoundaryField = hasLowerLogicOp;
+        }
+        return false;
+    });
+    if (hasMoreThenOneLowerBoundaryField) {
+        return false;
+    }
+
+    let prevUpperBoundaryField: any;
+    const hasMoreThenOneUpperBoundaryField = index.find(fieldName => {
+        const operation = selector[fieldName];
+        if (!operation) {
+            return false;
+        }
+        const hasUpperLogicOp = Object.keys(operation).find(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
+        if (prevUpperBoundaryField && hasUpperLogicOp) {
+            return true;
+        } else if (hasUpperLogicOp !== '$eq') {
+            prevUpperBoundaryField = hasUpperLogicOp;
+        }
+        return false;
+    });
+    if (hasMoreThenOneUpperBoundaryField) {
+        return false;
+    }
+
+    return true;
 }
 
-export function getMatcherQueryOpts(operator: string, operatorValue: any): Partial<RxQueryPlanerOpts> {
+export function getMatcherQueryOpts(
+    operator: string,
+    operatorValue: any
+): Partial<RxQueryPlanerOpts> {
     switch (operator) {
         case '$eq':
             return {
@@ -177,12 +252,12 @@ export function rateQueryPlan<RxDocType>(
     const pointsPerMatchingKey = 10;
     const idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === INDEX_MIN);
     if (idxOfFirstMinStartKey > 0) {
-        quality = quality + (idxOfFirstMinStartKey * pointsPerMatchingKey)
+        quality = quality + (idxOfFirstMinStartKey * pointsPerMatchingKey);
     }
 
     const idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === INDEX_MAX);
     if (idxOfFirstMaxEndKey > 0) {
-        quality = quality + (idxOfFirstMaxEndKey * pointsPerMatchingKey)
+        quality = quality + (idxOfFirstMaxEndKey * pointsPerMatchingKey);
     }
 
     const pointsIfNoReSortMustBeDone = 5;

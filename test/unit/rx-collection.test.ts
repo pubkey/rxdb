@@ -1245,7 +1245,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describe('.findOne()', () => {
+        config.parallel('.findOne()', () => {
             describe('positive', () => {
                 it('find a single document', async () => {
                     const c = await humansCollection.create();
@@ -1355,6 +1355,75 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
+        config.parallel('.count()', () => {
+            describe('basics', () => {
+                it('should count one document', async () => {
+                    const c = await humansCollection.create(1);
+                    const count = await c.count().exec();
+                    assert.strictEqual(count, 1);
+                    c.database.destroy();
+                });
+                it('should not count deleted documents', async () => {
+                    const c = await humansCollection.create(2);
+                    const emitted: number[] = [];
+                    c.count().$.subscribe(nr => emitted.push(nr));
+                    const doc = await c.findOne().exec(true);
+                    await doc.remove();
+                    const count = await c.count().exec();
+                    assert.strictEqual(count, 1);
+                    assert.deepStrictEqual(emitted, [2, 1]);
+                    c.database.destroy();
+                });
+                it('count matching only', async () => {
+                    const c = await humansCollection.createAgeIndex(0);
+                    await c.insert(schemaObjects.human('aa', 1));
+                    await c.insert(schemaObjects.human('bb', 2));
+                    const count = await c.count({
+                        selector: {
+                            age: {
+                                $eq: 1
+                            }
+                        }
+                    }).exec();
+                    assert.strictEqual(count, 1);
+                    c.database.destroy();
+                });
+            });
+            describe('disallowed usage', () => {
+                it('must throw when query has property of selectorSatisfiedByIndex=false', async () => {
+                    const c = await humansCollection.create(0);
+                    await AsyncTestUtil.assertThrows(
+                        () => c.count({
+                            selector: {
+                                age: {
+                                    $regex: 'foobar'
+                                }
+                            }
+                        }).exec(),
+                        'RxError',
+                        'QU14'
+                    );
+                    c.database.destroy();
+                });
+                it('must throw on limit and skip', async () => {
+                    const c = await humansCollection.create(0);
+                    const query = c.count();
+                    await AsyncTestUtil.assertThrows(
+                        () => query.limit(11),
+                        'RxError',
+                        'QU15'
+                    );
+
+                    await AsyncTestUtil.assertThrows(
+                        () => query.skip(11),
+                        'RxError',
+                        'QU15'
+                    );
+
+                    c.database.destroy();
+                });
+            });
+        });
         config.parallel('.bulkUpsert()', () => {
             it('insert and update', async () => {
                 const c = await humansCollection.create(0);
@@ -1401,7 +1470,7 @@ describe('rx-collection.test.ts', () => {
                     assert.strictEqual(doc.firstName, 'foobar');
                     db.destroy();
                 });
-                it('overwrite exisiting document', async () => {
+                it('overwrite existing document', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
                         storage: config.storage.getStorage(),
@@ -2217,7 +2286,7 @@ describe('rx-collection.test.ts', () => {
             /**
              * Each emitted result must have a different result set
              * because findByIds$ must only emit when data has actually changed.
-             * We cannot just cound the updates.length here because some RxStorage implementations
+             * We cannot just count the updates.length here because some RxStorage implementations
              * might return multiple RxChangeEventBulks for a single bulkWrite() operation
              * or do additional writes. So we have to check for the revisions+docId strings.
              */

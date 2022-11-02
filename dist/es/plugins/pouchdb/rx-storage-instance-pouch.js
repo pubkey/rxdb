@@ -256,7 +256,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
     /**
      * Instead of listening to pouch.changes,
      * we have overwritten pouchdbs bulkDocs()
-     * and create our own event stream, this will work more relyable
+     * and create our own event stream, this will work more reliable
      * and does not mix up with write events from other sources.
      */
     var emitter = getCustomEventEmitterByPouch(this.internals.pouch);
@@ -441,11 +441,28 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
       return Promise.reject(e);
     }
   };
-  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
+  _proto.count = function count(preparedQuery) {
     try {
       var _this9 = this;
-      ensureNotClosed(_this9);
-      return Promise.resolve(_this9.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
+      /**
+       * There is no count method in PouchDB,
+       * so we have to run a normal query and use the result length.
+       */
+      return Promise.resolve(_this9.query(preparedQuery)).then(function (result) {
+        return {
+          count: result.documents.length,
+          mode: 'fast'
+        };
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
+    try {
+      var _this11 = this;
+      ensureNotClosed(_this11);
+      return Promise.resolve(_this11.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
         /**
          * In Node.js, PouchDB works with Buffers because it is old and Node.js did
          * not support Blob at the time is was coded.
@@ -483,7 +500,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
       var _temp9 = function _temp9() {
-        return Promise.resolve(pouchFindDocumentsById(_this11, changedDocuments.map(function (o) {
+        return Promise.resolve(pouchFindDocumentsById(_this13, changedDocuments.map(function (o) {
           return o.id;
         }), true)).then(function (documentsData) {
           if (Object.keys(documentsData).length > 0 && checkpoint && checkpoint.sequence === lastSequence) {
@@ -507,8 +524,8 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
           };
         });
       };
-      var _this11 = this;
-      ensureNotClosed(_this11);
+      var _this13 = this;
+      ensureNotClosed(_this13);
       if (!limit || typeof limit !== 'number') {
         throw new Error('wrong limit');
       }
@@ -532,7 +549,7 @@ export var RxStorageInstancePouch = /*#__PURE__*/function () {
       }, void 0, function () {
         first = false;
         skippedDesignDocuments = 0;
-        return Promise.resolve(_this11.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
+        return Promise.resolve(_this13.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
           var addChangedDocuments = pouchResults.results.filter(function (row) {
             var isDesignDoc = row.id.startsWith(POUCHDB_DESIGN_PREFIX);
             if (isDesignDoc) {

@@ -102,7 +102,7 @@ config.parallel('attachments.test.ts', () => {
                 base64StringNode
             );
         });
-        it('image attachment should be useable as img-element after base64<->Blob transformations', async function () {
+        it('image attachment should be usable as img-element after base64<->Blob transformations', async function () {
             if (config.platform.isNode()) {
                 return;
             }
@@ -460,7 +460,7 @@ config.parallel('attachments.test.ts', () => {
             assert.strictEqual(data, 'foo bar aaa');
             c.database.destroy();
         });
-        it('should be able to render an encrytped stored image attachment', async () => {
+        it('should be able to render an encrypted stored image attachment', async () => {
             if (config.platform.isNode()) {
                 return;
             }
@@ -496,13 +496,13 @@ config.parallel('attachments.test.ts', () => {
                 type: 'text/plain'
             });
 
-            const emited: any[] = [];
+            const emitted: any[] = [];
             const sub = doc.allAttachments$
-                .subscribe((attachments: any[]) => emited.push(attachments));
-            await AsyncTestUtil.waitUntil(() => emited.length === 1);
+                .subscribe((attachments: any[]) => emitted.push(attachments));
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
 
-            assert.strictEqual(emited[0].length, 1);
-            assert.ok(emited[0][0].doc);
+            assert.strictEqual(emitted[0].length, 1);
+            assert.ok(emitted[0][0].doc);
 
             sub.unsubscribe();
             c.database.destroy();

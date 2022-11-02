@@ -158,7 +158,7 @@ const docData = {
 
 myCollection.upsert(docData);
 myCollection.upsert(docData);
-// -> throws because of parrallel update to the same document
+// -> throws because of parallel update to the same document
 
 myCollection.atomicUpsert(docData);
 myCollection.atomicUpsert(docData);

@@ -24,10 +24,10 @@ import {
 
 import {
     getCRDTSchemaPart,
-    RxDDcrdtPlugin,
+    RxDBcrdtPlugin,
     getCRDTConflictHandler
 } from '../../plugins/crdt';
-addRxPlugin(RxDDcrdtPlugin);
+addRxPlugin(RxDBcrdtPlugin);
 import config from './config';
 import { replicateRxCollection, RxReplicationState } from '../../plugins/replication';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../src/types';
@@ -371,24 +371,14 @@ config.parallel('crdt.test.js', () => {
                     pull: {
                         batchSize: 10,
                         async handler(lastPulledCheckpoint, batchSize) {
-                            console.log('pull send:');
-                            console.dir(lastPulledCheckpoint);
                             const ret = await pullHandler(lastPulledCheckpoint, batchSize);
-                            console.log('pull ret:');
-                            console.dir(ret);
                             return ret;
                         }
                     },
                     push: {
                         batchSize: 10,
                         async handler(docs) {
-                            console.log('push send:');
-                            console.dir(docs);
                             const ret = await pushHandler(docs);
-                            console.log('push ret:');
-                            console.dir(ret);
-
-
                             return ret;
                         }
                     }
@@ -408,8 +398,6 @@ config.parallel('crdt.test.js', () => {
                 await clientACollection.insert(writeData);
                 await replicateOnce(clientACollection, serverCollection);
 
-
-                console.log('first replication b to server');
                 await replicateOnce(clientBCollection, serverCollection);
 
                 const docA = await clientACollection.findOne().exec(true);

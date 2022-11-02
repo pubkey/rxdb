@@ -542,7 +542,7 @@ describe('rx-document.test.js', () => {
                 );
                 db.destroy();
             });
-            it('should still be useable if previous mutation function has thrown', async () => {
+            it('should still be usable if previous mutation function has thrown', async () => {
                 const col = await humansCollection.create(1);
                 const doc = await col.findOne().exec(true);
 

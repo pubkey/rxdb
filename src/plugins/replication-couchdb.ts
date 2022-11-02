@@ -57,7 +57,7 @@ const INTERNAL_POUCHDBS = new WeakSet();
 export class RxCouchDBReplicationStateBase {
     public _subs: Subscription[] = [];
 
-    // can be used for debuging or custom event-handling
+    // can be used for debugging or custom event-handling
     // will be set some time after sync() is called
     public _pouchEventEmitterObject?: PouchSyncHandler | null;
     public _subjects = {
@@ -206,7 +206,7 @@ export function setPouchEventEmitter(
             .subscribe(async (info: any) => {
                 /**
                  * when complete fires, it might be that not all changeEvents
-                 * have passed throught, because of the delay of .wachtForChanges()
+                 * have passed through, because of the delay of .wachtForChanges()
                  * Therefore we have to first ensure that all previous changeEvents have been handled
                  */
                 await promiseWait(100);
