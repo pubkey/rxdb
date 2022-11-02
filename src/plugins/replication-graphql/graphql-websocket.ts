@@ -1,7 +1,8 @@
 import { Client, createClient } from 'graphql-ws';
 import { getFromMapOrThrow } from '../../util';
-import { WebSocket as IsomorphicWebSocket } from 'isomorphic-ws';
+import ws from 'isomorphic-ws';
 
+const { WebSocket: IsomorphicWebSocket } = ws;
 
 export type WebsocketWithRefCount = {
     url: string;
