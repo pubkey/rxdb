@@ -15,8 +15,8 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 
 
-### Tasks already in progress
+### Tasks already in progress (do no work on these!)
 
-Task: Solve [this](https://github.com/pouchdb/pouchdb/pull/8471) PouchDB issue.
-Solution: https://github.com/pouchdb/pouchdb/pull/8552
-Related: https://github.com/pubkey/rxdb/issues/4102
+#### Task: Solve [this](https://github.com/pouchdb/pouchdb/pull/8471) PouchDB issue.
+- Solution: https://github.com/pouchdb/pouchdb/pull/8552
+- Related: https://github.com/pubkey/rxdb/issues/4102
