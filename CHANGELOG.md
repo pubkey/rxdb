@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX TS Error in Plugin "Replicate-GraphQL" : GraphQL Websocket on "isomorphic-ws" import [#4104](https://github.com/pubkey/rxdb/pull/4104) Thanks [@jwallet](https://github.com/jwallet)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.8.3 (3 November 2022)
+
+- FIX TS Error in Plugin "Replicate-GraphQL" : GraphQL Websocket on "isomorphic-ws" import [#4104](https://github.com/pubkey/rxdb/pull/4104) Thanks [@jwallet](https://github.com/jwallet)
 
 ### 13.8.2 (1 November 2022)
 
