@@ -18,7 +18,7 @@ The main reason to use this is to improve initial page load and query/write time
 
 ### As a company
 
-If you use RxDB in your company project, you can purchase access by filling out [this form](https://forms.gle/SVjUuPdVtrSM4ZGW7).
+If you use RxDB in your company project, you can purchase access by filling out [this form](https://rxdb.info/form-premium.html).
 
 ### For your side project
 
