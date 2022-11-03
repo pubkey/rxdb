@@ -1,5 +1,6 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -8,7 +9,8 @@ exports.getGraphQLWebSocket = getGraphQLWebSocket;
 exports.removeGraphQLWebSocketRef = removeGraphQLWebSocketRef;
 var _graphqlWs = require("graphql-ws");
 var _util = require("../../util");
-var _isomorphicWs = require("isomorphic-ws");
+var _isomorphicWs = _interopRequireDefault(require("isomorphic-ws"));
+var IsomorphicWebSocket = _isomorphicWs["default"].WebSocket;
 var GRAPHQL_WEBSOCKET_BY_URL = new Map();
 exports.GRAPHQL_WEBSOCKET_BY_URL = GRAPHQL_WEBSOCKET_BY_URL;
 function getGraphQLWebSocket(url) {
@@ -19,7 +21,7 @@ function getGraphQLWebSocket(url) {
       shouldRetry: function shouldRetry() {
         return true;
       },
-      webSocketImpl: _isomorphicWs.WebSocket
+      webSocketImpl: IsomorphicWebSocket
     });
     has = {
       url: url,
