@@ -148,6 +148,7 @@ export const ERROR_MESSAGES = {
     RC_PULL: 'RxReplication pull handler threw an error - see .errors for more details',
     RC_STREAM: 'RxReplication pull stream$ threw an error - see .errors for more details',
     RC_PUSH: 'RxReplication push handler threw an error - see .errors for more details',
+    RC_PUSH_NO_AR: 'RxReplication push handler did not return an array with the conflicts',
 
     // plugins/dev-mode/check-schema.js
     SC1: 'fieldnames do not match the regex',
@@ -206,9 +207,6 @@ export const ERROR_MESSAGES = {
     // removed in 13.0.0, use RC_PULL instead - GQL2: 'GraphQL replication: unknown errors occurred in replication pull - see innerErrors for more details',
     GQL3: 'GraphQL replication: pull returns more documents then batchSize',
     // removed in 13.0.0, use RC_PUSH instead - GQL4: 'GraphQL replication: unknown errors occurred in replication push - see innerErrors for more details',
-
-    // plugins/replication/
-    REP1: 'Replication: _deleted field not provided',
 
     // plugins/crdt/
     CRDT1: 'CRDT operations cannot be used because the crdt options are not set in the schema.',

@@ -3,7 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - REFACTOR use faster `areRxDocumentArraysEqual` instead of doing a deep-equal check.
-
+- ADD check to easier debug wrongly behaving backend during replication.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

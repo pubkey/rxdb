@@ -250,13 +250,29 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         })
                     );
 
-                    let result: WithDeleted<RxDocType>[] = {} as any;
+                    let result: WithDeleted<RxDocType>[] = null as any;
                     while (!done && !this.isStopped()) {
                         try {
                             result = await this.push.handler(useRows);
+                            /**
+                             * It is a common problem that people have wrongly behaving backend
+                             * that do not return an array with the conflicts on push requests.
+                             * So we run this check here to make it easier to debug.
+                             * @link https://github.com/pubkey/rxdb/issues/4103
+                             */
+                            if (!Array.isArray(result)) {
+                                throw newRxError(
+                                    'RC_PUSH_NO_AR',
+                                    {
+                                        pushRows: rows,
+                                        direction: 'push',
+                                        args: { result }
+                                    }
+                                );
+                            }
                             done = true;
-                        } catch (err: any | Error | Error[]) {
-                            const emitError = newRxError('RC_PUSH', {
+                        } catch (err: any | Error | Error[] | RxError) {
+                            const emitError = (err as RxError).rxdb ? err : newRxError('RC_PUSH', {
                                 pushRows: rows,
                                 errors: Array.isArray(err) ? err : [err],
                                 direction: 'push'
