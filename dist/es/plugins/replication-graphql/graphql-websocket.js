@@ -1,6 +1,7 @@
 import { createClient } from 'graphql-ws';
 import { getFromMapOrThrow } from '../../util';
-import { WebSocket as IsomorphicWebSocket } from 'isomorphic-ws';
+import ws from 'isomorphic-ws';
+var IsomorphicWebSocket = ws.WebSocket;
 export var GRAPHQL_WEBSOCKET_BY_URL = new Map();
 export function getGraphQLWebSocket(url) {
   var has = GRAPHQL_WEBSOCKET_BY_URL.get(url);
