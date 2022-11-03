@@ -1,4 +1,3 @@
-import deepEqual from 'fast-deep-equal';
 import {
     BehaviorSubject,
     firstValueFrom,
@@ -22,7 +21,8 @@ import {
     now,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    ensureNotFalsy
+    ensureNotFalsy,
+    areRxDocumentArraysEqual
 } from './util';
 import {
     newRxError
@@ -58,9 +58,9 @@ const newQueryID = function (): number {
 };
 
 export class RxQueryBase<
-    RxDocumentType = any,
+    RxDocType,
     // TODO also pass DocMethods here
-    RxQueryResult = RxDocument<RxDocumentType>[] | RxDocument<RxDocumentType>
+    RxQueryResult = RxDocument<RxDocType>[] | RxDocument<RxDocType>
 > {
 
     public id: number = newQueryID();
@@ -90,10 +90,10 @@ export class RxQueryBase<
      * or null if query has not run yet.
      */
     public _result: {
-        docsData: RxDocumentType[];
+        docsData: RxDocumentData<RxDocType>[];
         // A key->document map, used in the event reduce optimization.
-        docsDataMap: Map<string, RxDocumentType>;
-        docs: RxDocument<RxDocumentType>[];
+        docsDataMap: Map<string, RxDocType>;
+        docs: RxDocument<RxDocType>[];
         count: number;
         /**
          * Time at which the current _result state was created.
@@ -107,7 +107,7 @@ export class RxQueryBase<
     constructor(
         public op: RxQueryOP,
         public mangoQuery: Readonly<MangoQuery>,
-        public collection: RxCollection<RxDocumentType>
+        public collection: RxCollection<RxDocType>
     ) {
         if (!mangoQuery) {
             this.mangoQuery = _getDefaultQuery();
@@ -208,7 +208,7 @@ export class RxQueryBase<
      * set the new result-data as result-docs of the query
      * @param newResultData json-docs that were received from pouchdb
      */
-    _setResultData(newResultData: RxDocumentData<RxDocumentType[]> | number): void {
+    _setResultData(newResultData: RxDocumentData<RxDocType[]> | number): void {
 
         if (typeof newResultData === 'number') {
             this._result = {
@@ -221,7 +221,7 @@ export class RxQueryBase<
             return;
         }
 
-        const docs = createRxDocuments<RxDocumentType, {}>(
+        const docs = createRxDocuments<RxDocType, {}>(
             this.collection,
             newResultData
         );
@@ -234,7 +234,7 @@ export class RxQueryBase<
         const primPath = this.collection.schema.primaryPath;
         const docsDataMap = new Map();
         const docsData = docs.map(doc => {
-            const docData: RxDocumentData<RxDocumentType> = doc._dataSync$.getValue() as any;
+            const docData: RxDocumentData<RxDocType> = doc._dataSync$.getValue() as any;
             const id: string = docData[primPath] as any;
             docsDataMap.set(id, docData);
             return docData;
@@ -253,7 +253,7 @@ export class RxQueryBase<
      * executes the query on the database
      * @return results-array with document-data
      */
-    _execOverDatabase(): Promise<RxDocumentData<RxDocumentType>[] | number> {
+    _execOverDatabase(): Promise<RxDocumentData<RxDocType>[] | number> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
         this._lastExecStart = now();
 
@@ -273,7 +273,7 @@ export class RxQueryBase<
             });
         }
 
-        const docsPromise = queryCollection<RxDocumentType>(this as any);
+        const docsPromise = queryCollection<RxDocType>(this as any);
         return docsPromise.then(docs => {
             this._lastExecEnd = now();
             return docs;
@@ -285,7 +285,7 @@ export class RxQueryBase<
      * To have an easier implementations,
      * just subscribe and use the first result
      */
-    public exec(throwIfMissing: true): Promise<RxDocument<RxDocumentType>>;
+    public exec(throwIfMissing: true): Promise<RxDocument<RxDocType>>;
     public exec(): Promise<RxQueryResult>;
     public exec(throwIfMissing?: boolean): Promise<any> {
         if (throwIfMissing && this.op !== 'findOne') {
@@ -323,7 +323,7 @@ export class RxQueryBase<
      * cached call to get the queryMatcher
      * @overwrites itself with the actual value
      */
-    get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocumentType>> {
+    get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocType>> {
         const schema = this.collection.schema.jsonSchema;
 
 
@@ -371,11 +371,11 @@ export class RxQueryBase<
      * which can be send to the storage instance to query for documents.
      * @overwrites itself with the actual value.
      */
-    getPreparedQuery(): PreparedQuery<RxDocumentType> {
+    getPreparedQuery(): PreparedQuery<RxDocType> {
         const hookInput = {
             rxQuery: this,
             // can be mutated by the hooks so we have to deep clone first.
-            mangoQuery: normalizeMangoQuery<RxDocumentType>(
+            mangoQuery: normalizeMangoQuery<RxDocType>(
                 this.collection.schema.jsonSchema,
                 clone(this.mangoQuery)
             )
@@ -395,7 +395,7 @@ export class RxQueryBase<
      * returns true if the document matches the query,
      * does not use the 'skip' and 'limit'
      */
-    doesDocumentDataMatch(docData: RxDocumentType | any): boolean {
+    doesDocumentDataMatch(docData: RxDocType | any): boolean {
         // if doc is deleted, it cannot match
         if (docData._deleted) {
             return false;
@@ -428,7 +428,7 @@ export class RxQueryBase<
     /**
      * helper function to transform RxQueryBase to RxQuery type
      */
-    get asRxQuery(): RxQuery<RxDocumentType, RxQueryResult> {
+    get asRxQuery(): RxQuery<RxDocType, RxQueryResult> {
         return this as any;
     }
 
@@ -443,16 +443,16 @@ export class RxQueryBase<
 
     // we only set some methods of query-builder here
     // because the others depend on these ones
-    where(_queryObj: MangoQuerySelector<RxDocumentType> | keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult> {
+    where(_queryObj: MangoQuerySelector<RxDocType> | keyof RxDocType | string): RxQuery<RxDocType, RxQueryResult> {
         throw pluginMissing('query-builder');
     }
-    sort(_params: string | MangoQuerySortPart<RxDocumentType>): RxQuery<RxDocumentType, RxQueryResult> {
+    sort(_params: string | MangoQuerySortPart<RxDocType>): RxQuery<RxDocType, RxQueryResult> {
         throw pluginMissing('query-builder');
     }
-    skip(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult> {
+    skip(_amount: number | null): RxQuery<RxDocType, RxQueryResult> {
         throw pluginMissing('query-builder');
     }
-    limit(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult> {
+    limit(_amount: number | null): RxQuery<RxDocType, RxQueryResult> {
         throw pluginMissing('query-builder');
     }
 }
@@ -497,7 +497,7 @@ export function createRxQuery(
  * which means that no write event happened since the last run.
  * @return false if not which means it should re-execute
  */
-function _isResultsInSync(rxQuery: RxQueryBase): boolean {
+function _isResultsInSync(rxQuery: RxQueryBase<any>): boolean {
     const currentLatestEventNumber = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
     if (rxQuery._latestChangeEvent >= currentLatestEventNumber) {
         return true;
@@ -512,7 +512,7 @@ function _isResultsInSync(rxQuery: RxQueryBase): boolean {
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
  */
-function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
+function _ensureEqual(rxQuery: RxQueryBase<any>): Promise<boolean> {
     // Optimisation shortcut
     if (
         rxQuery.collection.database.destroyed ||
@@ -530,7 +530,7 @@ function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
  * ensures that the results of this query is equal to the results which a query over the database would give
  * @return true if results have changed
  */
-function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
+function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<boolean> {
     rxQuery._lastEnsureEqual = now();
 
     /**
@@ -613,7 +613,26 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
         return rxQuery._execOverDatabase()
             .then(newResultData => {
                 rxQuery._latestChangeEvent = latestAfter;
-                if (!rxQuery._result || !deepEqual(newResultData, rxQuery._result.docsData)) {
+
+                // A count query needs a different has-changed check.
+                if (typeof newResultData === 'number') {
+                    if (
+                        !rxQuery._result ||
+                        newResultData !== rxQuery._result.count
+                    ) {
+                        ret = true;
+                        rxQuery._setResultData(newResultData as any);
+                    }
+                    return ret;
+                }
+                if (
+                    !rxQuery._result ||
+                    !areRxDocumentArraysEqual(
+                        rxQuery.collection.schema.primaryPath,
+                        newResultData,
+                        rxQuery._result.docsData
+                    )
+                ) {
                     ret = true; // true because results changed
                     rxQuery._setResultData(newResultData as any);
                 }

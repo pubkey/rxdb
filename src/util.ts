@@ -4,7 +4,8 @@ import type {
     HashFunction,
     MaybeReadonly,
     RxDocumentData,
-    RxDocumentMeta
+    RxDocumentMeta,
+    StringKeys
 } from './types';
 import {
     default as deepClone
@@ -502,6 +503,37 @@ export function createRevision<RxDocType>(
 
     const revisionHash = hashFunction(diggestString);
     return newRevisionHeight + '-' + revisionHash;
+}
+
+
+/**
+ * Faster way to check the equalness of document lists
+ * compared to doing a deep-equal.
+ * Here we only check the ids and revisions.
+ */
+export function areRxDocumentArraysEqual<RxDocType>(
+    primaryPath: StringKeys<RxDocumentData<RxDocType>>,
+    ar1: RxDocumentData<RxDocType>[],
+    ar2: RxDocumentData<RxDocType>[]
+): boolean {
+    if (ar1.length !== ar2.length) {
+        return false;
+    }
+    let i = 0;
+    const len = ar1.length;
+    while (i < len) {
+        const row1 = ar1[i];
+        const row2 = ar2[i];
+        i++;
+        
+        if (
+            row1._rev !== row2._rev ||
+            row1[primaryPath] !== row2[primaryPath]
+        ) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /**

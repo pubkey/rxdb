@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- REFACTOR use faster `areRxDocumentArraysEqual` instead of doing a deep-equal check.
 
 <!-- ADD new changes here! -->
 
