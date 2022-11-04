@@ -1,3 +1,8 @@
+<meta name="twitter:image:src" content="https://rxdb.info/files/why-no-transactions.jpg" />
+<meta name="twitter:site" content="@rxdbjs" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Why UI applications need NoSQL" />
+
 # Why UI applications need NoSQL
 
 [RxDB](https://rxdb.info), a client side, offline first, JavaScript database, is now several years old.
