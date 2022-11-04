@@ -227,3 +227,4 @@ Yes, there are SQL databases out there that run on the client side or have repli
 - Cockroach Labs: [Living Without Atomic Clocks](https://www.cockroachlabs.com/blog/living-without-atomic-clocks/)
 - `Make a PR to this file if you have more interesting links to that topic`
 - [Transactions, Conflicts and Revisions in RxDB](./transactions-conflicts-revisions.md)
+- [Why MongoDB, Cassandra, HBase, DynamoDB, and Riak will only let you perform transactions on a single data item](https://dbmsmusings.blogspot.com/2015/10/why-mongodb-cassandra-hbase-dynamodb_28.html)
