@@ -1,4 +1,4 @@
-import type { BlobBuffer, DeepReadonlyObject, HashFunction, MaybeReadonly, RxDocumentData, RxDocumentMeta } from './types';
+import type { BlobBuffer, DeepReadonlyObject, HashFunction, MaybeReadonly, RxDocumentData, RxDocumentMeta, StringKeys } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -133,6 +133,12 @@ export declare function createRevision<RxDocType>(hashFunction: HashFunction, do
      */
     _rev?: string;
 }, previousDocData?: RxDocumentData<RxDocType>): string;
+/**
+ * Faster way to check the equalness of document lists
+ * compared to doing a deep-equal.
+ * Here we only check the ids and revisions.
+ */
+export declare function areRxDocumentArraysEqual<RxDocType>(primaryPath: StringKeys<RxDocumentData<RxDocType>>, ar1: RxDocumentData<RxDocType>[], ar2: RxDocumentData<RxDocType>[]): boolean;
 /**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run

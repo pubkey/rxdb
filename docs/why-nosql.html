@@ -2131,15 +2131,19 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="why-it-has-to-be-nosql">Why it has to be NoSQL</h1>
+                                <p><meta name="twitter:image:src" content="https://rxdb.info/files/why-no-transactions.jpg"></p>
+<p><meta name="twitter:site" content="@rxdbjs"></p>
+<p><meta name="twitter:card" content="summary_large_image"></p>
+<meta name="twitter:title" content="Why UI applications need NoSQL">
+
+<h1 id="why-ui-applications-need-nosql">Why UI applications need NoSQL</h1>
 <p><a href="https://rxdb.info" target="_blank">RxDB</a>, a client side, offline first, JavaScript database, is now several years old.
 Often new users appear in the chat and ask for that one simple feature:
 They want to store and query <strong>relational data</strong>.</p>
 <blockquote>
 <p>So why not just implement SQL?</p>
 </blockquote>
-<p>All these client databases out there have on some kind
-of document-based, NoSQL like, storage engine. PouchDB, Firebase, AWS Datastore, RethinkDB&apos;s <a href="https://github.com/rethinkdb/horizon" target="_blank">Horizon</a>, Meteor&apos;s <a href="https://github.com/mWater/minimongo" target="_blank">Minimongo</a>, <a href="https://parseplatform.org/" target="_blank">Parse</a>, <a href="https://realm.io/" target="_blank">Realm</a>. They all do not have real relational data.</p>
+<p>All these client databases out there have on some kind of document based, NoSQL like, storage engine. PouchDB, Firebase, AWS Datastore, RethinkDB&apos;s <a href="https://github.com/rethinkdb/horizon" target="_blank">Horizon</a>, Meteor&apos;s <a href="https://github.com/mWater/minimongo" target="_blank">Minimongo</a>, <a href="https://parseplatform.org/" target="_blank">Parse</a>, <a href="https://realm.io/" target="_blank">Realm</a>. They all do not have real relational data.</p>
 <p>They might have some kind of weak relational foreign keys like the <a href="population.html">RxDB Population</a>
 or the <a href="https://docs.amplify.aws/lib/datastore/relational/q/platform/js/" target="_blank">relational models</a> of AWS Datastore.
 But these relations are weak. The foreign keys are not enforced to be valid like in PostgreSQL, and you cannot query
@@ -2150,6 +2154,26 @@ the rows with complex subqueries over different tables or collections and then m
 </p>
 
 
+<h2 id="transactions-do-not-work-with-humans-involved">Transactions do not work with humans involved</h2>
+<p>On the server side, transactions are used to run steps of logic inside of a self contained <code>unit of work</code>. The database system ensures that multiple transactions do not run in parallel or interfere with each other.
+This works well because on the server side you can predict how longer everything takes. It can be ensured that one transactions does not block everything else for too long which would make the system not responding anymore to other requests.</p>
+<p>When you build a UI based application that is used by a real human, you can no longer predict how long anything takes.
+The user clicks the edit button and expects to not have anyone else change the document while the user is in edit mode.
+Using a transaction to ensure nothing is changed in between, is not an option because the transaction could be open for a long
+time and other background tasks, like replication, would no longer work.</p>
+<p>So whenever a human is involved, this kind of logic has to be implemented using other strategies. Most NoSQL databases like <a href=".">RxDB</a> or CouchDB use a system based on <a href="transactions-conflicts-revisions.html">revision and conflicts</a> to handle these.</p>
+<h2 id="transactions-do-not-work-with-offline-first">Transactions do not work with offline-first</h2>
+<p>When you want to build an <a href="offline-first.html">offline-first</a> application, it is assumed that the user can also read and write data, when the device has lost the connection to the backend.
+You could use database transactions on writes to the client&apos;s database state, but enforcing a transaction boundary across other instances like clients or servers, is not possible when there is no connection.</p>
+<p align="center">
+  <img src="files/why-no-transactions.jpg" alt="offline first vs relational transactions" width="400">
+</p>
+
+<p>On the client you could run an update query where all <code>color: red</code> rows are changed to <code>color: blue</code>, but this would not guarantee that there will still be other <code>red</code> documents when the client goes online again and restarts the replication with the server. </p>
+<pre><code class="lang-sql"><span class="hljs-keyword">UPDATE</span> docs
+<span class="hljs-keyword">SET</span> docs.color = <span class="hljs-string">&apos;red&apos;</span>
+<span class="hljs-keyword">WHERE</span> docs.color = <span class="hljs-string">&apos;blue&apos;</span>;
+</code></pre>
 <h2 id="relational-queries-in-nosql">Relational queries in NoSQL</h2>
 <p>What most people want from a relational database, is to run queries over multiple tables.
 Some people think that they cannot do that with NoSQL, so let me explain.</p>
@@ -2231,12 +2255,13 @@ On a NoSQL database, validating a changed document is trivial. The client sends 
 <h2 id="migration-without-relations">Migration without relations</h2>
 <p>Sooner or later you change the layout of your data. You update the schema and you also have to migrate the stored rows/documents. In NoSQL this is often not a big deal because all of your documents are modeled as self containing piece of data. There is an old version of the document and you have a function that transforms it into the new version.</p>
 <p>With relational data, nothing is self-contained. The relevant data for the migration of a single row could be inside any other table. So when changing the schema, it will be important which table to migrate first and how to orchestrate the migration or relations.</p>
+<p>On client side applications, this is even harder because the client can close the application at any time and the migration must be able to continue.</p>
 <h2 id="everything-can-be-downgraded-to-nosql">Everything can be downgraded to NoSQL</h2>
 <p>To use an offline first database in the frontend, you have to make it compatible with your backend APIs.
 Making software things compatible often means you have to find the <strong>lowest common denominator</strong>.
 When you have SQLite in the frontend and want to replicate it with the backend, the backend also has to use SQLite. You cannot even use PostgreSQL because it has a different SQL dialect and some queries might fail. But you do not want to let the frontend dictate which technologies to use in the backend just to make replication work.</p>
-<p>With NoSQL, you just have documents and writes to these documents. You can build a document based layer on top of everything by <strong>removing</strong> functionality. It can be built on top of SQL, but also on top of a graph database or even on top of a key-value store like <a href="adapters.html#leveldown">levelDB</a>.</p>
-<p>With that document layer you can build a <a href="replication-graphql.html">replication API</a> that serves documents sorted by the last update time and there you have a realtime replication.</p>
+<p>With NoSQL, you just have documents and writes to these documents. You can build a document based layer on top of everything by <strong>removing</strong> functionality. It can be built on top of SQL, but also on top of a graph database or even on top of a key-value store like <a href="adapters.html#leveldown">levelDB</a> or <a href="rx-storage-foundationdb.html">FoundationDB</a>.</p>
+<p>With that document layer you can build a <a href="replication.html">replication API</a> that serves documents sorted by the last update time and there you have a realtime replication.</p>
 <h2 id="caching-query-results">Caching query results</h2>
 <p>Memory is limited and this is especially true for client side applications where you never know how much free RAM the device really has. You want to have a fast realtime UI, so your database must be able to cache query results.</p>
 <p>When you run a SQL query like <code>SELECT ..</code> the result of it can be anything. An <code>array</code>, a <code>number</code>, a <code>string</code>, a single row, it depends on how the query goes on. So the caching strategy can only be to keep the result in memory, once for each query.
@@ -2269,6 +2294,7 @@ This scales very bad because the more queries you run, the more results you have
 <li>Cockroach Labs: <a href="https://www.cockroachlabs.com/blog/living-without-atomic-clocks/" target="_blank">Living Without Atomic Clocks</a></li>
 <li><code>Make a PR to this file if you have more interesting links to that topic</code></li>
 <li><a href="transactions-conflicts-revisions.html">Transactions, Conflicts and Revisions in RxDB</a></li>
+<li><a href="https://dbmsmusings.blogspot.com/2015/10/why-mongodb-cassandra-hbase-dynamodb_28.html" target="_blank">Why MongoDB, Cassandra, HBase, DynamoDB, and Riak will only let you perform transactions on a single data item</a></li>
 </ul>
 
                                 

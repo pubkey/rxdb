@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RX_META_LWT_MINIMUM = exports.RXJS_SHARE_REPLAY_DEFAULTS = exports.RANDOM_STRING = exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
 exports.adapterObject = adapterObject;
+exports.areRxDocumentArraysEqual = areRxDocumentArraysEqual;
 exports.arrayBufferToBase64 = arrayBufferToBase64;
 exports.arrayFilterNotEmpty = arrayFilterNotEmpty;
 exports.b64DecodeUnicode = b64DecodeUnicode;
@@ -496,6 +497,28 @@ function createRevision(hashFunction, docData, previousDocData) {
   var diggestString = JSON.stringify(docWithoutRev);
   var revisionHash = hashFunction(diggestString);
   return newRevisionHeight + '-' + revisionHash;
+}
+
+/**
+ * Faster way to check the equalness of document lists
+ * compared to doing a deep-equal.
+ * Here we only check the ids and revisions.
+ */
+function areRxDocumentArraysEqual(primaryPath, ar1, ar2) {
+  if (ar1.length !== ar2.length) {
+    return false;
+  }
+  var i = 0;
+  var len = ar1.length;
+  while (i < len) {
+    var row1 = ar1[i];
+    var row2 = ar2[i];
+    i++;
+    if (row1._rev !== row2._rev || row1[primaryPath] !== row2[primaryPath]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
