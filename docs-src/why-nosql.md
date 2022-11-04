@@ -1,4 +1,4 @@
-# Why it has to be NoSQL
+# Why UI applications need NoSQL
 
 [RxDB](https://rxdb.info), a client side, offline first, JavaScript database, is now several years old.
 Often new users appear in the chat and ask for that one simple feature:
@@ -6,8 +6,7 @@ They want to store and query **relational data**.
 
 > So why not just implement SQL?
 
-All these client databases out there have on some kind
-of document-based, NoSQL like, storage engine. PouchDB, Firebase, AWS Datastore, RethinkDB's [Horizon](https://github.com/rethinkdb/horizon), Meteor's [Minimongo](https://github.com/mWater/minimongo), [Parse](https://parseplatform.org/), [Realm](https://realm.io/). They all do not have real relational data.
+All these client databases out there have on some kind of document based, NoSQL like, storage engine. PouchDB, Firebase, AWS Datastore, RethinkDB's [Horizon](https://github.com/rethinkdb/horizon), Meteor's [Minimongo](https://github.com/mWater/minimongo), [Parse](https://parseplatform.org/), [Realm](https://realm.io/). They all do not have real relational data.
 
 They might have some kind of weak relational foreign keys like the [RxDB Population](./population.md)
 or the [relational models](https://docs.amplify.aws/lib/datastore/relational/q/platform/js/) of AWS Datastore.
@@ -16,9 +15,46 @@ the rows with complex subqueries over different tables or collections and then m
 
 There must be a reason for that. In fact, there are multiple of them and in the following I want to show you why you can neither have, nor want real relational data when you have a client-side database with replication.
 
+
 <p align="center">
   <img src="./files/no-sql.png" alt="NoSQL" width="100" />
 </p>
+
+
+## Transactions do not work with humans involved
+
+On the server side, transactions are used to run steps of logic inside of a self contained `unit of work`. The database system ensures that multiple transactions do not run in parallel or interfer with each other.
+This works well because on the server side you can predict how longer everything takes. It can be ensured that one transactions does not block everything else for too long which would make the system not responding anymore to other requests.
+
+When you build a UI based application that is used by a real human, you can no longer predict how long anything takes.
+The user clicks the edit button and expects to not have anyone else change the document while the user is in edit mode.
+Using a transaction to ensure nothing is changed in between, is not an option because the transaction could be open for a long
+time and other background tasks, like replication, would no longer work.
+
+So whenever a human is involved, this kind of logic has to be implemented using other strategies. Most NoSQL databases like [RxDB](./) or CouchDB use a system based on [revision and conflicts](./transactions-conflicts-revisions.md) to handle these.
+
+
+
+## Transactions do not work with offline-first
+
+
+When you want to build an [offline-first](./offline-first.md) application, it is assumed that the user can also read and write data, when the device has lost the connection to the backend.
+You could use database transactions on writes to the client's database state, but enforcing a transaction boundary across other instances like clients or servers, is not possible when there is no connection.
+
+<p align="center">
+  <img src="./files/why-no-transactions.jpg" alt="offline first vs relational transactions" width="400" />
+</p>
+
+On the client you could run an update query where all `color: red` rows are changed to `color: blue`, but this would not guarantee that there will still be other `red` documents when the client goes online again and restarts the replication with the server. 
+
+```sql
+UPDATE docs
+SET docs.color = 'red'
+WHERE docs.color = 'blue';
+```
+
+
+
 
 
 ## Relational queries in NoSQL
@@ -131,15 +167,17 @@ Sooner or later you change the layout of your data. You update the schema and yo
 
 With relational data, nothing is self-contained. The relevant data for the migration of a single row could be inside any other table. So when changing the schema, it will be important which table to migrate first and how to orchestrate the migration or relations.
 
+On client side applications, this is even harder because the client can close the application at any time and the migration must be able to continue.
+
 ## Everything can be downgraded to NoSQL
 
 To use an offline first database in the frontend, you have to make it compatible with your backend APIs.
 Making software things compatible often means you have to find the **lowest common denominator**.
 When you have SQLite in the frontend and want to replicate it with the backend, the backend also has to use SQLite. You cannot even use PostgreSQL because it has a different SQL dialect and some queries might fail. But you do not want to let the frontend dictate which technologies to use in the backend just to make replication work.
 
-With NoSQL, you just have documents and writes to these documents. You can build a document based layer on top of everything by **removing** functionality. It can be built on top of SQL, but also on top of a graph database or even on top of a key-value store like [levelDB](./adapters.md#leveldown).
+With NoSQL, you just have documents and writes to these documents. You can build a document based layer on top of everything by **removing** functionality. It can be built on top of SQL, but also on top of a graph database or even on top of a key-value store like [levelDB](./adapters.md#leveldown) or [FoundationDB](./rx-storage-foundationdb.md).
 
-With that document layer you can build a [replication API](./replication-graphql.md) that serves documents sorted by the last update time and there you have a realtime replication.
+With that document layer you can build a [replication API](./replication.md) that serves documents sorted by the last update time and there you have a realtime replication.
 
 ## Caching query results
 
