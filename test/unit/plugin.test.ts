@@ -27,28 +27,24 @@ const REQUIRE_FUN = require;
 config.parallel('plugin.test.js', () => {
     if (!config.platform.isNode()) return;
     describe('.addRxPlugin()', () => {
-        describe('positive', () => {
-            it('should not crash when a new plugin is added', () => {
-                addRxPlugin({
-                    rxdb: true,
-                    name: randomCouchString(12)
-                });
+        it('should not crash when a new plugin is added', () => {
+            addRxPlugin({
+                rxdb: true,
+                name: randomCouchString(12)
             });
         });
-        describe('positive', () => {
-            it('should crash when a plugin with the same name added already but it is NOT the same object', async () => {
-                await assertThrows(
-                    () => addRxPlugin({
-                        name: DEV_MODE_PLUGIN_NAME,
-                        rxdb: true
-                    }),
-                    'RxError',
-                    'PL3'
-                );
-            });
-            it('should NOT crash when a plugin with the same name added already but it IS the same object', async () => {
-                await addRxPlugin(RxDBDevModePlugin);
-            });
+        it('should crash when a plugin with the same name added already but it is NOT the same object', async () => {
+            await assertThrows(
+                () => addRxPlugin({
+                    name: DEV_MODE_PLUGIN_NAME,
+                    rxdb: true
+                }),
+                'RxError',
+                'PL3'
+            );
+        });
+        it('should NOT crash when a plugin with the same name added already but it IS the same object', async () => {
+            await addRxPlugin(RxDBDevModePlugin);
         });
     });
     describe('.addPouchPlugin()', () => {
