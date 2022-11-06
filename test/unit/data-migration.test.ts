@@ -48,7 +48,7 @@ import {
 import { HumanDocumentType } from '../helper/schemas';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
-config.parallel('data-migration.test.js', () => {
+config.parallel('data-migration.test.ts', () => {
 
     /**
      * TODO these tests do not run with the lokijs storage (and others)
@@ -373,9 +373,10 @@ config.parallel('data-migration.test.js', () => {
 
                     const pouchLocation = old.storageInstance.internals.pouch.name;
                     const checkPouch = new PouchDB(pouchLocation, {
-                        adapter: 'memory'
+                        adapter: old.storageInstance.internals.pouch.adapter
                     });
                     const amountPlain = await pouchCountAllUndeleted(checkPouch as any);
+
                     assert.strictEqual(amountPlain, 10);
 
                     // check that internal doc exists
@@ -388,7 +389,7 @@ config.parallel('data-migration.test.js', () => {
 
                     // check that all docs deleted
                     const checkPouch2 = new PouchDB(pouchLocation, {
-                        adapter: 'memory'
+                        adapter: old.storageInstance.internals.pouch.adapter
                     });
                     const amountPlain2 = await pouchCountAllUndeleted(checkPouch2 as any);
                     assert.strictEqual(amountPlain2, 0);
