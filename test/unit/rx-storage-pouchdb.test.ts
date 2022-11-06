@@ -17,7 +17,6 @@ import {
 } from '../../';
 
 import {
-    hashAttachmentData,
     getAttachmentSize
 } from '../../plugins/attachments';
 
@@ -26,7 +25,8 @@ import {
     getCustomEventEmitterByPouch,
     PouchDBInstance,
     getRxStoragePouch,
-    PouchDB
+    PouchDB,
+    hashAttachmentData
 } from '../../plugins/pouchdb';
 import * as schemaObjects from '../helper/schema-objects';
 

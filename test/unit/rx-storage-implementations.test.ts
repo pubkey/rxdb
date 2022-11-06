@@ -2346,13 +2346,15 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     }
                 };
-                await writeSingle<TestDocType>(
+                const writeResult = await writeSingle<TestDocType>(
                     storageInstance,
                     {
                         document: writeData
                     },
                     testContext
                 );
+                assert.strictEqual(typeof (writeResult._attachments.foo as any).data, 'undefined');
+                assert.ok(writeResult._attachments.foo.digest.length > 3);
 
                 const attachmentDataAfter = await storageInstance.getAttachmentData('foobar', 'foo');
                 assert.strictEqual(attachmentDataAfter, dataStringBase64);
