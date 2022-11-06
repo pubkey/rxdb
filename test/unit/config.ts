@@ -108,8 +108,13 @@ export function setDefaultStorage(storageKey: string) {
             config.storage = {
                 name: 'pouchdb',
                 getStorage: () => {
-                    addPouchPlugin(require('pouchdb-adapter-memory'));
-                    return getRxStoragePouch('memory');
+                    if (config.platform.name === 'node') {
+                        addPouchPlugin(require('pouchdb-adapter-memory'));
+                        return getRxStoragePouch('memory');
+                    } else {
+                        addPouchPlugin(require('pouchdb-adapter-idb'));
+                        return getRxStoragePouch('idb');
+                    }
                 },
                 getPerformanceStorage() {
                     if (config.platform.name === 'node') {
@@ -214,7 +219,7 @@ export function setDefaultStorage(storageKey: string) {
                 name: 'dexie',
                 getStorage: () => {
                     if (config.platform.name === 'node' || config.isFastMode()) {
-                        const {indexedDB, IDBKeyRange} = require('fake-indexeddb');
+                        const { indexedDB, IDBKeyRange } = require('fake-indexeddb');
                         return getRxStorageDexie({
                             indexedDB,
                             IDBKeyRange
@@ -225,7 +230,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 getPerformanceStorage() {
                     if (config.platform.name === 'node') {
-                        const {indexedDB, IDBKeyRange} = require('fake-indexeddb');
+                        const { indexedDB, IDBKeyRange } = require('fake-indexeddb');
                         return {
                             storage: getRxStorageDexie({
                                 indexedDB,
