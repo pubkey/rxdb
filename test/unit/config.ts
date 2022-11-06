@@ -112,8 +112,9 @@ export function setDefaultStorage(storageKey: string) {
                         addPouchPlugin(require('pouchdb-adapter-memory'));
                         return getRxStoragePouch('memory');
                     } else {
-                        addPouchPlugin(require('pouchdb-adapter-idb'));
-                        return getRxStoragePouch('idb');
+                        // TODO use idb when performance is fixed
+                        addPouchPlugin(require('pouchdb-adapter-memory'));
+                        return getRxStoragePouch('memory');
                     }
                 },
                 getPerformanceStorage() {
