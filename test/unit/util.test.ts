@@ -250,7 +250,7 @@ describe('util.test.js', () => {
             const size = blobBufferUtil.size(blobBuffer);
             assert.strictEqual(size, amount);
         });
-        it('should do the correct base64 conversion', async () => {
+        it('should do the correct base64 conversions', async () => {
             const plain = 'aaa';
             const base64 = 'YWFh';
 
@@ -272,6 +272,19 @@ describe('util.test.js', () => {
             assert.strictEqual(
                 await blobBufferUtil.toString(blobBufferFromb64),
                 plain
+            );
+        });
+        /**
+         * @link https://github.com/pubkey/rxdb/pull/4107
+         */
+        it('#4107 it should do the correct base64 conversion', async () => {
+            const base64 = 'Qk06AAAAAAAAADYAAAAoAAAAAQAAAAEAAAABABgAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAJBztAA==';
+            const mimeType = 'image/bmp';
+
+            const blobBuffer = await blobBufferUtil.createBlobBufferFromBase64(base64, mimeType);
+            assert.strictEqual(
+                await blobBufferUtil.toBase64String(blobBuffer),
+                base64
             );
         });
         it('should work with non latin-1 chars', async () => {

@@ -157,6 +157,10 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
     > {
+
+        console.log('################# pouch bulk write:');
+        console.log(JSON.stringify(documentWrites, null, 4));
+
         ensureNotClosed(this);
         if (documentWrites.length === 0) {
             throw newRxError('P2', {

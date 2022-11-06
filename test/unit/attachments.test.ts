@@ -15,8 +15,12 @@ import {
     MigrationStrategies,
     WithAttachmentsData,
     RxCollection,
+    addRxPlugin,
     ensureNotFalsy
 } from '../../';
+import { RxDBMigrationPlugin } from '../../plugins/migration';
+addRxPlugin(RxDBMigrationPlugin);
+
 import { HumanDocumentType } from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
 import {

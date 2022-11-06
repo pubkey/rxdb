@@ -31,12 +31,12 @@ import { pouchHash } from './pouchdb';
  * we have to use the md5 hashing here, even if the RxDatabase itself
  * has a different hashing function.
  */
-export function hashAttachmentData(
+export async function hashAttachmentData(
     attachmentBase64String: string
 ): Promise<string> {
     let binary;
     try {
-        binary = b64DecodeUnicode(attachmentBase64String);
+        binary = await atob(attachmentBase64String);
     } catch (err) {
         console.log('could not run b64DecodeUnicode() on ' + attachmentBase64String);
         throw err;

@@ -9,31 +9,50 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+import PouchDBPlugin from 'pouchdb-adapter-idb';
+
 import config from './config';
 
 import {
+    addRxPlugin,
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
+    blobBufferUtil
 } from '../../';
+import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
+import { wrappedKeyEncryptionStorage } from '../../plugins/encryption';
+import { addPouchPlugin, getRxStoragePouch } from '../../plugins/pouchdb';
+import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
+import { RxDBUpdatePlugin } from '../../plugins/update';
+import { wait } from 'async-test-util';
+
+addRxPlugin(RxDBUpdatePlugin);
+addRxPlugin(RxDBQueryBuilderPlugin);
+addRxPlugin(RxDBAttachmentsPlugin);
+addPouchPlugin(PouchDBPlugin);
+
+const attName = 'red_dot_1px_image';
+const redDotBase64 =
+    'data:image/bmp;base64,Qk06AAAAAAAAADYAAAAoAAAAAQAAAAEAAAABABgAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAJBztAA==';
+
+const convertBase64ToBlob = (base64Image: string) => {
+    const parts = base64Image.split(';base64,');
+    const imageType = parts[0].split(':')[1];
+    return blobBufferUtil.createBlobBufferFromBase64(
+        parts[1],
+        imageType
+    );
+    const decodedData = atob(parts[1]);
+    const uInt8Array = new Uint8Array(decodedData.length);
+    for (let i = 0; i < decodedData.length; ++i) {
+        uInt8Array[i] = decodedData.charCodeAt(i);
+    }
+    return new Blob([uInt8Array], { type: imageType });
+};
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
 
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !config.platform.isNode() // runs only in node
-            // config.platform.isNode() // runs only in the browser
-        ) {
-            // return;
-        }
-
-        if (!config.storage.hasMultiInstance) {
-            return;
-        }
 
         // create a schema
         const mySchema = {
@@ -43,41 +62,52 @@ describe('bug-report.test.js', () => {
             properties: {
                 passportId: {
                     type: 'string',
-                    maxLength: 100
+                    maxLength: 100,
                 },
                 firstName: {
-                    type: 'string'
+                    type: 'string',
                 },
                 lastName: {
-                    type: 'string'
+                    type: 'string',
                 },
                 age: {
                     type: 'integer',
                     minimum: 0,
-                    maximum: 150
-                }
-            }
+                    maximum: 150,
+                },
+            },
+            attachments: {
+                encrypted: false,
+            },
         };
 
         // generate a random database-name
         const name = randomCouchString(10);
 
+        // create an encrypted storage
+        const encryptedPoachStorage = wrappedKeyEncryptionStorage({
+            storage: config.storage.getStorage(),
+        });
+
         // create a database
         const db = await createRxDatabase({
             name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
+            storage: encryptedPoachStorage,
+            password: 'password',
+            eventReduce: false,
+            multiInstance: true,
+            ignoreDuplicate: true,
+            pouchSettings: {
+                auto_compaction: false,
+                revs_limit: 5,
+            },
         });
+
         // create a collection
         const collections = await db.addCollections({
             mycollection: {
-                schema: mySchema
-            }
+                schema: mySchema,
+            },
         });
 
         // insert a document
@@ -85,28 +115,11 @@ describe('bug-report.test.js', () => {
             passportId: 'foobar',
             firstName: 'Bob',
             lastName: 'Kelso',
-            age: 56
-        });
-
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
+            age: 56,
         });
 
         // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
+        const myDocument = await db.mycollection
             .findOne()
             .where('firstName')
             .eq('Bob')
@@ -118,16 +131,42 @@ describe('bug-report.test.js', () => {
          */
         assert.strictEqual(myDocument.age, 56);
 
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        // generate blob for attachment
+        const blob = await convertBase64ToBlob(redDotBase64);
+
+        console.log('----');
+        console.log(myDocument.toJSON(true));
+
+
+
+        // put blob as attachment in storage
+        const attachment = await myDocument.putAttachment({
+            id: attName,
+            data: blob,
+            type: 'image/bmp',
+        });
+        console.log(
+            `myDocument.putAttachment with digest: "${attachment?.digest}" will not match digest in the IndexedDB (Debug - Application - IndexedDB - attach-store) causing error later`
+        );
+
+        await wait(1000);
+        const fromStorage = await myDocument.collection.storageInstance.findDocumentsById(['foobar'], false);
+        console.dir(fromStorage);
+
+        console.log('----2');
+        console.log(myDocument.toJSON(true));
+
+
+        // trying update document later and getting Error "A pre-existing attachment stub wasn't found" because digest mismatch
+        await myDocument.update({
+            $set: {
+                age: 60,
+            },
+        });
+
+        assert.strictEqual(myDocument.age, 60);
 
         // clean up afterwards
-        sub.unsubscribe();
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });
