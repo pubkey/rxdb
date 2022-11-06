@@ -19,7 +19,7 @@ import {
 
 import * as humansCollection from '../helper/humans-collection';
 import { assertThrows } from 'async-test-util';
-import { RxDBDevModePlugin } from '../../plugins/dev-mode';
+import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode';
 
 // used so that browserify will not require things in browsers
 const REQUIRE_FUN = require;
@@ -36,16 +36,18 @@ config.parallel('plugin.test.js', () => {
             });
         });
         describe('positive', () => {
-            /**
-             * this test assumes that at this point,
-             * the full RxDB has been imported and dev-mode is already there
-             */
-            it('should crash when dev-mode is added multiple times', async () => {
+            it('should crash when a plugin with the same name added already but it is NOT the same object', async () => {
                 await assertThrows(
-                    () => addRxPlugin(RxDBDevModePlugin),
+                    () => addRxPlugin({
+                        name: DEV_MODE_PLUGIN_NAME,
+                        rxdb: true
+                    }),
                     'RxError',
-                    'DEV1'
+                    'PL3'
                 );
+            });
+            it('should NOT crash when a plugin with the same name added already but it IS the same object', async () => {
+                await addRxPlugin(RxDBDevModePlugin);
             });
         });
     });

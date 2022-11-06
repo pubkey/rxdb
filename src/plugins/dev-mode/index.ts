@@ -2,7 +2,6 @@ import type {
     RxPlugin,
     RxCollectionCreator,
     RxDatabaseCreator,
-    RxPluginPreAddRxPluginArgs,
     RxErrorKey
 } from '../../types';
 
@@ -12,7 +11,10 @@ import {
 import {
     checkSchema
 } from './check-schema';
-import { checkOrmDocumentMethods, checkOrmMethods } from './check-orm';
+import {
+    checkOrmDocumentMethods,
+    checkOrmMethods
+} from './check-orm';
 import { checkMigrationStrategies } from './check-migration-strategies';
 import {
     ensureCollectionNameValid,
@@ -48,7 +50,7 @@ export function deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T> {
 }
 
 
-const DEV_MODE_PLUGIN_NAME = 'dev-mode';
+export const DEV_MODE_PLUGIN_NAME = 'dev-mode';
 export const RxDBDevModePlugin: RxPlugin = {
     name: DEV_MODE_PLUGIN_NAME,
     rxdb: true,
@@ -66,20 +68,6 @@ export const RxDBDevModePlugin: RxPlugin = {
         }
     },
     hooks: {
-        preAddRxPlugin: {
-            after: function (args: RxPluginPreAddRxPluginArgs) {
-                /**
-                 * throw when dev mode is added multiple times
-                 * because there is no way that this was done intentional.
-                 * Likely the developer has mixed core and default usage of RxDB.
-                 */
-                if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
-                    throw newRxError('DEV1', {
-                        plugins: args.plugins
-                    });
-                }
-            }
-        },
         preCreateRxSchema: {
             after: checkSchema
         },
