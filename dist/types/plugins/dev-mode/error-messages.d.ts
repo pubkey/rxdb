@@ -105,6 +105,7 @@ export declare const ERROR_MESSAGES: {
     RC_PULL: string;
     RC_STREAM: string;
     RC_PUSH: string;
+    RC_PUSH_NO_AR: string;
     SC1: string;
     SC2: string;
     SC3: string;
@@ -148,7 +149,6 @@ export declare const ERROR_MESSAGES: {
     S1: string;
     GQL1: string;
     GQL3: string;
-    REP1: string;
     CRDT1: string;
     CRDT2: string;
     CRDT3: string;

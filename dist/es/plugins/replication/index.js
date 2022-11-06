@@ -360,7 +360,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
                 return Promise.resolve(Promise.all(rows.map(function (row) {
                   try {
                     return Promise.resolve(pushModifier(row.newDocumentState)).then(function (_pushModifier) {
-                      function _temp12() {
+                      function _temp11() {
                         if (_this3.deletedField !== '_deleted') {
                           row.newDocumentState = swapDefaultDeletedTodeletedField(_this3.deletedField, row.newDocumentState);
                           if (row.assumedMasterState) {
@@ -370,20 +370,22 @@ export var RxReplicationState = /*#__PURE__*/function () {
                         return row;
                       }
                       row.newDocumentState = _pushModifier;
-                      var _temp11 = function () {
+                      var _temp10 = function () {
                         if (row.assumedMasterState) {
                           return Promise.resolve(pushModifier(row.assumedMasterState)).then(function (_pushModifier2) {
                             row.assumedMasterState = _pushModifier2;
                           });
                         }
                       }();
-                      return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
+                      return _temp10 && _temp10.then ? _temp10.then(_temp11) : _temp11(_temp10);
                     });
                   } catch (e) {
                     return Promise.reject(e);
                   }
                 }))).then(function (useRows) {
-                  function _temp10() {
+                  var _exit = false;
+                  function _temp9(_result2) {
+                    if (_exit) return _result2;
                     if (_this3.isStopped()) {
                       return [];
                     }
@@ -392,17 +394,32 @@ export var RxReplicationState = /*#__PURE__*/function () {
                     });
                     return conflicts;
                   }
-                  var result = {};
-                  var _temp9 = _for(function () {
-                    return !done && !_this3.isStopped();
+                  var result = null;
+                  var _temp8 = _for(function () {
+                    return !_exit && !done && !_this3.isStopped();
                   }, void 0, function () {
-                    var _temp8 = _catch(function () {
+                    return _catch(function () {
                       return Promise.resolve(_this3.push.handler(useRows)).then(function (_this3$push$handler) {
                         result = _this3$push$handler;
+                        /**
+                         * It is a common problem that people have wrongly behaving backend
+                         * that do not return an array with the conflicts on push requests.
+                         * So we run this check here to make it easier to debug.
+                         * @link https://github.com/pubkey/rxdb/issues/4103
+                         */
+                        if (!Array.isArray(result)) {
+                          throw newRxError('RC_PUSH_NO_AR', {
+                            pushRows: rows,
+                            direction: 'push',
+                            args: {
+                              result: result
+                            }
+                          });
+                        }
                         done = true;
                       });
                     }, function (err) {
-                      var emitError = newRxError('RC_PUSH', {
+                      var emitError = err.rxdb ? err : newRxError('RC_PUSH', {
                         pushRows: rows,
                         errors: Array.isArray(err) ? err : [err],
                         direction: 'push'
@@ -410,9 +427,8 @@ export var RxReplicationState = /*#__PURE__*/function () {
                       _this3.subjects.error.next(emitError);
                       return Promise.resolve(_this3.collection.promiseWait(ensureNotFalsy(_this3.retryTime))).then(function () {});
                     });
-                    if (_temp8 && _temp8.then) return _temp8.then(function () {});
                   });
-                  return _temp9 && _temp9.then ? _temp9.then(_temp10) : _temp10(_temp9);
+                  return _temp8 && _temp8.then ? _temp8.then(_temp9) : _temp9(_temp8);
                 });
               } catch (e) {
                 return Promise.reject(e);

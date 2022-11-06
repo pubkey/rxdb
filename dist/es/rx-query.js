@@ -1,8 +1,7 @@
 import _createClass from "@babel/runtime/helpers/createClass";
-import deepEqual from 'fast-deep-equal';
 import { BehaviorSubject, firstValueFrom, merge } from 'rxjs';
 import { mergeMap, filter, map, startWith, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy } from './util';
+import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy, areRxDocumentArraysEqual } from './util';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { createRxDocuments } from './rx-document-prototype-merge';
@@ -521,7 +520,16 @@ function __ensureEqual(rxQuery) {
     var latestAfter = rxQuery.collection._changeEventBuffer.counter;
     return rxQuery._execOverDatabase().then(function (newResultData) {
       rxQuery._latestChangeEvent = latestAfter;
-      if (!rxQuery._result || !deepEqual(newResultData, rxQuery._result.docsData)) {
+
+      // A count query needs a different has-changed check.
+      if (typeof newResultData === 'number') {
+        if (!rxQuery._result || newResultData !== rxQuery._result.count) {
+          ret = true;
+          rxQuery._setResultData(newResultData);
+        }
+        return ret;
+      }
+      if (!rxQuery._result || !areRxDocumentArraysEqual(rxQuery.collection.schema.primaryPath, newResultData, rxQuery._result.docsData)) {
         ret = true; // true because results changed
         rxQuery._setResultData(newResultData);
       }

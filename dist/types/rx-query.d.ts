@@ -1,10 +1,10 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData } from './types';
 import type { QueryMatcher } from 'event-reduce-js';
-export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocument<RxDocumentType>[] | RxDocument<RxDocumentType>> {
+export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType>[] | RxDocument<RxDocType>> {
     op: RxQueryOP;
     mangoQuery: Readonly<MangoQuery>;
-    collection: RxCollection<RxDocumentType>;
+    collection: RxCollection<RxDocType>;
     id: number;
     /**
      * Some stats then are used for debugging and cache replacement policies
@@ -21,9 +21,9 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
      * or null if query has not run yet.
      */
     _result: {
-        docsData: RxDocumentType[];
-        docsDataMap: Map<string, RxDocumentType>;
-        docs: RxDocument<RxDocumentType>[];
+        docsData: RxDocumentData<RxDocType>[];
+        docsDataMap: Map<string, RxDocType>;
+        docs: RxDocument<RxDocType>[];
         count: number;
         /**
          * Time at which the current _result state was created.
@@ -32,7 +32,7 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
          */
         time: number;
     } | null;
-    constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery>, collection: RxCollection<RxDocumentType>);
+    constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery>, collection: RxCollection<RxDocType>);
     get $(): BehaviorSubject<RxQueryResult>;
     _latestChangeEvent: -1 | number;
     _lastExecStart: number;
@@ -54,24 +54,24 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
      * set the new result-data as result-docs of the query
      * @param newResultData json-docs that were received from pouchdb
      */
-    _setResultData(newResultData: RxDocumentData<RxDocumentType[]> | number): void;
+    _setResultData(newResultData: RxDocumentData<RxDocType[]> | number): void;
     /**
      * executes the query on the database
      * @return results-array with document-data
      */
-    _execOverDatabase(): Promise<RxDocumentData<RxDocumentType>[] | number>;
+    _execOverDatabase(): Promise<RxDocumentData<RxDocType>[] | number>;
     /**
      * Execute the query
      * To have an easier implementations,
      * just subscribe and use the first result
      */
-    exec(throwIfMissing: true): Promise<RxDocument<RxDocumentType>>;
+    exec(throwIfMissing: true): Promise<RxDocument<RxDocType>>;
     exec(): Promise<RxQueryResult>;
     /**
      * cached call to get the queryMatcher
      * @overwrites itself with the actual value
      */
-    get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocumentType>>;
+    get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocType>>;
     /**
      * returns a string that is used for equal-comparisons
      * @overwrites itself with the actual value
@@ -82,12 +82,12 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
      * which can be send to the storage instance to query for documents.
      * @overwrites itself with the actual value.
      */
-    getPreparedQuery(): PreparedQuery<RxDocumentType>;
+    getPreparedQuery(): PreparedQuery<RxDocType>;
     /**
      * returns true if the document matches the query,
      * does not use the 'skip' and 'limit'
      */
-    doesDocumentDataMatch(docData: RxDocumentType | any): boolean;
+    doesDocumentDataMatch(docData: RxDocType | any): boolean;
     /**
      * deletes all found documents
      * @return promise with deleted documents
@@ -96,16 +96,16 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     /**
      * helper function to transform RxQueryBase to RxQuery type
      */
-    get asRxQuery(): RxQuery<RxDocumentType, RxQueryResult>;
+    get asRxQuery(): RxQuery<RxDocType, RxQueryResult>;
     /**
      * updates all found documents
      * @overwritten by plugin (optional)
      */
     update(_updateObj: any): Promise<RxQueryResult>;
-    where(_queryObj: MangoQuerySelector<RxDocumentType> | keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
-    sort(_params: string | MangoQuerySortPart<RxDocumentType>): RxQuery<RxDocumentType, RxQueryResult>;
-    skip(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult>;
-    limit(_amount: number | null): RxQuery<RxDocumentType, RxQueryResult>;
+    where(_queryObj: MangoQuerySelector<RxDocType> | keyof RxDocType | string): RxQuery<RxDocType, RxQueryResult>;
+    sort(_params: string | MangoQuerySortPart<RxDocType>): RxQuery<RxDocType, RxQueryResult>;
+    skip(_amount: number | null): RxQuery<RxDocType, RxQueryResult>;
+    limit(_amount: number | null): RxQuery<RxDocType, RxQueryResult>;
 }
 export declare function _getDefaultQuery(): MangoQuery;
 /**

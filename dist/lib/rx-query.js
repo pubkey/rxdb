@@ -12,7 +12,6 @@ exports.isInstanceOf = isInstanceOf;
 exports.queryCollection = void 0;
 exports.tunnelQueryCache = tunnelQueryCache;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
 var _util = require("./util");
@@ -535,7 +534,16 @@ function __ensureEqual(rxQuery) {
     var latestAfter = rxQuery.collection._changeEventBuffer.counter;
     return rxQuery._execOverDatabase().then(function (newResultData) {
       rxQuery._latestChangeEvent = latestAfter;
-      if (!rxQuery._result || !(0, _fastDeepEqual["default"])(newResultData, rxQuery._result.docsData)) {
+
+      // A count query needs a different has-changed check.
+      if (typeof newResultData === 'number') {
+        if (!rxQuery._result || newResultData !== rxQuery._result.count) {
+          ret = true;
+          rxQuery._setResultData(newResultData);
+        }
+        return ret;
+      }
+      if (!rxQuery._result || !(0, _util.areRxDocumentArraysEqual)(rxQuery.collection.schema.primaryPath, newResultData, rxQuery._result.docsData)) {
         ret = true; // true because results changed
         rxQuery._setResultData(newResultData);
       }
