@@ -121,12 +121,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
                 categorized.bulkInsertDocs.forEach(row => {
                     const docId: string = (row.document as any)[this.primaryPath];
-                    ret.success[docId] = row.document;
+                    ret.success[docId] = row.document as any;
                     bulkPutDocs.push(row.document);
                 });
                 categorized.bulkUpdateDocs.forEach(row => {
                     const docId: string = (row.document as any)[this.primaryPath];
-                    ret.success[docId] = row.document;
+                    ret.success[docId] = row.document as any;
                     if (
                         row.document._deleted &&
                         (row.previous && !row.previous._deleted)

@@ -33,7 +33,8 @@ import type {
     RxDocumentData,
     RxStorageStatics,
     FilledMangoQuery,
-    PreparedQuery
+    PreparedQuery,
+    RxDocumentWriteData
 } from '../types';
 import {
     flatClone,
@@ -218,7 +219,7 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                 }
 
                 const compressionState = getCompressionStateByRxJsonSchema(params.schema);
-                function modifyToStorage(docData: RxDocumentData<RxDocType>) {
+                function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
                     return compressDocumentData(compressionState, docData);
                 }
                 function modifyFromStorage(docData: RxDocumentData<any>): Promise<RxDocumentData<RxDocType>> {

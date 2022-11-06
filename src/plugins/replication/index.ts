@@ -298,7 +298,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         );
         this.subs.push(
             this.internalReplicationState.events.processed.down
-                .subscribe(row => this.subjects.received.next(row.document))
+                .subscribe(row => this.subjects.received.next(row.document as any))
         );
         this.subs.push(
             this.internalReplicationState.events.processed.up

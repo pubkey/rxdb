@@ -3,6 +3,7 @@
  */
 
 import { overwritable } from './overwritable';
+import { attachmentWriteDataToNormalData } from './plugins/attachments';
 import { newRxError } from './rx-error';
 import {
     fillPrimaryKey,
@@ -10,6 +11,7 @@ import {
 } from './rx-schema-helper';
 import type {
     BulkWriteRow,
+    BulkWriteRowProcessed,
     ById,
     CategorizeBulkWriteRowsOutput,
     EventBulk,
@@ -185,10 +187,10 @@ export function categorizeBulkWriteRows<RxDocType>(
     context: string
 ): CategorizeBulkWriteRowsOutput<RxDocType> {
     const hasAttachments = !!storageInstance.schema.attachments;
-    const bulkInsertDocs: BulkWriteRow<RxDocType>[] = [];
-    const bulkUpdateDocs: BulkWriteRow<RxDocType>[] = [];
+    const bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[] = [];
+    const bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const errors: ById<RxStorageBulkWriteError<RxDocType>> = {};
-    const changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][] = [];
+    const changedDocumentIds: RxDocType[StringKeys<RxDocType>][] = [];
     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
         id: randomCouchString(10),
         events: [],
@@ -250,7 +252,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                 if (hasAttachments) {
                     bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
                 } else {
-                    bulkInsertDocs.push(writeRow);
+                    bulkInsertDocs.push(writeRow as any);
                 }
             }
 
@@ -341,10 +343,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                                     attachmentData: attachmentData as any
                                 });
                             } else {
-                                if (
-                                    (attachmentData as RxAttachmentWriteData).data &&
-                                    attachmentData.digest !== previousAttachmentData.digest
-                                ) {
+                                if ((attachmentData as RxAttachmentWriteData).data) {
                                     attachmentsUpdate.push({
                                         documentId: id as any,
                                         attachmentId,
@@ -361,7 +360,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                 if (hasAttachments) {
                     bulkUpdateDocs.push(stripAttachmentsDataFromRow(writeRow));
                 } else {
-                    bulkUpdateDocs.push(writeRow);
+                    bulkUpdateDocs.push(writeRow as any);
                 }
             }
 
@@ -373,14 +372,14 @@ export function categorizeBulkWriteRows<RxDocType>(
 
             if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
                 operation = 'INSERT';
-                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc;
+                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc as any;
             } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
                 operation = 'UPDATE';
-                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc;
+                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc as any;
                 previousEventDocumentData = writeRow.previous;
             } else if (writeDoc._deleted) {
                 operation = 'DELETE';
-                eventDocumentData = ensureNotFalsy(writeRow.document);
+                eventDocumentData = ensureNotFalsy(writeRow.document) as any;
                 previousEventDocumentData = writeRow.previous;
             } else {
                 throw newRxError('SNH', { args: { writeRow } });
@@ -411,23 +410,22 @@ export function categorizeBulkWriteRows<RxDocType>(
     };
 }
 
-export function stripAttachmentsDataFromRow<RxDocType>(writeRow: BulkWriteRow<RxDocType>): BulkWriteRow<RxDocType> {
+export function stripAttachmentsDataFromRow<RxDocType>(writeRow: BulkWriteRow<RxDocType>): BulkWriteRowProcessed<RxDocType> {
     return {
         previous: writeRow.previous,
         document: stripAttachmentsDataFromDocument(writeRow.document)
     };
 }
+
+
+
 export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWriteData<RxDocType>): RxDocumentData<RxDocType> {
-    const useDoc: RxDocumentData<RxDocType> = flatClone(doc);
+    const useDoc: RxDocumentData<RxDocType> = flatClone(doc) as any;
     useDoc._attachments = {};
     Object
         .entries(doc._attachments)
         .forEach(([attachmentId, attachmentData]) => {
-            useDoc._attachments[attachmentId] = {
-                digest: attachmentData.digest,
-                length: attachmentData.length,
-                type: attachmentData.type
-            };
+            useDoc._attachments[attachmentId] = attachmentWriteDataToNormalData(attachmentData);
         })
     return useDoc;
 }

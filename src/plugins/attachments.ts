@@ -3,8 +3,8 @@ import {
 } from 'rxjs/operators';
 
 import {
-    b64DecodeUnicode,
     blobBufferUtil,
+    defaultHashFunction,
     flatClone,
     PROMISE_RESOLVE_VOID
 } from './../util';
@@ -23,32 +23,30 @@ import type {
     RxAttachmentWriteData
 } from '../types';
 import { flatCloneDocWithMeta, writeSingle } from '../rx-storage-helper';
-import { pouchHash } from './pouchdb';
 
-
-/**
- * To be able to support PouchDB with attachments,
- * we have to use the md5 hashing here, even if the RxDatabase itself
- * has a different hashing function.
- */
-export function hashAttachmentData(
-    attachmentBase64String: string
-): Promise<string> {
-    let binary;
-    try {
-        binary = b64DecodeUnicode(attachmentBase64String);
-    } catch (err) {
-        console.log('could not run b64DecodeUnicode() on ' + attachmentBase64String);
-        throw err;
-    }
-    return pouchHash(binary);
-}
 
 export function getAttachmentSize(
     attachmentBase64String: string
 ): number {
     return atob(attachmentBase64String).length;
 }
+
+/**
+ * Used in custom RxStorage implementations.
+ */
+export function attachmentWriteDataToNormalData(writeData: RxAttachmentData | RxAttachmentWriteData): RxAttachmentData {
+    const data = (writeData as RxAttachmentWriteData).data;
+    if (!data) {
+        return writeData as any;
+    }
+    const ret: RxAttachmentData = {
+        digest: defaultHashFunction(data),
+        length: getAttachmentSize(data),
+        type: writeData.type
+    };
+    return ret;
+}
+
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -161,8 +159,10 @@ export async function putAttachment(
     /**
      * If set to true, the write will be skipped
      * when the attachment already contains the same data.
+     * @deprecated Makes no sense because the attachment hash
+     * is calculated by the RxStorage so we do not know it at this point.
      */
-    skipIfSame: boolean = true
+    _skipIfSame: boolean = true
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
@@ -173,25 +173,12 @@ export async function putAttachment(
     const type = attachmentData.type;
     const data = dataString;
 
-    const newDigest = await hashAttachmentData(
-        dataString
-    ).then(hash => 'md5-' + hash);
-
     this._atomicQueue = this._atomicQueue
         .then(async () => {
-            if (skipIfSame && this._data._attachments && this._data._attachments[id]) {
-                const currentMeta = this._data._attachments[id];
-                if (currentMeta.type === type && currentMeta.digest === newDigest) {
-                    // skip because same data and same type
-                    return this.getAttachment(id);
-                }
-            }
-
             const docWriteData: RxDocumentWriteData<{}> = flatCloneDocWithMeta(this._data);
             docWriteData._attachments = flatClone(docWriteData._attachments);
 
             docWriteData._attachments[id] = {
-                digest: newDigest,
                 length: dataSize,
                 type,
                 data
@@ -283,7 +270,6 @@ export async function preMigrateDocument<RxDocType>(
                 const docPrimary: string = (data.docData as any)[data.oldCollection.schema.primaryPath];
                 const rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
                 newAttachments[attachmentId] = {
-                    digest: attachment.digest,
                     length: attachment.length,
                     type: attachment.type,
                     data: rawAttachmentData

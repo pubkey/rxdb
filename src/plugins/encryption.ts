@@ -16,6 +16,7 @@ import type {
     InternalStoreDocType,
     RxAttachmentWriteData,
     RxDocumentData,
+    RxDocumentWriteData,
     RxJsonSchema,
     RxStorage,
     RxStorageInstanceCreationParams
@@ -116,7 +117,7 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
                     )
                 );
 
-                function modifyToStorage(docData: RxDocumentData<RxDocType>) {
+                function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
                     docData = cloneWithoutAttachments(docData);
                     ensureNotFalsy(params.schema.encrypted)
                         .forEach(path => {
@@ -190,13 +191,13 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
 
 
 
-function cloneWithoutAttachments<T>(data: RxDocumentData<T>): RxDocumentData<T> {
+function cloneWithoutAttachments<T>(data: RxDocumentWriteData<T>): RxDocumentData<T> {
     const attachments = data._attachments;
     data = flatClone(data);
     delete (data as any)._attachments;
     data = clone(data);
     data._attachments = attachments;
-    return data;
+    return data as any;
 }
 
 function validatePassword(password: any) {

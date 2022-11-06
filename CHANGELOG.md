@@ -5,6 +5,7 @@
 - REFACTOR use faster `areRxDocumentArraysEqual` instead of doing a deep-equal check.
 - ADD check to easier debug wrongly behaving backend during replication.
 - FIX error `dev-mode added multiple times` is removed because it is annoying when using react hot-swap. Instead `addRxPlugin()` will now only throw if a different plugin is added that has the same name as a plugin that was added before.
+- REFACTOR create the `digest` of an attachment inside of the `RxStorage`, not in RxDB. This makes the behavior equal to CouchDB and solves a lot of problems caused by different hashing or base64 encoding of the RxStorage implementations.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

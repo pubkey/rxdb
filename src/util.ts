@@ -5,6 +5,7 @@ import type {
     MaybeReadonly,
     RxDocumentData,
     RxDocumentMeta,
+    RxDocumentWriteData,
     StringKeys
 } from './types';
 import {
@@ -457,7 +458,7 @@ export function getHeightOfRevision(revision: string): number {
  */
 export function createRevision<RxDocType>(
     hashFunction: HashFunction,
-    docData: RxDocumentData<RxDocType> & {
+    docData: RxDocumentWriteData<RxDocType> & {
         /**
          * Passing a revision is optional here,
          * because it is anyway not needed to calculate

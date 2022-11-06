@@ -93,38 +93,50 @@ export type BulkWriteRowById<RxDocType> = {
     [documentId: string]: BulkWriteRow<RxDocType>;
 }
 
-
 /**
- * Meta data of the attachment.
- * Created by RxDB, not by the RxStorage.
+ * After the RxStorage has processed all rows,
+ * we have this to work with afterwards.
  */
-export type RxAttachmentDataMeta = {
-    /**
-     * The digest which is the output of the hash function
-     */
-    digest: string;
+export type BulkWriteRowProcessed<RxDocType> = BulkWriteRow<RxDocType> & {
+    document: RxDocumentData<RxDocType>
+}
+
+
+export type RxAttachmentDataBase = {
     /**
      * Size of the attachments data
      */
     length: number;
-};
-
-/**
- * Meta data of the attachment
- * how it is send to, or comes out of the RxStorage implementation.
- */
-export type RxAttachmentData = RxAttachmentDataMeta & {
     /**
      * Content type like 'plain/text'
      */
     type: string;
 }
 
+
+/**
+ * Meta data of the attachment
+ * how it is send to, or comes out of the RxStorage implementation.
+ */
+export type RxAttachmentData = RxAttachmentDataBase & {
+    /**
+     * The hash of the attachments content.
+     * It is NOT calculated by RxDB, instead it is calculated
+     * by the RxStorage.
+     * There is no way to pre-calculate the hash from the outside because
+     * the RxStorage might hash a compressed binary or do a different base64 transformation
+     * before hashing.
+     * @link https://github.com/pouchdb/pouchdb/issues/3156#issuecomment-66831010
+     * @link https://github.com/pubkey/rxdb/pull/4107
+     */
+    digest: string;
+}
+
 /**
  * Data which is needed for new attachments
  * that are send from RxDB to the RxStorage implementation.
  */
-export type RxAttachmentWriteData = RxAttachmentData & {
+export type RxAttachmentWriteData = RxAttachmentDataBase & {
     /**
      * The data of the attachment. As string in base64 format.
      * In the past we used BlobBuffer internally but it created many
@@ -320,15 +332,15 @@ export type RxStorageDefaultCheckpoint = {
 
 
 export type CategorizeBulkWriteRowsOutput<RxDocType> = {
-    bulkInsertDocs: BulkWriteRow<RxDocType>[];
-    bulkUpdateDocs: BulkWriteRow<RxDocType>[];
+    bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[];
+    bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[];
     /**
      * Ids of all documents that are changed
      * and so their change must be written into the
      * sequences table so that they can be fetched via
      * RxStorageInstance().getChangedDocumentsSince().
      */
-    changedDocumentIds: RxDocumentData<RxDocType>[StringKeys<RxDocType>][];
+    changedDocumentIds: RxDocType[StringKeys<RxDocType>][];
     errors: ById<RxStorageBulkWriteError<RxDocType>>;
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {

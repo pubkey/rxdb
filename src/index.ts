@@ -134,7 +134,7 @@ export type {
     WithDeleted,
     BulkWriteRow,
     BulkWriteRowById,
-    RxAttachmentDataMeta,
+    RxAttachmentDataBase,
     RxAttachmentData,
     RxAttachmentWriteData,
     RxStorage,

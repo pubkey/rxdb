@@ -12,7 +12,6 @@ import type {
     RxQuery,
     MangoQuery,
     RxChangeEvent,
-    RxDocumentWriteData,
     PreparedQuery,
     StringKeys,
     RxDocumentData
@@ -86,14 +85,13 @@ export function getQueryParams<RxDocType>(
             collection.schema.jsonSchema,
             preparedQuery
         );
-        const useQueryMatcher: QueryMatcher<RxDocumentWriteData<RxDocType>> = (doc: RxDocumentWriteData<RxDocType>) => {
+        const useQueryMatcher: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
             const queryMatcherData = {
                 doc,
                 rxQuery
             };
             return queryMatcher(queryMatcherData.doc);
         };
-
 
         const ret: QueryParams<any> = {
             primaryKey: rxQuery.collection.schema.primaryPath as any,
