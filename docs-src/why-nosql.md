@@ -43,7 +43,7 @@ So whenever a human is involved, this kind of logic has to be implemented using 
 ## Transactions do not work with offline-first
 
 
-When you want to build an [offline-first](./offline-first.md) application, it is assumed that the user can also read and write data, when the device has lost the connection to the backend.
+When you want to build an [offline-first](./offline-first.md) application, it is assumed that the user can also read and write data, even when the device has lost the connection to the backend.
 You could use database transactions on writes to the client's database state, but enforcing a transaction boundary across other instances like clients or servers, is not possible when there is no connection.
 
 <p align="center">
@@ -225,6 +225,7 @@ Yes, there are SQL databases out there that run on the client side or have repli
 # Further read
 
 - Cockroach Labs: [Living Without Atomic Clocks](https://www.cockroachlabs.com/blog/living-without-atomic-clocks/)
-- `Make a PR to this file if you have more interesting links to that topic`
 - [Transactions, Conflicts and Revisions in RxDB](./transactions-conflicts-revisions.md)
 - [Why MongoDB, Cassandra, HBase, DynamoDB, and Riak will only let you perform transactions on a single data item](https://dbmsmusings.blogspot.com/2015/10/why-mongodb-cassandra-hbase-dynamodb_28.html)
+
+- `Make a PR to this file if you have more interesting links to that topic`

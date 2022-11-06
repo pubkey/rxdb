@@ -66,3 +66,20 @@ https://github.com/pubkey/rxdb/pull/4005#issuecomment-1264742235
 
 The `selector`part of queries is currently not fully typed.
 Hint: We can find out the possible doc field names via https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object/58436959#58436959
+
+
+## Use normal RxQuery for `findByIds$` and `findByIds`
+
+Atm `findByIds$` and `findByIds` are implemented with their own query and observe logic. 
+This is not necessary and confusing for the user.
+Instead we should use a different `RxQuery.op` and use normal `RxQuery` objects to handles the result state and observables.
+
+The user would call it like normal queries but with a different method input:
+
+```ts
+const result = await myRxCollection.findById('foo').exec();
+const result$ = await myRxCollection.findById('foo').$;
+
+const results = await myRxCollection.findByIds(['foo', 'bar']).exec();
+const results$ = await myRxCollection.findByIds(['foo', 'bar']).$;
+```
