@@ -126,6 +126,7 @@ export type RxAttachmentData = RxAttachmentDataBase & {
      * There is no way to pre-calculate the hash from the outside because
      * the RxStorage might hash a compressed binary or do a different base64 transformation
      * before hashing.
+     * The only guarantee is that the digest will change when the attachments data changes.
      * @link https://github.com/pouchdb/pouchdb/issues/3156#issuecomment-66831010
      * @link https://github.com/pubkey/rxdb/pull/4107
      */

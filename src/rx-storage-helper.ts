@@ -297,6 +297,8 @@ export function categorizeBulkWriteRows<RxDocType>(
             }
 
             // handle attachments data
+
+            const updatedRow: BulkWriteRowProcessed<RxDocType> = hasAttachments ? stripAttachmentsDataFromRow(writeRow) : writeRow as any;
             if (writeRow.document._deleted) {
                 /**
                  * Deleted documents must have cleared all their attachments.
@@ -343,7 +345,15 @@ export function categorizeBulkWriteRows<RxDocType>(
                                     attachmentData: attachmentData as any
                                 });
                             } else {
-                                if ((attachmentData as RxAttachmentWriteData).data) {
+                                const newDigest = updatedRow.document._attachments[attachmentId].digest;
+                                if (
+                                    (attachmentData as RxAttachmentWriteData).data &&
+                                    /**
+                                     * Performance shortcut,
+                                     * do not update the attachment data if it did not change.
+                                     */
+                                    previousAttachmentData.digest !== newDigest
+                                ) {
                                     attachmentsUpdate.push({
                                         documentId: id as any,
                                         attachmentId,
@@ -357,11 +367,7 @@ export function categorizeBulkWriteRows<RxDocType>(
             if (attachmentError) {
                 errors[id as any] = attachmentError;
             } else {
-                if (hasAttachments) {
-                    bulkUpdateDocs.push(stripAttachmentsDataFromRow(writeRow));
-                } else {
-                    bulkUpdateDocs.push(writeRow as any);
-                }
+                bulkUpdateDocs.push(updatedRow);
             }
 
             const writeDoc = writeRow.document;
