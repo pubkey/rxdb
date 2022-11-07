@@ -155,6 +155,16 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                     lastCheckpoint
                 )
             );
+
+            /**
+             * By definition we stop pull when the pulled documents
+             * do not fill up the pullBatchSize because we
+             * can assume that the remote has no more documents.
+             */
+            if (downResult.documents.length < state.input.pullBatchSize) {
+                break;
+            }
+
         }
         return Promise.all(promises)
             .then(() => {
