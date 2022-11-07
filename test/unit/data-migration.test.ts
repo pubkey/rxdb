@@ -28,11 +28,6 @@ import {
 } from '../../plugins/pouchdb';
 
 import {
-    hashAttachmentData
-} from '../../plugins/attachments';
-
-
-import {
     _getOldCollections,
     getBatchOfOldCollection,
     migrateDocumentData,
@@ -1096,10 +1091,6 @@ config.parallel('data-migration.test.ts', () => {
                 attachmentData,
                 'text/plain'
             );
-
-            const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
-            const attachmentHash = await hashAttachmentData(dataStringBase64);
-
             const col = await humansCollection.createMigrationCollection(10, {
                 3: (doc: any) => {
                     doc.age = parseInt(doc.age, 10);
@@ -1122,7 +1113,6 @@ config.parallel('data-migration.test.ts', () => {
             const attachment = docs[0].getAttachment('foo');
             assert.ok(attachment);
             assert.strictEqual(attachment.type, 'text/plain');
-            assert.strictEqual(attachment.digest, 'md5-' + attachmentHash);
             assert.strictEqual(attachment.length, attachmentData.length);
 
             olds.forEach(oldCol => oldCol.storageInstance.close().catch(() => { }));

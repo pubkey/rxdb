@@ -24,7 +24,9 @@ import {
     ById,
     stackCheckpoints,
     defaultHashFunction,
-    deepFreeze
+    deepFreeze,
+    stripAttachmentsDataFromDocument,
+    getAttachmentSize
 } from '../../';
 import Ajv from 'ajv';
 import {
@@ -56,11 +58,6 @@ import {
     EXAMPLE_REVISION_4
 } from '../helper/revisions';
 import { compressObject } from 'jsonschema-key-compression';
-
-import {
-    hashAttachmentData,
-    getAttachmentSize
-} from '../../plugins/attachments';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -762,7 +759,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
 
                 const key = 'foobar';
-                let docData: RxDocumentWriteData<TestDocType> = {
+                let docData: RxDocumentData<TestDocType> = {
                     key,
                     value: 'barfoo1',
                     _attachments: {},
@@ -784,7 +781,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.deepStrictEqual(res1.error, {});
 
                 // change once
-                let newDocData: RxDocumentWriteData<TestDocType> = clone(docData);
+                let newDocData: RxDocumentData<TestDocType> = clone(docData);
                 newDocData._meta.foobar = 1;
                 newDocData._meta.lwt = now();
                 newDocData._rev = createRevision(defaultHashFunction, newDocData, docData);
@@ -884,7 +881,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
 
                 // insert
-                const docData: RxDocumentWriteData<TestDocType> = {
+                const docData: RxDocumentData<TestDocType> = {
                     key: 'foobar',
                     value: 'barfoo1',
                     _deleted: false,
@@ -2328,7 +2325,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     'text/plain'
                 );
                 const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
-                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const dataLength = getAttachmentSize(dataStringBase64);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -2341,20 +2337,21 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: 'md5-' + attachmentHash,
                             length: dataLength,
                             data: dataStringBase64,
                             type: 'text/plain'
                         }
                     }
                 };
-                await writeSingle<TestDocType>(
+                const writeResult = await writeSingle<TestDocType>(
                     storageInstance,
                     {
                         document: writeData
                     },
                     testContext
                 );
+                assert.strictEqual(typeof (writeResult._attachments.foo as any).data, 'undefined');
+                assert.ok(writeResult._attachments.foo.digest.length > 3);
 
                 const attachmentDataAfter = await storageInstance.getAttachmentData('foobar', 'foo');
                 assert.strictEqual(attachmentDataAfter, dataStringBase64);
@@ -2387,7 +2384,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
-                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const dataLength = getAttachmentSize(dataStringBase64);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -2400,7 +2396,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: 'md5-' + attachmentHash,
                             length: dataLength,
                             data: dataStringBase64,
                             type: 'text/plain'
@@ -2419,7 +2414,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 await waitUntil(() => flattenEvents(emitted).length === 1);
 
                 assert.strictEqual(writeResult._attachments.foo.type, 'text/plain');
-                assert.strictEqual(writeResult._attachments.foo.digest, 'md5-' + attachmentHash);
 
                 /**
                  * When getting the document from the storage again,
@@ -2495,9 +2489,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 let previous: RxDocumentData<TestDocType> | undefined;
 
                 const dataBlobBuffer = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const dataString = await blobBufferUtil.toBase64String(dataBlobBuffer);
                 const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
-                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
@@ -2508,9 +2500,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: 'md5-' + attachmentHash,
                             length: blobBufferUtil.size(dataBlobBuffer),
-                            data: dataString,
+                            data: dataStringBase64,
                             type: 'text/plain'
                         }
                     }
@@ -2536,12 +2527,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 writeData._attachments = flatClone(previous._attachments) as any;
 
                 const data2 = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const dataStringBase642 = await blobBufferUtil.toBase64String(data2);
-                const attachmentHash2 = await hashAttachmentData(dataStringBase642);
                 const dataString2 = await blobBufferUtil.toBase64String(data2);
                 writeData._attachments.bar = {
                     data: dataString2,
-                    digest: 'md5-' + attachmentHash2,
                     length: blobBufferUtil.size(data2),
                     type: 'text/plain'
                 };
@@ -2582,8 +2570,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
 
                 const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const dataStringBase64 = await blobBufferUtil.toBase64String(data);
-                const attachmentHash = await hashAttachmentData(dataStringBase64);
                 const dataString = await blobBufferUtil.toBase64String(data);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -2595,7 +2581,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            digest: 'md5-' + attachmentHash,
                             length: blobBufferUtil.size(data),
                             data: dataString,
                             type: 'text/plain'
@@ -2612,7 +2597,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 deleteData._rev = EXAMPLE_REVISION_2;
 
                 await storageInstance.bulkWrite(
-                    [{ previous: writeData, document: deleteData }],
+                    [{
+                        previous: stripAttachmentsDataFromDocument(writeData),
+                        document: deleteData
+                    }],
                     testContext
                 );
 

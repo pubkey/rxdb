@@ -347,7 +347,7 @@ export class RxQueryBase<
             this.collection.database.storage.statics.getQueryMatcher(
                 schema,
                 usePreparedQuery
-            )
+            ) as any
         );
     }
 

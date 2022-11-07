@@ -5,6 +5,7 @@ import type {
     RxChangeEvent,
     RxDocumentData,
     RxDocumentDataById,
+    RxDocumentWriteData,
     RxJsonSchema,
     RxStorage,
     RxStorageBulkWriteError,
@@ -115,11 +116,11 @@ export function wrappedValidateStorageFactory(
  */
 export function wrapRxStorageInstance<RxDocType>(
     instance: RxStorageInstance<RxDocType, any, any>,
-    modifyToStorage: (docData: RxDocumentData<RxDocType>) => Promise<RxDocumentData<any>> | RxDocumentData<any>,
+    modifyToStorage: (docData: RxDocumentWriteData<RxDocType>) => Promise<RxDocumentData<any>> | RxDocumentData<any>,
     modifyFromStorage: (docData: RxDocumentData<any>) => Promise<RxDocumentData<RxDocType>> | RxDocumentData<RxDocType>,
     modifyAttachmentFromStorage: (attachmentData: string) => Promise<string> | string = (v) => v
 ) {
-    async function toStorage(docData: RxDocumentData<RxDocType>): Promise<RxDocumentData<any>> {
+    async function toStorage(docData: RxDocumentWriteData<RxDocType>): Promise<RxDocumentData<any>> {
         if (!docData) {
             return docData;
         }

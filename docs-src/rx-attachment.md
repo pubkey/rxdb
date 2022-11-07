@@ -2,12 +2,14 @@
 
 Attachments are binary data files that can be attachment to an `RxDocument`, like a file that is attached to an email.
 
-Using attachments instead of adding the data to the normal document, ensures that you still have a good performance when querying and writing documents, even when a big amount of data, like an image file has to be stored.
+Using attachments instead of adding the data to the normal document, ensures that you still have a good **performance** when querying and writing documents, even when a big amount of data, like an image file has to be stored.
 
 - You can store string, binary files, images and whatever you want side by side with your documents.
 - Deleted documents automatically loose all their attachments data.
 - Not all replication plugins support the replication of attachments.
 - Attachments can be stored encrypted.
+
+Internally, attachments in RxDB are stored and handled similar to how [CouchDB, PouchDB](https://pouchdb.com/guides/attachments.html#how-attachments-are-stored) does it.
 
 
 ## Add the attachments plugin
@@ -57,8 +59,7 @@ const attachment = await myDocument.putAttachment(
         id,     // (string) name of the attachment like 'cat.jpg'
         data,   // (string|Blob|Buffer) data of the attachment
         type    // (string) type of the attachment-data like 'image/jpeg'
-    },
-    true // (boolean, optional, default=true) skipIfSame:If true and attachment already exists with same data, the write will be skipped
+    }
 );
 ```
 
@@ -111,7 +112,9 @@ The length of the data of the attachment as `number`.
 
 ### digest
 
-The md5-sum of the attachments data as `string`.
+The hash of the attachments data as `string`.
+
+NOTICE: The digest is NOT calculated by RxDB, instead it is calculated by the RxStorage. The only guarantee is that the digest will change when the attachments data changes.
 
 ### rev
 

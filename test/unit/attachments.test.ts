@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config from './config';
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
@@ -22,6 +22,7 @@ import { RxDocumentWriteData } from '../../src/types';
 import {
     wrappedKeyEncryptionStorage
 } from '../../plugins/encryption';
+import { addPouchPlugin, getRxStoragePouch } from '../../plugins/pouchdb';
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
 
@@ -186,50 +187,6 @@ config.parallel('attachments.test.ts', () => {
                 ].join(' '), 'text/plain'), // use space here
                 type: 'text/plain'
             });
-            c.database.destroy();
-        });
-        it('should not update the document if skipIfSame=true and same data', async () => {
-            const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
-            const data = blobBufferUtil.createBlobBuffer(AsyncTestUtil.randomString(100), 'text/plain');
-            await doc.putAttachment({
-                id: 'cat.txt',
-                data,
-                type: 'text/plain'
-            }, true);
-            const revBefore = doc.revision;
-            await doc.putAttachment({
-                id: 'cat.txt',
-                data,
-                type: 'text/plain'
-            }, true);
-            await wait(50);
-            assert.strictEqual(
-                revBefore,
-                doc.revision
-            );
-
-            c.database.destroy();
-        });
-        it('should update the document if skipIfSame=true and different data', async () => {
-            const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
-            await doc.putAttachment({
-                id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer(AsyncTestUtil.randomString(100), 'text/plain'),
-                type: 'text/plain'
-            }, true);
-            const revBefore = doc.revision;
-            await doc.putAttachment({
-                id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer(AsyncTestUtil.randomString(100), 'text/plain'),
-                type: 'text/plain'
-            }, false);
-            await wait(50);
-            assert.notStrictEqual(
-                revBefore,
-                doc.revision
-            );
             c.database.destroy();
         });
     });
@@ -889,6 +846,124 @@ config.parallel('attachments.test.ts', () => {
 
             const attachments = await doc.allAttachments();
             assert.strictEqual(attachments.length, 0);
+
+            db.destroy();
+        });
+        it('#4107 reproduce 412 pouchdb error', async () => {
+            if (config.isNotOneOfTheseStorages(['pouchdb'])) {
+                return;
+            }
+            let pouchAdapter = 'memory';
+            if (!config.platform.isNode()) {
+                addPouchPlugin(require('pouchdb-adapter-idb'));
+                pouchAdapter = 'idb';
+            }
+
+            const attName = 'red_dot_1px_image';
+            const redDotBase64 =
+                'data:image/bmp;base64,Qk06AAAAAAAAADYAAAAoAAAAAQAAAAEAAAABABgAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAJBztAA==';
+            const convertBase64ToBlob = (base64Image: string) => {
+                const parts = base64Image.split(';base64,');
+                const imageType = parts[0].split(':')[1];
+                const decodedData = atob(parts[1]);
+                const uInt8Array = new Uint8Array(decodedData.length);
+                for (let i = 0; i < decodedData.length; ++i) {
+                    uInt8Array[i] = decodedData.charCodeAt(i);
+                }
+                return new Blob([uInt8Array], { type: imageType });
+            };
+
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    firstName: {
+                        type: 'string',
+                    },
+                    lastName: {
+                        type: 'string',
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150,
+                    },
+                },
+                attachments: {
+                    encrypted: false,
+                },
+            };
+
+            // generate a random database-name
+            const name = randomCouchString(10);
+
+            // create an encrypted storage
+            const encryptedPouchStorage = wrappedKeyEncryptionStorage({
+                storage: getRxStoragePouch(pouchAdapter),
+            });
+
+            // create a database
+            const db = await createRxDatabase({
+                name,
+                storage: encryptedPouchStorage,
+                password: 'password',
+                eventReduce: false,
+                multiInstance: true,
+                ignoreDuplicate: true
+            });
+
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema,
+                },
+            });
+
+            // insert a document
+            await collections.mycollection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56,
+            });
+
+            // find the document in the other tab
+            const myDocument = await db.mycollection
+                .findOne()
+                .where('firstName')
+                .eq('Bob')
+                .exec();
+
+            /*
+             * assert things,
+             * here your tests should fail to show that there is a bug
+             */
+            assert.strictEqual(myDocument.age, 56);
+
+            // generate blob for attachment
+            const blob = convertBase64ToBlob(redDotBase64);
+
+            // put blob as attachment in storage
+            const attachment = await myDocument.putAttachment({
+                id: attName,
+                data: blob,
+                type: blob.type,
+            });
+            assert.ok(attachment);
+
+            // trying update document later and getting Error "A pre-existing attachment stub wasn't found" because digest mismatch
+            await myDocument.update({
+                $set: {
+                    age: 60,
+                },
+            });
+
+            assert.strictEqual(myDocument.age, 60);
 
             db.destroy();
         });

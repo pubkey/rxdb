@@ -23,7 +23,7 @@ import {
 } from '../../util';
 import { newRxError } from '../../rx-error';
 import type { ChangeEvent } from 'event-reduce-js';
-import { getAttachmentSize, hashAttachmentData } from '../attachments';
+import { getAttachmentSize } from '../../rx-storage-helper';
 
 export type PouchStorageInternals = {
     pouchInstanceId: string;
@@ -349,6 +349,24 @@ export function pouchHash(data: Buffer | Blob | string): Promise<string> {
             res(digest);
         });
     });
+}
+
+
+/**
+ * Runs the same hashing as PouchDB would do.
+ * Used to pre-calculated the hashes which is required to emit the correct events.
+ */
+export function hashAttachmentData(
+    attachmentBase64String: string
+): Promise<string> {
+    let binary;
+    try {
+        binary = atob(attachmentBase64String);
+    } catch (err) {
+        console.log('hashAttachmentData() could not run b64DecodeUnicode() on ' + attachmentBase64String);
+        throw err;
+    }
+    return pouchHash(binary);
 }
 
 export async function writeAttachmentsToAttachments(

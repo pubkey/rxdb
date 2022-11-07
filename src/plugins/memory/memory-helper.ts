@@ -53,10 +53,10 @@ export function putWriteRowToState<RxDocType>(
     row: BulkWriteRow<RxDocType>,
     docInState?: RxDocumentData<RxDocType>
 ) {
-    state.documents.set(docId, row.document);
+    state.documents.set(docId, row.document as any);
     stateByIndex.forEach(byIndex => {
         const docsWithIndex = byIndex.docsWithIndex;
-        const newIndexString = byIndex.getIndexableString(row.document);
+        const newIndexString = byIndex.getIndexableString(row.document as any);
         const [, insertPosition] = pushAtSortPosition(
             docsWithIndex,
             {

@@ -122,14 +122,14 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             // INSERTS
             categorized.bulkInsertDocs.forEach(writeRow => {
                 const docId: string = writeRow.document[this.primaryPath] as any;
-                ret.success[docId] = writeRow.document;
+                ret.success[docId] = writeRow.document as any;
 
                 // insert document data
                 mainTx.set(docId, writeRow.document);
 
                 // insert secondary indexes
                 Object.values(dbs.indexes).forEach(indexMeta => {
-                    const indexString = indexMeta.getIndexableString(writeRow.document);
+                    const indexString = indexMeta.getIndexableString(writeRow.document as any);
                     const indexTx = tx.at(indexMeta.db.subspace);
                     indexTx.set(indexString, docId);
                 });
@@ -144,14 +144,14 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                 // update secondary indexes
                 Object.values(dbs.indexes).forEach(indexMeta => {
                     const oldIndexString = indexMeta.getIndexableString(ensureNotFalsy(writeRow.previous));
-                    const newIndexString = indexMeta.getIndexableString(writeRow.document);
+                    const newIndexString = indexMeta.getIndexableString(writeRow.document as any);
                     if (oldIndexString !== newIndexString) {
                         const indexTx = tx.at(indexMeta.db.subspace);
                         indexTx.delete(oldIndexString);
                         indexTx.set(newIndexString, docId);
                     }
                 });
-                ret.success[docId] = writeRow.document;
+                ret.success[docId] = writeRow.document as any;
             });
 
             // attachments

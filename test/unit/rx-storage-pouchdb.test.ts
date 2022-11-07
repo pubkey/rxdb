@@ -13,20 +13,17 @@ import {
     blobBufferUtil,
     EventBulk,
     RxStorageChangeEvent,
-    RxDocumentData
-} from '../../';
-
-import {
-    hashAttachmentData,
+    RxDocumentData,
     getAttachmentSize
-} from '../../plugins/attachments';
+} from '../../';
 
 import {
     addCustomEventsPluginToPouch,
     getCustomEventEmitterByPouch,
     PouchDBInstance,
     getRxStoragePouch,
-    PouchDB
+    PouchDB,
+    hashAttachmentData
 } from '../../plugins/pouchdb';
 import * as schemaObjects from '../helper/schema-objects';
 
