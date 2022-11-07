@@ -853,6 +853,12 @@ config.parallel('attachments.test.ts', () => {
             if (config.isNotOneOfTheseStorages(['pouchdb'])) {
                 return;
             }
+            let pouchAdapter = 'memory';
+            if (!config.platform.isNode()) {
+                addPouchPlugin(require('pouchdb-adapter-idb'));
+                pouchAdapter = 'idb';
+            }
+
             const attName = 'red_dot_1px_image';
             const redDotBase64 =
                 'data:image/bmp;base64,Qk06AAAAAAAAADYAAAAoAAAAAQAAAAEAAAABABgAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAJBztAA==';
@@ -866,12 +872,6 @@ config.parallel('attachments.test.ts', () => {
                 }
                 return new Blob([uInt8Array], { type: imageType });
             };
-
-            let pouchAdapter = 'memory';
-            if (!config.platform.isNode()) {
-                addPouchPlugin(require('pouchdb-adapter-idb'));
-                pouchAdapter = 'idb';
-            }
 
             const mySchema = {
                 version: 0,
