@@ -1091,9 +1091,6 @@ config.parallel('data-migration.test.ts', () => {
                 attachmentData,
                 'text/plain'
             );
-
-            const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
-
             const col = await humansCollection.createMigrationCollection(10, {
                 3: (doc: any) => {
                     doc.age = parseInt(doc.age, 10);
