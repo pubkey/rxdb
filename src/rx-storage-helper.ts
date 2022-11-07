@@ -3,7 +3,6 @@
  */
 
 import { overwritable } from './overwritable';
-import { attachmentWriteDataToNormalData } from './plugins/attachments';
 import { newRxError } from './rx-error';
 import {
     fillPrimaryKey,
@@ -15,6 +14,7 @@ import type {
     ById,
     CategorizeBulkWriteRowsOutput,
     EventBulk,
+    RxAttachmentData,
     RxAttachmentWriteData,
     RxChangeEvent,
     RxCollection,
@@ -30,6 +30,7 @@ import type {
 } from './types';
 import {
     createRevision,
+    defaultHashFunction,
     ensureNotFalsy,
     firstPropertyValueOfObject,
     flatClone,
@@ -423,7 +424,27 @@ export function stripAttachmentsDataFromRow<RxDocType>(writeRow: BulkWriteRow<Rx
     };
 }
 
+export function getAttachmentSize(
+    attachmentBase64String: string
+): number {
+    return atob(attachmentBase64String).length;
+}
 
+/**
+ * Used in custom RxStorage implementations.
+ */
+export function attachmentWriteDataToNormalData(writeData: RxAttachmentData | RxAttachmentWriteData): RxAttachmentData {
+    const data = (writeData as RxAttachmentWriteData).data;
+    if (!data) {
+        return writeData as any;
+    }
+    const ret: RxAttachmentData = {
+        digest: defaultHashFunction(data),
+        length: getAttachmentSize(data),
+        type: writeData.type
+    };
+    return ret;
+}
 
 export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWriteData<RxDocType>): RxDocumentData<RxDocType> {
     const useDoc: RxDocumentData<RxDocType> = flatClone(doc) as any;

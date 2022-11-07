@@ -4,7 +4,6 @@ import {
 
 import {
     blobBufferUtil,
-    defaultHashFunction,
     flatClone,
     PROMISE_RESOLVE_VOID
 } from './../util';
@@ -24,28 +23,6 @@ import type {
 } from '../types';
 import { flatCloneDocWithMeta, writeSingle } from '../rx-storage-helper';
 
-
-export function getAttachmentSize(
-    attachmentBase64String: string
-): number {
-    return atob(attachmentBase64String).length;
-}
-
-/**
- * Used in custom RxStorage implementations.
- */
-export function attachmentWriteDataToNormalData(writeData: RxAttachmentData | RxAttachmentWriteData): RxAttachmentData {
-    const data = (writeData as RxAttachmentWriteData).data;
-    if (!data) {
-        return writeData as any;
-    }
-    const ret: RxAttachmentData = {
-        digest: defaultHashFunction(data),
-        length: getAttachmentSize(data),
-        type: writeData.type
-    };
-    return ret;
-}
 
 
 function ensureSchemaSupportsAttachments(doc: any) {
