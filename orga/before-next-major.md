@@ -83,3 +83,5 @@ const result$ = await myRxCollection.findById('foo').$;
 const results = await myRxCollection.findByIds(['foo', 'bar']).exec();
 const results$ = await myRxCollection.findByIds(['foo', 'bar']).$;
 ```
+
+## Remove depricated `skipIfSame` from `putAttachment()`
