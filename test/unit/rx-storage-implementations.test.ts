@@ -25,7 +25,8 @@ import {
     stackCheckpoints,
     defaultHashFunction,
     deepFreeze,
-    stripAttachmentsDataFromDocument
+    stripAttachmentsDataFromDocument,
+    getAttachmentSize
 } from '../../';
 import Ajv from 'ajv';
 import {
@@ -57,10 +58,6 @@ import {
     EXAMPLE_REVISION_4
 } from '../helper/revisions';
 import { compressObject } from 'jsonschema-key-compression';
-
-import {
-    getAttachmentSize
-} from '../../plugins/attachments';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
