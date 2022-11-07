@@ -522,7 +522,7 @@ describe('replication-graphql.test.ts', () => {
                 c.database.destroy();
             });
             // https://github.com/pubkey/rxdb/blob/d7c3aca4f49d605ceae8997df32f713d0fe21ee2/src/types/plugins/replication.d.ts#L47-L53
-            it('should stop pulling when response returns less documents than the pull.batchSize', async () => {
+            it('#4110 should stop pulling when response returns less documents than the pull.batchSize', async () => {
                 const amount = batchSize + 1;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -554,7 +554,6 @@ describe('replication-graphql.test.ts', () => {
                     responseHaveBeenCalledTimes,
                     Math.ceil(amount / batchSize)
                 );
-
                 server.close();
                 c.database.destroy();
             });
