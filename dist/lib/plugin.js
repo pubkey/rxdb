@@ -29,6 +29,7 @@ var PROTOTYPES = {
   RxDatabase: _rxDatabase.RxDatabaseBase.prototype
 };
 var ADDED_PLUGINS = new Set();
+var ADDED_PLUGIN_NAMES = new Set();
 
 /**
  * Add a plugin to the RxDB library.
@@ -44,7 +45,15 @@ function addRxPlugin(plugin) {
   if (ADDED_PLUGINS.has(plugin)) {
     return;
   } else {
+    // ensure no other plugin with the same name was already added
+    if (ADDED_PLUGIN_NAMES.has(plugin.name)) {
+      throw (0, _rxError.newRxError)('PL3', {
+        name: plugin.name,
+        plugin: plugin
+      });
+    }
     ADDED_PLUGINS.add(plugin);
+    ADDED_PLUGIN_NAMES.add(plugin.name);
   }
 
   /**

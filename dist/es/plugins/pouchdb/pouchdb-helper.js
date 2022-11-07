@@ -1,7 +1,7 @@
 import { binaryMd5 } from 'pouchdb-md5';
 import { blobBufferUtil, flatClone, getHeightOfRevision } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getAttachmentSize, hashAttachmentData } from '../attachments';
+import { getAttachmentSize } from '../../rx-storage-helper';
 export var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attachments) {
   try {
     if (!attachments) {
@@ -316,6 +316,21 @@ export function pouchHash(data) {
       res(digest);
     });
   });
+}
+
+/**
+ * Runs the same hashing as PouchDB would do.
+ * Used to pre-calculated the hashes which is required to emit the correct events.
+ */
+export function hashAttachmentData(attachmentBase64String) {
+  var binary;
+  try {
+    binary = atob(attachmentBase64String);
+  } catch (err) {
+    console.log('hashAttachmentData() could not run b64DecodeUnicode() on ' + attachmentBase64String);
+    throw err;
+  }
+  return pouchHash(binary);
 }
 export function getPouchIndexDesignDocNameByIndex(index) {
   var indexName = 'idx-rxdb-index-' + index.join(',');

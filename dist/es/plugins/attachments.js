@@ -1,15 +1,15 @@
 import { map } from 'rxjs/operators';
-import { b64DecodeUnicode, blobBufferUtil, flatClone, PROMISE_RESOLVE_VOID } from './../util';
+import { blobBufferUtil, flatClone, PROMISE_RESOLVE_VOID } from './../util';
 import { newRxError } from '../rx-error';
 import { flatCloneDocWithMeta, writeSingle } from '../rx-storage-helper';
-import { pouchHash } from './pouchdb';
-
-/**
- * To be able to support PouchDB with attachments,
- * we have to use the md5 hashing here, even if the RxDatabase itself
- * has a different hashing function.
- */
-
+function ensureSchemaSupportsAttachments(doc) {
+  var schemaJson = doc.collection.schema.jsonSchema;
+  if (!schemaJson.attachments) {
+    throw newRxError('AT1', {
+      link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
+    });
+  }
+}
 export var preMigrateDocument = function preMigrateDocument(data) {
   try {
     var attachments = data.docData._attachments;
@@ -22,7 +22,6 @@ export var preMigrateDocument = function preMigrateDocument(data) {
             var docPrimary = data.docData[data.oldCollection.schema.primaryPath];
             return Promise.resolve(data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId)).then(function (rawAttachmentData) {
               newAttachments[attachmentId] = {
-                digest: attachment.digest,
                 length: attachment.length,
                 type: attachment.type,
                 data: rawAttachmentData
@@ -49,52 +48,40 @@ export var putAttachment = function putAttachment(attachmentData) {
   try {
     var _arguments2 = arguments,
       _this7 = this;
-    var skipIfSame = _arguments2.length > 1 && _arguments2[1] !== undefined ? _arguments2[1] : true;
+    var _skipIfSame = _arguments2.length > 1 && _arguments2[1] !== undefined ? _arguments2[1] : true;
     ensureSchemaSupportsAttachments(_this7);
     var dataSize = blobBufferUtil.size(attachmentData.data);
     return Promise.resolve(blobBufferUtil.toBase64String(attachmentData.data)).then(function (dataString) {
       var id = attachmentData.id;
       var type = attachmentData.type;
       var data = dataString;
-      return Promise.resolve(hashAttachmentData(dataString).then(function (hash) {
-        return 'md5-' + hash;
-      })).then(function (newDigest) {
-        _this7._atomicQueue = _this7._atomicQueue.then(function () {
-          try {
-            if (skipIfSame && _this7._data._attachments && _this7._data._attachments[id]) {
-              var currentMeta = _this7._data._attachments[id];
-              if (currentMeta.type === type && currentMeta.digest === newDigest) {
-                // skip because same data and same type
-                return Promise.resolve(_this7.getAttachment(id));
-              }
-            }
-            var docWriteData = flatCloneDocWithMeta(_this7._data);
-            docWriteData._attachments = flatClone(docWriteData._attachments);
-            docWriteData._attachments[id] = {
-              digest: newDigest,
-              length: dataSize,
-              type: type,
-              data: data
-            };
-            var writeRow = {
-              previous: flatClone(_this7._data),
-              document: flatClone(docWriteData)
-            };
-            return Promise.resolve(writeSingle(_this7.collection.storageInstance, writeRow, 'attachment-put')).then(function (writeResult) {
-              var attachmentData = writeResult._attachments[id];
-              var attachment = fromStorageInstanceResult(id, attachmentData, _this7);
-              var newData = flatClone(_this7._data);
-              newData._rev = writeResult._rev;
-              newData._attachments = writeResult._attachments;
-              _this7._dataSync$.next(newData);
-              return attachment;
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
-        });
-        return _this7._atomicQueue;
+      _this7._atomicQueue = _this7._atomicQueue.then(function () {
+        try {
+          var docWriteData = flatCloneDocWithMeta(_this7._data);
+          docWriteData._attachments = flatClone(docWriteData._attachments);
+          docWriteData._attachments[id] = {
+            length: dataSize,
+            type: type,
+            data: data
+          };
+          var writeRow = {
+            previous: flatClone(_this7._data),
+            document: flatClone(docWriteData)
+          };
+          return Promise.resolve(writeSingle(_this7.collection.storageInstance, writeRow, 'attachment-put')).then(function (writeResult) {
+            var attachmentData = writeResult._attachments[id];
+            var attachment = fromStorageInstanceResult(id, attachmentData, _this7);
+            var newData = flatClone(_this7._data);
+            newData._rev = writeResult._rev;
+            newData._attachments = writeResult._attachments;
+            _this7._dataSync$.next(newData);
+            return attachment;
+          });
+        } catch (e) {
+          return Promise.reject(e);
+        }
       });
+      return _this7._atomicQueue;
     });
   } catch (e) {
     return Promise.reject(e);
@@ -104,27 +91,6 @@ export var putAttachment = function putAttachment(attachmentData) {
 /**
  * get an attachment of the document by its id
  */
-export function hashAttachmentData(attachmentBase64String) {
-  var binary;
-  try {
-    binary = b64DecodeUnicode(attachmentBase64String);
-  } catch (err) {
-    console.log('could not run b64DecodeUnicode() on ' + attachmentBase64String);
-    throw err;
-  }
-  return pouchHash(binary);
-}
-export function getAttachmentSize(attachmentBase64String) {
-  return atob(attachmentBase64String).length;
-}
-function ensureSchemaSupportsAttachments(doc) {
-  var schemaJson = doc.collection.schema.jsonSchema;
-  if (!schemaJson.attachments) {
-    throw newRxError('AT1', {
-      link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
-    });
-  }
-}
 var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment) {
   Object.entries(attachment.doc.collection.attachments).forEach(function (_ref) {
     var funName = _ref[0],

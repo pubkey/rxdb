@@ -2133,13 +2133,14 @@
                                 
                                 <h1 id="attachments">Attachments</h1>
 <p>Attachments are binary data files that can be attachment to an <code>RxDocument</code>, like a file that is attached to an email.</p>
-<p>Using attachments instead of adding the data to the normal document, ensures that you still have a good performance when querying and writing documents, even when a big amount of data, like an image file has to be stored.</p>
+<p>Using attachments instead of adding the data to the normal document, ensures that you still have a good <strong>performance</strong> when querying and writing documents, even when a big amount of data, like an image file has to be stored.</p>
 <ul>
 <li>You can store string, binary files, images and whatever you want side by side with your documents.</li>
 <li>Deleted documents automatically loose all their attachments data.</li>
 <li>Not all replication plugins support the replication of attachments.</li>
 <li>Attachments can be stored encrypted.</li>
 </ul>
+<p>Internally, attachments in RxDB are stored and handled similar to how <a href="https://pouchdb.com/guides/attachments.html#how-attachments-are-stored" target="_blank">CouchDB, PouchDB</a> does it.</p>
 <h2 id="add-the-attachments-plugin">Add the attachments plugin</h2>
 <p>To enable the attachments, you have to add the <code>attachments</code> plugin.</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> { addRxPlugin } from <span class="hljs-string">&apos;rxdb&apos;</span>;
@@ -2175,8 +2176,7 @@ addRxPlugin(RxDBAttachmentsPlugin);
         id,     <span class="hljs-comment">// (string) name of the attachment like &apos;cat.jpg&apos;</span>
         data,   <span class="hljs-comment">// (string|Blob|Buffer) data of the attachment</span>
         type    <span class="hljs-comment">// (string) type of the attachment-data like &apos;image/jpeg&apos;</span>
-    },
-    <span class="hljs-literal">true</span> <span class="hljs-comment">// (boolean, optional, default=true) skipIfSame:If true and attachment already exists with same data, the write will be skipped</span>
+    }
 );
 </code></pre>
 <h2 id="getattachment">getAttachment()</h2>
@@ -2205,7 +2205,8 @@ myDocument.allAttachments$.subscribe(
 <h3 id="length">length</h3>
 <p>The length of the data of the attachment as <code>number</code>.</p>
 <h3 id="digest">digest</h3>
-<p>The md5-sum of the attachments data as <code>string</code>.</p>
+<p>The hash of the attachments data as <code>string</code>.</p>
+<p>NOTICE: The digest is NOT calculated by RxDB, instead it is calculated by the RxStorage. The only guarantee is that the digest will change when the attachments data changes.</p>
 <h3 id="rev">rev</h3>
 <p>The revision-number of the attachment as <code>number</code>.</p>
 <h3 id="remove">remove()</h3>

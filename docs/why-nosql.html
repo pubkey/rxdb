@@ -2163,7 +2163,7 @@ Using a transaction to ensure nothing is changed in between, is not an option be
 time and other background tasks, like replication, would no longer work.</p>
 <p>So whenever a human is involved, this kind of logic has to be implemented using other strategies. Most NoSQL databases like <a href=".">RxDB</a> or CouchDB use a system based on <a href="transactions-conflicts-revisions.html">revision and conflicts</a> to handle these.</p>
 <h2 id="transactions-do-not-work-with-offline-first">Transactions do not work with offline-first</h2>
-<p>When you want to build an <a href="offline-first.html">offline-first</a> application, it is assumed that the user can also read and write data, when the device has lost the connection to the backend.
+<p>When you want to build an <a href="offline-first.html">offline-first</a> application, it is assumed that the user can also read and write data, even when the device has lost the connection to the backend.
 You could use database transactions on writes to the client&apos;s database state, but enforcing a transaction boundary across other instances like clients or servers, is not possible when there is no connection.</p>
 <p align="center">
   <img src="files/why-no-transactions.jpg" alt="offline first vs relational transactions" width="400">
@@ -2292,9 +2292,11 @@ This scales very bad because the more queries you run, the more results you have
 <h1 id="further-read">Further read</h1>
 <ul>
 <li>Cockroach Labs: <a href="https://www.cockroachlabs.com/blog/living-without-atomic-clocks/" target="_blank">Living Without Atomic Clocks</a></li>
-<li><code>Make a PR to this file if you have more interesting links to that topic</code></li>
 <li><a href="transactions-conflicts-revisions.html">Transactions, Conflicts and Revisions in RxDB</a></li>
-<li><a href="https://dbmsmusings.blogspot.com/2015/10/why-mongodb-cassandra-hbase-dynamodb_28.html" target="_blank">Why MongoDB, Cassandra, HBase, DynamoDB, and Riak will only let you perform transactions on a single data item</a></li>
+<li><p><a href="https://dbmsmusings.blogspot.com/2015/10/why-mongodb-cassandra-hbase-dynamodb_28.html" target="_blank">Why MongoDB, Cassandra, HBase, DynamoDB, and Riak will only let you perform transactions on a single data item</a></p>
+</li>
+<li><p><code>Make a PR to this file if you have more interesting links to that topic</code></p>
+</li>
 </ul>
 
                                 

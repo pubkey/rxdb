@@ -5,7 +5,7 @@
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { createRevision, ensureNotFalsy, firstPropertyValueOfObject, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, randomCouchString } from './util';
+import { createRevision, defaultHashFunction, ensureNotFalsy, firstPropertyValueOfObject, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, randomCouchString } from './util';
 /**
  * Writes a single document,
  * throws RxStorageBulkWriteError on failure
@@ -200,6 +200,8 @@ bulkWriteRows, context) {
       }
 
       // handle attachments data
+
+      var updatedRow = hasAttachments ? stripAttachmentsDataFromRow(writeRow) : writeRow;
       if (writeRow.document._deleted) {
         /**
          * Deleted documents must have cleared all their attachments.
@@ -241,7 +243,13 @@ bulkWriteRows, context) {
                 attachmentData: attachmentData
               });
             } else {
-              if (attachmentData.data && attachmentData.digest !== previousAttachmentData.digest) {
+              var newDigest = updatedRow.document._attachments[attachmentId].digest;
+              if (attachmentData.data &&
+              /**
+               * Performance shortcut,
+               * do not update the attachment data if it did not change.
+               */
+              previousAttachmentData.digest !== newDigest) {
                 attachmentsUpdate.push({
                   documentId: id,
                   attachmentId: attachmentId,
@@ -255,11 +263,7 @@ bulkWriteRows, context) {
       if (attachmentError) {
         errors[id] = attachmentError;
       } else {
-        if (hasAttachments) {
-          bulkUpdateDocs.push(stripAttachmentsDataFromRow(writeRow));
-        } else {
-          bulkUpdateDocs.push(writeRow);
-        }
+        bulkUpdateDocs.push(updatedRow);
       }
       var writeDoc = writeRow.document;
       var eventDocumentData = null;
@@ -312,17 +316,32 @@ export function stripAttachmentsDataFromRow(writeRow) {
     document: stripAttachmentsDataFromDocument(writeRow.document)
   };
 }
+export function getAttachmentSize(attachmentBase64String) {
+  return atob(attachmentBase64String).length;
+}
+
+/**
+ * Used in custom RxStorage implementations.
+ */
+export function attachmentWriteDataToNormalData(writeData) {
+  var data = writeData.data;
+  if (!data) {
+    return writeData;
+  }
+  var ret = {
+    digest: defaultHashFunction(data),
+    length: getAttachmentSize(data),
+    type: writeData.type
+  };
+  return ret;
+}
 export function stripAttachmentsDataFromDocument(doc) {
   var useDoc = flatClone(doc);
   useDoc._attachments = {};
   Object.entries(doc._attachments).forEach(function (_ref4) {
     var attachmentId = _ref4[0],
       attachmentData = _ref4[1];
-    useDoc._attachments[attachmentId] = {
-      digest: attachmentData.digest,
-      length: attachmentData.length,
-      type: attachmentData.type
-    };
+    useDoc._attachments[attachmentId] = attachmentWriteDataToNormalData(attachmentData);
   });
   return useDoc;
 }

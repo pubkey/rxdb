@@ -21,6 +21,7 @@ var ERROR_MESSAGES = {
   // plugins
   PL1: 'Given plugin is not RxDB plugin. Pouchdb plugins must be added via addPouchPlugin()',
   PL2: 'You tried importy a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
+  PL3: 'A plugin with the same name was already added but it was not the exact same JavaScript object',
   // pouch-db.js
   // removed in 12.0.0 - P1: 'PouchDB.getBatch: limit must be > 2',
   P2: 'bulkWrite() cannot be called with an empty array',
@@ -176,7 +177,8 @@ var ERROR_MESSAGES = {
   SC38: 'Fields of type boolean that are used in an index, must be required in the schema',
   SC39: 'The primary key must have the maxLength attribute set',
   // plugins/dev-mode
-  DEV1: 'dev-mode added multiple times',
+  // removed in 13.9.0, use PL3 insated - DEV1: 'dev-mode added multiple times',
+
   // plugins/validate.js
   VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',
   VD2: 'object does not match schema',

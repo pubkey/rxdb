@@ -5,9 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 var _exportNames = {
   deepFreezeWhenDevMode: true,
+  DEV_MODE_PLUGIN_NAME: true,
   RxDBDevModePlugin: true
 };
-exports.RxDBDevModePlugin = void 0;
+exports.RxDBDevModePlugin = exports.DEV_MODE_PLUGIN_NAME = void 0;
 exports.deepFreezeWhenDevMode = deepFreezeWhenDevMode;
 var _errorMessages = require("./error-messages");
 var _checkSchema = require("./check-schema");
@@ -64,6 +65,7 @@ function deepFreezeWhenDevMode(obj) {
   return (0, _util.deepFreeze)(obj);
 }
 var DEV_MODE_PLUGIN_NAME = 'dev-mode';
+exports.DEV_MODE_PLUGIN_NAME = DEV_MODE_PLUGIN_NAME;
 var RxDBDevModePlugin = {
   name: DEV_MODE_PLUGIN_NAME,
   rxdb: true,
@@ -81,20 +83,6 @@ var RxDBDevModePlugin = {
     }
   },
   hooks: {
-    preAddRxPlugin: {
-      after: function after(args) {
-        /**
-         * throw when dev mode is added multiple times
-         * because there is no way that this was done intentional.
-         * Likely the developer has mixed core and default usage of RxDB.
-         */
-        if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
-          throw (0, _rxError.newRxError)('DEV1', {
-            plugins: args.plugins
-          });
-        }
-      }
-    },
     preCreateRxSchema: {
       after: _checkSchema.checkSchema
     },

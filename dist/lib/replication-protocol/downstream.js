@@ -198,6 +198,15 @@ function startReplicationDownstream(state) {
             }
             lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, downResult.checkpoint]);
             promises.push(persistFromMaster(downResult.documents, lastCheckpoint));
+
+            /**
+             * By definition we stop pull when the pulled documents
+             * do not fill up the pullBatchSize because we
+             * can assume that the remote has no more documents.
+             */
+            if (downResult.documents.length < state.input.pullBatchSize) {
+              _interrupt = true;
+            }
           });
         });
         return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);

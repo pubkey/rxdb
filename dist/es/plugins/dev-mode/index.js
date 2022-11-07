@@ -23,7 +23,7 @@ export function deepFreezeWhenDevMode(obj) {
   }
   return deepFreeze(obj);
 }
-var DEV_MODE_PLUGIN_NAME = 'dev-mode';
+export var DEV_MODE_PLUGIN_NAME = 'dev-mode';
 export var RxDBDevModePlugin = {
   name: DEV_MODE_PLUGIN_NAME,
   rxdb: true,
@@ -41,20 +41,6 @@ export var RxDBDevModePlugin = {
     }
   },
   hooks: {
-    preAddRxPlugin: {
-      after: function after(args) {
-        /**
-         * throw when dev mode is added multiple times
-         * because there is no way that this was done intentional.
-         * Likely the developer has mixed core and default usage of RxDB.
-         */
-        if (args.plugin.name === DEV_MODE_PLUGIN_NAME) {
-          throw newRxError('DEV1', {
-            plugins: args.plugins
-          });
-        }
-      }
-    },
     preCreateRxSchema: {
       after: checkSchema
     },

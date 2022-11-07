@@ -10,4 +10,5 @@ export * from './check-query';
  * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */
 export declare function deepFreezeWhenDevMode<T>(obj: T): DeepReadonly<T>;
+export declare const DEV_MODE_PLUGIN_NAME = "dev-mode";
 export declare const RxDBDevModePlugin: RxPlugin;

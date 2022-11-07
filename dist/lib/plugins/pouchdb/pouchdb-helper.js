@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.RX_STORAGE_NAME_POUCHDB = exports.RXDB_POUCH_DELETED_FLAG = exports.POUCHDB_META_FIELDNAME = exports.POUCHDB_LOCAL_PREFIX_LENGTH = exports.POUCHDB_LOCAL_PREFIX = exports.POUCHDB_DESIGN_PREFIX = exports.POUCHDB_CHECKPOINT_SCHEMA = exports.OPEN_POUCH_INSTANCES = exports.OPEN_POUCHDB_STORAGE_INSTANCES = void 0;
 exports.getEventKey = getEventKey;
 exports.getPouchIndexDesignDocNameByIndex = getPouchIndexDesignDocNameByIndex;
+exports.hashAttachmentData = hashAttachmentData;
 exports.openPouchId = openPouchId;
 exports.pouchChangeRowToChangeEvent = pouchChangeRowToChangeEvent;
 exports.pouchChangeRowToChangeStreamEvent = pouchChangeRowToChangeStreamEvent;
@@ -21,7 +22,7 @@ exports.writeAttachmentsToAttachments = void 0;
 var _pouchdbMd = require("pouchdb-md5");
 var _util = require("../../util");
 var _rxError = require("../../rx-error");
-var _attachments = require("../attachments");
+var _rxStorageHelper = require("../../rx-storage-helper");
 var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attachments) {
   try {
     if (!attachments) {
@@ -47,8 +48,8 @@ var writeAttachmentsToAttachments = function writeAttachmentsToAttachments(attac
         var _temp4 = function () {
           if (obj.data) {
             var _temp5 = function _temp5(dataAsBase64String) {
-              return Promise.resolve((0, _attachments.hashAttachmentData)(dataAsBase64String)).then(function (hash) {
-                var length = (0, _attachments.getAttachmentSize)(dataAsBase64String);
+              return Promise.resolve(hashAttachmentData(dataAsBase64String)).then(function (hash) {
+                var length = (0, _rxStorageHelper.getAttachmentSize)(dataAsBase64String);
                 ret[key] = {
                   digest: 'md5-' + hash,
                   length: length,
@@ -344,6 +345,21 @@ function pouchHash(data) {
       res(digest);
     });
   });
+}
+
+/**
+ * Runs the same hashing as PouchDB would do.
+ * Used to pre-calculated the hashes which is required to emit the correct events.
+ */
+function hashAttachmentData(attachmentBase64String) {
+  var binary;
+  try {
+    binary = atob(attachmentBase64String);
+  } catch (err) {
+    console.log('hashAttachmentData() could not run b64DecodeUnicode() on ' + attachmentBase64String);
+    throw err;
+  }
+  return pouchHash(binary);
 }
 function getPouchIndexDesignDocNameByIndex(index) {
   var indexName = 'idx-rxdb-index-' + index.join(',');

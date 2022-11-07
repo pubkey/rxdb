@@ -10,7 +10,7 @@ import { RxCollectionBase } from './rx-collection';
 import { RxDatabaseBase } from './rx-database';
 import { overwritable } from './overwritable';
 import { HOOKS, runPluginHooks } from './hooks';
-import { newRxTypeError } from './rx-error';
+import { newRxError, newRxTypeError } from './rx-error';
 
 /**
  * prototypes that can be manipulated with a plugin
@@ -23,6 +23,7 @@ var PROTOTYPES = {
   RxDatabase: RxDatabaseBase.prototype
 };
 var ADDED_PLUGINS = new Set();
+var ADDED_PLUGIN_NAMES = new Set();
 
 /**
  * Add a plugin to the RxDB library.
@@ -38,7 +39,15 @@ export function addRxPlugin(plugin) {
   if (ADDED_PLUGINS.has(plugin)) {
     return;
   } else {
+    // ensure no other plugin with the same name was already added
+    if (ADDED_PLUGIN_NAMES.has(plugin.name)) {
+      throw newRxError('PL3', {
+        name: plugin.name,
+        plugin: plugin
+      });
+    }
     ADDED_PLUGINS.add(plugin);
+    ADDED_PLUGIN_NAMES.add(plugin.name);
   }
 
   /**

@@ -12,6 +12,7 @@ export declare const ERROR_MESSAGES: {
     UT6: string;
     PL1: string;
     PL2: string;
+    PL3: string;
     P2: string;
     QU1: string;
     QU4: string;
@@ -141,7 +142,6 @@ export declare const ERROR_MESSAGES: {
     SC37: string;
     SC38: string;
     SC39: string;
-    DEV1: string;
     VD1: string;
     VD2: string;
     IM1: string;

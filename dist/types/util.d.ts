@@ -1,4 +1,4 @@
-import type { BlobBuffer, DeepReadonlyObject, HashFunction, MaybeReadonly, RxDocumentData, RxDocumentMeta, StringKeys } from './types';
+import type { BlobBuffer, DeepReadonlyObject, HashFunction, MaybeReadonly, RxDocumentData, RxDocumentMeta, RxDocumentWriteData, StringKeys } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -125,7 +125,7 @@ export declare function getHeightOfRevision(revision: string): number;
 /**
  * Creates the next write revision for a given document.
  */
-export declare function createRevision<RxDocType>(hashFunction: HashFunction, docData: RxDocumentData<RxDocType> & {
+export declare function createRevision<RxDocType>(hashFunction: HashFunction, docData: RxDocumentWriteData<RxDocType> & {
     /**
      * Passing a revision is optional here,
      * because it is anyway not needed to calculate

@@ -63,6 +63,11 @@ export declare function pouchChangeRowToChangeStreamEvent<DocumentData>(primaryK
  */
 export declare function primarySwapPouchDbQuerySelector<RxDocType>(selector: any, primaryKey: StringKeys<RxDocumentData<RxDocType>>): any;
 export declare function pouchHash(data: Buffer | Blob | string): Promise<string>;
+/**
+ * Runs the same hashing as PouchDB would do.
+ * Used to pre-calculated the hashes which is required to emit the correct events.
+ */
+export declare function hashAttachmentData(attachmentBase64String: string): Promise<string>;
 export declare function writeAttachmentsToAttachments(attachments: {
     [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
 }): Promise<{
