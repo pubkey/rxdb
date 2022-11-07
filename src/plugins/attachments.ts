@@ -136,8 +136,9 @@ export async function putAttachment(
     /**
      * If set to true, the write will be skipped
      * when the attachment already contains the same data.
-     * @deprecated Makes no sense because the attachment hash
-     * is calculated by the RxStorage so we do not know it at this point.
+     * @deprecated The check if the data has changed is now performed
+     * inside of the RxStorage, no longer by RxDB itself. So we do
+     * no longer need 'skipIfSame'.
      */
     _skipIfSame: boolean = true
 ): Promise<RxAttachment> {
