@@ -521,6 +521,43 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.destroy();
             });
+            // https://github.com/pubkey/rxdb/blob/d7c3aca4f49d605ceae8997df32f713d0fe21ee2/src/types/plugins/replication.d.ts#L47-L53
+            it('should stop pulling when response returns less documents than the pull.batchSize', async () => {
+                const amount = batchSize + 1;
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(amount)),
+                ]);
+                let responseHaveBeenCalledTimes = 0;
+                const replicationState = c.syncGraphQL({
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        responseModifier: (res: any) => {
+                            responseHaveBeenCalledTimes += 1;
+                            return res;
+                        },
+                    },
+                    live: false,
+                    deletedField: 'deleted',
+                });
+
+                // wait until first replication is done
+                await replicationState.awaitInitialReplication();
+
+                const docs = await c.find().exec();
+                assert.strictEqual(docs.length, amount);
+
+                // do not send a request if the server returned less documents than the batch size
+                assert.strictEqual(
+                    responseHaveBeenCalledTimes,
+                    Math.ceil(amount / batchSize)
+                );
+
+                server.close();
+                c.database.destroy();
+            });
             it('should retry on errors', async () => {
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);
