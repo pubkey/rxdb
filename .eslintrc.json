@@ -84,7 +84,6 @@
     "guard-for-in": "error",
     "id-blacklist": "off",
     "id-match": "off",
-    "import/no-deprecated": "warn",
     "jsdoc/no-types": "off",
     "no-bitwise": "error",
     "no-caller": "error",
@@ -144,9 +143,6 @@
         ]
       }
     ],
-    // transpiling async-await produces a really big build size,
-    // so we try to not use async if we do not have an await.
-    "@typescript-eslint/require-await": "error",
     "require-await": "error",
     // overrides
     // TODO: remove these rules one by one
@@ -205,7 +201,17 @@
     "@typescript-eslint/no-unused-expressions": "off",
     "no-unused-expressions": "off",
     "no-shadow": "off",
-    "@typescript-eslint/no-shadow": "off"
+    "@typescript-eslint/no-shadow": "off",
+
+
+    // These rules must stay turned off
+    // because the take too long to run.
+    // Use 'npm run lint:debug:time' to check
+    // how long each rules takes.
+    "@typescript-eslint/unbound-method": "off",
+    "import/no-deprecated": "off",
+    "@typescript-eslint/no-implied-eval": "off",
+    "@typescript-eslint/require-await": "off"
   },
   "overrides": [
     {
