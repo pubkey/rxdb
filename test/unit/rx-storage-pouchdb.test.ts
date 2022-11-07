@@ -13,12 +13,9 @@ import {
     blobBufferUtil,
     EventBulk,
     RxStorageChangeEvent,
-    RxDocumentData
-} from '../../';
-
-import {
+    RxDocumentData,
     getAttachmentSize
-} from '../../plugins/attachments';
+} from '../../';
 
 import {
     addCustomEventsPluginToPouch,
