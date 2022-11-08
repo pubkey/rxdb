@@ -277,6 +277,21 @@ export type ExplainedPouchQuery<DocType> = {
     skip: number;
 }
 
+export type PouchAllDocsResponse = {
+    offset: number;
+    rows: {
+        id: string;
+        doc: any;
+        key: string;
+        value: {
+            rev: string;
+            deleted?: boolean;
+        };
+        error?: 'not_found' | string;
+    }[];
+    total_rows: number;
+};
+
 export declare class PouchDBInstance {
     constructor(
         name: string,
@@ -298,20 +313,7 @@ export declare class PouchDBInstance {
     static isInstanceOf(instance: any): boolean;
     info(): Promise<any>;
 
-    allDocs(options?: PouchAllDocsOptions): Promise<{
-        offset: number;
-        rows: {
-            id: string;
-            doc: any;
-            key: string;
-            value: {
-                rev: string;
-                deleted?: boolean;
-            };
-            error?: 'not_found' | string;
-        }[];
-        total_rows: number;
-    }>;
+    allDocs(options?: PouchAllDocsOptions): Promise<PouchAllDocsResponse>;
 
     bulkDocs(
         docs: { docs: any[] } | any[],
