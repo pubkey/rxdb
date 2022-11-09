@@ -175,7 +175,7 @@ describe('replication-couchdb-new.test.ts', () => {
             const c2 = await humansCollection.create(0);
             await c2.insert(schemaObjects.human());
             await syncOnce(c2, server);
-            
+
             let serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 1);
 
@@ -217,30 +217,33 @@ describe('replication-couchdb-new.test.ts', () => {
             await syncAll();
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 0.5');
             await ensureCollectionsHaveEqualState(c, c2);
+            let serverDocs = await getAllServerDocs(server.url);
+            assert.strictEqual(serverDocs.length, 2);
 
 
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 11');
 
             await doc1.remove();
             await syncAll();
+            serverDocs = await getAllServerDocs(server.url);
+            assert.strictEqual(serverDocs.length, 1);
+
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 1.5');
             await ensureCollectionsHaveEqualState(c, c2);
 
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 2');
 
-            process.exit();
-
+            
             await doc2.remove();
+            console.log(';;;;;;;;;;;;;;;;;;;;;;; 2.3');
             await syncAll();
+            console.log(';;;;;;;;;;;;;;;;;;;;;;; 2.4');
+            serverDocs = await getAllServerDocs(server.url);
+            assert.strictEqual(serverDocs.length, 0);
+            console.log(';;;;;;;;;;;;;;;;;;;;;;; 2.6');
             await ensureCollectionsHaveEqualState(c, c2);
-
-
-            console.log(';;;;;;;;;;;;;;;;;;;;;;; 3');
-
-            const serverDocs = await getAllServerDocs(server.url);
-            console.dir(serverDocs);
-
-
+            
+            
             c.database.destroy();
             c2.database.destroy();
             server.close();

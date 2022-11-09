@@ -237,10 +237,6 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                     const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData);
                     const assumedMasterDoc = assumedMasterState[docId];
 
-
-                    console.log('IIIIIIIIIIIIIIIIIIIIIIIIII');
-                    console.dir({ fullDocData, assumedMasterDoc });
-
                     /**
                      * If the master state is equal to the
                      * fork state, we can assume that the document state is already
@@ -269,10 +265,10 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                             parseRevision(fullDocData._rev).height === fullDocData._meta[state.input.identifier]
                         )
                     ) {
-                        console.log('RETUUUN ' + docId);
+                        console.log('up: RETUUUN ' + docId);
                         return;
                     }
-                    console.log('NOT RETUUUN ' + docId);
+                    console.log('up: NOT RETUUUN ' + docId);
 
                     writeRowsToMasterIds.push(docId);
 

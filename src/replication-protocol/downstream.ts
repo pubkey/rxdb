@@ -137,7 +137,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
         state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'down'));
         let lastCheckpoint: CheckpointType = await state.checkpointQueue;
 
-        
+
         const promises: Promise<any>[] = [];
         while (!state.events.canceled.getValue()) {
             console.log('lastCheckpointlastCheckpointlastCheckpointlastCheckpoint:');
@@ -264,6 +264,10 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             ]) => {
                 return Promise.all(
                     docIds.map(async (docId) => {
+
+
+                        console.log('DOWN docId: ' + docId);
+
                         const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
                         const forkStateDocData: WithDeleted<RxDocType> | undefined = forkStateFullDoc ? writeDocToDocState(forkStateFullDoc) : undefined;
                         const masterState = downDocsById[docId];
@@ -281,6 +285,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                             return PROMISE_RESOLVE_VOID;
                         }
 
+                        console.dir({ assumedMaster, forkStateFullDoc });
 
                         const isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ?
                             PROMISE_RESOLVE_FALSE :
@@ -288,7 +293,21 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                                 realMasterState: assumedMaster.docData,
                                 newDocumentState: forkStateDocData
                             }, 'downstream-check-if-equal-0').then(r => r.isEqual);
-                        const isAssumedMasterEqualToForkState = await isAssumedMasterEqualToForkStatePromise;
+                        let isAssumedMasterEqualToForkState = await isAssumedMasterEqualToForkStatePromise;
+
+                        if (
+                            !isAssumedMasterEqualToForkState &&
+                            (
+                                assumedMaster &&
+                                (assumedMaster.docData as any)._rev &&
+                                forkStateFullDoc._meta[state.input.identifier] &&
+                                parseRevision(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]
+                            )
+                        ) {
+                            isAssumedMasterEqualToForkState = true;
+                        }
+
+                        console.log('isAssumedMasterEqualToForkState(' + docId + '): ' + isAssumedMasterEqualToForkState);
                         if (
                             (
                                 forkStateFullDoc &&
@@ -305,6 +324,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                              * This means we ignore the downstream of this document
                              * because anyway the upstream will first resolve the conflict.
                              */
+                            console.log('INGORE DOWNSREAM BECAUSE FIRS THAVE TO UP ' + docId);
                             return PROMISE_RESOLVE_VOID;
                         }
 
@@ -316,6 +336,8 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                                 newDocumentState: forkStateDocData
                             }, 'downstream-check-if-equal-1').then(r => r.isEqual);
                         const areStatesExactlyEqual = await areStatesExactlyEqualPromise;
+
+                        console.log('areStatesExactlyEqual(' + docId + '): ' + areStatesExactlyEqual);
 
                         if (
                             forkStateDocData &&
@@ -370,7 +392,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                          * This is used for example in the CouchDB replication plugin.
                          */
                         if ((masterState as any)._rev) {
-                            const nextRevisionHeight = !newForkState._rev ? 1 : parseRevision(newForkState._rev).height + 1;
+                            const nextRevisionHeight = !forkStateFullDoc ? 1 : parseRevision(forkStateFullDoc._rev).height + 1;
                             newForkState._meta[state.input.identifier] = nextRevisionHeight;
                         }
 
@@ -378,6 +400,10 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                             previous: forkStateFullDoc,
                             document: newForkState
                         };
+
+                        console.log('forkWriteRow: ' + docId);
+                        console.dir(forkWriteRow);
+
                         writeRowsToFork.push(forkWriteRow);
                         writeRowsToForkById[docId] = forkWriteRow;
                         writeRowsToMeta[docId] = getMetaWriteRow(

@@ -161,6 +161,7 @@ export function syncCouchDBNew<RxDocType>(
 
                 const nonOk = responseJson.find(row => !row.ok);
                 if(nonOk){
+                    console.log('CONFLICT::');
                     console.dir(nonOk);
                     throw new Error('got conflict !!!');
                 }
