@@ -57,7 +57,6 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
     checkpoint: CheckpointType
 ) {
     let previousCheckpointDoc = state.lastCheckpointDoc[direction];
-
     if (
         checkpoint &&
         /**
@@ -116,6 +115,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 previous: previousCheckpointDoc,
                 document: newDoc
             }], 'replication-set-checkpoint');
+
             if (result.success[newDoc.id]) {
                 state.lastCheckpointDoc[direction] = getFromObjectOrThrow(
                     result.success,

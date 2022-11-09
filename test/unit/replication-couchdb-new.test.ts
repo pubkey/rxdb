@@ -22,7 +22,8 @@ import {
     blobBufferUtil,
     RxChangeEvent,
     flattenEvents,
-    RxCollection
+    RxCollection,
+    getLastCheckpointDoc
 } from '../../';
 
 import {
@@ -82,7 +83,7 @@ describe('replication-couchdb-new.test.ts', () => {
     }
 
     async function syncOnce(collection: RxCollection, server: any) {
-        console.log('-------------- syncOnce()');
+        console.log('-------------- syncOnce() ' + collection.name);
         const replicationState = collection.syncCouchDBNew({
             url: server.url,
             live: false,
@@ -92,6 +93,31 @@ describe('replication-couchdb-new.test.ts', () => {
         ensureReplicationHasNoErrors(replicationState);
         await replicationState.awaitInitialReplication();
         console.log('-------------- syncOnce() DONE ' + replicationState);
+    }
+
+    async function ensureCollectionsHaveEqualState<RxDocType>(
+        c1: RxCollection<RxDocType>,
+        c2: RxCollection<RxDocType>
+    ) {
+        const getJson = async (collection: RxCollection<RxDocType>) => {
+            const docs = await collection.find().exec();
+            return docs.map(d => d.toJSON());
+        }
+        const json1 = await getJson(c1);
+        const json2 = await getJson(c2);
+        try {
+            assert.deepStrictEqual(
+                json1,
+                json2
+            );
+        } catch (err) {
+            console.error('ensureCollectionsHaveEqualState() states not equal:');
+            console.dir({
+                [c1.name]: json1,
+                [c2.name]: json2
+            });
+            throw err;
+        }
     }
 
     describe('live:false', () => {
@@ -115,7 +141,7 @@ describe('replication-couchdb-new.test.ts', () => {
             c.database.destroy();
             server.close();
         });
-        it('pull and push changes', async () => {
+        it('push and pull inserted document', async () => {
             const server = await SpawnServer.spawn();
             const c = await humansCollection.create(0);
             const c2 = await humansCollection.create(0);
@@ -131,8 +157,12 @@ describe('replication-couchdb-new.test.ts', () => {
             const serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 2);
 
-            assert.strictEqual((await c.find().exec()).length, 2)
-            assert.strictEqual((await c2.find().exec()).length, 2)
+            assert.strictEqual((await c.find().exec()).length, 2);
+            await ensureCollectionsHaveEqualState(c, c2);
+
+            // pulling again should not crash
+            await syncOnce(c2, server);
+            await ensureCollectionsHaveEqualState(c, c2);
 
             c.database.destroy();
             c2.database.destroy();
@@ -145,14 +175,11 @@ describe('replication-couchdb-new.test.ts', () => {
             const c2 = await humansCollection.create(0);
             await c2.insert(schemaObjects.human());
             await syncOnce(c2, server);
-            await c2.database.destroy();
-
+            
             let serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 1);
 
             await syncOnce(c, server);
-
-            console.log('((((((((((((((((((((((((((((((');
 
             const doc = await c.findOne().exec(true);
             await doc.atomicPatch({ firstName: 'foobar' });
@@ -161,7 +188,61 @@ describe('replication-couchdb-new.test.ts', () => {
             serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs[0].firstName, 'foobar');
 
+            // pulling again should not crash
+            await syncOnce(c2, server);
+            await ensureCollectionsHaveEqualState(c, c2);
+
             c.database.destroy();
+            c2.database.destroy();
+            server.close();
+        });
+        it('delete documents', async () => {
+            const server = await SpawnServer.spawn();
+            const c = await humansCollection.create(0, 'col1', false);
+            const c2 = await humansCollection.create(0, 'col2', false);
+
+            const doc1 = await c.insert(schemaObjects.human('doc1'));
+            const doc2 = await c2.insert(schemaObjects.human('doc2'));
+
+            const syncAll = async () => {
+                console.log('----------------- syncAll() 1');
+                await syncOnce(c, server);
+                console.log('----------------- syncAll() 2');
+                await syncOnce(c2, server);
+                console.log('----------------- syncAll() 3');
+                await syncOnce(c, server);
+                console.log('----------------- syncAll() 4');
+            }
+            console.log(';;;;;;;;;;;;;;;;;;;;;;; 0');
+            await syncAll();
+            console.log(';;;;;;;;;;;;;;;;;;;;;;; 0.5');
+            await ensureCollectionsHaveEqualState(c, c2);
+
+
+            console.log(';;;;;;;;;;;;;;;;;;;;;;; 11');
+
+            await doc1.remove();
+            await syncAll();
+            console.log(';;;;;;;;;;;;;;;;;;;;;;; 1.5');
+            await ensureCollectionsHaveEqualState(c, c2);
+
+            console.log(';;;;;;;;;;;;;;;;;;;;;;; 2');
+
+            process.exit();
+
+            await doc2.remove();
+            await syncAll();
+            await ensureCollectionsHaveEqualState(c, c2);
+
+
+            console.log(';;;;;;;;;;;;;;;;;;;;;;; 3');
+
+            const serverDocs = await getAllServerDocs(server.url);
+            console.dir(serverDocs);
+
+
+            c.database.destroy();
+            c2.database.destroy();
             server.close();
         });
     });

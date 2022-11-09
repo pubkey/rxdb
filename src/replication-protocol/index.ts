@@ -261,15 +261,22 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
 export async function cancelRxStorageReplication(
     replicationState: RxStorageInstanceReplicationState<any>
 ): Promise<void> {
-    replicationState.events.canceled.next(true);
-
     await replicationState.streamQueue.down;
     await replicationState.streamQueue.up;
     await replicationState.checkpointQueue;
+
+    /**
+     * This must run AFTER awaiting the queues
+     * because inside of the queue handlers
+     * we often do is-canceled checks which would
+     * then be true.
+     */
+    replicationState.events.canceled.next(true);
 
     replicationState.events.active.up.complete();
     replicationState.events.active.down.complete();
     replicationState.events.processed.up.complete();
     replicationState.events.processed.down.complete();
     replicationState.events.resolvedConflicts.complete();
+    replicationState.events.canceled.complete();
 }

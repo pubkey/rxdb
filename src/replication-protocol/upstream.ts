@@ -15,6 +15,7 @@ import type {
 import {
     batchArray,
     ensureNotFalsy,
+    parseRevision,
     PROMISE_RESOLVE_FALSE
 } from '../util';
 import {
@@ -236,22 +237,42 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                     const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData);
                     const assumedMasterDoc = assumedMasterState[docId];
 
+
+                    console.log('IIIIIIIIIIIIIIIIIIIIIIIIII');
+                    console.dir({ fullDocData, assumedMasterDoc });
+
                     /**
                      * If the master state is equal to the
                      * fork state, we can assume that the document state is already
                      * replicated.
                      */
                     if (
-                        assumedMasterDoc &&
-                        // if the isResolvedConflict is correct, we do not have to compare the documents.
-                        assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev &&
-                        (await state.input.conflictHandler({
-                            realMasterState: assumedMasterDoc.docData,
-                            newDocumentState: docData
-                        }, 'upstream-check-if-equal')).isEqual
+                        (
+                            assumedMasterDoc &&
+                            // if the isResolvedConflict is correct, we do not have to compare the documents.
+                            assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev
+                            &&
+                            (await state.input.conflictHandler({
+                                realMasterState: assumedMasterDoc.docData,
+                                newDocumentState: docData
+                            }, 'upstream-check-if-equal')).isEqual
+                        )
+                        ||
+                        /**
+                         * If the master works with _rev fields,
+                         * we use that to check if our current doc state
+                         * is different from the assumedMasterDoc.
+                         */
+                        (
+                            assumedMasterDoc &&
+                            (assumedMasterDoc.docData as any)._rev &&
+                            parseRevision(fullDocData._rev).height === fullDocData._meta[state.input.identifier]
+                        )
                     ) {
+                        console.log('RETUUUN ' + docId);
                         return;
                     }
+                    console.log('NOT RETUUUN ' + docId);
 
                     writeRowsToMasterIds.push(docId);
 

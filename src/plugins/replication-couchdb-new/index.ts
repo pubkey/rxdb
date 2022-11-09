@@ -87,8 +87,6 @@ export function syncCouchDBNew<RxDocType>(
                 lastPulledCheckpoint: CouchDBCheckpointType | undefined,
                 batchSize: number
             ) {
-                console.log('run pull handler');
-
                 /**
                  * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/changes.html
                  */
@@ -105,13 +103,10 @@ export function syncCouchDBNew<RxDocType>(
                 console.log('pull handler url: ' + url);
 
                 const response = await replicationState.fetch(url);
-                console.log('run pull handler 2');
                 const jsonResponse: PouchdbChangesResult = await response.json();
                 console.dir(jsonResponse);
-                console.log('run pull handler 3');
                 const documents: WithDeleted<RxDocType>[] = jsonResponse.results
                     .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
-                console.dir(documents);
                 return {
                     documents,
                     checkpoint: {
@@ -131,10 +126,6 @@ export function syncCouchDBNew<RxDocType>(
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
-                console.log(' call push handler');
-                console.dir(rows);
-
-
                 /**
                  * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/bulk-api.html#db-bulk-docs
                  */
@@ -168,6 +159,13 @@ export function syncCouchDBNew<RxDocType>(
                 console.log('PUSH responseJson;:');
                 console.dir(responseJson);
 
+                const nonOk = responseJson.find(row => !row.ok);
+                if(nonOk){
+                    console.dir(nonOk);
+                    throw new Error('got conflict !!!');
+                }
+
+                
                 return []; // TODO
             },
             batchSize: options.push.batchSize,
