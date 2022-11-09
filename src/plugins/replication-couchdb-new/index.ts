@@ -17,13 +17,15 @@ import type {
     RxReplicationWriteToMasterRow,
     RxReplicationPullStreamItem,
     PouchdbChangesResult,
-    PouchBulkDocResultRow
+    PouchBulkDocResultRow,
+    PouchAllDocsResponse
 } from '../../types';
 import {
     RxReplicationState, startReplicationOnLeaderShip
 } from '../replication';
 import {
     addRxPlugin,
+    newRxError,
     WithDeleted
 } from '../../index';
 
@@ -156,18 +158,32 @@ export function syncCouchDBNew<RxDocType>(
                 );
                 const responseJson: PouchBulkDocResultRow[] = await response.json();
 
-                console.log('PUSH responseJson;:');
-                console.dir(responseJson);
 
-                const nonOk = responseJson.find(row => !row.ok);
-                if(nonOk){
-                    console.log('CONFLICT::');
-                    console.dir(nonOk);
-                    throw new Error('got conflict !!!');
+                const conflicts = responseJson.filter(row => {
+                    const isConflict = row.error === 'conflict';
+                    if (!row.ok && !isConflict) {
+                        throw newRxError('SNH', { args: { row } });
+                    }
+                    return isConflict;
+                });
+
+                if (conflicts.length === 0) {
+                    return [];
                 }
 
-                
-                return []; // TODO
+
+                const getConflictDocsUrl = options.url + '_all_docs?' + mergeUrlQueryParams({
+                    include_docs: true,
+                    keys: JSON.stringify(conflicts.map(c => c.id))
+                });
+                const conflictResponse = await replicationState.fetch(getConflictDocsUrl);
+                const conflictResponseJson: PouchAllDocsResponse = await conflictResponse.json();
+                const conflictDocsMasterState = conflictResponseJson.rows.map(r => r.doc);
+
+                console.log('PUSH conflictDocsMasterState;:');
+                console.dir(conflictDocsMasterState);
+
+                return conflictDocsMasterState;
             },
             batchSize: options.push.batchSize,
             modifier: options.push.modifier

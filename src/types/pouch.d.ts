@@ -227,6 +227,9 @@ export type PouchBulkDocResultRow = {
     ok: boolean;
     id: string;
     rev: string;
+
+    error?: 'conflict';
+    reason?: string;
 }
 
 export type PouchCheckpoint = {

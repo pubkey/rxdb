@@ -94,6 +94,19 @@ describe('replication-couchdb-new.test.ts', () => {
         await replicationState.awaitInitialReplication();
         console.log('-------------- syncOnce() DONE ' + replicationState);
     }
+    async function syncAll<RxDocType>(
+        c1: RxCollection<RxDocType>,
+        c2: RxCollection<RxDocType>,
+        server: any
+    ) {
+        console.log('----------------- syncAll() 1');
+        await syncOnce(c1, server);
+        console.log('----------------- syncAll() 2');
+        await syncOnce(c2, server);
+        console.log('----------------- syncAll() 3');
+        await syncOnce(c1, server);
+        console.log('----------------- syncAll() 4');
+    }
 
     async function ensureCollectionsHaveEqualState<RxDocType>(
         c1: RxCollection<RxDocType>,
@@ -120,7 +133,7 @@ describe('replication-couchdb-new.test.ts', () => {
         }
     }
 
-    describe('live:false', () => {
+    describe('basic CRUD - live:false', () => {
         it('finish sync once without data', async () => {
             const server = await SpawnServer.spawn();
             const c = await humansCollection.create(0);
@@ -204,17 +217,9 @@ describe('replication-couchdb-new.test.ts', () => {
             const doc1 = await c.insert(schemaObjects.human('doc1'));
             const doc2 = await c2.insert(schemaObjects.human('doc2'));
 
-            const syncAll = async () => {
-                console.log('----------------- syncAll() 1');
-                await syncOnce(c, server);
-                console.log('----------------- syncAll() 2');
-                await syncOnce(c2, server);
-                console.log('----------------- syncAll() 3');
-                await syncOnce(c, server);
-                console.log('----------------- syncAll() 4');
-            }
+
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 0');
-            await syncAll();
+            await syncAll(c, c2, server);
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 0.5');
             await ensureCollectionsHaveEqualState(c, c2);
             let serverDocs = await getAllServerDocs(server.url);
@@ -224,7 +229,7 @@ describe('replication-couchdb-new.test.ts', () => {
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 11');
 
             await doc1.remove();
-            await syncAll();
+            await syncAll(c, c2, server);
             serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 1);
 
@@ -233,18 +238,47 @@ describe('replication-couchdb-new.test.ts', () => {
 
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 2');
 
-            
+
             await doc2.remove();
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 2.3');
-            await syncAll();
+            await syncAll(c, c2, server);
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 2.4');
             serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 0);
             console.log(';;;;;;;;;;;;;;;;;;;;;;; 2.6');
             await ensureCollectionsHaveEqualState(c, c2);
-            
-            
+
+
             c.database.destroy();
+            c2.database.destroy();
+            server.close();
+        });
+    });
+    describe('conflict handling', () => {
+        it('should keep the master state as default conflict handler', async () => {
+            const server = await SpawnServer.spawn();
+            const c1 = await humansCollection.create(1);
+            const c2 = await humansCollection.create(0);
+
+            await syncAll(c1, c2, server);
+
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
+
+            // make update on both sides
+            await doc1.atomicPatch({ firstName: 'c1' });
+            await doc2.atomicPatch({ firstName: 'c2' });
+
+            await syncOnce(c2, server);
+
+            // cause conflict
+            console.log('CAUSE CONFLICT');
+            await syncOnce(c1, server);
+
+            process.exit();
+
+
+            c1.database.destroy();
             c2.database.destroy();
             server.close();
         });
