@@ -5,46 +5,21 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    createRxDatabase,
-    promiseWait,
-    randomCouchString,
-    isRxCollection,
-    RxCouchDBReplicationState,
-    SyncOptions,
     addRxPlugin,
-    blobBufferUtil,
-    RxChangeEvent,
-    flattenEvents,
-    RxCollection,
-    getLastCheckpointDoc
-} from '../../';
+    RxCollection} from '../../';
 
-import {
-    addPouchPlugin,
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
 import {
     mergeUrlQueryParams,
     RxCouchDBNewReplicationState,
     RxDBReplicationCouchDBNewPlugin
 } from '../../plugins/replication-couchdb-new';
 
-import {
-    fromEvent
-} from 'rxjs';
-import {
-    map,
-    filter,
-    first
-} from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schemas';
 import { PouchAllDocsResponse } from '../../src/types';
 
 describe('replication-couchdb-new.test.ts', () => {
