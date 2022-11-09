@@ -125,7 +125,8 @@ export function awaitRxStorageReplicationInSync(
 ) {
     return Promise.all([
         replicationState.streamQueue.up,
-        replicationState.streamQueue.down
+        replicationState.streamQueue.down,
+        replicationState.checkpointQueue
     ]);
 }
 
@@ -257,16 +258,6 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
     return replicationHandler;
 }
 
-
-export function awaitRxStorageReplicationQueues(
-    replicationState: RxStorageInstanceReplicationState<any>
-): Promise<any> {
-    return Promise.all([
-        replicationState.streamQueue.down,
-        replicationState.streamQueue.up,
-        replicationState.checkpointQueue
-    ]);
-}
 
 export function cancelRxStorageReplication(
     replicationState: RxStorageInstanceReplicationState<any>

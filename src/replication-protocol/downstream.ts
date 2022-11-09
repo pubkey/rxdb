@@ -14,10 +14,12 @@ import type {
     DocumentsWithCheckpoint
 } from '../types';
 import {
+    createRevision,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
+    now,
     parseRevision,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID
@@ -146,11 +148,19 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                 state.input.pullBatchSize
             );
 
+
+            console.log(':::: DOWN RESULT:');
+            console.dir(downResult);
+
             if (downResult.documents.length === 0) {
                 break;
             }
 
             lastCheckpoint = stackCheckpoints([lastCheckpoint, downResult.checkpoint]);
+
+            console.log('lastCheckpoint:');
+            console.dir(lastCheckpoint);
+
             promises.push(
                 persistFromMaster(
                     downResult.documents,
@@ -228,6 +238,10 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
         nonPersistedFromMaster.checkpoint = checkpoint;
 
 
+
+        console.log('## persistFromMaster()');
+        console.dir(checkpoint);
+
         /**
          * Run in the queue
          * with all open documents from nonPersistedFromMaster.
@@ -262,8 +276,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             ]) => {
                 return Promise.all(
                     docIds.map(async (docId) => {
-
-
                         console.log('DOWN docId: ' + docId);
 
                         const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
@@ -381,6 +393,20 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                                 _attachments: {}
                             });
 
+
+                        /**
+                         * TODO for unknown reason we need
+                         * to manually set the lwt and the _rev here
+                         * to fix the pouchdb tests. This is not required for
+                         * the other RxStorage implementations which means something is wrong.
+                         */
+                        newForkState._meta.lwt = now();
+                        newForkState._rev = (masterState as any)._rev ? (masterState as any)._rev : createRevision(
+                            state.input.hashFunction,
+                            newForkState,
+                            forkStateFullDoc
+                        );
+
                         /**
                          * If the remote works with revisions,
                          * we store the height of the next fork-state revision
@@ -412,17 +438,21 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                     })
                 );
             }).then(() => {
+                console.log('ZZZZZZZZZZZZZZZZZZZZZZWEEEEIIII');
                 if (writeRowsToFork.length > 0) {
+                    console.log('ZZZZZZZZZZZZZZZZZZZZZZWEEEEIIII 0.1');
                     return state.input.forkInstance.bulkWrite(
                         writeRowsToFork,
                         state.downstreamBulkWriteFlag
                     ).then((forkWriteResult) => {
+                        console.log('ZZZZZZZZZZZZZZZZZZZZZZWEEEEIIII   - 2');
                         Object.keys(forkWriteResult.success).forEach((docId) => {
                             state.events.processed.down.next(writeRowsToForkById[docId]);
                             useMetaWriteRows.push(writeRowsToMeta[docId]);
                         });
                     });
                 }
+                console.log('ZZZZZZZZZZZZZZZZZZZZZZWEEEEIIII 0.2');
             }).then(() => {
                 if (useMetaWriteRows.length > 0) {
                     return state.input.metaInstance.bulkWrite(

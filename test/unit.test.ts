@@ -22,6 +22,7 @@ import './unit/query-planner.test';
 import './unit/rx-storage-implementations.test';
 import './unit/rx-storage-query-correctness.test';
 
+import './unit/replication-protocol.test';
 import './unit/replication-couchdb-new.test';
 
 
@@ -58,7 +59,6 @@ import './unit/reactive-document.test';
 import './unit/cleanup.test';
 import './unit/hooks.test';
 import './unit/orm.test';
-import './unit/replication-protocol.test';
 import './unit/replication.test';
 import './unit/replication-websocket.test';
 import './unit/replication-couchdb.test';

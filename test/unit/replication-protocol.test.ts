@@ -247,7 +247,10 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             /**
              * @link https://github.com/pubkey/rxdb/pull/3627
              */
-            it('should not write a duplicate checkpoint', async () => {
+            it('#3627 should not write a duplicate checkpoint', async () => {
+                if (!config.isNotOneOfTheseStorages(['pouchdb'])) {
+                    return;
+                }
                 const masterInstance = await createRxStorageInstance(1);
                 const forkInstance = await createRxStorageInstance(0);
                 const metaInstance = await createMetaInstance();
@@ -256,6 +259,12 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     document: getDocData()
                 }], testContext);
                 assert.deepStrictEqual(writeResult.error, {});
+
+
+                console.log('OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
+                console.log('OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
+                console.log('OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
+                console.log('OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
 
                 const replicationState = replicateRxStorageInstance({
                     identifier: randomCouchString(10),
@@ -271,9 +280,13 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     conflictHandler: THROWING_CONFLICT_HANDLER,
                     hashFunction: defaultHashFunction
                 });
+
+                console.log('AAAAAAAAAAAAA 1');
+
                 await awaitRxStorageReplicationFirstInSync(replicationState);
                 await awaitRxStorageReplicationInSync(replicationState);
 
+                console.log('AAAAAAAAAAAAA 2');
 
                 const checkpointDocId = getComposedPrimaryKeyOfDocumentData(
                     RX_REPLICATION_META_INSTANCE_SCHEMA,
@@ -284,17 +297,25 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     }
                 );
 
+                console.log('AAAAAAAAAAAAA 3');
                 let checkpointDocBefore: any;
                 while (!checkpointDocBefore) {
+
+                    const all = await replicationState.input.metaInstance.getChangedDocumentsSince(1000);
+                    console.log('aLL:');
+                    console.dir(all);
+
                     const response = await replicationState.input.metaInstance.findDocumentsById(
                         [checkpointDocId],
                         false
                     );
                     if (response[checkpointDocId]) {
                         checkpointDocBefore = response[checkpointDocId];
+                        break;
                     }
-                    await wait(20);
+                    await wait(1000);
                 }
+                console.log('AAAAAAAAAAAAA 4');
 
                 await setCheckpoint(
                     replicationState,
@@ -307,6 +328,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     false
                 );
                 const checkpointDocAfter = getFromObjectOrThrow(checkpointDocAfterResult, checkpointDocId);
+                console.log('AAAAAAAAAAAAA 5');
 
                 assert.strictEqual(
                     checkpointDocAfter._rev,

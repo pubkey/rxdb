@@ -38,7 +38,6 @@ import {
 import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,
-    awaitRxStorageReplicationQueues,
     cancelRxStorageReplication,
     replicateRxStorageInstance,
     RX_REPLICATION_META_INSTANCE_SCHEMA
@@ -331,7 +330,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          */
         if (!this.live) {
             await awaitRxStorageReplicationFirstInSync(this.internalReplicationState);
-            await awaitRxStorageReplicationQueues(this.internalReplicationState);
+            await awaitRxStorageReplicationInSync(this.internalReplicationState);
             await this.cancel();
         }
         this.callOnStart();
