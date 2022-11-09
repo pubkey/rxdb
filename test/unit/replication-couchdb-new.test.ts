@@ -12,7 +12,8 @@ import * as humansCollection from '../helper/humans-collection';
 
 import {
     addRxPlugin,
-    RxCollection} from '../../';
+    RxCollection
+} from '../../';
 
 import {
     mergeUrlQueryParams,
@@ -237,7 +238,7 @@ describe('replication-couchdb-new.test.ts', () => {
             await syncOnce(c1, server);
 
             /**
-             * Must have keept the master state c2
+             * Must have kept the master state c2
              */
             assert.strictEqual(doc1.firstName, 'c2');
 
