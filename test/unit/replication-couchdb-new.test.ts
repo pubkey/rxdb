@@ -217,37 +217,23 @@ describe('replication-couchdb-new.test.ts', () => {
             const doc1 = await c.insert(schemaObjects.human('doc1'));
             const doc2 = await c2.insert(schemaObjects.human('doc2'));
 
-
-            console.log(';;;;;;;;;;;;;;;;;;;;;;; 0');
             await syncAll(c, c2, server);
-            console.log(';;;;;;;;;;;;;;;;;;;;;;; 0.5');
             await ensureCollectionsHaveEqualState(c, c2);
             let serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 2);
-
-
-            console.log(';;;;;;;;;;;;;;;;;;;;;;; 11');
 
             await doc1.remove();
             await syncAll(c, c2, server);
             serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 1);
 
-            console.log(';;;;;;;;;;;;;;;;;;;;;;; 1.5');
             await ensureCollectionsHaveEqualState(c, c2);
-
-            console.log(';;;;;;;;;;;;;;;;;;;;;;; 2');
-
 
             await doc2.remove();
-            console.log(';;;;;;;;;;;;;;;;;;;;;;; 2.3');
             await syncAll(c, c2, server);
-            console.log(';;;;;;;;;;;;;;;;;;;;;;; 2.4');
             serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 0);
-            console.log(';;;;;;;;;;;;;;;;;;;;;;; 2.6');
             await ensureCollectionsHaveEqualState(c, c2);
-
 
             c.database.destroy();
             c2.database.destroy();
@@ -275,8 +261,10 @@ describe('replication-couchdb-new.test.ts', () => {
             console.log('CAUSE CONFLICT');
             await syncOnce(c1, server);
 
-            process.exit();
-
+            /**
+             * Must have keept the master state c2
+             */
+            assert.strictEqual(doc1.firstName, 'c2');
 
             c1.database.destroy();
             c2.database.destroy();

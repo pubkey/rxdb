@@ -341,6 +341,10 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                 state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
                 const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
                 const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
+
+                console.log('UP: conflictsById:');
+                console.dir(conflictsById);
+
                 await Promise.all(
                     Object
                         .entries(conflictsById)

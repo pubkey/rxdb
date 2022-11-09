@@ -158,6 +158,9 @@ export function syncCouchDBNew<RxDocType>(
                 );
                 const responseJson: PouchBulkDocResultRow[] = await response.json();
 
+                console.log('PUSH RESPONSE;');
+                console.dir(responseJson);
+
 
                 const conflicts = responseJson.filter(row => {
                     const isConflict = row.error === 'conflict';
@@ -171,14 +174,14 @@ export function syncCouchDBNew<RxDocType>(
                     return [];
                 }
 
-
                 const getConflictDocsUrl = options.url + '_all_docs?' + mergeUrlQueryParams({
                     include_docs: true,
                     keys: JSON.stringify(conflicts.map(c => c.id))
                 });
                 const conflictResponse = await replicationState.fetch(getConflictDocsUrl);
                 const conflictResponseJson: PouchAllDocsResponse = await conflictResponse.json();
-                const conflictDocsMasterState = conflictResponseJson.rows.map(r => r.doc);
+                const conflictDocsMasterState = conflictResponseJson.rows
+                    .map(r => couchDBDocToRxDocData(collection.schema.primaryPath, r.doc));
 
                 console.log('PUSH conflictDocsMasterState;:');
                 console.dir(conflictDocsMasterState);
