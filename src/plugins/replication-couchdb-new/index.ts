@@ -180,7 +180,7 @@ export function syncCouchDBNew<RxDocType>(
                 });
                 const conflictResponse = await replicationState.fetch(getConflictDocsUrl);
                 const conflictResponseJson: PouchAllDocsResponse = await conflictResponse.json();
-                const conflictDocsMasterState = conflictResponseJson.rows
+                const conflictDocsMasterState: WithDeleted<RxDocType>[] = conflictResponseJson.rows
                     .map(r => couchDBDocToRxDocData(collection.schema.primaryPath, r.doc));
 
                 console.log('PUSH conflictDocsMasterState;:');
