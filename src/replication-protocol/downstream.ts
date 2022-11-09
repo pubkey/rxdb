@@ -14,12 +14,10 @@ import type {
     DocumentsWithCheckpoint
 } from '../types';
 import {
-    createRevision,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    now,
     parseRevision,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID

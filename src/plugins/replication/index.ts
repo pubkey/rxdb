@@ -38,6 +38,7 @@ import {
 import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,
+    awaitRxStorageReplicationQueues,
     cancelRxStorageReplication,
     replicateRxStorageInstance,
     RX_REPLICATION_META_INSTANCE_SCHEMA
@@ -324,8 +325,13 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             );
         }
 
+        /**
+         * Non-live replications run once
+         * and then automatically get canceled.
+         */
         if (!this.live) {
             await awaitRxStorageReplicationFirstInSync(this.internalReplicationState);
+            await awaitRxStorageReplicationQueues(this.internalReplicationState);
             await this.cancel();
         }
         this.callOnStart();
@@ -379,7 +385,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.remoteEvents$.next(ev);
     }
 
-    async cancel(): Promise<any> {
+    cancel(): Promise<any> {
         if (this.isStopped()) {
             return PROMISE_RESOLVE_FALSE;
         }
@@ -387,7 +393,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const promises: Promise<any>[] = [];
 
         if (this.internalReplicationState) {
-            await cancelRxStorageReplication(this.internalReplicationState);
+            cancelRxStorageReplication(this.internalReplicationState);
         }
         if (this.metaInstance) {
             promises.push(
