@@ -140,26 +140,17 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
 
         const promises: Promise<any>[] = [];
         while (!state.events.canceled.getValue()) {
-            console.log('lastCheckpointlastCheckpointlastCheckpointlastCheckpoint:');
-            console.dir(lastCheckpoint);
             lastTimeMasterChangesRequested = timer++;
             const downResult = await replicationHandler.masterChangesSince(
                 lastCheckpoint,
                 state.input.pullBatchSize
             );
 
-
-            console.log(':::: DOWN RESULT:');
-            console.dir(downResult);
-
             if (downResult.documents.length === 0) {
                 break;
             }
 
             lastCheckpoint = stackCheckpoints([lastCheckpoint, downResult.checkpoint]);
-
-            console.log('lastCheckpoint:');
-            console.dir(lastCheckpoint);
 
             promises.push(
                 persistFromMaster(
@@ -237,11 +228,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
         });
         nonPersistedFromMaster.checkpoint = checkpoint;
 
-
-
-        console.log('## persistFromMaster()');
-        console.dir(checkpoint);
-
         /**
          * Run in the queue
          * with all open documents from nonPersistedFromMaster.
@@ -276,8 +262,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             ]) => {
                 return Promise.all(
                     docIds.map(async (docId) => {
-                        console.log('DOWN docId: ' + docId);
-
                         const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
                         const forkStateDocData: WithDeleted<RxDocType> | undefined = forkStateFullDoc ? writeDocToDocState(forkStateFullDoc) : undefined;
                         const masterState = downDocsById[docId];
@@ -316,8 +300,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                         ) {
                             isAssumedMasterEqualToForkState = true;
                         }
-
-                        console.log('isAssumedMasterEqualToForkState(' + docId + '): ' + isAssumedMasterEqualToForkState);
                         if (
                             (
                                 forkStateFullDoc &&
@@ -334,7 +316,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                              * This means we ignore the downstream of this document
                              * because anyway the upstream will first resolve the conflict.
                              */
-                            console.log('INGORE DOWNSREAM BECAUSE FIRS THAVE TO UP ' + docId);
                             return PROMISE_RESOLVE_VOID;
                         }
 
@@ -346,8 +327,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                                 newDocumentState: forkStateDocData
                             }, 'downstream-check-if-equal-1').then(r => r.isEqual);
                         const areStatesExactlyEqual = await areStatesExactlyEqualPromise;
-
-                        console.log('areStatesExactlyEqual(' + docId + '): ' + areStatesExactlyEqual);
 
                         if (
                             forkStateDocData &&
@@ -425,9 +404,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                             document: newForkState
                         };
 
-                        console.log('forkWriteRow: ' + docId);
-                        console.dir(forkWriteRow);
-
                         writeRowsToFork.push(forkWriteRow);
                         writeRowsToForkById[docId] = forkWriteRow;
                         writeRowsToMeta[docId] = getMetaWriteRow(
@@ -438,21 +414,17 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                     })
                 );
             }).then(() => {
-                console.log('ZZZZZZZZZZZZZZZZZZZZZZWEEEEIIII');
                 if (writeRowsToFork.length > 0) {
-                    console.log('ZZZZZZZZZZZZZZZZZZZZZZWEEEEIIII 0.1');
                     return state.input.forkInstance.bulkWrite(
                         writeRowsToFork,
                         state.downstreamBulkWriteFlag
                     ).then((forkWriteResult) => {
-                        console.log('ZZZZZZZZZZZZZZZZZZZZZZWEEEEIIII   - 2');
                         Object.keys(forkWriteResult.success).forEach((docId) => {
                             state.events.processed.down.next(writeRowsToForkById[docId]);
                             useMetaWriteRows.push(writeRowsToMeta[docId]);
                         });
                     });
                 }
-                console.log('ZZZZZZZZZZZZZZZZZZZZZZWEEEEIIII 0.2');
             }).then(() => {
                 if (useMetaWriteRows.length > 0) {
                     return state.input.metaInstance.bulkWrite(
@@ -466,10 +438,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                  * but to ensure order on parallel checkpoint writes,
                  * we have to use a queue.
                  */
-
-                console.log('useCheckpointuseCheckpointuseCheckpointuseCheckpoint:');
-                console.dir(useCheckpoint);
-
                 state.checkpointQueue = state.checkpointQueue.then(() => setCheckpoint(
                     state,
                     'down',

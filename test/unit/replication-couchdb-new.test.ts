@@ -37,10 +37,6 @@ describe('replication-couchdb-new.test.ts', () => {
         const url = serverUrl + '_all_docs?' + mergeUrlQueryParams({ include_docs: true });
         const response = await fetch(url);
         const result: PouchAllDocsResponse = await response.json();
-
-        console.log('all server docs result:');
-        console.dir(result);
-
         return result.rows.map(row => row.doc);
     }
 
@@ -59,7 +55,6 @@ describe('replication-couchdb-new.test.ts', () => {
     }
 
     async function syncOnce(collection: RxCollection, server: any) {
-        console.log('-------------- syncOnce() ' + collection.name);
         const replicationState = collection.syncCouchDBNew({
             url: server.url,
             live: false,
@@ -68,20 +63,15 @@ describe('replication-couchdb-new.test.ts', () => {
         });
         ensureReplicationHasNoErrors(replicationState);
         await replicationState.awaitInitialReplication();
-        console.log('-------------- syncOnce() DONE ' + replicationState);
     }
     async function syncAll<RxDocType>(
         c1: RxCollection<RxDocType>,
         c2: RxCollection<RxDocType>,
         server: any
     ) {
-        console.log('----------------- syncAll() 1');
         await syncOnce(c1, server);
-        console.log('----------------- syncAll() 2');
         await syncOnce(c2, server);
-        console.log('----------------- syncAll() 3');
         await syncOnce(c1, server);
-        console.log('----------------- syncAll() 4');
     }
 
     async function ensureCollectionsHaveEqualState<RxDocType>(
@@ -234,7 +224,6 @@ describe('replication-couchdb-new.test.ts', () => {
             await syncOnce(c2, server);
 
             // cause conflict
-            console.log('CAUSE CONFLICT');
             await syncOnce(c1, server);
 
             /**

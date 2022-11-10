@@ -265,10 +265,8 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                             parseRevision(fullDocData._rev).height === fullDocData._meta[state.input.identifier]
                         )
                     ) {
-                        console.log('up: RETUUUN ' + docId);
                         return;
                     }
-                    console.log('up: NOT RETUUUN ' + docId);
 
                     writeRowsToMasterIds.push(docId);
 
@@ -341,10 +339,6 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                 state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
                 const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
                 const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
-
-                console.log('UP: conflictsById:');
-                console.dir(conflictsById);
-
                 await Promise.all(
                     Object
                         .entries(conflictsById)
