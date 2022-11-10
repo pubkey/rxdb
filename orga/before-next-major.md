@@ -85,3 +85,10 @@ const results$ = await myRxCollection.findByIds(['foo', 'bar']).$;
 ```
 
 ## Remove depricated `skipIfSame` from `putAttachment()`
+
+
+## Rename `replication-couchdb-new`
+
+The `replication-couchdb-new` plugin should be called `replication-couchdb` while the previous `replication-couchdb`
+should be called `replication-couchdb-pouchdb`.
+Also rename the method names and variables inside of the plugins.

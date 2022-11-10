@@ -95,6 +95,10 @@ import type {
 import type {
     RxGraphQLReplicationState
 } from './plugins/replication-graphql';
+import type {
+    RxCouchDBNewReplicationState,
+    SyncOptionsCouchDBNew
+} from './plugins/replication-couchdb-new';
 
 import {
     RxSchema
@@ -763,6 +767,11 @@ export class RxCollectionBase<
     syncGraphQL<CheckpointType = any>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType, CheckpointType> {
         throw pluginMissing('replication-graphql');
     }
+
+    syncCouchDBNew(_syncOptions: SyncOptionsCouchDBNew<RxDocumentType>): RxCouchDBNewReplicationState<RxDocumentType> {
+        throw pluginMissing('replication-couchdb-new');
+    }
+
 
     /**
      * HOOKS

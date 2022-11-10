@@ -17,18 +17,36 @@ const InMemPouchDB = PouchDB.defaults({
 const expressPouch = require('express-pouchdb')(InMemPouchDB);
 
 export async function spawn(): Promise<{
+    dbName: string;
     url: string,
     close: () => Promise<void>
 }> {
     const port = await nextPort();
     const path = '/db';
     app.use(path, expressPouch);
-    const ret = 'http://0.0.0.0:' + port + path;
+    const dbRootUrl = 'http://0.0.0.0:' + port + path;
+
+    const dbName = randomString(5);
 
     return new Promise(res => {
-        const server = app.listen(port, function () {
+        const server = app.listen(port, async function () {
+            const url = dbRootUrl + '/' + dbName + '/';
+
+            // create the CouchDB database
+            await fetch(
+                url,
+                {
+                    method: 'PUT'
+                }
+            );
+
             res({
-                url: ret + '/' + randomString(5) + '/',
+                dbName,
+                url,
+                /**
+                 * TODO add check in last.unit.test to ensure
+                 * that all servers have been closed.
+                 */
                 close(now = false) {
                     if (now) {
                         server.close();

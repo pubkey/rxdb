@@ -15,6 +15,7 @@ import type {
 import {
     batchArray,
     ensureNotFalsy,
+    parseRevision,
     PROMISE_RESOLVE_FALSE
 } from '../util';
 import {
@@ -242,13 +243,27 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
                      * replicated.
                      */
                     if (
-                        assumedMasterDoc &&
-                        // if the isResolvedConflict is correct, we do not have to compare the documents.
-                        assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev &&
-                        (await state.input.conflictHandler({
-                            realMasterState: assumedMasterDoc.docData,
-                            newDocumentState: docData
-                        }, 'upstream-check-if-equal')).isEqual
+                        (
+                            assumedMasterDoc &&
+                            // if the isResolvedConflict is correct, we do not have to compare the documents.
+                            assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev
+                            &&
+                            (await state.input.conflictHandler({
+                                realMasterState: assumedMasterDoc.docData,
+                                newDocumentState: docData
+                            }, 'upstream-check-if-equal')).isEqual
+                        )
+                        ||
+                        /**
+                         * If the master works with _rev fields,
+                         * we use that to check if our current doc state
+                         * is different from the assumedMasterDoc.
+                         */
+                        (
+                            assumedMasterDoc &&
+                            (assumedMasterDoc.docData as any)._rev &&
+                            parseRevision(fullDocData._rev).height === fullDocData._meta[state.input.identifier]
+                        )
                     ) {
                         return;
                     }

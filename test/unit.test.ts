@@ -26,7 +26,6 @@ import './unit/rx-storage-pouchdb.test';
 import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 
-import './unit/replication-graphql.test';
 import './unit/instance-of-check.test';
 import './unit/rx-schema.test';
 import './unit/bug-report.test';
@@ -56,6 +55,8 @@ import './unit/hooks.test';
 import './unit/orm.test';
 import './unit/replication-protocol.test';
 import './unit/replication.test';
+import './unit/replication-graphql.test';
+import './unit/replication-couchdb-new.test';
 import './unit/replication-websocket.test';
 import './unit/replication-couchdb.test';
 import './unit/crdt.test';
@@ -67,4 +68,3 @@ import './unit/import-export.test';
 import './unit/dexie-helper.test';
 import './unit/plugin.test';
 import './unit/last.test';
-

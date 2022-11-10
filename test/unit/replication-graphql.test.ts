@@ -588,7 +588,7 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.destroy();
             });
-            it('should stop retrying when canceled', async () => {
+            it('#4088 should stop retrying when canceled', async () => {
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);
 
@@ -603,22 +603,22 @@ describe('replication-graphql.test.ts', () => {
                     },
                     pull: {
                         batchSize,
-                        queryBuilder: pullQueryBuilder
+                        queryBuilder: (checkpoint, limit) => {
+                            return pullQueryBuilder(checkpoint, limit);
+                        }
                     },
                     deletedField: 'deleted',
                     retryTime: 100
                 });
 
-                await replicationState.error$.pipe(
-                    first()
-                ).toPromise().then(() => {
-                    replicationState.cancel()
-                });
+                await firstValueFrom(replicationState.error$);
+                await replicationState.cancel();
 
-
-                const timeout = wait(500).then(() => 'timeout');
-
-                assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',)
+                const firstResolved = await Promise.race([
+                    replicationState.awaitInitialReplication(),
+                    wait(500).then(() => 'timeout')
+                ]);
+                assert.notStrictEqual(firstResolved, 'timeout');
 
                 server.close();
                 c.database.destroy();

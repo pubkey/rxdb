@@ -247,7 +247,10 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             /**
              * @link https://github.com/pubkey/rxdb/pull/3627
              */
-            it('should not write a duplicate checkpoint', async () => {
+            it('#3627 should not write a duplicate checkpoint', async () => {
+                if (!config.isNotOneOfTheseStorages(['pouchdb'])) {
+                    return;
+                }
                 const masterInstance = await createRxStorageInstance(1);
                 const forkInstance = await createRxStorageInstance(0);
                 const metaInstance = await createMetaInstance();
@@ -271,6 +274,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     conflictHandler: THROWING_CONFLICT_HANDLER,
                     hashFunction: defaultHashFunction
                 });
+
                 await awaitRxStorageReplicationFirstInSync(replicationState);
                 await awaitRxStorageReplicationInSync(replicationState);
 
@@ -283,7 +287,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         replicationIdentifier: replicationState.checkpointKey
                     }
                 );
-
                 let checkpointDocBefore: any;
                 while (!checkpointDocBefore) {
                     const response = await replicationState.input.metaInstance.findDocumentsById(
@@ -292,8 +295,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     );
                     if (response[checkpointDocId]) {
                         checkpointDocBefore = response[checkpointDocId];
+                        break;
                     }
-                    await wait(20);
+                    await wait(200);
                 }
 
                 await setCheckpoint(

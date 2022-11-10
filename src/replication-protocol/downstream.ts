@@ -20,6 +20,7 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now,
+    parseRevision,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID
 } from '../util';
@@ -136,6 +137,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
         state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'down'));
         let lastCheckpoint: CheckpointType = await state.checkpointQueue;
 
+
         const promises: Promise<any>[] = [];
         while (!state.events.canceled.getValue()) {
             lastTimeMasterChangesRequested = timer++;
@@ -149,6 +151,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             }
 
             lastCheckpoint = stackCheckpoints([lastCheckpoint, downResult.checkpoint]);
+
             promises.push(
                 persistFromMaster(
                     downResult.documents,
@@ -225,7 +228,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
         });
         nonPersistedFromMaster.checkpoint = checkpoint;
 
-
         /**
          * Run in the queue
          * with all open documents from nonPersistedFromMaster.
@@ -277,14 +279,25 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                             return PROMISE_RESOLVE_VOID;
                         }
 
-
                         const isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ?
                             PROMISE_RESOLVE_FALSE :
                             state.input.conflictHandler({
                                 realMasterState: assumedMaster.docData,
                                 newDocumentState: forkStateDocData
                             }, 'downstream-check-if-equal-0').then(r => r.isEqual);
-                        const isAssumedMasterEqualToForkState = await isAssumedMasterEqualToForkStatePromise;
+                        let isAssumedMasterEqualToForkState = await isAssumedMasterEqualToForkStatePromise;
+
+                        if (
+                            !isAssumedMasterEqualToForkState &&
+                            (
+                                assumedMaster &&
+                                (assumedMaster.docData as any)._rev &&
+                                forkStateFullDoc._meta[state.input.identifier] &&
+                                parseRevision(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]
+                            )
+                        ) {
+                            isAssumedMasterEqualToForkState = true;
+                        }
                         if (
                             (
                                 forkStateFullDoc &&
@@ -356,16 +369,39 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                                 _rev: getDefaultRevision(),
                                 _attachments: {}
                             });
+
+
+                        /**
+                         * TODO for unknown reason we need
+                         * to manually set the lwt and the _rev here
+                         * to fix the pouchdb tests. This is not required for
+                         * the other RxStorage implementations which means something is wrong.
+                         */
                         newForkState._meta.lwt = now();
                         newForkState._rev = (masterState as any)._rev ? (masterState as any)._rev : createRevision(
                             state.input.hashFunction,
                             newForkState,
                             forkStateFullDoc
                         );
+
+                        /**
+                         * If the remote works with revisions,
+                         * we store the height of the next fork-state revision
+                         * inside of the documents meta data.
+                         * By doing so we can filter it out in the upstream
+                         * and detect the document as being equal to master or not.
+                         * This is used for example in the CouchDB replication plugin.
+                         */
+                        if ((masterState as any)._rev) {
+                            const nextRevisionHeight = !forkStateFullDoc ? 1 : parseRevision(forkStateFullDoc._rev).height + 1;
+                            newForkState._meta[state.input.identifier] = nextRevisionHeight;
+                        }
+
                         const forkWriteRow = {
                             previous: forkStateFullDoc,
                             document: newForkState
                         };
+
                         writeRowsToFork.push(forkWriteRow);
                         writeRowsToForkById[docId] = forkWriteRow;
                         writeRowsToMeta[docId] = getMetaWriteRow(

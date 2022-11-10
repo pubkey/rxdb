@@ -1,6 +1,6 @@
 /**
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
- * you can use it to sync collections with remote graphql endpoint
+ * you can use it to sync collections with a remote graphql endpoint.
  */
 import objectPath from 'object-path';
 import {
@@ -90,7 +90,7 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
 
 
 export function syncGraphQL<RxDocType, CheckpointType>(
-    this: RxCollection,
+    this: RxCollection<RxDocType>,
     {
         url,
         headers = {},

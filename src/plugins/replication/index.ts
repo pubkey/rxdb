@@ -38,6 +38,7 @@ import {
 import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,
+    cancelRxStorageReplication,
     replicateRxStorageInstance,
     RX_REPLICATION_META_INSTANCE_SCHEMA
 } from '../../replication-protocol';
@@ -323,8 +324,13 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             );
         }
 
+        /**
+         * Non-live replications run once
+         * and then automatically get canceled.
+         */
         if (!this.live) {
             await awaitRxStorageReplicationFirstInSync(this.internalReplicationState);
+            await awaitRxStorageReplicationInSync(this.internalReplicationState);
             await this.cancel();
         }
         this.callOnStart();
@@ -386,7 +392,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const promises: Promise<any>[] = [];
 
         if (this.internalReplicationState) {
-            this.internalReplicationState.events.canceled.next(true);
+            cancelRxStorageReplication(this.internalReplicationState);
         }
         if (this.metaInstance) {
             promises.push(
