@@ -7,6 +7,7 @@
 
 import {
     BehaviorSubject,
+    combineLatest,
     mergeMap,
     Observable,
     Subject,
@@ -296,18 +297,22 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.subs.push(
             this.internalReplicationState.events.error.subscribe(err => {
                 this.subjects.error.next(err);
-            })
-        );
-        this.subs.push(
+            }),
             this.internalReplicationState.events.processed.down
-                .subscribe(row => this.subjects.received.next(row.document as any))
-        );
-        this.subs.push(
+                .subscribe(row => this.subjects.received.next(row.document as any)),
             this.internalReplicationState.events.processed.up
                 .subscribe(writeToMasterRow => {
                     this.subjects.send.next(writeToMasterRow.newDocumentState);
-                })
+                }),
+            combineLatest([
+                this.internalReplicationState.events.active.down,
+                this.internalReplicationState.events.active.up
+            ]).subscribe(([down, up]) => {
+                const isActive = down || up;
+                this.subjects.active.next(isActive);
+            })
         );
+
         if (
             this.pull &&
             this.pull.stream$ &&
