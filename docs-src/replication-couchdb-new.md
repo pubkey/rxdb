@@ -86,16 +86,62 @@ const replicationState = collection.syncCouchDBNew({
 
 When you call `myCollection.syncCouchDBNew()` it returns a `RxCouchDBNewReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./replication.md) so any other method that can be used there can also be used on the CouchDB replication state.
 
+## Conflict handling
+
+When conflicts appear during replication, the `conflictHandler` of the `RxCollection` is used, equal to the other replication plugins. Read more about conflict handling [here](./replication.md#conflict-handling).
+
+## Auth example
+
+Lets say for authentication you need to add a [bearer token](https://swagger.io/docs/specification/authentication/bearer-authentication/) as HTTP header to each request. You can achieve that by crafting a custom `fetch()` method that add the header field.
+
+
+```ts
+
+const myCustomFetch = (url, options) => {
+
+    // flat clone the given options to not mutate the input
+    const optionsWithAuth = Object.assign({}, options);
+    // ensure the headers property exists
+    if(!optionsWithAuth.headers) {
+        optionsWithAuth.headers = {};
+    }
+    // add bearer token to headers
+    optionsWithAuth.headers['Authorization'] ='Basic S0VLU0UhIExFQ0...';
+
+    // call the original fetch function with our custom options.
+    return fetch(
+        url,
+        optionsWithAuth
+    );
+};
+
+const replicationState = collection.syncCouchDBNew({
+    url: 'http://example.com/db/humans',
+    /**
+     * Add the custom fetch function here.
+     */
+    fetch: myCustomFetch,
+    pull: {},
+    push: {}
+});
+```
+
+Also when your bearer token changes over time, you can set a new custom `fetch` method while the replication is running:
+
+```ts
+replicationState.fetch = newCustomFetchMethod;
+```
 
 ## Known problems
 
 In contrast to PouchDB, this plugin **does NOT** automatically create missing CouchDB databases.
-If your CouchDB server does not have a database yet, you have to create it by yourself by running a `PUT` request to the database name url:
+If your CouchDB server does not have a database yet, you have to create it by yourself by running a `PUT` request to the database `name` url:
 
 ```ts
 // create a 'humans' CouchDB database on the server
+const remoteDatabaseName = 'humans';
 await fetch(
-    'http://example.com/db/humans',
+    'http://example.com/db/' + remoteDatabaseName,
     {
         method: 'PUT'
     }
