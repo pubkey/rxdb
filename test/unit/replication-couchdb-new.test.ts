@@ -22,6 +22,8 @@ import {
 } from '../../plugins/replication-couchdb-new';
 
 import { PouchAllDocsResponse } from '../../src/types';
+import { filter, firstValueFrom } from 'rxjs';
+import { waitUntil } from 'async-test-util';
 
 describe('replication-couchdb-new.test.ts', () => {
     if (
@@ -99,7 +101,7 @@ describe('replication-couchdb-new.test.ts', () => {
         }
     }
 
-    describe('basic CRUD - live:false', () => {
+    describe('live:false', () => {
         it('finish sync once without data', async () => {
             const server = await SpawnServer.spawn();
             const c = await humansCollection.create(0);
@@ -205,31 +207,78 @@ describe('replication-couchdb-new.test.ts', () => {
             c2.database.destroy();
             server.close();
         });
+        describe('conflict handling', () => {
+            it('should keep the master state as default conflict handler', async () => {
+                const server = await SpawnServer.spawn();
+                const c1 = await humansCollection.create(1);
+                const c2 = await humansCollection.create(0);
+
+                await syncAll(c1, c2, server);
+
+                const doc1 = await c1.findOne().exec(true);
+                const doc2 = await c2.findOne().exec(true);
+
+                // make update on both sides
+                await doc1.atomicPatch({ firstName: 'c1' });
+                await doc2.atomicPatch({ firstName: 'c2' });
+
+                await syncOnce(c2, server);
+
+                // cause conflict
+                await syncOnce(c1, server);
+
+                /**
+                 * Must have kept the master state c2
+                 */
+                assert.strictEqual(doc1.firstName, 'c2');
+
+                c1.database.destroy();
+                c2.database.destroy();
+                server.close();
+            });
+        });
     });
-    describe('conflict handling', () => {
-        it('should keep the master state as default conflict handler', async () => {
+    describe('live:true', () => {
+
+        async function syncLive<RxDocType>(
+            collection: RxCollection<RxDocType>,
+            server: any
+        ): Promise<RxCouchDBNewReplicationState<RxDocType>> {
+            const replicationState = collection.syncCouchDBNew({
+                url: server.url,
+                live: true,
+                pull: {},
+                push: {}
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+            return replicationState;
+        }
+
+        it('should stream changes over the replication to a query', async () => {
             const server = await SpawnServer.spawn();
-            const c1 = await humansCollection.create(1);
+            const c1 = await humansCollection.create(0);
             const c2 = await humansCollection.create(0);
 
-            await syncAll(c1, c2, server);
+            await syncLive(c1, server);
+            await syncLive(c2, server);
 
-            const doc1 = await c1.findOne().exec(true);
-            const doc2 = await c2.findOne().exec(true);
+            const foundPromise = firstValueFrom(
+                c2.find().$.pipe(
+                    filter(results => results.length === 1)
+                )
+            );
 
-            // make update on both sides
-            await doc1.atomicPatch({ firstName: 'c1' });
-            await doc2.atomicPatch({ firstName: 'c2' });
+            await c1.insert(schemaObjects.human('foobar'));
 
-            await syncOnce(c2, server);
+            // wait until it is on the server
+            await waitUntil(async () => {
+                const serverDocs = await getAllServerDocs(server.url);
+                return serverDocs.length === 1;
+            });
 
-            // cause conflict
-            await syncOnce(c1, server);
-
-            /**
-             * Must have kept the master state c2
-             */
-            assert.strictEqual(doc1.firstName, 'c2');
+            const endResult = await foundPromise;
+            assert.strictEqual(endResult[0].passportId, 'foobar');
 
             c1.database.destroy();
             c2.database.destroy();

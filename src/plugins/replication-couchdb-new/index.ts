@@ -102,11 +102,8 @@ export function syncCouchDBNew<RxDocType>(
                     seq_interval: batchSize
                 });
 
-                console.log('pull handler url: ' + url);
-
                 const response = await replicationState.fetch(url);
                 const jsonResponse: PouchdbChangesResult = await response.json();
-                console.dir(jsonResponse);
                 const documents: WithDeleted<RxDocType>[] = jsonResponse.results
                     .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
                 return {
@@ -142,10 +139,6 @@ export function syncCouchDBNew<RxDocType>(
                     })
                 };
 
-
-                console.log('PUSH BODY:');
-                console.log(body);
-
                 const response = await replicationState.fetch(
                     url,
                     {
@@ -157,10 +150,6 @@ export function syncCouchDBNew<RxDocType>(
                     }
                 );
                 const responseJson: PouchBulkDocResultRow[] = await response.json();
-
-                console.log('PUSH RESPONSE;');
-                console.dir(responseJson);
-
 
                 const conflicts = responseJson.filter(row => {
                     const isConflict = row.error === 'conflict';
@@ -183,9 +172,6 @@ export function syncCouchDBNew<RxDocType>(
                 const conflictDocsMasterState: WithDeleted<RxDocType>[] = conflictResponseJson.rows
                     .map(r => couchDBDocToRxDocData(collection.schema.primaryPath, r.doc));
 
-                console.log('PUSH conflictDocsMasterState;:');
-                console.dir(conflictDocsMasterState);
-
                 return conflictDocsMasterState;
             },
             batchSize: options.push.batchSize,
@@ -205,13 +191,10 @@ export function syncCouchDBNew<RxDocType>(
         options.autoStart
     );
 
-    console.log('replicationState created');
-
     /**
      * Use long polling to get live changes for the pull.stream$
      */
     if (options.live && options.pull) {
-        console.log('start replication stream$');
         const startBefore = replicationState.start.bind(replicationState);
         replicationState.start = () => {
             let since: string | number = 'now';
@@ -223,10 +206,12 @@ export function syncCouchDBNew<RxDocType>(
                         style: 'all_docs',
                         feed: 'longpoll',
                         since,
+                        include_docs: true,
                         heartbeat: options.pull && options.pull.heartbeat ? options.pull.heartbeat : 60000,
                         limit: batchSize,
                         seq_interval: batchSize
                     });
+
                     let jsonResponse: PouchdbChangesResult;
                     try {
                         jsonResponse = await (await replicationState.fetch(url)).json();
@@ -237,6 +222,7 @@ export function syncCouchDBNew<RxDocType>(
                     const documents: WithDeleted<RxDocType>[] = jsonResponse.results
                         .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
                     since = jsonResponse.last_seq;
+
                     pullStream$.next({
                         documents,
                         checkpoint: {

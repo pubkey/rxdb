@@ -597,7 +597,6 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(testData)
                 ]);
 
-                console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
                 const replicationState = c.syncGraphQL({
                     url: {
                         http: ERROR_URL
@@ -605,7 +604,6 @@ describe('replication-graphql.test.ts', () => {
                     pull: {
                         batchSize,
                         queryBuilder: (checkpoint, limit) => {
-                            console.log('query builder run once!');
                             return pullQueryBuilder(checkpoint, limit);
                         }
                     },
@@ -614,9 +612,7 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 await firstValueFrom(replicationState.error$);
-                console.log('START CANCEL');
                 await replicationState.cancel();
-                console.log('/START CANCEL');
 
                 const firstResolved = await Promise.race([
                     replicationState.awaitInitialReplication(),

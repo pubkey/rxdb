@@ -279,8 +279,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                             return PROMISE_RESOLVE_VOID;
                         }
 
-                        console.dir({ assumedMaster, forkStateFullDoc });
-
                         const isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ?
                             PROMISE_RESOLVE_FALSE :
                             state.input.conflictHandler({
