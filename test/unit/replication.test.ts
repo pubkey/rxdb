@@ -349,6 +349,39 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
+        it('should emit active$ when a replication cycle is running', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            replicationState.error$.subscribe(err => {
+                console.log('got error :');
+                console.dir(err);
+                throw err;
+            });
+
+            let wasActive = false;
+            replicationState.active$.subscribe((active) => {
+                if (active) wasActive = active
+            });
+
+            await replicationState.awaitInitialReplication();
+            assert.strictEqual(
+                wasActive,
+                true
+            );
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
     });
     config.parallel('other', () => {
         describe('autoStart', () => {
