@@ -43,9 +43,11 @@ export function swapdeletedFieldToDefaultDeleted<RxDocType>(
 export function awaitRetry(
     collection: RxCollection,
     retryTime: number
-    ) {
+) {
     if (
+        typeof window === 'undefined' ||
         typeof window !== 'object' ||
+        typeof window.addEventListener === 'undefined' ||
         navigator.onLine
     ) {
         return collection.promiseWait(retryTime);
