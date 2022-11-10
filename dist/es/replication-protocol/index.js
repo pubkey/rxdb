@@ -160,24 +160,6 @@ function _for(test, update, body) {
     }
   }
 }
-export var cancelRxStorageReplication = function cancelRxStorageReplication(replicationState) {
-  try {
-    replicationState.events.canceled.next(true);
-    return Promise.resolve(replicationState.streamQueue.down).then(function () {
-      return Promise.resolve(replicationState.streamQueue.up).then(function () {
-        return Promise.resolve(replicationState.checkpointQueue).then(function () {
-          replicationState.events.active.up.complete();
-          replicationState.events.active.down.complete();
-          replicationState.events.processed.up.complete();
-          replicationState.events.processed.down.complete();
-          replicationState.events.resolvedConflicts.complete();
-        });
-      });
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
 export var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state) {
   try {
     return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
@@ -270,7 +252,7 @@ export function awaitRxStorageReplicationFirstInSync(state) {
   }))])).then(function () {});
 }
 export function awaitRxStorageReplicationInSync(replicationState) {
-  return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
+  return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down, replicationState.checkpointQueue]);
 }
 export function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFunction) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
@@ -365,5 +347,14 @@ export function rxStorageInstanceToReplicationHandler(instance, conflictHandler,
     }
   };
   return replicationHandler;
+}
+export function cancelRxStorageReplication(replicationState) {
+  replicationState.events.canceled.next(true);
+  replicationState.events.active.up.complete();
+  replicationState.events.active.down.complete();
+  replicationState.events.processed.up.complete();
+  replicationState.events.processed.down.complete();
+  replicationState.events.resolvedConflicts.complete();
+  replicationState.events.canceled.complete();
 }
 //# sourceMappingURL=index.js.map

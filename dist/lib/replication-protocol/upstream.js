@@ -333,7 +333,14 @@ function startReplicationUpstream(state) {
           return Promise.resolve(Promise.all(docIds.map(function (docId) {
             try {
               var _temp9 = function _temp9(_state$input$conflict) {
-                if (_temp10 && _state$input$conflict.isEqual) {
+                if (_temp10 && _state$input$conflict.isEqual ||
+                /**
+                 * If the master works with _rev fields,
+                 * we use that to check if our current doc state
+                 * is different from the assumedMasterDoc.
+                 */
+
+                assumedMasterDoc && assumedMasterDoc.docData._rev && (0, _util.parseRevision)(fullDocData._rev).height === fullDocData._meta[state.input.identifier]) {
                   _exit2 = true;
                   return;
                 }

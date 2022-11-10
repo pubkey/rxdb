@@ -593,6 +593,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
    */;
   _proto.syncGraphQL = function syncGraphQL(_options) {
     throw (0, _util.pluginMissing)('replication-graphql');
+  };
+  _proto.syncCouchDBNew = function syncCouchDBNew(_syncOptions) {
+    throw (0, _util.pluginMissing)('replication-couchdb-new');
   }
 
   /**

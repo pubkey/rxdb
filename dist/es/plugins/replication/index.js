@@ -5,11 +5,11 @@
  * but also can be used as standalone with a custom replication handler.
  */
 
-import { BehaviorSubject, mergeMap, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, mergeMap, Subject } from 'rxjs';
 import { ensureNotFalsy, fastUnsecureHash, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE } from '../../util';
-import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, replicateRxStorageInstance, RX_REPLICATION_META_INSTANCE_SCHEMA } from '../../replication-protocol';
+import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, replicateRxStorageInstance, RX_REPLICATION_META_INSTANCE_SCHEMA } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
-import { DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, swapdeletedFieldToDefaultDeleted } from './replication-helper';
+import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, swapdeletedFieldToDefaultDeleted } from './replication-helper';
 import { addConnectedStorageToCollection } from '../../rx-database-internal-store';
 function _catch(body, recover) {
   try {
@@ -342,7 +342,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
                       direction: 'pull'
                     });
                     _this3.subjects.error.next(emitError);
-                    return Promise.resolve(_this3.collection.promiseWait(ensureNotFalsy(_this3.retryTime))).then(function () {});
+                    return Promise.resolve(awaitRetry(_this3.collection, ensureNotFalsy(_this3.retryTime))).then(function () {});
                   });
                   if (_temp3 && _temp3.then) return _temp3.then(function () {});
                 });
@@ -425,7 +425,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
                         direction: 'push'
                       });
                       _this3.subjects.error.next(emitError);
-                      return Promise.resolve(_this3.collection.promiseWait(ensureNotFalsy(_this3.retryTime))).then(function () {});
+                      return Promise.resolve(awaitRetry(_this3.collection, ensureNotFalsy(_this3.retryTime))).then(function () {});
                     });
                   });
                   return _temp8 && _temp8.then ? _temp8.then(_temp9) : _temp9(_temp8);
@@ -438,12 +438,15 @@ export var RxReplicationState = /*#__PURE__*/function () {
         });
         _this3.subs.push(_this3.internalReplicationState.events.error.subscribe(function (err) {
           _this3.subjects.error.next(err);
-        }));
-        _this3.subs.push(_this3.internalReplicationState.events.processed.down.subscribe(function (row) {
+        }), _this3.internalReplicationState.events.processed.down.subscribe(function (row) {
           return _this3.subjects.received.next(row.document);
-        }));
-        _this3.subs.push(_this3.internalReplicationState.events.processed.up.subscribe(function (writeToMasterRow) {
+        }), _this3.internalReplicationState.events.processed.up.subscribe(function (writeToMasterRow) {
           _this3.subjects.send.next(writeToMasterRow.newDocumentState);
+        }), combineLatest([_this3.internalReplicationState.events.active.down, _this3.internalReplicationState.events.active.up]).subscribe(function (_ref2) {
+          var down = _ref2[0],
+            up = _ref2[1];
+          var isActive = down || up;
+          _this3.subjects.active.next(isActive);
         }));
         if (_this3.pull && _this3.pull.stream$ && _this3.live) {
           _this3.subs.push(_this3.pull.stream$.subscribe({
@@ -455,10 +458,17 @@ export var RxReplicationState = /*#__PURE__*/function () {
             }
           }));
         }
+
+        /**
+         * Non-live replications run once
+         * and then automatically get canceled.
+         */
         var _temp = function () {
           if (!_this3.live) {
             return Promise.resolve(awaitRxStorageReplicationFirstInSync(_this3.internalReplicationState)).then(function () {
-              return Promise.resolve(_this3.cancel()).then(function () {});
+              return Promise.resolve(awaitRxStorageReplicationInSync(_this3.internalReplicationState)).then(function () {
+                return Promise.resolve(_this3.cancel()).then(function () {});
+              });
             });
           }
         }();
@@ -530,7 +540,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     }
     var promises = [];
     if (this.internalReplicationState) {
-      this.internalReplicationState.events.canceled.next(true);
+      cancelRxStorageReplication(this.internalReplicationState);
     }
     if (this.metaInstance) {
       promises.push(ensureNotFalsy(this.internalReplicationState).checkpointQueue.then(function () {
@@ -550,21 +560,21 @@ export var RxReplicationState = /*#__PURE__*/function () {
   };
   return RxReplicationState;
 }();
-export function replicateRxCollection(_ref2) {
-  var replicationIdentifier = _ref2.replicationIdentifier,
-    collection = _ref2.collection,
-    _ref2$deletedField = _ref2.deletedField,
-    deletedField = _ref2$deletedField === void 0 ? '_deleted' : _ref2$deletedField,
-    pull = _ref2.pull,
-    push = _ref2.push,
-    _ref2$live = _ref2.live,
-    live = _ref2$live === void 0 ? true : _ref2$live,
-    _ref2$retryTime = _ref2.retryTime,
-    retryTime = _ref2$retryTime === void 0 ? 1000 * 5 : _ref2$retryTime,
-    _ref2$waitForLeadersh = _ref2.waitForLeadership,
-    waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
-    _ref2$autoStart = _ref2.autoStart,
-    autoStart = _ref2$autoStart === void 0 ? true : _ref2$autoStart;
+export function replicateRxCollection(_ref3) {
+  var replicationIdentifier = _ref3.replicationIdentifier,
+    collection = _ref3.collection,
+    _ref3$deletedField = _ref3.deletedField,
+    deletedField = _ref3$deletedField === void 0 ? '_deleted' : _ref3$deletedField,
+    pull = _ref3.pull,
+    push = _ref3.push,
+    _ref3$live = _ref3.live,
+    live = _ref3$live === void 0 ? true : _ref3$live,
+    _ref3$retryTime = _ref3.retryTime,
+    retryTime = _ref3$retryTime === void 0 ? 1000 * 5 : _ref3$retryTime,
+    _ref3$waitForLeadersh = _ref3.waitForLeadership,
+    waitForLeadership = _ref3$waitForLeadersh === void 0 ? true : _ref3$waitForLeadersh,
+    _ref3$autoStart = _ref3.autoStart,
+    autoStart = _ref3$autoStart === void 0 ? true : _ref3$autoStart;
   var replicationIdentifierHash = fastUnsecureHash([collection.database.name, collection.name, replicationIdentifier].join('|'));
   var replicationState = new RxReplicationState(replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart);
   startReplicationOnLeaderShip(waitForLeadership, replicationState);

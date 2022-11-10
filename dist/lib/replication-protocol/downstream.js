@@ -359,6 +359,9 @@ function startReplicationDownstream(state) {
               return r.isEqual;
             });
             return Promise.resolve(isAssumedMasterEqualToForkStatePromise).then(function (isAssumedMasterEqualToForkState) {
+              if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc._meta[state.input.identifier] && (0, _util.parseRevision)(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]) {
+                isAssumedMasterEqualToForkState = true;
+              }
               if (forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster) {
                 /**
                  * We have a non-upstream-replicated
@@ -403,8 +406,28 @@ function startReplicationDownstream(state) {
                   _rev: (0, _util.getDefaultRevision)(),
                   _attachments: {}
                 });
+
+                /**
+                 * TODO for unknown reason we need
+                 * to manually set the lwt and the _rev here
+                 * to fix the pouchdb tests. This is not required for
+                 * the other RxStorage implementations which means something is wrong.
+                 */
                 newForkState._meta.lwt = (0, _util.now)();
                 newForkState._rev = masterState._rev ? masterState._rev : (0, _util.createRevision)(state.input.hashFunction, newForkState, forkStateFullDoc);
+
+                /**
+                 * If the remote works with revisions,
+                 * we store the height of the next fork-state revision
+                 * inside of the documents meta data.
+                 * By doing so we can filter it out in the upstream
+                 * and detect the document as being equal to master or not.
+                 * This is used for example in the CouchDB replication plugin.
+                 */
+                if (masterState._rev) {
+                  var nextRevisionHeight = !forkStateFullDoc ? 1 : (0, _util.parseRevision)(forkStateFullDoc._rev).height + 1;
+                  newForkState._meta[state.input.identifier] = nextRevisionHeight;
+                }
                 var forkWriteRow = {
                   previous: forkStateFullDoc,
                   document: newForkState

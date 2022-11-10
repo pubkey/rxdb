@@ -1666,12 +1666,25 @@
             
         </li>
     
-        <li class="chapter " data-level="1.20.3" data-path="replication-couchdb.html">
+        <li class="chapter " data-level="1.20.3" data-path="replication-couchdb-new.html">
+            
+                <a href="replication-couchdb-new.html">
+            
+                    
+                    Replication CouchDB (new)
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.20.4" data-path="replication-couchdb.html">
             
                 <a href="replication-couchdb.html">
             
                     
-                    Replication CouchDB
+                    Replication CouchDB/PouchDB
             
                 </a>
             
@@ -1994,7 +2007,7 @@
                 <span>
             
                     
-                    Major Release Notes
+                    Release Notes
             
                 </span>
             
@@ -2003,7 +2016,20 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="2.5.1" data-path="releases/13.0.0.html">
+        <li class="chapter " data-level="2.5.1" >
+            
+                <a target="_blank" href="https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md">
+            
+                    
+                    CHANGELOG
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.5.2" data-path="releases/13.0.0.html">
             
                 <a href="releases/13.0.0.html">
             
@@ -2016,7 +2042,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.5.2" data-path="releases/12.0.0.html">
+        <li class="chapter " data-level="2.5.3" data-path="releases/12.0.0.html">
             
                 <a href="releases/12.0.0.html">
             
@@ -2029,7 +2055,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.5.3" data-path="releases/11.0.0.html">
+        <li class="chapter " data-level="2.5.4" data-path="releases/11.0.0.html">
             
                 <a href="releases/11.0.0.html">
             
@@ -2042,7 +2068,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.5.4" data-path="releases/10.0.0.html">
+        <li class="chapter " data-level="2.5.5" data-path="releases/10.0.0.html">
             
                 <a href="releases/10.0.0.html">
             
@@ -2055,7 +2081,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.5.5" data-path="releases/9.0.0.html">
+        <li class="chapter " data-level="2.5.6" data-path="releases/9.0.0.html">
             
                 <a href="releases/9.0.0.html">
             
@@ -2068,7 +2094,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.5.6" data-path="releases/8.0.0.html">
+        <li class="chapter " data-level="2.5.7" data-path="releases/8.0.0.html">
             
                 <a href="releases/8.0.0.html">
             
@@ -2135,7 +2161,7 @@
 <p>RxDB is not a self contained database. Instead the data is stored in an implementation of the <a href="https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts" target="_blank">RxStorage interface</a>. This allows you to switch out the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the PouchDB storage with the SQLite adapter for a capacitor app. Or you can use the LokiJS RxStorage with the IndexedDB adapter for a browser based application. For Node.js, there are filesystem based adapters.</p>
 <h2 id="implementations">Implementations</h2>
 <h3 id="pouchdb">PouchDB</h3>
-<p>The PouchDB RxStorage is based on the <a href="https://github.com/pouchdb/pouchdb" target="_blank">PouchDB</a> database. It is the most battle proven RxStorage and has a big ecosystem of adapters. It is the only RxStorage that allows to do replication with a CouchDB endpoint. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. <a href="rx-storage-pouchdb.html">Read more</a></p>
+<p>The PouchDB RxStorage is based on the <a href="https://github.com/pouchdb/pouchdb" target="_blank">PouchDB</a> database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. <a href="rx-storage-pouchdb.html">Read more</a></p>
 <h3 id="lokijs">LokiJS</h3>
 <p>The LokiJS based storage is based on the <a href="https://github.com/techfort/LokiJS" target="_blank">LokiJS</a> database.
 It has the special behavior of loading all data into memory at app start and therefore has the best performance when running operations over a small to mid sized dataset. <a href="rx-storage-lokijs.html">Read more</a></p>

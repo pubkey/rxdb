@@ -1,7 +1,7 @@
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 /**
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
- * you can use it to sync collections with remote graphql endpoint
+ * you can use it to sync collections with a remote graphql endpoint.
  */
 import objectPath from 'object-path';
 import { ensureNotFalsy, fastUnsecureHash } from '../../util';

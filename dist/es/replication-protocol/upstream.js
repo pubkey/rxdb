@@ -1,6 +1,6 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { batchArray, ensureNotFalsy, PROMISE_RESOLVE_FALSE } from '../util';
+import { batchArray, ensureNotFalsy, parseRevision, PROMISE_RESOLVE_FALSE } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { resolveConflictError } from './conflicts';
 import { writeDocToDocState } from './helper';
@@ -14,7 +14,6 @@ import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
  *   In contrast to the master, the fork can be assumed to never loose connection,
  *   so we do not have to prepare for missed out events.
  */
-
 function _settle(pact, state, value) {
   if (!pact.s) {
     if (value instanceof _Pact) {
@@ -329,7 +328,14 @@ export function startReplicationUpstream(state) {
           return Promise.resolve(Promise.all(docIds.map(function (docId) {
             try {
               var _temp9 = function _temp9(_state$input$conflict) {
-                if (_temp10 && _state$input$conflict.isEqual) {
+                if (_temp10 && _state$input$conflict.isEqual ||
+                /**
+                 * If the master works with _rev fields,
+                 * we use that to check if our current doc state
+                 * is different from the assumedMasterDoc.
+                 */
+
+                assumedMasterDoc && assumedMasterDoc.docData._rev && parseRevision(fullDocData._rev).height === fullDocData._meta[state.input.identifier]) {
                   _exit2 = true;
                   return;
                 }

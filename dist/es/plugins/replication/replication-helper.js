@@ -26,4 +26,20 @@ export function swapdeletedFieldToDefaultDeleted(deletedField, doc) {
     return doc;
   }
 }
+export function awaitRetry(collection, retryTime) {
+  if (typeof window !== 'object' || navigator.onLine) {
+    return collection.promiseWait(retryTime);
+  }
+  var _listener;
+  var onlineAgain = new Promise(function (res) {
+    _listener = function listener() {
+      window.removeEventListener('online', _listener);
+      res();
+    };
+    window.addEventListener('online', _listener);
+  });
+  return Promise.race([onlineAgain, collection.promiseWait(retryTime)]).then(function () {
+    window.removeEventListener('online', _listener);
+  });
+}
 //# sourceMappingURL=replication-helper.js.map

@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DEFAULT_MODIFIER = void 0;
+exports.awaitRetry = awaitRetry;
 exports.swapDefaultDeletedTodeletedField = swapDefaultDeletedTodeletedField;
 exports.swapdeletedFieldToDefaultDeleted = swapdeletedFieldToDefaultDeleted;
 var _util = require("../../util");
@@ -33,5 +34,21 @@ function swapdeletedFieldToDefaultDeleted(deletedField, doc) {
     delete doc[deletedField];
     return doc;
   }
+}
+function awaitRetry(collection, retryTime) {
+  if (typeof window !== 'object' || navigator.onLine) {
+    return collection.promiseWait(retryTime);
+  }
+  var _listener;
+  var onlineAgain = new Promise(function (res) {
+    _listener = function listener() {
+      window.removeEventListener('online', _listener);
+      res();
+    };
+    window.addEventListener('online', _listener);
+  });
+  return Promise.race([onlineAgain, collection.promiseWait(retryTime)]).then(function () {
+    window.removeEventListener('online', _listener);
+  });
 }
 //# sourceMappingURL=replication-helper.js.map

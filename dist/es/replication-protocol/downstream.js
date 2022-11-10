@@ -1,6 +1,6 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../util';
+import { createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, parseRevision, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../util';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { writeDocToDocState } from './helper';
 import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
@@ -354,6 +354,9 @@ export function startReplicationDownstream(state) {
               return r.isEqual;
             });
             return Promise.resolve(isAssumedMasterEqualToForkStatePromise).then(function (isAssumedMasterEqualToForkState) {
+              if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc._meta[state.input.identifier] && parseRevision(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]) {
+                isAssumedMasterEqualToForkState = true;
+              }
               if (forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster) {
                 /**
                  * We have a non-upstream-replicated
@@ -398,8 +401,28 @@ export function startReplicationDownstream(state) {
                   _rev: getDefaultRevision(),
                   _attachments: {}
                 });
+
+                /**
+                 * TODO for unknown reason we need
+                 * to manually set the lwt and the _rev here
+                 * to fix the pouchdb tests. This is not required for
+                 * the other RxStorage implementations which means something is wrong.
+                 */
                 newForkState._meta.lwt = now();
                 newForkState._rev = masterState._rev ? masterState._rev : createRevision(state.input.hashFunction, newForkState, forkStateFullDoc);
+
+                /**
+                 * If the remote works with revisions,
+                 * we store the height of the next fork-state revision
+                 * inside of the documents meta data.
+                 * By doing so we can filter it out in the upstream
+                 * and detect the document as being equal to master or not.
+                 * This is used for example in the CouchDB replication plugin.
+                 */
+                if (masterState._rev) {
+                  var nextRevisionHeight = !forkStateFullDoc ? 1 : parseRevision(forkStateFullDoc._rev).height + 1;
+                  newForkState._meta[state.input.identifier] = nextRevisionHeight;
+                }
                 var forkWriteRow = {
                   previous: forkStateFullDoc,
                   document: newForkState

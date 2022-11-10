@@ -4,17 +4,17 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var _exportNames = {
-  cancelRxStorageReplication: true,
   awaitRxStorageReplicationIdle: true,
   replicateRxStorageInstance: true,
   awaitRxStorageReplicationFirstInSync: true,
   awaitRxStorageReplicationInSync: true,
-  rxStorageInstanceToReplicationHandler: true
+  rxStorageInstanceToReplicationHandler: true,
+  cancelRxStorageReplication: true
 };
 exports.awaitRxStorageReplicationFirstInSync = awaitRxStorageReplicationFirstInSync;
 exports.awaitRxStorageReplicationIdle = void 0;
 exports.awaitRxStorageReplicationInSync = awaitRxStorageReplicationInSync;
-exports.cancelRxStorageReplication = void 0;
+exports.cancelRxStorageReplication = cancelRxStorageReplication;
 exports.replicateRxStorageInstance = replicateRxStorageInstance;
 exports.rxStorageInstanceToReplicationHandler = rxStorageInstanceToReplicationHandler;
 var _rxjs = require("rxjs");
@@ -246,25 +246,6 @@ function _for(test, update, body) {
  * It can be used to replicated RxStorageInstances or RxCollections
  * or even to do a client(s)-server replication.
  */
-var cancelRxStorageReplication = function cancelRxStorageReplication(replicationState) {
-  try {
-    replicationState.events.canceled.next(true);
-    return Promise.resolve(replicationState.streamQueue.down).then(function () {
-      return Promise.resolve(replicationState.streamQueue.up).then(function () {
-        return Promise.resolve(replicationState.checkpointQueue).then(function () {
-          replicationState.events.active.up.complete();
-          replicationState.events.active.down.complete();
-          replicationState.events.processed.up.complete();
-          replicationState.events.processed.down.complete();
-          replicationState.events.resolvedConflicts.complete();
-        });
-      });
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-exports.cancelRxStorageReplication = cancelRxStorageReplication;
 var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state) {
   try {
     return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
@@ -352,7 +333,7 @@ function awaitRxStorageReplicationFirstInSync(state) {
   }))])).then(function () {});
 }
 function awaitRxStorageReplicationInSync(replicationState) {
-  return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down]);
+  return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down, replicationState.checkpointQueue]);
 }
 function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFunction) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(instance.schema.primaryKey);
@@ -447,5 +428,14 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFu
     }
   };
   return replicationHandler;
+}
+function cancelRxStorageReplication(replicationState) {
+  replicationState.events.canceled.next(true);
+  replicationState.events.active.up.complete();
+  replicationState.events.active.down.complete();
+  replicationState.events.processed.up.complete();
+  replicationState.events.processed.down.complete();
+  replicationState.events.resolvedConflicts.complete();
+  replicationState.events.canceled.complete();
 }
 //# sourceMappingURL=index.js.map

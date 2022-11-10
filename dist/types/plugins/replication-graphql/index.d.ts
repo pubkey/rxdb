@@ -19,7 +19,7 @@ export declare class RxGraphQLReplicationState<RxDocType, CheckpointType> extend
     setCredentials(credentials: RequestCredentials | undefined): void;
     graphQLRequest(queryParams: RxGraphQLReplicationQueryBuilderResponseObject): Promise<any>;
 }
-export declare function syncGraphQL<RxDocType, CheckpointType>(this: RxCollection, { url, headers, credentials, deletedField, waitForLeadership, pull, push, live, retryTime, // in ms
+export declare function syncGraphQL<RxDocType, CheckpointType>(this: RxCollection<RxDocType>, { url, headers, credentials, deletedField, waitForLeadership, pull, push, live, retryTime, // in ms
 autoStart, }: SyncOptionsGraphQL<RxDocType, CheckpointType>): RxGraphQLReplicationState<RxDocType, CheckpointType>;
 export * from './helper';
 export * from './graphql-schema-from-rx-schema';
