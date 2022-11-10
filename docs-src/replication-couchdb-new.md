@@ -6,7 +6,7 @@ Because the way how RxDB handles revisions and documents is very similar to Couc
 
 ## Pros
 
-- Faster inital replication.
+- Faster initial replication.
 - Works with any [RxStorage](./rx-storage.md), not just PouchDB.
 - Easier conflict handling because conflicts are handled during replication and not afterwards.
 - Does not have to store all document revisions on the client, only stores the newest version.

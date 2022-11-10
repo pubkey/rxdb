@@ -130,7 +130,8 @@
 * [Replication](./replication.md)
     * [Replication GraphQL](./replication-graphql.md)
     * [Replication Websocket](./replication-websocket.md)
-    * [Replication CouchDB](./replication-couchdb.md)
+    * [Replication CouchDB (new)](./replication-couchdb-new.md)
+    * [Replication CouchDB/PouchDB](./replication-couchdb.md)
 
 * [Cleanup](./cleanup.md)
 
