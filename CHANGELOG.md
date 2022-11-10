@@ -3,7 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD [replication-couchdb-new plugin](./docs-src/replication-couchdb-new.md) which can be used to replicate *any* RxStorage with a CouchDB endpoint.
+- ADD [replication-couchdb-new plugin](./docs-src/replication-couchdb-new.md) which can be used to replicate **any** [RxStorage](https://rxdb.info/rx-storage.html) with a CouchDB endpoint.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
