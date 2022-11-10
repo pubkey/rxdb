@@ -2,7 +2,7 @@ import type {
     RxCollection,
     WithDeleted
 } from '../../types';
-import { flatClone, promiseWait } from '../../util';
+import { flatClone } from '../../util';
 
 // does nothing
 export const DEFAULT_MODIFIER = (d: any) => Promise.resolve(d);
