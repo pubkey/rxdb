@@ -10,7 +10,6 @@ LokiJS has the main benefit of having a better performance. It can do this becau
 
 ### Cons
 
-- Does not support CouchDB replication. 
 - It does not support attachments. (Make a pull request)
 - Data can be lost when the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated.
 - All data must fit into the memory.

@@ -11,7 +11,6 @@ Use this storage when you need a really fast database like in your unit tests or
 ### Cons
 
 - No persistence
-- No CouchDB replication
 
 
 ```ts

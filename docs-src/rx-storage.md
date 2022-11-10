@@ -6,7 +6,7 @@ RxDB is not a self contained database. Instead the data is stored in an implemen
 
 ### PouchDB
 
-The PouchDB RxStorage is based on the [PouchDB](https://github.com/pouchdb/pouchdb) database. It is the most battle proven RxStorage and has a big ecosystem of adapters. It is the only RxStorage that allows to do replication with a CouchDB endpoint. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. [Read more](./rx-storage-pouchdb.md)
+The PouchDB RxStorage is based on the [PouchDB](https://github.com/pouchdb/pouchdb) database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. [Read more](./rx-storage-pouchdb.md)
 
 ### LokiJS
 

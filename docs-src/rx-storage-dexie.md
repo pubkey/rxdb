@@ -11,7 +11,6 @@ For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/m
   - Faster write and read performance than with PouchDB because it has less overhead.
 
 ## Cons
-  - Does not support CouchDB replication.
   - It does not support attachments. (Make a pull request)
   - Does not use a [Batched Cursor](./slow-indexeddb.md) which makes it slower then the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
 
