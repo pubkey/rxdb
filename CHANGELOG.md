@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 13.10.1 (10 November 2022)
+
 ### 13.10.0 (10 November 2022)
 
 - ADD [replication-couchdb-new plugin](./docs-src/replication-couchdb-new.md) which can be used to replicate **any** [RxStorage](https://rxdb.info/rx-storage.html) with a CouchDB endpoint.
