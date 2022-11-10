@@ -526,7 +526,7 @@ export function areRxDocumentArraysEqual<RxDocType>(
         const row1 = ar1[i];
         const row2 = ar2[i];
         i++;
-        
+
         if (
             row1._rev !== row2._rev ||
             row1[primaryPath] !== row2[primaryPath]
@@ -854,3 +854,4 @@ export function deepFreeze<T>(o: T): T {
     });
     return o;
 }
+

@@ -160,6 +160,8 @@ const replicationState = await replicateRxCollection({
     /**
      * Time in milliseconds after when a failed backend request
      * has to be retried.
+     * This time will be skipped if a offline->online switch is detected
+     * via navigator.onLine
      * (optional), default is 5 seconds.
      */
     retryTime: 5 * 1000,

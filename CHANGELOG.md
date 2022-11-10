@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - ADD [replication-couchdb-new plugin](./docs-src/replication-couchdb-new.md) which can be used to replicate **any** [RxStorage](https://rxdb.info/rx-storage.html) with a CouchDB endpoint.
+- ADD skip replication `retryTime` if `navigator.onLine` becomes `true`.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

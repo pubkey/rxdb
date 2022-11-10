@@ -1,7 +1,8 @@
 import type {
+    RxCollection,
     WithDeleted
 } from '../../types';
-import { flatClone } from '../../util';
+import { flatClone, promiseWait } from '../../util';
 
 // does nothing
 export const DEFAULT_MODIFIER = (d: any) => Promise.resolve(d);
@@ -36,4 +37,33 @@ export function swapdeletedFieldToDefaultDeleted<RxDocType>(
         delete (doc as any)[deletedField];
         return doc as any;
     }
+}
+
+
+export function awaitRetry(
+    collection: RxCollection,
+    retryTime: number
+    ) {
+    if (
+        typeof window !== 'object' ||
+        navigator.onLine
+    ) {
+        return collection.promiseWait(retryTime);
+    }
+
+    let listener: any;
+    const onlineAgain = new Promise<void>(res => {
+        listener = () => {
+            window.removeEventListener('online', listener);
+            res();
+        };
+        window.addEventListener('online', listener);
+    });
+
+    return Promise.race([
+        onlineAgain,
+        collection.promiseWait(retryTime)
+    ]).then(() => {
+        window.removeEventListener('online', listener);
+    });
 }

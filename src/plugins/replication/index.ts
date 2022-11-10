@@ -44,6 +44,7 @@ import {
 } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
 import {
+    awaitRetry,
     DEFAULT_MODIFIER,
     swapDefaultDeletedTodeletedField,
     swapdeletedFieldToDefaultDeleted
@@ -205,7 +206,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                                 direction: 'pull'
                             });
                             this.subjects.error.next(emitError);
-                            await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
+                            await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
                         }
                     }
 
@@ -279,7 +280,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                                 direction: 'push'
                             });
                             this.subjects.error.next(emitError);
-                            await this.collection.promiseWait(ensureNotFalsy(this.retryTime));
+                            await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
                         }
                     }
 
