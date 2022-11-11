@@ -366,16 +366,6 @@ const textsSecond = [
 function randomBoolean() {
     return Math.random() < 0.5;
 }
-function randomOfArray<T>(array: T[], mustNotBe?: T): T {
-    let ret;
-    while (!ret || ret === mustNotBe) {
-        ret = array[Math.floor(Math.random() * array.length)];
-    }
-    return ret;
-}
-
-
-
 
 
 /**
