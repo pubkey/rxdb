@@ -27,7 +27,7 @@ export function swapdeletedFieldToDefaultDeleted(deletedField, doc) {
   }
 }
 export function awaitRetry(collection, retryTime) {
-  if (typeof window !== 'object' || navigator.onLine) {
+  if (typeof window === 'undefined' || typeof window !== 'object' || typeof window.addEventListener === 'undefined' || navigator.onLine) {
     return collection.promiseWait(retryTime);
   }
   var _listener;
