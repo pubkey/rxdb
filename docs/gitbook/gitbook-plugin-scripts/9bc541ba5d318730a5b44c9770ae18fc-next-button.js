@@ -1,7 +1,5 @@
 
 function runAddingNextButtons() {
-
-
     function addNextButton() {
         var id = 'rxdb-custon-next-button';
 
@@ -9,15 +7,11 @@ function runAddingNextButtons() {
         if (alreadyThere) {
             return;
         }
-        console.log('custom next button NOT already there.');
-
 
         var block = document.querySelector('.normal.markdown-section');
-        console.dir(block);
 
         var path = window.location.pathname;
         var page = path.split('/').pop();
-        console.log('page: ' + page);
 
         var chapters = document.querySelectorAll('.chapter');
         var dataPaths = [];
@@ -29,10 +23,7 @@ function runAddingNextButtons() {
         });
 
         var lastIndex = dataPaths.lastIndexOf(page);
-        console.dir('dataPaths:');
-        console.dir(dataPaths);
         var nextPath = dataPaths[lastIndex + 1];
-        console.log('nexdtPath: ' + nextPath);
         if (!nextPath) {
             return;
         }
@@ -40,7 +31,6 @@ function runAddingNextButtons() {
         var hr = document.createElement('hr');
         block.appendChild(hr);
 
-        console.log('# Add next button');
         var span = document.createElement('p');
         span.id = id;
         span.innerHTML = 'If you are new to RxDB, you should continue ';
