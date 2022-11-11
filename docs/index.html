@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" prefix="og: https://ogp.me/ns#">
+<html
+    lang="en"
+    prefix="og: https://ogp.me/ns#"
+>
+
 <head>
     <meta charset="utf-8">
     <title>RxDB - A client side, offline-first, reactive database for JavaScript Applications</title>
@@ -63,6 +67,7 @@
         defer
     ></script>
 </head>
+
 <body>
     <header>
         <a href="/">
@@ -155,6 +160,51 @@
                 changes, your UI
                 reflects the new state.
             </p>
+            <br />
+
+            <!-- 
+                Use https://www.programiz.com/html/online-compiler/
+                to craft html from code. (inspect the element)
+            -->
+            <div class="code">
+                <fieldset
+                    class="samp-wrapper"
+                    style="background-color: var(--bg-color);"
+                >
+                    <legend>Write</legend>
+                    <samp>
+                        <span class="cm-keyword">await</span>
+                        <span class="cm-variable">myColorDocument</span>.<span
+                            class="cm-method">atomicPatch</span>({<br />
+                        <span class="cm-property">&nbsp; color</span>:
+                        <span class="cm-string">'<span
+                                class="beating-color-string beating-color">#e6008d</span>'</span><br />
+                        });
+                    </samp>
+                </fieldset>
+                <br />
+                <br />
+                <fieldset
+                    class="samp-wrapper"
+                    style="background-color: var(--bg-color);"
+                >
+                    <legend>Observe</legend>
+                    <samp style="background-color: var(--bg-color);">
+                        <span class="cm-keyword">await</span>
+                        <span class="cm-variable">myColorDocument</span>.<span class="cm-property">color$</span><br />
+                        &nbsp;.<span class="cm-method">subscribe</span>(<span class="cm-def beating-color">color</span>
+                        <span class="cm-operator">=&gt;</span> {<br />
+                        <span class="cm-variable">&nbsp;&nbsp; body</span>.<span class="cm-property">style</span>.<span
+                            class="cm-property"
+                        >backgroundColor</span>
+                        <span class="cm-operator">=</span>
+                        <span class="cm-variable-2 beating-color">color</span>;<br />
+                        &nbsp;});
+                    </samp>
+                </fieldset>
+            </div>
+            <br />
+
             <div class="content-canvas">
                 <div
                     class="full-width"

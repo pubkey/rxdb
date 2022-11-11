@@ -3,7 +3,8 @@ import {
     createRxDatabase,
     RxLocalDocument,
     now,
-    addRxPlugin
+    addRxPlugin,
+    promiseWait
 } from '../';
 import {
     getRxStorageDexie
@@ -18,7 +19,9 @@ import {
 addRxPlugin(RxDBLeaderElectionPlugin);
 import {
     merge,
-    fromEvent
+    fromEvent,
+    map,
+    distinctUntilChanged
 } from 'rxjs';
 
 
@@ -28,23 +31,33 @@ type MousePositionType = {
     time: number;
 };
 
-type HeadingTextType = {
+type BeatingValuesType = {
+    beatPeriod: number;
     text1: string;
     text2: string;
-};
-
-type BeatColorType = {
     color: string;
-}
-
-const colors = [
-    '#e6008d',
-    '#8d2089',
-    '#5f2688'
-];
+};
 
 
 window.onload = async function () {
+
+
+
+    /**
+     * Having blinking stuff can be annoying for people with
+     * neuronal problems. So we disable it for everyone
+     * who has set the reduced motions settings in the browser/OS
+     * @link https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion
+     * @link https://web.dev/prefers-reduced-motion/
+     * @link https://github.com/pubkey/rxdb/pull/3800
+     * @link https://a11y-101.com/development/reduced-motion
+     */
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+        console.log('reducedMotion is set to true');
+        return;
+    }
+
 
     const database = await createRxDatabase({
         name: 'rxdb-landingpage',
@@ -52,14 +65,47 @@ window.onload = async function () {
         storage: getRxStorageDexie()
     });
 
-    const headingTextDoc = await database.upsertLocal<HeadingTextType>('headingtext', {
-        text1: 'JavaScript',
-        text2: 'you deserve'
-    });
 
-    const beatColorDoc = await database.upsertLocal<BeatColorType>('beatingcolor', {
-        color: colors[0]
-    });
+    // once insert if not exists
+    try {
+        await database.insertLocal<BeatingValuesType>('beatingvalues', {
+            beatPeriod: 0,
+            text1: 'JavaScript',
+            text2: 'you deserve',
+            color: colors[0]
+        });
+    } catch (err) { }
+
+    const beatingValuesDoc = ensureNotFalsy(await database.getLocal<BeatingValuesType>('beatingvalues'));
+    (async () => {
+        await promiseWait(heartbeatDuration);
+        while (true) {
+            const beatInfo = getBeatCurrentBeatInfo();
+            const nextBeatPromise = promiseWait(beatInfo.timeToNextPeriod);
+            // only every second interval so we have a pause in between
+            if (beatInfo.period % 2 === 0) {
+                try {
+                    await beatingValuesDoc.atomicUpdate(docData => {
+                        if (docData.beatPeriod >= beatInfo.period) {
+                            return docData;
+                        }
+                        docData.beatPeriod = beatInfo.period;
+                        docData.color = colors[beatInfo.period % 3];
+
+                        if (beatInfo.period % 4 === 0) {
+                            docData.text1 = shuffleWithSeed(textsFirst, beatInfo.period)[0];
+                        } else {
+                            docData.text2 = shuffleWithSeed(textsSecond, beatInfo.period)[0];
+                        }
+
+                        return docData;
+                    });
+                } catch (err) { }
+            }
+            await nextBeatPromise;
+        }
+    })();
+
 
     // track mouse position
     const mousePointerDoc = await database.upsertLocal<MousePositionType>('mousepos', {
@@ -67,7 +113,6 @@ window.onload = async function () {
         y: 0,
         time: 0
     });
-
     let currentMousePosition: number[] = [];
     window.addEventListener('mousemove', (ev) => {
         currentMousePosition = [ev.clientX, ev.clientY];
@@ -89,24 +134,6 @@ window.onload = async function () {
 
 
 
-
-    /**
-     * Having blinking stuff can be annoying for people with
-     * neuronal problems. So we disable it for everyone
-     * who has set the reduced motions settings in the browser/OS
-     * @link https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion
-     * @link https://web.dev/prefers-reduced-motion/
-     * @link https://github.com/pubkey/rxdb/pull/3800
-     * @link https://a11y-101.com/development/reduced-motion
-     */
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotion) {
-        console.log('reducedMotion is set to true');
-        return;
-    }
-
-
-
     startTiltToMouse(mousePointerDoc);
     startEnlargeOnMousePos(mousePointerDoc);
 
@@ -120,6 +147,7 @@ window.onload = async function () {
     const $$beatingSecond: any[] = document.getElementsByClassName('beating-second') as any;
     const $$beatingNumber = document.getElementsByClassName('beating-number');
     const $$beatingColor: any[] = document.getElementsByClassName('beating-color') as any;
+    const $$beatingColorString: any[] = document.getElementsByClassName('beating-color-string') as any;
 
     const $swapOutFirst = ensureNotFalsy(document.getElementById('swap-out-first'));
     const $swapOutSecond = ensureNotFalsy(document.getElementById('swap-out-second'));
@@ -127,96 +155,37 @@ window.onload = async function () {
 
     const heartbeatListeners: any[] = [];
     let heartbeatIndex = 0;
-    const heartbeatDuration = 851.088;
     const heartbeatTimeToFirstBeat = 105;
 
-    console.log('heartbeatDuration: ' + heartbeatDuration);
-
-
-    headingTextDoc.$.subscribe(textDoc => {
-        $swapOutFirst.innerHTML = textDoc.data.text1;
-        $swapOutSecond.innerHTML = textDoc.data.text2;
-    });
+    getBeatCurrentBeatInfo();
 
 
 
-    setInterval(function () {
-        /**
-         * Only run when browser tab is active
-         * to not annoy the user with background sound otherwise.
-         */
-        if (!document.hidden) {
+    beatingValuesDoc.$
+        .pipe(
+            map(d => d.data),
+            distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
+        )
+        .subscribe((beatingValuesDoc: BeatingValuesType) => {
+
             heartbeatListeners.forEach(function (listener) {
                 listener(heartbeatIndex);
             });
             heartbeatIndex = heartbeatIndex + 1;
-        }
-    }, heartbeatDuration * 1.9);
 
 
-    // swap out main text on every X heartbeat
-    const swapOutTextEveryX = 1;
-    let swapOutsDone = 0;
-    function swapMainText(index: number) {
-        const textsFirst = [
-            'NoSQL',
-            'OfflineFirst',
-            'JavaScript',
-            'observable',
-            'reactive',
-            'realtime',
-            'client side',
-            'fast'
-        ];
-        const textsSecond = [
-            'for the Web',
-            'for Node.js',
-            'for Browsers',
-            'for Capacitor',
-            'for Electron',
-            'for hybrid apps',
-            'for PWAs',
-            'for React Native',
-            'for NativeScript',
-            'for UI apps',
-            'you deserve',
-            'that syncs',
+            $swapOutFirst.innerHTML = beatingValuesDoc.text1;
+            $swapOutSecond.innerHTML = beatingValuesDoc.text2;
 
-        ];
-        /**
-         * Do not directly change the text on the audio start,
-         * but wait a bit for the first beat sound.
-         */
-        database.waitForLeadership().then(() => {
-            setTimeout(function () {
-                if (
-                    index % swapOutTextEveryX === 0
-                ) {
-                    swapOutsDone = swapOutsDone + 1;
-                    if (swapOutsDone % 2 === 0) {
-                        headingTextDoc.atomicPatch({
-                            text1: randomOfArray(textsFirst, $swapOutFirst.innerHTML)
-                        });
-                    } else {
-                        headingTextDoc.atomicPatch({
-                            text2: randomOfArray(textsSecond, $swapOutSecond.innerHTML)
-                        });
-                    }
-                }
+            const color = beatingValuesDoc.color;
+            Array.from($$beatingColor).forEach(function (element) {
+                element.style.backgroundColor = color;
+            });
+
+            Array.from($$beatingColorString).forEach(function (element) {
+                element.innerHTML = color;
             });
         });
-    }
-
-    // beat sound on heartbeat
-    heartbeatListeners.push(function (index: number) {
-
-        /**
-         * Only swap out the main text when the audio was playing,
-         * so we ensure that the user interacted with the site.
-         */
-        swapMainText(index);
-
-    });
 
     // css animation of big logo on heartbeat
     heartbeatListeners.push(function () {
@@ -251,23 +220,6 @@ window.onload = async function () {
                     element.innerHTML = newValue + '';
                 }, heartbeatTimeToFirstBeat);
             }
-        });
-    });
-
-    // tablet swap color on heartbeat
-    database.waitForLeadership().then(() => {
-        heartbeatListeners.push(function (idx: number) {
-            const nextColor = colors[(idx + 1) % 3];
-            console.log('nextColor: ' + nextColor);
-            beatColorDoc.atomicPatch({
-                color: nextColor
-            });
-        });
-    });
-    beatColorDoc.$.subscribe(docData => {
-        const color = docData.data.color;
-        Array.from($$beatingColor).forEach(function (element) {
-            element.style.backgroundColor = color;
         });
     });
 };
@@ -365,16 +317,87 @@ function startEnlargeOnMousePos(mousePosDoc: RxLocalDocument<any, MousePositionT
 
 }
 
+const heartbeatDuration = 851;
+
+function getBeatCurrentBeatInfo() {
+    // remove a big chunk so we do not have a large number for better precision.
+    const time = new Date().getTime() - 1960000000;
+    const ratio = time / heartbeatDuration;
+    const period = Math.floor(ratio);
+    const timeToNextPeriod = (ratio - period) * heartbeatDuration;
+    return {
+        ratio,
+        period,
+        timeToNextPeriod
+    }
+}
+
+const colors = [
+    '#e6008d',
+    '#8d2089',
+    '#5f2688'
+];
+
+
+const textsFirst = [
+    'NoSQL',
+    'OfflineFirst',
+    'JavaScript',
+    'observable',
+    'reactive',
+    'realtime',
+    'client side',
+    'fast'
+];
+const textsSecond = [
+    'for the Web',
+    'for Node.js',
+    'for Browsers',
+    'for Capacitor',
+    'for Electron',
+    'for hybrid apps',
+    'for PWAs',
+    'for React Native',
+    'for NativeScript',
+    'for UI apps',
+    'you deserve',
+    'that syncs',
+];
+
 
 // UTILS
 
 function randomBoolean() {
     return Math.random() < 0.5;
 }
-function randomOfArray<T>(array: T[], mustNotBe?: T): T {
-    let ret;
-    while (!ret || ret === mustNotBe) {
-        ret = array[Math.floor(Math.random() * array.length)];
+
+
+/**
+ * @link https://stackoverflow.com/questions/16801687/javascript-random-ordering-with-seed
+ */
+function shuffleWithSeed<T>(array: T[], seed: number): T[] {
+    array = array.slice(0);
+    let m = array.length;
+    let t;
+    let i;
+
+    // While there remain elements to shuffle…
+    while (m) {
+
+        // Pick a remaining element…
+        i = Math.floor(random(seed) * m--);
+
+        // And swap it with the current element.
+        t = array[m];
+        array[m] = array[i];
+        array[i] = t;
+        ++seed
     }
-    return ret;
+
+    return array;
+}
+
+function random(seed: number) {
+    const x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
 }

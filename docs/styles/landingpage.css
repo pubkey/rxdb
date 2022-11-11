@@ -425,7 +425,7 @@ header .logo img {
 .block.second .content-canvas {
     width: 80%;
     margin-left: 10%;
-    margin-top: 60px;
+    margin-top: 0px;
     height: 380px;
 }
 
@@ -439,7 +439,7 @@ header .logo img {
 @media (max-width: 670px) {
     .block.second .content-canvas {
         transform: scale(0.8);
-        margin-top: 30px;
+        margin-top: 0px;
         height: 300px;
     }
 }
@@ -447,7 +447,7 @@ header .logo img {
 @media (max-width: 543px) {
     .block.second .content-canvas {
         transform: scale(0.6);
-        margin-top: 10px;
+        margin-top: 0px;
         height: 300px;
     }
 }
@@ -606,6 +606,7 @@ header .logo img {
     position: relative;
     height: 530px;
 }
+
 @media (max-width: 600px) {
     .block.frameworks .content {
         height: 570px;
@@ -1045,6 +1046,90 @@ header .logo img {
     -ms-transition: background-color 400ms linear;
     transition: background-color 400ms linear;
     background-color: #e6008d;
+}
+
+
+
+.code {
+    text-align: center;
+}
+
+.samp-wrapper {
+    background-color: var(--bg-color--dark);
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 15px;
+    padding: 12px;
+    display: inline-block;
+    background-color: var(--bg-color);
+    text-align: left;
+
+    width: 50%;
+}
+
+@media (max-width: 830px) {
+    .samp-wrapper {
+        width: 70%;
+    }
+}
+@media (max-width: 600px) {
+    .samp-wrapper {
+        width: 90%;
+    }
+}
+@media (max-width: 480px) {
+    .samp-wrapper {
+        width: 94%;
+    }
+}
+
+.samp-wrapper legend {
+    padding-left: 6px;
+    padding-right: 6px;
+    font-weight: bold;
+}
+
+samp {
+    font-family: 'Courier New', monospace;
+    line-height: 157%;
+}
+
+samp .beating-color {
+    color: white !important;
+    padding: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+samp .cm-keyword {
+    color: #c678dd;
+}
+
+samp .cm-variable {
+    color: #e5c07b;
+}
+
+samp .cm-property {
+    color: #e06c75;
+}
+
+samp .cm-method {
+    color: #61afef;
+}
+
+
+samp .cm-string {
+    color: #98c379;
+}
+
+samp .cm-def {
+    color: #e06c75;
+}
+
+samp .cm-operator {
+    color: #c678dd;
 }
 
 /*
