@@ -96,37 +96,46 @@ export type ReplicationOptions<RxDocType, CheckpointType> = {
      * and so that RxDB is able to resume the replication on app reload.
      * If you replicate with a remote server, it is recommended to put the
      * server url into the replicationIdentifier.
-     * Like 'my-rest-replication-to-https://example.com/rest'
+     * Like 'my-rest-replication-to-https://example.com/api/sync'
      */
     replicationIdentifier: string;
     collection: RxCollection<RxDocType>;
     /**
      * Define a custom property that is used
      * to flag a document as being deleted.
-     * [default='_deleted']
+     * @default '_deleted'
      */
     deletedField?: '_deleted' | string;
     pull?: ReplicationPullOptions<RxDocType, CheckpointType>;
     push?: ReplicationPushOptions<RxDocType>;
     /**
-     * default=false
+     * By default it will do an ongoing realtime replication.
+     * By settings live: false the replication will run once until the local state
+     * is in sync with the remote state, then it will cancel itself.
+     * @default true
      */
     live?: boolean;
     /**
-     * Time in milliseconds
+     * Time in milliseconds after when a failed backend request
+     * has to be retried.
+     * This time will be skipped if a offline->online switch is detected
+     * via `navigator.onLine`
+     * @default 5000
      */
     retryTime?: number;
     /**
-     * If set to false,
-     * it will not wait until the current instance becomes leader.
-     * This means it can happen that multiple browser tabs
-     * run the replication at the same time which is dangerous.
+     * When multiInstance is `true`, like when you use RxDB in multiple browser tabs,
+     * the replication should always run in only one of the open browser tabs.
+     * If waitForLeadership is `true`, it will wait until the current instance is leader.
+     * If waitForLeadership is `false`, it will start replicating, even if it is not leader.
+     * @default true
      */
-    waitForLeadership?: boolean; // default=true
+    waitForLeadership?: boolean;
     /**
-     * Calling `replicateRxCollection()` implies to run a replication.
-     * If set to false, it will not run replication on `replicateRxCollection()`.
-     * This means you need to call replicationState.run() to trigger the first replication.
+     * If this is set to `false`,
+     * the replication will not start automatically
+     * but will wait for `replicationState.start()` being called.
+     * @default true
      */
-    autoStart?: boolean; // default=true
+    autoStart?: boolean;
 }
