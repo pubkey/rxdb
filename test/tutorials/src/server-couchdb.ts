@@ -1,7 +1,7 @@
 /**
  * this is the test for the server-tutorial
  * IMPORTANT: whenever you change something here,
- * ensure it is also changed in /docs-src/tutorials/server.md
+ * ensure it is also changed in /docs-src/tutorials/server-couchdb.md
  */
 
 import {
