@@ -39,13 +39,6 @@ type BeatingValuesType = {
 };
 
 
-const colors = [
-    '#e6008d',
-    '#8d2089',
-    '#5f2688'
-];
-
-
 window.onload = async function () {
 
 
@@ -154,6 +147,7 @@ window.onload = async function () {
     const $$beatingSecond: any[] = document.getElementsByClassName('beating-second') as any;
     const $$beatingNumber = document.getElementsByClassName('beating-number');
     const $$beatingColor: any[] = document.getElementsByClassName('beating-color') as any;
+    const $$beatingColorString: any[] = document.getElementsByClassName('beating-color-string') as any;
 
     const $swapOutFirst = ensureNotFalsy(document.getElementById('swap-out-first'));
     const $swapOutSecond = ensureNotFalsy(document.getElementById('swap-out-second'));
@@ -186,6 +180,10 @@ window.onload = async function () {
             const color = beatingValuesDoc.color;
             Array.from($$beatingColor).forEach(function (element) {
                 element.style.backgroundColor = color;
+            });
+
+            Array.from($$beatingColorString).forEach(function (element) {
+                element.innerHTML = color;
             });
         });
 
@@ -333,6 +331,12 @@ function getBeatCurrentBeatInfo() {
         timeToNextPeriod
     }
 }
+
+const colors = [
+    '#e6008d',
+    '#8d2089',
+    '#5f2688'
+];
 
 
 const textsFirst = [
