@@ -22,6 +22,7 @@ import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
+import { first } from 'rxjs';
 
 
 config.parallel('rx-database.test.js', () => {
@@ -606,6 +607,23 @@ config.parallel('rx-database.test.js', () => {
                 5
             );
             assert.strictEqual(pouchPath, 'subfolder/mydb-rxdb-5-humans');
+        });
+        // @link: https://github.com/pubkey/rxdb/discussions/4128
+        it('"EmptyError: no elements in sequence" when destroying a db that has an event subscription using rxjs operator first()', async () => {
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                foobar: {
+                    schema: schemas.human
+                }
+            });
+            db.$.pipe(first()).subscribe(() => {
+                // subscribe to first db event for debug purposes
+            });
+            assert.strictEqual(isRxDatabase(db), true);
+            await db.destroy();
         });
     });
 });
