@@ -17,10 +17,25 @@ gtag('config', 'G-62D63SY3S0');
 
 window.trigger = function (type, value) {
     console.log('window trigger: ' + type + ': ' + value);
-    window.rdt('track', 'Lead', {
-        transactionId: type + '-' + new Date().getTime(),
-        value: value
-    });
+
+    // reddit
+    if (typeof window.rdt === 'function') {
+        window.rdt('track', 'Lead', {
+            transactionId: type + '-' + new Date().getTime(),
+            value: value
+        });
+    }
+
+    // google analytics
+    if (typeof window.gtag === 'function') {
+        window.gtag(
+            'event',
+            type,
+            {
+                value
+            }
+        );
+    }
 }
 
 
