@@ -622,7 +622,6 @@ config.parallel('rx-database.test.js', () => {
             db.$.pipe(first()).subscribe(() => {
                 // subscribe to first db event for debug purposes
             });
-            assert.strictEqual(isRxDatabase(db), true);
             await db.destroy();
         });
     });
