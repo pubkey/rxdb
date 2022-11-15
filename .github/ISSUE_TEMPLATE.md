@@ -14,9 +14,8 @@
   ## Do you have a common question which cannot be solved with a PR?
   -> Ask it at one of these places:
     - Chat: https://discord.gg/tqt9ZttJfD
-    - Github discussions: https://github.com/pubkey/rxdb/discussions
     - Stackoverflow: https://stackoverflow.com/questions/tagged/rxdb
 
-  ## Everything else will likely be autoclosed. The maintainer's time is as same as valuable as yours. 
+  ## Everything else will be autoclosed. The maintainer's time is as same as valuable as yours. 
   You are also a developer! You can fix stuff by yourself.
 -->
