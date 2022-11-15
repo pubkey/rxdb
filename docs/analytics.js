@@ -32,11 +32,19 @@ window.trigger = function (type, value) {
             'event',
             type,
             {
-                value
+                value,
+                currency: 'EUR'
             }
         );
     }
 }
+
+setTimeout(function () {
+    window.trigger('spend_10_seconds_on_page', 0.01);
+}, 10 * 1000);
+setTimeout(function () {
+    window.trigger('spend_30_seconds_on_page', 0.03);
+}, 30 * 1000);
 
 
 // Reddit Pixel
@@ -57,13 +65,6 @@ window.trigger = function (type, value) {
 //     useDecimalCurrencyValues: true
 // });
 // window.rdt('track', 'PageVisit');
-
-// setTimeout(function () {
-//     window.trigger('10-seconds-on-page', 0.01);
-// }, 10 * 1000);
-// setTimeout(function () {
-//     window.trigger('30-seconds-on-page', 0.03);
-// }, 30 * 1000);
 // /Reddit Pixel
 
 
