@@ -174,7 +174,7 @@
                     <legend>Write</legend>
                     <samp>
                         <span class="cm-keyword">await</span>
-                        <span class="cm-variable">myRxCollection</span>.<span class="cm-method">upsert</span>({<br />
+                        <span class="cm-variable">collection</span>.<span class="cm-method">upsert</span>({<br />
                         <span class="cm-property">&nbsp; id</span>:
                         <span class="cm-string">'foobar'</span>,<br />
                         <span class="cm-property">&nbsp; color</span>:
@@ -192,17 +192,17 @@
                     <legend>Observe</legend>
                     <samp style="background-color: var(--bg-color);">
                         <span class="cm-keyword">await</span>
-                        <span class="cm-variable">myRxCollection</span>.<span class="cm-method">findOne(<span
+                        <span class="cm-variable">collection</span>.<span class="cm-method">findOne(<span
                                 class="cm-string"
                             >'foobar'</span>)</span><br />
-                            &nbsp;.<span class="cm-property">$</span><br />
-                        &nbsp;.<span class="cm-method">subscribe</span>(<span class="cm-def beating-color">doc</span>
+                            &nbsp;.<span class="cm-property">$</span><span class="cm-comment"> // get observable</span><br />
+                        &nbsp;.<span class="cm-method">subscribe</span>(<span class="cm-def">d</span>
                         <span class="cm-operator">=&gt;</span> {<br />
                         <span class="cm-variable">&nbsp;&nbsp; screen</span>.<span
                             class="cm-property"
                         >backgroundColor</span>
                         <span class="cm-operator">=</span>
-                        <span class="cm-variable">doc</span>.<span class="cm-property beating-color">color</span>;<br />
+                        <span class="cm-variable">d</span>.<span class="cm-property beating-color">color</span>;<br />
                         &nbsp;});
                     </samp>
                 </fieldset>

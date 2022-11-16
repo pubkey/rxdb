@@ -1132,6 +1132,11 @@ samp .cm-operator {
     color: #c678dd;
 }
 
+samp .cm-comment {
+    color: #7f848e;
+}
+
+
 /*
  * The animation must use the same steps as the soundwave of the heartbeat.mp3
  * @link https://planetcalc.com/8627/
