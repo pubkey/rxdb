@@ -19,6 +19,8 @@ import './unit/query-planner.test';
  * your relevant tests run first.
  * Do not commit this file if you modified the order.
  */
+import './unit/replication-p2p.test';
+/*
 import './unit/rx-storage-implementations.test';
 import './unit/rx-storage-query-correctness.test';
 
@@ -68,3 +70,4 @@ import './unit/import-export.test';
 import './unit/dexie-helper.test';
 import './unit/plugin.test';
 import './unit/last.test';
+*/

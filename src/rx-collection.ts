@@ -99,6 +99,10 @@ import type {
     RxCouchDBNewReplicationState,
     SyncOptionsCouchDBNew
 } from './plugins/replication-couchdb-new';
+import type {
+    SyncOptionsP2P,
+    RxP2PReplicationPool
+} from './plugins/replication-p2p';
 
 import {
     RxSchema
@@ -770,6 +774,10 @@ export class RxCollectionBase<
 
     syncCouchDBNew(_syncOptions: SyncOptionsCouchDBNew<RxDocumentType>): RxCouchDBNewReplicationState<RxDocumentType> {
         throw pluginMissing('replication-couchdb-new');
+    }
+
+    syncP2P(_syncOptions: SyncOptionsP2P<RxDocumentType>): RxP2PReplicationPool<RxDocumentType> {
+        throw pluginMissing('replication-p2p');
     }
 
 
