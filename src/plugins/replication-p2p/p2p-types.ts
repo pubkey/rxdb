@@ -3,7 +3,9 @@ import type {
     ReplicationOptions,
     ReplicationPullOptions,
     ReplicationPushOptions,
-    RxStorageDefaultCheckpoint
+    RxReplicationHandler,
+    RxStorageDefaultCheckpoint,
+    StringKeys
 } from '../../types';
 import { RxReplicationState } from '../replication';
 import { WebsocketMessageResponseType, WebsocketMessageType } from '../replication-websocket';
@@ -15,7 +17,9 @@ export type P2PPeer = {
 export type P2PReplicationCheckpoint = RxStorageDefaultCheckpoint;
 
 
-export type P2PMessage = WebsocketMessageType;
+export type P2PMessage = Omit<WebsocketMessageType, 'method'> & {
+    method: StringKeys<RxReplicationHandler<any, any>> | 'token';
+};
 export type P2PResponse = WebsocketMessageResponseType;
 export type PeerWithMessage = {
     peer: P2PPeer;
@@ -35,7 +39,6 @@ export type P2PConnectionHandler = {
 };
 
 export type P2PConnectionHandlerCreator = (
-    peerId: string,
     opts: SyncOptionsP2P<any>
 ) => P2PConnectionHandler;
 

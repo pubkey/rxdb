@@ -17,6 +17,8 @@ export function isMasterInP2PReplication(
     ownPeerId: string,
     otherPeerId: string
 ): boolean {
+    console.log('ownPeerId: ' + ownPeerId);
+    console.log('otherPeerId: ' + otherPeerId);
     const isMaster =
         hashFunction([ownPeerId, otherPeerId].join('|'))
         >
@@ -37,9 +39,8 @@ export function getConnectionHandlerP2PT(
     trackers: string[] = P2PT_DEFAULT_TRACKERS
 ): P2PConnectionHandlerCreator {
 
-    const creator: P2PConnectionHandlerCreator = (peerId, options) => {
+    const creator: P2PConnectionHandlerCreator = (options) => {
         const p2p2 = new P2PT(trackers, options.topic);
-        p2p2._peerId = peerId;
 
         const connect$ = new Subject<P2PPeer>();
         p2p2.on('peerconnect', (peer) => connect$.next(peer as any));

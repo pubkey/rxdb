@@ -1,4 +1,4 @@
-import { Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, filter, firstValueFrom, Subject, Subscription } from 'rxjs';
 import { addRxPlugin } from '../../plugin';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
 import type {
@@ -45,7 +45,7 @@ export async function syncP2P<RxDocType>(
     const pool = new RxP2PReplicationPool(
         this,
         options,
-        options.connectionHandlerCreator(storageToken, options)
+        options.connectionHandlerCreator(options)
     );
 
 
@@ -54,90 +54,121 @@ export async function syncP2P<RxDocType>(
     );
 
 
-    const connectSub = pool.connectionHandler.connect$.subscribe((peer) => {
-        if (pool.canceled) {
-            return;
-        }
+    const connectSub = pool.connectionHandler.connect$
+        .pipe(
+            filter(() => !pool.canceled)
+        )
+        .subscribe(async (peer) => {
+            /**
+             * TODO ensure both know the correct secret
+             */
 
-        /**
-         * To deterministicly define which peer is master and
-         * which peer is fork, we compare the storage tokens.
-         * But we have to hash them before, to ensure that
-         * a storageToken like 'aaaaaa' is not always the master.
-         */
-        const isMaster = isMasterInP2PReplication(this.database.hashFunction, storageToken, peer.id);
-
-        let replicationState: RxP2PReplicationState<RxDocType> | undefined;
-        if (isMaster) {
-            const masterHandler = pool.masterReplicationHandler;
-            const messageSub = pool.connectionHandler.message$.subscribe(async (data) => {
-                const { peer: msgPeer, message } = data;
-                if (peer.id !== msgPeer.id) {
-                    return;
-                }
-                const method = masterHandler[message.method];
-                /**
-                 * If it is not a function,
-                 * it means that the client requested the masterChangeStream$
-                 */
-                if (typeof method !== 'function') {
-                    // TODO shouldn't we cleanup subscriptions when the peer disconnects?
-                    masterHandler.masterChangeStream$.subscribe(ev => {
-                        const streamResponse: P2PResponse = {
-                            id: 'stream',
-                            collection: message.collection,
-                            result: ev
-                        };
-                        msgPeer.respond(streamResponse);
+            /**
+             * Get the storageToken of the remote
+             */
+            pool.subs.push(
+                pool.connectionHandler.message$.pipe(
+                    filter(data => data.peer === peer),
+                    filter(data => data.message.method === 'token')
+                ).subscribe(data => {
+                    peer.respond({
+                        collection: collection.name,
+                        id: data.message.id,
+                        result: storageToken
                     });
-                } else {
-                    const result = await (method as any)(...message.params);
-                    const response: P2PResponse = {
-                        id: message.id,
-                        collection: message.collection,
-                        result
-                    };
-                    msgPeer.respond(response);
-                }
+                })
+            );
+            const tokenResponse = await pool.connectionHandler.send(peer, {
+                collection: collection.name,
+                id: getRequestId(),
+                method: 'token',
+                params: []
             });
-            pool.subs.push(messageSub);
-        } else {
-            replicationState = replicateRxCollection({
-                replicationIdentifier: options.topic + '||' + peer.id,
-                collection: this,
-                autoStart: true,
-                deletedField: '_deleted',
-                live: true,
-                retryTime: options.retryTime,
-                waitForLeadership: false,
-                pull: options.pull ? Object.assign({}, options.pull, {
-                    handler(lastPulledCheckpoint: P2PReplicationCheckpoint) {
-                        return pool.connectionHandler.send(peer, {
-                            method: 'masterChangesSince',
-                            params: [lastPulledCheckpoint],
-                            collection: collection.name,
-                            id: getRequestId()
-                        }).then(([_p, response]) => {
-                            return response.result;
-                        })
-                    }
-                }) : undefined,
-                push: options.push ? Object.assign({}, options.push, {
-                    handler(docs: RxReplicationWriteToMasterRow<RxDocType>[]) {
-                        return pool.connectionHandler.send(peer, {
-                            method: 'masterWrite',
-                            params: [docs],
-                            collection: collection.name,
-                            id: getRequestId()
-                        }).then(([_p, response]) => {
-                            return response.result;
-                        })
-                    }
-                }) : undefined
-            });
-        }
-        pool.addPeer(peer, replicationState);
-    });
+            const peerToken: string = tokenResponse.response.result;
+
+
+            /**
+             * To deterministicly define which peer is master and
+             * which peer is fork, we compare the storage tokens.
+             * But we have to hash them before, to ensure that
+             * a storageToken like 'aaaaaa' is not always the master.
+             */
+            const isMaster = isMasterInP2PReplication(this.database.hashFunction, storageToken, peerToken);
+            console.log('isMaster: ' + isMaster);
+
+            let replicationState: RxP2PReplicationState<RxDocType> | undefined;
+            if (isMaster) {
+                const masterHandler = pool.masterReplicationHandler;
+                const messageSub = pool.connectionHandler.message$
+                    .pipe(
+                        filter(data => data.peer === peer),
+                        filter(data => data.message.method !== 'token')
+                    )
+                    .subscribe(async (data) => {
+                        const { peer: msgPeer, message } = data;
+                        const method = (masterHandler as any)[message.method];
+                        /**
+                         * If it is not a function,
+                         * it means that the client requested the masterChangeStream$
+                         */
+                        if (typeof method !== 'function') {
+                            // TODO shouldn't we cleanup subscriptions when the peer disconnects?
+                            masterHandler.masterChangeStream$.subscribe(ev => {
+                                const streamResponse: P2PResponse = {
+                                    id: 'stream',
+                                    collection: message.collection,
+                                    result: ev
+                                };
+                                msgPeer.respond(streamResponse);
+                            });
+                        } else {
+                            const result = await (method as any)(...message.params);
+                            const response: P2PResponse = {
+                                id: message.id,
+                                collection: message.collection,
+                                result
+                            };
+                            msgPeer.respond(response);
+                        }
+                    });
+                pool.subs.push(messageSub);
+            } else {
+                replicationState = replicateRxCollection({
+                    replicationIdentifier: options.topic + '||' + peer.id,
+                    collection: this,
+                    autoStart: true,
+                    deletedField: '_deleted',
+                    live: true,
+                    retryTime: options.retryTime,
+                    waitForLeadership: false,
+                    pull: options.pull ? Object.assign({}, options.pull, {
+                        handler(lastPulledCheckpoint: P2PReplicationCheckpoint) {
+                            return pool.connectionHandler.send(peer, {
+                                method: 'masterChangesSince',
+                                params: [lastPulledCheckpoint],
+                                collection: collection.name,
+                                id: getRequestId()
+                            }).then(peerWithResponse => {
+                                return peerWithResponse.response.result;
+                            })
+                        }
+                    }) : undefined,
+                    push: options.push ? Object.assign({}, options.push, {
+                        handler(docs: RxReplicationWriteToMasterRow<RxDocType>[]) {
+                            return pool.connectionHandler.send(peer, {
+                                method: 'masterWrite',
+                                params: [docs],
+                                collection: collection.name,
+                                id: getRequestId()
+                            }).then(peerWithResponse => {
+                                return peerWithResponse.response.result;
+                            })
+                        }
+                    }) : undefined
+                });
+            }
+            pool.addPeer(peer, replicationState);
+        });
     pool.subs.push(connectSub);
     return pool;
 }
@@ -149,7 +180,7 @@ export async function syncP2P<RxDocType>(
  */
 export class RxP2PReplicationPool<RxDocType> {
 
-    peerStates: Map<P2PPeer, P2PPeerState<RxDocType>> = new Map();
+    peerStates$: BehaviorSubject<Map<P2PPeer, P2PPeerState<RxDocType>>> = new BehaviorSubject(new Map());
     canceled: boolean = false;
     masterReplicationHandler: RxReplicationHandler<RxDocType, P2PReplicationCheckpoint>;
     subs: Subscription[] = [];
@@ -178,7 +209,7 @@ export class RxP2PReplicationPool<RxDocType> {
             replicationState,
             subs: []
         };
-        this.peerStates.set(peer, peerState);
+        this.peerStates$.next(this.peerStates$.getValue().set(peer, peerState));
         if (replicationState) {
             peerState.subs.push(
                 replicationState.error$.subscribe(ev => this.error$.next(ev))
@@ -186,12 +217,22 @@ export class RxP2PReplicationPool<RxDocType> {
         }
     }
     removePeer(peer: P2PPeer) {
-        const peerState = getFromMapOrThrow(this.peerStates, peer);
-        this.peerStates.delete(peer);
+        const peerState = getFromMapOrThrow(this.peerStates$.getValue(), peer);
+        this.peerStates$.getValue().delete(peer);
+        this.peerStates$.next(this.peerStates$.getValue());
         peerState.subs.forEach(sub => sub.unsubscribe());
         if (peerState.replicationState) {
             peerState.replicationState.cancel();
         }
+    }
+
+    // often used in unit tests
+    awaitFirstPeer() {
+        return firstValueFrom(
+            this.peerStates$.pipe(
+                filter(peerStates => peerStates.size > 0)
+            )
+        );
     }
 
     public async cancel() {
@@ -200,7 +241,7 @@ export class RxP2PReplicationPool<RxDocType> {
         }
         this.canceled = true;
         this.subs.forEach(sub => sub.unsubscribe());
-        Array.from(this.peerStates.keys()).forEach(peer => {
+        Array.from(this.peerStates$.getValue().keys()).forEach(peer => {
             this.removePeer(peer);
         });
         await this.connectionHandler.destroy();
