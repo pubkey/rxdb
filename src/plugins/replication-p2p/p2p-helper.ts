@@ -7,9 +7,11 @@ import type {
     P2PConnectionHandlerCreator,
     P2PMessage,
     P2PPeer,
-    PeerWithMessage
+    P2PResponse,
+    PeerWithMessage,
+    PeerWithResponse
 } from './p2p-types';
-import { Subject } from 'rxjs';
+import { filter, firstValueFrom, map, Subject } from 'rxjs';
 import { PROMISE_RESOLVE_VOID } from '../../util';
 
 export function isMasterInP2PReplication(
@@ -17,8 +19,6 @@ export function isMasterInP2PReplication(
     ownPeerId: string,
     otherPeerId: string
 ): boolean {
-    console.log('ownPeerId: ' + ownPeerId);
-    console.log('otherPeerId: ' + otherPeerId);
     const isMaster =
         hashFunction([ownPeerId, otherPeerId].join('|'))
         >
@@ -49,16 +49,30 @@ export function getConnectionHandlerP2PT(
         p2p2.on('peerclose', (peer) => disconnect$.next(peer as any));
 
         const message$ = new Subject<PeerWithMessage>();
-        p2p2.on('msg', (peer, message) => message$.next({
-            peer: peer as any,
-            message
-        }));
+        const response$ = new Subject<PeerWithResponse>();
+        p2p2.on('msg', (peer, messageOrResponse) => {
+            if (messageOrResponse.result) {
+                response$.next({
+                    peer: peer as any,
+                    response: messageOrResponse
+                });
+            } else {
+                message$.next({
+                    peer: peer as any,
+                    message: messageOrResponse
+                });
+            }
+
+        });
 
         const handler: P2PConnectionHandler = {
             connect$,
             disconnect$,
             message$,
+            response$,
             async send(peer: P2PPeer, message: P2PMessage) {
+                console.log('SEND MESSAGE;');
+                console.dir(message);
                 const [responsePeer, response] = await p2p2.send(peer as any, message);
                 return {
                     peer: responsePeer,
@@ -70,6 +84,7 @@ export function getConnectionHandlerP2PT(
                 connect$.complete();
                 disconnect$.complete();
                 message$.complete();
+                response$.complete();
                 return PROMISE_RESOLVE_VOID;
             }
         }
@@ -77,4 +92,22 @@ export function getConnectionHandlerP2PT(
         return handler;
     };
     return creator;
+}
+
+
+export function sendMessageAndAwaitAnswer(
+    handler: P2PConnectionHandler,
+    peer: P2PPeer,
+    message: P2PMessage
+): Promise<P2PResponse> {
+    const requestId = message.id;
+    const answerPromise = firstValueFrom(
+        handler.response$.pipe(
+            filter(d => d.peer === peer),
+            filter(d => d.response.id === requestId),
+            map(d => d.response)
+        )
+    );
+    handler.send(peer, message);
+    return answerPromise;
 }

@@ -197,6 +197,9 @@ describe('replication-p2p.test.ts', () => {
             console.log('3');
 
 
+            console.log('-------------------------------');
+            console.log('-------------------------------');
+            console.log('-------------------------------');
             await wait(100000);
 
 

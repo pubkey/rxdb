@@ -12,7 +12,7 @@ import type {
 import { getFromMapOrThrow, randomCouchString } from '../../util';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { replicateRxCollection } from '../replication';
-import { isMasterInP2PReplication } from './p2p-helper';
+import { isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';
 import type {
     P2PConnectionHandler,
     P2PPeer,
@@ -54,6 +54,18 @@ export async function syncP2P<RxDocType>(
     );
 
 
+
+
+    pool.connectionHandler.message$.subscribe(msg => {
+        console.log('::' + collection.name + ' got message$: ');
+        console.dir(msg.message);
+    });
+    pool.connectionHandler.response$.subscribe(msg => {
+        console.log('::' + collection.name + ' got response$: ');
+        console.dir(msg.response);
+    });
+
+
     const connectSub = pool.connectionHandler.connect$
         .pipe(
             filter(() => !pool.canceled)
@@ -68,23 +80,32 @@ export async function syncP2P<RxDocType>(
              */
             pool.subs.push(
                 pool.connectionHandler.message$.pipe(
-                    filter(data => data.peer === peer),
+                    filter(data => data.peer.id === peer.id),
                     filter(data => data.message.method === 'token')
                 ).subscribe(data => {
-                    peer.respond({
-                        collection: collection.name,
+                    console.log('RESPONS TO TOKEN MESSAGE ' + collection.name);
+                    pool.connectionHandler.send(peer, {
                         id: data.message.id,
+                        collection: collection.name,
                         result: storageToken
                     });
                 })
             );
-            const tokenResponse = await pool.connectionHandler.send(peer, {
-                collection: collection.name,
-                id: getRequestId(),
-                method: 'token',
-                params: []
-            });
-            const peerToken: string = tokenResponse.response.result;
+
+
+            console.log('::' + collection.name + ' get token 1');
+            const tokenResponse = await sendMessageAndAwaitAnswer(
+                pool.connectionHandler,
+                peer,
+                {
+                    collection: collection.name,
+                    id: getRequestId(),
+                    method: 'token',
+                    params: []
+                }
+            );
+            console.log('::' + collection.name + ' get token 2');
+            const peerToken: string = tokenResponse.result;
 
 
             /**
@@ -101,7 +122,7 @@ export async function syncP2P<RxDocType>(
                 const masterHandler = pool.masterReplicationHandler;
                 const messageSub = pool.connectionHandler.message$
                     .pipe(
-                        filter(data => data.peer === peer),
+                        filter(data => data.peer.id === peer.id),
                         filter(data => data.message.method !== 'token')
                     )
                     .subscribe(async (data) => {

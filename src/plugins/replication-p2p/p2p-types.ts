@@ -34,7 +34,8 @@ export type P2PConnectionHandler = {
     connect$: Observable<P2PPeer>;
     disconnect$: Observable<P2PPeer>;
     message$: Observable<PeerWithMessage>;
-    send(peer: P2PPeer, message: P2PMessage): Promise<PeerWithResponse>;
+    response$: Observable<PeerWithResponse>;
+    send(peer: P2PPeer, message: P2PMessage | P2PResponse): Promise<PeerWithResponse>;
     destroy(): Promise<void>;
 };
 
