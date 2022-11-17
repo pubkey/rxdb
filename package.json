@@ -167,6 +167,7 @@
     "lokijs": "1.5.12",
     "mingo": "5.1.0",
     "modifyjs": "0.3.1",
+    "node-pre-gyp": "0.17.0",
     "object-path": "0.11.8",
     "oblivious-set": "1.1.1",
     "p2pt": "1.5.1",
@@ -181,6 +182,7 @@
     "threads": "1.7.0",
     "unload": "2.3.1",
     "util": "0.12.4",
+    "wrtc": "0.4.7",
     "ws": "8.8.1",
     "z-schema": "5.0.4"
   },

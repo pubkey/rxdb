@@ -1,4 +1,4 @@
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import type {
     ReplicationOptions,
     ReplicationPullOptions,
@@ -17,13 +17,20 @@ export type P2PReplicationCheckpoint = RxStorageDefaultCheckpoint;
 
 export type P2PMessage = WebsocketMessageType;
 export type P2PResponse = WebsocketMessageResponseType;
+export type PeerWithMessage = {
+    peer: P2PPeer;
+    message: P2PMessage;
+};
+export type PeerWithResponse = {
+    peer: P2PPeer;
+    response: P2PResponse;
+};
 
 export type P2PConnectionHandler = {
-    on(k: 'connect', fn: (peer: P2PPeer) => void): void;
-    on(k: 'disconnect', fn: (peer: P2PPeer) => void): void;
-    on(k: 'message', fn: (peer: P2PPeer, message: P2PMessage) => void): void;
-
-    send(peer: P2PPeer, message: P2PMessage): Promise<[P2PPeer, P2PResponse]>;
+    connect$: Observable<P2PPeer>;
+    disconnect$: Observable<P2PPeer>;
+    message$: Observable<PeerWithMessage>;
+    send(peer: P2PPeer, message: P2PMessage): Promise<PeerWithResponse>;
     destroy(): Promise<void>;
 };
 
@@ -50,8 +57,14 @@ export type SyncOptionsP2P<RxDocType> = Omit<
     'collection' |
     'deletedField' |
     'live' |
-    'autostart'
+    'autostart' |
+    'waitForLeadership'
 > & {
+    /**
+     * It will only replicate with other instances
+     * that use the same topic and
+     * are able to prove that they know the secret.
+     */
     topic: string;
     secret: string;
     connectionHandlerCreator: P2PConnectionHandlerCreator;

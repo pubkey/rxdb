@@ -1,19 +1,17 @@
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { addRxPlugin } from '../../plugin';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
 import type {
-    ById,
     RxCollection,
     RxError,
     RxPlugin,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
-    RxStorageDefaultCheckpoint,
     RxTypeError
 } from '../../types';
 import { getFromMapOrThrow, randomCouchString } from '../../util';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
-import { replicateRxCollection, RxReplicationState } from '../replication';
+import { replicateRxCollection } from '../replication';
 import { isMasterInP2PReplication } from './p2p-helper';
 import type {
     P2PConnectionHandler,
@@ -31,8 +29,7 @@ export async function syncP2P<RxDocType>(
     options: SyncOptionsP2P<RxDocType>
 ): Promise<RxP2PReplicationPool<RxDocType>> {
     const collection = this;
-    const mustWaitForLeadership = options.waitForLeadership && this.database.multiInstance;
-    if (mustWaitForLeadership) {
+    if (this.database.multiInstance) {
         await this.database.waitForLeadership();
     }
 
@@ -51,10 +48,13 @@ export async function syncP2P<RxDocType>(
         options.connectionHandlerCreator(storageToken, options)
     );
 
-    pool.connectionHandler.on('disconnect', (peer) => {
-        pool.removePeer(peer);
-    });
-    pool.connectionHandler.on('connect', (peer) => {
+
+    pool.subs.push(
+        pool.connectionHandler.disconnect$.subscribe(peer => pool.removePeer(peer))
+    );
+
+
+    const connectSub = pool.connectionHandler.connect$.subscribe((peer) => {
         if (pool.canceled) {
             return;
         }
@@ -70,7 +70,8 @@ export async function syncP2P<RxDocType>(
         let replicationState: RxP2PReplicationState<RxDocType> | undefined;
         if (isMaster) {
             const masterHandler = pool.masterReplicationHandler;
-            pool.connectionHandler.on('message', async (msgPeer, message) => {
+            const messageSub = pool.connectionHandler.message$.subscribe(async (data) => {
+                const { peer: msgPeer, message } = data;
                 if (peer.id !== msgPeer.id) {
                     return;
                 }
@@ -99,6 +100,7 @@ export async function syncP2P<RxDocType>(
                     msgPeer.respond(response);
                 }
             });
+            pool.subs.push(messageSub);
         } else {
             replicationState = replicateRxCollection({
                 replicationIdentifier: options.topic + '||' + peer.id,
@@ -136,6 +138,7 @@ export async function syncP2P<RxDocType>(
         }
         pool.addPeer(peer, replicationState);
     });
+    pool.subs.push(connectSub);
     return pool;
 }
 
@@ -149,6 +152,7 @@ export class RxP2PReplicationPool<RxDocType> {
     peerStates: Map<P2PPeer, P2PPeerState<RxDocType>> = new Map();
     canceled: boolean = false;
     masterReplicationHandler: RxReplicationHandler<RxDocType, P2PReplicationCheckpoint>;
+    subs: Subscription[] = [];
 
     public error$ = new Subject<RxError | RxTypeError>();
 
@@ -195,7 +199,7 @@ export class RxP2PReplicationPool<RxDocType> {
             return;
         }
         this.canceled = true;
-
+        this.subs.forEach(sub => sub.unsubscribe());
         Array.from(this.peerStates.keys()).forEach(peer => {
             this.removePeer(peer);
         });
