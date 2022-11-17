@@ -158,7 +158,6 @@ describe('replication-p2p.test.ts', () => {
                 return replicationPool;
             })
         );
-
         console.log('syncCollections() 0.1');
 
         /**
@@ -175,9 +174,13 @@ describe('replication-p2p.test.ts', () => {
         return ret;
     }
 
-    describe('live:true', () => {
-
-        it('should stream changes over the replication to a query', async function () {
+    describe('basic CRUD', () => {
+        /**
+         * Creating a WebRTC connection takes really long,
+         * so we have to use a big test to test all functionality at once
+         * without to re-create connections.
+         */
+        it('should stream changes over the replication to other collections', async function () {
             this.timeout(100 * 1000);
 
             console.log('#############################');
@@ -186,7 +189,7 @@ describe('replication-p2p.test.ts', () => {
             console.log('#############################');
 
             const c1 = await humansCollection.create(1, 'aaa');
-            const c2 = await humansCollection.create(0, 'bbb');
+            const c2 = await humansCollection.create(1, 'bbb');
 
 
             console.log('1');
@@ -197,11 +200,16 @@ describe('replication-p2p.test.ts', () => {
             console.log('3');
 
 
-            console.log('-------------------------------');
-            console.log('-------------------------------');
-            console.log('-------------------------------');
-            await wait(100000);
+            // update
+            const doc = await c1.findOne().exec(true);
 
+
+            console.log('-------------------------------');
+            console.log('-------------------------------');
+            console.log('-------------------------------');
+
+
+            process.exit();
 
 
             // const foundPromise = firstValueFrom(

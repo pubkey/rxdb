@@ -71,8 +71,6 @@ export function getConnectionHandlerP2PT(
             message$,
             response$,
             async send(peer: P2PPeer, message: P2PMessage) {
-                console.log('SEND MESSAGE;');
-                console.dir(message);
                 const [responsePeer, response] = await p2p2.send(peer as any, message);
                 return {
                     peer: responsePeer,

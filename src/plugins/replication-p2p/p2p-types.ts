@@ -17,10 +17,10 @@ export type P2PPeer = {
 export type P2PReplicationCheckpoint = RxStorageDefaultCheckpoint;
 
 
-export type P2PMessage = Omit<WebsocketMessageType, 'method'> & {
+export type P2PMessage = Omit<WebsocketMessageType, 'method' | 'collection'> & {
     method: StringKeys<RxReplicationHandler<any, any>> | 'token';
 };
-export type P2PResponse = WebsocketMessageResponseType;
+export type P2PResponse = Omit<WebsocketMessageResponseType, 'collection'>;
 export type PeerWithMessage = {
     peer: P2PPeer;
     message: P2PMessage;

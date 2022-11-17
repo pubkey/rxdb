@@ -1,4 +1,4 @@
-import { BehaviorSubject, filter, firstValueFrom, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, filter, firstValueFrom, mergeMap, Subject, Subscription } from 'rxjs';
 import { addRxPlugin } from '../../plugin';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
 import type {
@@ -53,11 +53,25 @@ export async function syncP2P<RxDocType>(
         pool.connectionHandler.disconnect$.subscribe(peer => pool.removePeer(peer))
     );
 
+    /**
+     * Answer if someone requests our storage token
+     */
+    pool.subs.push(
+        pool.connectionHandler.message$.pipe(
+            filter(data => data.message.method === 'token')
+        ).subscribe(data => {
+            console.log('RESPONS TO TOKEN MESSAGE ' + collection.name);
+            pool.connectionHandler.send(data.peer, {
+                id: data.message.id,
+                result: storageToken
+            });
+        })
+    );
 
 
 
     pool.connectionHandler.message$.subscribe(msg => {
-        console.log('::' + collection.name + ' got message$: ');
+        console.log('::' + collection.name + ' got message$: ' + msg.peer.id);
         console.dir(msg.message);
     });
     pool.connectionHandler.response$.subscribe(msg => {
@@ -68,37 +82,22 @@ export async function syncP2P<RxDocType>(
 
     const connectSub = pool.connectionHandler.connect$
         .pipe(
+            mergeMap(peer => this.promiseWait(0).then(() => peer)),
             filter(() => !pool.canceled)
         )
         .subscribe(async (peer) => {
+
+            console.log(collection.name + ' - connected to peer: ' + peer.id);
+
             /**
              * TODO ensure both know the correct secret
              */
-
-            /**
-             * Get the storageToken of the remote
-             */
-            pool.subs.push(
-                pool.connectionHandler.message$.pipe(
-                    filter(data => data.peer.id === peer.id),
-                    filter(data => data.message.method === 'token')
-                ).subscribe(data => {
-                    console.log('RESPONS TO TOKEN MESSAGE ' + collection.name);
-                    pool.connectionHandler.send(peer, {
-                        id: data.message.id,
-                        collection: collection.name,
-                        result: storageToken
-                    });
-                })
-            );
-
 
             console.log('::' + collection.name + ' get token 1');
             const tokenResponse = await sendMessageAndAwaitAnswer(
                 pool.connectionHandler,
                 peer,
                 {
-                    collection: collection.name,
                     id: getRequestId(),
                     method: 'token',
                     params: []
@@ -126,6 +125,11 @@ export async function syncP2P<RxDocType>(
                         filter(data => data.message.method !== 'token')
                     )
                     .subscribe(async (data) => {
+
+
+                        console.log('----------- handle replication message from remote: ' + collection.name);
+                        console.dir(data.message);
+
                         const { peer: msgPeer, message } = data;
                         const method = (masterHandler as any)[message.method];
                         /**
@@ -137,7 +141,6 @@ export async function syncP2P<RxDocType>(
                             masterHandler.masterChangeStream$.subscribe(ev => {
                                 const streamResponse: P2PResponse = {
                                     id: 'stream',
-                                    collection: message.collection,
                                     result: ev
                                 };
                                 msgPeer.respond(streamResponse);
@@ -146,7 +149,6 @@ export async function syncP2P<RxDocType>(
                             const result = await (method as any)(...message.params);
                             const response: P2PResponse = {
                                 id: message.id,
-                                collection: message.collection,
                                 result
                             };
                             msgPeer.respond(response);
@@ -167,7 +169,6 @@ export async function syncP2P<RxDocType>(
                             return pool.connectionHandler.send(peer, {
                                 method: 'masterChangesSince',
                                 params: [lastPulledCheckpoint],
-                                collection: collection.name,
                                 id: getRequestId()
                             }).then(peerWithResponse => {
                                 return peerWithResponse.response.result;
@@ -179,7 +180,6 @@ export async function syncP2P<RxDocType>(
                             return pool.connectionHandler.send(peer, {
                                 method: 'masterWrite',
                                 params: [docs],
-                                collection: collection.name,
                                 id: getRequestId()
                             }).then(peerWithResponse => {
                                 return peerWithResponse.response.result;
