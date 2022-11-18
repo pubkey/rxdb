@@ -12,7 +12,6 @@ import { WebsocketMessageResponseType, WebsocketMessageType } from '../replicati
 
 export type P2PPeer = {
     id: string;
-    respond(response: P2PResponse): Promise<void>;
 };
 export type P2PReplicationCheckpoint = RxStorageDefaultCheckpoint;
 
@@ -35,7 +34,7 @@ export type P2PConnectionHandler = {
     disconnect$: Observable<P2PPeer>;
     message$: Observable<PeerWithMessage>;
     response$: Observable<PeerWithResponse>;
-    send(peer: P2PPeer, message: P2PMessage | P2PResponse): Promise<PeerWithResponse>;
+    send(peer: P2PPeer, message: P2PMessage | P2PResponse): Promise<void>;
     destroy(): Promise<void>;
 };
 

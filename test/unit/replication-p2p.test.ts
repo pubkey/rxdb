@@ -21,11 +21,10 @@ import {
 import {
     RxDBReplicationP2PPlugin,
     RxP2PReplicationPool,
-    getConnectionHandlerP2PT,
+    getConnectionHandlerWebtorrent,
     isMasterInP2PReplication
 } from '../../plugins/replication-p2p';
 
-import { filter, firstValueFrom } from 'rxjs';
 import { randomString, wait, waitUntil } from 'async-test-util';
 
 describe('replication-p2p.test.ts', () => {
@@ -131,7 +130,7 @@ describe('replication-p2p.test.ts', () => {
                 const replicationPool = await collection.syncP2P({
                     topic,
                     secret,
-                    connectionHandlerCreator: getConnectionHandlerP2PT([webtorrentTrackerUrl]),
+                    connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
                     pull: {},
                     push: {}
                 });
@@ -144,11 +143,9 @@ describe('replication-p2p.test.ts', () => {
          * If we have more then one collection,
          * ensure that at least one peer exists each.
          */
-        if (collections.length > 1) {
-            await Promise.all(
-                ret.map(pool => pool.awaitFirstPeer())
-            );
-        }
+        await Promise.all(
+            ret.map(pool => pool.awaitFirstPeer())
+        );
         return ret;
     }
 
@@ -174,7 +171,7 @@ describe('replication-p2p.test.ts', () => {
             console.log('1');
             const topic = randomCouchString(10);
             const secret = randomCouchString(10);
-            await syncCollections(topic, secret, [c1, c2]);
+            const replicationPools = await syncCollections(topic, secret, [c1, c2]);
             console.log('2');
 
             await awaitCollectionsInSync([c1, c2]);
@@ -221,9 +218,20 @@ describe('replication-p2p.test.ts', () => {
             console.log('.......................');
 
 
+            replicationPools.forEach(pool => {
+                const peerIds = Array.from(pool.peerStates$.getValue().keys())
+                    .map(peer => peer.id);
+                console.log('peers of colleciton: ' + pool.collection.name);
+                console.dir(peerIds);
+            });
+
             // add another collection to sync
             const c3 = await humansCollection.create(1, 'ccc');
+
+            console.log('----------------- collection created!');
+
             await syncCollections(topic, secret, [c3]);
+            console.log('----- collection synced');
             await awaitCollectionsInSync([c1, c2, c3]);
 
 

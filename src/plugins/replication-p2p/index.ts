@@ -92,6 +92,8 @@ export async function syncP2P<RxDocType>(
     });
 
 
+    console.log('START CONNOCT');
+
     const connectSub = pool.connectionHandler.connect$
         .pipe(
             filter(() => !pool.canceled)
@@ -270,7 +272,7 @@ export class RxP2PReplicationPool<RxDocType> {
         }
     }
     removePeer(peer: P2PPeer) {
-        console.log('removePeer() ' + peer.id);
+        console.log('removePeer(' + this.collection.name + ') ' + peer.id);
         const peerState = getFromMapOrThrow(this.peerStates$.getValue(), peer);
         this.peerStates$.getValue().delete(peer);
         this.peerStates$.next(this.peerStates$.getValue());
@@ -290,6 +292,7 @@ export class RxP2PReplicationPool<RxDocType> {
     }
 
     public async cancel() {
+        console.log('replication canceld(' + this.collection.name + ')');
         if (this.canceled) {
             return;
         }
@@ -319,3 +322,4 @@ export const RxDBReplicationP2PPlugin: RxPlugin = {
 
 export * from './p2p-helper';
 export * from './p2p-types';
+export * from './connection-handler-webtorrent';

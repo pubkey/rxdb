@@ -170,7 +170,6 @@
     "node-pre-gyp": "0.17.0",
     "object-path": "0.11.8",
     "oblivious-set": "1.1.1",
-    "p2pt": "git+https://github.com/subins2000/p2pt.git",
     "pouchdb-adapter-http": "7.3.0",
     "pouchdb-all-dbs": "1.1.1",
     "pouchdb-core": "7.3.0",
