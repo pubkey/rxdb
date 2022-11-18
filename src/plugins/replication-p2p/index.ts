@@ -9,7 +9,7 @@ import type {
     RxReplicationWriteToMasterRow,
     RxTypeError
 } from '../../types';
-import { getFromMapOrThrow, randomCouchString } from '../../util';
+import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../util';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { replicateRxCollection } from '../replication';
 import { isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';
@@ -28,6 +28,19 @@ export async function syncP2P<RxDocType>(
     this: RxCollection<RxDocType>,
     options: SyncOptionsP2P<RxDocType>
 ): Promise<RxP2PReplicationPool<RxDocType>> {
+
+    // fill defaults
+    if (options.pull) {
+        if (!options.pull.batchSize) {
+            options.pull.batchSize = 20;
+        }
+    }
+    if (options.push) {
+        if (!options.push.batchSize) {
+            options.push.batchSize = 20;
+        }
+    }
+
     const collection = this;
     if (this.database.multiInstance) {
         await this.database.waitForLeadership();
@@ -60,7 +73,6 @@ export async function syncP2P<RxDocType>(
         pool.connectionHandler.message$.pipe(
             filter(data => data.message.method === 'token')
         ).subscribe(data => {
-            console.log('RESPONS TO TOKEN MESSAGE ' + collection.name);
             pool.connectionHandler.send(data.peer, {
                 id: data.message.id,
                 result: storageToken
@@ -92,8 +104,6 @@ export async function syncP2P<RxDocType>(
             /**
              * TODO ensure both know the correct secret
              */
-
-            console.log('::' + collection.name + ' get token 1');
             const tokenResponse = await sendMessageAndAwaitAnswer(
                 pool.connectionHandler,
                 peer,
@@ -103,9 +113,7 @@ export async function syncP2P<RxDocType>(
                     params: []
                 }
             );
-            console.log('::' + collection.name + ' get token 2');
             const peerToken: string = tokenResponse.result;
-
 
             /**
              * To deterministicly define which peer is master and
@@ -114,7 +122,7 @@ export async function syncP2P<RxDocType>(
              * a storageToken like 'aaaaaa' is not always the master.
              */
             const isMaster = isMasterInP2PReplication(this.database.hashFunction, storageToken, peerToken);
-            console.log('isMaster: ' + isMaster);
+            console.log('isMaster: ' + isMaster + ' peerToken : ' + peerToken);
 
             let replicationState: RxP2PReplicationState<RxDocType> | undefined;
             if (isMaster) {
@@ -131,7 +139,7 @@ export async function syncP2P<RxDocType>(
                         console.dir(data.message);
 
                         const { peer: msgPeer, message } = data;
-                        const method = (masterHandler as any)[message.method];
+                        const method = (masterHandler as any)[message.method].bind(masterHandler);
                         /**
                          * If it is not a function,
                          * it means that the client requested the masterChangeStream$
@@ -143,7 +151,7 @@ export async function syncP2P<RxDocType>(
                                     id: 'stream',
                                     result: ev
                                 };
-                                msgPeer.respond(streamResponse);
+                                pool.connectionHandler.send(msgPeer, streamResponse);
                             });
                         } else {
                             const result = await (method as any)(...message.params);
@@ -151,7 +159,12 @@ export async function syncP2P<RxDocType>(
                                 id: message.id,
                                 result
                             };
-                            msgPeer.respond(response);
+
+                            console.log('GOT RESULT FOR  ' + message.method + ':');
+                            console.dir(message.params);
+                            console.dir(response);
+
+                            pool.connectionHandler.send(msgPeer, response);
                         }
                     });
                 pool.subs.push(messageSub);
@@ -165,25 +178,38 @@ export async function syncP2P<RxDocType>(
                     retryTime: options.retryTime,
                     waitForLeadership: false,
                     pull: options.pull ? Object.assign({}, options.pull, {
-                        handler(lastPulledCheckpoint: P2PReplicationCheckpoint) {
-                            return pool.connectionHandler.send(peer, {
-                                method: 'masterChangesSince',
-                                params: [lastPulledCheckpoint],
-                                id: getRequestId()
-                            }).then(peerWithResponse => {
-                                return peerWithResponse.response.result;
-                            })
+                        async handler(lastPulledCheckpoint: P2PReplicationCheckpoint) {
+                            console.log('# PULL HANDLER ' + collection.name + ' 1');
+                            const answer = await sendMessageAndAwaitAnswer(
+                                pool.connectionHandler,
+                                peer,
+                                {
+                                    method: 'masterChangesSince',
+                                    params: [
+                                        lastPulledCheckpoint,
+                                        ensureNotFalsy(options.pull).batchSize
+                                    ],
+                                    id: getRequestId()
+                                }
+                            );
+                            console.log('# PULL HANDLER ' + collection.name + ' 2');
+                            return answer.result;
                         }
                     }) : undefined,
                     push: options.push ? Object.assign({}, options.push, {
-                        handler(docs: RxReplicationWriteToMasterRow<RxDocType>[]) {
-                            return pool.connectionHandler.send(peer, {
-                                method: 'masterWrite',
-                                params: [docs],
-                                id: getRequestId()
-                            }).then(peerWithResponse => {
-                                return peerWithResponse.response.result;
-                            })
+                        async handler(docs: RxReplicationWriteToMasterRow<RxDocType>[]) {
+                            console.log('# PUSH HANDLER ' + collection.name + ' 1');
+                            const answer = await sendMessageAndAwaitAnswer(
+                                pool.connectionHandler,
+                                peer,
+                                {
+                                    method: 'masterWrite',
+                                    params: [docs],
+                                    id: getRequestId()
+                                }
+                            );
+                            console.log('# PUSH HANDLER ' + collection.name + ' 2');
+                            return answer.result;
                         }
                     }) : undefined
                 });

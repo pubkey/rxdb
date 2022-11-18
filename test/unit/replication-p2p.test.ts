@@ -14,7 +14,8 @@ import {
     addRxPlugin,
     randomCouchString,
     RxCollection,
-    defaultHashFunction
+    defaultHashFunction,
+    ensureNotFalsy
 } from '../../';
 
 import {
@@ -122,7 +123,7 @@ describe('replication-p2p.test.ts', () => {
     }
 
     async function awaitCollectionsInSync<RxDocType>(collections: RxCollection<RxDocType>[]) {
-        const last = collections.pop();
+        const last = ensureNotFalsy(collections.pop());
         await waitUntil(async () => {
             const lastJSON = await getJson(last);
             for (const collection of collections) {
@@ -158,7 +159,6 @@ describe('replication-p2p.test.ts', () => {
                 return replicationPool;
             })
         );
-        console.log('syncCollections() 0.1');
 
         /**
          * If we have more then one collection,
@@ -169,8 +169,6 @@ describe('replication-p2p.test.ts', () => {
                 ret.map(pool => pool.awaitFirstPeer())
             );
         }
-
-        console.log('syncCollections() 0.2');
         return ret;
     }
 
@@ -197,12 +195,20 @@ describe('replication-p2p.test.ts', () => {
             console.log('2');
 
             await awaitCollectionsInSync([c1, c2]);
+
+
+
             console.log('3');
 
 
             // update
             const doc = await c1.findOne().exec(true);
+            await doc.atomicPatch({ age: 100 });
+            console.log('4');
+            await awaitCollectionsInSync([c1, c2]);
+            console.log('5');
 
+            process.exit();
 
             console.log('-------------------------------');
             console.log('-------------------------------');

@@ -39,7 +39,14 @@ if (config.platform.name !== 'node') {
         console.log('init.test.js: unhandledRejection');
 
         // use log and error because some CI terminals do not show errors.
-        console.dir(await p);
+        try {
+            console.dir(await p);
+        } catch (err) {
+            console.dir((error as any).stack);
+            console.dir(error);
+            console.log('------- COULD NOT AWAIT p');
+            process.exit(5);
+        }
         console.dir((error as any).stack);
         console.error(error);
         console.dir(error);
