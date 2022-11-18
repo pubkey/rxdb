@@ -14,15 +14,24 @@ import type {
 import { filter, firstValueFrom, map, Subject } from 'rxjs';
 import { PROMISE_RESOLVE_VOID } from '../../util';
 
+
+
+/**
+ * To deterministically define which peer is master and
+ * which peer is fork, we compare the storage tokens.
+ * But we have to hash them before, to ensure that
+ * a storageToken like 'aaaaaa' is not always the master
+ * for all peers.
+ */
 export function isMasterInP2PReplication(
     hashFunction: HashFunction,
-    ownPeerId: string,
-    otherPeerId: string
+    ownStorageToken: string,
+    otherStorageToken: string
 ): boolean {
     const isMaster =
-        hashFunction([ownPeerId, otherPeerId].join('|'))
+        hashFunction([ownStorageToken, otherStorageToken].join('|'))
         >
-        hashFunction([otherPeerId, ownPeerId].join('|'));
+        hashFunction([otherStorageToken, ownStorageToken].join('|'));
     return isMaster;
 }
 
@@ -108,4 +117,16 @@ export function sendMessageAndAwaitAnswer(
     );
     handler.send(peer, message);
     return answerPromise;
+}
+
+
+export function awaitPeerDisconnect(
+    handler: P2PConnectionHandler,
+    peer: P2PPeer
+): Promise<P2PPeer> {
+    return firstValueFrom(
+        handler.disconnect$.pipe(
+            filter(p => p.id === peer.id)
+        )
+    );
 }

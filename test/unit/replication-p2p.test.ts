@@ -77,26 +77,6 @@ describe('replication-p2p.test.ts', () => {
         });
     }
 
-    async function syncOnce(collection: RxCollection, server: any) {
-        const replicationState = collection.syncP2P({
-
-            live: false,
-            pull: {},
-            push: {}
-        });
-        ensureReplicationHasNoErrors(replicationState);
-        await replicationState.awaitInitialReplication();
-    }
-    async function syncAll<RxDocType>(
-        c1: RxCollection<RxDocType>,
-        c2: RxCollection<RxDocType>,
-        server: any
-    ) {
-        await syncOnce(c1, server);
-        await syncOnce(c2, server);
-        await syncOnce(c1, server);
-    }
-
     async function getJson<RxDocType>(collection: RxCollection<RxDocType>) {
         const docs = await collection.find().exec();
         return docs.map(d => d.toJSON());
@@ -190,11 +170,24 @@ describe('replication-p2p.test.ts', () => {
             const c2 = await humansCollection.create(1, 'bbb');
 
 
+            // initial sync
             console.log('1');
-            await syncCollections(randomCouchString(10), randomCouchString(10), [c1, c2]);
+            const topic = randomCouchString(10);
+            const secret = randomCouchString(10);
+            await syncCollections(topic, secret, [c1, c2]);
             console.log('2');
 
             await awaitCollectionsInSync([c1, c2]);
+            await wait(100);
+
+
+            // insert
+            console.log('2.2');
+            await c1.insert(schemaObjects.human('inserted-after-first-sync'));
+            console.log('2.3');
+            await awaitCollectionsInSync([c1, c2]);
+            console.log('2.4');
+            await wait(100);
 
 
 
@@ -203,12 +196,36 @@ describe('replication-p2p.test.ts', () => {
 
             // update
             const doc = await c1.findOne().exec(true);
+            console.log('-------------------------------------');
+            console.log('-------------------------------------');
+            console.log('-------------------------------------');
+            console.log('-------------------------------------');
             await doc.atomicPatch({ age: 100 });
             console.log('4');
             await awaitCollectionsInSync([c1, c2]);
+            console.log('4.5');
+            assert.strictEqual(doc.age, 100);
             console.log('5');
+            await wait(100);
 
-            process.exit();
+            // delete
+            await doc.remove();
+            await awaitCollectionsInSync([c1, c2]);
+            await wait(100);
+            console.log('6');
+
+
+            console.log('.......................');
+            console.log('.......................');
+            console.log('.......................');
+            console.log('.......................');
+
+
+            // add another collection to sync
+            const c3 = await humansCollection.create(1, 'ccc');
+            await syncCollections(topic, secret, [c3]);
+            await awaitCollectionsInSync([c1, c2, c3]);
+
 
             console.log('-------------------------------');
             console.log('-------------------------------');
@@ -237,6 +254,7 @@ describe('replication-p2p.test.ts', () => {
 
             c1.database.destroy();
             c2.database.destroy();
+            c3.database.destroy();
         });
     });
     describe('ISSUES', () => { });

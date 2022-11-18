@@ -1,4 +1,4 @@
-import { BehaviorSubject, filter, firstValueFrom, mergeMap, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, filter, firstValueFrom, map, mergeMap, Subject, Subscription, tap } from 'rxjs';
 import { addRxPlugin } from '../../plugin';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
 import type {
@@ -12,7 +12,7 @@ import type {
 import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../util';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { replicateRxCollection } from '../replication';
-import { isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';
+import { awaitPeerDisconnect, isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';
 import type {
     P2PConnectionHandler,
     P2PPeer,
@@ -94,7 +94,6 @@ export async function syncP2P<RxDocType>(
 
     const connectSub = pool.connectionHandler.connect$
         .pipe(
-            mergeMap(peer => this.promiseWait(0).then(() => peer)),
             filter(() => !pool.canceled)
         )
         .subscribe(async (peer) => {
@@ -115,18 +114,32 @@ export async function syncP2P<RxDocType>(
             );
             const peerToken: string = tokenResponse.result;
 
-            /**
-             * To deterministicly define which peer is master and
-             * which peer is fork, we compare the storage tokens.
-             * But we have to hash them before, to ensure that
-             * a storageToken like 'aaaaaa' is not always the master.
-             */
             const isMaster = isMasterInP2PReplication(this.database.hashFunction, storageToken, peerToken);
             console.log('isMaster: ' + isMaster + ' peerToken : ' + peerToken);
 
             let replicationState: RxP2PReplicationState<RxDocType> | undefined;
             if (isMaster) {
                 const masterHandler = pool.masterReplicationHandler;
+
+                console.log('SUBSCRIBE TO masterChangeStream$: ' + collection.name);
+                const masterChangeStreamSub = masterHandler.masterChangeStream$.subscribe(ev => {
+                    console.log('emit from masterChangeStream$ to remote:');
+                    console.dir(ev);
+                    const streamResponse: P2PResponse = {
+                        id: 'masterChangeStream$',
+                        result: ev
+                    };
+                    pool.connectionHandler.send(peer, streamResponse);
+                });
+
+                // clean up the subscription
+                pool.subs.push(masterChangeStreamSub);
+                awaitPeerDisconnect(
+                    pool.connectionHandler,
+                    peer
+                ).then(() => masterChangeStreamSub.unsubscribe());
+
+
                 const messageSub = pool.connectionHandler.message$
                     .pipe(
                         filter(data => data.peer.id === peer.id),
@@ -139,38 +152,22 @@ export async function syncP2P<RxDocType>(
                         console.dir(data.message);
 
                         const { peer: msgPeer, message } = data;
-                        const method = (masterHandler as any)[message.method].bind(masterHandler);
                         /**
                          * If it is not a function,
                          * it means that the client requested the masterChangeStream$
                          */
-                        if (typeof method !== 'function') {
-                            // TODO shouldn't we cleanup subscriptions when the peer disconnects?
-                            masterHandler.masterChangeStream$.subscribe(ev => {
-                                const streamResponse: P2PResponse = {
-                                    id: 'stream',
-                                    result: ev
-                                };
-                                pool.connectionHandler.send(msgPeer, streamResponse);
-                            });
-                        } else {
-                            const result = await (method as any)(...message.params);
-                            const response: P2PResponse = {
-                                id: message.id,
-                                result
-                            };
-
-                            console.log('GOT RESULT FOR  ' + message.method + ':');
-                            console.dir(message.params);
-                            console.dir(response);
-
-                            pool.connectionHandler.send(msgPeer, response);
-                        }
+                        const method = (masterHandler as any)[message.method].bind(masterHandler);
+                        const result = await (method as any)(...message.params);
+                        const response: P2PResponse = {
+                            id: message.id,
+                            result
+                        };
+                        pool.connectionHandler.send(msgPeer, response);
                     });
                 pool.subs.push(messageSub);
             } else {
                 replicationState = replicateRxCollection({
-                    replicationIdentifier: options.topic + '||' + peer.id,
+                    replicationIdentifier: [this.name, options.topic, peerToken].join('||'),
                     collection: this,
                     autoStart: true,
                     deletedField: '_deleted',
@@ -194,7 +191,16 @@ export async function syncP2P<RxDocType>(
                             );
                             console.log('# PULL HANDLER ' + collection.name + ' 2');
                             return answer.result;
-                        }
+                        },
+                        stream$: pool.connectionHandler.response$.pipe(
+                            filter(m => m.response.id === 'masterChangeStream$'),
+                            map(m => m.response.result),
+                            tap(ss => {
+                                console.log('GOT pull.STREAM$ item:');
+                                console.dir(ss);
+                            })
+                        )
+
                     }) : undefined,
                     push: options.push ? Object.assign({}, options.push, {
                         async handler(docs: RxReplicationWriteToMasterRow<RxDocType>[]) {
@@ -264,6 +270,7 @@ export class RxP2PReplicationPool<RxDocType> {
         }
     }
     removePeer(peer: P2PPeer) {
+        console.log('removePeer() ' + peer.id);
         const peerState = getFromMapOrThrow(this.peerStates$.getValue(), peer);
         this.peerStates$.getValue().delete(peer);
         this.peerStates$.next(this.peerStates$.getValue());
