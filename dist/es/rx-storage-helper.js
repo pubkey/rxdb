@@ -525,7 +525,7 @@ rxJsonSchema) {
     },
     getChangedDocumentsSince: function getChangedDocumentsSince(limit, checkpoint) {
       return database.lockedRun(function () {
-        return storageInstance.getChangedDocumentsSince(limit, checkpoint);
+        return storageInstance.getChangedDocumentsSince(ensureNotFalsy(limit), checkpoint);
       });
     },
     cleanup: function cleanup(minDeletedTime) {

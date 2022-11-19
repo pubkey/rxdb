@@ -195,12 +195,12 @@
                         <span class="cm-variable">collection</span>.<span class="cm-method">findOne(<span
                                 class="cm-string"
                             >'foobar'</span>)</span><br />
-                            &nbsp;.<span class="cm-property">$</span><span class="cm-comment"> // get observable</span><br />
+                        &nbsp;.<span class="cm-property">$</span><span class="cm-comment"> // get
+                            observable</span><br />
                         &nbsp;.<span class="cm-method">subscribe</span>(<span class="cm-def">d</span>
                         <span class="cm-operator">=&gt;</span> {<br />
                         <span class="cm-variable">&nbsp;&nbsp; screen</span>.<span
-                            class="cm-property"
-                        >backgroundColor</span>
+                            class="cm-property">backgroundColor</span>
                         <span class="cm-operator">=</span>
                         <span class="cm-variable">d</span>.<span class="cm-property beating-color">color</span>;<br />
                         &nbsp;});
@@ -306,7 +306,13 @@
                     endpoint which smoothly integrates with your existing infrastructure.
                     Also you can use the replication primitives plugin to create custom replications over any protocol
                     like <b>REST</b>,
-                    <b>Websocket</b> or <b>p2p</b>.
+                    <a
+                        href="/replication-websocket.html"
+                        target="_blank"
+                    >Websocket</a> or <a
+                        href="/replication-p2p.html"
+                        target="_blank"
+                    >p2p</a>.
                 </p>
             </div>
 
@@ -317,29 +323,49 @@
                         alt="RxDB"
                         class="replicate-logo tilt-to-mouse"
                     />
-                    <div class="neumorphism-circle-xl centered replicate-graphql enlarge-on-mouse">
-                        <img
-                            src="./files/icons/graphql-text.svg"
-                            alt="GraphQL"
-                            class="protocol"
-                        />
-                    </div>
-                    <div class="neumorphism-circle-xl centered replicate-couchdb enlarge-on-mouse">
-                        <img
-                            src="./files/icons/couchdb-text.svg"
-                            alt="CouchDB"
-                            class="protocol"
-                        />
-                    </div>
+                    <a
+                        href="/replication-graphql.html"
+                        target="_blank"
+                    >
+                        <div class="neumorphism-circle-xl centered replicate-graphql enlarge-on-mouse">
+                            <img
+                                src="./files/icons/graphql-text.svg"
+                                alt="GraphQL"
+                                class="protocol"
+                            />
+                        </div>
+                    </a>
+                    <a
+                        href="/replication-couchdb.html"
+                        target="_blank"
+                    >
+                        <div class="neumorphism-circle-xl centered replicate-couchdb enlarge-on-mouse">
+                            <img
+                                src="./files/icons/couchdb-text.svg"
+                                alt="CouchDB"
+                                class="protocol"
+                            />
+                        </div>
+                    </a>
                     <div class="neumorphism-circle-xs centered replicate-rest enlarge-on-mouse">
                         { REST }
                     </div>
-                    <div class="neumorphism-circle-xs centered replicate-websocket enlarge-on-mouse">
-                        websocket
-                    </div>
-                    <div class="neumorphism-circle-xs centered replicate-p2p enlarge-on-mouse">
-                        p2p
-                    </div>
+                    <a
+                        href="/replication-websocket.html"
+                        target="_blank"
+                    >
+                        <div class="neumorphism-circle-xs centered replicate-websocket enlarge-on-mouse">
+                            websocket
+                        </div>
+                    </a>
+                    <a
+                        href="/replication-p2p.html"
+                        target="_blank"
+                    >
+                        <div class="neumorphism-circle-xs centered replicate-p2p enlarge-on-mouse">
+                            p2p
+                        </div>
+                    </a>
                 </div>
             </div>
             <div class="clear"></div>

@@ -6,6 +6,7 @@ import { Subscription, Observable } from 'rxjs';
 import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise, CRDTEntry, MangoQuerySelectorAndIndex } from './types';
 import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import type { RxCouchDBNewReplicationState, SyncOptionsCouchDBNew } from './plugins/replication-couchdb-new';
+import type { SyncOptionsP2P, RxP2PReplicationPool } from './plugins/replication-p2p';
 import { RxSchema } from './rx-schema';
 declare const HOOKS_WHEN: readonly ["pre", "post"];
 declare type HookWhenType = typeof HOOKS_WHEN[number];
@@ -119,6 +120,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      */
     syncGraphQL<CheckpointType = any>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType, CheckpointType>;
     syncCouchDBNew(_syncOptions: SyncOptionsCouchDBNew<RxDocumentType>): RxCouchDBNewReplicationState<RxDocumentType>;
+    syncP2P(_syncOptions: SyncOptionsP2P<RxDocumentType>): RxP2PReplicationPool<RxDocumentType>;
     /**
      * HOOKS
      */

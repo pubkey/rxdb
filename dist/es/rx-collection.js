@@ -587,6 +587,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   };
   _proto.syncCouchDBNew = function syncCouchDBNew(_syncOptions) {
     throw pluginMissing('replication-couchdb-new');
+  };
+  _proto.syncP2P = function syncP2P(_syncOptions) {
+    throw pluginMissing('replication-p2p');
   }
 
   /**
