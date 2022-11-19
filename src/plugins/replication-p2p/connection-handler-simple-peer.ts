@@ -15,13 +15,12 @@ import {
 } from 'simple-peer';
 
 /**
- * Returns a connection handler that uses the Cloudflare worker signaling server
- * @link https://github.com/gfodor/p2pcf
+ * Returns a connection handler that uses simple-peer and the signaling server.
  */
 export function getConnectionHandlerSimplePeer(
-    serverUrl: string
+    serverUrl: string,
+    wrtc?: any
 ): P2PConnectionHandlerCreator {
-    const wrtc = require('wrtc');
     const io = require('socket.io-client');
 
 

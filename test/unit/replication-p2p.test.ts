@@ -33,9 +33,15 @@ describe('replication-p2p.test.ts', () => {
         return;
     }
 
-
-    let signalingServerUrl: string;
+    let wrtc: any;
+    let signalingServerUrl: string = 'ws://localhost:18006';
     describe('init', () => {
+        it('load wrtc', () => {
+            if (!config.platform.isNode()) {
+                return;
+            }
+            wrtc = require('wrtc');
+        });
         it('Start WebRTC singaling server', async () => {
             if (!config.platform.isNode()) {
                 return;
@@ -111,7 +117,7 @@ describe('replication-p2p.test.ts', () => {
                     secret,
                     // connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
                     // connectionHandlerCreator: getConnectionHandlerP2PCF(),
-                    connectionHandlerCreator: getConnectionHandlerSimplePeer(signalingServerUrl),
+                    connectionHandlerCreator: getConnectionHandlerSimplePeer(signalingServerUrl, wrtc),
                     pull: {},
                     push: {}
                 });

@@ -6,8 +6,10 @@ import { nextPort } from './port-manager';
  * Starts a WebRTC signaling server
  * that can be used in tests.
  */
-export async function startSignalingServer(): Promise<string> {
-    const port = await nextPort();
+export async function startSignalingServer(port?: number): Promise<string> {
+    if (!port) {
+        port = await nextPort();
+    }
     const server = require('http').createServer();
     const io = require('socket.io')(server);
 

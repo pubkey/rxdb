@@ -17,9 +17,11 @@ console.log('staticFilesPath: ' + staticFilesPath);
 
 // while the karma tests run, we need some things which we start here
 const GraphQLServer = require('../test_tmp/helper/graphql-server');
+const SignalingServer = require('../test_tmp/helper/signaling-server');
 function thingsWeNeed() {
     // we need one graphql server so the browser can sync to it
     GraphQLServer.spawn([], 18000);
+    SignalingServer.startSignalingServer([], 18006);
 
     /**
      * we need to serve some static files
