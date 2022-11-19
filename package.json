@@ -184,7 +184,6 @@
     "threads": "1.7.0",
     "unload": "2.3.1",
     "util": "0.12.4",
-    "wrtc": "0.4.7",
     "ws": "8.8.1",
     "z-schema": "5.0.4"
   },
@@ -219,6 +218,7 @@
     "@typescript-eslint/eslint-plugin": "4.33.0",
     "@typescript-eslint/parser": "4.33.0",
     "assert": "2.0.0",
+    "wrtc": "0.4.7",
     "node-pre-gyp": "0.17.0",
     "async-test-util": "2.0.0",
     "babel-loader": "8.2.5",
