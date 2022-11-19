@@ -137,6 +137,9 @@ describe('replication-p2p.test.ts', () => {
     }
 
     describe('basic CRUD', () => {
+        if (config.isFastMode()) {
+            return;
+        }
         /**
          * Creating a WebRTC connection takes really long,
          * so we have to use a big test to test all functionality at once
