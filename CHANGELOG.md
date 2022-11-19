@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD [replication-p2p](./docs-src/replication-p2p.md) which can be used to replicate data peer-to-peer without a backend server.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

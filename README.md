@@ -71,8 +71,7 @@ Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation
 </h2>
 
 RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html"> replication protocol</a> for realtime sync with your existing infrastructure.<br />
-There are also plugins to replicate with any CouchDB endpoint or over GraphQL and REST.
-
+There are also plugins to replicate with any <a href="/replication-couchdb.html">CouchDB</a> endpoint or over <a href="https://rxdb.info/replication-graphql.html">GraphQL</a> and REST or even <a href="https://rxdb.info/replication-p2p.html">P2P</a>.
 
 
 

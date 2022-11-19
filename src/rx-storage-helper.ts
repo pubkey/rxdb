@@ -705,7 +705,7 @@ export function getWrappedStorageInstance<
         },
         getChangedDocumentsSince(limit: number, checkpoint?: any) {
             return database.lockedRun(
-                () => storageInstance.getChangedDocumentsSince(limit, checkpoint)
+                () => storageInstance.getChangedDocumentsSince(ensureNotFalsy(limit), checkpoint)
             );
         },
         cleanup(minDeletedTime: number) {

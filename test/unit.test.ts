@@ -59,6 +59,7 @@ import './unit/replication-graphql.test';
 import './unit/replication-couchdb-new.test';
 import './unit/replication-websocket.test';
 import './unit/replication-couchdb.test';
+import './unit/replication-p2p.test';
 import './unit/crdt.test';
 import './unit/server-couchdb.test';
 import './unit/population.test';
