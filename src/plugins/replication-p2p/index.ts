@@ -63,6 +63,7 @@ export async function syncP2P<RxDocType>(
 
 
     pool.subs.push(
+        pool.connectionHandler.error$.subscribe(err => pool.error$.next(err)),
         pool.connectionHandler.disconnect$.subscribe(peer => pool.removePeer(peer))
     );
 

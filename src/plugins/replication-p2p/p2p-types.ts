@@ -3,8 +3,10 @@ import type {
     ReplicationOptions,
     ReplicationPullOptions,
     ReplicationPushOptions,
+    RxError,
     RxReplicationHandler,
     RxStorageDefaultCheckpoint,
+    RxTypeError,
     StringKeys
 } from '../../types';
 import { RxReplicationState } from '../replication';
@@ -34,6 +36,7 @@ export type P2PConnectionHandler = {
     disconnect$: Observable<P2PPeer>;
     message$: Observable<PeerWithMessage>;
     response$: Observable<PeerWithResponse>;
+    error$: Observable<RxError | RxTypeError>;
     send(peer: P2PPeer, message: P2PMessage | P2PResponse): Promise<void>;
     destroy(): Promise<void>;
 };

@@ -13,6 +13,8 @@ import {
     Instance as SimplePeer,
     default as Peer
 } from 'simple-peer';
+import { RxError, RxTypeError } from '../../types';
+import { newRxError } from '../../rx-error';
 
 /**
  * Returns a connection handler that uses simple-peer and the signaling server.
@@ -37,6 +39,7 @@ export function getConnectionHandlerSimplePeer(
         const disconnect$ = new Subject<P2PPeer>();
         const message$ = new Subject<PeerWithMessage>();
         const response$ = new Subject<PeerWithResponse>();
+        const error$ = new Subject<RxError | RxTypeError>();
 
         const peers = new Map<string, SimplePeer>();
 
@@ -83,6 +86,12 @@ export function getConnectionHandlerSimplePeer(
                     });
                 });
 
+                newPeer.on('error', (error) => {
+                    error$.next(newRxError('RC_P2P_PEER', {
+                        error
+                    }));
+                });
+
                 newPeer.on('connect', () => {
                     connect$.next(newPeer as any);
                 })
@@ -97,6 +106,7 @@ export function getConnectionHandlerSimplePeer(
         });
 
         const handler: P2PConnectionHandler = {
+            error$,
             connect$,
             disconnect$,
             message$,
@@ -106,6 +116,7 @@ export function getConnectionHandlerSimplePeer(
             },
             destroy() {
                 socket.close();
+                error$.complete();
                 connect$.complete();
                 disconnect$.complete();
                 message$.complete();

@@ -150,6 +150,7 @@ export const ERROR_MESSAGES = {
     RC_STREAM: 'RxReplication pull stream$ threw an error - see .errors for more details',
     RC_PUSH: 'RxReplication push handler threw an error - see .errors for more details',
     RC_PUSH_NO_AR: 'RxReplication push handler did not return an array with the conflicts',
+    RC_P2P_PEER: 'RxReplication P2P Peer has error',
 
     // plugins/dev-mode/check-schema.js
     SC1: 'fieldnames do not match the regex',
