@@ -21,7 +21,7 @@ const SignalingServer = require('../test_tmp/helper/signaling-server');
 function thingsWeNeed() {
     // we need one graphql server so the browser can sync to it
     GraphQLServer.spawn([], 18000);
-    SignalingServer.startSignalingServer([], 18006);
+    SignalingServer.startSignalingServer(18006);
 
     /**
      * we need to serve some static files
