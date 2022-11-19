@@ -50,15 +50,3 @@ export function sendMessageAndAwaitAnswer(
     handler.send(peer, message);
     return answerPromise;
 }
-
-
-export function awaitPeerDisconnect(
-    handler: P2PConnectionHandler,
-    peer: P2PPeer
-): Promise<P2PPeer> {
-    return firstValueFrom(
-        handler.disconnect$.pipe(
-            filter(p => p.id === peer.id)
-        )
-    );
-}

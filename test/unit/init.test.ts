@@ -42,7 +42,7 @@ if (config.platform.name !== 'node') {
         try {
             console.dir(await p);
         } catch (err) {
-            console.dir((error as any).stack);
+            console.log((error as any).stack);
             console.dir(error);
             console.log('------- COULD NOT AWAIT p');
             process.exit(5);

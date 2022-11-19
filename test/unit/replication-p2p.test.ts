@@ -23,7 +23,7 @@ import {
     RxP2PReplicationPool,
     // getConnectionHandlerP2PCF,
     isMasterInP2PReplication,
-    getConnectionHandlerSocket
+    getConnectionHandlerSimplePeer
 } from '../../plugins/replication-p2p';
 
 import { randomString, wait, waitUntil } from 'async-test-util';
@@ -34,16 +34,14 @@ describe('replication-p2p.test.ts', () => {
     }
 
 
-    let webtorrentTrackerUrl: string;
+    let signalingServerUrl: string;
     describe('init', () => {
-        it('Start Webtorrent tracker server', async () => {
+        it('Start WebRTC singaling server', async () => {
             if (!config.platform.isNode()) {
                 return;
             }
-            console.log('START TRACKER');
-            const trackerModule = require('../helper/webtorrent-tracker');
-            webtorrentTrackerUrl = await trackerModule.startWebtorrentTracker();
-            console.log('START TRACKER DONE');
+            const signalingServerModule = require('../helper/signaling-server');
+            signalingServerUrl = await signalingServerModule.startSignalingServer();
         });
     });
     describe('utils', () => {
@@ -79,27 +77,7 @@ describe('replication-p2p.test.ts', () => {
 
     async function getJson<RxDocType>(collection: RxCollection<RxDocType>) {
         const docs = await collection.find().exec();
-        return docs.map(d => d.toJSON());
-    }
-    async function ensureCollectionsHaveEqualState<RxDocType>(
-        c1: RxCollection<RxDocType>,
-        c2: RxCollection<RxDocType>
-    ) {
-        const json1 = await getJson(c1);
-        const json2 = await getJson(c2);
-        try {
-            assert.deepStrictEqual(
-                json1,
-                json2
-            );
-        } catch (err) {
-            console.error('ensureCollectionsHaveEqualState() states not equal:');
-            console.dir({
-                [c1.name]: json1,
-                [c2.name]: json2
-            });
-            throw err;
-        }
+        return docs.map((d: any) => d.toJSON());
     }
 
     async function awaitCollectionsInSync<RxDocType>(collections: RxCollection<RxDocType>[]) {
@@ -133,7 +111,7 @@ describe('replication-p2p.test.ts', () => {
                     secret,
                     // connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
                     // connectionHandlerCreator: getConnectionHandlerP2PCF(),
-                    connectionHandlerCreator: getConnectionHandlerSocket('ws://localhost:8080'),
+                    connectionHandlerCreator: getConnectionHandlerSimplePeer(signalingServerUrl),
                     pull: {},
                     push: {}
                 });
@@ -159,112 +137,44 @@ describe('replication-p2p.test.ts', () => {
          * without to re-create connections.
          */
         it('should stream changes over the replication to other collections', async function () {
-            this.timeout(100 * 1000);
-
-            console.log('#############################');
-            console.log('#############################');
-            console.log('#############################');
-            console.log('#############################');
-
             const c1 = await humansCollection.create(1, 'aaa');
             const c2 = await humansCollection.create(1, 'bbb');
 
-
             // initial sync
-            console.log('1');
             const topic = randomCouchString(10);
             const secret = randomCouchString(10);
-            const replicationPools = await syncCollections(topic, secret, [c1, c2]);
-            console.log('2');
+            await syncCollections(topic, secret, [c1, c2]);
 
             await awaitCollectionsInSync([c1, c2]);
             await wait(100);
 
 
             // insert
-            console.log('2.2');
             await c1.insert(schemaObjects.human('inserted-after-first-sync'));
-            console.log('2.3');
             await awaitCollectionsInSync([c1, c2]);
-            console.log('2.4');
             await wait(100);
-
-
-
-            console.log('3');
-
 
             // update
             const doc = await c1.findOne().exec(true);
-            console.log('-------------------------------------');
-            console.log('-------------------------------------');
-            console.log('-------------------------------------');
-            console.log('-------------------------------------');
             await doc.atomicPatch({ age: 100 });
-            console.log('4');
             await awaitCollectionsInSync([c1, c2]);
-            console.log('4.5');
             assert.strictEqual(doc.age, 100);
-            console.log('5');
             await wait(100);
 
             // delete
             await doc.remove();
             await awaitCollectionsInSync([c1, c2]);
             await wait(100);
-            console.log('6');
-
-
-            console.log('.......................');
-            console.log('.......................');
-            console.log('.......................');
-            console.log('.......................');
-
-
-            replicationPools.forEach(pool => {
-                const peerIds = Array.from(pool.peerStates$.getValue().keys())
-                    .map(peer => peer.id);
-                console.log('peers of colleciton: ' + pool.collection.name);
-                console.dir(peerIds);
-            });
 
             // add another collection to sync
             const c3 = await humansCollection.create(1, 'ccc');
-
-            console.log('----------------- collection created!');
-
             await syncCollections(topic, secret, [c3]);
-            console.log('----- collection synced');
             await awaitCollectionsInSync([c1, c2, c3]);
 
-
-            console.log('-------------------------------');
-            console.log('-------------------------------');
-            console.log('-------------------------------');
-
-
-            process.exit();
-
-
-            // const foundPromise = firstValueFrom(
-            //     c2.find().$.pipe(
-            //         filter(results => results.length === 1)
-            //     )
-            // );
-
-            // await c1.insert(schemaObjects.human('foobar'));
-
-            // // wait until it is on the server
-            // await waitUntil(async () => {
-            //     const serverDocs = await getAllServerDocs(server.url);
-            //     return serverDocs.length === 1;
-            // });
-
-            // const endResult = await foundPromise;
-            // assert.strictEqual(endResult[0].passportId, 'foobar');
+            // remove one peer
+            await c2.database.destroy();
 
             c1.database.destroy();
-            c2.database.destroy();
             c3.database.destroy();
         });
     });
