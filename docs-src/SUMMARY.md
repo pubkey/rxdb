@@ -131,6 +131,7 @@
     * [Replication GraphQL](./replication-graphql.md)
     * [Replication Websocket](./replication-websocket.md)
     * [Replication CouchDB (new)](./replication-couchdb-new.md)
+    * [Replication P2P](./replication-p2p.md)
     * [Replication CouchDB/PouchDB](./replication-couchdb.md)
 
 * [Cleanup](./cleanup.md)
