@@ -11,7 +11,11 @@ export async function startSignalingServer(port?: number): Promise<string> {
         port = await nextPort();
     }
     const server = require('http').createServer();
-    const io = require('socket.io')(server);
+    const io = require('socket.io')(server, {
+        cors: {
+            origin: '*'
+        }
+    });
 
     const socketByPeerId = new Map();
     const socketsByRoom = new Map();

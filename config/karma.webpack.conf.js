@@ -20,7 +20,8 @@ module.exports = {
             'utf-8-validate': false,
             'try-thread-sleep': false,
             express: false,
-            'pouchdb-fauxton': false
+            'pouchdb-fauxton': false,
+            timers: false
         }
     },
     plugins: [
