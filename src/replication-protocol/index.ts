@@ -182,7 +182,6 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                 batchSize,
                 checkpoint
             ).then(result => {
-                console.dir(result);
                 return {
                     checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
                     documents: result.documents.map(d => writeDocToDocState(d))
