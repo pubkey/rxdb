@@ -322,4 +322,6 @@ export const RxDBReplicationP2PPlugin: RxPlugin = {
 
 export * from './p2p-helper';
 export * from './p2p-types';
-export * from './connection-handler-webtorrent';
+// export * from './connection-handler-webtorrent';
+// export * from './connection-handler-p2pcf';
+export * from './connection-handler-socket';

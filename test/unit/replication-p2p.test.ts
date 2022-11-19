@@ -21,8 +21,9 @@ import {
 import {
     RxDBReplicationP2PPlugin,
     RxP2PReplicationPool,
-    getConnectionHandlerWebtorrent,
-    isMasterInP2PReplication
+    // getConnectionHandlerP2PCF,
+    isMasterInP2PReplication,
+    getConnectionHandlerSocket
 } from '../../plugins/replication-p2p';
 
 import { randomString, wait, waitUntil } from 'async-test-util';
@@ -130,7 +131,9 @@ describe('replication-p2p.test.ts', () => {
                 const replicationPool = await collection.syncP2P({
                     topic,
                     secret,
-                    connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
+                    // connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
+                    // connectionHandlerCreator: getConnectionHandlerP2PCF(),
+                    connectionHandlerCreator: getConnectionHandlerSocket('ws://localhost:8080'),
                     pull: {},
                     push: {}
                 });

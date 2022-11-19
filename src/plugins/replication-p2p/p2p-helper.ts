@@ -3,11 +3,15 @@ import type {
 } from '../../types';
 import type {
     P2PConnectionHandler,
+    P2PConnectionHandlerCreator,
     P2PMessage,
     P2PPeer,
-    P2PResponse
+    P2PResponse,
+    PeerWithMessage,
+    PeerWithResponse
 } from './p2p-types';
-import { filter, firstValueFrom, map } from 'rxjs';
+import { filter, firstValueFrom, map, Subject } from 'rxjs';
+import { PROMISE_RESOLVE_VOID } from '../../util';
 
 
 
@@ -29,7 +33,6 @@ export function isMasterInP2PReplication(
         hashFunction([otherStorageToken, ownStorageToken].join('|'));
     return isMaster;
 }
-
 
 export function sendMessageAndAwaitAnswer(
     handler: P2PConnectionHandler,

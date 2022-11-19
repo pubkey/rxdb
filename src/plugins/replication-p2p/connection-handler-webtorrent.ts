@@ -70,11 +70,11 @@ export function getConnectionHandlerWebtorrent(
 
         const knownPeers = new Set<string>();
         client.on('peer', function (peer: P2PPeer) {
+            console.log('found a peer: ' + peer.id + '    ' + requiredOpts.peerId.toString('hex')) // 85.10.239.191:48623
             if (knownPeers.has(peer.id)) {
                 return;
             }
             knownPeers.add(peer.id);
-            console.log('found a peer: ' + peer.id + '    ' + requiredOpts.peerId.toString('hex')) // 85.10.239.191:48623
             peer.once('connect', () => {
                 connect$.next(peer);
             });
@@ -97,6 +97,7 @@ export function getConnectionHandlerWebtorrent(
             peer.on('signal', (signal) => {
                 console.log('GOT SIGNAL: ' + requiredOpts.peerId.toString('hex'));
                 console.dir(signal);
+                client.signal(signal);
                 client.update();
                 client.scrape();
             });
