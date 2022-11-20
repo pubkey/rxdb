@@ -1,6 +1,6 @@
 # RxDB Premium
 
-To make RxDB a sustainable Project, some plugins are not part of the RxDB open source project. Instead they are part of the `rxdb-premium` package.
+To make RxDB a sustainable Project, some plugins are not part of the RxDB open source project. Instead they are part of the <b>rxdb-premium</b> package which must be purchased.
 
 
 ## Premium plugins
@@ -30,8 +30,8 @@ The main reason to use this is to improve initial page load and query/write time
 <summary>
     Why is it not for free?
 </summary>
-    The development of RxDB started in 2016 and after all these years it became clear that big implementation and improvement steps will not be done by the RxDB community. While the community submits valuable pull requests, they are mostly small improvements or bugfixes for specific edge case. Big rewrites and optimizations that require a bug effort have only be done my the RxDB maintainer.<br />
-    Selling RxDB Premium for money ensures that there will be always an incentive for someone to add features, keep everything up to date and to further improve and optimize the codebase. This gives the user the confidence that RxDB is a future proof tech stack to build on.
+    The development of RxDB started in 2016 and after all these years it became clear that big implementation and improvement steps will not be done by the RxDB community. While the community submits valuable pull requests, they are mostly small improvements or bugfixes for specific edge case. Big rewrites and optimizations that require a big effort have only be done my the RxDB maintainer.<br />
+    Selling RxDB Premium ensures that there will be always an incentive for someone to add features, keep everything up to date and to further improve and optimize the codebase. This gives the user the confidence that RxDB is a <b>future proof</b> tech stack to build on which lets RxDB stand out compared to similar technologies.
 </details>
 
 <details>
@@ -73,7 +73,7 @@ The main reason to use this is to improve initial page load and query/write time
 
 
 
-## Getting Premium
+## Get Premium
 
 ### As a company
 
@@ -102,7 +102,7 @@ If you use RxDB in your company project, you can purchase access by filling out 
 
 ### For your side project
 
-If you are a **single developer** and you use RxDB in your **side project**, you can get 5 years access to the premium package by solving one Task of the [Premium Tasks](https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md) list.
+If you are a **single developer** and you use RxDB in your **side project**, you can get 3 years access to the premium package by solving one Task of the [Premium Tasks](https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md) list.
 
 **Notice:** It is not possible to get premium access via github sponsorships.
 
