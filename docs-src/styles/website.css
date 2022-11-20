@@ -16,7 +16,7 @@
 
 .book-header {
     position: fixed;
-    width   : 100%;
+    width: 100%;
 }
 
 /* images and codeblock muse have border radius */
@@ -85,10 +85,27 @@ li {
 }
 
 code {
-    color        : black !important;
+    color: black !important;
     border-radius: 4px;
 }
 
 ::marker {
     color: white;
+}
+
+
+
+
+/* details blocks */
+details {
+    color: white !important;
+}
+
+details[open] {
+    padding-bottom: 25px;
+}
+
+details .summary {
+    font-weight: bold;
+    font-size: 130%;
 }

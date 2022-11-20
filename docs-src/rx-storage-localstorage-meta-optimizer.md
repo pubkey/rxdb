@@ -8,7 +8,7 @@ Depending on your database usage and the collection amount, this can save about 
 
 ## Usage
 
-The meta optimizer gets wrapper around any other RxStorage. It will then automatically detect if an RxDB internal storage instance is created, and replace that with a localstorage based instance.
+The meta optimizer gets wrapped around any other RxStorage. It will then automatically detect if an RxDB internal storage instance is created, and replace that with a localstorage based instance.
 
 ```ts
 import {
