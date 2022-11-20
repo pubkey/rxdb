@@ -683,7 +683,7 @@ config.parallel('server-couchdb.test.ts', () => {
                 const subPath = '/db2';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    subPath,
+                    path: subPath,
                     port
                 });
 
@@ -700,7 +700,7 @@ config.parallel('server-couchdb.test.ts', () => {
                 const subPath = '/db3/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    subPath,
+                    path: subPath,
                     port
                 });
 
@@ -717,7 +717,7 @@ config.parallel('server-couchdb.test.ts', () => {
                 const subPath = '/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    subPath,
+                    path: subPath,
                     port
                 });
 
