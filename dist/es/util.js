@@ -33,7 +33,7 @@ doNotUseTextEncoder) {
   /**
    * For better performance we first transform all
    * chars into their ascii numbers at once.
-   * 
+   *
    * This is what makes the murmurhash implementation such fast.
    * @link https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L4
    */
@@ -50,8 +50,8 @@ doNotUseTextEncoder) {
     encoded = new TextEncoder().encode(inputString);
   } else {
     encoded = [];
-    for (var _i = 0; _i < inputString.length; _i++) {
-      encoded.push(inputString.charCodeAt(_i));
+    for (var j = 0; j < inputString.length; j++) {
+      encoded.push(inputString.charCodeAt(j));
     }
   }
   for (i = 0, len = inputString.length; i < len; i++) {
@@ -90,7 +90,7 @@ export function defaultHashFunction(input) {
  * this method implements a way to never return the same value twice.
  * This ensures that when now() is called often, we do not loose the information
  * about which call came first and which came after.
- * 
+ *
  * We had to move from having no decimals, to having two decimal
  * because it turned out that some storages are such fast that
  * calling this method too often would return 'the future'.

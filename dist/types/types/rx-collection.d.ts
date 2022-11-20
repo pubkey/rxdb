@@ -47,7 +47,7 @@ export type RxCollectionCreator<RxDocType = any> = {
      * will be used as default
      */
     conflictHandler?: RxConflictHandler<RxDocType>;
-}
+};
 
 export interface MigrationState {
     done: boolean; // true if finished
@@ -64,10 +64,10 @@ export type RxCacheReplacementPolicy = (collection: RxCollection, queryCache: Qu
 export type RxCollectionHookCallback<
     RxDocumentType,
     OrmMethods
-    > = (
-        data: RxDocumentType,
-        instance: RxDocument<RxDocumentType, OrmMethods>
-    ) => void | Promise<void> | any;
+> = (
+    data: RxDocumentType,
+    instance: RxDocument<RxDocumentType, OrmMethods>
+) => void | Promise<void> | any;
 export type RxCollectionHookNoInstance<RxDocumentType> = (data: RxDocumentType) => void | Promise<void> | any;
 export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (
     data: RxDocumentType,
@@ -76,19 +76,19 @@ export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (
 export type RxCollectionHookNoInstanceCallback<
     RxDocumentType,
     OrmMethods
-    > = (
-        data: RxDocumentType,
-        instance: RxCollection<RxDocumentType, OrmMethods>
-    ) => Promise<void> | void | any;
+> = (
+    data: RxDocumentType,
+    instance: RxCollection<RxDocumentType, OrmMethods>
+) => Promise<void> | void | any;
 
 export type RxCollection<
     RxDocumentType = any,
     OrmMethods = {},
     StaticMethods = {},
     InstanceCreationOptions = {}
-    > = StaticMethods &
-    RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods> &
-    RxCollectionGenerated<RxDocumentType, OrmMethods>;
+> = StaticMethods &
+RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods> &
+RxCollectionGenerated<RxDocumentType, OrmMethods>;
 
 export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods>> {
 

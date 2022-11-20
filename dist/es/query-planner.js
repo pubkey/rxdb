@@ -6,7 +6,7 @@ export var INDEX_MIN = -Infinity;
  * Returns the query plan which contains
  * information about how to run the query
  * and which indexes to use.
- * 
+ *
  * This is used in some storage like Memory, dexie.js and IndexedDB.
  */
 export function getQueryPlan(schema, query) {

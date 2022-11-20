@@ -24,8 +24,7 @@ function addIndexesToInternalsState(state, schema) {
      * so all indexes must have the the deleted field as first index field.
      */
     indexAr.unshift('_deleted');
-    var indexName = getMemoryIndexName(indexAr);
-    state.byIndex[indexName] = {
+    state.byIndex[getMemoryIndexName(indexAr)] = {
       index: indexAr,
       docsWithIndex: [],
       getIndexableString: (0, _customIndex.getIndexableStringMonad)(schema, indexAr)

@@ -191,7 +191,7 @@ export var cleanupRxCollection = function cleanupRxCollection(rxCollection, clea
     return Promise.resolve(_for(function () {
       return !_exit2 && !isDone && !rxCollection.destroyed;
     }, void 0, function () {
-      function _temp3() {
+      function _temp5() {
         return Promise.resolve(rxDatabase.requestIdlePromise()).then(function () {
           if (rxCollection.destroyed) {
             _exit2 = true;
@@ -208,10 +208,10 @@ export var cleanupRxCollection = function cleanupRxCollection(rxCollection, clea
           });
         });
       }
-      var _temp2 = function () {
+      var _temp4 = function () {
         if (cleanupPolicy.awaitReplicationsInSync) {
           var replicationStates = REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
-          var _temp4 = function () {
+          var _temp6 = function () {
             if (replicationStates) {
               return Promise.resolve(Promise.all(replicationStates.map(function (replicationState) {
                 if (!replicationState.isStopped()) {
@@ -220,10 +220,10 @@ export var cleanupRxCollection = function cleanupRxCollection(rxCollection, clea
               }))).then(function () {});
             }
           }();
-          if (_temp4 && _temp4.then) return _temp4.then(function () {});
+          if (_temp6 && _temp6.then) return _temp6.then(function () {});
         }
       }();
-      return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
+      return _temp4 && _temp4.then ? _temp4.then(_temp5) : _temp5(_temp4);
     }));
   } catch (e) {
     return Promise.reject(e);
@@ -239,11 +239,7 @@ export var startCleanupForRxCollection = function startCleanupForRxCollection(rx
      * or collection is destroyed.
      */
     return Promise.resolve(rxCollection.promiseWait(cleanupPolicy.minimumCollectionAge)).then(function () {
-      if (rxCollection.destroyed) {
-        return;
-      }
-      return Promise.resolve(cleanupPolicy.waitForLeadership).then(function (_cleanupPolicy$waitFo) {
-        _cleanupPolicy$waitFo ? rxDatabase.waitForLeadership() : PROMISE_RESOLVE_TRUE;
+      function _temp2() {
         if (rxCollection.destroyed) {
           return;
         }
@@ -257,7 +253,16 @@ export var startCleanupForRxCollection = function startCleanupForRxCollection(rx
            */
           return Promise.resolve(runCleanupAfterDelete(rxCollection, cleanupPolicy)).then(function () {});
         });
-      });
+      }
+      if (rxCollection.destroyed) {
+        return;
+      }
+      var _temp = function () {
+        if (cleanupPolicy.waitForLeadership) {
+          return Promise.resolve(rxDatabase.waitForLeadership()).then(function () {});
+        }
+      }();
+      return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
     });
   } catch (e) {
     return Promise.reject(e);

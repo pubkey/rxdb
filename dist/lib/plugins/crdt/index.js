@@ -229,11 +229,13 @@ function mergeCRDTFields(hashFunction, crdtsA, crdtsB) {
       ids.add(op.creator);
       mergedOps.push(op);
     });
-    crdtsB.operations[index] && crdtsB.operations[index].forEach(function (op) {
-      if (!ids.has(op.creator)) {
-        mergedOps.push(op);
-      }
-    });
+    if (crdtsB.operations[index]) {
+      crdtsB.operations[index].forEach(function (op) {
+        if (!ids.has(op.creator)) {
+          mergedOps.push(op);
+        }
+      });
+    }
     mergedOps = mergedOps.sort(sortOperationComparator);
     ret.operations[index] = mergedOps;
   });

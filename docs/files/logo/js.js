@@ -81,7 +81,7 @@ window.renderLogo = function (selector, showText = true) {
         }
     }
 
-    function addBlock(x, y, color) {
+    function addBlock(x, y, blockColor) {
         groups.forEach((g, idx) => {
             g.append('rect')
                 .attr('x', x)
@@ -89,11 +89,11 @@ window.renderLogo = function (selector, showText = true) {
                 .attr('width', blockSize)
                 .attr('height', blockSize)
                 .attr('shape-rendering', getShapeRendering(idx))
-                .style('fill', color);
+                .style('fill', blockColor);
         });
     }
 
-    function addSquare(x, y, color) {
+    function addSquare(x, y, squareColor) {
         groups.forEach((g, idx) => {
             g.append('rect')
                 .attr('x', x)
@@ -101,7 +101,7 @@ window.renderLogo = function (selector, showText = true) {
                 .attr('width', squareWidth)
                 .attr('height', squareHeight)
                 .attr('shape-rendering', getShapeRendering(idx))
-                .style('fill', color);
+                .style('fill', squareColor);
         });
     }
 

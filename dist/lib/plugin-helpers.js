@@ -162,8 +162,8 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
           Object.entries(writeResult.success).forEach(function (_ref2) {
             var k = _ref2[0],
               v = _ref2[1];
-            promises.push(fromStorage(v).then(function (v) {
-              return ret.success[k] = v;
+            promises.push(fromStorage(v).then(function (v2) {
+              return ret.success[k] = v2;
             }));
           });
           Object.entries(writeResult.error).forEach(function (_ref3) {

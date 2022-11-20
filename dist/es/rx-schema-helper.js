@@ -84,7 +84,7 @@ export function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
  * We need this to ensure everything is set up properly
  * and we have the same hash on schemas that represent the same value but
  * have different json.
- * 
+ *
  * - Orders the schemas attributes by alphabetical order
  * - Adds the primaryKey to all indexes that do not contain the primaryKey
  * - We need this for deterministic sort order on all queries, which is required for event-reduce to work.

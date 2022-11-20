@@ -1,1 +1,1 @@
-{"version":3,"file":"pouchdb-selector-core.d.js","names":[],"sources":["../../../../src/types/modules/pouchdb-selector-core.d.ts"],"sourcesContent":["declare module 'pouchdb-selector-core';"],"mappings":""}
+{"version":3,"file":"pouchdb-selector-core.d.js","names":[],"sources":["../../../../src/types/modules/pouchdb-selector-core.d.ts"],"sourcesContent":["declare module 'pouchdb-selector-core';\n"],"mappings":""}

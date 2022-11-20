@@ -15,7 +15,7 @@ import { RxCleanupPolicy } from './plugins/cleanup';
 import { HashFunction } from './util';
 
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any> {
-    storage: RxStorage<Internals, InstanceCreationOptions>,
+    storage: RxStorage<Internals, InstanceCreationOptions>;
     instanceCreationOptions?: InstanceCreationOptions;
     name: string;
     password?: string | any;
@@ -47,17 +47,17 @@ export interface CouchDBServerOptions {
     pouchdbExpressOptions?: PouchDBExpressServerOptions;
 }
 
-export type CollectionsOfDatabase = { [key: string]: RxCollection };
+export type CollectionsOfDatabase = { [key: string]: RxCollection; };
 export type RxDatabase<
     Collections = CollectionsOfDatabase,
     Internals = any,
     InstanceCreationOptions = any,
-    > = RxDatabaseBase<
-        Internals,
-        InstanceCreationOptions,
-        Collections
-    > &
-    Collections & RxDatabaseGenerated<Collections>;
+> = RxDatabaseBase<
+Internals,
+InstanceCreationOptions,
+Collections
+> &
+Collections & RxDatabaseGenerated<Collections>;
 
 export type AllMigrationStates = {
     collection: RxCollection;
@@ -66,16 +66,16 @@ export type AllMigrationStates = {
 
 export interface RxLocalDocumentMutation<StorageType> {
     insertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<
-        RxLocalDocument<StorageType, LocalDocType>
+    RxLocalDocument<StorageType, LocalDocType>
     >;
     upsertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<
-        RxLocalDocument<StorageType, LocalDocType>
+    RxLocalDocument<StorageType, LocalDocType>
     >;
     getLocal<LocalDocType = any>(id: string): Promise<
-        RxLocalDocument<StorageType, LocalDocType> | null
+    RxLocalDocument<StorageType, LocalDocType> | null
     >;
     getLocal$<LocalDocType = any>(id: string): Observable<
-        RxLocalDocument<StorageType, LocalDocType> | null
+    RxLocalDocument<StorageType, LocalDocType> | null
     >;
 }
 
@@ -84,7 +84,7 @@ export interface RxDatabaseGenerated<Collections> extends RxLocalDocumentMutatio
 /**
  * Extract the **DocumentType** of a collection.
  */
-type ExtractDTcol<P> = P extends RxCollection<infer T> ? T : { [prop: string]: any };
+type ExtractDTcol<P> = P extends RxCollection<infer T> ? T : { [prop: string]: any; };
 
 interface RxDumpDatabaseBase {
     instanceToken: string;

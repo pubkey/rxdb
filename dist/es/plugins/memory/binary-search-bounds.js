@@ -1,7 +1,7 @@
 /**
  * Everything in this file was copied and adapted from
  * @link https://github.com/mikolalysenko/binary-search-bounds
- * 
+ *
  * TODO We should use the original npm module instead when this bug is fixed:
  * @link https://github.com/mikolalysenko/binary-search-bounds/pull/14
  */

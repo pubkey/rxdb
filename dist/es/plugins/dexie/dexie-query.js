@@ -28,8 +28,7 @@ export var dexieCount = function dexieCount(instance, preparedQuery) {
           var request = index.count(keyRange);
           return Promise.resolve(new Promise(function (res, rej) {
             request.onsuccess = function () {
-              var count = request.result;
-              res(count);
+              res(request.result);
             };
             request.onerror = function (err) {
               return rej(err);

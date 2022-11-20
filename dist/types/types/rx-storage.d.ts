@@ -24,7 +24,7 @@ export type RxDocumentData<T> = T & {
      */
     _attachments: {
         [attachmentId: string]: RxAttachmentData;
-    }
+    };
 
     /**
      * Contains a revision which is concated with a [height: number]-[identifier: string]
@@ -40,11 +40,11 @@ export type RxDocumentData<T> = T & {
      */
     _rev: string;
     _meta: RxDocumentMeta;
-}
+};
 
 export type RxDocumentDataById<RxDocType> = {
     [documentId: string]: RxDocumentData<RxDocType>;
-}
+};
 
 /**
  * The document data how it is send to the
@@ -61,12 +61,12 @@ export type RxDocumentWriteData<T> = T & Override<RxDocumentData<{}>, {
          * which came out of the storage instance.
          */
         [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
-    }
+    };
 }>;
 
 export type WithDeleted<DocType> = DocType & {
     _deleted: boolean;
-}
+};
 
 /**
  * Send to the bulkWrite() method of a storage instance.
@@ -83,23 +83,23 @@ export type BulkWriteRow<RxDocType> = {
      * This will later allow us to use something different then the _rev key for conflict detection
      * when we implement other storage instances.
      */
-    previous?: RxDocumentData<RxDocType>,
+    previous?: RxDocumentData<RxDocType>;
     /**
      * The new document data to be stored in the storage instance.
      */
-    document: RxDocumentWriteData<RxDocType>
+    document: RxDocumentWriteData<RxDocType>;
 };
 export type BulkWriteRowById<RxDocType> = {
     [documentId: string]: BulkWriteRow<RxDocType>;
-}
+};
 
 /**
  * After the RxStorage has processed all rows,
  * we have this to work with afterwards.
  */
 export type BulkWriteRowProcessed<RxDocType> = BulkWriteRow<RxDocType> & {
-    document: RxDocumentData<RxDocType>
-}
+    document: RxDocumentData<RxDocType>;
+};
 
 
 export type RxAttachmentDataBase = {
@@ -111,7 +111,7 @@ export type RxAttachmentDataBase = {
      * Content type like 'plain/text'
      */
     type: string;
-}
+};
 
 
 /**
@@ -131,7 +131,7 @@ export type RxAttachmentData = RxAttachmentDataBase & {
      * @link https://github.com/pubkey/rxdb/pull/4107
      */
     digest: string;
-}
+};
 
 /**
  * Data which is needed for new attachments
@@ -143,13 +143,13 @@ export type RxAttachmentWriteData = RxAttachmentDataBase & {
      * In the past we used BlobBuffer internally but it created many
      * problems because of then we need the full data (for encryption/compression)
      * so we anyway have to get the string value out of the BlobBuffer.
-     * 
+     *
      * Also using BlobBuffer has no performance benefit because in some RxStorage implementations,
      * like PouchDB, it just keeps the transaction open for longer because the BlobBuffer
      * has be be read.
      */
     data: string;
-}
+};
 
 
 /**
@@ -187,7 +187,7 @@ export type RxStorageBulkWriteError<RxDocType> = {
      * Is not set if the error happens on an insert.
      */
     documentInDb?: RxDocumentData<RxDocType>;
-}
+};
 
 export type RxStorageBulkWriteResponse<RxDocType> = {
     /**
@@ -201,7 +201,7 @@ export type RxStorageBulkWriteResponse<RxDocType> = {
      * contains all errored writes.
      */
     error: ById<RxStorageBulkWriteError<RxDocType>>;
-}
+};
 
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
 
@@ -212,7 +212,7 @@ export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
 export type RxStorageQueryResult<RxDocType> = {
     // the found documents, sort order is important.
     documents: RxDocumentData<RxDocType>[];
-}
+};
 
 export type RxStorageCountResult = {
     count: number;
@@ -223,7 +223,7 @@ export type RxStorageCountResult = {
      * if 'allowSlowCount' is not set.
      */
     mode: 'fast' | 'slow';
-}
+};
 
 export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> = {
 
@@ -231,11 +231,11 @@ export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> 
      * A string to uniquely identify the instance of the JavaScript object
      * of the RxDatabase where this RxStorageInstance belongs to.
      * In most cases you would use RxDatabase.token here.
-     * 
+     *
      * This is used so that we can add caching or reuse stuff that belongs to the same RxDatabase.
      * For example the BroadcastChannel that is used for event propagation between multiple browser tabs
      * is cached by this token.
-     * 
+     *
      * In theory we could just use the databaseName for that. But to make it easier in unit tests
      * to simulate cross-tab usage, we cannot assume that the databaseName is unique in a single
      * JavaScript process. Therefore we use the instance token instead.
@@ -255,7 +255,7 @@ export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> 
      */
     multiInstance: boolean;
     password?: string;
-}
+};
 
 export type ChangeStreamOptions = {
 
@@ -263,7 +263,7 @@ export type ChangeStreamOptions = {
      * Sequence number of the first event to start with.
      * If you want to get all ongoing events,
      * first get the latest sequence number and input it here.
-     * 
+     *
      * Optional on changeStream,
      * will start from the newest sequence.
      */
@@ -272,7 +272,7 @@ export type ChangeStreamOptions = {
      * limits the amount of results
      */
     limit?: number;
-}
+};
 
 /**
  * In the past we handles each RxChangeEvent by its own.
@@ -302,7 +302,7 @@ export type EventBulk<EventType, CheckpointType> = {
      * that caused this EventBulk.
      */
     context: string;
-}
+};
 
 export type ChangeStreamEvent<DocType> = ChangeEvent<RxDocumentData<DocType>> & {
     /**

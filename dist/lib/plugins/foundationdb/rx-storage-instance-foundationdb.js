@@ -318,10 +318,10 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
               return Promise.resolve(Promise.all(docIds.map(function (docId) {
                 return mainTx.get(docId);
               }))).then(function (docsData) {
-                Object.values(dbs.indexes).forEach(function (indexMeta) {
-                  var subIndexDB = tx.at(indexMeta.db.subspace);
+                Object.values(dbs.indexes).forEach(function (indexMetaInner) {
+                  var subIndexDB = tx.at(indexMetaInner.db.subspace);
                   docsData.forEach(function (docData) {
-                    var indexString = indexMeta.getIndexableString(docData);
+                    var indexString = indexMetaInner.getIndexableString(docData);
                     subIndexDB["delete"](indexString);
                   });
                 });

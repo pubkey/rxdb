@@ -98,13 +98,11 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     getAttachment(id: string): RxAttachment<RxDocType, OrmMethods> | null;
     allAttachments(): RxAttachment<RxDocType, OrmMethods>[];
 
-    toJSON(): DeepReadonly<RxDocType>;
     toJSON(withRevAndAttachments: true): DeepReadonly<RxDocumentData<RxDocType>>;
-    toJSON(withRevAndAttachments: false): DeepReadonly<RxDocType>;
+    toJSON(withRevAndAttachments?: false): DeepReadonly<RxDocType>;
 
-    toMutableJSON(): RxDocType;
     toMutableJSON(withRevAndAttachments: true): RxDocumentData<RxDocType>;
-    toMutableJSON(withRevAndAttachments: false): RxDocType;
+    toMutableJSON(withRevAndAttachments?: false): RxDocType;
 
     destroy(): void;
 }

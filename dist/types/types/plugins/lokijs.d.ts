@@ -31,7 +31,7 @@ export type LokiRemoteRequestBroadcastMessage = {
 
 export type LokiRemoteResponseBroadcastMessage = {
     response: true;
-    type: string,
+    type: string;
     databaseName: string;
     collectionName: string;
     requestId: string;
@@ -43,7 +43,7 @@ export type LokiRemoteResponseBroadcastMessage = {
 export type LokiDatabaseState = {
     database: Loki;
     databaseSettings: LokiDatabaseSettings;
-    saveQueue: LokiSaveQueue,
+    saveQueue: LokiSaveQueue;
 
     // all known collections of the database
     collections: {

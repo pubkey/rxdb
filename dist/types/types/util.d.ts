@@ -13,9 +13,9 @@ export type PlainSimpleJsonObject = {
  */
 type DeepReadonly<T> =
     T extends (infer R)[] ? DeepReadonlyArray<R> :
-    T extends Function ? T :
-    T extends object ? DeepReadonlyObject<T> :
-    T;
+        T extends Function ? T :
+            T extends object ? DeepReadonlyObject<T> :
+                T;
 
 interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
 
@@ -32,14 +32,14 @@ export type MaybeReadonly<T> = T | Readonly<T>;
  */
 type DeepMutable<T> = (
     T extends object
-    ? {
-        -readonly [K in keyof T]: (
-            T[K] extends object
-            ? DeepMutable<T[K]>
-            : T[K]
-        )
-    }
-    : never
+        ? {
+            -readonly [K in keyof T]: (
+                T[K] extends object
+                    ? DeepMutable<T[K]>
+                    : T[K]
+            )
+        }
+        : never
 );
 
 /**
@@ -51,7 +51,7 @@ export type StringKeys<X> = Extract<keyof X, string>;
 
 export type AnyKeys<T> = { [P in keyof T]?: T[P] | any };
 export interface AnyObject {
-    [k: string]: any
+    [k: string]: any;
 }
 
 /**
@@ -96,7 +96,7 @@ export type RxTestStorage = {
     readonly hasAttachments: boolean;
     // true if the storage supports $regex queries, false if not.
     readonly hasRegexSupport: boolean;
-}
+};
 
 
 export type HashFunction = (input: string) => string;
