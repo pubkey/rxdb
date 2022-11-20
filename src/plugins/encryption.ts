@@ -62,7 +62,7 @@ export type InternalStorePasswordDocType = InternalStoreDocType<{
 
 export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
     args: {
-        storage: RxStorage<Internals, InstanceCreationOptions>
+        storage: RxStorage<Internals, InstanceCreationOptions>;
     }
 ): RxStorage<Internals, InstanceCreationOptions> {
     return Object.assign(

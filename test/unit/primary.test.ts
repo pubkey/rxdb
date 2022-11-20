@@ -255,7 +255,7 @@ config.parallel('primary.test.js', () => {
                         if (docs.length > 1) {
                             throw new Error('got too much documents');
                         }
-                        return docs.length === 1
+                        return docs.length === 1;
                     });
 
                     c1.database.destroy();
@@ -266,7 +266,7 @@ config.parallel('primary.test.js', () => {
     });
     describe('Composite Primary', () => {
         async function getCompositePrimaryCollection(): Promise<RxCollection<HumanWithCompositePrimary>> {
-            const db = await createRxDatabase<{ human: RxCollection<HumanWithCompositePrimary> }>({
+            const db = await createRxDatabase<{ human: RxCollection<HumanWithCompositePrimary>; }>({
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
                 ignoreDuplicate: true

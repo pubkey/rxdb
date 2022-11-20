@@ -41,7 +41,7 @@ export const defaultConflictHandler: RxConflictHandler<any> = function (
         isEqual: false,
         documentData: i.realMasterState
     });
-}
+};
 
 
 /**
@@ -57,9 +57,9 @@ export async function resolveConflictError<RxDocType>(
     input: RxConflictHandlerInput<RxDocType>,
     forkState: RxDocumentData<RxDocType>
 ): Promise<{
-    resolvedDoc: RxDocumentData<RxDocType>;
-    output: RxConflictHandlerOutput<RxDocType>;
-} | undefined> {
+        resolvedDoc: RxDocumentData<RxDocType>;
+        output: RxConflictHandlerOutput<RxDocType>;
+    } | undefined> {
     const conflictHandler: RxConflictHandler<RxDocType> = state.input.conflictHandler;
     const conflictHandlerOutput = await conflictHandler(input, 'replication-resolve-conflict');
 

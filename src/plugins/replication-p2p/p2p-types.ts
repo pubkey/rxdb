@@ -46,25 +46,25 @@ export type P2PConnectionHandlerCreator = (
 ) => P2PConnectionHandler;
 
 export type P2PSyncPushOptions<RxDocType> = Omit<
-    ReplicationPushOptions<RxDocType>,
-    'handler'
+ReplicationPushOptions<RxDocType>,
+'handler'
 > & {};
 
 export type P2PSyncPullOptions<RxDocType> = Omit<
-    ReplicationPullOptions<RxDocType, P2PReplicationCheckpoint>,
-    'handler' | 'stream$'
+ReplicationPullOptions<RxDocType, P2PReplicationCheckpoint>,
+'handler' | 'stream$'
 > & {};
 
 export type SyncOptionsP2P<RxDocType> = Omit<
-    ReplicationOptions<RxDocType, P2PReplicationCheckpoint>,
-    'pull' |
-    'push' |
-    'replicationIdentifier' |
-    'collection' |
-    'deletedField' |
-    'live' |
-    'autostart' |
-    'waitForLeadership'
+ReplicationOptions<RxDocType, P2PReplicationCheckpoint>,
+'pull' |
+'push' |
+'replicationIdentifier' |
+'collection' |
+'deletedField' |
+'live' |
+'autostart' |
+'waitForLeadership'
 > & {
     /**
      * It will only replicate with other instances
@@ -76,7 +76,7 @@ export type SyncOptionsP2P<RxDocType> = Omit<
     connectionHandlerCreator: P2PConnectionHandlerCreator;
     pull?: P2PSyncPullOptions<RxDocType>;
     push?: P2PSyncPushOptions<RxDocType>;
-}
+};
 
 export type RxP2PReplicationState<RxDocType> = RxReplicationState<RxDocType, P2PReplicationCheckpoint>;
 
@@ -87,4 +87,4 @@ export type P2PPeerState<RxDocType> = {
     replicationState?: RxP2PReplicationState<RxDocType>;
     // clean this up when removing the peer
     subs: Subscription[];
-}
+};

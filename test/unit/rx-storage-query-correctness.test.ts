@@ -36,7 +36,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
              * set selectorSatisfiedByIndex as the given value.
              */
             selectorSatisfiedByIndex?: boolean;
-        } | undefined)[]
+        } | undefined)[];
     };
     function withIndexes<RxDocType>(
         schema: RxJsonSchema<RxDocType>,

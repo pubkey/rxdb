@@ -64,7 +64,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
         console.log(JSON.stringify(input, null, 4));
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called. (context: ' + context + ')');
-    }
+    };
     const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (
         input: RxConflictHandlerInput<HumanDocumentType>,
         context: string
@@ -112,7 +112,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             console.log(JSON.stringify(input, null, 4));
             throw new Error('equal age ' + ageA + ' ctxt: ' + context);
         }
-    }
+    };
     function getDocData(partial: Partial<HumanDocumentType> = {}): RxDocumentData<HumanDocumentType> {
         const docData = Object.assign(
             schemaObjects.human(),
@@ -129,7 +129,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             },
             docData
         );
-        withMeta._rev = createRevision(defaultHashFunction, withMeta)
+        withMeta._rev = createRevision(defaultHashFunction, withMeta);
         return withMeta;
     }
     async function createRxStorageInstance(
@@ -153,7 +153,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     .fill(0)
                     .map(() => ({ document: getDocData() })),
                 testContext
-            )
+            );
         }
 
         return storageInstance;
@@ -227,7 +227,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     _meta: undefined,
                     _rev: undefined
                 });
-            }
+            };
             try {
                 assert.deepStrictEqual(
                     cleanDocToCompare(docA),
@@ -752,7 +752,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         docData._meta.lwt = now();
                         await instance.bulkWrite([{
                             document: docData
-                        }], testContext)
+                        }], testContext);
                     })
             );
 
@@ -1048,7 +1048,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                                 idx === 0 ? 'master' : 'fork'
                             )
                         );
-                    })
+                    });
                 });
             await Promise.all(promises);
 

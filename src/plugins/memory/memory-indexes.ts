@@ -29,8 +29,7 @@ export function addIndexesToInternalsState<RxDocType>(
          */
         indexAr.unshift('_deleted');
 
-        const indexName = getMemoryIndexName(indexAr);
-        state.byIndex[indexName] = {
+        state.byIndex[getMemoryIndexName(indexAr)] = {
             index: indexAr,
             docsWithIndex: [],
             getIndexableString: getIndexableStringMonad(schema, indexAr)

@@ -69,12 +69,12 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
         );
     }
 
-    setHeaders(headers: { [k: string]: string }): void {
+    setHeaders(headers: { [k: string]: string; }): void {
         this.clientState.headers = headers;
     }
 
     setCredentials(credentials: RequestCredentials | undefined) {
-        this.clientState.credentials = credentials
+        this.clientState.credentials = credentials;
     }
 
     graphQLRequest(
@@ -148,12 +148,12 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 return {
                     documents: docsData,
                     checkpoint: newCheckpoint
-                }
+                };
             },
             batchSize: pull.batchSize,
             modifier: pull.modifier,
             stream$: pullStream$.asObservable()
-        }
+        };
     }
     let replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined;
     if (push) {
@@ -228,7 +228,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
                 });
         }
         return startBefore();
-    }
+    };
 
     const cancelBefore = graphqlReplicationState.cancel.bind(graphqlReplicationState);
     graphqlReplicationState.cancel = () => {
@@ -237,7 +237,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
             removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
         }
         return cancelBefore();
-    }
+    };
 
     startReplicationOnLeaderShip(waitForLeadership, graphqlReplicationState);
     return graphqlReplicationState;

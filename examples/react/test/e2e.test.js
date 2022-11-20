@@ -3,6 +3,7 @@ import {
 } from 'testcafe';
 import AsyncTestUtil from 'async-test-util';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
 fixture`Example page`
     .page`http://0.0.0.0:8888/`;
 

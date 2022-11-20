@@ -116,7 +116,7 @@ config.parallel('local-documents.test.js', () => {
         type LocalDocType = {
             foo: string;
             added?: string;
-        }
+        };
         describe('.atomicPatch()', () => {
             it('should modify the data', async () => {
                 const c = await humansCollection.create(0);
@@ -574,8 +574,8 @@ config.parallel('local-documents.test.js', () => {
             const myCollection = await humansCollection.create(0);
             await myCollection.upsertLocal(
                 'foobar', {
-                foo: 'bar'
-            }
+                    foo: 'bar'
+                }
             );
 
             const emitted: any[] = [];
@@ -594,7 +594,7 @@ config.parallel('local-documents.test.js', () => {
                 storage: config.storage.getStorage(),
             });
 
-            type DocData = { id: string; boudariesGrp: { bndrPlnId: string; bndrPlnNm: string; }[] };
+            type DocData = { id: string; boudariesGrp: { bndrPlnId: string; bndrPlnNm: string; }[]; };
             const boundaryMgmtSchema: RxJsonSchema<DocData> = {
                 version: 0,
                 type: 'object',

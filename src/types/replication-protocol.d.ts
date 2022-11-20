@@ -61,16 +61,16 @@ export type RxReplicationWriteToMasterRow<RxDocType> = {
 export type DocumentsWithCheckpoint<RxDocType, CheckpointType> = {
     documents: WithDeleted<RxDocType>[];
     checkpoint: CheckpointType;
-}
+};
 
 
 export type RxReplicationPullStreamItem<RxDocType, MasterCheckpointType> = DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> |
-    /**
+/**
      * Emit this when the masterChangeStream$ might have missed out
      * some events because the fork lost the connection to the master.
      * Like when the user went offline and reconnects.
      */
-    'RESYNC';
+'RESYNC';
 
 /**
  * The replication handler contains all logic
@@ -79,7 +79,7 @@ export type RxReplicationPullStreamItem<RxDocType, MasterCheckpointType> = Docum
  * This is an abstraction so that we can use different
  * handlers for GraphQL, REST or any other transportation layer.
  * Even a RxStorageInstance can be wrapped in a way to represent a replication handler.
- * 
+ *
  * The RxStorage instance of the master branch that is
  * replicated with the fork branch.
  * The replication algorithm is made to make
@@ -137,23 +137,23 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * Using the metaInstance instead leads to better overall performance
      * because RxDB will not re-emit query results or document state
      * when replication meta data is written.
-     * 
+     *
      * In addition to per-document meta data,
      * the replication checkpoints are also stored in this instance.
-     * 
+     *
      */
     metaInstance: RxStorageInstance<RxStorageReplicationMeta, any, any>;
 
     /**
      * When a write happens to the fork,
      * normally the replication will directly try to persist.
-     * 
+     *
      * For many use cases, it is better to await the next event loop tick
      * or to wait until the RxDatabase is idle or requestIdleCallback() calls
      * to ensure the CPU is idle.
      * This can improve performance because the persistence will not affect UI
      * renders.
-     * 
+     *
      * But: The longer you wait here, the higher is the risk of losing fork
      * writes when the replicatoin is destroyed unexpected.
      */
@@ -175,7 +175,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
         processed: {
             up: Subject<RxReplicationWriteToMasterRow<RxDocType>>;
             down: Subject<BulkWriteRow<RxDocType>>;
-        }
+        };
         resolvedConflicts: Subject<{
             input: RxConflictHandlerInput<RxDocType>;
             output: RxConflictHandlerOutput<RxDocType>;
@@ -193,12 +193,12 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
          */
         active: {
             [direction in RxStorageReplicationDirection]: BehaviorSubject<boolean>;
-        },
+        };
         /**
          * All errors that would otherwise be unhandled,
          * get emitted here.
          */
-        error: Subject<RxError | RxTypeError>
+        error: Subject<RxError | RxTypeError>;
     };
 
 
@@ -247,8 +247,8 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      */
     streamQueue: {
         [direction in RxStorageReplicationDirection]: Promise<any>;
-    }
-    
+    };
+
     checkpointQueue: Promise<any>;
 
     /**
@@ -258,7 +258,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      */
     lastCheckpointDoc: {
         [direction in RxStorageReplicationDirection]?: RxDocumentData<RxStorageReplicationMeta>;
-    }
-}
+    };
+};
 
 export type RxStorageReplicationDirection = 'up' | 'down';

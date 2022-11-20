@@ -73,9 +73,9 @@ export function getAssumedMasterState<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     docIds: string[]
 ): Promise<ById<{
-    docData: WithDeleted<RxDocType>;
-    metaDocument: RxDocumentData<RxStorageReplicationMeta>
-}>> {
+        docData: WithDeleted<RxDocType>;
+        metaDocument: RxDocumentData<RxStorageReplicationMeta>;
+    }>> {
     return state.input.metaInstance.findDocumentsById(
         docIds.map(docId => {
             const useId = getComposedPrimaryKeyOfDocumentData(
@@ -93,8 +93,8 @@ export function getAssumedMasterState<RxDocType>(
         const ret: {
             [docId: string]: {
                 docData: RxDocumentData<RxDocType>;
-                metaDocument: RxDocumentData<RxStorageReplicationMeta>
-            }
+                metaDocument: RxDocumentData<RxStorageReplicationMeta>;
+            };
         } = {};
         Object
             .values(metaDocs)

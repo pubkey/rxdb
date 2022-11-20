@@ -72,8 +72,8 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
     wss.on('connection', function connection(ws) {
         const onCloseHandlers: Function[] = [];
         ws.onclose = () => {
-            onCloseHandlers.map(fn => fn())
-        }
+            onCloseHandlers.map(fn => fn());
+        };
         ws.on('message', async (messageString: string) => {
             const message: WebsocketMessageType = JSON.parse(messageString);
             const handler = getReplicationHandler(message.collection);

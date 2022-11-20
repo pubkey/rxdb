@@ -749,12 +749,12 @@ config.parallel('data-migration.test.ts', () => {
             it('should auto-run on creation (async)', async () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
-                    3: (doc: any) => {
-                        promiseWait(10);
-                        doc.age = parseInt(doc.age, 10);
-                        return doc;
-                    }
-                },
+                        3: (doc: any) => {
+                            promiseWait(10);
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        }
+                    },
                     randomCouchString(10),
                     true
                 );
@@ -946,7 +946,7 @@ config.parallel('data-migration.test.ts', () => {
                     storage: config.storage.getStorage(),
                 });
                 await db.addCollections<{
-                    foobar: RxCollection<SimpleHumanV3DocumentType>
+                    foobar: RxCollection<SimpleHumanV3DocumentType>;
                 }>({
                     foobar: {
                         schema: schemas.simpleHuman
@@ -979,7 +979,7 @@ config.parallel('data-migration.test.ts', () => {
                 const schemaV2 = clone(schemas.simpleHuman);
                 schemaV2.version = 1;
                 await db2.addCollections<{
-                    foobar: RxCollection<SimpleHumanV3DocumentType>
+                    foobar: RxCollection<SimpleHumanV3DocumentType>;
                 }>({
                     foobar: {
                         schema: schemaV2,
@@ -1115,7 +1115,7 @@ config.parallel('data-migration.test.ts', () => {
             assert.strictEqual(attachment.type, 'text/plain');
             assert.strictEqual(attachment.length, attachmentData.length);
 
-            olds.forEach(oldCol => oldCol.storageInstance.close().catch(() => { }));
+            olds.forEach(old => old.storageInstance.close().catch(() => { }));
             col.database.destroy();
         });
     });

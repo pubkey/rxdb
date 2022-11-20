@@ -217,7 +217,7 @@ export class RxQueryBase<
                 count: newResultData,
                 docs: [],
                 time: now()
-            }
+            };
             return;
         }
 
@@ -246,7 +246,7 @@ export class RxQueryBase<
             count: docsData.length,
             docs,
             time: now()
-        }
+        };
     }
 
     /**

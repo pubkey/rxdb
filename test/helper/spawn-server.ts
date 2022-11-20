@@ -18,8 +18,8 @@ const expressPouch = require('express-pouchdb')(InMemPouchDB);
 
 export async function spawn(): Promise<{
     dbName: string;
-    url: string,
-    close: () => Promise<void>
+    url: string;
+    close: () => Promise<void>;
 }> {
     const port = await nextPort();
     const path = '/db';

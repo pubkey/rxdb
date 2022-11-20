@@ -16,7 +16,7 @@ export const INDEX_MIN = -Infinity;
  * Returns the query plan which contains
  * information about how to run the query
  * and which indexes to use.
- * 
+ *
  * This is used in some storage like Memory, dexie.js and IndexedDB.
  */
 export function getQueryPlan<RxDocType>(
@@ -39,7 +39,7 @@ export function getQueryPlan<RxDocType>(
      * Most storages do not support descending indexes
      * so having a 'desc' in the sorting, means we always have to re-sort the results.
      */
-    const hasDescSorting = !!query.sort.find(sortField => Object.values(sortField)[0] === 'desc')
+    const hasDescSorting = !!query.sort.find(sortField => Object.values(sortField)[0] === 'desc');
 
     let currentBestQuality = -1;
     let currentBestQueryPlan: RxQueryPlan | undefined;
@@ -136,7 +136,7 @@ export function getQueryPlan<RxDocType>(
             inclusiveStart: true,
             sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath,
             selectorSatisfiedByIndex: isSelectorSatisfiedByIndex([primaryPath], query.selector)
-        }
+        };
     }
 
     return currentBestQueryPlan;

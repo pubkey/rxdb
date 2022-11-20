@@ -85,7 +85,7 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
             parent,
             storageInstance,
             docCache
-        }
+        };
     })();
     LOCAL_DOC_STATE_BY_PARENT.set(parent, statePromise);
 }

@@ -45,9 +45,9 @@ describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
 
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
-    async function getTestCollections(docsAmount: { local: number, remote: number }): Promise<{
-        localCollection: RxCollection<TestDocType, {}, {}, {}>,
-        remoteCollection: RxCollection<TestDocType, {}, {}, {}>
+    async function getTestCollections(docsAmount: { local: number; remote: number; }): Promise<{
+        localCollection: RxCollection<TestDocType, {}, {}, {}>;
+        remoteCollection: RxCollection<TestDocType, {}, {}, {}>;
     }> {
         const localCollection = await humansCollection.createHumanWithTimestamp(docsAmount.local, randomCouchString(10), false);
         const remoteCollection = await humansCollection.createHumanWithTimestamp(docsAmount.remote, randomCouchString(10), false);
@@ -91,7 +91,7 @@ describe('replication.test.js', () => {
         ) => {
             const result = await helper.masterWrite(rows);
             return result;
-        }
+        };
         return handler;
     }
     config.parallel('non-live replication', () => {
@@ -370,7 +370,7 @@ describe('replication.test.js', () => {
 
             let wasActive = false;
             replicationState.active$.subscribe((active) => {
-                if (active) wasActive = active
+                if (active) wasActive = active;
             });
 
             await replicationState.awaitInitialReplication();

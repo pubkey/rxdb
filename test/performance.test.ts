@@ -27,7 +27,7 @@ describe('performance.test.ts', () => {
 
         const perfStorage = config.storage.getPerformanceStorage();
 
-        const totalTimes: { [k: string]: number[] } = {};
+        const totalTimes: { [k: string]: number[]; } = {};
 
         const collectionsAmount = 4;
         const docsAmount = 600;
@@ -55,7 +55,7 @@ describe('performance.test.ts', () => {
                     totalTimes[flag].push(diff);
                 }
                 time = performance.now();
-            }
+            };
 
             updateTime();
 
@@ -123,7 +123,7 @@ describe('performance.test.ts', () => {
              * here we run the query against the storage because
              * if we would do collection.findByIds(), it would
              * just return the documents from the cache.
-             * 
+             *
              */
             updateTime();
             const idsResult = await collection.storageInstance.findDocumentsById(docIds, false);

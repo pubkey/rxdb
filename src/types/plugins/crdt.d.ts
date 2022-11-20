@@ -35,7 +35,7 @@ export type CRDTSchemaOptions<RxDocType> = {
     // TODO not implemented yet, make a pull request if you need that.
     // maxOperations: number;
     // maxTTL: number;
-}
+};
 
 
 export type CRDTOperation<RxDocType> = {
@@ -53,7 +53,7 @@ export type CRDTOperation<RxDocType> = {
      * Used to properly clean up old operations.
      */
     time: number;
-}
+};
 
 
 export type CRDTDocumentField<RxDocType> = {
@@ -73,4 +73,4 @@ export type CRDTDocumentField<RxDocType> = {
      * A hash to uniquely define the whole operations state.
      */
     hash: string;
-}
+};

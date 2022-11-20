@@ -74,7 +74,7 @@ export const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<CollectionOptions<any>> 
     clone: false,
     transactional: false,
     autoupdate: false
-}
+};
 
 const LOKI_DATABASE_STATE_BY_NAME: Map<string, Promise<LokiDatabaseState>> = new Map();
 export function getLokiDatabase(
@@ -136,7 +136,11 @@ export function getLokiDatabase(
                             if (useSettings.autoloadCallback) {
                                 useSettings.autoloadCallback(err);
                             }
-                            err ? rej(err) : res();
+                            if (err) {
+                                rej(err);
+                            } else {
+                                res();
+                            }
                         });
                     } catch (err) {
                         rej(err);
@@ -191,7 +195,11 @@ export async function closeLokiCollections(
         databaseState.unloads.forEach(u => u.remove());
         await new Promise<void>((res, rej) => {
             databaseState.database.close(err => {
-                err ? rej(err) : res();
+                if (err) {
+                    rej(err);
+                } else {
+                    res();
+                }
             });
         });
     }
@@ -241,7 +249,7 @@ export function getLokiSortComparator<RxDocType>(
         }
 
         return compareResult as any;
-    }
+    };
     return fun;
 }
 
@@ -276,10 +284,10 @@ export async function requestRemoteInstance(
     const broadcastChannel = leaderElector.broadcastChannel;
 
     type WinningPromise = {
-        retry: boolean,
+        retry: boolean;
         result?: any;
         error?: any;
-    }
+    };
 
     let whenDeathListener: OnMessageHandler<any>;
     const leaderDeadPromise = new Promise<WinningPromise>(res => {

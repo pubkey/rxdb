@@ -126,9 +126,9 @@ let hooksApplied = false;
 
 export class RxCollectionBase<
     InstanceCreationOptions,
-    RxDocumentType = { [prop: string]: any },
+    RxDocumentType = { [prop: string]: any; },
     OrmMethods = {},
-    StaticMethods = { [key: string]: any }
+    StaticMethods = { [key: string]: any; }
 > {
 
 
@@ -185,7 +185,7 @@ export class RxCollectionBase<
     public _subs: Subscription[] = [];
 
     public _docCache: DocCache<
-        RxDocument<RxDocumentType, OrmMethods>
+    RxDocument<RxDocumentType, OrmMethods>
     > = new DocCache();
 
     public _queryCache: QueryCache = createQueryCache();
@@ -315,9 +315,9 @@ export class RxCollectionBase<
     async bulkInsert(
         docsData: RxDocumentType[]
     ): Promise<{
-        success: RxDocument<RxDocumentType, OrmMethods>[],
-        error: RxStorageBulkWriteError<RxDocumentType>[]
-    }> {
+            success: RxDocument<RxDocumentType, OrmMethods>[];
+            error: RxStorageBulkWriteError<RxDocumentType>[];
+        }> {
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -388,9 +388,9 @@ export class RxCollectionBase<
     async bulkRemove(
         ids: string[]
     ): Promise<{
-        success: RxDocument<RxDocumentType, OrmMethods>[],
-        error: RxStorageBulkWriteError<RxDocumentType>[]
-    }> {
+            success: RxDocument<RxDocumentType, OrmMethods>[];
+            error: RxStorageBulkWriteError<RxDocumentType>[];
+        }> {
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -528,8 +528,8 @@ export class RxCollectionBase<
     }
 
     find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<
-        RxDocumentType,
-        RxDocument<RxDocumentType, OrmMethods>[]
+    RxDocumentType,
+    RxDocument<RxDocumentType, OrmMethods>[]
     > {
         if (typeof queryObj === 'string') {
             throw newRxError('COL5', {
@@ -546,9 +546,9 @@ export class RxCollectionBase<
     }
 
     findOne(queryObj?: MangoQueryNoLimit<RxDocumentType> | string): RxQuery<
-        RxDocumentType,
-        RxDocument<RxDocumentType, OrmMethods>
-        | null
+    RxDocumentType,
+    RxDocument<RxDocumentType, OrmMethods>
+    | null
     > {
         let query;
 
@@ -586,8 +586,8 @@ export class RxCollectionBase<
     }
 
     count(queryObj?: MangoQuerySelectorAndIndex<RxDocumentType>): RxQuery<
-        RxDocumentType,
-        number
+    RxDocumentType,
+    number
     > {
         if (!queryObj) {
             queryObj = _getDefaultQuery();
@@ -995,10 +995,10 @@ function _atomicUpsertEnsureRxDocumentExists(
     json: any
 ): Promise<
     {
-        doc: RxDocument,
-        inserted: boolean
+        doc: RxDocument;
+        inserted: boolean;
     }
-> {
+    > {
     /**
      * Optimisation shortcut,
      * first try to find the document in the doc-cache

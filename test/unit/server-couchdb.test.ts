@@ -350,7 +350,7 @@ config.parallel('server-couchdb.test.ts', () => {
         });
 
         // both collections should have 2 documents
-        await serverCollection.insert(schemaObjects.human('server-doc'))
+        await serverCollection.insert(schemaObjects.human('server-doc'));
         await waitUntil(() => serverCollection.find().exec().then(r => r.length === 1));
         await waitUntil(() => clientCollection.find().exec().then(r => r.length === 1));
 
@@ -504,8 +504,8 @@ config.parallel('server-couchdb.test.ts', () => {
 
         const datastoreDBName = config.rootPath + 'test_tmp/datastore-' + randomCouchString(10);
         type Collections = {
-            human: RxCollection<schemas.HumanDocumentType>
-        }
+            human: RxCollection<schemas.HumanDocumentType>;
+        };
 
         const datastoreDB = await createRxDatabase<Collections>({
             name: datastoreDBName,
@@ -680,10 +680,9 @@ config.parallel('server-couchdb.test.ts', () => {
             it('use the path when given', async function () {
                 this.timeout(12 * 1000);
                 const port = await nextPort();
-                const path = '/db2';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    path,
+                    path: '/db2',
                     port
                 });
 
@@ -697,10 +696,9 @@ config.parallel('server-couchdb.test.ts', () => {
             it('use the path with ending slash', async function () {
                 this.timeout(12 * 1000);
                 const port = await nextPort();
-                const path = '/db3/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    path,
+                    path: '/db3/',
                     port
                 });
 
@@ -714,10 +712,9 @@ config.parallel('server-couchdb.test.ts', () => {
             it('should be able to use the root /', async function () {
                 this.timeout(12 * 1000);
                 const port = await nextPort();
-                const path = '/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    path,
+                    path: '/',
                     port
                 });
 

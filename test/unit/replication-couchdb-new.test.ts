@@ -83,7 +83,7 @@ describe('replication-couchdb-new.test.ts', () => {
         const getJson = async (collection: RxCollection<RxDocType>) => {
             const docs = await collection.find().exec();
             return docs.map(d => d.toJSON());
-        }
+        };
         const json1 = await getJson(c1);
         const json2 = await getJson(c2);
         try {

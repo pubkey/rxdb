@@ -126,7 +126,7 @@ export class RxDatabaseBase<
          * conflict with the collection names etc.
          * So only if it is not pseudoInstance,
          * we have all values to prepare a real RxDatabase.
-         * 
+         *
          * TODO this is ugly, we should use a different way in the dev-mode
          * so that all non-dev-mode code can be cleaner.
          */
@@ -146,7 +146,7 @@ export class RxDatabaseBase<
              * Start writing the storage token.
              * Do not await the creation because it would run
              * in a critical path that increases startup time.
-             * 
+             *
              * Writing the token takes about 20 milliseconds
              * even on a fast adapter, so this is worth it.
              */
@@ -190,7 +190,7 @@ export class RxDatabaseBase<
      * Unique token that is stored with the data.
      * Used to detect if the dataset has been deleted
      * and if two RxDatabase instances work on the same dataset or not.
-     * 
+     *
      * Because reading and writing the storageToken runs in the hot path
      * of database creation, we do not await the storageWrites but instead
      * work with the promise when we need the value.
@@ -485,9 +485,9 @@ export class RxDatabaseBase<
     }
 
     get asRxDatabase(): RxDatabase<
-        {},
-        Internals,
-        InstanceCreationOptions
+    {},
+    Internals,
+    InstanceCreationOptions
     > {
         return this as any;
     }
@@ -537,7 +537,7 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
 }
 
 export function createRxDatabase<
-    Collections = { [key: string]: RxCollection },
+    Collections = { [key: string]: RxCollection; },
     Internals = any,
     InstanceCreationOptions = any
 >(
@@ -557,7 +557,7 @@ export function createRxDatabase<
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions>
-> {
+    > {
     runPluginHooks('preCreateRxDatabase', {
         storage,
         instanceCreationOptions,
@@ -578,8 +578,8 @@ export function createRxDatabase<
     const databaseInstanceToken = randomCouchString(10);
 
     return createRxDatabaseStorageInstance<
-        Internals,
-        InstanceCreationOptions
+    Internals,
+    InstanceCreationOptions
     >(
         databaseInstanceToken,
         storage,
@@ -634,7 +634,7 @@ export function createRxDatabase<
 /**
  * Removes the database and all its known data
  * with all known collections and all internal meta data.
- * 
+ *
  * Returns the names of the removed collections.
  */
 export async function removeRxDatabase(
@@ -690,7 +690,7 @@ export function dbCount(): number {
 /**
  * Returns true if the given RxDatabase was the first
  * instance that was created on the storage with this name.
- * 
+ *
  * Can be used for some optimizations because on the first instantiation,
  * we can assume that no data was written before.
  */

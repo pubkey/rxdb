@@ -67,36 +67,36 @@ export const defaultCacheReplacementPolicyMonad: (
     _collection: RxCollection,
     queryCache: QueryCache
 ) => {
-            if (queryCache._map.size < tryToKeepMax) {
-                return;
-            }
+    if (queryCache._map.size < tryToKeepMax) {
+        return;
+    }
 
-            const minUnExecutedLifetime = now() - unExecutedLifetime;
-            const maybeUncash: RxQuery[] = [];
+    const minUnExecutedLifetime = now() - unExecutedLifetime;
+    const maybeUncash: RxQuery[] = [];
 
-            const queriesInCache = Array.from(queryCache._map.values());
-            for (const rxQuery of queriesInCache) {
-                // filter out queries with subscribers
-                if (countRxQuerySubscribers(rxQuery) > 0) {
-                    continue;
-                }
-                // directly uncache queries that never executed and are older then unExecutedLifetime
-                if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
-                    uncacheRxQuery(queryCache, rxQuery);
-                    continue;
-                }
-                maybeUncash.push(rxQuery);
-            }
+    const queriesInCache = Array.from(queryCache._map.values());
+    for (const rxQuery of queriesInCache) {
+        // filter out queries with subscribers
+        if (countRxQuerySubscribers(rxQuery) > 0) {
+            continue;
+        }
+        // directly uncache queries that never executed and are older then unExecutedLifetime
+        if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
+            uncacheRxQuery(queryCache, rxQuery);
+            continue;
+        }
+        maybeUncash.push(rxQuery);
+    }
 
-            const mustUncache = maybeUncash.length - tryToKeepMax;
-            if (mustUncache <= 0) {
-                return;
-            }
+    const mustUncache = maybeUncash.length - tryToKeepMax;
+    if (mustUncache <= 0) {
+        return;
+    }
 
-            const sortedByLastUsage = maybeUncash.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
-            const toRemove = sortedByLastUsage.slice(0, mustUncache);
-            toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
-        };
+    const sortedByLastUsage = maybeUncash.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
+    const toRemove = sortedByLastUsage.slice(0, mustUncache);
+    toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
+};
 
 
 export const defaultCacheReplacementPolicy: RxCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(

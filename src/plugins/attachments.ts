@@ -172,10 +172,10 @@ export async function putAttachment(
                 'attachment-put'
             );
 
-            const attachmentData = writeResult._attachments[id];
+            const attachmentDataOfId = writeResult._attachments[id];
             const attachment = fromStorageInstanceResult(
                 id,
-                attachmentData,
+                attachmentDataOfId,
                 this
             );
 
@@ -236,12 +236,12 @@ export function allAttachments(
 export async function preMigrateDocument<RxDocType>(
     data: {
         docData: RxDocumentData<RxDocType>;
-        oldCollection: OldRxCollection
+        oldCollection: OldRxCollection;
     }
 ): Promise<void> {
     const attachments = data.docData._attachments;
     if (attachments) {
-        const newAttachments: { [attachmentId: string]: RxAttachmentWriteData } = {};
+        const newAttachments: { [attachmentId: string]: RxAttachmentWriteData; } = {};
         await Promise.all(
             Object.keys(attachments).map(async (attachmentId) => {
                 const attachment: RxAttachmentData = attachments[attachmentId];

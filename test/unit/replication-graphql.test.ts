@@ -74,7 +74,7 @@ import {
 import { RxDocumentData } from '../../src/types';
 import { enableKeyCompression } from '../helper/schemas';
 
-declare type WithDeleted<T> = T & { deleted: boolean };
+declare type WithDeleted<T> = T & { deleted: boolean; };
 
 describe('replication-graphql.test.ts', () => {
     // for port see karma.config.js
@@ -113,7 +113,7 @@ describe('replication-graphql.test.ts', () => {
             variables
         });
     };
-    const pullStreamQueryBuilder = (headers: { [k: string]: string }) => {
+    const pullStreamQueryBuilder = (headers: { [k: string]: string; }) => {
         const query = `subscription onHumanChanged($headers: Headers) {
             humanChanged(headers: $headers) {
                 documents {
@@ -502,7 +502,7 @@ describe('replication-graphql.test.ts', () => {
                         query,
                         variables
                     };
-                }
+                };
 
                 const replicationState = c.syncGraphQL({
                     url: server.url,
@@ -767,8 +767,8 @@ describe('replication-graphql.test.ts', () => {
                         clearTimeout(timeoutId);
                         reject(new Error('Timeout reached'));
                     },
-                        // small buffer until the promise rejects
-                        1000);
+                    // small buffer until the promise rejects
+                    1000);
                 });
 
                 const raceProm = Promise.race([
@@ -967,12 +967,12 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.error$.pipe(
                     first()
                 ).toPromise().then(() => {
-                    replicationState.cancel()
+                    replicationState.cancel();
                 });
 
                 const timeout = wait(500).then(() => 'timeout');
 
-                assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',)
+                assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',);
 
                 await Promise.all([
                     server.close(),
@@ -999,11 +999,11 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 await firstValueFrom(replicationState.error$);
-                replicationState.cancel()
+                replicationState.cancel();
 
                 const timeout = wait(500).then(() => 'timeout');
 
-                assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',)
+                assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',);
 
                 replicationState = c.syncGraphQL({
                     url: server.url,
@@ -1674,12 +1674,12 @@ describe('replication-graphql.test.ts', () => {
             it('should create a valid builder', async () => {
                 const builder = pullQueryBuilderFromRxSchema(
                     'human', {
-                    schema: schemas.humanWithTimestamp,
-                    checkpointFields: [
-                        'id',
-                        'updatedAt'
-                    ]
-                });
+                        schema: schemas.humanWithTimestamp,
+                        checkpointFields: [
+                            'id',
+                            'updatedAt'
+                        ]
+                    });
 
                 const output = await builder({
                     id: 'foo',
@@ -1692,12 +1692,12 @@ describe('replication-graphql.test.ts', () => {
             it('builder should work on null-document', async () => {
                 const builder = pullQueryBuilderFromRxSchema(
                     'human', {
-                    schema: schemas.humanWithTimestamp,
-                    checkpointFields: [
-                        'id',
-                        'updatedAt'
-                    ]
-                });
+                        schema: schemas.humanWithTimestamp,
+                        checkpointFields: [
+                            'id',
+                            'updatedAt'
+                        ]
+                    });
 
                 const output = await builder(null, batchSize);
                 const parsed = parseQuery(output.query);
@@ -1708,13 +1708,13 @@ describe('replication-graphql.test.ts', () => {
             it('should create a valid builder', async () => {
                 const builder = pullStreamBuilderFromRxSchema(
                     'human', {
-                    schema: schemas.humanWithTimestamp,
-                    checkpointFields: [
-                        'id',
-                        'updatedAt'
-                    ],
-                    headerFields: ['AUTH_TOKEN']
-                });
+                        schema: schemas.humanWithTimestamp,
+                        checkpointFields: [
+                            'id',
+                            'updatedAt'
+                        ],
+                        headerFields: ['AUTH_TOKEN']
+                    });
 
                 const output = await builder({
                     AUTH_TOKEN: 'foobar'
@@ -1727,12 +1727,12 @@ describe('replication-graphql.test.ts', () => {
             it('builder should work on null-document', async () => {
                 const builder = pullStreamBuilderFromRxSchema(
                     'human', {
-                    schema: schemas.humanWithTimestamp,
-                    checkpointFields: [
-                        'id',
-                        'updatedAt'
-                    ]
-                });
+                        schema: schemas.humanWithTimestamp,
+                        checkpointFields: [
+                            'id',
+                            'updatedAt'
+                        ]
+                    });
 
                 const output = await builder({});
                 const parsed = parseQuery(output.query);
@@ -1743,13 +1743,13 @@ describe('replication-graphql.test.ts', () => {
             it('should create a valid builder', async () => {
                 const builder = pushQueryBuilderFromRxSchema(
                     'human', {
-                    schema: schemas.humanWithTimestamp,
-                    checkpointFields: [
-                        'id',
-                        'updatedAt'
-                    ],
-                    deletedField: 'deleted'
-                });
+                        schema: schemas.humanWithTimestamp,
+                        checkpointFields: [
+                            'id',
+                            'updatedAt'
+                        ],
+                        deletedField: 'deleted'
+                    });
 
                 // build valid output for insert document
                 const output = await builder([{
@@ -1983,10 +1983,10 @@ describe('replication-graphql.test.ts', () => {
                 });
                 assert.strictEqual(replicationState.clientState.credentials, undefined);
 
-                replicationState.setCredentials('same-origin')
+                replicationState.setCredentials('same-origin');
 
-                assert.deepStrictEqual(replicationState.clientState.headers, { originalHeader: '1' })
-                assert.strictEqual(replicationState.clientState.credentials, 'same-origin')
+                assert.deepStrictEqual(replicationState.clientState.headers, { originalHeader: '1' });
+                assert.strictEqual(replicationState.clientState.credentials, 'same-origin');
 
                 server.close();
                 await c.database.destroy();

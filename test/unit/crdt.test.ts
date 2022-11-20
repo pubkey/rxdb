@@ -34,7 +34,7 @@ import { ReplicationPullHandler, ReplicationPushHandler } from '../../src/types'
 
 config.parallel('crdt.test.js', () => {
     type WithCRDTs<RxDocType> = RxDocType & {
-        crdts?: CRDTDocumentField<RxDocType>
+        crdts?: CRDTDocumentField<RxDocType>;
     };
     function enableCRDTinSchema<RxDocType>(schema: RxJsonSchema<RxDocType>): RxJsonSchema<WithCRDTs<RxDocType>> {
         const ret: RxJsonSchema<WithCRDTs<RxDocType>> = clone(schema);
@@ -348,7 +348,7 @@ config.parallel('crdt.test.js', () => {
                 ) => {
                     const result = await helper.masterWrite(rows);
                     return result;
-                }
+                };
                 return handler;
             }
             function ensureReplicationHasNoErrors(replicationState: RxReplicationState<any, any>) {

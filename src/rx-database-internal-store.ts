@@ -103,7 +103,7 @@ export function getPrimaryKeyOfInternalDocument(
             key,
             context
         }
-    )
+    );
 }
 
 /**

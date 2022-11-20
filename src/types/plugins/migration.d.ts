@@ -15,12 +15,12 @@ export type MigrationStrategy<DocData = any> = (
 
 export type MigrationStrategies = {
     [toVersion: number]: MigrationStrategy<any>;
-}
+};
 
 export interface OldRxCollection {
     version: number;
     schema: RxSchema;
-    storageInstance: RxStorageInstance<any, any, any>,
+    storageInstance: RxStorageInstance<any, any, any>;
     dataMigrator: DataMigrator;
     newestCollection: RxCollection;
     database: RxDatabase;

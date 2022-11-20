@@ -74,7 +74,7 @@ export type JsonSchema<RxDocType = any> = {
     // RxDB-specific
     ref?: string;
     final?: boolean;
-}
+};
 
 export interface TopLevelProperty extends JsonSchema {
     default?: any;
@@ -110,7 +110,7 @@ export type RxJsonSchema<
     /**
      * On the top level the required-array must be set
      * because we always have to set the primary key to required.
-     * 
+     *
      * TODO required should be made non-optional on the top level
      */
     required?: StringKeys<RxDocType>[] | readonly StringKeys<RxDocType>[];
@@ -137,7 +137,7 @@ export type RxJsonSchema<
      */
     sharding?: {
         /**
-         * Amount of shards. 
+         * Amount of shards.
          * This value cannot be changed after you have stored data,
          * if you change it anyway, you will loose the existing data.
          */
@@ -148,9 +148,9 @@ export type RxJsonSchema<
          * because it has a faster initial load time.
          */
         mode: 'database' | 'collection';
-    }
+    };
     crdt?: CRDTSchemaOptions<RxDocType>;
-}
+};
 
 /**
  * Used to aggregate the document type from the schema.

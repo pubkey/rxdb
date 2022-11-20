@@ -8,4 +8,4 @@ export const DEFAULT_CLEANUP_POLICY: RxCleanupPolicy = {
     runEach: 1000 * 60 * 5, // 5 minutes
     awaitReplicationsInSync: true,
     waitForLeadership: true
-}
+};

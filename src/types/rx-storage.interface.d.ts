@@ -44,7 +44,7 @@ import type {
  * A RxStorage is a module that acts
  * as a factory that can create multiple RxStorageInstance
  * objects.
- * 
+ *
  * All data inputs and outputs of a StorageInstance must be plain json objects.
  * Do not use Map, Set or anything else that cannot be JSON.stringify-ed.
  * This will ensure that the storage can exchange data
@@ -78,35 +78,35 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
  * so we do not have to do many if-field-exist tests in the internals.
  */
 export type FilledMangoQuery<RxDocType> = Override<
-    MangoQuery<RxDocType>,
-    {
-        /**
+MangoQuery<RxDocType>,
+{
+    /**
          * The selector is required here.
          */
-        selector: MangoQuerySelector<RxDocType>;
+    selector: MangoQuerySelector<RxDocType>;
 
-        /**
+    /**
          * In contrast to the user-provided MangoQuery,
          * the sorting is required here because
          * RxDB has to ensure that the primary key is always
          * part of the sort params.
          */
-        sort: MangoQuerySortPart<RxDocType>[];
+    sort: MangoQuerySortPart<RxDocType>[];
 
-        /**
+    /**
          * In the normalized mango query,
          * the index must always be a string[],
          * never just a string.
          * This makes it easier to use the query because
          * we do not have to do an array check.
          */
-        index?: string[];
+    index?: string[];
 
-        /**
+    /**
          * Skip must be set which defaults to 0
          */
-        skip: number;
-    }
+    skip: number;
+}
 >;
 
 /**
@@ -122,10 +122,10 @@ export type RxStorageStatics = Readonly<{
      * PouchDB and others have some bugs
      * and behaviors that must be worked around
      * before querying the db.
-     * 
+     *
      * Also some storages do optimizations
      * and other things related to query planning.
-     * 
+     *
      * For performance reason this preparation
      * runs in a single step so it can be cached
      * when the query is used multiple times.
@@ -219,10 +219,10 @@ export interface RxStorageInstance<
          */
         context: string
     ): Promise<
-        /**
+    /**
          * returns the response, split into success and error lists.
          */
-        RxStorageBulkWriteResponse<RxDocType>
+    RxStorageBulkWriteResponse<RxDocType>
     >;
 
     /**
@@ -310,7 +310,7 @@ export interface RxStorageInstance<
      * of all changes that happen to the
      * storage instance.
      * Do not forget to unsubscribe.
-     * 
+     *
      * If the RxStorage support multi-instance,
      * and the storage is persistend,
      * then the emitted changes of one RxStorageInstance
@@ -323,7 +323,7 @@ export interface RxStorageInstance<
      * Runs a cleanup that removes all tompstones
      * of documents that have _deleted set to true
      * to free up disc space.
-     * 
+     *
      * Returns true if all cleanable documents have been removed.
      * Returns false if there are more documents to be cleaned up,
      * but not all have been purged because that would block the storage for too long.
@@ -336,11 +336,11 @@ export interface RxStorageInstance<
          */
         minimumDeletedTime: number
     ): Promise<
-        /**
+    /**
          * True if all docs cleaned up,
          * false if there are more docs to clean up
          */
-        boolean
+    boolean
     >;
 
     /**

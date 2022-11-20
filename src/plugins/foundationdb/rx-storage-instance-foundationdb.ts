@@ -59,10 +59,10 @@ import { INDEX_MAX } from '../../query-planner';
 import { attachmentMapKey } from '../memory';
 
 export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstance<
-    RxDocType,
-    FoundationDBStorageInternals<RxDocType>,
-    RxStorageFoundationDBInstanceCreationOptions,
-    RxStorageDefaultCheckpoint
+RxDocType,
+FoundationDBStorageInternals<RxDocType>,
+RxStorageFoundationDBInstanceCreationOptions,
+RxStorageDefaultCheckpoint
 > {
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
@@ -357,10 +357,10 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 
             Object
                 .values(dbs.indexes)
-                .forEach(indexMeta => {
-                    const subIndexDB = tx.at(indexMeta.db.subspace);
+                .forEach(indexMetaInner => {
+                    const subIndexDB = tx.at(indexMetaInner.db.subspace);
                     docsData.forEach(docData => {
-                        const indexString = indexMeta.getIndexableString(docData);
+                        const indexString = indexMetaInner.getIndexableString(docData);
                         subIndexDB.delete(indexString);
                     });
                 });
@@ -435,14 +435,14 @@ export function createFoundationDBStorageInstance<RxDocType>(
             .withValueEncoding(encoders.json) as any;
 
 
-        const indexDBs: { [indexName: string]: FoundationDBIndexMeta<RxDocType> } = {};
+        const indexDBs: { [indexName: string]: FoundationDBIndexMeta<RxDocType>; } = {};
         const useIndexes = params.schema.indexes ? params.schema.indexes.slice(0) : [];
         useIndexes.push([primaryPath]);
         const useIndexesFinal = useIndexes.map(index => {
             const indexAr = Array.isArray(index) ? index.slice(0) : [index];
             indexAr.unshift('_deleted');
             return indexAr;
-        })
+        });
         // used for `getChangedDocumentsSince()`
         useIndexesFinal.push([
             '_meta.lwt',

@@ -60,10 +60,10 @@ import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } fro
 let instanceId = now();
 
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
-    RxDocType,
-    LokiStorageInternals,
-    LokiSettings,
-    RxStorageDefaultCheckpoint
+RxDocType,
+LokiStorageInternals,
+LokiSettings,
+RxStorageDefaultCheckpoint
 > {
 
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
@@ -111,7 +111,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 remove: this.remove.bind(this),
                 resolveConflictResultionTask: this.resolveConflictResultionTask.bind(this),
                 schema: this.schema
-            }
+            };
 
             this.internals.leaderElector.awaitLeadership().then(() => {
                 // this instance is leader now, so it has to reply to queries from other instances
@@ -144,8 +144,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
         const docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>> = new Map();
         const docsInDbWithLokiKey: Map<
-            RxDocumentData<RxDocType>[StringKeys<RxDocType>],
-            RxDocumentData<RxDocType> & { $loki: number; }
+        RxDocumentData<RxDocType>[StringKeys<RxDocType>],
+        RxDocumentData<RxDocType> & { $loki: number; }
         > = new Map();
         documentWrites.forEach(writeRow => {
             const id = writeRow.document[this.primaryPath];
@@ -266,9 +266,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: RxStorageDefaultCheckpoint | null
     ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }> {
+            documents: RxDocumentData<RxDocType>[];
+            checkpoint: RxStorageDefaultCheckpoint;
+        }> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'getChangedDocumentsSince', [limit, checkpoint]);
@@ -501,7 +501,7 @@ export async function createLokiStorageInstance<RxDocType>(
             .awaitLeadership()
             .then(() => {
                 if (!instance.closed) {
-                    mustUseLocalState(instance)
+                    mustUseLocalState(instance);
                 }
             });
     }

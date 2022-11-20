@@ -163,7 +163,7 @@ config.parallel('rx-storage-pouchdb.test.js', () => {
                     data.age = 18;
                     return {
                         document: data
-                    }
+                    };
                 }),
                 'pouchdb-test'
             );

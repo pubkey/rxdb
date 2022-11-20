@@ -69,11 +69,11 @@ export type InWorkerStorage<RxDocType, CheckpointType> = {
         instanceById: number,
         taskSolution: RxConflictResultionTaskSolution<RxDocType>
     ): Promise<void>;
-}
+};
 
 export function wrappedWorkerRxStorage<T, D, CheckpointType = any>(
     args: {
-        storage: RxStorage<T, D>
+        storage: RxStorage<T, D>;
     }
 ) {
     let nextId = 0;
@@ -135,9 +135,9 @@ export function wrappedWorkerRxStorage<T, D, CheckpointType = any>(
             limit: number,
             checkpoint: any
         ): Promise<{
-            documents: RxDocumentData<RxDocType>[];
-            checkpoint: any;
-        }> {
+                documents: RxDocumentData<RxDocType>[];
+                checkpoint: any;
+            }> {
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.getChangedDocumentsSince(
                 limit,
@@ -179,6 +179,6 @@ export function wrappedWorkerRxStorage<T, D, CheckpointType = any>(
             const instance = getFromMapOrThrow(instanceById, instanceId);
             return instance.resolveConflictResultionTask(taskSolution);
         }
-    }
+    };
     expose(exposeMe);
 }

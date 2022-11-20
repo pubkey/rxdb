@@ -53,7 +53,7 @@ export function fastUnsecureHash(
     /**
      * For better performance we first transform all
      * chars into their ascii numbers at once.
-     * 
+     *
      * This is what makes the murmurhash implementation such fast.
      * @link https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L4
      */
@@ -70,8 +70,8 @@ export function fastUnsecureHash(
         encoded = new TextEncoder().encode(inputString);
     } else {
         encoded = [];
-        for (let i = 0; i < inputString.length; i++) {
-            encoded.push(inputString.charCodeAt(i));
+        for (let j = 0; j < inputString.length; j++) {
+            encoded.push(inputString.charCodeAt(j));
         }
     }
 
@@ -111,7 +111,7 @@ export function defaultHashFunction(input: string): string {
  * this method implements a way to never return the same value twice.
  * This ensures that when now() is called often, we do not loose the information
  * about which call came first and which came after.
- * 
+ *
  * We had to move from having no decimals, to having two decimal
  * because it turned out that some storages are such fast that
  * calling this method too often would return 'the future'.
@@ -406,7 +406,7 @@ export function flatClone<T>(obj: T | DeepReadonlyObject<T>): T {
 export function firstPropertyNameOfObject(obj: any): string {
     return Object.keys(obj)[0];
 }
-export function firstPropertyValueOfObject<T>(obj: { [k: string]: T }): T {
+export function firstPropertyValueOfObject<T>(obj: { [k: string]: T; }): T {
     const key = Object.keys(obj)[0];
     return obj[key];
 }
@@ -441,12 +441,12 @@ export function flattenObject(ob: any) {
 }
 
 
-export function parseRevision(revision: string): { height: number; hash: string } {
+export function parseRevision(revision: string): { height: number; hash: string; } {
     const split = revision.split('-');
     return {
         height: parseInt(split[0], 10),
         hash: split[1]
-    }
+    };
 }
 
 export function getHeightOfRevision(revision: string): number {
@@ -547,7 +547,9 @@ export function overwriteGetterForCaching<ValueType = any>(
     value: ValueType
 ): ValueType {
     Object.defineProperty(obj, getterName, {
-        get: function () { return value; }
+        get: function () {
+            return value;
+        }
     });
     return value;
 }
@@ -576,7 +578,7 @@ export function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K
 }
 
 export function getFromObjectOrThrow<V>(
-    obj: { [k: string]: V },
+    obj: { [k: string]: V; },
     key: string
 ): V {
     const val = obj[key];
@@ -738,7 +740,7 @@ export const blobBufferUtil = {
 export const RXJS_SHARE_REPLAY_DEFAULTS = {
     bufferSize: 1,
     refCount: true
-}
+};
 
 /**
  * We use 1 as minimum so that the value is never falsy.
@@ -756,7 +758,7 @@ export function getDefaultRxDocumentMeta(): RxDocumentMeta {
          * the lastWrite time while calling transformDocumentDataFromRxDBToRxStorage()
          */
         lwt: RX_META_LWT_MINIMUM
-    }
+    };
 }
 
 /**
@@ -829,7 +831,7 @@ export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonad
             t++;
         }
         return currentVal;
-    }
+    };
 }
 
 

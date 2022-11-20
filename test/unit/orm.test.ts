@@ -96,11 +96,11 @@ config.parallel('orm.test.js', () => {
         describe('run', () => {
             it('should be able to run the method', async () => {
                 const db = await createRxDatabase<{
-                    humans: RxCollection<HumanDocumentType, {}, { foobar(): string; }>
+                    humans: RxCollection<HumanDocumentType, {}, { foobar(): string; }>;
                 }>({
-                    name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
-                });
+                            name: randomCouchString(10),
+                            storage: getRxStoragePouch('memory'),
+                        });
                 const collections = await db.addCollections({
                     humans: {
                         schema: schemas.human,
@@ -379,7 +379,7 @@ config.parallel('orm.test.js', () => {
                 multiInstance: false
             });
 
-            const schema: RxJsonSchema<{ name: string; nested: { foo: string }; }> = {
+            const schema: RxJsonSchema<{ name: string; nested: { foo: string; }; }> = {
                 version: 0,
                 type: 'object',
                 primaryKey: 'name',

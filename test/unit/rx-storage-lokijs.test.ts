@@ -116,7 +116,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     const leaderElector: LeaderElector = storageInstance.internals.leaderElector;
                     return leaderElector.isLeader;
                 });
-            }
+            };
 
             // wait until one is leader
             await waitUntil(() => {
@@ -226,7 +226,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 databaseName
             );
 
-            const storageInstance = await storage.createStorageInstance<{ key: string }>({
+            const storageInstance = await storage.createStorageInstance<{ key: string; }>({
                 databaseInstanceToken: randomCouchString(10),
                 databaseName: dbLocation,
                 collectionName: randomCouchString(12),
@@ -276,7 +276,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 '../',
                 databaseName
             );
-            const storageInstance = await storage.createStorageInstance<{ key: string }>({
+            const storageInstance = await storage.createStorageInstance<{ key: string; }>({
                 databaseInstanceToken: randomCouchString(10),
                 databaseName: dbLocation,
                 collectionName: randomCouchString(12),
@@ -307,10 +307,10 @@ describe('rx-storage-lokijs.test.js', () => {
          * running setTimeout takes way longer then the given time.
          * Because LokiJS is in-memory, we elect a leader and all requests go to that leader.
          * This means when the leader is cpu-throttled, we have a really slow response.
-         * 
+         *
          * So in this test we assure that the internals of the LokiJS RxStorage
          * do not use any setTimeout call.
-         * 
+         *
          * @link https://github.com/pubkey/rxdb/issues/3666#issuecomment-1027801805
          */
         describe('#3666 RxDB with lokijs works bad in Safari and FF when using multiple tabs', () => {
@@ -327,7 +327,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 const oldSetTimeout = global.setTimeout;
                 (global as any).setTimeout = (fn: Function, time: number) => {
                     throw new Error('LokiJS must not use setTimeout(' + fn.toString() + ', ' + time + ')');
-                }
+                };
 
                 const storage = getRxStorageLoki({
                     /**
@@ -412,7 +412,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 databaseName
             );
             const collectionName = randomCouchString(12);
-            const storageInstance = await storage.createStorageInstance<{ key: string }>({
+            const storageInstance = await storage.createStorageInstance<{ key: string; }>({
                 databaseInstanceToken: randomCouchString(10),
                 databaseName: dbLocation,
                 collectionName,
@@ -431,12 +431,12 @@ describe('rx-storage-lokijs.test.js', () => {
                 _attachments: {},
                 _rev: '1-62080c42d471e3d2625e49dcca3b8e3e'
             });
-            // manually trigger the save queue because we did a write to the internal loki db. 
+            // manually trigger the save queue because we did a write to the internal loki db.
             await localState.databaseState.saveQueue.addWrite();
 
             await storageInstance.close();
 
-            const storageInstance2 = await storage.createStorageInstance<{ key: string }>({
+            const storageInstance2 = await storage.createStorageInstance<{ key: string; }>({
                 databaseInstanceToken: randomCouchString(10),
                 databaseName: dbLocation,
                 collectionName,

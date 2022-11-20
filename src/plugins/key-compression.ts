@@ -52,8 +52,8 @@ declare type CompressionState = {
  * by the storage instance for better performance.
  */
 const COMPRESSION_STATE_BY_SCHEMA: WeakMap<
-    RxJsonSchema<any>,
-    CompressionState
+RxJsonSchema<any>,
+CompressionState
 > = new WeakMap();
 
 
@@ -134,7 +134,7 @@ export function getCompressionStateByRxJsonSchema(
 
 export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>(
     args: {
-        storage: RxStorage<Internals, InstanceCreationOptions>
+        storage: RxStorage<Internals, InstanceCreationOptions>;
     }
 ): RxStorage<Internals, InstanceCreationOptions> {
     const statics: RxStorageStatics = Object.assign(
@@ -181,7 +181,7 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                         );
                         const res = comparator(compressedDocDataA, compressedDocDataB);
                         return res;
-                    }
+                    };
                 }
             },
             getQueryMatcher<RxDocType>(
@@ -200,7 +200,7 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                         );
                         const ret = matcher(compressedDocData);
                         return ret;
-                    }
+                    };
                 }
             }
         }

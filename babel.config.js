@@ -34,7 +34,7 @@ const plugins = [
     /**
      * Transpile async/await to promises instead of generators.
      * This has shown to be 10% smaller build size and also be a bit faster.
-     * 
+     *
      */
     ['babel-plugin-transform-async-to-promises', {
         /**

@@ -11,8 +11,8 @@ export type CouchDBCheckpointType = {
 
 export type FetchMethodType = typeof fetch;
 export type SyncOptionsCouchDBNew<RxDocType> = Omit<
-    ReplicationOptions<RxDocType, any>,
-    'pull' | 'push' | 'replicationIdentifier' | 'collection'
+ReplicationOptions<RxDocType, any>,
+'pull' | 'push' | 'replicationIdentifier' | 'collection'
 > & {
     url: string;
     /**
@@ -28,7 +28,7 @@ export type SyncOptionsCouchDBNew<RxDocType> = Omit<
         heartbeat?: number;
     };
     push?: Omit<ReplicationPushOptions<RxDocType>, 'handler'>;
-}
+};
 
 
 export type URLQueryParams = ById<string | number | undefined | boolean>;

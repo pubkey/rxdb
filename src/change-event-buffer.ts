@@ -15,7 +15,7 @@ export class ChangeEventBuffer {
     public limit: number = 100;
     public counter: number = 0;
     private eventCounterMap: WeakMap<
-        RxChangeEvent<any>, number
+    RxChangeEvent<any>, number
     > = new WeakMap();
 
     /**

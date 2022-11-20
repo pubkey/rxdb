@@ -305,10 +305,10 @@ config.parallel('pouch-db-integration.test.js', () => {
             function createPouch(): PouchDBInstance {
                 const pouch = new PouchDB(
                     name, {
-                    adapter: 'memory',
-                    auto_compaction: true,
-                    revs_limit: 1
-                }
+                        adapter: 'memory',
+                        auto_compaction: true,
+                        revs_limit: 1
+                    }
                 ) as any;
                 return pouch;
             }
@@ -335,10 +335,10 @@ config.parallel('pouch-db-integration.test.js', () => {
         it('pouchdb.find() should not return design-docs', async () => {
             const pouch = new PouchDB(
                 randomCouchString(10), {
-                adapter: 'memory',
-                auto_compaction: true,
-                revs_limit: 1
-            }
+                    adapter: 'memory',
+                    auto_compaction: true,
+                    revs_limit: 1
+                }
             );
 
             await pouch.createIndex({
@@ -369,10 +369,10 @@ config.parallel('pouch-db-integration.test.js', () => {
         it('removing via bulkDocs does not work', async () => {
             const pouch: PouchDBInstance = new PouchDB(
                 randomCouchString(10), {
-                adapter: 'memory',
-                auto_compaction: true,
-                revs_limit: 1
-            }
+                    adapter: 'memory',
+                    auto_compaction: true,
+                    revs_limit: 1
+                }
             ) as any;
 
             // add one doc
@@ -428,10 +428,10 @@ config.parallel('pouch-db-integration.test.js', () => {
         it('putting with _deleted does not work', async () => {
             const pouch: PouchDBInstance = new PouchDB(
                 randomCouchString(10), {
-                adapter: 'memory',
-                auto_compaction: true,
-                revs_limit: 1
-            }
+                    adapter: 'memory',
+                    auto_compaction: true,
+                    revs_limit: 1
+                }
             ) as any;
             const bulkOptions = {
                 new_edits: false
@@ -462,7 +462,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 docs
             }, bulkOptions);
 
-            let foundAfter = await pouch.find<{ firstName: string, _deleted: boolean }>({
+            let foundAfter = await pouch.find<{ firstName: string; _deleted: boolean; }>({
                 selector: {}
             });
             assert.strictEqual(foundAfter.docs.length, 1);
@@ -548,8 +548,8 @@ config.parallel('pouch-db-integration.test.js', () => {
                 t++;
                 const pouch: PouchDBInstance = new PouchDB(
                     randomCouchString(10), {
-                    adapter: 'memory'
-                }) as any;
+                        adapter: 'memory'
+                    }) as any;
                 pouches.push(pouch);
 
                 // do not await
@@ -580,8 +580,8 @@ config.parallel('pouch-db-integration.test.js', () => {
             while (promises.length < amount) {
                 const pouch: PouchDBInstance = new PouchDB(
                     randomCouchString(10), {
-                    adapter: 'memory'
-                }) as any;
+                        adapter: 'memory'
+                    }) as any;
                 pouches.push(pouch);
 
                 promises.push(pouch.find({

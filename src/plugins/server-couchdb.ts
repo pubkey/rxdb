@@ -221,9 +221,9 @@ function ensureNoMoreCollections(args: any) {
     if (DBS_WITH_SERVER.has(args.database)) {
         const err = newRxError(
             'S1', {
-            collection: args.name,
-            database: args.database.name
-        }
+                collection: args.name,
+                database: args.database.name
+            }
         );
         throw err;
     }

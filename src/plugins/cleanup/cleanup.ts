@@ -31,7 +31,9 @@ export async function startCleanupForRxCollection(
         return;
     }
 
-    await cleanupPolicy.waitForLeadership ? rxDatabase.waitForLeadership() : PROMISE_RESOLVE_TRUE;
+    if (cleanupPolicy.waitForLeadership) {
+        await rxDatabase.waitForLeadership();
+    }
     if (rxCollection.destroyed) {
         return;
     }

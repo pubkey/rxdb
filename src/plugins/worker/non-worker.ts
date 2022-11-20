@@ -35,11 +35,11 @@ declare type WorkerStorageInternals = {
     rxStorage: RxStorageWorker;
     instanceId: number;
     worker: InWorkerStorage<any, any>;
-}
+};
 declare type RxStorageWorkerSettings = {
     statics: RxStorageStatics;
     workerInput: any;
-}
+};
 
 
 /**
@@ -96,10 +96,10 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
 
 
 export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<
-    RxDocType,
-    WorkerStorageInternals,
-    any,
-    any
+RxDocType,
+WorkerStorageInternals,
+any,
+any
 > {
     /**
      * threads.js uses observable-fns instead of rxjs
@@ -171,9 +171,9 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: any
     ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: any;
-    }> {
+            documents: RxDocumentData<RxDocType>[];
+            checkpoint: any;
+        }> {
         return this.internals.worker.getChangedDocumentsSince(
             this.internals.instanceId,
             limit,

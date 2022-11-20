@@ -71,26 +71,26 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                 const useTasks: Task[] = [];
                 while (openTasks.length > 0) {
                     state.events.active.down.next(true);
-                    const taskWithTime = ensureNotFalsy(openTasks.shift());
+                    const innerTaskWithTime = ensureNotFalsy(openTasks.shift());
 
                     /**
-                     * If the task came in before the last time we started the pull 
+                     * If the task came in before the last time we started the pull
                      * from the master, then we can drop the task.
                      */
-                    if (taskWithTime.time < lastTimeMasterChangesRequested) {
+                    if (innerTaskWithTime.time < lastTimeMasterChangesRequested) {
                         continue;
                     }
 
-                    if (taskWithTime.task === 'RESYNC') {
+                    if (innerTaskWithTime.task === 'RESYNC') {
                         if (useTasks.length === 0) {
-                            useTasks.push(taskWithTime.task);
+                            useTasks.push(innerTaskWithTime.task);
                             break;
                         } else {
                             break;
                         }
                     }
 
-                    useTasks.push(taskWithTime.task);
+                    useTasks.push(innerTaskWithTime.task);
                 }
 
                 if (useTasks.length === 0) {
@@ -334,7 +334,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                              * Document states are exactly equal.
                              * This can happen when the replication is shut down
                              * unexpected like when the user goes offline.
-                             * 
+                             *
                              * Only when the assumedMaster is different from the forkState,
                              * we have to patch the document in the meta instance.
                              */
