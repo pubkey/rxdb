@@ -152,10 +152,10 @@ var _queryPlanner = require("./query-planner");
 
 /**
  * Crafts an indexable string that can be used
- * to check if a document would be sorted below or above 
+ * to check if a document would be sorted below or above
  * another documents, dependent on the index values.
  * @monad for better performance
- * 
+ *
  * IMPORTANT: Performance is really important here
  * which is why we code so 'strange'.
  * Always run performance tests when you want to
@@ -1116,8 +1116,8 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
           Object.entries(writeResult.success).forEach(function (_ref2) {
             var k = _ref2[0],
               v = _ref2[1];
-            promises.push(fromStorage(v).then(function (v) {
-              return ret.success[k] = v;
+            promises.push(fromStorage(v).then(function (v2) {
+              return ret.success[k] = v2;
             }));
           });
           Object.entries(writeResult.error).forEach(function (_ref3) {
@@ -1558,7 +1558,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
           } catch (e) {
             return Promise.reject(e);
           }
-        }))).then(function () {});
+        }))).then(function () {}); // eslint-disable-next-line brace-style
       } else {
         var _temp13 = function () {
           if (!emitData.writeOptions.custom || emitData.writeOptions.custom && !emitData.writeOptions.custom.writeRowById) {
@@ -1623,9 +1623,9 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                           // we need to add the new revision to the previous doc
                           // so that the eventkey is calculated correctly.
                           // Is this a hack? idk.
-                          return Promise.resolve((0, _pouchdbHelper.writeAttachmentsToAttachments)(writeRow.previous._attachments)).then(function (attachments) {
+                          return Promise.resolve((0, _pouchdbHelper.writeAttachmentsToAttachments)(writeRow.previous._attachments)).then(function (attachmentsInner) {
                             var previousDoc = Object.assign({}, writeRow.previous, {
-                              _attachments: attachments
+                              _attachments: attachmentsInner
                             });
                             event = {
                               operation: 'DELETE',
@@ -1690,8 +1690,8 @@ var i = 0;
 /**
  * Because we cannot force pouchdb to await bulkDocs runs
  * inside of a transaction, like done with the other RxStorage implementations,
- * we have to ensure the calls to bulkDocs() do not run in parallel. 
- * 
+ * we have to ensure the calls to bulkDocs() do not run in parallel.
+ *
  * TODO this is somehow a hack. Instead of doing that, inspect how
  * PouchDB runs bulkDocs internally and adapt that transaction handling.
  */
@@ -1737,7 +1737,9 @@ function addCustomEventsPluginToPouch() {
     if (internalPouches.includes(this.name) || this.name.includes('-mrview-')) {
       return oldBulkDocs.call(this, body, options, function (err, result) {
         if (err) {
-          callback ? callback(err, null) : 0;
+          if (callback) {
+            callback(err, null);
+          }
         } else {
           if (callback) {
             callback(null, result);
@@ -1840,7 +1842,7 @@ function addCustomEventsPluginToPouch() {
           }));
           var heighestSequence = 0;
           var changesSub;
-          var heighestSequencePromise = new Promise(function (res) {
+          var heighestSequencePromise = new Promise(function (res2) {
             changesSub = _this3.changes({
               since: 'now',
               live: true,
@@ -1854,7 +1856,7 @@ function addCustomEventsPluginToPouch() {
                 }
                 if (docIds.size === 0) {
                   changesSub.cancel();
-                  res(heighestSequence);
+                  res2(heighestSequence);
                 }
               }
             });
@@ -1870,7 +1872,11 @@ function addCustomEventsPluginToPouch() {
           delete useOptsForOldBulkDocs.custom;
           callReturn = oldBulkDocs.call(_this3, docs, useOptsForOldBulkDocs, function (err, result) {
             if (err) {
-              callback ? callback(err) : rej(err);
+              if (callback) {
+                callback(err);
+              } else {
+                rej(err);
+              }
             } else {
               return function () {
                 try {
@@ -1901,7 +1907,7 @@ function addCustomEventsPluginToPouch() {
                           id: (0, _util.randomCouchString)(10),
                           events: events,
                           checkpoint: {
-                            sequence: _heighestSequence
+                            sequence: heighestSequenceInner
                           },
                           context: options.custom ? options.custom.context : 'pouchdb-internal'
                         };
@@ -1921,11 +1927,11 @@ function addCustomEventsPluginToPouch() {
                   var hasError = result.find(function (row) {
                     return row.error;
                   });
-                  var _heighestSequence = -1;
+                  var heighestSequenceInner = -1;
                   var _temp7 = function () {
                     if (!hasError) {
                       return Promise.resolve(heighestSequencePromise).then(function (_heighestSequenceProm) {
-                        _heighestSequence = _heighestSequenceProm;
+                        heighestSequenceInner = _heighestSequenceProm;
                       });
                     } else {
                       changesSub.cancel();
@@ -3774,7 +3780,7 @@ var INDEX_MIN = -Infinity;
  * Returns the query plan which contains
  * information about how to run the query
  * and which indexes to use.
- * 
+ *
  * This is used in some storage like Memory, dexie.js and IndexedDB.
  */
 exports.INDEX_MIN = INDEX_MIN;
@@ -4578,24 +4584,24 @@ function startReplicationDownstream(state) {
       var useTasks = [];
       while (openTasks.length > 0) {
         state.events.active.down.next(true);
-        var _taskWithTime = (0, _util.ensureNotFalsy)(openTasks.shift());
+        var innerTaskWithTime = (0, _util.ensureNotFalsy)(openTasks.shift());
 
         /**
-         * If the task came in before the last time we started the pull 
+         * If the task came in before the last time we started the pull
          * from the master, then we can drop the task.
          */
-        if (_taskWithTime.time < lastTimeMasterChangesRequested) {
+        if (innerTaskWithTime.time < lastTimeMasterChangesRequested) {
           continue;
         }
-        if (_taskWithTime.task === 'RESYNC') {
+        if (innerTaskWithTime.task === 'RESYNC') {
           if (useTasks.length === 0) {
-            useTasks.push(_taskWithTime.task);
+            useTasks.push(innerTaskWithTime.task);
             break;
           } else {
             break;
           }
         }
-        useTasks.push(_taskWithTime.task);
+        useTasks.push(innerTaskWithTime.task);
       }
       if (useTasks.length === 0) {
         state.events.active.down.next(false);
@@ -4730,7 +4736,7 @@ function startReplicationDownstream(state) {
                    * Document states are exactly equal.
                    * This can happen when the replication is shut down
                    * unexpected like when the user goes offline.
-                   * 
+                   *
                    * Only when the assumedMaster is different from the forkState,
                    * we have to patch the document in the meta instance.
                    */
@@ -7508,7 +7514,7 @@ exports.ensureNoStartupErrors = ensureNoStartupErrors;
 /**
  * Returns true if the given RxDatabase was the first
  * instance that was created on the storage with this name.
- * 
+ *
  * Can be used for some optimizations because on the first instantiation,
  * we can assume that no data was written before.
  */
@@ -7525,7 +7531,7 @@ exports.isRxDatabaseFirstTimeInstantiated = isRxDatabaseFirstTimeInstantiated;
 /**
  * Removes the database and all its known data
  * with all known collections and all internal meta data.
- * 
+ *
  * Returns the names of the removed collections.
  */
 var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
@@ -7634,7 +7640,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
      * conflict with the collection names etc.
      * So only if it is not pseudoInstance,
      * we have all values to prepare a real RxDatabase.
-     * 
+     *
      * TODO this is ugly, we should use a different way in the dev-mode
      * so that all non-dev-mode code can be cleaner.
      */
@@ -7650,7 +7656,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
        * Start writing the storage token.
        * Do not await the creation because it would run
        * in a critical path that increases startup time.
-       * 
+       *
        * Writing the token takes about 20 milliseconds
        * even on a fast adapter, so this is worth it.
        */
@@ -8976,13 +8982,13 @@ function normalizeMangoQuery(schema, mangoQuery) {
    * of the sort query.
    * Primary sorting is added as last sort parameter,
    * similar to how we add the primary key to indexes that do not have it.
-   * 
+   *
    */
   if (!normalizedMangoQuery.sort) {
     /**
      * If no sort is given at all,
      * we can assume that the user does not care about sort order at al.
-     * 
+     *
      * we cannot just use the primary key as sort parameter
      * because it would likely cause the query to run over the primary key index
      * which has a bad performance in most cases.
@@ -9726,7 +9732,7 @@ function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
  * We need this to ensure everything is set up properly
  * and we have the same hash on schemas that represent the same value but
  * have different json.
- * 
+ *
  * - Orders the schemas attributes by alphabetical order
  * - Adds the primaryKey to all indexes that do not contain the primaryKey
  * - We need this for deterministic sort order on all queries, which is required for event-reduce to work.
@@ -10699,13 +10705,13 @@ var _broadcastChannel = require("broadcast-channel");
  * When a persistend RxStorage is used in more the one JavaScript process,
  * the even stream of the changestream() function must be broadcasted to the other
  * RxStorageInstances of the same databaseName+collectionName.
- * 
+ *
  * In the past this was done by RxDB but it makes more sense to do this
  * at the RxStorage level so that the broadcasting etc can all happen inside of a WebWorker
  * and not on the main thread.
  * Also it makes it less complex to stack up different RxStorages onto each other
  * like what we do with the in-memory plugin.
- * 
+ *
  * This is intened to be used inside of createStorageInstance() of a storage.
  * Do not use this if the storage anyway broadcasts the events like when using MongoDB
  * or in the future W3C might introduce a way to listen to IndexedDB changes.
@@ -10718,7 +10724,7 @@ var _broadcastChannel = require("broadcast-channel");
  * have different broadcast channels.
  * But also it ensures that for each RxDatabase we only create a single
  * broadcast channel that can even be reused in the leader election plugin.
- * 
+ *
  * TODO at the end of the unit tests,
  * we should ensure that all channels are closed and cleaned up.
  * Otherwise we have forgot something.
@@ -10924,7 +10930,7 @@ doNotUseTextEncoder) {
   /**
    * For better performance we first transform all
    * chars into their ascii numbers at once.
-   * 
+   *
    * This is what makes the murmurhash implementation such fast.
    * @link https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L4
    */
@@ -10941,8 +10947,8 @@ doNotUseTextEncoder) {
     encoded = new TextEncoder().encode(inputString);
   } else {
     encoded = [];
-    for (var _i = 0; _i < inputString.length; _i++) {
-      encoded.push(inputString.charCodeAt(_i));
+    for (var j = 0; j < inputString.length; j++) {
+      encoded.push(inputString.charCodeAt(j));
     }
   }
   for (i = 0, len = inputString.length; i < len; i++) {
@@ -10981,7 +10987,7 @@ function defaultHashFunction(input) {
  * this method implements a way to never return the same value twice.
  * This ensures that when now() is called often, we do not loose the information
  * about which call came first and which came after.
- * 
+ *
  * We had to move from having no decimals, to having two decimal
  * because it turned out that some storages are such fast that
  * calling this method too often would return 'the future'.

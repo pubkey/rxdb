@@ -37,7 +37,7 @@ window.trigger = function (type, value) {
             }
         );
     }
-}
+};
 
 setTimeout(function () {
     window.trigger('spend_10_seconds_on_page', 0.01);

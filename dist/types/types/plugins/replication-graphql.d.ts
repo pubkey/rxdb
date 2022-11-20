@@ -26,14 +26,14 @@ export type RxGraphQLReplicationPullQueryBuilder<CheckpointType> = (
     limit: number
 ) => RxGraphQLReplicationQueryBuilderResponse;
 export type GraphQLSyncPullOptions<RxDocType, CheckpointType> = Omit<
-    ReplicationPullOptions<RxDocType, CheckpointType>,
-    'handler' | 'stream$'
+ReplicationPullOptions<RxDocType, CheckpointType>,
+'handler' | 'stream$'
 > & {
     queryBuilder: RxGraphQLReplicationPullQueryBuilder<CheckpointType>;
     streamQueryBuilder?: RxGraphQLReplicationPullStreamQueryBuilder;
     dataPath?: string;
     responseModifier?: RxGraphQLPullResponseModifier<RxDocType, CheckpointType>;
-}
+};
 
 export type RxGraphQLPullResponseModifier<RxDocType, CheckpointType> = (
     // the exact response that was returned from the server
@@ -43,14 +43,14 @@ export type RxGraphQLPullResponseModifier<RxDocType, CheckpointType> = (
     requestCheckpoint?: CheckpointType
 ) => MaybePromise<ReplicationPullHandlerResult<RxDocType, CheckpointType>>;
 
-export type RxGraphQLReplicationPullStreamQueryBuilder = (headers: { [k: string]: string }) => RxGraphQLReplicationQueryBuilderResponse;
+export type RxGraphQLReplicationPullStreamQueryBuilder = (headers: { [k: string]: string; }) => RxGraphQLReplicationQueryBuilderResponse;
 
 export type GraphQLSyncPushOptions<RxDocType> = Omit<
-    ReplicationPushOptions<RxDocType>,
-    'handler'
+ReplicationPushOptions<RxDocType>,
+'handler'
 > & {
     queryBuilder: RxGraphQLReplicationPushQueryBuilder;
-}
+};
 
 export type GraphQLServerUrl = {
     http?: string;
@@ -58,12 +58,12 @@ export type GraphQLServerUrl = {
 };
 
 export type SyncOptionsGraphQL<RxDocType, CheckpointType> = Omit<
-    ReplicationOptions<RxDocType, CheckpointType>,
-    'pull' | 'push' | 'replicationIdentifier' | 'collection'
+ReplicationOptions<RxDocType, CheckpointType>,
+'pull' | 'push' | 'replicationIdentifier' | 'collection'
 > & {
     url: GraphQLServerUrl;
-    headers?: { [k: string]: string }; // send with all requests to the endpoint
+    headers?: { [k: string]: string; }; // send with all requests to the endpoint
     credentials?: RequestCredentials;
     pull?: GraphQLSyncPullOptions<RxDocType, CheckpointType>;
     push?: GraphQLSyncPushOptions<RxDocType>;
-}
+};

@@ -37,7 +37,7 @@ export var ensureNoStartupErrors = function ensureNoStartupErrors(rxDatabase) {
 /**
  * Returns true if the given RxDatabase was the first
  * instance that was created on the storage with this name.
- * 
+ *
  * Can be used for some optimizations because on the first instantiation,
  * we can assume that no data was written before.
  */
@@ -53,7 +53,7 @@ export var isRxDatabaseFirstTimeInstantiated = function isRxDatabaseFirstTimeIns
 /**
  * Removes the database and all its known data
  * with all known collections and all internal meta data.
- * 
+ *
  * Returns the names of the removed collections.
  */
 export var removeRxDatabase = function removeRxDatabase(databaseName, storage) {
@@ -156,7 +156,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
      * conflict with the collection names etc.
      * So only if it is not pseudoInstance,
      * we have all values to prepare a real RxDatabase.
-     * 
+     *
      * TODO this is ugly, we should use a different way in the dev-mode
      * so that all non-dev-mode code can be cleaner.
      */
@@ -172,7 +172,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
        * Start writing the storage token.
        * Do not await the creation because it would run
        * in a critical path that increases startup time.
-       * 
+       *
        * Writing the token takes about 20 milliseconds
        * even on a fast adapter, so this is worth it.
        */

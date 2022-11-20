@@ -13,7 +13,7 @@ export type RxQueryPlanerOpts = {
      * must also be included into the result set.
      */
     inclusiveEnd: boolean;
-}
+};
 
 export type RxQueryPlan = {
     index: string[];

@@ -2,7 +2,7 @@ export type CouchDBServerResponse = {
     app: any;
     pouchApp: any;
     server: any;
-}
+};
 
 
 /**
@@ -17,12 +17,12 @@ export type PouchDBExpressServerOptions = {
     // If true (=default) the config file is not written to configPath but stored in memory.
     inMemoryConfig?: boolean;
     // determines which parts of the HTTP API express-pouchdb offers are enabled
-    mode?: 'fullCouchDB' | 'minimumForPouchDB' | 'custom',
+    mode?: 'fullCouchDB' | 'minimumForPouchDB' | 'custom';
     // Sometimes the preprogrammed modes are insufficient for your needs
     overrideMode?: {
         // a javascript array that specifies parts to include on top of the ones specified by opts.mode
         include?: any[];
         // a javascript array that specifies parts to exclude from the ones specified by opts.mode
         exclude?: any[];
-    }
+    };
 };

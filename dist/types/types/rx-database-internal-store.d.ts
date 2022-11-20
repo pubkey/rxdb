@@ -5,7 +5,7 @@ export type InternalStoreDocType<Data = any> = {
     key: string;
     context: string;
     data: Data;
-}
+};
 
 /**
  * Stores information about the collections.
@@ -39,5 +39,5 @@ export type InternalStoreCollectionDocType = InternalStoreDocType<{
     connectedStorages: {
         collectionName: string;
         schema: RxJsonSchema<any>;
-    }[]
+    }[];
 }>;

@@ -105,7 +105,7 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
           } catch (e) {
             return Promise.reject(e);
           }
-        }))).then(function () {});
+        }))).then(function () {}); // eslint-disable-next-line brace-style
       } else {
         var _temp13 = function () {
           if (!emitData.writeOptions.custom || emitData.writeOptions.custom && !emitData.writeOptions.custom.writeRowById) {
@@ -170,9 +170,9 @@ var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDB
                           // we need to add the new revision to the previous doc
                           // so that the eventkey is calculated correctly.
                           // Is this a hack? idk.
-                          return Promise.resolve((0, _pouchdbHelper.writeAttachmentsToAttachments)(writeRow.previous._attachments)).then(function (attachments) {
+                          return Promise.resolve((0, _pouchdbHelper.writeAttachmentsToAttachments)(writeRow.previous._attachments)).then(function (attachmentsInner) {
                             var previousDoc = Object.assign({}, writeRow.previous, {
-                              _attachments: attachments
+                              _attachments: attachmentsInner
                             });
                             event = {
                               operation: 'DELETE',
@@ -237,8 +237,8 @@ var i = 0;
 /**
  * Because we cannot force pouchdb to await bulkDocs runs
  * inside of a transaction, like done with the other RxStorage implementations,
- * we have to ensure the calls to bulkDocs() do not run in parallel. 
- * 
+ * we have to ensure the calls to bulkDocs() do not run in parallel.
+ *
  * TODO this is somehow a hack. Instead of doing that, inspect how
  * PouchDB runs bulkDocs internally and adapt that transaction handling.
  */
@@ -284,7 +284,9 @@ function addCustomEventsPluginToPouch() {
     if (internalPouches.includes(this.name) || this.name.includes('-mrview-')) {
       return oldBulkDocs.call(this, body, options, function (err, result) {
         if (err) {
-          callback ? callback(err, null) : 0;
+          if (callback) {
+            callback(err, null);
+          }
         } else {
           if (callback) {
             callback(null, result);
@@ -387,7 +389,7 @@ function addCustomEventsPluginToPouch() {
           }));
           var heighestSequence = 0;
           var changesSub;
-          var heighestSequencePromise = new Promise(function (res) {
+          var heighestSequencePromise = new Promise(function (res2) {
             changesSub = _this3.changes({
               since: 'now',
               live: true,
@@ -401,7 +403,7 @@ function addCustomEventsPluginToPouch() {
                 }
                 if (docIds.size === 0) {
                   changesSub.cancel();
-                  res(heighestSequence);
+                  res2(heighestSequence);
                 }
               }
             });
@@ -417,7 +419,11 @@ function addCustomEventsPluginToPouch() {
           delete useOptsForOldBulkDocs.custom;
           callReturn = oldBulkDocs.call(_this3, docs, useOptsForOldBulkDocs, function (err, result) {
             if (err) {
-              callback ? callback(err) : rej(err);
+              if (callback) {
+                callback(err);
+              } else {
+                rej(err);
+              }
             } else {
               return function () {
                 try {
@@ -448,7 +454,7 @@ function addCustomEventsPluginToPouch() {
                           id: (0, _util.randomCouchString)(10),
                           events: events,
                           checkpoint: {
-                            sequence: _heighestSequence
+                            sequence: heighestSequenceInner
                           },
                           context: options.custom ? options.custom.context : 'pouchdb-internal'
                         };
@@ -468,11 +474,11 @@ function addCustomEventsPluginToPouch() {
                   var hasError = result.find(function (row) {
                     return row.error;
                   });
-                  var _heighestSequence = -1;
+                  var heighestSequenceInner = -1;
                   var _temp7 = function () {
                     if (!hasError) {
                       return Promise.resolve(heighestSequencePromise).then(function (_heighestSequenceProm) {
-                        _heighestSequence = _heighestSequenceProm;
+                        heighestSequenceInner = _heighestSequenceProm;
                       });
                     } else {
                       changesSub.cancel();

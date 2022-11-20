@@ -19,10 +19,10 @@ var _queryPlanner = require("./query-planner");
 
 /**
  * Crafts an indexable string that can be used
- * to check if a document would be sorted below or above 
+ * to check if a document would be sorted below or above
  * another documents, dependent on the index values.
  * @monad for better performance
- * 
+ *
  * IMPORTANT: Performance is really important here
  * which is why we code so 'strange'.
  * Always run performance tests when you want to

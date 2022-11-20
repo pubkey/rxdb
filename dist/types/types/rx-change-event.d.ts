@@ -31,22 +31,22 @@ export type RxChangeEventBase<RxDocType> = {
     readonly endTime?: number;
 
     documentData: RxDocumentData<RxDocType>;
-}
+};
 
 export type RxChangeEventInsert<RxDocType> = RxChangeEventBase<RxDocType> & {
     operation: 'INSERT';
     previousDocumentData: undefined;
-}
+};
 
 export type RxChangeEventUpdate<RxDocType> = RxChangeEventBase<RxDocType> & {
     operation: 'UPDATE';
     previousDocumentData: RxDocumentData<RxDocType>;
-}
+};
 
 export type RxChangeEventDelete<RxDocType> = RxChangeEventBase<RxDocType> & {
     operation: 'DELETE';
     previousDocumentData: RxDocumentData<RxDocType>;
-}
+};
 
 export type RxChangeEvent<RxDocType> = RxChangeEventInsert<RxDocType> | RxChangeEventUpdate<RxDocType> | RxChangeEventDelete<RxDocType>;
 
@@ -73,4 +73,4 @@ export type RxChangeEventBulk<DocType> = EventBulk<RxChangeEvent<DocType>, any> 
      * Internal events are not emitted to the outside over the .$ Observables.
      */
     internal: boolean;
-}
+};

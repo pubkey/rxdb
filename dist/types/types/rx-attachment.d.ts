@@ -6,7 +6,7 @@ import {
 declare type Buffer = any;
 
 export type RxAttachmentCreator = {
-    id: string,
+    id: string;
     /**
      * Content type like 'plain/text'
      */

@@ -39,10 +39,10 @@ export type SyncOptions = {
     remote: string | any;
     waitForLeadership?: boolean;
     direction?: {
-        push?: boolean,
-        pull?: boolean
+        push?: boolean;
+        pull?: boolean;
     };
     // for options see https://pouchdb.com/api.html#replication
     options?: PouchReplicationOptions;
     query?: RxQuery<any, any>;
-}
+};

@@ -392,7 +392,11 @@ var closeLokiCollections = function closeLokiCollections(databaseName, collectio
             });
             return Promise.resolve(new Promise(function (res, rej) {
               databaseState.database.close(function (err) {
-                err ? rej(err) : res();
+                if (err) {
+                  rej(err);
+                } else {
+                  res();
+                }
               });
             })).then(function () {});
           }
@@ -531,7 +535,11 @@ function getLokiDatabase(databaseName, databaseSettings) {
                   if (useSettings.autoloadCallback) {
                     useSettings.autoloadCallback(err);
                   }
-                  err ? rej(err) : res();
+                  if (err) {
+                    rej(err);
+                  } else {
+                    res();
+                  }
                 });
               } catch (err) {
                 rej(err);

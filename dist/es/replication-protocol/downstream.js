@@ -226,24 +226,24 @@ export function startReplicationDownstream(state) {
       var useTasks = [];
       while (openTasks.length > 0) {
         state.events.active.down.next(true);
-        var _taskWithTime = ensureNotFalsy(openTasks.shift());
+        var innerTaskWithTime = ensureNotFalsy(openTasks.shift());
 
         /**
-         * If the task came in before the last time we started the pull 
+         * If the task came in before the last time we started the pull
          * from the master, then we can drop the task.
          */
-        if (_taskWithTime.time < lastTimeMasterChangesRequested) {
+        if (innerTaskWithTime.time < lastTimeMasterChangesRequested) {
           continue;
         }
-        if (_taskWithTime.task === 'RESYNC') {
+        if (innerTaskWithTime.task === 'RESYNC') {
           if (useTasks.length === 0) {
-            useTasks.push(_taskWithTime.task);
+            useTasks.push(innerTaskWithTime.task);
             break;
           } else {
             break;
           }
         }
-        useTasks.push(_taskWithTime.task);
+        useTasks.push(innerTaskWithTime.task);
       }
       if (useTasks.length === 0) {
         state.events.active.down.next(false);
@@ -378,7 +378,7 @@ export function startReplicationDownstream(state) {
                    * Document states are exactly equal.
                    * This can happen when the replication is shut down
                    * unexpected like when the user goes offline.
-                   * 
+                   *
                    * Only when the assumedMaster is different from the forkState,
                    * we have to patch the document in the meta instance.
                    */

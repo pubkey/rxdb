@@ -52,14 +52,14 @@ export type MangoQuerySelectorAndIndex<RxDocType = any> = {
     /**
      * By default, the RxStorage implementation
      * decides which index to use when running the query.
-     * 
+     *
      * For better performance, a different index might be defined
      * by setting it in the query.
      * How this improves performance and if the defined index is used,
      * depends on the RxStorage implementation.
      */
     index?: string | string[];
-}
+};
 
 export type MangoQueryNoLimit<RxDocType = any> = MangoQuerySelectorAndIndex<RxDocType> & {
     /**
@@ -67,7 +67,7 @@ export type MangoQueryNoLimit<RxDocType = any> = MangoQuerySelectorAndIndex<RxDo
      * If no sort is set, RxDB will sort by the primary key.
      * Also if sort is set, RxDB will add primaryKey sorting
      * if the primaryKey was not in the sort parameters before.
-     * This ensures that there is a deterministic sorting of the 
+     * This ensures that there is a deterministic sorting of the
      * results, not mather at which order the documents have been
      * inserted into the storage.
      */

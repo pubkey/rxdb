@@ -17,7 +17,7 @@ export type RxCleanupPolicy = {
     minimumCollectionAge: number;
     /**
      * After the initial cleanup is done,
-     * a new cleanup is started after [runEach] milliseconds 
+     * a new cleanup is started after [runEach] milliseconds
      */
     runEach: number;
     /**
@@ -35,4 +35,4 @@ export type RxCleanupPolicy = {
      * only one instance will start the cleanup.
      */
     waitForLeadership: boolean;
-}
+};

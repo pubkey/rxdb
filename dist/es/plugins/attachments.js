@@ -69,8 +69,8 @@ export var putAttachment = function putAttachment(attachmentData) {
             document: flatClone(docWriteData)
           };
           return Promise.resolve(writeSingle(_this7.collection.storageInstance, writeRow, 'attachment-put')).then(function (writeResult) {
-            var attachmentData = writeResult._attachments[id];
-            var attachment = fromStorageInstanceResult(id, attachmentData, _this7);
+            var attachmentDataOfId = writeResult._attachments[id];
+            var attachment = fromStorageInstanceResult(id, attachmentDataOfId, _this7);
             var newData = flatClone(_this7._data);
             newData._rev = writeResult._rev;
             newData._attachments = writeResult._attachments;

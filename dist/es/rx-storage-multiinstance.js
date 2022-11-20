@@ -2,13 +2,13 @@
  * When a persistend RxStorage is used in more the one JavaScript process,
  * the even stream of the changestream() function must be broadcasted to the other
  * RxStorageInstances of the same databaseName+collectionName.
- * 
+ *
  * In the past this was done by RxDB but it makes more sense to do this
  * at the RxStorage level so that the broadcasting etc can all happen inside of a WebWorker
  * and not on the main thread.
  * Also it makes it less complex to stack up different RxStorages onto each other
  * like what we do with the in-memory plugin.
- * 
+ *
  * This is intened to be used inside of createStorageInstance() of a storage.
  * Do not use this if the storage anyway broadcasts the events like when using MongoDB
  * or in the future W3C might introduce a way to listen to IndexedDB changes.
@@ -25,7 +25,7 @@ import { BroadcastChannel } from 'broadcast-channel';
  * have different broadcast channels.
  * But also it ensures that for each RxDatabase we only create a single
  * broadcast channel that can even be reused in the leader election plugin.
- * 
+ *
  * TODO at the end of the unit tests,
  * we should ensure that all channels are closed and cleaned up.
  * Otherwise we have forgot something.

@@ -17,21 +17,21 @@ import type {
     RxDatabaseCreator,
     RxDocument,
     RxStorage
-} from '../types'
+} from '../types';
 import type { RxSchema } from '../rx-schema';
 
 export type RxPluginPreCreateRxQueryArgs = {
     op: RxQueryOP;
     queryObj: MangoQuery;
     collection: RxCollection;
-}
+};
 
 export type RxPluginPreAddRxPluginArgs = {
     // the plugin that is getting added
     plugin: RxPlugin | any;
     // previous added plugins
-    plugins: Set<RxPlugin | any>
-}
+    plugins: Set<RxPlugin | any>;
+};
 
 export type RxPluginPrePrepareQueryArgs = {
     rxQuery: RxQuery<any>;
@@ -55,7 +55,7 @@ export type RxPluginHooks<Input> = {
      * Hook function that is added as last.
      */
     after?: (i: Input) => void;
-}
+};
 
 export interface RxPlugin {
     /**
@@ -79,32 +79,32 @@ export interface RxPlugin {
     init?(): any;
 
     prototypes?: {
-        RxSchema?: (proto: RxSchema) => void,
-        RxDocument?: (proto: RxDocument) => void,
-        RxQuery?: (proto: RxQuery) => void,
-        RxCollection?: (proto: RxCollection) => void,
-        RxDatabase?: (proto: RxDatabase) => void
+        RxSchema?: (proto: RxSchema) => void;
+        RxDocument?: (proto: RxDocument) => void;
+        RxQuery?: (proto: RxQuery) => void;
+        RxCollection?: (proto: RxCollection) => void;
+        RxDatabase?: (proto: RxDatabase) => void;
     };
     overwritable?: {
         isDevMode?: () => boolean;
-        deepFreezeWhenDevMode?: <T>(obj: T) => DeepReadonly<T>,
-        validatePassword?: Function,
-        checkAdapter?: Function,
-        tunnelErrorMessage?: Function
+        deepFreezeWhenDevMode?: <T>(obj: T) => DeepReadonly<T>;
+        validatePassword?: Function;
+        checkAdapter?: Function;
+        tunnelErrorMessage?: Function;
     };
     // TODO add typings to hook functions
     hooks?: {
-        preAddRxPlugin?: RxPluginHooks<RxPluginPreAddRxPluginArgs>,
-        preCreateRxDatabase?: RxPluginHooks<any>,
+        preAddRxPlugin?: RxPluginHooks<RxPluginPreAddRxPluginArgs>;
+        preCreateRxDatabase?: RxPluginHooks<any>;
         createRxDatabase?: RxPluginHooks<{
-            database: RxDatabase,
-            creator: RxDatabaseCreator
-        }>,
-        preDestroyRxDatabase?: RxPluginHooks<RxDatabase>,
+            database: RxDatabase;
+            creator: RxDatabaseCreator;
+        }>;
+        preDestroyRxDatabase?: RxPluginHooks<RxDatabase>;
         postRemoveRxDatabase?: RxPluginHooks<{
-            databaseName: string,
-            storage: RxStorage<any, any>
-        }>,
+            databaseName: string;
+            storage: RxStorage<any, any>;
+        }>;
         createRxCollection?: RxPluginHooks<{
             collection: RxCollection;
             creator: RxCollectionCreator;
