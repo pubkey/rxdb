@@ -329,7 +329,7 @@ describe('util.test.js', () => {
         });
     });
     describe('.sortDocumentsByLastWriteTime()', () => {
-        type SortDocType = { id: string };
+        type SortDocType = { id: string; };
         const sortDocPrimary = 'id';
         it('should sort correctly by lwt', () => {
             const docs: RxDocumentData<SortDocType>[] = [
@@ -417,13 +417,13 @@ describe('util.test.js', () => {
             it(`should throw error for ${value} argument`, () => {
                 assert.throws(() => ensureInteger(value));
             });
-        })
+        });
     });
     describe('.batchArray()', () => {
         it('should split into the correct amounts of batches', () => {
             const getArrayWithItems = (amount: number) => {
                 return new Array(amount).fill(0);
-            }
+            };
 
             assert.strictEqual(
                 batchArray(getArrayWithItems(10), 10).length,
@@ -450,7 +450,7 @@ describe('util.test.js', () => {
                 nes: {
                     ted: 'nested'
                 }
-            }
+            };
             assert.strictEqual(
                 objectPathMonad('top')(docData),
                 'top'

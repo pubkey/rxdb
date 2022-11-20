@@ -30,10 +30,10 @@ export type WebsocketMessageType = {
     collection: string;
     method: StringKeys<RxReplicationHandler<any, any>>;
     params: any[];
-}
+};
 
 export type WebsocketMessageResponseType = {
     id: string;
     collection: string;
     result: any;
-}
+};

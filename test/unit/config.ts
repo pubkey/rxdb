@@ -149,7 +149,7 @@ export function setDefaultStorage(storageKey: string) {
                     return {
                         description: 'memory',
                         storage: getRxStorageMemory()
-                    }
+                    };
                 },
                 hasPersistence: false,
                 hasMultiInstance: false,
@@ -174,7 +174,7 @@ export function setDefaultStorage(storageKey: string) {
                         storage: wrappedValidateAjvStorage({
                             storage: getRxStorageMemory()
                         })
-                    }
+                    };
                 },
                 hasPersistence: false,
                 hasMultiInstance: false,
@@ -243,7 +243,7 @@ export function setDefaultStorage(storageKey: string) {
                         return {
                             storage: getRxStorageDexie({}),
                             description: 'dexie+native-indexeddb'
-                        }
+                        };
                     }
                 },
                 hasPersistence: true,
@@ -305,7 +305,7 @@ export function setDefaultStorage(storageKey: string) {
                         storage: getRxStorageFoundationDB({
                             apiVersion: foundationDBAPIVersion
                         })
-                    }
+                    };
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,

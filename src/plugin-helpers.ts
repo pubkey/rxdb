@@ -24,7 +24,7 @@ import {
 
 type WrappedStorageFunction = <Internals, InstanceCreationOptions>(
     args: {
-        storage: RxStorage<Internals, InstanceCreationOptions>
+        storage: RxStorage<Internals, InstanceCreationOptions>;
     }
 ) => RxStorage<Internals, InstanceCreationOptions>;
 
@@ -98,7 +98,7 @@ export function wrappedValidateStorageFactory(
                             validatorCached(row.document);
                         });
                         return oldBulkWrite(documentWrites, context);
-                    }
+                    };
 
                     return instance;
                 }
@@ -132,7 +132,7 @@ export function wrapRxStorageInstance<RxDocType>(
         }
         return await modifyFromStorage(docData);
     }
-    async function errorFromStorage<RxDocType>(
+    async function errorFromStorage(
         error: RxStorageBulkWriteError<any>
     ): Promise<RxStorageBulkWriteError<RxDocType>> {
         const ret = flatClone(error);
@@ -171,17 +171,17 @@ export function wrapRxStorageInstance<RxDocType>(
         const promises: Promise<any>[] = [];
         Object.entries(writeResult.success).forEach(([k, v]) => {
             promises.push(
-                fromStorage(v).then(v => ret.success[k] = v)
+                fromStorage(v).then(v2 => ret.success[k] = v2)
             );
         });
         Object.entries(writeResult.error).forEach(([k, error]) => {
             promises.push(
-                errorFromStorage<RxDocType>(error).then(err => ret.error[k] = err)
+                errorFromStorage(error).then(err => ret.error[k] = err)
             );
         });
         await Promise.all(promises);
         return ret;
-    }
+    };
 
     const oldQuery = instance.query.bind(instance);
     instance.query = (preparedQuery) => {
@@ -190,7 +190,7 @@ export function wrapRxStorageInstance<RxDocType>(
                 return Promise.all(queryResult.documents.map(doc => fromStorage(doc)));
             })
             .then(documents => ({ documents: documents as any }));
-    }
+    };
 
     const oldGetAttachmentData = instance.getAttachmentData.bind(instance);
     instance.getAttachmentData = async (
@@ -200,7 +200,7 @@ export function wrapRxStorageInstance<RxDocType>(
         let data = await oldGetAttachmentData(documentId, attachmentId);
         data = await modifyAttachmentFromStorage(data);
         return data;
-    }
+    };
 
     const oldFindDocumentsById = instance.findDocumentsById.bind(instance);
     instance.findDocumentsById = (ids, deleted) => {
@@ -263,7 +263,7 @@ export function wrapRxStorageInstance<RxDocType>(
                 };
                 return ret;
             })
-        )
+        );
     };
 
     const oldConflictResultionTasks = instance.conflictResultionTasks.bind(instance);
@@ -284,7 +284,7 @@ export function wrapRxStorageInstance<RxDocType>(
                 };
             })
         );
-    }
+    };
 
     const oldResolveConflictResultionTask = instance.resolveConflictResultionTask.bind(instance);
     instance.resolveConflictResultionTask = (taskSolution) => {
@@ -299,7 +299,7 @@ export function wrapRxStorageInstance<RxDocType>(
             }
         };
         return oldResolveConflictResultionTask(useSolution);
-    }
+    };
 
     return instance;
 }

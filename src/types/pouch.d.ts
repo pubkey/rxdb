@@ -126,13 +126,13 @@ export type PouchChangeRow = {
     seq: number;
     deleted?: true;
     changes: {
-        rev: 'string'
-    }[],
+        rev: 'string';
+    }[];
     /**
      * only if include_docs === true
      */
-    doc?: PouchChangeDoc
-}
+    doc?: PouchChangeDoc;
+};
 
 export type PouchAttachmentMeta = {
     digest: string;
@@ -161,7 +161,7 @@ export type PouchAttachmentWithData = PouchAttachmentMeta & {
      * because we have the full data and not only a stub.
      */
     stub?: false;
-}
+};
 
 export type PouchChangeDoc = {
     _id: string;
@@ -171,9 +171,9 @@ export type PouchChangeDoc = {
      */
     _deleted?: boolean;
     _attachments: {
-        [attachmentId: string]: PouchAttachmentMeta
+        [attachmentId: string]: PouchAttachmentMeta;
     };
-}
+};
 
 export type WithAttachments<Data> = Data & {
     /**
@@ -182,9 +182,9 @@ export type WithAttachments<Data> = Data & {
      * we do NOT have an empty object.
      */
     _attachments?: {
-        [attachmentId: string]: PouchAttachmentMeta
+        [attachmentId: string]: PouchAttachmentMeta;
     };
-}
+};
 export type WithAttachmentsData<Data> = Data & {
     /**
      * Intentional optional,
@@ -192,35 +192,35 @@ export type WithAttachmentsData<Data> = Data & {
      * we do NOT have an empty object.
      */
     _attachments?: {
-        [attachmentId: string]: PouchAttachmentWithData
+        [attachmentId: string]: PouchAttachmentWithData;
     };
-}
+};
 
 
 export type WithPouchMeta<Data> = Data & {
     _rev: string;
     _attachments?: {
-        [attachmentId: string]: PouchAttachmentMeta
+        [attachmentId: string]: PouchAttachmentMeta;
     };
     _deleted?: boolean;
-}
+};
 
 export type PouchdbChangesResult = {
     results: PouchChangeRow[];
     last_seq: number;
-}
+};
 
 declare type Debug = {
     enable(what: string): void;
     disable(): void;
 };
 
-export type PouchDbSorting = (string | string[] | { [k: string]: 'asc' | 'desc' | 1 | -1 })[];
+export type PouchDbSorting = (string | string[] | { [k: string]: 'asc' | 'desc' | 1 | -1; })[];
 
 // this is not equal to the standard MangoQuery
 // because of different sorting
 export type PouchdbQuery = MangoQuery & {
-    sort?: PouchDbSorting
+    sort?: PouchDbSorting;
 };
 
 export type PouchBulkDocResultRow = {
@@ -230,11 +230,11 @@ export type PouchBulkDocResultRow = {
 
     error?: 'conflict';
     reason?: string;
-}
+};
 
 export type PouchCheckpoint = {
     sequence: number;
-}
+};
 
 export type PouchBulkDocOptions = {
     new_edits?: boolean;
@@ -248,7 +248,7 @@ export type PouchBulkDocOptions = {
         previousDocsInDb: Map<string, any>;
         context: string;
     };
-}
+};
 
 export type PouchMangoQuery<DocType> = MangoQuery<DocType> & {
     index: undefined;
@@ -263,7 +263,7 @@ export type ExplainedPouchQuery<DocType> = {
         type: 'json';
         def: {
             fields: MangoQuerySortPart<DocType>[];
-        }
+        };
     };
     selector: MangoQuerySelector<DocType>;
     range: {
@@ -278,7 +278,7 @@ export type ExplainedPouchQuery<DocType> = {
         r: any[];
     };
     skip: number;
-}
+};
 
 export type PouchAllDocsResponse = {
     offset: number;
@@ -298,7 +298,7 @@ export type PouchAllDocsResponse = {
 export declare class PouchDBInstance {
     constructor(
         name: string,
-        options: { adapter: string }
+        options: { adapter: string; }
     );
     readonly name: string;
     readonly adapter: string;
@@ -319,13 +319,13 @@ export declare class PouchDBInstance {
     allDocs(options?: PouchAllDocsOptions): Promise<PouchAllDocsResponse>;
 
     bulkDocs(
-        docs: { docs: any[] } | any[],
+        docs: { docs: any[]; } | any[],
         options?: PouchBulkDocOptions,
     ): Promise<(PouchBulkDocResultRow | PouchWriteError)[]>;
 
 
     find<DocumentData>(mangoQuery: PouchdbQuery): Promise<{
-        docs: WithPouchMeta<DocumentData>[]
+        docs: WithPouchMeta<DocumentData>[];
     }>;
     compact(options?: any): Promise<any>;
     destroy(options?: any): Promise<void>;
@@ -333,7 +333,7 @@ export declare class PouchDBInstance {
         docId: string,
         options?: any
     ): Promise<null | ({
-        _id: string
+        _id: string;
     } & any)>;
     put(
         doc: any,
@@ -344,9 +344,8 @@ export declare class PouchDBInstance {
         options?: any,
     ): Promise<any>;
 
-    changes(options: PouchChangesOptionsNonLive): Promise<PouchdbChangesResult>;
+    changes(options?: PouchChangesOptionsNonLive): Promise<PouchdbChangesResult>;
     changes(options: PouchChangesOptionsLive): PouchChangesOnChangeEvent;
-    changes(): Promise<PouchdbChangesResult>;
 
     sync(remoteDb: string | any, options?: PouchReplicationOptions): PouchSyncHandler;
     replicate(options?: PouchReplicationOptions): PouchSyncHandler;
@@ -362,7 +361,7 @@ export declare class PouchDBInstance {
     getAttachment(
         docId: string,
         attachmentId: string,
-        options?: { rev?: string },
+        options?: { rev?: string; },
     ): Promise<BlobBuffer>;
     removeAttachment(
         docId: string,
@@ -382,7 +381,7 @@ export declare class PouchDBInstance {
 
             //  I could not find out what this should be
             atts_since?: any;
-        }[],
+        }[];
         // Each returned revision body will include its revision history as a _revisions property. Default is false
         revs?: boolean;
         // what does this?
@@ -401,16 +400,16 @@ export declare class PouchDBInstance {
                     _revisions: {
                         ids: string[];
                         start: number;
-                    }
-                }
+                    };
+                };
                 error?: {
                     error: string;
                     id: string;
                     reason: string;
                     rev: string;
-                }
-            }[]
-        }[]
+                };
+            }[];
+        }[];
     }>;
 
     revsDiff(diff: any): Promise<any>;
@@ -423,9 +422,9 @@ export declare class PouchDBInstance {
             type: string;
             def: {
                 fields: {
-                    [key: string]: 'asc' | 'desc'
+                    [key: string]: 'asc' | 'desc';
                 }[];
-            }
+            };
         }[];
         total_rows: number;
     }>;

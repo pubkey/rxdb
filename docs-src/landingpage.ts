@@ -166,7 +166,7 @@ window.onload = async function () {
             map(d => d.data),
             distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
         )
-        .subscribe((beatingValuesDoc: BeatingValuesType) => {
+        .subscribe((beatingValuesDocInner: BeatingValuesType) => {
 
             heartbeatListeners.forEach(function (listener) {
                 listener(heartbeatIndex);
@@ -174,10 +174,10 @@ window.onload = async function () {
             heartbeatIndex = heartbeatIndex + 1;
 
 
-            $swapOutFirst.innerHTML = beatingValuesDoc.text1;
-            $swapOutSecond.innerHTML = beatingValuesDoc.text2;
+            $swapOutFirst.innerHTML = beatingValuesDocInner.text1;
+            $swapOutSecond.innerHTML = beatingValuesDocInner.text2;
 
-            const color = beatingValuesDoc.color;
+            const color = beatingValuesDocInner.color;
             Array.from($$beatingColor).forEach(function (element) {
                 element.style.backgroundColor = color;
             });
@@ -192,19 +192,16 @@ window.onload = async function () {
         Array.from($$beating).forEach(function (element) {
             element.style.animationDuration = heartbeatDuration + 'ms';
             element.classList.remove('animation');
-            element.offsetWidth
             element.classList.add('animation');
         });
         Array.from($$beatingFirst).forEach(function (element) {
             element.style.animationDuration = heartbeatDuration + 'ms';
             element.classList.remove('animation');
-            element.offsetWidth
             element.classList.add('animation');
         });
         Array.from($$beatingSecond).forEach(function (element) {
             element.style.animationDuration = heartbeatDuration + 'ms';
             element.classList.remove('animation');
-            element.offsetWidth
             element.classList.add('animation');
         });
     });
@@ -329,7 +326,7 @@ function getBeatCurrentBeatInfo() {
         ratio,
         period,
         timeToNextPeriod
-    }
+    };
 }
 
 const colors = [
@@ -391,7 +388,7 @@ function shuffleWithSeed<T>(array: T[], seed: number): T[] {
         t = array[m];
         array[m] = array[i];
         array[i] = t;
-        ++seed
+        ++seed;
     }
 
     return array;

@@ -81,7 +81,7 @@ export function pullStreamBuilderFromRxSchema(
             variables: {
                 headers
             }
-        }
+        };
     };
     return builder;
 }

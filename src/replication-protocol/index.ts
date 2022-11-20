@@ -185,8 +185,8 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                 return {
                     checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
                     documents: result.documents.map(d => writeDocToDocState(d))
-                }
-            })
+                };
+            });
         },
         async masterWrite(
             rows

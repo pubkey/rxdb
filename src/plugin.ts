@@ -32,7 +32,7 @@ import { newRxError, newRxTypeError } from './rx-error';
 /**
  * prototypes that can be manipulated with a plugin
  */
-const PROTOTYPES: { [k: string]: any } = {
+const PROTOTYPES: { [k: string]: any; } = {
     RxSchema: RxSchema.prototype,
     RxDocument: RxDocumentPrototype,
     RxQuery: RxQueryBase.prototype,
@@ -103,10 +103,10 @@ export function addRxPlugin(plugin: RxPlugin) {
             .entries(plugin.hooks)
             .forEach(([name, hooksObj]) => {
                 if (hooksObj.after) {
-                    HOOKS[name].push(hooksObj.after)
+                    HOOKS[name].push(hooksObj.after);
                 }
                 if (hooksObj.before) {
-                    HOOKS[name].unshift(hooksObj.before)
+                    HOOKS[name].unshift(hooksObj.before);
                 }
             });
     }

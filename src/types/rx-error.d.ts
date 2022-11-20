@@ -109,8 +109,8 @@ export interface RxErrorParameters {
      * The documents that failed to be pushed.
      * Typed as 'any' because they might be modified by the push modifier.
      */
-    readonly pushRows?: RxReplicationWriteToMasterRow<any>[],
-    readonly direction?: 'pull' | 'push'
+    readonly pushRows?: RxReplicationWriteToMasterRow<any>[];
+    readonly direction?: 'pull' | 'push';
 
 }
 

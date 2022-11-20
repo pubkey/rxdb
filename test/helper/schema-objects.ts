@@ -217,13 +217,13 @@ export interface EncryptedDeepHumanDocumentType {
     };
     deepSecret: {
         darkhole: {
-            pw: string
-        }
+            pw: string;
+        };
     };
     nestedSecret: {
         darkhole: {
             pw: string;
-        }
+        };
     };
 }
 export function encryptedDeepHumanDocumentType(): EncryptedDeepHumanDocumentType {
@@ -262,7 +262,7 @@ export function compoundIndex(): CompoundIndexDocumentType {
 
 export interface CompoundIndexNoStringDocumentType {
     passportId: string;
-    passportCountry: { [prop: string]: string };
+    passportCountry: { [prop: string]: string; };
     age: number;
 }
 export function compoundIndexNoString(): CompoundIndexNoStringDocumentType {
@@ -399,7 +399,7 @@ export type HumanWithCompositePrimary = {
     lastName: string;
     info: {
         age: number;
-    }
+    };
 };
 export function humanWithCompositePrimary(): HumanWithCompositePrimary {
     return {

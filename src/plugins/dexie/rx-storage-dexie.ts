@@ -83,13 +83,13 @@ export const RxStorageDexieStatics: RxStorageStatics = {
             } else {
                 return false;
             }
-        }
+        };
         return fun;
     },
 
     checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 
-}
+};
 
 
 export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSettings> {

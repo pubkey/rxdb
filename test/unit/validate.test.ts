@@ -23,10 +23,10 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 const validationImplementations: {
-    key: string,
-    implementation: ReturnType<typeof wrappedValidateStorageFactory>
+    key: string;
+    implementation: ReturnType<typeof wrappedValidateStorageFactory>;
 }[] = [
-        /*
+    /*
          * TODO is-my-json-valid is no longer supported, until this is fixed:
          * @link https://github.com/mafintosh/is-my-json-valid/pull/192
         {
@@ -34,15 +34,15 @@ const validationImplementations: {
             implementation: wrappedValidateIsMyJsonValidStorage
         },
         */
-        {
-            key: 'ajv',
-            implementation: wrappedValidateAjvStorage
-        },
-        {
-            key: 'z-schema',
-            implementation: wrappedValidateZSchemaStorage
-        }
-    ];
+    {
+        key: 'ajv',
+        implementation: wrappedValidateAjvStorage
+    },
+    {
+        key: 'z-schema',
+        implementation: wrappedValidateZSchemaStorage
+    }
+];
 
 validationImplementations.forEach(
     validationImplementation => config.parallel('validate.test.js (' + validationImplementation.key + ') ', () => {
@@ -130,7 +130,7 @@ validationImplementations.forEach(
                 });
 
                 it('should allow this complex regex pattern', async () => {
-                    const schema: RxJsonSchema<{ id: string }> = {
+                    const schema: RxJsonSchema<{ id: string; }> = {
                         version: 0,
                         primaryKey: 'id',
                         required: ['id'],
@@ -296,7 +296,7 @@ validationImplementations.forEach(
                     await instance.close();
                 });
                 it('should throw if enum does not match', async () => {
-                    const schema: RxJsonSchema<{ id: string; childProperty: 'A' | 'B' | 'C' }> = {
+                    const schema: RxJsonSchema<{ id: string; childProperty: 'A' | 'B' | 'C'; }> = {
                         version: 0,
                         primaryKey: 'id',
                         type: 'object',
@@ -602,7 +602,7 @@ validationImplementations.forEach(
             it('#734 Invalid value persists in document after failed update', async () => {
                 // create a schema
                 const schemaEnum = ['A', 'B'];
-                const mySchema: RxJsonSchema<{ id: string, children: any[] }> = {
+                const mySchema: RxJsonSchema<{ id: string; children: any[]; }> = {
                     version: 0,
                     primaryKey: 'id',
                     required: ['id'],

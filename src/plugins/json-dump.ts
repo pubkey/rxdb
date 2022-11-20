@@ -123,7 +123,7 @@ function importDumpRxCollection<RxDocType>(
             );
             return {
                 document
-            }
+            };
         }),
         'json-dump-import'
     );

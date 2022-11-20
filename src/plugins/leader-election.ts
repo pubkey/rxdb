@@ -56,7 +56,7 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
     this.destroy = function () {
         removeBroadcastChannelReference(this.token, this);
         return oldDestroy();
-    }
+    };
 
 
     let elector = getLeaderElectorByBroadcastChannel(broadcastChannel);

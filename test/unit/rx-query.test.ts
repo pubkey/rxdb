@@ -1028,7 +1028,7 @@ describe('rx-query.test.ts', () => {
             collection.database.destroy();
         });
         it('#698 Same query producing a different result', async () => {
-            const mySchema: RxJsonSchema<{ id: string; event_id: number; user_id: string; created_at: number }> = {
+            const mySchema: RxJsonSchema<{ id: string; event_id: number; user_id: string; created_at: number; }> = {
                 version: 0,
                 keyCompression: false,
                 primaryKey: 'id',
@@ -1151,7 +1151,7 @@ describe('rx-query.test.ts', () => {
                 name: randomCouchString(10),
                 storage: getRxStoragePouch('memory'),
             });
-            const schema: RxJsonSchema<{ roomId: string; sessionId: string }> = {
+            const schema: RxJsonSchema<{ roomId: string; sessionId: string; }> = {
                 version: 0,
                 primaryKey: 'roomId',
                 type: 'object',

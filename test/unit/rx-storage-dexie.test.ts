@@ -49,7 +49,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     sort: [
                         { age: 'asc' }
                     ]
-                }
+                };
                 const schema = fillWithDefaultSettings(human);
                 const preparedQuery = RxStorageDexieStatics.prepareQuery(
                     schema,
@@ -176,7 +176,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     data._rev = createRevision(defaultHashFunction, data);
                     return {
                         document: data
-                    }
+                    };
                 }),
                 'dexie-test'
             );

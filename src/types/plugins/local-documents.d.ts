@@ -7,20 +7,20 @@ import { Override } from '../util';
 
 export type LocalDocumentParent = RxDatabase | RxCollection;
 export type LocalDocumentState = {
-    database: RxDatabase,
+    database: RxDatabase;
     parent: LocalDocumentParent;
     storageInstance: RxStorageInstance<RxLocalDocumentData, any, any>;
     docCache: DocCache<RxLocalDocument<any, any>>;
-}
+};
 export type RxLocalDocumentData<
     Data = {
         // local documents are schemaless and contain any data
-        [key: string]: any
+        [key: string]: any;
     }
-    > = {
-        id: string;
-        data: Data;
-    };
+> = {
+    id: string;
+    data: Data;
+};
 
 declare type LocalDocumentAtomicUpdateFunction<Data> = (
     doc: Data,
@@ -29,16 +29,16 @@ declare type LocalDocumentAtomicUpdateFunction<Data> = (
 
 
 export declare type RxLocalDocument<Parent, Data = any> = Override<
-    RxDocumentBase<RxLocalDocumentData<Data>, {}>,
-    {
-        readonly parent: Parent;
-        isLocal(): true;
+RxDocumentBase<RxLocalDocumentData<Data>, {}>,
+{
+    readonly parent: Parent;
+    isLocal(): true;
 
-        /**
+    /**
          * Because local documents store their relevant data inside of the 'data' property,
          * the atomic mutation methods are changed a bit to only allow to change parts of the data property.
          */
-        atomicUpdate(mutationFunction: LocalDocumentAtomicUpdateFunction<Data>): Promise<RxLocalDocument<Parent, Data>>;
-        atomicPatch(patch: Partial<Data>): Promise<RxLocalDocument<Parent, Data>>;
-    }
+    atomicUpdate(mutationFunction: LocalDocumentAtomicUpdateFunction<Data>): Promise<RxLocalDocument<Parent, Data>>;
+    atomicPatch(patch: Partial<Data>): Promise<RxLocalDocument<Parent, Data>>;
+}
 >;

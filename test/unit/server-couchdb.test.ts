@@ -350,7 +350,7 @@ config.parallel('server-couchdb.test.ts', () => {
         });
 
         // both collections should have 2 documents
-        await serverCollection.insert(schemaObjects.human('server-doc'))
+        await serverCollection.insert(schemaObjects.human('server-doc'));
         await waitUntil(() => serverCollection.find().exec().then(r => r.length === 1));
         await waitUntil(() => clientCollection.find().exec().then(r => r.length === 1));
 
@@ -504,8 +504,8 @@ config.parallel('server-couchdb.test.ts', () => {
 
         const datastoreDBName = config.rootPath + 'test_tmp/datastore-' + randomCouchString(10);
         type Collections = {
-            human: RxCollection<schemas.HumanDocumentType>
-        }
+            human: RxCollection<schemas.HumanDocumentType>;
+        };
 
         const datastoreDB = await createRxDatabase<Collections>({
             name: datastoreDBName,
@@ -680,14 +680,14 @@ config.parallel('server-couchdb.test.ts', () => {
             it('use the path when given', async function () {
                 this.timeout(12 * 1000);
                 const port = await nextPort();
-                const path = '/db2';
+                const subPath = '/db2';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    path,
+                    path: subPath,
                     port
                 });
 
-                const colUrl = 'http://0.0.0.0:' + port + path + '/human';
+                const colUrl = 'http://0.0.0.0:' + port + subPath + '/human';
                 const res = await fetch(colUrl);
                 const got = await res.json();
                 assert.strictEqual(got.doc_count, 1);
@@ -697,14 +697,14 @@ config.parallel('server-couchdb.test.ts', () => {
             it('use the path with ending slash', async function () {
                 this.timeout(12 * 1000);
                 const port = await nextPort();
-                const path = '/db3/';
+                const subPath = '/db3/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    path,
+                    path: subPath,
                     port
                 });
 
-                const colUrl = 'http://0.0.0.0:' + port + path + 'human';
+                const colUrl = 'http://0.0.0.0:' + port + subPath + 'human';
                 const res = await fetch(colUrl);
                 const got = await res.json();
                 assert.strictEqual(got.doc_count, 1);
@@ -714,14 +714,14 @@ config.parallel('server-couchdb.test.ts', () => {
             it('should be able to use the root /', async function () {
                 this.timeout(12 * 1000);
                 const port = await nextPort();
-                const path = '/';
+                const subPath = '/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    path,
+                    path: subPath,
                     port
                 });
 
-                const colUrl = 'http://0.0.0.0:' + port + path + 'human';
+                const colUrl = 'http://0.0.0.0:' + port + subPath + 'human';
                 const res = await fetch(colUrl);
                 const got = await res.json();
                 assert.strictEqual(got.doc_count, 1);

@@ -2,7 +2,7 @@
 /**
  * hook-functions that can be extended by the plugin
  */
-export const HOOKS: { [k: string]: any[] } = {
+export const HOOKS: { [k: string]: any[]; } = {
     /**
      * Runs before a plugin is added.
      * Use this to block the usage of non-compatible plugins.

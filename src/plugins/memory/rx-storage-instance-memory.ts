@@ -65,10 +65,10 @@ import type {
 } from './memory-types';
 
 export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
-    RxDocType,
-    MemoryStorageInternals<RxDocType>,
-    RxStorageMemoryInstanceCreationOptions,
-    RxStorageDefaultCheckpoint
+RxDocType,
+MemoryStorageInternals<RxDocType>,
+RxStorageMemoryInstanceCreationOptions,
+RxStorageDefaultCheckpoint
 > {
 
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
@@ -296,9 +296,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: RxStorageDefaultCheckpoint
     ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }> {
+            documents: RxDocumentData<RxDocType>[];
+            checkpoint: RxStorageDefaultCheckpoint;
+        }> {
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const sinceId = checkpoint ? checkpoint.id : '';
 

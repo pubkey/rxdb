@@ -219,7 +219,7 @@ config.parallel('reactive-document.test.js', () => {
 
             await person.atomicUpdate(state => {
                 state.age = 50;
-                return state
+                return state;
             });
 
             assert.strictEqual(person.age, 50);

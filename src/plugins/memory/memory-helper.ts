@@ -79,11 +79,11 @@ export function putWriteRowToState<RxDocType>(
                  */
                 const prev = docsWithIndex[insertPosition - 1];
                 if (prev && prev.id === docId) {
-                    docsWithIndex.splice(insertPosition - 1, 1)
+                    docsWithIndex.splice(insertPosition - 1, 1);
                 } else {
                     const next = docsWithIndex[insertPosition + 1];
                     if (next.id === docId) {
-                        docsWithIndex.splice(insertPosition + 1, 1)
+                        docsWithIndex.splice(insertPosition + 1, 1);
                     } else {
                         throw newRxError('SNH', {
                             args: {
@@ -104,7 +104,7 @@ export function putWriteRowToState<RxDocType>(
                     } as any,
                     compareDocsWithIndex
                 );
-                docsWithIndex.splice(indexBefore, 1)
+                docsWithIndex.splice(indexBefore, 1);
             }
         }
     });

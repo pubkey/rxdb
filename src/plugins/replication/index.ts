@@ -167,7 +167,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         }
                         const useEv = flatClone(ev);
                         if (this.deletedField !== '_deleted') {
-                            useEv.documents = useEv.documents.map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc))
+                            useEv.documents = useEv.documents.map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
                         }
                         useEv.documents = await Promise.all(
                             useEv.documents.map(d => pullModifier(d))
@@ -220,7 +220,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
                     const useResult = flatClone(result);
                     if (this.deletedField !== '_deleted') {
-                        useResult.documents = useResult.documents.map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc))
+                        useResult.documents = useResult.documents.map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
                     }
                     useResult.documents = await Promise.all(
                         useResult.documents.map(d => pullModifier(d))

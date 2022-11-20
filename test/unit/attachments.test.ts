@@ -38,7 +38,7 @@ config.parallel('attachments.test.ts', () => {
         if (!name) {
             name = 'human';
         }
-        const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType> }>({
+        const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
             name: randomCouchString(10),
             password: 'foooooobaaaar',
             storage: wrappedKeyEncryptionStorage({
@@ -471,7 +471,7 @@ config.parallel('attachments.test.ts', () => {
         }
         it('should emit on other instance', async () => {
             const name = randomCouchString(10);
-            type Collections = { humans: RxCollection<HumanDocumentType, {}, {}> };
+            type Collections = { humans: RxCollection<HumanDocumentType, {}, {}>; };
             type Document = RxDocument<HumanDocumentType>;
             const db = await createRxDatabase<Collections>({
                 name,

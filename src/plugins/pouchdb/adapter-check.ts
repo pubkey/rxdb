@@ -31,9 +31,9 @@ export function checkAdapter(adapter: any): Promise<any> {
         pouch = new (PouchDB as any)(
             POUCHDB_LOCATION,
             adapterObject(adapter), {
-            auto_compaction: true,
-            revs_limit: 1
-        }
+                auto_compaction: true,
+                revs_limit: 1
+            }
         );
     } catch (err) {
         return PROMISE_RESOLVE_FALSE;

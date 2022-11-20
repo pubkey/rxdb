@@ -43,8 +43,7 @@ export function getLokijsAdapterFlutter() {
             const success = true;
             if (success) {
                 callback(serializedDb);
-            }
-            else {
+            } else {
                 callback(new Error('There was a problem loading the database'));
             }
         },
@@ -56,8 +55,7 @@ export function getLokijsAdapterFlutter() {
             const success = true;  // make your own determinations
             if (success) {
                 callback(null);
-            }
-            else {
+            } else {
                 callback(new Error('An error was encountered loading " + dbname + " database.'));
             }
         }

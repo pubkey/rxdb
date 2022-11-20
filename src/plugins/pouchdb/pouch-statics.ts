@@ -60,7 +60,7 @@ export const RxStoragePouchStatics: RxStorageStatics = {
             const rows = [a, b].map(doc => ({
                 doc: pouchSwapPrimaryToId<RxDocType>(primaryPath, doc)
             }));
-            const sortedRows: { doc: any }[] = filterInMemoryFields(
+            const sortedRows: { doc: any; }[] = filterInMemoryFields(
                 rows,
                 {
                     selector: {},

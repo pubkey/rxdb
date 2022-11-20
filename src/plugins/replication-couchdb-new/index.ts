@@ -116,7 +116,7 @@ export function syncCouchDBNew<RxDocType>(
             batchSize: ensureNotFalsy(options.pull).batchSize,
             modifier: ensureNotFalsy(options.pull).modifier,
             stream$: pullStream$.asObservable()
-        }
+        };
     }
 
     let replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined;

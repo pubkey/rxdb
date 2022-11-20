@@ -95,12 +95,12 @@ export const RxStorageLokiStatics: RxStorageStatics = {
 
             const ret = fakeResultSet.filteredrows.length > 0;
             return ret;
-        }
+        };
         return fun;
     },
 
     checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
-}
+};
 
 export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     public name = RX_STORAGE_NAME_LOKIJS;
@@ -112,7 +112,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
      * to make it easier to test multi-tab behavior.
      */
     public leaderElectorByLokiDbName: Map<string, {
-        leaderElector: LeaderElector,
+        leaderElector: LeaderElector;
         /**
          * Count the instances that currently use the elector.
          * If is goes to zero again, the elector can be closed.

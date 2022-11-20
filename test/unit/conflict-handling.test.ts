@@ -12,7 +12,7 @@ import {
 import {
     getRxStorageMemory,
     RxStorageInstanceMemory
-} from '../../plugins/memory'
+} from '../../plugins/memory';
 
 import { HumanDocumentType } from '../helper/schemas';
 
@@ -37,7 +37,7 @@ config.parallel('conflict-handling.test.js', () => {
             storageInstance.resolveConflictResultionTask = function (taskSolution) {
                 resolvedTasks.add(taskSolution.id);
                 return oldResolveConflictResultionTask(taskSolution);
-            }
+            };
 
             const taskId = randomCouchString();
             storageInstance.internals.conflictResultionTasks$.next({

@@ -32,7 +32,7 @@ export type WebsocketWithRefCount = {
     openPromise: Promise<void>;
     connected$: BehaviorSubject<boolean>;
     message$: Subject<WebsocketMessageResponseType>;
-    error$: Subject<RxError>
+    error$: Subject<RxError>;
 };
 
 
@@ -101,7 +101,7 @@ export async function getWebSocket(
                 direction: 'pull'
             });
             error$.next(emitError);
-        }
+        };
 
 
         has = {
@@ -169,7 +169,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                     collection: options.collection.name,
                     method: 'masterChangesSince',
                     params: [lastPulledCheckpoint, batchSize]
-                }
+                };
                 wsClient.send(JSON.stringify(request));
                 const result = await firstValueFrom(
                     messages$.pipe(
@@ -189,7 +189,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                     collection: options.collection.name,
                     method: 'masterWrite',
                     params: [docs]
-                }
+                };
                 wsClient.send(JSON.stringify(request));
                 return firstValueFrom(
                     messages$.pipe(
@@ -222,7 +222,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                 collection: options.collection.name,
                 method: 'masterChangeStream$',
                 params: []
-            }
+            };
             wsClient.send(JSON.stringify(streamRequest));
         }
     });

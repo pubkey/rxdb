@@ -38,7 +38,7 @@ const TRANSPILE_FOLDERS = [
             es5: 'test_tmp'
         }
     }
-]
+];
 
 nconf.argv()
     .env()
@@ -51,14 +51,16 @@ async function transpileFile(
     outDir,
     env
 ) {
-    DEBUG && console.log('transpile: ' + srcLocations.join(', '));
+    if (DEBUG) {
+        console.log('transpile: ' + srcLocations.join(', '));
+    }
     // ensure folder exists
     const folder = path.join(outDir);
     if (!fs.existsSync(folder)) {
         shell.mkdir('-p', folder);
     }
 
-    // const outFilePath = 
+    // const outFilePath =
     // await del.promise([outDir]);
     const cmd = 'cross-env NODE_ENV=' + env +
         ' babel ' +
@@ -68,7 +70,9 @@ async function transpileFile(
         ' --out-dir ' +
         outDir;
 
-    DEBUG && console.dir(cmd);
+    if (DEBUG) {
+        console.dir(cmd);
+    }
 
     const execRes = shell.exec(cmd, {
         async: true
@@ -144,7 +148,9 @@ async function getFiles() {
         filesByGoalFolder[file.goalFolder].push(file);
     });
 
-    DEBUG && console.dir(filesByGoalFolder);
+    if (DEBUG) {
+        console.dir(filesByGoalFolder);
+    }
 
     return filesByGoalFolder;
 }
@@ -168,20 +174,22 @@ async function run() {
 
             await Promise.all(
                 Object.entries(byEnv)
-                    .map(async ([env, files]) => {
+                    .map(async ([env, innerFiles]) => {
                         await transpileFile(
-                            files.map(file => path.join(file.basePath, file.relativePath)),
-                            files[0].goalFolder,
+                            innerFiles.map(file => path.join(file.basePath, file.relativePath)),
+                            innerFiles[0].goalFolder,
                             env
                         );
-                        files.forEach(file => nconf.set(file.fullPath, file.mtime));
+                        innerFiles.forEach(file => nconf.set(file.fullPath, file.mtime));
                     })
             );
         })
     );
 
     nconf.save(function () {
-        DEBUG && console.log('conf saved');
+        if (DEBUG) {
+            console.log('conf saved');
+        }
         console.log('# transpiling DONE (' + cpuCount + ' CPUs)');
     });
 }

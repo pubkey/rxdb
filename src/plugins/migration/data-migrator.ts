@@ -138,7 +138,7 @@ export class DataMigrator {
                         const queryResult = await storageInstance.query(getAllQueryPrepared);
                         const allDocs = queryResult.documents;
                         return allDocs;
-                    }
+                    };
 
                     const countAll: Promise<number[]> = Promise.all(
                         this.nonMigratedOldCollections
@@ -418,7 +418,7 @@ export function migrateDocumentData(
          * Add _meta field if missing.
          * We need this to migration documents from pre-12.0.0 state
          * to version 12.0.0. Therefore we need to add the _meta field if it is missing.
-         * TODO remove this in the major version 13.0.0 
+         * TODO remove this in the major version 13.0.0
          */
         if (!doc._meta) {
             doc._meta = getDefaultRxDocumentMeta();
@@ -447,7 +447,7 @@ export function isDocumentDataWithoutRevisionEqual<T>(doc1: T, doc2: T): boolean
 export async function _migrateDocuments(
     oldCollection: OldRxCollection,
     documentsData: any[]
-): Promise<{ type: string, doc: any }[]> {
+): Promise<{ type: string; doc: any; }[]> {
 
     // run hooks that might mutate documentsData
     await Promise.all(

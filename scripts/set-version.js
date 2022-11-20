@@ -58,7 +58,7 @@ async function run() {
     let newRows = changelogRows.slice(indexStart + 1, indexEnd);
     newRows = newRows
         .filter(row => !row.startsWith('<!-- '))
-        .filter(row => !row.startsWith('### '))
+        .filter(row => !row.startsWith('### '));
     newRows.push('');
 
 

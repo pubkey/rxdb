@@ -50,7 +50,7 @@ export function getDexieDbWithTables(
                  * by primary key.
                  * This increases performance because it is way easier for the query planner to select
                  * a good index and we also do not have to add the _deleted field to every index.
-                 * 
+                 *
                  * We also need the [_meta.lwt+' + primaryPath + '] index for getChangedDocumentsSince()
                  */
                 [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']'
@@ -123,7 +123,7 @@ export function getDexieSortComparator<RxDocType>(
         } else {
             return 1;
         }
-    }
+    };
 
     return fun;
 }
@@ -236,7 +236,7 @@ export function getDexieStoreSchema(
      * which comes from the key-compression plugin.
      */
     parts = parts.map(part => {
-        return part.map(str => dexieReplaceIfStartsWithPipe(str))
+        return part.map(str => dexieReplaceIfStartsWithPipe(str));
     });
 
     return parts.map(part => {

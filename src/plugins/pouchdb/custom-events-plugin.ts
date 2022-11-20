@@ -90,8 +90,8 @@ let i = 0;
 /**
  * Because we cannot force pouchdb to await bulkDocs runs
  * inside of a transaction, like done with the other RxStorage implementations,
- * we have to ensure the calls to bulkDocs() do not run in parallel. 
- * 
+ * we have to ensure the calls to bulkDocs() do not run in parallel.
+ *
  * TODO this is somehow a hack. Instead of doing that, inspect how
  * PouchDB runs bulkDocs internally and adapt that transaction handling.
  */
@@ -117,7 +117,7 @@ export function addCustomEventsPluginToPouch() {
      */
     const newBulkDocs = function (
         this: PouchDBInstance,
-        body: any[] | { docs: any[], new_edits?: boolean },
+        body: any[] | { docs: any[]; new_edits?: boolean; },
         options: PouchBulkDocOptions,
         callback: Function
     ) {
@@ -157,7 +157,9 @@ export function addCustomEventsPluginToPouch() {
                 options,
                 (err: any, result: (PouchBulkDocResultRow | PouchWriteError)[]) => {
                     if (err) {
-                        callback ? callback(err, null) : 0;
+                        if (callback) {
+                            callback(err, null);
+                        }
                     } else {
                         if (callback) {
                             callback(null, result);
@@ -186,7 +188,7 @@ export function addCustomEventsPluginToPouch() {
 
     const newBulkDocsInner = async function (
         this: PouchDBInstance,
-        body: any[] | { docs: any[], new_edits?: boolean },
+        body: any[] | { docs: any[]; new_edits?: boolean; },
         options: PouchBulkDocOptions,
         callback: Function
     ) {
@@ -387,7 +389,7 @@ export function addCustomEventsPluginToPouch() {
             const docIds: Set<string> = new Set(docs.map(d => d._id));
             let heighestSequence = 0;
             let changesSub: PouchChangesOnChangeEvent;
-            const heighestSequencePromise = new Promise<number>(res => {
+            const heighestSequencePromise = new Promise<number>(res2 => {
                 changesSub = this.changes({
                     since: 'now',
                     live: true,
@@ -402,7 +404,7 @@ export function addCustomEventsPluginToPouch() {
 
                         if (docIds.size === 0) {
                             (changesSub as any).cancel();
-                            res(heighestSequence);
+                            res2(heighestSequence);
                         }
                     }
                 }) as any;
@@ -424,13 +426,17 @@ export function addCustomEventsPluginToPouch() {
                 useOptsForOldBulkDocs,
                 (err: any, result: (PouchBulkDocResultRow | PouchWriteError)[]) => {
                     if (err) {
-                        callback ? callback(err) : rej(err);
+                        if (callback) {
+                            callback(err);
+                        } else {
+                            rej(err);
+                        }
                     } else {
                         return (async () => {
                             const hasError = result.find(row => (row as PouchWriteError).error);
-                            let heighestSequence = -1;
+                            let heighestSequenceInner = -1;
                             if (!hasError) {
-                                heighestSequence = await heighestSequencePromise;
+                                heighestSequenceInner = await heighestSequencePromise;
                             } else {
                                 changesSub.cancel();
                             }
@@ -465,7 +471,7 @@ export function addCustomEventsPluginToPouch() {
                                         id: randomCouchString(10),
                                         events,
                                         checkpoint: {
-                                            sequence: heighestSequence
+                                            sequence: heighestSequenceInner
                                         },
                                         context: options.custom ? options.custom.context : 'pouchdb-internal'
                                     };
@@ -608,7 +614,9 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                 ret.push(changeEvent);
             })
         );
+        // eslint-disable-next-line brace-style
     }
+
     /**
      * There is no write map given for internal pouchdb document writes
      * like it is done with replication.
@@ -679,12 +687,12 @@ export async function eventEmitDataToStorageEvents<RxDocType>(
                     // we need to add the new revision to the previous doc
                     // so that the eventkey is calculated correctly.
                     // Is this a hack? idk.
-                    const attachments = await writeAttachmentsToAttachments(writeRow.previous._attachments);
+                    const attachmentsInner = await writeAttachmentsToAttachments(writeRow.previous._attachments);
                     const previousDoc = Object.assign(
                         {},
                         writeRow.previous,
                         {
-                            _attachments: attachments
+                            _attachments: attachmentsInner
                         }
                     );
 

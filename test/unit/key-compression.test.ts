@@ -26,7 +26,7 @@ import { HumanDocumentType, human, enableKeyCompression } from '../helper/schema
 
 config.parallel('key-compression.test.js', () => {
     async function getCollection() {
-        const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType> }>({
+        const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
             name: randomCouchString(10),
             storage: wrappedKeyCompressionStorage({
                 storage: config.storage.getStorage()
@@ -133,7 +133,7 @@ config.parallel('key-compression.test.js', () => {
     });
     describe('issues', () => {
         it('#50 compress string array properly', async () => {
-            const mySchema: RxJsonSchema<{ likes: any[], id: string }> = {
+            const mySchema: RxJsonSchema<{ likes: any[]; id: string; }> = {
                 title: 'hero schema',
                 version: 0,
                 description: 'describes a simple hero',

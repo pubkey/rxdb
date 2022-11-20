@@ -178,8 +178,8 @@ export function categorizeBulkWriteRows<RxDocType>(
      * each time we use it.
      */
     docsInDb:
-        Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>> |
-        ById<RxDocumentData<RxDocType>>,
+    Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>> |
+    ById<RxDocumentData<RxDocType>>,
     /**
      * The write rows that are passed to
      * RxStorageInstance().bulkWrite().
@@ -453,7 +453,7 @@ export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWrite
         .entries(doc._attachments)
         .forEach(([attachmentId, attachmentData]) => {
             useDoc._attachments[attachmentId] = attachmentWriteDataToNormalData(attachmentData);
-        })
+        });
     return useDoc;
 }
 

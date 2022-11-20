@@ -51,10 +51,10 @@ import { newRxError } from '../../rx-error';
 let instanceId = now();
 
 export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
-    RxDocType,
-    DexieStorageInternals,
-    DexieSettings,
-    RxStorageDefaultCheckpoint
+RxDocType,
+DexieStorageInternals,
+DexieSettings,
+RxStorageDefaultCheckpoint
 > {
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
@@ -190,7 +190,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 if (deleted) {
                     docsInDb = await getDocsInDb<RxDocType>(this.internals, ids);
                 } else {
-                    docsInDb = await state.dexieTable.bulkGet(ids)
+                    docsInDb = await state.dexieTable.bulkGet(ids);
                 }
                 ids.forEach((id, idx) => {
                     const documentInDb = docsInDb[idx];
@@ -226,9 +226,9 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: RxStorageDefaultCheckpoint
     ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }> {
+            documents: RxDocumentData<RxDocType>[];
+            checkpoint: RxStorageDefaultCheckpoint;
+        }> {
         ensureNotClosed(this);
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const sinceId = checkpoint ? checkpoint.id : '';

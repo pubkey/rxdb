@@ -32,7 +32,7 @@ config.parallel('encryption.test.ts', () => {
     async function createEncryptedCollection(
         amount: number = 10
     ): Promise<RxCollection<schemaObjects.EncryptedHumanDocumentType>> {
-        const db = await createRxDatabase<{ encryptedhuman: RxCollection<schemaObjects.EncryptedHumanDocumentType> }>({
+        const db = await createRxDatabase<{ encryptedhuman: RxCollection<schemaObjects.EncryptedHumanDocumentType>; }>({
             name: randomCouchString(10),
             storage,
             eventReduce: true,

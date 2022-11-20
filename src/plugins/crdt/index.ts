@@ -272,11 +272,13 @@ export function mergeCRDTFields<RxDocType>(
             ids.add(op.creator);
             mergedOps.push(op);
         });
-        crdtsB.operations[index] && crdtsB.operations[index].forEach(op => {
-            if (!ids.has(op.creator)) {
-                mergedOps.push(op);
-            }
-        });
+        if (crdtsB.operations[index]) {
+            crdtsB.operations[index].forEach(op => {
+                if (!ids.has(op.creator)) {
+                    mergedOps.push(op);
+                }
+            });
+        }
         mergedOps = mergedOps.sort(sortOperationComparator);
         ret.operations[index] = mergedOps;
     });
@@ -370,7 +372,7 @@ export const RxDBcrdtPlugin: RxPlugin = {
                         }
                     }
                 });
-            }
+            };
 
             const oldAtomicPatch = proto.atomicPatch;
             proto.atomicPatch = function (this: RxDocument, patch: any) {
@@ -382,7 +384,7 @@ export const RxDBcrdtPlugin: RxPlugin = {
                         $set: patch
                     }
                 });
-            }
+            };
             const oldAtomicUpdate = proto.atomicUpdate;
             proto.atomicUpdate = function (fn: any, context: string) {
                 if (!this.collection.schema.jsonSchema.crdt) {
@@ -476,7 +478,7 @@ export const RxDBcrdtPlugin: RxPlugin = {
                         });
 
                         return bulkWriteBefore(writes, context);
-                    }
+                    };
                 }
 
 
@@ -513,7 +515,7 @@ export const RxDBcrdtPlugin: RxPlugin = {
                         return docData;
                     });
                     return bulkInsertBefore(useDocsData);
-                }
+                };
             }
         }
     }

@@ -228,9 +228,8 @@ export async function dexieCount<RxDocType>(
             const request = index.count(keyRange);
             count = await new Promise<number>((res, rej) => {
                 request.onsuccess = function () {
-                    const count = request.result;
-                    res(count);
-                }
+                    res(request.result);
+                };
                 request.onerror = (err: any) => rej(err);
             });
         }

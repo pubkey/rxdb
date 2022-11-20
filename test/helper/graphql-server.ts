@@ -54,7 +54,7 @@ export interface GraphqlServer<T> {
     wsPort: number;
     subServer: any;
     url: GraphQLServerUrl;
-    setDocument(doc: T): Promise<{ data: any }>;
+    setDocument(doc: T): Promise<{ data: any; }>;
     overwriteDocuments(docs: T[]): void;
     getDocuments(): T[];
     requireHeader(name: string, value: string): void;
@@ -145,7 +145,7 @@ export async function spawn(
     `);
 
     const pubsub = new PubSub();
-    /*pubsub.subscribe('humanChanged', data => {
+    /* pubsub.subscribe('humanChanged', data => {
         console.log('pubsub received!!');
         console.dir(data);
     });*/
@@ -182,8 +182,7 @@ export async function spawn(
                 } else if (doc.updatedAt === minUpdatedAt) {
                     if (doc.id > lastId) {
                         return true;
-                    }
-                    else return false;
+                    } else return false;
                 }
             });
 

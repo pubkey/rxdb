@@ -55,10 +55,10 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 let lastId = 0;
 
 export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
-    RxDocType,
-    PouchStorageInternals,
-    PouchSettings,
-    PouchCheckpoint
+RxDocType,
+PouchStorageInternals,
+PouchSettings,
+PouchCheckpoint
 > {
     public readonly id: number = lastId++;
 
@@ -156,7 +156,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         context: string
     ): Promise<
         RxStorageBulkWriteResponse<RxDocType>
-    > {
+        > {
         ensureNotClosed(this);
         if (documentWrites.length === 0) {
             throw newRxError('P2', {
@@ -168,7 +168,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
 
         const writeRowById: Map<string, BulkWriteRow<RxDocType>> = new Map();
         const insertDocsById: Map<string, any> = new Map();
-        const writeDocs: (RxDocType & { _id: string; _rev: string })[] = documentWrites.map(writeData => {
+        const writeDocs: (RxDocType & { _id: string; _rev: string; })[] = documentWrites.map(writeData => {
 
             /**
              * Ensure that _meta.lwt is set correctly
@@ -346,9 +346,9 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
         limit: number,
         checkpoint?: PouchCheckpoint
     ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: PouchCheckpoint;
-    }> {
+            documents: RxDocumentData<RxDocType>[];
+            checkpoint: PouchCheckpoint;
+        }> {
         ensureNotClosed(this);
         if (!limit || typeof limit !== 'number') {
             throw new Error('wrong limit');
@@ -423,7 +423,7 @@ export class RxStorageInstancePouch<RxDocType> implements RxStorageInstance<
             } : checkpoint ? checkpoint : {
                 sequence: -1
             }
-        }
+        };
     }
 
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {

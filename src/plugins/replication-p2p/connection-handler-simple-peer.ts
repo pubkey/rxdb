@@ -94,7 +94,7 @@ export function getConnectionHandlerSimplePeer(
 
                 newPeer.on('connect', () => {
                     connect$.next(newPeer as any);
-                })
+                });
 
             });
         });
@@ -123,8 +123,8 @@ export function getConnectionHandlerSimplePeer(
                 response$.complete();
                 return PROMISE_RESOLVE_VOID;
             }
-        }
+        };
         return handler;
-    }
+    };
     return creator;
 }

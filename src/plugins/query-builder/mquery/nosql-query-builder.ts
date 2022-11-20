@@ -380,8 +380,8 @@ export class NoSqlQueryBuilderClass<DocType> {
     }
 
     toJSON(): {
-        query: MangoQuery<DocType>,
-        path?: string
+        query: MangoQuery<DocType>;
+        path?: string;
     } {
         const query: MangoQuery<DocType> = {
             selector: this._conditions,
@@ -405,7 +405,7 @@ export class NoSqlQueryBuilderClass<DocType> {
 }
 
 export function mQuerySortToRxDBSort<DocType>(
-    sort: { [k: string]: 1 | -1 }
+    sort: { [k: string]: 1 | -1; }
 ): MangoQuerySortPart<DocType>[] {
     return Object.entries(sort).map(([k, v]) => {
         const direction: MangoQuerySortDirection = v === 1 ? 'asc' : 'desc';

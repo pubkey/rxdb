@@ -7,7 +7,7 @@
   "plugins": [
     "eslint-plugin-import",
     "eslint-plugin-jsdoc",
-    "@typescript-eslint"
+    "@typescript-eslint"    
   ],
   "extends": [
     "eslint:recommended",
@@ -47,7 +47,7 @@
         }
       }
     ],
-    "@typescript-eslint/member-ordering": "error",
+    "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-misused-new": "error",
     "@typescript-eslint/no-non-null-assertion": "error",
@@ -85,7 +85,7 @@
     "id-blacklist": "off",
     "id-match": "off",
     "jsdoc/no-types": "off",
-    "no-bitwise": "error",
+    "no-bitwise": "off",
     "no-caller": "error",
     "no-console": [
       "error",
@@ -133,7 +133,6 @@
     "no-var": "error",
     "prefer-const": "error",
     "radix": "error",
-    "semi": "error",
     "spaced-comment": [
       "error",
       "always",
@@ -179,29 +178,15 @@
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "indent": "off",
     "@typescript-eslint/no-empty-interface": "off",
-    "@typescript-eslint/semi": "off",
-    "no-trailing-spaces": "off",
-    "@typescript-eslint/member-delimiter-style": "off",
-    "@typescript-eslint/indent": "off",
-    "brace-style": "off",
-    "semi": "off",
-    "@typescript-eslint/unified-signatures": "off",
-    "@typescript-eslint/member-ordering": "off",
-    "eol-last": "off",
+    "semi": "error",
     "no-case-declarations": "off",
     "no-self-assign": "off",
-    "spaced-comment": "off",
     "no-constant-condition": "off",
     "@typescript-eslint/no-this-alias": "off",
     "prefer-rest-params": "off",
     "prefer-spread": "off",
     "@typescript-eslint/prefer-as-const": "off",
     "@typescript-eslint/prefer-regexp-exec": "off",
-    "no-bitwise": "off",
-    "@typescript-eslint/no-unused-expressions": "off",
-    "no-unused-expressions": "off",
-    "no-shadow": "off",
-    "@typescript-eslint/no-shadow": "off",
 
 
     // These rules must stay turned off
@@ -536,10 +521,7 @@
       }
     },
     {
-      "files": ".eslintrc.json",
-      "rules": {
-        "no-dupe-keys": "off"
-      }
+      "files": ".eslintrc.json"
     },
     {
       "files": "./docs-src/files/logo/js.js",

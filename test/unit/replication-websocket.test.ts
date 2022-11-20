@@ -22,9 +22,9 @@ config.parallel('replication-websocket.test.ts', () => {
     }
 
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
-    async function getTestCollections(docsAmount: { local: number, remote: number }): Promise<{
-        localCollection: RxCollection<TestDocType, {}, {}, {}>,
-        remoteCollection: RxCollection<TestDocType, {}, {}, {}>
+    async function getTestCollections(docsAmount: { local: number; remote: number; }): Promise<{
+        localCollection: RxCollection<TestDocType, {}, {}, {}>;
+        remoteCollection: RxCollection<TestDocType, {}, {}, {}>;
     }> {
         const localCollection = await humansCollection.createHumanWithTimestamp(docsAmount.local, undefined, false);
         const remoteCollection = await humansCollection.createHumanWithTimestamp(docsAmount.remote, undefined, false);

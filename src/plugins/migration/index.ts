@@ -58,7 +58,7 @@ export const RxDBMigrationPlugin: RxPlugin = {
             proto.migrationNeeded = function (this: RxCollection) {
                 if (this.schema.version === 0) {
                     return PROMISE_RESOLVE_FALSE;
-                }        
+                }
                 return mustMigrate(this.getDataMigrator());
             };
         }

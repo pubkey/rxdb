@@ -537,7 +537,7 @@ export const encryptedDeepHuman: RxJsonSchema<EncryptedDeepHumanDocumentType> = 
     ]
 };
 
-export const notExistingIndex: RxJsonSchema<{ passportId: string; address: { street: string } }> = {
+export const notExistingIndex: RxJsonSchema<{ passportId: string; address: { street: string; }; }> = {
     title: 'index',
     version: 0,
     description: 'this schema has a specified index which does not exists',
@@ -1010,7 +1010,7 @@ export const humanMinimal: RxJsonSchema<SimpleHumanV3DocumentType> = overwritabl
     required: ['passportId', 'age']
 });
 
-export const humanMinimalBroken: RxJsonSchema<{ passportId: string; broken: number }> = {
+export const humanMinimalBroken: RxJsonSchema<{ passportId: string; broken: number; }> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -1149,7 +1149,7 @@ export const humanWithSimpleAndCompoundIndexes: RxJsonSchema<{
     required: ['id', 'name', 'age', 'updatedAt']
 });
 
-export const humanWithDeepNestedIndexes: RxJsonSchema<{ id: string; name: string; job: any }> = overwritable.deepFreezeWhenDevMode({
+export const humanWithDeepNestedIndexes: RxJsonSchema<{ id: string; name: string; job: any; }> = overwritable.deepFreezeWhenDevMode({
     version: 0,
     primaryKey: 'id',
     type: 'object',

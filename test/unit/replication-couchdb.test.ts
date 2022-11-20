@@ -114,8 +114,8 @@ describe('replication-couchdb.test.ts', () => {
                 await pw8.promise;
 
                 await AsyncTestUtil.waitUntil(async () => {
-                    const ds = await c2.find().exec();
-                    return ds.length === 1;
+                    const ds2 = await c2.find().exec();
+                    return ds2.length === 1;
                 });
                 const docs = await c2.find().exec();
                 assert.strictEqual(docs.length, 1);

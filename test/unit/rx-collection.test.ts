@@ -138,11 +138,11 @@ describe('rx-collection.test.ts', () => {
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
                     assert.deepStrictEqual(
                         lastIndexDefFields, [
-                        { 'age': 'asc' },
-                        { '|a': 'asc' },
-                        // the primaryKey index will always be added by RxDB
-                        { _id: 'asc' }
-                    ]
+                            { 'age': 'asc' },
+                            { '|a': 'asc' },
+                            // the primaryKey index will always be added by RxDB
+                            { _id: 'asc' }
+                        ]
                     );
                     db.destroy();
                 });
@@ -919,7 +919,7 @@ describe('rx-collection.test.ts', () => {
                          */
                         // const c = humansCollection.create(5);
 
-                        const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType> }>({
+                        const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
                             name: randomCouchString(10),
                             storage: config.storage.getStorage(),
                             eventReduce: true
@@ -1118,7 +1118,7 @@ describe('rx-collection.test.ts', () => {
                         storage: config.storage.getStorage(),
                     });
 
-                    const collectionsCreator: { [k: string]: RxCollectionCreator } = {};
+                    const collectionsCreator: { [k: string]: RxCollectionCreator; } = {};
                     collectionNames.forEach(collectionName => {
                         collectionsCreator[collectionName] = {
                             schema: schemas.human
@@ -1163,7 +1163,7 @@ describe('rx-collection.test.ts', () => {
                             'human-2': { schema: schemas.human }
                         });
                         return db;
-                    }
+                    };
 
                     const db1 = await createDb();
 
@@ -2307,8 +2307,8 @@ describe('rx-collection.test.ts', () => {
             const singleQueryDocs = await collection.findByIds(matchingIds);
 
             const lastEmit = lastOfArray(emitted) as Map<string, RxDocumentData<HumanDocumentType>>;
-            const singleResultPlain = matchingIds.map(id => getFromMapOrThrow(singleQueryDocs, id).toJSON(true))
-            const observedResultPlain = matchingIds.map(id => getFromMapOrThrow(lastEmit, id))
+            const singleResultPlain = matchingIds.map(id => getFromMapOrThrow(singleQueryDocs, id).toJSON(true));
+            const observedResultPlain = matchingIds.map(id => getFromMapOrThrow(lastEmit, id));
             assert.deepStrictEqual(singleResultPlain, observedResultPlain);
 
             //  And contains the right data
@@ -2335,7 +2335,7 @@ describe('rx-collection.test.ts', () => {
 
             //  Verify that the subscription has not been triggered and no error has been added
             assert.strictEqual(sizeBeforeRandomInserts, sizeAfterRandomInserts);
-            assert(sizeBeforeRandomInserts !== undefined)
+            assert(sizeBeforeRandomInserts !== undefined);
 
             // clean up afterwards
             sub.unsubscribe();

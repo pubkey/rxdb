@@ -169,7 +169,7 @@ config.parallel('custom-index.test.ts', () => {
                     id: string;
                     bigNum: number;
                 };
-                const schema: RxJsonSchema<RxDocumentData<DocType>> = fillWithDefaultSettings({
+                const bigNumSchema: RxJsonSchema<RxDocumentData<DocType>> = fillWithDefaultSettings({
                     primaryKey: 'id',
                     version: 0,
                     type: 'object',
@@ -205,7 +205,7 @@ config.parallel('custom-index.test.ts', () => {
                     }
                 };
                 const indexString = getIndexableStringMonad(
-                    schema,
+                    bigNumSchema,
                     index
                 )(doc);
                 const mustBeStart = '000166194601680601';
@@ -219,7 +219,7 @@ config.parallel('custom-index.test.ts', () => {
         });
         describe('special cases', () => {
             it('indexing a optional field must work', () => {
-                const schema: RxJsonSchema<RxDocumentData<{ id: string; optional?: string; }>> = fillWithDefaultSettings({
+                const schemaOptional: RxJsonSchema<RxDocumentData<{ id: string; optional?: string; }>> = fillWithDefaultSettings({
                     primaryKey: 'id',
                     version: 0,
                     type: 'object',
@@ -245,7 +245,7 @@ config.parallel('custom-index.test.ts', () => {
                     id: 'foo'
                 };
                 const strA: string = getIndexableStringMonad<{ id: string; optional?: string; }>(
-                    schema,
+                    schemaOptional,
                     ['optional']
                 )(doc as any);
                 assert.ok(strA);

@@ -21,11 +21,11 @@ import { arrayFilterNotEmpty, clone, ensureNotFalsy } from './util';
 import { normalizeMangoQuery } from './rx-query-helper';
 
 export type EventReduceResultNeg = {
-    runFullQueryAgain: true,
+    runFullQueryAgain: true;
 };
 export type EventReduceResultPos<RxDocumentType> = {
-    runFullQueryAgain: false,
-    changed: boolean,
+    runFullQueryAgain: false;
+    changed: boolean;
     newResults: RxDocumentType[];
 };
 export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventReduceResultPos<RxDocumentType>;
@@ -132,7 +132,7 @@ export function calculateNewResults<RxDocumentType>(
             changeEvent: eventReduceEvent,
             previousResults,
             keyDocumentMap: previousResultsMap
-        }
+        };
 
         const actionName: ActionName = calculateActionName(stateResolveFunctionInput);
         if (actionName === 'runFullQueryAgain') {
