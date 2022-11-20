@@ -105,12 +105,12 @@ details[open] {
     padding-bottom: 25px;
 }
 
-details .summary {
+details summary {
     cursor: pointer;
     font-weight: bold;
     font-size: 130%;
 }
 
-details .summary:hover {
+details summary:hover {
     text-decoration: underline;
 }
