@@ -106,6 +106,11 @@ details[open] {
 }
 
 details .summary {
+    cursor: pointer;
     font-weight: bold;
     font-size: 130%;
+}
+
+details .summary:hover {
+    text-decoration: underline;
 }
