@@ -680,13 +680,14 @@ config.parallel('server-couchdb.test.ts', () => {
             it('use the path when given', async function () {
                 this.timeout(12 * 1000);
                 const port = await nextPort();
+                const subPath = '/db2';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    path: '/db2',
+                    subPath,
                     port
                 });
 
-                const colUrl = 'http://0.0.0.0:' + port + path + '/human';
+                const colUrl = 'http://0.0.0.0:' + port + subPath + '/human';
                 const res = await fetch(colUrl);
                 const got = await res.json();
                 assert.strictEqual(got.doc_count, 1);
@@ -696,13 +697,14 @@ config.parallel('server-couchdb.test.ts', () => {
             it('use the path with ending slash', async function () {
                 this.timeout(12 * 1000);
                 const port = await nextPort();
+                const subPath = '/db3/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    path: '/db3/',
+                    subPath,
                     port
                 });
 
-                const colUrl = 'http://0.0.0.0:' + port + path + 'human';
+                const colUrl = 'http://0.0.0.0:' + port + subPath + 'human';
                 const res = await fetch(colUrl);
                 const got = await res.json();
                 assert.strictEqual(got.doc_count, 1);
@@ -712,13 +714,14 @@ config.parallel('server-couchdb.test.ts', () => {
             it('should be able to use the root /', async function () {
                 this.timeout(12 * 1000);
                 const port = await nextPort();
+                const subPath = '/';
                 const serverCollection = await humansCollection.create(0);
                 await serverCollection.database.serverCouchDB({
-                    path: '/',
+                    subPath,
                     port
                 });
 
-                const colUrl = 'http://0.0.0.0:' + port + path + 'human';
+                const colUrl = 'http://0.0.0.0:' + port + subPath + 'human';
                 const res = await fetch(colUrl);
                 const got = await res.json();
                 assert.strictEqual(got.doc_count, 1);
