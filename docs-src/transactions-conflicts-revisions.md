@@ -1,6 +1,6 @@
 # Transactions, Conflicts and Revisions
 
-In contrast to most SQL databases, RxDB does not have the concept of relational, ACID transactions. Instead, RxDB has to apply different techniques that better suite the offline-first, client side world.
+In contrast to most SQL databases, RxDB does not have the concept of relational, ACID transactions. Instead, RxDB has to apply different techniques that better suite the offline-first, client side world where it is not possible to create a transaction between multiple maybe-offline client devices.
 
 ## Why RxDB does not have transactions
 
@@ -41,9 +41,9 @@ There are two types of conflicts in RxDB, the **local conflict** and the **repli
 
 ### Local conflicts
 
-A local conflict can happen when a write operation assumes a different previous document state, then what is currently stored in the database. This can happen when multiple parts of your application do simultaneous writes to the same document. This can happen on a single browser tab, or even when multiple tabs write at once or when a write appears while the document gets replicated from a remote server replication.
+A local conflict can happen when a write operation assumes a different previous document state, then what is currently stored in the database. This can happen when multiple parts of your application do simultaneous writes to the same document. This can happen on a single browser tab, or when multiple tabs write at once or when a write appears while the document gets replicated from a remote server replication.
 
-When a local conflict appears, RxDB will throw an error. The calling code must then handle the error properly, depending on the application logic.
+When a local conflict appears, RxDB will throw a `409 CONFLICT` error. The calling code must then handle the error properly, depending on the application logic.
 
 Instead of handling local conflicts, in most cases it is easier to ensure that they cannot happen, by using `atomic` database operations like [atomicUpdate()](./rx-document.md), [atomicPatch()](./rx-document.md) or [atomicUpsert()](./rx-collection.md). These write operations have a build in way to handle conflicts by re-applying the mutation functions to the conflicting document state.
 
@@ -54,3 +54,70 @@ A replication conflict appears when multiple clients write to the same documents
 When you replicate with the [Graphql replication](./replication-graphql.md) and the [replication primitives](./replication.md), RxDB assumes that conflicts are **detected** and **resolved** at the client side.
 
 When a document is send to the backend and the backend detected a conflict (by comparing revisions or other properties), the backend will respond with the actual document state so that the client can compare this with the local document state and create a new, resolved document state that is then pushed to the server again. You can read more about the replication protocol [here](./replication.md#conflict-handling).
+
+
+## Custom conflict handler
+
+A conflict handler is a JavaScript function that has two tasks:
+- Detect if a conflict exists
+- Solve exististing conflicts 
+
+Because the conflict handler also is used for conflict detection, it will run many times on pull-, push- and write operations of RxDB. Most of the time it will detect that there is no conflict and then return.
+
+Lets have a look at the default conflict handler of RxDB to learn how to create a custom one:
+
+```ts
+export const defaultConflictHandler: RxConflictHandler<any> = function (
+    /**
+     * The conflict handler gets 3 input properties:
+     * - assumedMasterState: The state of the document that is assumed to be on the master branch
+     * - newDocumentState: The new document state of the fork branch (=client) that RxDB want to write to the master
+     * - realMasterState: The real master state of the document
+     */
+    i: RxConflictHandlerInput<any>
+): Promise<RxConflictHandlerOutput<any>> {
+    /**
+     * Here we detect if a conflict exists in the first place.
+     * If there is no conflict, we return isEqual=true.
+     * If there is a conflict, return isEqual=false.
+     * In the default handler we do a deepEqual check,
+     * but in your custom conflict handler you propably want
+     * to compare specific properties of the document, like the updatedAt time,
+     * for better performance because deepEqual() is expensive.
+     */
+    if (deepEqual(
+        i.newDocumentState,
+        i.realMasterState
+    )) {
+        return Promise.resolve({
+            isEqual: true
+        });
+    }
+
+    /**
+     * If a conflict exists, we have to resolve it.
+     * The default conflict handler will always
+     * drop the fork state and use the master state instead.
+     * 
+     * In your custom conflict handler you likely want to merge properties
+     * of the realMasterState and the newDocumentState instead.
+     */
+    return Promise.resolve({
+        isEqual: false,
+        documentData: i.realMasterState
+    });
+};
+```
+
+To overwrite the default conflict handler, you have to specify a custom `conflictHandler` property when creating a collection with `addCollections()`.
+
+
+```js
+const myCollections = await myDatabase.addCollections({
+  // key = collectionName
+  humans: {
+    schema: mySchema,
+    conflictHandler: myCustomConflictHandler
+  }
+});
+```

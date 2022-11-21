@@ -131,6 +131,8 @@ A---B1---C1---X---D    master/server state
 The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentally overwrite other peoples changes when they go online again.
 You can specify a custom conflict handler by setting the property `conflictHandler` when calling `addCollection()`.
 
+MLearn how to create a [custom conflict handler](./transactions-conflicts-revisions.md#custom-conflict-handler).
+
 
 ## replicateRxCollection()
 
