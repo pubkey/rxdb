@@ -81,7 +81,7 @@ export const defaultConflictHandler: RxConflictHandler<any> = function (
      * If there is no conflict, we return isEqual=true.
      * If there is a conflict, return isEqual=false.
      * In the default handler we do a deepEqual check,
-     * but in your custom conflict handler you propably want
+     * but in your custom conflict handler you probably want
      * to compare specific properties of the document, like the updatedAt time,
      * for better performance because deepEqual() is expensive.
      */
