@@ -5,7 +5,7 @@ React Native provides a cross-platform JavaScript runtime that runs on different
 In difference to the JavaScript runtime of browsers, React Native does not support all HTML5 APIs and so it is not possible to use browser storage possibilities like localstorage, cookies, WebSQL or IndexedDB.
 Instead a different storage solution must be chosen that does not come directly with React Native itself but has to be installed as a library or plugin.
 
-**NOTICE:** You are reading this inside of the [RxDB](./) documentation, so everything might be opinionated.
+**NOTICE:** You are reading this inside of the [RxDB](https://rxdb.info/) documentation, so everything might be opinionated.
 
 <p align="center">
   <img src="./files/icons/react-native.png" alt="React Native" width="20" />
@@ -63,6 +63,10 @@ Also there is no replication method. This makes SQLite a good solution when you 
 
 ### PouchDB
 
+<p align="center">
+  <img src="./files/icons/pouchdb.png" alt="PouchDB" width="40" />
+</p>
+
 PouchDB is a JavaScript NoSQL database that follows the API of the [Apache CouchDB](https://couchdb.apache.org/) server database.
 The core feature of PouchDB is the ability to do a two-way replication with any CouchDB compliant endpoint.
 While PouchDB is pretty mature, it has some drawbacks that makes blocks it from being used in a client-side React Native application. For example it has to store all documents states over time which is required to replicate with CouchDB. Also it is not easily possible to fully purge documents and so it will fill up disc space over time. A big problem is also that PouchDB is not really maintained and major bugs like wrong query results are not fixed anymore. The performance of PouchDB is a general bottleneck which is caused by how it has to store and fetch documents while being compliant to CouchDB. The only real reason to use PouchDB in React Native, is when you want to replicate with a CouchDB or Couchbase server.
@@ -103,9 +107,13 @@ const db = new PouchDB('mydb.db', {
 ```
 
 
-## RxDB
+### RxDB
 
-[RxDB](./) is an offline-first, NoSQL-database for JavaScript Applications. Reactive means that you can not only query the current state, but subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
+<p align="center">
+  <img src="./files/logo/logo_text.svg" alt="RxDB" width="70" />
+</p>
+
+[RxDB](https://rxdb.info/) is an offline-first, NoSQL-database for JavaScript Applications. Reactive means that you can not only query the current state, but subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
 
 There are multiple ways to use RxDB in React Native:
 
@@ -129,6 +137,7 @@ import {
 } from 'rxdb-premium/plugins/sqlite';
 import { openDatabase } from 'react-native-quick-sqlite';
 
+// create database
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageSQLite({
@@ -136,6 +145,7 @@ const myRxDatabase = await createRxDatabase({
     })
 });
 
+// create collections
 const collections = await myRxDatabase.addCollections({
     humans: {
         /* ... */
@@ -153,30 +163,51 @@ const result = await collections.humans.find({
 }).exec();
 
 // observe a query
-const result = await collections.humans.find({
+await collections.humans.find({
     selector: {
         name: 'bar'
     }
-}).$.subscribe(results => {/* ... */});
+}).$.subscribe(result => {/* ... */});
 ```
 
 Using the SQLite RxStorage is pretty fast, which is shown in the [performance comparison](./rx-storage.md#performance-comparison).
 
-## WatermelonDB
+### WatermelonDB
+
+WatermelonDB reactive and asynchronous database for React and React Native apps. It is based on SQLite in React Native and LokiJS when it is used in the browser. It supports schemas, observable queries, migrations and relations.
+The schema layout is handled by TypeScript decorators and looks like this:
+
+```ts
+class Post extends Model {
+  @field('name') name;
+  @field('body') body;
+  @children('comments') comments;
+
+  // a relation to another table
+  @relation('users', 'author_id') author;
+}
+```
+
+WatermelonDB also [supports replication](https://nozbe.github.io/WatermelonDB/Advanced/Sync.html) but the sync protocol is pretty complext because on how it resolves conflicts. I recommend to watch [this video](https://www.youtube.com/watch?v=uFvHURTRLxQ) to learn how the replication works.
+
+According to the roadmap, despite being essentially feature-complete, WatermelonDB is still on the `0.xx` version and intends to switch to a `1.x.x` version as once it [reaches a long-term stable API](https://nozbe.github.io/WatermelonDB/Roadmap.html).
+
+### Firebase / Firestore
+
+<p align="center">
+  <img src="./files/alternatives/firebase.svg" alt="Firebase" width="80" />
+</p>
+
+Firestore is a cloud based database technologie that stores data on clients devices and replicates it with the Firebase cloud service that is run by google. It has many features like observability and authentication.
+The main lacking feature is the non-complete offline first support because clients cannot start the application while being offline because then the authentication does not work. After they are authenticated, being offline is no longer a problem.
+Also using firestore creates a vendor lock-in because it is not possible to replicate with a custom self hosted backend.
 
 
-
-
-## Firebase
-
-- not really offline first
-
+<!-- TODO
 ## Realm
 
 - bound to mongodb cloud replication
-
-## Using RxDB as React-Native Database
-
+-->
 
 
 ## Follow up
