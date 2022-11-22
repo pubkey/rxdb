@@ -56,7 +56,7 @@ With the open connection you can then run SQL queries:
 let { rows } = db.execute('SELECT somevalue FROM sometable');
 ```
 
-If that does not work for you, you might want to try the [react-native-sqlite-storag](https://github.com/andpor/react-native-sqlite-storage) project instead which is also very popular.
+If that does not work for you, you might want to try the [react-native-sqlite-storage](https://github.com/andpor/react-native-sqlite-storage) project instead which is also very popular.
 
 The downside of SQLite is that it is lacking many features that are handfull when using a database together with an UI based application. For example it is not possible to observe queries or document fields.
 Also there is no replication method. This makes SQLite a good solution when you want to solely store data on the client, but not when you want to sync data with a server or other clients.
@@ -113,7 +113,7 @@ const db = new PouchDB('mydb.db', {
   <img src="./files/logo/logo_text.svg" alt="RxDB" width="70" />
 </p>
 
-[RxDB](https://rxdb.info/) is an offline-first, NoSQL-database for JavaScript Applications. Reactive means that you can not only query the current state, but subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
+[RxDB](https://rxdb.info/) is an offline-first, NoSQL-database for JavaScript Applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
 
 There are multiple ways to use RxDB in React Native:
 
@@ -124,7 +124,7 @@ There are multiple ways to use RxDB in React Native:
 
 It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it has the best performance and is the easiest to set up. However it is part of the [Premium Plugins](./premium.md) which must be purchased, so to try out RxDB with React Native, you might want to use one of the other three options.
 
-First you have to install all dependencies vai `npm install rxdb rxjs rxdb-premium react-native-quick-sqlite`.
+First you have to install all dependencies via `npm install rxdb rxjs rxdb-premium react-native-quick-sqlite`.
 Then you can assemble the RxStorage and create a database with it:
 
 ```ts
@@ -201,6 +201,8 @@ According to the roadmap, despite being essentially feature-complete, Watermelon
 Firestore is a cloud based database technologie that stores data on clients devices and replicates it with the Firebase cloud service that is run by google. It has many features like observability and authentication.
 The main lacking feature is the non-complete offline first support because clients cannot start the application while being offline because then the authentication does not work. After they are authenticated, being offline is no longer a problem.
 Also using firestore creates a vendor lock-in because it is not possible to replicate with a custom self hosted backend.
+
+To get started with Firestore in React Native, it is recommended to use the [React Native Firebase](https://github.com/invertase/react-native-firebase) open-source project.
 
 
 <!-- TODO
