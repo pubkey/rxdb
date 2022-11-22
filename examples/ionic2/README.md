@@ -24,3 +24,8 @@ $ ionic cordova run ios
 
 Substitute ios for android if not on a Mac.
 
+
+
+## Related
+
+- [Comparison of Capacitor Databases](https://rxdb.info/capacitor-database.html)

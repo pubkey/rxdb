@@ -33,10 +33,7 @@ describe('replication-p2p.test.ts', () => {
         return;
     }
 
-    if (
-        config.storage.name === 'lokijs' &&
-        !config.platform.isNode()
-    ) {
+    if (config.storage.name === 'lokijs') {
         /**
          * TODO for whatever reason this test
          * randomly does not work in the browser with lokijs

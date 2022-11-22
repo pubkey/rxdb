@@ -22,3 +22,8 @@ For database replication and syncing you will need to input a public ip address 
 
 ![Screenshot](docfiles/screenshot.png?raw=true)
 ![Android](docfiles/android.png?raw=true)
+
+
+## Related
+
+- [Comparison of React Native Databases](https://rxdb.info/react-native-database.html)
