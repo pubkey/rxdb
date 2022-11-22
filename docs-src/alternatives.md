@@ -198,7 +198,7 @@ RxDB supports using [Dexie.js as RxStorage](./rx-storage-dexie.md) which enhance
 Originally Realm was a mobile database for Android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
 It was meant as replacement for SQLite but is more like an object store then a full SQL database.
 In 2019 MongoDB bought Realm and changed the projects focus.
-Now Realm is made for replication with the MongoDB Realm Sync based on the MongoDB Atlas Cloud platform.
+Now Realm is made for replication with the MongoDB Realm Sync based on the MongoDB Atlas Cloud platform. This tight coupling to the MongoDB cloud service is a big downside for most use cases.
 
 ### Apollo
 
