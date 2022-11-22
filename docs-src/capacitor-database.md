@@ -60,7 +60,7 @@ To use SQLite in Capacitor, there are three options:
 - The non-free [Ionic Secure Storage](https://ionic.io/products/secure-storage) which comes at **999$** per month.
 
 
-It is recommened to use the `@capacitor-community/sqlite` because it has the best maintainance and is open source. Install it first `npm install --save @capacitor-community/sqlite` and then set the storage location for iOS apps:
+It is recommended to use the `@capacitor-community/sqlite` because it has the best maintenance and is open source. Install it first `npm install --save @capacitor-community/sqlite` and then set the storage location for iOS apps:
 
 ```json
 {
@@ -86,7 +86,7 @@ let { rows } = database.query('SELECT somevalue FROM sometable');
 ```
 
 
-The downside of SQLite is that it is lacking many features that are handfull when using a database together with an UI based application like your Capacitor app. For example it is not possible to observe queries or document fields. Also there is no realtime replication feature, you can only import json files. This makes SQLite a good solution when you just want to store data on the client, but when you want to sync data with a server or other clients or create big complex realtime applications, you have to use something else.
+The downside of SQLite is that it is lacking many features that are handful when using a database together with an UI based application like your Capacitor app. For example it is not possible to observe queries or document fields. Also there is no realtime replication feature, you can only import json files. This makes SQLite a good solution when you just want to store data on the client, but when you want to sync data with a server or other clients or create big complex realtime applications, you have to use something else.
 
 
 
@@ -99,9 +99,9 @@ The downside of SQLite is that it is lacking many features that are handfull whe
 
 [RxDB](https://rxdb.info/) is an offline first, NoSQL database for JavaScript Applications like hybrid apps. Because it is reactive, you can subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in Capacitor.
 
-Because RxDB is made for Web applications, most of the [available RxStorage](./rx-storage.md) plugins can be used to store and query data in a Capacitor app. However it is recommened to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it stores the data on the filesystem of the device, not in the JavaScript runtime (like IndexedDB). Storing data on the filesystem ensures it is persistend and will not be cleaned up by any process. Also the performance of SQLite is [much faster](./rx-storage.md#performance-comparison) compared to IndexedDB, because SQLite does not have to go througth a browsers permission layers. For the SQLite binding you should use the [@capacitor-community/sqlite](https://github.com/capacitor-community/sqlite) package.
+Because RxDB is made for Web applications, most of the [available RxStorage](./rx-storage.md) plugins can be used to store and query data in a Capacitor app. However it is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it stores the data on the filesystem of the device, not in the JavaScript runtime (like IndexedDB). Storing data on the filesystem ensures it is persistend and will not be cleaned up by any process. Also the performance of SQLite is [much faster](./rx-storage.md#performance-comparison) compared to IndexedDB, because SQLite does not have to go through a browsers permission layers. For the SQLite binding you should use the [@capacitor-community/sqlite](https://github.com/capacitor-community/sqlite) package.
 
-Because the SQLite RxStorage is part of the [Premium Plugins](./premium.md) which must be purchased, it is recommened to use the [Dexie.js RxStorage](./rx-storage-dexie.md) while testing and prototyping your Capacitor app.
+Because the SQLite RxStorage is part of the [Premium Plugins](./premium.md) which must be purchased, it is recommended to use the [Dexie.js RxStorage](./rx-storage-dexie.md) while testing and prototyping your Capacitor app.
 
 
 To use the SQLite RxStorage in Capacitor you have to install all dependencies via `npm install rxdb rxjs rxdb-premium @capacitor-community/sqlite`.

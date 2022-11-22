@@ -29,7 +29,7 @@ const value = await AsyncStorage.getItem('myKey');
 ```
 
 
-AsyncStorage was originaly included in [React Native itself](https://reactnative.dev/docs/asyncstorage). But it was deprecated by the React Native Team which recommends to use a community based package instead. There is a [community fork of AsyncStorage](https://github.com/react-native-async-storage/async-storage) that is actively maintained and open source.
+AsyncStorage was originally included in [React Native itself](https://reactnative.dev/docs/asyncstorage). But it was deprecated by the React Native Team which recommends to use a community based package instead. There is a [community fork of AsyncStorage](https://github.com/react-native-async-storage/async-storage) that is actively maintained and open source.
 
 AsyncStorage is fine when only a small amount of data needs to be stored and when no query capabilities besides the key-access are required. Complex queries or features are not supported which makes AsyncStorage not suitable for anything more then storing simple user settings data.
 
@@ -58,7 +58,7 @@ let { rows } = db.execute('SELECT somevalue FROM sometable');
 
 If that does not work for you, you might want to try the [react-native-sqlite-storage](https://github.com/andpor/react-native-sqlite-storage) project instead which is also very popular.
 
-The downside of SQLite is that it is lacking many features that are handfull when using a database together with an UI based application. For example it is not possible to observe queries or document fields.
+The downside of SQLite is that it is lacking many features that are handful when using a database together with an UI based application. For example it is not possible to observe queries or document fields.
 Also there is no replication method. This makes SQLite a good solution when you want to solely store data on the client, but not when you want to sync data with a server or other clients.
 
 ### PouchDB
@@ -188,7 +188,7 @@ class Post extends Model {
 }
 ```
 
-WatermelonDB also [supports replication](https://nozbe.github.io/WatermelonDB/Advanced/Sync.html) but the sync protocol is pretty complext because on how it resolves conflicts. I recommend to watch [this video](https://www.youtube.com/watch?v=uFvHURTRLxQ) to learn how the replication works.
+WatermelonDB also [supports replication](https://nozbe.github.io/WatermelonDB/Advanced/Sync.html) but the sync protocol is pretty complex because on how it resolves conflicts. I recommend to watch [this video](https://www.youtube.com/watch?v=uFvHURTRLxQ) to learn how the replication works.
 
 According to the roadmap, despite being essentially feature-complete, WatermelonDB is still on the `0.xx` version and intends to switch to a `1.x.x` version as once it [reaches a long-term stable API](https://nozbe.github.io/WatermelonDB/Roadmap.html).
 
