@@ -965,6 +965,14 @@ config.parallel('rx-schema.test.js', () => {
          * @link https://github.com/pubkey/rxdb/issues/3994#issuecomment-1260073490
          */
         it('#3994 must work with a boolean index', async () => {
+            /**
+             * Dexie.js does not support boolean indexes,
+             * see docs-src/rx-storage-dexie.md
+             */
+            if (config.storage.name.includes('dexie')) {
+                return;
+            }
+
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 storage: config.storage.getStorage()

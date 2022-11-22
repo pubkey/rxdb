@@ -2,17 +2,19 @@
 
 To store the data inside of IndexedDB in the browser, you can also use the [Dexie.js](https://github.com/dexie/Dexie.js) [RxStorage](./rx-storage.md).
 
-Dexie.js is a minimal wrapper around IndexedDB that has a good performance.
+Dexie.js is a minimal wrapper around IndexedDB.
 For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/mingo) query handler.
 
 ## Pros 
   - Smaller bundle size than with the PouchDB storage.
   - Fast initial load even on big datasets.
   - Faster write and read performance than with PouchDB because it has less overhead.
+  - Can use [Dexie.js addons](https://dexie.org/docs/Tutorial/Building-Addons).
 
 ## Cons
-  - It does not support attachments. (Make a pull request)
-  - Does not use a [Batched Cursor](./slow-indexeddb.md) which makes it slower then the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
+  - It does not support [attachments](./rx-attachment.md)
+  - [It does not support boolean indexes](#boolean-index)
+  - Does not use a [Batched Cursor](./slow-indexeddb.md#batched-cursor) or [custom indexes](./slow-indexeddb.md#custom-indexes) which makes queries slower compared to the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
 
 ## Usage
 
@@ -63,3 +65,10 @@ const db = await createRxDatabase({
     })
 });
 ```
+
+
+## Boolean Index
+
+Dexie.js does not support boolean indexes because they are not a valid index key in IndexedDB itself. See [w3c/IndexedDB#76](https://github.com/w3c/IndexedDB/issues/76). To index boolean fields, you can:
+- Substitute the index field with a non boolean field. For example you can use a number field and store `0` as `false` and `1` as `true`,
+- or use the the [IndexedDB RxStorage](./rx-storage-indexeddb.md) which supports boolean indexes because it does not use the IndexedDB indexes but [custom index string](./slow-indexeddb.md#custom-indexes) instead.

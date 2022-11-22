@@ -12,7 +12,7 @@ import { Dexie } from 'dexie';
 import { DexieSettings } from '../../types';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
@@ -128,6 +128,30 @@ export function getDexieSortComparator<RxDocType>(
     return fun;
 }
 
+
+export function ensureNoBooleanIndex(schema: RxJsonSchema<any>) {
+    if (!schema.indexes) {
+        return;
+    }
+    const checkedFields = new Set<string>();
+    schema.indexes.forEach(index => {
+        const fields = Array.isArray(index) ? index : [];
+        fields.forEach(field => {
+            if (checkedFields.has(field)) {
+                return;
+            }
+            checkedFields.add(field);
+            const schemaObj = getSchemaByObjectPath(schema, field);
+            if (schemaObj.type === 'boolean') {
+                throw newRxError('DXE1', {
+                    schema,
+                    index,
+                    field
+                });
+            }
+        });
+    });
+}
 
 
 

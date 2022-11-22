@@ -66,9 +66,9 @@ When the checkpoint iteration reaches the last checkpoint, where the backend ret
 
 While the client is connected to the backend, the events from the backend are observed via `pullStream$` and persisted to the client.
 
-If your backend for any reason is not able to provide a full `pullStream$` that contains all events and the checkpoint, you can instead only emit `RESYNC` events that tell RxDB that anything unknown has changed on the server and it should run the pull replication via `checkpoint iteration`.
+If your backend for any reason is not able to provide a full `pullStream$` that contains all events and the checkpoint, you can instead only emit `RESYNC` events that tell RxDB that anything unknown has changed on the server and it should run the pull replication via [checkpoint iteration](#checkpoint-iteration).
 
-When the client goes offline and online again, it might happen that the `pullStream$` has missed out some events. Therefore the `pullStream$` should also emit a `RESYNC` event each time the client reconnects, so that the client can become in sync with the backend via the `checkpoint iteration` mode.
+When the client goes offline and online again, it might happen that the `pullStream$` has missed out some events. Therefore the `pullStream$` should also emit a `RESYNC` event each time the client reconnects, so that the client can become in sync with the backend via the [checkpoint iteration](#checkpoint-iteration) mode.
 
 ## Data layout on the server
 
@@ -131,7 +131,7 @@ A---B1---C1---X---D    master/server state
 The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentally overwrite other peoples changes when they go online again.
 You can specify a custom conflict handler by setting the property `conflictHandler` when calling `addCollection()`.
 
-MLearn how to create a [custom conflict handler](./transactions-conflicts-revisions.md#custom-conflict-handler).
+Learn how to create a [custom conflict handler](./transactions-conflicts-revisions.md#custom-conflict-handler).
 
 
 ## replicateRxCollection()
@@ -438,7 +438,7 @@ await myRxReplicationState.awaitInSync();
 
 ### reSync()
 
-Triggers a `RESYNC` cycle where the replication goes into `Checkpoint iteration` until the client is in sync with the backend. Used in unit tests or when no proper `pull.stream$` can be implemented so that the client only knows that something has been changed but not what.
+Triggers a `RESYNC` cycle where the replication goes into [checkpoint iteration](#checkpoint-iteration) until the client is in sync with the backend. Used in unit tests or when no proper `pull.stream$` can be implemented so that the client only knows that something has been changed but not what.
 
 ```ts
 myRxReplicationState.reSync();

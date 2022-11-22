@@ -15,7 +15,9 @@ import {
 
 import {
     RxStorageDexieStatics,
-    getDexieStoreSchema
+    getDexieStoreSchema,
+    fromDexieToStorage,
+    fromStorageToDexie
 } from '../../plugins/dexie';
 
 import * as schemaObjects from '../helper/schema-objects';
@@ -25,6 +27,7 @@ import {
     humanSchemaLiteral,
     human
 } from '../helper/schemas';
+import { assertThrows } from 'async-test-util';
 
 /**
  * RxStoragePouch specific tests
@@ -134,6 +137,62 @@ config.parallel('rx-storage-dexie.test.js', () => {
                 assert.ok(dexieSchema.startsWith('id, [age+id]'));
             });
         });
+        describe('.fromStorageToDexie()', () => {
+            it('should convert unsupported IndexedDB key', () => {
+                const result = fromStorageToDexie(
+                    {
+                        '|key': 'value',
+                        '|objectArray': [{ ['|id']: '1' }],
+                        '|nestedObject': {
+                            key: 'value2',
+                            '|objectArray': [{ '|id': '2' }],
+                            stringArray: ['415', '51'],
+                            '|numberArray': [1, 2, 3],
+                            '|falsyValue': null
+                        }
+                    }
+                );
+                assert.deepStrictEqual(result, {
+                    '__key': 'value',
+                    '__objectArray': [{ ['__id']: '1' }],
+                    '__nestedObject': {
+                        key: 'value2',
+                        '__objectArray': [{ '__id': '2' }],
+                        stringArray: ['415', '51'],
+                        '__numberArray': [1, 2, 3],
+                        '__falsyValue': null
+                    }
+                });
+            });
+        });
+        describe('.fromDexieToStorage()', () => {
+            it('should revert escaped unsupported IndexedDB key', () => {
+                const result = fromDexieToStorage({
+                    '__key': 'value',
+                    '__objectArray': [{ ['__id']: '1' }],
+                    '__nestedObject': {
+                        key: 'value2',
+                        '__objectArray': [{ '__id': '2' }],
+                        stringArray: ['415', '51'],
+                        '__numberArray': [1, 2, 3],
+                        '__falsyValue': null
+                    }
+                }
+                );
+                assert.deepStrictEqual(result,
+                    {
+                        '|key': 'value',
+                        '|objectArray': [{ ['|id']: '1' }],
+                        '|nestedObject': {
+                            key: 'value2',
+                            '|objectArray': [{ '|id': '2' }],
+                            stringArray: ['415', '51'],
+                            '|numberArray': [1, 2, 3],
+                            '|falsyValue': null
+                        }
+                    });
+            });
+        });
     });
     describe('.query()', () => {
         it('should respect a custom index', async () => {
@@ -239,6 +298,33 @@ config.parallel('rx-storage-dexie.test.js', () => {
             );
 
             storageInstance.close();
+        });
+        /**
+         * @link https://github.com/w3c/IndexedDB/issues/76
+         */
+        it('should throw the correct error on boolean index', async () => {
+            const storage = config.storage.getStorage();
+
+            let schema = clone(humanSchemaLiteral) as any;
+            schema.properties.bool = {
+                type: 'boolean'
+            };
+            schema.required.push('bool');
+            schema.indexes.push(['bool', 'passportId']);
+            schema = fillWithDefaultSettings(schema);
+
+            await assertThrows(
+                () => storage.createStorageInstance<HumanDocumentType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName: randomCouchString(10),
+                    collectionName: randomCouchString(12),
+                    schema,
+                    options: {},
+                    multiInstance: false
+                }),
+                'RxError',
+                'DXE1'
+            );
         });
     });
 });

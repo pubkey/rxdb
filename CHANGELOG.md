@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX Throw proper error message when a boolean index is used in the Dexie.js RxStorage.
 
 <!-- ADD new changes here! -->
 

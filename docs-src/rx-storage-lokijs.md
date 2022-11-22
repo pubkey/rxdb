@@ -14,7 +14,7 @@ LokiJS has the main benefit of having a better performance. It can do this becau
 - Data can be lost when the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated.
 - All data must fit into the memory.
 - Slow initialisation time when used with `multiInstance: true` because it has to await the leader election process.
-- Slow initialisation time when really much data is stored inside of the database.
+- Slow initialisation time when really much data is stored inside of the database because it has to parse a big `JSON` string.
 
 ## Usage
 

@@ -66,6 +66,5 @@ import './unit/population.test';
 import './unit/leader-election.test';
 import './unit/backup.test';
 import './unit/import-export.test';
-import './unit/dexie-helper.test';
 import './unit/plugin.test';
 import './unit/last.test';
