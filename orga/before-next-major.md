@@ -96,3 +96,6 @@ Also rename the method names and variables inside of the plugins.
 ## Batch up atomic operations
 
 If multiple atomic updates are run on the same document at the same time, we should merge them together and do a single database write.
+
+## Add enum-compression to the key-compressio plugin
+- Also rename the key-compression plugin to be just called 'compression'
