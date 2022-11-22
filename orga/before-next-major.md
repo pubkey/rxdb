@@ -92,3 +92,7 @@ const results$ = await myRxCollection.findByIds(['foo', 'bar']).$;
 The `replication-couchdb-new` plugin should be called `replication-couchdb` while the previous `replication-couchdb`
 should be called `replication-couchdb-pouchdb`.
 Also rename the method names and variables inside of the plugins.
+
+## Batch up atomic operations
+
+If multiple atomic updates are run on the same document at the same time, we should merge them together and do a single database write.
