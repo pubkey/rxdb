@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>CRDT · RxDB - Documentation</title>
+        <title>React Native Database · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="third-party-plugins.html" />
+    <link rel="next" href="capacitor-database.html" />
     
     
-    <link rel="prev" href="rx-local-document.html" />
+    <link rel="prev" href="alternatives.html" />
     
 
     </head>
@@ -1762,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.25" data-path="crdt.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
             
                 <a href="crdt.html">
             
@@ -1984,7 +1984,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.2.6" data-path="react-native-database.html">
+        <li class="chapter active" data-level="2.2.6" data-path="react-native-database.html">
             
                 <a href="react-native-database.html">
             
@@ -2181,7 +2181,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >CRDT</a>
+        <a href="." >React Native Database</a>
     </h1>
 </div>
 
@@ -2196,238 +2196,168 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxdb-crdt-plugin-beta">RxDB CRDT Plugin (beta)</h1>
-<p>Whenever there are multiple instances in a distributed system, data writes can cause conflicts. Two different clients could do a write to the same document at the same time or while they are both offline. When the clients replicate the document state with the server, a conflict emerges that must be resolved by the system.</p>
-<p>In <a href=".">RXDB</a>, conflicts are normally resolved by setting a <code>conflictHandler</code> when creating a collection. The conflict handler is a JavaScript function that gets the two conflicting states of the same document and it will return the resolved document state.
-The <a href="replication.html#conflict-handling">default conflict handler</a> will always drop the fork state and use the master state to ensure that clients that have been offline for a long time, do not overwrite other clients changes when they go online again.</p>
+                                <h1 id="react-native-database">React Native Database</h1>
+<p>React Native provides a cross-platform JavaScript runtime that runs on different operating systems like Android, iOS, Windows and others. Mostly it is used to create hybrid Apps that run on mobile devices at Android (google) and iOS (apple).</p>
+<p>In difference to the JavaScript runtime of browsers, React Native does not support all HTML5 APIs and so it is not possible to use browser storage possibilities like localstorage, cookies, WebSQL or IndexedDB.
+Instead a different storage solution must be chosen that does not come directly with React Native itself but has to be installed as a library or plugin.</p>
+<p><strong>NOTICE:</strong> You are reading this inside of the <a href="https://rxdb.info/" target="_blank">RxDB</a> documentation, so everything might be opinionated.</p>
 <p align="center">
-  <img src="files/document-replication-conflict.svg" alt="document replication conflict" width="250">
+  <img src="files/icons/react-native.png" alt="React Native" width="20">
 </p>
 
-
-<p>With CRDTs (short for <a href="https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type" target="_blank">Conflict-free replicated data type</a>), all document 
-writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the operations in a deterministic way. Using CRDTs is an easy way to &quot;magically&quot; handle all conflict problems in your application by storing the deltas of writes together with the document data.</p>
-<p align="center">
-  <img src="files/crdt-conflict-free-replicated-data-type.svg" alt="CRDT Conflict-free replicated data type" width="300">
-</p>
-
-<h2 id="rxdb-crdt-operations">RxDB CRDT operations</h2>
-<p>In RXDB, a CRDT operation is defined with NoSQL update operators, like you might know them from <a href="https://www.mongodb.com/docs/manual/reference/operator/update/" target="_blank">MongoDB update operations</a> or the <a href="rx-document.html#update">RxDB update plugin</a>.
-To run the operators, RxDB uses the <a href="https://github.com/lgandecki/modifyjs" target="_blank">modifyjs library</a>.</p>
-<p>A CRDT operator example:</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> myCRDTOperation = {
-    <span class="hljs-comment">// increment the points field by +1</span>
-    $inc: {
-        points: <span class="hljs-number">1</span>
-    },
-    <span class="hljs-comment">// set the modified field to true</span>
-    $set: {
-        modified: <span class="hljs-literal">true</span>
-    }
-};
+<h2 id="database-solutions-for-react-native">Database Solutions for React-Native</h2>
+<p>There are multiple database solutions that can be used with React Native. While I would recommend to use <a href=".">RxDB</a> for most use cases, it is still helpful to learn about other alternatives.</p>
+<h3 id="asyncstorage">AsyncStorage</h3>
+<p>AsyncStorage is a key-&gt;value storage solution that works similar to the browsers <em>localstorage</em> API. The big difference is that access to the AsyncStorage is not a blocking operation but instead everything is <code>Promise</code> based. This is a big benefit because long running writes and reads will not block your JavaScript process which would cause a laggy user interface.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">/**
+ * Because it is Promise-based,
+ * you have to &apos;await&apos; the call to getItem()
+ */</span>
+await setItem(<span class="hljs-string">&apos;myKey&apos;</span>, <span class="hljs-string">&apos;myValue&apos;</span>);
+<span class="hljs-keyword">const</span> value = await AsyncStorage.getItem(<span class="hljs-string">&apos;myKey&apos;</span>);
 </code></pre>
-<h3 id="operators">Operators</h3>
-<p>At the moment, not all possible operators are implemented in <a href="https://github.com/lgandecki/modifyjs#implemented" target="_blank">modifyjs</a>, if you need additional ones, you should make a pull request there.</p>
-<p>The following operators can be used at this point in time:</p>
+<p>AsyncStorage was originally included in <a href="https://reactnative.dev/docs/asyncstorage" target="_blank">React Native itself</a>. But it was deprecated by the React Native Team which recommends to use a community based package instead. There is a <a href="https://github.com/react-native-async-storage/async-storage" target="_blank">community fork of AsyncStorage</a> that is actively maintained and open source.</p>
+<p>AsyncStorage is fine when only a small amount of data needs to be stored and when no query capabilities besides the key-access are required. Complex queries or features are not supported which makes AsyncStorage not suitable for anything more then storing simple user settings data.</p>
+<h3 id="sqlite">SQLite</h3>
+<p>SQLite is a SQL based relational database written in C that was crafted to be embed inside of applications. Operations are written in the SQL query language and SQLite generally follows the PostgreSQL syntax.</p>
+<p>To use SQLite in React Native, you first have to include the SQLite library itself as a plugin. There a different project out there that that can be used, but I would recommend to use the <a href="https://github.com/ospfranco/react-native-quick-sqlite" target="_blank">react-native-quick-sqlite</a> project.</p>
+<p>First you have to install the library into your React Native project via <code>npm install react-native-quick-sqlite</code>.
+In your code you can then import the library and create a database connection:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {open} from <span class="hljs-string">&apos;react-native-quick-sqlite&apos;</span>;
+<span class="hljs-keyword">const</span> db = open(<span class="hljs-string">&apos;myDb.sqlite&apos;</span>);
+</code></pre>
+<p>Notice that SQLite is a file based database where all data is stored directly in the filesystem of the OS. Therefore to create a connection, you have to provide a filename.</p>
+<p>With the open connection you can then run SQL queries:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">let</span> { rows } = db.execute(<span class="hljs-string">&apos;SELECT somevalue FROM sometable&apos;</span>);
+</code></pre>
+<p>If that does not work for you, you might want to try the <a href="https://github.com/andpor/react-native-sqlite-storage" target="_blank">react-native-sqlite-storage</a> project instead which is also very popular.</p>
+<p>The downside of SQLite is that it is lacking many features that are handful when using a database together with an UI based application. For example it is not possible to observe queries or document fields.
+Also there is no replication method. This makes SQLite a good solution when you want to solely store data on the client, but not when you want to sync data with a server or other clients.</p>
+<h3 id="pouchdb">PouchDB</h3>
+<p align="center">
+  <img src="files/icons/pouchdb.png" alt="PouchDB" width="40">
+</p>
+
+<p>PouchDB is a JavaScript NoSQL database that follows the API of the <a href="https://couchdb.apache.org/" target="_blank">Apache CouchDB</a> server database.
+The core feature of PouchDB is the ability to do a two-way replication with any CouchDB compliant endpoint.
+While PouchDB is pretty mature, it has some drawbacks that makes blocks it from being used in a client-side React Native application. For example it has to store all documents states over time which is required to replicate with CouchDB. Also it is not easily possible to fully purge documents and so it will fill up disc space over time. A big problem is also that PouchDB is not really maintained and major bugs like wrong query results are not fixed anymore. The performance of PouchDB is a general bottleneck which is caused by how it has to store and fetch documents while being compliant to CouchDB. The only real reason to use PouchDB in React Native, is when you want to replicate with a CouchDB or Couchbase server.</p>
+<p>Because PouchDB is based on an adapter system for storage, there are two options to use it with React Native:</p>
 <ul>
-<li><code>$min</code></li>
-<li><code>$max</code></li>
-<li><code>$inc</code></li>
-<li><code>$set</code></li>
-<li><code>$unset</code></li>
-<li><code>$push</code></li>
-<li><code>$pushAll</code></li>
-<li><code>$addToSet</code></li>
-<li><code>$pop</code></li>
-<li><code>$pullAll</code></li>
-<li><code>$rename</code></li>
+<li>Either use the <a href="https://github.com/craftzdog/pouchdb-react-native" target="_blank">pouchdb-adapter-react-native-sqlite</a> adapter</li>
+<li>or the <a href="pouchdb-adapter-asyncstorage">pouchdb-adapter-asyncstorage</a> adapter.</li>
 </ul>
-<p>For the exact definition on how each operator behaves, check out the <a href="https://www.mongodb.com/docs/manual/reference/operator/update/" target="_blank">MongoDB documentation on update operators</a>.</p>
-<h2 id="installation">Installation</h2>
-<p>To use CRDTs with RxDB, you need the following:</p>
+<p>Because the <code>asyncstorage</code> adapter is no longer maintained, it is recommended to use the <code>native-sqlite</code> adapter:</p>
+<p>First you have to install the adapter and other dependencies via <code>npm install pouchdb-adapter-react-native-sqlite react-native-quick-sqlite react-native-quick-websql</code>.</p>
+<p>Then you have to craft a custom PouchDB class that combines these plugins:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> <span class="hljs-string">&apos;react-native-get-random-values&apos;</span>;
+<span class="hljs-keyword">import</span> PouchDB from <span class="hljs-string">&apos;pouchdb-core&apos;</span>;
+<span class="hljs-keyword">import</span> HttpPouch from <span class="hljs-string">&apos;pouchdb-adapter-http&apos;</span>;
+<span class="hljs-keyword">import</span> replication from <span class="hljs-string">&apos;pouchdb-replication&apos;</span>;
+<span class="hljs-keyword">import</span> mapreduce from <span class="hljs-string">&apos;pouchdb-mapreduce&apos;</span>;
+<span class="hljs-keyword">import</span> SQLiteAdapterFactory from <span class="hljs-string">&apos;pouchdb-adapter-react-native-sqlite&apos;</span>;
+<span class="hljs-keyword">import</span> WebSQLite from <span class="hljs-string">&apos;react-native-quick-websql&apos;</span>;
+
+<span class="hljs-keyword">const</span> SQLiteAdapter = SQLiteAdapterFactory(WebSQLite);
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> PouchDB.plugin(HttpPouch)
+  .plugin(replication)
+  .plugin(mapreduce)
+  .plugin(SQLiteAdapter);
+</code></pre>
+<p>This can then be used to create a PouchDB database instance which can store and query documents:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> db = <span class="hljs-keyword">new</span> PouchDB(<span class="hljs-string">&apos;mydb.db&apos;</span>, {
+  adapter: <span class="hljs-string">&apos;react-native-sqlite&apos;</span>
+});
+</code></pre>
+<h3 id="rxdb">RxDB</h3>
+<p align="center">
+  <img src="files/logo/logo_text.svg" alt="RxDB" width="70">
+</p>
+
+<p><a href="https://rxdb.info/" target="_blank">RxDB</a> is an offline-first, NoSQL-database for JavaScript Applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.</p>
+<p>There are multiple ways to use RxDB in React Native:</p>
 <ul>
-<li>Add the CRDT plugin via <code>addRxPlugin</code>.</li>
-<li>Add a field to your schema that defines where to store the CRDT operations via <code>getCRDTSchemaPart()</code></li>
-<li>Set the <code>crdt</code> options in your schema.</li>
-<li>Do <strong>NOT</strong> set a custom conflict handler, the plugin will use its own one.</li>
+<li>Use the <a href="rx-storage-memory.html">memory RxStorage</a> that stores the data inside of the JavaScript memory without persistence</li>
+<li>Use the <a href="rx-storage-lokijs.html">LokiJS RxStorage</a> with the <a href="https://github.com/cawfree/react-native-lokijs" target="_blank">react-native-lokijs</a> plugin</li>
+<li>Use the <a href="rx-storage-pouchdb.html">PouchDB RxStorage</a> with the SQLite plugin mentioned above.</li>
+<li>Use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> with the <a href="https://github.com/ospfranco/react-native-quick-sqlite" target="_blank">react-native-quick-sqlite</a> plugin.</li>
 </ul>
-<pre><code class="lang-ts"><span class="hljs-comment">// import the relevant parts from the CRDT plugin</span>
+<p>It is recommended to use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> because it has the best performance and is the easiest to set up. However it is part of the <a href="premium.html">Premium Plugins</a> which must be purchased, so to try out RxDB with React Native, you might want to use one of the other three options.</p>
+<p>First you have to install all dependencies via <code>npm install rxdb rxjs rxdb-premium react-native-quick-sqlite</code>.
+Then you can assemble the RxStorage and create a database with it:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    createRxDatabase
+} from <span class="hljs-string">&apos;rxdb&apos;</span>;
 <span class="hljs-keyword">import</span> {
-    getCRDTSchemaPart,
-    RxDDcrdtPlugin,
-    getCRDTConflictHandler
-} from <span class="hljs-string">&apos;rxdb/plugins/crdt&apos;</span>;
+    getRxStorageSQLite,
+    getSQLiteBasicsQuickSQLite
+} from <span class="hljs-string">&apos;rxdb-premium/plugins/sqlite&apos;</span>;
+<span class="hljs-keyword">import</span> { openDatabase } from <span class="hljs-string">&apos;react-native-quick-sqlite&apos;</span>;
 
-<span class="hljs-comment">// add the CRDT plugin to RxDB</span>
-<span class="hljs-keyword">import</span> { addRxPlugin } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-addRxPlugin(RxDDcrdtPlugin);
-
-<span class="hljs-comment">// create a database</span>
-<span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
-<span class="hljs-keyword">const</span> myDatabase = await createRxDatabase({
-  name: <span class="hljs-string">&apos;heroesdb&apos;</span>,
-  storage: getRxStorageDexie()
+<span class="hljs-comment">// create database</span>
+<span class="hljs-keyword">const</span> myRxDatabase = await createRxDatabase({
+    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
+    storage: getRxStorageSQLite({
+        sqliteBasics: getSQLiteBasicsQuickSQLite(openDatabase)
+    })
 });
 
-<span class="hljs-comment">// create a schema with the CRDT options</span>
-<span class="hljs-keyword">const</span> mySchema = {
-    version: <span class="hljs-number">0</span>,
-    primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
-    <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;object&apos;</span>,
-    properties: {
-        id: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>,
-            maxLength: <span class="hljs-number">100</span>
-        },
-        points: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;number&apos;</span>,
-            maximum: <span class="hljs-number">100</span>,
-            minimum: <span class="hljs-number">0</span>
-        },
-        crdts: getCRDTSchemaPart() <span class="hljs-comment">// use this field to store the CRDT operations</span>
-    },
-    required: [<span class="hljs-string">&apos;id&apos;</span>, <span class="hljs-string">&apos;points&apos;</span>],
-    crdt: { <span class="hljs-comment">// CRDT options</span>
-        field: <span class="hljs-string">&apos;crdts&apos;</span>
+<span class="hljs-comment">// create collections</span>
+<span class="hljs-keyword">const</span> collections = await myRxDatabase.addCollections({
+    humans: {
+        <span class="hljs-comment">/* ... */</span>
     }
+});
+
+<span class="hljs-comment">// insert document</span>
+await collections.humans.insert({id: <span class="hljs-string">&apos;foo&apos;</span>, name: <span class="hljs-string">&apos;bar&apos;</span>});
+
+<span class="hljs-comment">// run a query</span>
+<span class="hljs-keyword">const</span> result = await collections.humans.find({
+    selector: {
+        name: <span class="hljs-string">&apos;bar&apos;</span>
+    }
+}).exec();
+
+<span class="hljs-comment">// observe a query</span>
+await collections.humans.find({
+    selector: {
+        name: <span class="hljs-string">&apos;bar&apos;</span>
+    }
+}).$.subscribe(result =&gt; {<span class="hljs-comment">/* ... */</span>});
+</code></pre>
+<p>Using the SQLite RxStorage is pretty fast, which is shown in the <a href="rx-storage.html#performance-comparison">performance comparison</a>.</p>
+<h3 id="watermelondb">WatermelonDB</h3>
+<p>WatermelonDB reactive and asynchronous database for React and React Native apps. It is based on SQLite in React Native and LokiJS when it is used in the browser. It supports schemas, observable queries, migrations and relations.
+The schema layout is handled by TypeScript decorators and looks like this:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">class</span> Post extends Model {
+  @field(<span class="hljs-string">&apos;name&apos;</span>) name;
+  @field(<span class="hljs-string">&apos;body&apos;</span>) body;
+  @children(<span class="hljs-string">&apos;comments&apos;</span>) comments;
+
+  <span class="hljs-comment">// a relation to another table</span>
+  @relation(<span class="hljs-string">&apos;users&apos;</span>, <span class="hljs-string">&apos;author_id&apos;</span>) author;
 }
+</code></pre>
+<p>WatermelonDB also <a href="https://nozbe.github.io/WatermelonDB/Advanced/Sync.html" target="_blank">supports replication</a> but the sync protocol is pretty complex because on how it resolves conflicts. I recommend to watch <a href="https://www.youtube.com/watch?v=uFvHURTRLxQ" target="_blank">this video</a> to learn how the replication works.</p>
+<p>According to the roadmap, despite being essentially feature-complete, WatermelonDB is still on the <code>0.xx</code> version and intends to switch to a <code>1.x.x</code> version as once it <a href="https://nozbe.github.io/WatermelonDB/Roadmap.html" target="_blank">reaches a long-term stable API</a>.</p>
+<h3 id="firebase--firestore">Firebase / Firestore</h3>
+<p align="center">
+  <img src="files/alternatives/firebase.svg" alt="Firebase" width="80">
+</p>
 
-<span class="hljs-comment">// add a collection</span>
-await db.addCollections({
-    users: {
-        schema: mySchema
-    }
-});
+<p>Firestore is a cloud based database technologie that stores data on clients devices and replicates it with the Firebase cloud service that is run by google. It has many features like observability and authentication.
+The main lacking feature is the non-complete offline first support because clients cannot start the application while being offline because then the authentication does not work. After they are authenticated, being offline is no longer a problem.
+Also using firestore creates a vendor lock-in because it is not possible to replicate with a custom self hosted backend.</p>
+<p>To get started with Firestore in React Native, it is recommended to use the <a href="https://github.com/invertase/react-native-firebase" target="_blank">React Native Firebase</a> open-source project.</p>
+<!-- TODO
+## Realm
 
-<span class="hljs-comment">// insert a document</span>
-<span class="hljs-keyword">const</span> myDocument = await db.users.insert({id: <span class="hljs-string">&apos;alice&apos;</span>, points: <span class="hljs-number">0</span>});
-
-<span class="hljs-comment">// run a CRDT operation that increments the &apos;points&apos; by one</span>
-await myDocument.updateCRDT({
-    ifMatch: {
-        $inc: {
-            points: <span class="hljs-number">1</span>
-        }
-    }
-});
-</code></pre>
-<h2 id="conditional-crdt-operations">Conditional CRDT operations</h2>
-<p>By default, all CRDTs operations will be run to build the current document state. But in many cases, more granular operations are required to better reflect the desired business logic. For these cases, conditional CRDTs can be used.</p>
-<p>For example if you have a field <code>points</code> with a <code>maximum</code> of <code>100</code>, you might want to only run an <code>$inc</code> operations, if the <code>points</code> value is less then <code>100</code>.
-In an conditional CRDT, you can specify a <code>selector</code> and the operation sets <code>ifMatch</code> and <code>ifNotMatch</code>. At each time the CRDT is applied to the document state, first the selector will run and evaluate which operations path must be used.</p>
-<pre><code class="lang-ts">await myDocument.updateCRDT({
-    <span class="hljs-comment">// only if the selector matches, the ifMatch operation will run</span>
-    selector: {
-        age: {
-            $lt: <span class="hljs-number">100</span>
-        }
-    },
-    <span class="hljs-comment">// an operation that runs if the selector matches</span>
-    ifMatch: {
-        $inc: {
-            points: <span class="hljs-number">1</span>
-        }
-    },
-    <span class="hljs-comment">// if the selector does NOT match, you could run a different operation instead</span>
-    ifNotMatch: {
-        <span class="hljs-comment">// ...</span>
-    }
-});
-</code></pre>
-<h2 id="running-multiples-operations-at-once">Running multiples operations at once</h2>
-<p>By default, one CRDT operation is applied to the document in a single database write.
-To represent more complex logic chains, it might make sense to use multiple CRDTs and write them at once inside of a single atomic document write.</p>
-<p>For these cases, the <code>updateCRDT()</code> method allows to pass an array of operations.</p>
-<pre><code class="lang-ts">await myDocument.updateCRDT([
-    {
-        selector: { <span class="hljs-comment">/** ... **/</span> },
-        ifMatch: { <span class="hljs-comment">/** ... **/</span> }
-    },
-    {
-        selector: { <span class="hljs-comment">/** ... **/</span> },
-        ifMatch: { <span class="hljs-comment">/** ... **/</span> }
-    },
-    {
-        selector: { <span class="hljs-comment">/** ... **/</span> },
-        ifMatch: { <span class="hljs-comment">/** ... **/</span> }
-    },
-    {
-        selector: { <span class="hljs-comment">/** ... **/</span> },
-        ifMatch: { <span class="hljs-comment">/** ... **/</span> }
-    }
-]);
-</code></pre>
-<h2 id="crdts-on-inserts">CRDTs on inserts</h2>
-<p>When CRDTs are enabled with the plugin, all insert operations are automatically mapped as CRDT operation with the <code>$set</code> operator.</p>
-<pre><code class="lang-ts"><span class="hljs-comment">// Calling RxCollection.insert()</span>
-await myRxCollection.insert({
-    id: <span class="hljs-string">&apos;foo&apos;</span>
-    points: <span class="hljs-number">1</span>
-});
-<span class="hljs-comment">// is exactly equal to calling insertCRDT()</span>
-await myRxCollection.insertCRDT({
-    ifMatch: {
-        $<span class="hljs-keyword">set</span>: {
-            id: <span class="hljs-string">&apos;foo&apos;</span>
-            points: <span class="hljs-number">1</span>
-        }
-    }
-});
-</code></pre>
-<p>When the same document is inserted in multiple client instances and then replicated, a conflict will emerge and the insert-CRDTs will overwrite each other in a deterministic order.
-You can use <code>insertCRDT()</code> to make conditional insert operations with any logic. To check for the previous existence of a document, use the <code>$exists</code> query operation on the primary key of the document.</p>
-<pre><code class="lang-ts">await myRxCollection.insertCRDT({
-    selector: {
-        <span class="hljs-comment">// only run if the document did not exist before.</span>
-        id: { $exists: <span class="hljs-literal">false</span> }
-    }, 
-    ifMatch: {
-        <span class="hljs-comment">// if the document did not exist, insert it</span>
-        $<span class="hljs-keyword">set</span>: {
-            id: <span class="hljs-string">&apos;foo&apos;</span>
-            points: <span class="hljs-number">1</span>
-        }
-    },
-    ifNotMatch: {
-        <span class="hljs-comment">// if document existed already, increment the points by +1</span>
-        $inc: {
-            points: <span class="hljs-number">1</span>
-        }
-    }
-});
-</code></pre>
-<h2 id="deleting-documents">Deleting documents</h2>
-<p>You can delete a document with a CRDT operation by setting <code>_deleted</code> to true. Calling <code>RxDocument.remove()</code> will do exactly the same when CRDTs are activated.</p>
-<pre><code class="lang-ts">await doc.updateCRDT({
-    ifMatch: {
-        $<span class="hljs-keyword">set</span>: {
-            _deleted: <span class="hljs-literal">true</span>
-        }
-    }
-});
-
-<span class="hljs-comment">// OR</span>
-await doc.remove();
-</code></pre>
-<h2 id="crdts-with-replication">CRDTs with replication</h2>
-<p>CRDT operations are stored inside of a special field besides your &apos;normal&apos; document fields.
-When replicating document data with the <a href="replication.html">RxDB replication</a> or the <a href="replication-couchdb.html">CouchDB replication</a> or even any custom replication, the CRDT operations must be replicated together with the document data as if they would be &apos;normal&apos; a document property.</p>
-<p>When any instances makes a write to the document, it is required to update the CRDT operations accordingly. For example if your custom backend updates a document, it must also do that by adding a CRDT operation. In <a href="dev-mode.html">dev-mode</a> RxDB will refuse to store any document data where the document properties do not match the result of the CRDT operations.</p>
-<h2 id="why-not-automergejs-or-yjs">Why not automerge.js or yjs?</h2>
-<p>There are already CRDT libraries out there that have been considered to be used with RxDB. The biggeste ones are <a href="https://github.com/automerge/automerge" target="_blank">automerge</a> and <a href="https://github.com/yjs/yjs" target="_blank">yjs</a>. The decision was made to not use these but instead go for a more NoSQL way of designing the CRDT format because:</p>
+- bound to mongodb cloud replication
+-->
+<h2 id="follow-up">Follow up</h2>
 <ul>
-<li>Users do not have to learn a new syntax but instead can use the NoSQL operations which they already know.</li>
-<li>RxDB is often used to <a href="replication.html">replicate</a> data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on these backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.</li>
-</ul>
-<h2 id="when-to-not-use-crdts">When to not use CRDTs</h2>
-<p>CRDT can only be use when your business logic allows to represent document changes via static json operators.
-If you can have cases where user interaction is required to correctly merge conflicting document states, you cannot use CRDTs for that.</p>
-<p>Also when CRDTs are used, it is no longer allowed to do non-CRDT writes to the document properties.</p>
-<h2 id="todos">TODOs</h2>
-<ul>
-<li>Clean up old CRDT operations by crunching them together</li>
-<li>CRDT streaming replication</li>
+<li>If you haven&apos;t done yet, you should start learning about RxDB with the <a href="quickstart.html">Quickstart Tutorial</a>.</li>
+<li>There is a followup list of other <a href="alternatives.html">client side database alternatives</a>.</li>
 </ul>
 
                                 
@@ -2456,12 +2386,12 @@ If you can have cases where user interaction is required to correctly merge conf
 
             
                 
-                <a href="rx-local-document.html" class="navigation navigation-prev " aria-label="Previous page: LocalDocuments">
+                <a href="alternatives.html" class="navigation navigation-prev " aria-label="Previous page: Alternatives">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="third-party-plugins.html" class="navigation navigation-next " aria-label="Next page: Third Party Plugins">
+                <a href="capacitor-database.html" class="navigation navigation-next " aria-label="Next page: Capacitor Database">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2472,7 +2402,7 @@ If you can have cases where user interaction is required to correctly merge conf
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"CRDT","level":"1.25","depth":1,"next":{"title":"Third Party Plugins","level":"1.26","depth":1,"path":"third-party-plugins.md","ref":"./third-party-plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"1.24","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"crdt.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"React Native Database","level":"2.2.6","depth":2,"next":{"title":"Capacitor Database","level":"2.2.7","depth":2,"path":"capacitor-database.md","ref":"./capacitor-database.md","articles":[]},"previous":{"title":"Alternatives","level":"2.2.5","depth":2,"path":"alternatives.md","ref":"./alternatives.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"react-native-database.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

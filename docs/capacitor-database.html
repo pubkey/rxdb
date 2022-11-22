@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>CRDT · RxDB - Documentation</title>
+        <title>Capacitor Database · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="third-party-plugins.html" />
+    <link rel="next" href="questions-answers.html" />
     
     
-    <link rel="prev" href="rx-local-document.html" />
+    <link rel="prev" href="react-native-database.html" />
     
 
     </head>
@@ -1762,7 +1762,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.25" data-path="crdt.html">
+        <li class="chapter " data-level="1.25" data-path="crdt.html">
             
                 <a href="crdt.html">
             
@@ -1997,7 +1997,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.2.7" data-path="capacitor-database.html">
+        <li class="chapter active" data-level="2.2.7" data-path="capacitor-database.html">
             
                 <a href="capacitor-database.html">
             
@@ -2181,7 +2181,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >CRDT</a>
+        <a href="." >Capacitor Database</a>
     </h1>
 </div>
 
@@ -2196,238 +2196,139 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxdb-crdt-plugin-beta">RxDB CRDT Plugin (beta)</h1>
-<p>Whenever there are multiple instances in a distributed system, data writes can cause conflicts. Two different clients could do a write to the same document at the same time or while they are both offline. When the clients replicate the document state with the server, a conflict emerges that must be resolved by the system.</p>
-<p>In <a href=".">RXDB</a>, conflicts are normally resolved by setting a <code>conflictHandler</code> when creating a collection. The conflict handler is a JavaScript function that gets the two conflicting states of the same document and it will return the resolved document state.
-The <a href="replication.html#conflict-handling">default conflict handler</a> will always drop the fork state and use the master state to ensure that clients that have been offline for a long time, do not overwrite other clients changes when they go online again.</p>
+                                <h1 id="capacitor-database">Capacitor Database</h1>
+<p><a href="https://capacitorjs.com/" target="_blank">Capacitor</a> is an open source native JavaScript runtime to build Web based Native apps. You can use it to create cross-platform iOS, Android, and Progressive Web Apps with the web technologies JavaScript, HTML, and CSS.
+It is developed by the Ionic Team and provides a great alternative to create hybrid apps. Compared to <a href="react-native-database.html">React Native</a>, Capacitor is more Web-Like because the JavaScript runtime supports most Web APIs like IndexedDB, fetch,  and so on.</p>
+<p>To read and write persistend data in Capacitor, there are multiple solutions which are shown in the following.</p>
+<p><strong>NOTICE:</strong> You are reading this inside of the <a href="https://rxdb.info/" target="_blank">RxDB</a> documentation, so everything might be opinionated.</p>
 <p align="center">
-  <img src="files/document-replication-conflict.svg" alt="document replication conflict" width="250">
+  <img src="files/icons/capacitor.svg" alt="Capacitor" width="50">
 </p>
 
 
-<p>With CRDTs (short for <a href="https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type" target="_blank">Conflict-free replicated data type</a>), all document 
-writes are represented as CRDT operations in plain JSON. The CRDT operations are stored together with the document and each time a conflict arises, the CRDT conflict handler will automatically merge the operations in a deterministic way. Using CRDTs is an easy way to &quot;magically&quot; handle all conflict problems in your application by storing the deltas of writes together with the document data.</p>
-<p align="center">
-  <img src="files/crdt-conflict-free-replicated-data-type.svg" alt="CRDT Conflict-free replicated data type" width="300">
-</p>
 
-<h2 id="rxdb-crdt-operations">RxDB CRDT operations</h2>
-<p>In RXDB, a CRDT operation is defined with NoSQL update operators, like you might know them from <a href="https://www.mongodb.com/docs/manual/reference/operator/update/" target="_blank">MongoDB update operations</a> or the <a href="rx-document.html#update">RxDB update plugin</a>.
-To run the operators, RxDB uses the <a href="https://github.com/lgandecki/modifyjs" target="_blank">modifyjs library</a>.</p>
-<p>A CRDT operator example:</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> myCRDTOperation = {
-    <span class="hljs-comment">// increment the points field by +1</span>
-    $inc: {
-        points: <span class="hljs-number">1</span>
-    },
-    <span class="hljs-comment">// set the modified field to true</span>
-    $set: {
-        modified: <span class="hljs-literal">true</span>
-    }
-};
-</code></pre>
-<h3 id="operators">Operators</h3>
-<p>At the moment, not all possible operators are implemented in <a href="https://github.com/lgandecki/modifyjs#implemented" target="_blank">modifyjs</a>, if you need additional ones, you should make a pull request there.</p>
-<p>The following operators can be used at this point in time:</p>
-<ul>
-<li><code>$min</code></li>
-<li><code>$max</code></li>
-<li><code>$inc</code></li>
-<li><code>$set</code></li>
-<li><code>$unset</code></li>
-<li><code>$push</code></li>
-<li><code>$pushAll</code></li>
-<li><code>$addToSet</code></li>
-<li><code>$pop</code></li>
-<li><code>$pullAll</code></li>
-<li><code>$rename</code></li>
-</ul>
-<p>For the exact definition on how each operator behaves, check out the <a href="https://www.mongodb.com/docs/manual/reference/operator/update/" target="_blank">MongoDB documentation on update operators</a>.</p>
-<h2 id="installation">Installation</h2>
-<p>To use CRDTs with RxDB, you need the following:</p>
-<ul>
-<li>Add the CRDT plugin via <code>addRxPlugin</code>.</li>
-<li>Add a field to your schema that defines where to store the CRDT operations via <code>getCRDTSchemaPart()</code></li>
-<li>Set the <code>crdt</code> options in your schema.</li>
-<li>Do <strong>NOT</strong> set a custom conflict handler, the plugin will use its own one.</li>
-</ul>
-<pre><code class="lang-ts"><span class="hljs-comment">// import the relevant parts from the CRDT plugin</span>
-<span class="hljs-keyword">import</span> {
-    getCRDTSchemaPart,
-    RxDDcrdtPlugin,
-    getCRDTConflictHandler
-} from <span class="hljs-string">&apos;rxdb/plugins/crdt&apos;</span>;
+<h2 id="database-solutions-for-capacitor">Database Solutions for Capacitor</h2>
+<h3 id="preferences-api">Preferences API</h3>
+<p>Capacitor comes with a native <a href="https://capacitorjs.com/docs/apis/preferences" target="_blank">Preferences API</a> which is a simple, perssistent key-&gt;value store for lightweight data, similar to the browsers localstorage or React Native <a href="react-native-database.html#asyncstorage">AsyncStorage</a>.</p>
+<p>To use it, you first have to install it from npm <code>npm install @capacitor/preferences</code> and then you can import it and write/read data.
+Notice that all calls to the preferences API are asynchronous so they return a <code>Promise</code> that must be <code>await</code>-ed.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { Preferences } from <span class="hljs-string">&apos;@capacitor/preferences&apos;</span>;
 
-<span class="hljs-comment">// add the CRDT plugin to RxDB</span>
-<span class="hljs-keyword">import</span> { addRxPlugin } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-addRxPlugin(RxDDcrdtPlugin);
 
-<span class="hljs-comment">// create a database</span>
-<span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
-<span class="hljs-keyword">const</span> myDatabase = await createRxDatabase({
-  name: <span class="hljs-string">&apos;heroesdb&apos;</span>,
-  storage: getRxStorageDexie()
+<span class="hljs-comment">// write</span>
+await Preferences.set({
+  key: <span class="hljs-string">&apos;foo&apos;</span>,
+  value: <span class="hljs-string">&apos;baar&apos;</span>,
 });
 
-<span class="hljs-comment">// create a schema with the CRDT options</span>
-<span class="hljs-keyword">const</span> mySchema = {
-    version: <span class="hljs-number">0</span>,
-    primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
-    <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;object&apos;</span>,
-    properties: {
-        id: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>,
-            maxLength: <span class="hljs-number">100</span>
-        },
-        points: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;number&apos;</span>,
-            maximum: <span class="hljs-number">100</span>,
-            minimum: <span class="hljs-number">0</span>
-        },
-        crdts: getCRDTSchemaPart() <span class="hljs-comment">// use this field to store the CRDT operations</span>
-    },
-    required: [<span class="hljs-string">&apos;id&apos;</span>, <span class="hljs-string">&apos;points&apos;</span>],
-    crdt: { <span class="hljs-comment">// CRDT options</span>
-        field: <span class="hljs-string">&apos;crdts&apos;</span>
+<span class="hljs-comment">// read</span>
+<span class="hljs-keyword">const</span> { value } = await Preferences.get({ key: <span class="hljs-string">&apos;foo&apos;</span> }); <span class="hljs-comment">// &gt; &apos;bar&apos;</span>
+
+<span class="hljs-comment">// delete</span>
+await Preferences.remove({ key: <span class="hljs-string">&apos;foo&apos;</span> });
+</code></pre>
+<p>The preferences API is good when only a small amount of data needs to be stored and when no query capabilities besides the key access are required. Complex queries or other features like indexes or replication are not supported which makes the preferences API not suitable for anything more then storing simple data like user settings.</p>
+<h3 id="localstorageindexeddbwebsql">Localstorage/IndexedDB/WebSQL</h3>
+<p>Since Capacitor apps run in a web view, Web APIs like IndexedDB, Localstorage and WebSQL are available. But the default browser behavior is to clean up these storages regularly when they are not in use for a long time or the device is low on space. Therefore you cannot 100% rely on the persistence of the stored data and your application needs to expect that the data will be lost eventually.</p>
+<p>Storing data in these storages can be done in browsers, because there is no other option. But in Capacitor iOS and Android, you should not rely on these.</p>
+<h3 id="sqlite">SQLite</h3>
+<p>SQLite is a SQL based relational database written in C that was crafted to be embed inside of applications. Operations are written in the SQL query language and SQLite generally follows the PostgreSQL syntax.</p>
+<p>To use SQLite in Capacitor, there are three options:</p>
+<ul>
+<li>The <a href="https://github.com/capacitor-community/sqlite" target="_blank">@capacitor-community/sqlite</a> package</li>
+<li>The <a href="https://github.com/storesafe/cordova-sqlite-storage" target="_blank">cordova-sqlite-storage</a> package</li>
+<li>The non-free <a href="https://ionic.io/products/secure-storage" target="_blank">Ionic Secure Storage</a> which comes at <strong>999$</strong> per month.</li>
+</ul>
+<p>It is recommended to use the <code>@capacitor-community/sqlite</code> because it has the best maintenance and is open source. Install it first <code>npm install --save @capacitor-community/sqlite</code> and then set the storage location for iOS apps:</p>
+<pre><code class="lang-json">{
+    <span class="hljs-string">&quot;plugins&quot;</span>: {
+        <span class="hljs-string">&quot;CapacitorSQLite&quot;</span>: {
+            <span class="hljs-string">&quot;iosDatabaseLocation&quot;</span>: <span class="hljs-string">&quot;Library/CapacitorDatabase&quot;</span>
+        }
     }
 }
+</code></pre>
+<p>Now you can create a database connection and use the SQLite database.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { Capacitor } from <span class="hljs-string">&apos;@capacitor/core&apos;</span>;
+<span class="hljs-keyword">import</span> { CapacitorSQLite, SQLiteDBConnection, SQLiteConnection, capSQLiteSet,
+         capSQLiteChanges, capSQLiteValues, capEchoResult, capSQLiteResult,
+         capNCDatabasePathResult } from <span class="hljs-string">&apos;@capacitor-community/sqlite&apos;</span>;
 
-<span class="hljs-comment">// add a collection</span>
-await db.addCollections({
-    users: {
-        schema: mySchema
-    }
-});
+<span class="hljs-keyword">const</span> sqlite = <span class="hljs-keyword">new</span> SQLiteConnection(CapacitorSQLite);
+<span class="hljs-keyword">const</span> database: SQLiteDBConnection = await <span class="hljs-keyword">this</span>.sqlite.createConnection(databaseName, encrypted, mode, version, readOnly);
+<span class="hljs-keyword">let</span> { rows } = database.query(<span class="hljs-string">&apos;SELECT somevalue FROM sometable&apos;</span>);
+</code></pre>
+<p>The downside of SQLite is that it is lacking many features that are handful when using a database together with an UI based application like your Capacitor app. For example it is not possible to observe queries or document fields. Also there is no realtime replication feature, you can only import json files. This makes SQLite a good solution when you just want to store data on the client, but when you want to sync data with a server or other clients or create big complex realtime applications, you have to use something else.</p>
+<h3 id="rxdb">RxDB</h3>
+<p align="center">
+  <img src="files/logo/logo_text.svg" alt="RxDB" width="70">
+</p>
 
-<span class="hljs-comment">// insert a document</span>
-<span class="hljs-keyword">const</span> myDocument = await db.users.insert({id: <span class="hljs-string">&apos;alice&apos;</span>, points: <span class="hljs-number">0</span>});
 
-<span class="hljs-comment">// run a CRDT operation that increments the &apos;points&apos; by one</span>
-await myDocument.updateCRDT({
-    ifMatch: {
-        $inc: {
-            points: <span class="hljs-number">1</span>
+<p><a href="https://rxdb.info/" target="_blank">RxDB</a> is an offline first, NoSQL database for JavaScript Applications like hybrid apps. Because it is reactive, you can subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in Capacitor.</p>
+<p>Because RxDB is made for Web applications, most of the <a href="rx-storage.html">available RxStorage</a> plugins can be used to store and query data in a Capacitor app. However it is recommended to use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> because it stores the data on the filesystem of the device, not in the JavaScript runtime (like IndexedDB). Storing data on the filesystem ensures it is persistend and will not be cleaned up by any process. Also the performance of SQLite is <a href="rx-storage.html#performance-comparison">much faster</a> compared to IndexedDB, because SQLite does not have to go through a browsers permission layers. For the SQLite binding you should use the <a href="https://github.com/capacitor-community/sqlite" target="_blank">@capacitor-community/sqlite</a> package.</p>
+<p>Because the SQLite RxStorage is part of the <a href="premium.html">Premium Plugins</a> which must be purchased, it is recommended to use the <a href="rx-storage-dexie.html">Dexie.js RxStorage</a> while testing and prototyping your Capacitor app.</p>
+<p>To use the SQLite RxStorage in Capacitor you have to install all dependencies via <code>npm install rxdb rxjs rxdb-premium @capacitor-community/sqlite</code>.</p>
+<p>For iOS apps you should add a database location in your Capacitor settings:</p>
+<pre><code class="lang-json">{
+    <span class="hljs-string">&quot;plugins&quot;</span>: {
+        <span class="hljs-string">&quot;CapacitorSQLite&quot;</span>: {
+            <span class="hljs-string">&quot;iosDatabaseLocation&quot;</span>: <span class="hljs-string">&quot;Library/CapacitorDatabase&quot;</span>
         }
     }
-});
+}
 </code></pre>
-<h2 id="conditional-crdt-operations">Conditional CRDT operations</h2>
-<p>By default, all CRDTs operations will be run to build the current document state. But in many cases, more granular operations are required to better reflect the desired business logic. For these cases, conditional CRDTs can be used.</p>
-<p>For example if you have a field <code>points</code> with a <code>maximum</code> of <code>100</code>, you might want to only run an <code>$inc</code> operations, if the <code>points</code> value is less then <code>100</code>.
-In an conditional CRDT, you can specify a <code>selector</code> and the operation sets <code>ifMatch</code> and <code>ifNotMatch</code>. At each time the CRDT is applied to the document state, first the selector will run and evaluate which operations path must be used.</p>
-<pre><code class="lang-ts">await myDocument.updateCRDT({
-    <span class="hljs-comment">// only if the selector matches, the ifMatch operation will run</span>
+<p>Then you can assemble the RxStorage and create a database with it:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    createRxDatabase
+} from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> {
+    getRxStorageSQLite,
+    getSQLiteBasicsCapacitor
+} from <span class="hljs-string">&apos;rxdb-premium/plugins/sqlite&apos;</span>;
+<span class="hljs-keyword">import</span> {
+    CapacitorSQLite,
+    SQLiteConnection
+} from <span class="hljs-string">&apos;@capacitor-community/sqlite&apos;</span>;
+<span class="hljs-keyword">import</span> { Capacitor } from <span class="hljs-string">&apos;@capacitor/core&apos;</span>;
+<span class="hljs-keyword">const</span> sqlite = <span class="hljs-keyword">new</span> SQLiteConnection(CapacitorSQLite);
+
+<span class="hljs-comment">// create database</span>
+<span class="hljs-keyword">const</span> myRxDatabase = await createRxDatabase({
+    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
+    storage: getRxStorageSQLite({
+        sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor)
+    })
+});
+
+<span class="hljs-comment">// create collections</span>
+<span class="hljs-keyword">const</span> collections = await myRxDatabase.addCollections({
+    humans: {
+        <span class="hljs-comment">/* ... */</span>
+    }
+});
+
+<span class="hljs-comment">// insert document</span>
+await collections.humans.insert({id: <span class="hljs-string">&apos;foo&apos;</span>, name: <span class="hljs-string">&apos;bar&apos;</span>});
+
+<span class="hljs-comment">// run a query</span>
+<span class="hljs-keyword">const</span> result = await collections.humans.find({
     selector: {
-        age: {
-            $lt: <span class="hljs-number">100</span>
-        }
-    },
-    <span class="hljs-comment">// an operation that runs if the selector matches</span>
-    ifMatch: {
-        $inc: {
-            points: <span class="hljs-number">1</span>
-        }
-    },
-    <span class="hljs-comment">// if the selector does NOT match, you could run a different operation instead</span>
-    ifNotMatch: {
-        <span class="hljs-comment">// ...</span>
+        name: <span class="hljs-string">&apos;bar&apos;</span>
     }
-});
-</code></pre>
-<h2 id="running-multiples-operations-at-once">Running multiples operations at once</h2>
-<p>By default, one CRDT operation is applied to the document in a single database write.
-To represent more complex logic chains, it might make sense to use multiple CRDTs and write them at once inside of a single atomic document write.</p>
-<p>For these cases, the <code>updateCRDT()</code> method allows to pass an array of operations.</p>
-<pre><code class="lang-ts">await myDocument.updateCRDT([
-    {
-        selector: { <span class="hljs-comment">/** ... **/</span> },
-        ifMatch: { <span class="hljs-comment">/** ... **/</span> }
-    },
-    {
-        selector: { <span class="hljs-comment">/** ... **/</span> },
-        ifMatch: { <span class="hljs-comment">/** ... **/</span> }
-    },
-    {
-        selector: { <span class="hljs-comment">/** ... **/</span> },
-        ifMatch: { <span class="hljs-comment">/** ... **/</span> }
-    },
-    {
-        selector: { <span class="hljs-comment">/** ... **/</span> },
-        ifMatch: { <span class="hljs-comment">/** ... **/</span> }
-    }
-]);
-</code></pre>
-<h2 id="crdts-on-inserts">CRDTs on inserts</h2>
-<p>When CRDTs are enabled with the plugin, all insert operations are automatically mapped as CRDT operation with the <code>$set</code> operator.</p>
-<pre><code class="lang-ts"><span class="hljs-comment">// Calling RxCollection.insert()</span>
-await myRxCollection.insert({
-    id: <span class="hljs-string">&apos;foo&apos;</span>
-    points: <span class="hljs-number">1</span>
-});
-<span class="hljs-comment">// is exactly equal to calling insertCRDT()</span>
-await myRxCollection.insertCRDT({
-    ifMatch: {
-        $<span class="hljs-keyword">set</span>: {
-            id: <span class="hljs-string">&apos;foo&apos;</span>
-            points: <span class="hljs-number">1</span>
-        }
-    }
-});
-</code></pre>
-<p>When the same document is inserted in multiple client instances and then replicated, a conflict will emerge and the insert-CRDTs will overwrite each other in a deterministic order.
-You can use <code>insertCRDT()</code> to make conditional insert operations with any logic. To check for the previous existence of a document, use the <code>$exists</code> query operation on the primary key of the document.</p>
-<pre><code class="lang-ts">await myRxCollection.insertCRDT({
-    selector: {
-        <span class="hljs-comment">// only run if the document did not exist before.</span>
-        id: { $exists: <span class="hljs-literal">false</span> }
-    }, 
-    ifMatch: {
-        <span class="hljs-comment">// if the document did not exist, insert it</span>
-        $<span class="hljs-keyword">set</span>: {
-            id: <span class="hljs-string">&apos;foo&apos;</span>
-            points: <span class="hljs-number">1</span>
-        }
-    },
-    ifNotMatch: {
-        <span class="hljs-comment">// if document existed already, increment the points by +1</span>
-        $inc: {
-            points: <span class="hljs-number">1</span>
-        }
-    }
-});
-</code></pre>
-<h2 id="deleting-documents">Deleting documents</h2>
-<p>You can delete a document with a CRDT operation by setting <code>_deleted</code> to true. Calling <code>RxDocument.remove()</code> will do exactly the same when CRDTs are activated.</p>
-<pre><code class="lang-ts">await doc.updateCRDT({
-    ifMatch: {
-        $<span class="hljs-keyword">set</span>: {
-            _deleted: <span class="hljs-literal">true</span>
-        }
-    }
-});
+}).exec();
 
-<span class="hljs-comment">// OR</span>
-await doc.remove();
+<span class="hljs-comment">// observe a query</span>
+await collections.humans.find({
+    selector: {
+        name: <span class="hljs-string">&apos;bar&apos;</span>
+    }
+}).$.subscribe(result =&gt; {<span class="hljs-comment">/* ... */</span>});
 </code></pre>
-<h2 id="crdts-with-replication">CRDTs with replication</h2>
-<p>CRDT operations are stored inside of a special field besides your &apos;normal&apos; document fields.
-When replicating document data with the <a href="replication.html">RxDB replication</a> or the <a href="replication-couchdb.html">CouchDB replication</a> or even any custom replication, the CRDT operations must be replicated together with the document data as if they would be &apos;normal&apos; a document property.</p>
-<p>When any instances makes a write to the document, it is required to update the CRDT operations accordingly. For example if your custom backend updates a document, it must also do that by adding a CRDT operation. In <a href="dev-mode.html">dev-mode</a> RxDB will refuse to store any document data where the document properties do not match the result of the CRDT operations.</p>
-<h2 id="why-not-automergejs-or-yjs">Why not automerge.js or yjs?</h2>
-<p>There are already CRDT libraries out there that have been considered to be used with RxDB. The biggeste ones are <a href="https://github.com/automerge/automerge" target="_blank">automerge</a> and <a href="https://github.com/yjs/yjs" target="_blank">yjs</a>. The decision was made to not use these but instead go for a more NoSQL way of designing the CRDT format because:</p>
+<h2 id="follow-up">Follow up</h2>
 <ul>
-<li>Users do not have to learn a new syntax but instead can use the NoSQL operations which they already know.</li>
-<li>RxDB is often used to <a href="replication.html">replicate</a> data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on these backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.</li>
-</ul>
-<h2 id="when-to-not-use-crdts">When to not use CRDTs</h2>
-<p>CRDT can only be use when your business logic allows to represent document changes via static json operators.
-If you can have cases where user interaction is required to correctly merge conflicting document states, you cannot use CRDTs for that.</p>
-<p>Also when CRDTs are used, it is no longer allowed to do non-CRDT writes to the document properties.</p>
-<h2 id="todos">TODOs</h2>
-<ul>
-<li>Clean up old CRDT operations by crunching them together</li>
-<li>CRDT streaming replication</li>
+<li>If you haven&apos;t done yet, you should start learning about RxDB with the <a href="quickstart.html">Quickstart Tutorial</a>.</li>
+<li>There is a followup list of other <a href="alternatives.html">client side database alternatives</a>.</li>
 </ul>
 
                                 
@@ -2456,12 +2357,12 @@ If you can have cases where user interaction is required to correctly merge conf
 
             
                 
-                <a href="rx-local-document.html" class="navigation navigation-prev " aria-label="Previous page: LocalDocuments">
+                <a href="react-native-database.html" class="navigation navigation-prev " aria-label="Previous page: React Native Database">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="third-party-plugins.html" class="navigation navigation-next " aria-label="Next page: Third Party Plugins">
+                <a href="questions-answers.html" class="navigation navigation-next " aria-label="Next page: Questions & Answers">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2472,7 +2373,7 @@ If you can have cases where user interaction is required to correctly merge conf
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"CRDT","level":"1.25","depth":1,"next":{"title":"Third Party Plugins","level":"1.26","depth":1,"path":"third-party-plugins.md","ref":"./third-party-plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"1.24","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"crdt.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Capacitor Database","level":"2.2.7","depth":2,"next":{"title":"Questions & Answers","level":"2.3","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"React Native Database","level":"2.2.6","depth":2,"path":"react-native-database.md","ref":"./react-native-database.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"capacitor-database.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

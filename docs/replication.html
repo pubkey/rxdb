@@ -1984,6 +1984,32 @@
             
         </li>
     
+        <li class="chapter " data-level="2.2.6" data-path="react-native-database.html">
+            
+                <a href="react-native-database.html">
+            
+                    
+                    React Native Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2.7" data-path="capacitor-database.html">
+            
+                <a href="capacitor-database.html">
+            
+                    
+                    Capacitor Database
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2170,7 +2196,7 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="replication">Replication</h1>
+                                <h1 id="database-replication">Database Replication</h1>
 <p>The RxDB replication protocol provides the ability to replicate the database state in <strong>realtime</strong> between the clients and the server.</p>
 <p>The backend server does not have to be a RxDB instance; you can build a replication with <strong>any infrastructure</strong>.
 For example you can replicate with a custom GraphQL endpoint or a http server on top of a PostgreSQL database.</p>
@@ -2259,6 +2285,7 @@ For example if your documents contain an <code>id</code> and an <code>updatedAt<
       B1---C2---D      fork/client state
 </code></pre><p>The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentally overwrite other peoples changes when they go online again.
 You can specify a custom conflict handler by setting the property <code>conflictHandler</code> when calling <code>addCollection()</code>.</p>
+<p>MLearn how to create a <a href="transactions-conflicts-revisions.html#custom-conflict-handler">custom conflict handler</a>.</p>
 <h2 id="replicaterxcollection">replicateRxCollection()</h2>
 <p>You can start the replication of a single <code>RxCollection</code> by calling <code>replicateRxCollection()</code> like in the following:</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> { replicateRxCollection } from <span class="hljs-string">&apos;rxdb/plugins/replication&apos;</span>;
