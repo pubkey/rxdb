@@ -113,7 +113,7 @@ const db = new PouchDB('mydb.db', {
   <img src="./files/logo/logo_text.svg" alt="RxDB" width="70" />
 </p>
 
-[RxDB](https://rxdb.info/) is an offline-first, NoSQL-database for JavaScript Applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
+[RxDB](https://rxdb.info/) is an offline-first, NoSQL-database for JavaScript applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
 
 There are multiple ways to use RxDB in React Native:
 
@@ -171,6 +171,7 @@ await collections.humans.find({
 ```
 
 Using the SQLite RxStorage is pretty fast, which is shown in the [performance comparison](./rx-storage.md#performance-comparison).
+To learn more about using RxDB with React Native, you might want to check out [this example project](https://github.com/pubkey/rxdb/tree/master/examples/react-native).
 
 ### WatermelonDB
 
@@ -215,4 +216,4 @@ To get started with Firestore in React Native, it is recommended to use the [Rea
 ## Follow up
 
 - If you haven't done yet, you should start learning about RxDB with the [Quickstart Tutorial](./quickstart.md).
-- There is a followup list of other [client side database alternatives](./alternatives.md).
+- There is a followup list of other [client side database alternatives](./alternatives.md) that might work with React Native.

@@ -169,6 +169,7 @@
     * [Alternatives](./alternatives.md)
     * [React Native Database](./react-native-database.md)
     * [Capacitor Database](./capacitor-database.md)
+    * [Electron Database](./electron-database.md)
 
 * [Questions & Answers](./questions-answers.md)
 

@@ -30,7 +30,7 @@ The main reason to use this is to improve initial page load and query/write time
 <summary>
     Why is it not for free?
 </summary>
-    The development of RxDB started in 2016 and after all these years it became clear that big implementation and improvement steps will not be done by the RxDB community. While the community submits valuable pull requests, they are mostly small improvements or bugfixes for specific edge case. Big rewrites and optimizations that require a big effort have only be done my the RxDB maintainer.<br />
+    The development of RxDB started in 2016 and after all these years it became clear that big implementation and improvement steps will not be done by the RxDB community. While the community submits valuable pull requests, they are mostly small improvements or bugfixes for specific edge case. Big rewrites and optimizations that require a big effort have only be done by the RxDB maintainer.<br />
     Selling RxDB Premium ensures that there will be always an incentive for someone to add features, keep everything up to date and to further improve and optimize the codebase. This gives the user the confidence that RxDB is a <b>future proof</b> tech stack to build on which lets RxDB stand out compared to similar technologies.
 </details>
 
