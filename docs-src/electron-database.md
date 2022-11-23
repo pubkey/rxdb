@@ -15,7 +15,7 @@ An Electron runtime can be divided in two parts:
 - The "main" process which is a Node.js JavaScript process that runs without a UI in the background.
 - One or multiple "renderer" processes that consist of a Chrome browser engine and runs the user interface. Each renderer process represents one "browser tab".
 
-This is important to understand because chosing the right database depends on your use case and on which of these JavaScript runtimes you want to keep the data.
+This is important to understand because choosing the right database depends on your use case and on which of these JavaScript runtimes you want to keep the data.
 
 
 ### Server Side Databases
@@ -29,15 +29,15 @@ Because Electron uses a common Chrome web browser in the renderer process, you c
 
 But as soon as your application goes beyond a simple TODO-app, there are multiple obstacles that come in your way. One thing is the bad multi-tab support. If you have more then one *renderer* process, it becomes hard to manage database writes between them. Each *browser tab* could modify the database state while the others do not know of the changes and keep an outdated UI.
 
-Another thing is performance. [IndexedDB is slow](./slow-indexeddb.md) mostly because it has to go throught layers of browser security and abstractions. Storing and querying much data might become your performance bottleneck. Localstorage and WebSQL are even slower by the way.
+Another thing is performance. [IndexedDB is slow](./slow-indexeddb.md) mostly because it has to go through layers of browser security and abstractions. Storing and querying much data might become your performance bottleneck. Localstorage and WebSQL are even slower by the way.
 
-Using the Web Storage APIs is generally only recommend when you know for shure that there will be always only **one rendnering process** and performance is not that relevant.
+Using the Web Storage APIs is generally only recommend when you know for sure that there will be always only **one rendnering process** and performance is not that relevant.
 
 ### SQLite
 
 SQLite is a SQL based relational database written in the C programming language that was crafted to be embed inside of applications and stores data locally. Operations are written in the SQL query language similar to the PostgreSQL syntax.
 
-Using SQLite in Electron is not possible in the *renderer process*, only in the *main process*. To communicate data operations between your main and your renderer processes, you have to use either [@electron/remote](https://github.com/electron/remote) (not recommened) or the [ipcRenderer](https://www.electronjs.org/de/docs/latest/api/ipc-renderer) (recommended). So you start up SQLite in your main process and whenever you want to read or write data, you send the SQL queries to the main process and retrieve the result back as JSON data.
+Using SQLite in Electron is not possible in the *renderer process*, only in the *main process*. To communicate data operations between your main and your renderer processes, you have to use either [@electron/remote](https://github.com/electron/remote) (not recommended) or the [ipcRenderer](https://www.electronjs.org/de/docs/latest/api/ipc-renderer) (recommended). So you start up SQLite in your main process and whenever you want to read or write data, you send the SQL queries to the main process and retrieve the result back as JSON data.
 
 To install SQLite, use the [SQLite3](https://github.com/TryGhost/node-sqlite3) package which is a native Node.js module. Also you need the [@electron/rebuild](https://github.com/electron/rebuild) package to rebuild the SQLite module against the currently installed Electron version.
 
@@ -131,7 +131,7 @@ await collections.humans.find({
 }).$.subscribe(result => {/* ... */});
 ```
 
-For having a better performance in the renderer tab, you can later switch to the [IndexedDB RxStorage](./rx-storage-indexeddb.md). But in production it is recommened to use the [SQLite RxStorage](./rx-storage-sqlite.md) in the main process so that database operations do not block the rendering of the UI.
+For having a better performance in the renderer tab, you can later switch to the [IndexedDB RxStorage](./rx-storage-indexeddb.md). But in production it is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) in the main process so that database operations do not block the rendering of the UI.
 To learn more about using RxDB with Electron, you might want to check out [this example project](https://github.com/pubkey/rxdb/tree/master/examples/electron).
 
 
