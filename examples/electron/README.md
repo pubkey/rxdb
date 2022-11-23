@@ -13,3 +13,7 @@ For an example with Electron [`remote`](https://github.com/electron/remote) modu
 4. go to this folder `cd examples/electron`
 5. run `npm install --verbose` (downloading electron can take a while, so use verbose to ensure its running)
 6. run `npm start`
+
+## Related
+
+- [Comparison of Electron Databases](https://rxdb.info/electron-database.html)
