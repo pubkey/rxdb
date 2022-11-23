@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.closeDexieDb = exports.RX_STORAGE_NAME_DEXIE = exports.DEXIE_PIPE_SUBSTITUTE = exports.DEXIE_DOCS_TABLE_NAME = exports.DEXIE_DELETED_DOCS_TABLE_NAME = exports.DEXIE_CHANGES_TABLE_NAME = void 0;
 exports.dexieReplaceIfStartsWithPipe = dexieReplaceIfStartsWithPipe;
 exports.dexieReplaceIfStartsWithPipeRevert = dexieReplaceIfStartsWithPipeRevert;
+exports.ensureNoBooleanIndex = ensureNoBooleanIndex;
 exports.fromDexieToStorage = fromDexieToStorage;
 exports.fromStorageToDexie = fromStorageToDexie;
 exports.getDexieDbWithTables = getDexieDbWithTables;
@@ -129,6 +130,29 @@ function getDexieSortComparator(_schema, query) {
     }
   };
   return fun;
+}
+function ensureNoBooleanIndex(schema) {
+  if (!schema.indexes) {
+    return;
+  }
+  var checkedFields = new Set();
+  schema.indexes.forEach(function (index) {
+    var fields = Array.isArray(index) ? index : [];
+    fields.forEach(function (field) {
+      if (checkedFields.has(field)) {
+        return;
+      }
+      checkedFields.add(field);
+      var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, field);
+      if (schemaObj.type === 'boolean') {
+        throw (0, _rxError.newRxError)('DXE1', {
+          schema: schema,
+          index: index,
+          field: field
+        });
+      }
+    });
+  });
 }
 
 /**

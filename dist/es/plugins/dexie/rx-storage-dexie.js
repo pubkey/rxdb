@@ -1,5 +1,5 @@
 import { Query as MingoQuery } from 'mingo';
-import { getDexieSortComparator, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
+import { ensureNoBooleanIndex, getDexieSortComparator, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
 import { createDexieStorageInstance } from './rx-storage-instance-dexie';
 import { newRxError } from '../../rx-error';
 import { getQueryPlan } from '../../query-planner';
@@ -54,6 +54,7 @@ export var RxStorageDexie = /*#__PURE__*/function () {
   var _proto = RxStorageDexie.prototype;
   _proto.createStorageInstance = function createStorageInstance(params) {
     ensureRxStorageInstanceParamsAreCorrect(params);
+    ensureNoBooleanIndex(params.schema);
     return createDexieStorageInstance(this, params, this.settings);
   };
   return RxStorageDexie;

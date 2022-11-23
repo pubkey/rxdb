@@ -2010,6 +2010,19 @@
             
         </li>
     
+        <li class="chapter " data-level="2.2.8" data-path="electron-database.html">
+            
+                <a href="electron-database.html">
+            
+                    
+                    Electron Database
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2273,7 +2286,7 @@ While PouchDB is pretty mature, it has some drawbacks that makes blocks it from 
   <img src="files/logo/logo_text.svg" alt="RxDB" width="70">
 </p>
 
-<p><a href="https://rxdb.info/" target="_blank">RxDB</a> is an offline-first, NoSQL-database for JavaScript Applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.</p>
+<p><a href="https://rxdb.info/" target="_blank">RxDB</a> is an offline-first, NoSQL-database for JavaScript applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.</p>
 <p>There are multiple ways to use RxDB in React Native:</p>
 <ul>
 <li>Use the <a href="rx-storage-memory.html">memory RxStorage</a> that stores the data inside of the JavaScript memory without persistence</li>
@@ -2325,7 +2338,8 @@ await collections.humans.find({
     }
 }).$.subscribe(result =&gt; {<span class="hljs-comment">/* ... */</span>});
 </code></pre>
-<p>Using the SQLite RxStorage is pretty fast, which is shown in the <a href="rx-storage.html#performance-comparison">performance comparison</a>.</p>
+<p>Using the SQLite RxStorage is pretty fast, which is shown in the <a href="rx-storage.html#performance-comparison">performance comparison</a>.
+To learn more about using RxDB with React Native, you might want to check out <a href="https://github.com/pubkey/rxdb/tree/master/examples/react-native" target="_blank">this example project</a>.</p>
 <h3 id="watermelondb">WatermelonDB</h3>
 <p>WatermelonDB reactive and asynchronous database for React and React Native apps. It is based on SQLite in React Native and LokiJS when it is used in the browser. It supports schemas, observable queries, migrations and relations.
 The schema layout is handled by TypeScript decorators and looks like this:</p>
@@ -2357,7 +2371,7 @@ Also using firestore creates a vendor lock-in because it is not possible to repl
 <h2 id="follow-up">Follow up</h2>
 <ul>
 <li>If you haven&apos;t done yet, you should start learning about RxDB with the <a href="quickstart.html">Quickstart Tutorial</a>.</li>
-<li>There is a followup list of other <a href="alternatives.html">client side database alternatives</a>.</li>
+<li>There is a followup list of other <a href="alternatives.html">client side database alternatives</a> that might work with React Native.</li>
 </ul>
 
                                 

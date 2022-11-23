@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>DataMigration · RxDB - Documentation</title>
+        <title>Electron Database · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="leader-election.html" />
+    <link rel="next" href="questions-answers.html" />
     
     
-    <link rel="prev" href="key-compression.html" />
+    <link rel="prev" href="capacitor-database.html" />
     
 
     </head>
@@ -1425,7 +1425,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.17" data-path="data-migration.html">
+        <li class="chapter " data-level="1.17" data-path="data-migration.html">
             
                 <a href="data-migration.html">
             
@@ -2010,7 +2010,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.2.8" data-path="electron-database.html">
+        <li class="chapter active" data-level="2.2.8" data-path="electron-database.html">
             
                 <a href="electron-database.html">
             
@@ -2194,7 +2194,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >DataMigration</a>
+        <a href="." >Electron Database</a>
     </h1>
 </div>
 
@@ -2209,165 +2209,114 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="datamigration">DataMigration</h1>
-<p>Imagine you have your awesome messenger-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the messages-collection. Instead of saving the message-date like <code>2017-02-12T23:03:05+00:00</code> you want to have the unix-timestamp like <code>1486940585</code> to make it easier to compare dates. To accomplish this, you change the schema and increase the version-number and you also change your code where you save the incoming messages. But one problem remains: what happens with the messages which are already saved on the user&apos;s device in the old schema?</p>
-<p>With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your existing data from older to newer schemas. This assures that the client&apos;s data always matches your newest code-version.</p>
-<h1 id="add-the-migration-plugin">Add the migration plugin</h1>
-<p>To enable the data migration, you have to add the <code>migration</code> plugin.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { addRxPlugin } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { RxDBMigrationPlugin } from <span class="hljs-string">&apos;rxdb/plugins/migration&apos;</span>;
-addRxPlugin(RxDBMigrationPlugin);
-</code></pre>
-<h2 id="providing-strategies">Providing strategies</h2>
-<p>Upon creation of a collection, you have to provide migrationStrategies when your schema&apos;s version-number is greater than <code>0</code>. To do this, you have to add an object to the <code>migrationStrategies</code> property where a function for every schema-version is assigned. A migrationStrategy is a function which gets the old document-data as a parameter and returns the new, transformed document-data. If the strategy returns <code>null</code>, the document will be removed instead of migrated.</p>
-<pre><code class="lang-javascript">myDatabase.addCollections({
-  messages: {
-    schema: messageSchemaV1,
-    migrationStrategies: {
-      <span class="hljs-comment">// 1 means, this transforms data from version 0 to version 1</span>
-      <span class="hljs-number">1</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-        oldDoc.time = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldDoc.time).getTime(); <span class="hljs-comment">// string to unix</span>
-        <span class="hljs-keyword">return</span> oldDoc;
-      }
-    }
-  }
+                                <h1 id="electron-database">Electron Database</h1>
+<p><a href="https://www.electronjs.org/" target="_blank">Electron</a> (aka Electron.js) is a framework developed by github which is designed to create desktop applications with the Web technology stack consisting of HTML, CSS and JavaScript.
+Because the desktop application runs on the clients device, it is suitable to use a database that can store and query data locally. This allows to create so called <a href="offline-first.html">offline first</a> apps that even work when to user has no internet connection.</p>
+<p><strong>NOTICE:</strong> You are reading this inside of the <a href="https://rxdb.info/" target="_blank">RxDB</a> documentation, so everything might be opinionated.</p>
+<p align="center">
+  <img src="files/icons/electron.svg" alt="Electron" width="70">
+</p>
+
+<h2 id="databases-for-electron">Databases for Electron</h2>
+<p>An Electron runtime can be divided in two parts:</p>
+<ul>
+<li>The &quot;main&quot; process which is a Node.js JavaScript process that runs without a UI in the background.</li>
+<li>One or multiple &quot;renderer&quot; processes that consist of a Chrome browser engine and runs the user interface. Each renderer process represents one &quot;browser tab&quot;.</li>
+</ul>
+<p>This is important to understand because choosing the right database depends on your use case and on which of these JavaScript runtimes you want to keep the data.</p>
+<h3 id="server-side-databases">Server Side Databases</h3>
+<p>Because Electron runs on a desktop computer, you might think that it should be possible to use a common &quot;server&quot; database like MySQL, PostgreSQL or MongoDB. In theory you could ship the correct database server binaries with your electron application and start a process on the clients device which exposes a port to the database that can be consumed by Electron. In practice this is not a viable way to go because shipping the correct binaries and opening ports is way to complicated and troublesome. Instead you should use a database that can be bundled and run <strong>inside</strong> of Electron, either in the <em>main</em> or in the <em>renderer</em> process.</p>
+<h3 id="localstorageindexeddbwebsql">Localstorage/IndexedDB/WebSQL</h3>
+<p>Because Electron uses a common Chrome web browser in the renderer process, you can access the common Web Storage APIs like Localstorage, IndexedDB and WebSQL. This is easy to setup and storing small sets of data can be archieved in a short span of time. </p>
+<p>But as soon as your application goes beyond a simple TODO-app, there are multiple obstacles that come in your way. One thing is the bad multi-tab support. If you have more then one <em>renderer</em> process, it becomes hard to manage database writes between them. Each <em>browser tab</em> could modify the database state while the others do not know of the changes and keep an outdated UI.</p>
+<p>Another thing is performance. <a href="slow-indexeddb.html">IndexedDB is slow</a> mostly because it has to go through layers of browser security and abstractions. Storing and querying much data might become your performance bottleneck. Localstorage and WebSQL are even slower by the way.</p>
+<p>Using the Web Storage APIs is generally only recommend when you know for sure that there will be always only <strong>one rendnering process</strong> and performance is not that relevant.</p>
+<h3 id="sqlite">SQLite</h3>
+<p>SQLite is a SQL based relational database written in the C programming language that was crafted to be embed inside of applications and stores data locally. Operations are written in the SQL query language similar to the PostgreSQL syntax.</p>
+<p>Using SQLite in Electron is not possible in the <em>renderer process</em>, only in the <em>main process</em>. To communicate data operations between your main and your renderer processes, you have to use either <a href="https://github.com/electron/remote" target="_blank">@electron/remote</a> (not recommended) or the <a href="https://www.electronjs.org/de/docs/latest/api/ipc-renderer" target="_blank">ipcRenderer</a> (recommended). So you start up SQLite in your main process and whenever you want to read or write data, you send the SQL queries to the main process and retrieve the result back as JSON data.</p>
+<p>To install SQLite, use the <a href="https://github.com/TryGhost/node-sqlite3" target="_blank">SQLite3</a> package which is a native Node.js module. Also you need the <a href="https://github.com/electron/rebuild" target="_blank">@electron/rebuild</a> package to rebuild the SQLite module against the currently installed Electron version.</p>
+<p>Install them with <code>npm install sqlite3 @electron/rebuild</code>.
+Then you can rebuild SQLite with <code>./node_modules/.bin/electron-rebuild  -f -w sqlite3</code>
+In the JavaScript code of your main process you can now create a database:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> sqlite3 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;sqlite3&apos;</span>);
+<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">new</span> sqlite3.Database(<span class="hljs-string">&apos;/path/to/database/file.db&apos;</span>);
+<span class="hljs-comment">// create a table and insert a row</span>
+db.serialize(() =&gt; {
+  db.run(<span class="hljs-string">&quot;CREATE TABLE Users (name, lastName)&quot;</span>);
+  db.run(<span class="hljs-string">&quot;INSERT INTO Users VALUES (?, ?)&quot;</span>, [<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs-string">&apos;bar&apos;</span>]);
 });
 </code></pre>
-<p>Asynchronous strategies can also be used:</p>
-<pre><code class="lang-javascript">myDatabase.addCollections({
-  messages: {
-    schema: messageSchemaV1,
-    migrationStrategies: {
-      <span class="hljs-number">1</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-        oldDoc.time = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldDoc.time).getTime(); <span class="hljs-comment">// string to unix</span>
-        <span class="hljs-keyword">return</span> oldDoc;
-      },
-      <span class="hljs-comment">/**
-       * 2 means, this transforms data from version 1 to version 2
-       * this returns a promise which resolves with the new document-data
-       */</span>
-      <span class="hljs-number">2</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-        <span class="hljs-comment">// in the new schema (version: 2) we defined &apos;senderCountry&apos; as required field (string)</span>
-        <span class="hljs-comment">// so we must get the country of the message-sender from the server</span>
-        <span class="hljs-keyword">const</span> coordinates = oldDoc.coordinates;
-        <span class="hljs-keyword">return</span> fetch(<span class="hljs-string">&apos;http://myserver.com/api/countryByCoordinates/&apos;</span>+coordinates+<span class="hljs-string">&apos;/&apos;</span>)
-          .then(response =&gt; {
-            <span class="hljs-keyword">const</span> response = response.json();
-            oldDoc.senderCountry=response;
-            <span class="hljs-keyword">return</span> oldDoc;
-          });
-      }
-    }
-  }
-});
-</code></pre>
-<p>you can also filter which documents should be migrated:</p>
-<pre><code class="lang-js">myDatabase.addCollections({
-  messages: {
-    schema: messageSchemaV1,
-    migrationStrategies: {
-      <span class="hljs-comment">// 1 means, this transforms data from version 0 to version 1</span>
-      <span class="hljs-number">1</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-        oldDoc.time = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(oldDoc.time).getTime(); <span class="hljs-comment">// string to unix</span>
-        <span class="hljs-keyword">return</span> oldDoc;
-      },
-      <span class="hljs-comment">/**
-       * this removes all documents older then 2017-02-12
-       * they will not appear in the new collection
-       */</span>
-      <span class="hljs-number">2</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-        <span class="hljs-keyword">if</span>(oldDoc.time &lt; <span class="hljs-number">1486940585</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
-        <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> oldDoc;
-      }
-    }
-  }
-});
-</code></pre>
-<h2 id="automigrate">autoMigrate</h2>
-<p>By default, the migration automatically happens when the collection is created. If you have lots of data or the migrationStrategies take a long time, it might be better to start the migration &apos;by hand&apos; and show the migration-state to the user as a loading-bar.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> messageCol = <span class="hljs-keyword">await</span> myDatabase.addCollections({
-  messages: {
-    schema: messageSchemaV1,
-    autoMigrate: <span class="hljs-literal">false</span>, <span class="hljs-comment">// &lt;- migration will not run at creation</span>
-    migrationStrategies: {
-      <span class="hljs-number">1</span>: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-        ...
-        anything that takes very long
-        ...
-        return oldDoc;
-      }
-    }
-  }
-});
-
-<span class="hljs-comment">// check if migration is needed</span>
-<span class="hljs-keyword">const</span> needed = <span class="hljs-keyword">await</span> messageCol.migrationNeeded();
-<span class="hljs-keyword">if</span>(needed == <span class="hljs-literal">false</span>) <span class="hljs-keyword">return</span>;
-
-<span class="hljs-comment">// starting the migration</span>
-
-<span class="hljs-keyword">const</span> migrationState$ = messageCol.migrate(<span class="hljs-number">10</span>); <span class="hljs-comment">// 10 is the batch-size, how many docs will run at parallel</span>
-
-<span class="hljs-comment">// &apos;start&apos; the observable</span>
-migrationState$.subscribe(
-  state =&gt; <span class="hljs-built_in">console</span>.dir(state),
-  error =&gt; <span class="hljs-built_in">console</span>.error(error),
-  done =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;done&apos;</span>)
-);
-
-<span class="hljs-comment">// the emitted states look like this:</span>
-{
-    done: <span class="hljs-literal">false</span>, <span class="hljs-comment">// true if finished</span>
-    total: <span class="hljs-number">50</span>,   <span class="hljs-comment">// amount of documents which must be migrated</span>
-    handled: <span class="hljs-number">0</span>,  <span class="hljs-comment">// amount of handled docs</span>
-    success: <span class="hljs-number">0</span>,  <span class="hljs-comment">// handled docs which succeeded</span>
-    deleted: <span class="hljs-number">0</span>,  <span class="hljs-comment">// handled docs which got deleted</span>
-    percent: <span class="hljs-number">0</span>   <span class="hljs-comment">// percentage</span>
-}
-</code></pre>
-<p>If you don&apos;t want to show the state to the user, you can also use <code>.migratePromise()</code>:</p>
-<pre><code class="lang-js">  <span class="hljs-keyword">const</span> migrationPromise = messageCol.migratePromise(<span class="hljs-number">10</span>);
-  <span class="hljs-keyword">await</span> migratePromise;
-</code></pre>
-<h2 id="migrationstates">migrationStates()</h2>
-<p><code>RxDatabase.migrationStates()</code> returns an <code>Observable</code> that emits all events to the ongoing migrations of all <code>RxCollection</code>s. Use it to log the current state of the overall migration process or to show a loading state to your user.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> allStatesObservable = myDatabase.migrationStates();
-allStatesObservable.subscribe(allStates =&gt; {
-  allStates.forEach(collectionState =&gt; {
-    <span class="hljs-built_in">console</span>.log(
-      <span class="hljs-string">&apos;migration state of &apos;</span> +
-      collectionState.collection.name + <span class="hljs-string">&apos;: &apos;</span> +
-      collectionState.state.done
-    );
+<p>Also you have to set up the ipcRenderer so that message from the renderer process are handled:</p>
+<pre><code class="lang-ts">ipcMain.handle(<span class="hljs-string">&apos;db-query&apos;</span>, async (event, sqlQuery) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Promise(res =&gt; {
+      db.all(sqlQuery, (err, rows) =&gt; {
+        res(rows);
+      });
   });
 });
 </code></pre>
-<h2 id="migrating-attachments">Migrating attachments</h2>
-<p>When you store <code>RxAttachment</code>s together with your document, they can also be changed, added or removed while running the migration.
-You can do this by mutating the <code>oldDoc._attachments</code> property.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">import</span> { blobBufferUtil } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">const</span> migrationStrategies = {
-      <span class="hljs-number">1</span>: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-        <span class="hljs-comment">// do nothing with _attachments to keep all attachments and have them in the new collection version.</span>
-        <span class="hljs-keyword">return</span> oldDoc;
-      },
-      <span class="hljs-number">2</span>: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-        <span class="hljs-comment">// set _attachments to an empty object to delete all existing ones during the migration.</span>
-        oldDoc._attachments = {};
-        <span class="hljs-keyword">return</span> oldDoc;
-      }
-      <span class="hljs-number">3</span>: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">oldDoc</span>)</span>{
-        <span class="hljs-comment">// update the data field of a single attachment to change its data. </span>
-        oldDoc._attachments.myFile.data = <span class="hljs-keyword">await</span> blobBufferUtil.createBlobBuffer(
-          <span class="hljs-string">&apos;my new text&apos;</span>,
-          oldDoc._attachments.myFile.content_type
-        );
-        <span class="hljs-keyword">return</span> oldDoc;
-      }
-}
+<p>In your renderer process you can now call the ipcHandler and fetch data from SQLite:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> rows = await ipcRenderer.invoke(<span class="hljs-string">&apos;db-query&apos;</span>, <span class="hljs-string">&quot;SELECT * FROM Users&quot;</span>);
 </code></pre>
-<h2 id="hint">Hint</h2>
-<p>If your migration takes a long time, combine it with the leaderElection to make sure you don&apos;t waste your users&apos; resources by running it in 2 open tabs.</p>
+<p>The downside of SQLite is that it is lacking many features that are handful when using a database together with UI based applications. It is not possible to observe queries or document fields and there is no replication method to sync data with a server. This makes SQLite a good solution when you just want to store data on the client, but it is not suitable for more complex operations like two-way replication, encryption, compression and so on. Also developer helpers like TypeScript type safety are totally out of reach.</p>
+<h3 id="rxdb">RxDB</h3>
+<p align="center">
+  <img src="files/logo/logo_text.svg" alt="RxDB" width="70">
+</p>
+
+
+<p><a href="https://rxdb.info/" target="_blank">RxDB</a> is a NoSQL database for JavaScript applications. It has manny features that come in handy when RxDB is used with UI based applications like you Electron app. For example it is able to subscribe to query results of single fields of document. It has encryption and compression features and most important it has a battle tested <a href="https://rxdb.info/replication.html" target="_blank">replication plugin</a> that can be used to do a realtime sync with your backend.</p>
+<p>Because of the <a href="https://rxdb.info/rx-storage.html" target="_blank">flexible storage</a> layer of RxDB, there are many options on how to use it with Electron:</p>
+<ul>
+<li>The <a href="rx-storage-memory.html">memory RxStorage</a> that stores the data inside of the JavaScript memory without persistence</li>
+<li>The <a href="rx-storage-sqlite.html">SQLite RxStorage</a></li>
+<li>The <a href="rx-storage-pouchdb.html">PouchDB RxStorage</a> with the SQLite adapter mentioned above.</li>
+<li>The <a href="rx-storage-indexeddb.html">IndexedDB RxStorage</a></li>
+<li>The <a href="rx-storage-dexie.html">Dexie.js RxStorage</a></li>
+</ul>
+<p>It is recommended to use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> because it has the best performance and is the easiest to set up. However it is part of the <a href="premium.html">Premium Plugins</a> which must be purchased, so to try out RxDB with Electron, you might want to use one of the other options. To start with RxDB, I would recommend to use the Dexie.js RxStorage in the renderer processes. Because RxDB is able to broadcast the database state between browser tabs, having multiple renderer processes is not a problem like it would be when you use plain IndexedDB without RxDB.</p>
+<p>First you have to install all dependencies via <code>npm install rxdb rxjs</code>.
+Then you can assemble the RxStorage and create a database with it:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
+
+<span class="hljs-comment">// create database</span>
+<span class="hljs-keyword">const</span> db = await createRxDatabase({
+    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
+    storage: getRxStorageDexie()
+});
+
+<span class="hljs-comment">// create collections</span>
+<span class="hljs-keyword">const</span> collections = await myRxDatabase.addCollections({
+    humans: {
+        <span class="hljs-comment">/* ... */</span>
+    }
+});
+
+<span class="hljs-comment">// insert document</span>
+await collections.humans.insert({id: <span class="hljs-string">&apos;foo&apos;</span>, name: <span class="hljs-string">&apos;bar&apos;</span>});
+
+<span class="hljs-comment">// run a query</span>
+<span class="hljs-keyword">const</span> result = await collections.humans.find({
+    selector: {
+        name: <span class="hljs-string">&apos;bar&apos;</span>
+    }
+}).exec();
+
+<span class="hljs-comment">// observe a query</span>
+await collections.humans.find({
+    selector: {
+        name: <span class="hljs-string">&apos;bar&apos;</span>
+    }
+}).$.subscribe(result =&gt; {<span class="hljs-comment">/* ... */</span>});
+</code></pre>
+<p>For having a better performance in the renderer tab, you can later switch to the <a href="rx-storage-indexeddb.html">IndexedDB RxStorage</a>. But in production it is recommended to use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> in the main process so that database operations do not block the rendering of the UI.
+To learn more about using RxDB with Electron, you might want to check out <a href="https://github.com/pubkey/rxdb/tree/master/examples/electron" target="_blank">this example project</a>.</p>
+<h2 id="follow-up">Follow up</h2>
+<ul>
+<li>If you haven&apos;t done yet, you should start learning about RxDB with the <a href="quickstart.html">Quickstart Tutorial</a>.</li>
+<li>There is a followup list of other <a href="alternatives.html">client side database alternatives</a> that you can try to use with Electron.</li>
+</ul>
 
                                 
                                 </section>
@@ -2395,12 +2344,12 @@ You can do this by mutating the <code>oldDoc._attachments</code> property.</p>
 
             
                 
-                <a href="key-compression.html" class="navigation navigation-prev " aria-label="Previous page: Key Compression">
+                <a href="capacitor-database.html" class="navigation navigation-prev " aria-label="Previous page: Capacitor Database">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="leader-election.html" class="navigation navigation-next " aria-label="Next page: LeaderElection">
+                <a href="questions-answers.html" class="navigation navigation-next " aria-label="Next page: Questions & Answers">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2411,7 +2360,7 @@ You can do this by mutating the <code>oldDoc._attachments</code> property.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"DataMigration","level":"1.17","depth":1,"next":{"title":"LeaderElection","level":"1.18","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"previous":{"title":"Key Compression","level":"1.16","depth":1,"path":"key-compression.md","ref":"./key-compression.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"data-migration.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Electron Database","level":"2.2.8","depth":2,"next":{"title":"Questions & Answers","level":"2.3","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Capacitor Database","level":"2.2.7","depth":2,"path":"capacitor-database.md","ref":"./capacitor-database.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"electron-database.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

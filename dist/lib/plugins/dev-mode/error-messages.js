@@ -198,6 +198,8 @@ var ERROR_MESSAGES = {
   CRDT1: 'CRDT operations cannot be used because the crdt options are not set in the schema.',
   CRDT2: 'RxDocument.atomicUpdate() cannot be used when CRDTs are activated.',
   CRDT3: 'To use CRDTs you MUST NOT set a conflictHandler because the default CRDT conflict handler must be used',
+  // plugins/dexie/
+  DXE1: 'The dexie.js RxStorage does not support boolean indexes, see https://rxdb.info/rx-storage-dexie.html#boolean-index',
   /**
    * Should never be thrown, use this for
    * null checks etc. so you do not have to increase the

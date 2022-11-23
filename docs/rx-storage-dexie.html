@@ -2010,6 +2010,19 @@
             
         </li>
     
+        <li class="chapter " data-level="2.2.8" data-path="electron-database.html">
+            
+                <a href="electron-database.html">
+            
+                    
+                    Electron Database
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2198,18 +2211,20 @@
                                 
                                 <h1 id="rxstorage-dexiejs">RxStorage Dexie.js</h1>
 <p>To store the data inside of IndexedDB in the browser, you can also use the <a href="https://github.com/dexie/Dexie.js" target="_blank">Dexie.js</a> <a href="rx-storage.html">RxStorage</a>.</p>
-<p>Dexie.js is a minimal wrapper around IndexedDB that has a good performance.
+<p>Dexie.js is a minimal wrapper around IndexedDB.
 For the Dexie based <code>RxStorage</code>, we use the <a href="https://github.com/kofrasa/mingo" target="_blank">mingo</a> query handler.</p>
 <h2 id="pros">Pros</h2>
 <ul>
 <li>Smaller bundle size than with the PouchDB storage.</li>
 <li>Fast initial load even on big datasets.</li>
 <li>Faster write and read performance than with PouchDB because it has less overhead.</li>
+<li>Can use <a href="https://dexie.org/docs/Tutorial/Building-Addons" target="_blank">Dexie.js addons</a>.</li>
 </ul>
 <h2 id="cons">Cons</h2>
 <ul>
-<li>It does not support attachments. (Make a pull request)</li>
-<li>Does not use a <a href="slow-indexeddb.html">Batched Cursor</a> which makes it slower then the <a href="rx-storage-indexeddb.html">IndexedDB RxStorage</a>.</li>
+<li>It does not support <a href="rx-attachment.html">attachments</a></li>
+<li><a href="#boolean-index">It does not support boolean indexes</a></li>
+<li>Does not use a <a href="slow-indexeddb.html#batched-cursor">Batched Cursor</a> or <a href="slow-indexeddb.html#custom-indexes">custom indexes</a> which makes queries slower compared to the <a href="rx-storage-indexeddb.html">IndexedDB RxStorage</a>.</li>
 </ul>
 <h2 id="usage">Usage</h2>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
@@ -2247,6 +2262,12 @@ You can do that by using the <a href="https://github.com/dumbmatter/fakeIndexedD
     })
 });
 </code></pre>
+<h2 id="boolean-index">Boolean Index</h2>
+<p>Dexie.js does not support boolean indexes because they are not a valid index key in IndexedDB itself. See <a href="https://github.com/w3c/IndexedDB/issues/76" target="_blank">w3c/IndexedDB#76</a>. To index boolean fields, you can:</p>
+<ul>
+<li>Substitute the index field with a non boolean field. For example you can use a number field and store <code>0</code> as <code>false</code> and <code>1</code> as <code>true</code>,</li>
+<li>or use the the <a href="rx-storage-indexeddb.html">IndexedDB RxStorage</a> which supports boolean indexes because it does not use the IndexedDB indexes but <a href="slow-indexeddb.html#custom-indexes">custom index string</a> instead.</li>
+</ul>
 
                                 
                                 </section>

@@ -2010,6 +2010,19 @@
             
         </li>
     
+        <li class="chapter " data-level="2.2.8" data-path="electron-database.html">
+            
+                <a href="electron-database.html">
+            
+                    
+                    Electron Database
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2210,7 +2223,7 @@ LokiJS has the main benefit of having a better performance. It can do this becau
 <li>Data can be lost when the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated.</li>
 <li>All data must fit into the memory.</li>
 <li>Slow initialisation time when used with <code>multiInstance: true</code> because it has to await the leader election process.</li>
-<li>Slow initialisation time when really much data is stored inside of the database.</li>
+<li>Slow initialisation time when really much data is stored inside of the database because it has to parse a big <code>JSON</code> string.</li>
 </ul>
 <h2 id="usage">Usage</h2>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> {

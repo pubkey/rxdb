@@ -12,6 +12,7 @@ export declare function closeDexieDb(statePromise: DexieStorageInternals): Promi
  * because we need it in multiple places.
  */
 export declare function getDexieSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
+export declare function ensureNoBooleanIndex(schema: RxJsonSchema<any>): void;
 /**
  * It is not possible to set non-javascript-variable-syntax
  * keys as IndexedDB indexes. So we have to substitute the pipe-char

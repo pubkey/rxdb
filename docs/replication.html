@@ -2010,6 +2010,19 @@
             
         </li>
     
+        <li class="chapter " data-level="2.2.8" data-path="electron-database.html">
+            
+                <a href="electron-database.html">
+            
+                    
+                    Electron Database
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2240,8 +2253,8 @@ For example if your documents contain an <code>id</code> and an <code>updatedAt<
 <p>When the checkpoint iteration reaches the last checkpoint, where the backend returns an empty array because there are no newer documents, the replication will automatically switch to the <code>event observation</code> mode.</p>
 <h3 id="event-observation">Event observation</h3>
 <p>While the client is connected to the backend, the events from the backend are observed via <code>pullStream$</code> and persisted to the client.</p>
-<p>If your backend for any reason is not able to provide a full <code>pullStream$</code> that contains all events and the checkpoint, you can instead only emit <code>RESYNC</code> events that tell RxDB that anything unknown has changed on the server and it should run the pull replication via <code>checkpoint iteration</code>.</p>
-<p>When the client goes offline and online again, it might happen that the <code>pullStream$</code> has missed out some events. Therefore the <code>pullStream$</code> should also emit a <code>RESYNC</code> event each time the client reconnects, so that the client can become in sync with the backend via the <code>checkpoint iteration</code> mode.</p>
+<p>If your backend for any reason is not able to provide a full <code>pullStream$</code> that contains all events and the checkpoint, you can instead only emit <code>RESYNC</code> events that tell RxDB that anything unknown has changed on the server and it should run the pull replication via <a href="#checkpoint-iteration">checkpoint iteration</a>.</p>
+<p>When the client goes offline and online again, it might happen that the <code>pullStream$</code> has missed out some events. Therefore the <code>pullStream$</code> should also emit a <code>RESYNC</code> event each time the client reconnects, so that the client can become in sync with the backend via the <a href="#checkpoint-iteration">checkpoint iteration</a> mode.</p>
 <h2 id="data-layout-on-the-server">Data layout on the server</h2>
 <p>To use the replication you first have to ensure that:</p>
 <ul>
@@ -2285,7 +2298,7 @@ For example if your documents contain an <code>id</code> and an <code>updatedAt<
       B1---C2---D      fork/client state
 </code></pre><p>The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentally overwrite other peoples changes when they go online again.
 You can specify a custom conflict handler by setting the property <code>conflictHandler</code> when calling <code>addCollection()</code>.</p>
-<p>MLearn how to create a <a href="transactions-conflicts-revisions.html#custom-conflict-handler">custom conflict handler</a>.</p>
+<p>Learn how to create a <a href="transactions-conflicts-revisions.html#custom-conflict-handler">custom conflict handler</a>.</p>
 <h2 id="replicaterxcollection">replicateRxCollection()</h2>
 <p>You can start the replication of a single <code>RxCollection</code> by calling <code>replicateRxCollection()</code> like in the following:</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> { replicateRxCollection } from <span class="hljs-string">&apos;rxdb/plugins/replication&apos;</span>;
@@ -2555,7 +2568,7 @@ myRxReplicationState.active$.subscribe(bool =&gt; <span class="hljs-built_in">co
 <pre><code class="lang-ts">await myRxReplicationState.awaitInSync();
 </code></pre>
 <h3 id="resync">reSync()</h3>
-<p>Triggers a <code>RESYNC</code> cycle where the replication goes into <code>Checkpoint iteration</code> until the client is in sync with the backend. Used in unit tests or when no proper <code>pull.stream$</code> can be implemented so that the client only knows that something has been changed but not what.</p>
+<p>Triggers a <code>RESYNC</code> cycle where the replication goes into <a href="#checkpoint-iteration">checkpoint iteration</a> until the client is in sync with the backend. Used in unit tests or when no proper <code>pull.stream$</code> can be implemented so that the client only knows that something has been changed but not what.</p>
 <pre><code class="lang-ts">myRxReplicationState.reSync();
 </code></pre>
 <p>If your backend is not capable of sending events to the client at all, you could run <code>reSync()</code> in an interval so that the client will automatically fetch server changes after some time at least.</p>

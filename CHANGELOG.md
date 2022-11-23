@@ -2,13 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX Throw proper error message when a boolean index is used in the Dexie.js RxStorage.
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.11.1 (23 November 2022)
+
+- FIX Throw proper error message when a boolean index is used in the Dexie.js RxStorage.
 
 ### 13.11.0 (19 November 2022)
 

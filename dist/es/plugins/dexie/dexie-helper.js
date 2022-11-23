@@ -2,7 +2,7 @@ import mingo from 'mingo';
 import { Dexie } from 'dexie';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 /**
  * Returns all documents in the database.
  * Non-deleted plus deleted ones.
@@ -108,6 +108,29 @@ export function getDexieSortComparator(_schema, query) {
     }
   };
   return fun;
+}
+export function ensureNoBooleanIndex(schema) {
+  if (!schema.indexes) {
+    return;
+  }
+  var checkedFields = new Set();
+  schema.indexes.forEach(function (index) {
+    var fields = Array.isArray(index) ? index : [];
+    fields.forEach(function (field) {
+      if (checkedFields.has(field)) {
+        return;
+      }
+      checkedFields.add(field);
+      var schemaObj = getSchemaByObjectPath(schema, field);
+      if (schemaObj.type === 'boolean') {
+        throw newRxError('DXE1', {
+          schema: schema,
+          index: index,
+          field: field
+        });
+      }
+    });
+  });
 }
 
 /**
