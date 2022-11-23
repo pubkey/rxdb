@@ -159,7 +159,7 @@ The last commit for hoodie was one year ago and the website (hood.ie) is offline
 ### LokiJS
 
 LokiJS is a JavaScript embeddable, in-memory database. And because everything is handled in-memory, LokiJS has awesome performance when mutating or querying data. You can still persist to a permanent storage (IndexedDB, Filesystem etc.) with one of the provided storage adapters. The persistence happens after a timeout is reached after a write, or before the JavaScript process exits. This also means you could loose data when the JavaScript process exits ungracefully like when the power of the device is shut down or the browser crashes.
-While the project is not that active anymore, it is more *finished* then *unmaintained*.
+While the project is not that active anymore, it is more *finished* than *unmaintained*.
 
 RxDB supports using [LokiJS as RxStorage](./rx-storage-lokijs.md).
 
@@ -187,7 +187,7 @@ The last commit to NeDB was in **2016**.
 
 ### Dexie.js
 
-Dexie.js is a minimalistic wrapper for IndexedDB. While providing a better API then plain IndexedDB, Dexie also improves performance by batching transactions and other optimizations. It also adds additional non-IndexedDB features like observable queries or multi tab support or react hooks.
+Dexie.js is a minimalistic wrapper for IndexedDB. While providing a better API than plain IndexedDB, Dexie also improves performance by batching transactions and other optimizations. It also adds additional non-IndexedDB features like observable queries or multi tab support or react hooks.
 Compared to RxDB, Dexie.js does not support complex (MongoDB-like) queries and requires a lot of fiddling when a document range of a specific index must be fetched.
 Dexie.js is used by Whatsapp Web, Microsoft To Do and Github Desktop.
 
@@ -196,7 +196,7 @@ RxDB supports using [Dexie.js as RxStorage](./rx-storage-dexie.md) which enhance
 ### MongoDB Realm
 
 Originally Realm was a mobile database for Android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
-It was meant as replacement for SQLite but is more like an object store then a full SQL database.
+It was meant as replacement for SQLite but is more like an object store than a full SQL database.
 In 2019 MongoDB bought Realm and changed the projects focus.
 Now Realm is made for replication with the MongoDB Realm Sync based on the MongoDB Atlas Cloud platform. This tight coupling to the MongoDB cloud service is a big downside for most use cases.
 
