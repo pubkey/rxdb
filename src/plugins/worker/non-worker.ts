@@ -95,12 +95,7 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
 }
 
 
-export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<
-    RxDocType,
-    WorkerStorageInternals,
-    any,
-    any
-> {
+export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxDocType, WorkerStorageInternals, any, any> {
     /**
      * threads.js uses observable-fns instead of rxjs
      * so we have to transform it.
