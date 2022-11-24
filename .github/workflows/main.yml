@@ -483,18 +483,6 @@ jobs:
           working-directory: ./examples/electron
           run: npm run test
 
-      - name: electron-remote install
-        working-directory: ./examples/electron-remote
-        run: |
-          npm run preinstall
-          npm install --legacy-peer-deps
-
-      - name: electron-remote test
-        uses: GabrielBB/xvfb-action@v1.6
-        with:
-          working-directory: ./examples/electron-remote
-          run: npm run test
-
   react:
     runs-on: ubuntu-20.04
     steps:

@@ -3,7 +3,7 @@ const path = require('path');
 const { addRxPlugin } = require('rxdb');
 
 const { getRxStorageMemory } = require('rxdb/plugins/memory');
-const { exposeIpcMainRxStorage } = require('../../plugins/electron');
+const { exposeIpcMainRxStorage } = require('rxdb/plugins/electron');
 
 const { getDatabase } = require('./shared');
 

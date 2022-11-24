@@ -126,6 +126,7 @@
     * [RxStorage Memory Synced](./rx-storage-memory-synced.md)
     * [RxStorage Sharding](./rx-storage-sharding.md)
     * [RxStorage Localstorage Meta Optimizer](./rx-storage-localstorage-meta-optimizer.md)
+    * [RxStorage Electron IpcRenderer & IpcMain](./electron.md#rxstorage-electron-ipcrenderer--ipcmain)
 
 * [Replication](./replication.md)
     * [Replication GraphQL](./replication-graphql.md)
