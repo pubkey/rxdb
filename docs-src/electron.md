@@ -38,3 +38,8 @@ const db = await createRxDatabase({
 });
 /* ... */
 ```
+
+
+## Related
+
+- [Comparison of Electron Databases](./electron-database.md)
