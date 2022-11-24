@@ -5,14 +5,11 @@
     "preinstall": "npm run preinstall:rxdb",
     "preinstall:rxdb": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/electron/rxdb-local.tgz)",
     "start": "npm run electron",
-    "electron": "electron .",
+    "electron": "electron . -enable-logging",
     "test": "mocha"
   },
   "dependencies": {
-    "electron": "19.0.17",
-    "pouchdb-adapter-http": "7.3.0",
-    "pouchdb-adapter-websql": "7.0.0",
-    "pouchdb-replication": "7.3.0",
+    "electron": "21.3.1",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.5.7"
   },

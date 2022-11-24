@@ -2,6 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD [electron ipcRenderer plugin](./docs-src/electron.md) which can be used in Electron.js to run the RxStorage in the main process and the RxDatabase in the renderer processes.
+- Removed the electron-remove example because `@electron/remote` is deprecated.
 
 <!-- ADD new changes here! -->
 

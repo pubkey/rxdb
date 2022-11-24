@@ -1,13 +1,11 @@
-const database = require('./database');
+const { getDatabase } = require('./shared');
 const renderTest = require('./test/render.test.js');
-const { addRxPlugin } = require('rxdb');
-const { RxDBReplicationCouchDBPlugin } = require('rxdb/plugins/replication-couchdb');
+const electron = require('electron');
+const { getRxStorageIpcRenderer } = require('../../plugins/electron');
+const { getRxStorageMemory } = require('rxdb/plugins/memory');
 
-addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 const heroesList = document.querySelector('#heroes-list');
-
-const syncURL = 'http://0.0.0.0:10102/db/heroes';
 
 async function run() {
     /**
@@ -18,35 +16,19 @@ async function run() {
 
     const dbSuffix = await window.getDBSuffix();
 
-    const db = await database.createDatabase(
+
+    const storage = getRxStorageIpcRenderer({
+        key: 'main-storage',
+        statics: getRxStorageMemory().statics,
+        ipcRenderer: electron.ipcRenderer
+    });
+
+    console.log('GET DATABASE');
+    const db = await getDatabase(
         'heroesdb' + dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
-        'memory'
+        storage
     );
-
-    console.log('starting sync with ' + syncURL);
-    const syncState = await db.heroes.syncCouchDB({
-        remote: syncURL,
-        waitForLeadership: false,
-        direction: {
-            pull: true,
-            push: true
-        },
-        options: {
-            live: true
-        },
-    });
-    syncState.error$.subscribe(err => {
-        console.error('# Got replication error:');
-        console.dir(err);
-        console.trace(err);
-
-        /**
-         * We have to throw here, otherwise
-         * something might not work but the CI will not fail
-         * and instead time out after a very long time.
-         */
-        throw err;
-    });
+    console.log('GET DATABASE DONE');
 
     /**
      * map the result of the find-query to the heroes-list in the dom
@@ -82,7 +64,8 @@ async function run() {
         };
         console.log('inserting hero:');
         console.dir(obj);
-        db.heroes.insert(obj);
+        await db.heroes.insert(obj);
+        console.log('inserting hero DONE');
     };
 }
 run();

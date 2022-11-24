@@ -95,12 +95,7 @@ export class RxStorageWorker implements RxStorage<WorkerStorageInternals, any> {
 }
 
 
-export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<
-RxDocType,
-WorkerStorageInternals,
-any,
-any
-> {
+export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxDocType, WorkerStorageInternals, any, any> {
     /**
      * threads.js uses observable-fns instead of rxjs
      * so we have to transform it.
@@ -170,10 +165,7 @@ any
     getChangedDocumentsSince(
         limit: number,
         checkpoint?: any
-    ): Promise<{
-            documents: RxDocumentData<RxDocType>[];
-            checkpoint: any;
-        }> {
+    ) {
         return this.internals.worker.getChangedDocumentsSince(
             this.internals.instanceId,
             limit,
@@ -209,9 +201,14 @@ any
     }
 
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return new Subject();
+        return this.conflicts$;
     }
-    async resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> { }
+    async resolveConflictResultionTask(taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
+        await this.internals.worker.resolveConflictResultionTask(
+            this.internals.instanceId,
+            taskSolution
+        );
+    }
 
 }
 
