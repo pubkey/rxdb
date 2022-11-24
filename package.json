@@ -163,7 +163,7 @@
     "is-electron": "2.2.0",
     "is-my-json-valid": "2.20.6",
     "isomorphic-ws": "4.0.1",
-    "js-base64": "3.7.2",
+    "js-base64": "3.7.3",
     "jsonschema-key-compression": "1.6.1",
     "lokijs": "1.5.12",
     "mingo": "5.1.0",
