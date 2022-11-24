@@ -1,6 +1,3 @@
-import type {
-    ipcRenderer as ipcRendererImport
-} from 'electron';
 import { filter, firstValueFrom, Observable, Subject, Subscription } from 'rxjs';
 import type {
     BulkWriteRow,
@@ -20,20 +17,27 @@ import type {
     RxStorageStatics
 } from '../../types';
 import { PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
-import { IpcMessageFromMain, IpcMessageFromRenderer, IPC_RENDERER_KEY_PREFIX } from './electron-helper';
+import {
+    IpcMessageFromMain,
+    IpcMessageFromRenderer,
+    IPC_RENDERER_KEY_PREFIX,
+    IPC_RENDERER_TO_MAIN
+} from './electron-helper';
 
 
 export type RxStorageIpcRendererInternals = {
+    channelId: string;
     rxStorage: RxStorageIpcRenderer;
     port: MessagePort;
     messages$: Subject<IpcMessageFromMain>;
     instanceId: string;
+    ipcRenderer: any;
 };
 
 declare type RxStorageIpcRendererSettings = {
     key: string;
     statics: RxStorageStatics;
-    ipcRenderer: typeof ipcRendererImport;
+    ipcRenderer: any;
 };
 
 
@@ -72,9 +76,9 @@ export class RxStorageIpcRenderer implements RxStorage<RxStorageIpcRendererInter
                 eventName
             ].join('|'),
             args,
-            [messageChannel.port1]
+            [messageChannel.port2]
         );
-        return messageChannel.port2;
+        return messageChannel.port1;
     }
 
     async createStorageInstance<RxDocType>(
@@ -82,10 +86,13 @@ export class RxStorageIpcRenderer implements RxStorage<RxStorageIpcRendererInter
     ): Promise<RxStorageInstanceIpcRenderer<RxDocType>> {
         const messages$ = new Subject<IpcMessageFromMain>();
         const instanceIdPromise = firstValueFrom(messages$);
+        const channelId = randomCouchString(10);
         const port = this.postMessage(
             'createStorageInstance',
-            params
-        );
+            Object.assign({}, params, { channelId }));
+        port.onmessage = msg => {
+            messages$.next(msg.data);
+        };
         const instanceIdResult = await instanceIdPromise;
         if (instanceIdResult.error) {
             throw new Error('could not create instance ' + instanceIdResult.error.toString());
@@ -97,10 +104,12 @@ export class RxStorageIpcRenderer implements RxStorage<RxStorageIpcRendererInter
             params.collectionName,
             params.schema,
             {
+                channelId,
                 instanceId,
                 port,
                 messages$,
-                rxStorage: this
+                rxStorage: this,
+                ipcRenderer: this.settings.ipcRenderer
             },
             params.options
         );
@@ -108,12 +117,7 @@ export class RxStorageIpcRenderer implements RxStorage<RxStorageIpcRendererInter
 }
 
 
-export class RxStorageInstanceIpcRenderer<RxDocType> implements RxStorageInstance<
-    RxDocType,
-    RxStorageIpcRendererInternals,
-    any,
-    any
-> {
+export class RxStorageInstanceIpcRenderer<RxDocType> implements RxStorageInstance<RxDocType, RxStorageIpcRendererInternals, any, any> {
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>> = new Subject();
     private conflicts$: Subject<RxConflictResultionTask<RxDocType>> = new Subject();
     private subs: Subscription[] = [];
@@ -134,16 +138,16 @@ export class RxStorageInstanceIpcRenderer<RxDocType> implements RxStorageInstanc
 
         this.instanceId = internals.instanceId;
 
-        this.internals.port.onmessage = event => {
-            const data = event.data;
-            if (data.key === 'changeStream') {
-                this.changes$.next(data.value);
-            } else if (data.key === 'conflictResultionTasks') {
-                this.conflicts$.next(data.value);
-            } else {
-                throw new Error('port.onmessage unknown data ' + data.key);
-            }
-        };
+        this.subs.push(
+            internals.messages$.subscribe(msg => {
+                if (msg.method === 'changeStream') {
+                    this.changes$.next(msg.return);
+                }
+                if (msg.method === 'conflictResultionTasks') {
+                    this.conflicts$.next(msg.return);
+                }
+            })
+        );
     }
 
     public async requestMain(
@@ -158,11 +162,12 @@ export class RxStorageInstanceIpcRenderer<RxDocType> implements RxStorageInstanc
             )
         );
         const message: IpcMessageFromRenderer = {
+            channelId: this.internals.channelId,
             requestId,
             method: methodName,
             params
         };
-        this.internals.port.postMessage(message);
+        this.internals.ipcRenderer.send(IPC_RENDERER_TO_MAIN, message);
         const response = await responsePromise;
 
         if (response.error) {

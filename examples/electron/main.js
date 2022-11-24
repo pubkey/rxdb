@@ -1,10 +1,11 @@
 const electron = require('electron');
 const path = require('path');
 const { addRxPlugin } = require('rxdb');
-const { RxDBServerCouchDBPlugin } = require('rxdb/plugins/server-couchdb');
-addRxPlugin(RxDBServerCouchDBPlugin);
 
-const database = require('./database');
+const { getRxStorageMemory } = require('rxdb/plugins/memory');
+const { exposeIpcMainRxStorage } = require('../../plugins/electron');
+
+const { getDatabase } = require('./shared');
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
@@ -12,7 +13,7 @@ const BrowserWindow = electron.BrowserWindow;
 const windows = [];
 
 function createWindow() {
-    const width = 300;
+    const width = 600;
     const height = 600;
     const w = new BrowserWindow({
         width,
@@ -30,6 +31,9 @@ function createWindow() {
     const y = 0;
     w.setPosition(x, y);
     windows.push(w);
+
+    // use this to debug
+    // w.webContents.openDevTools();
 }
 
 
@@ -38,30 +42,27 @@ app.on('ready', async function () {
 
     electron.ipcMain.handle('getDBSuffix', () => dbSuffix);
 
-    const db = await database.createDatabase(
-        'heroesdb' + dbSuffix,
-        'memory'
-    );
 
-    /**
-     * spawn a server
-     * which is used as sync-goal by page.js
-     */
-    console.log('start server');
-    await db.serverCouchDB({
-        path: '/db',
-        port: 10102,
-        cors: true
-    });
-    console.log('started server');
+    const storage = getRxStorageMemory();
 
-    // show heroes table in console
-    db.heroes.find().sort('name').$.subscribe(heroDocs => {
-        console.log('### got heroes(' + heroDocs.length + '):');
-        heroDocs.forEach(doc => console.log(
-            doc.name + '  |  ' + doc.color
-        ));
+    exposeIpcMainRxStorage({
+        key: 'main-storage',
+        storage,
+        ipcMain: electron.ipcMain
     });
+
+    // const db = await getDatabase(
+    //     'heroesdb' + dbSuffix,
+    //     storage
+    // );
+
+    // // show heroes table in console
+    // db.heroes.find().sort('name').$.subscribe(heroDocs => {
+    //     console.log('### got heroes(' + heroDocs.length + '):');
+    //     heroDocs.forEach(doc => console.log(
+    //         doc.name + '  |  ' + doc.color
+    //     ));
+    // });
 
     createWindow();
     createWindow();
