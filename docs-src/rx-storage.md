@@ -55,7 +55,7 @@ The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around
 
 ### Electron IpcRenderer & IpcMain
 
-To use RxDB in [electron](./electron-database.md), it is recommened to run the RxStorage in the main process and the RxDatabase in the renderer processes. With the rxdb electron plugin you can create a remote RxStorage and consume it from the renderer process. [Read more](./electron.md)
+To use RxDB in [electron](./electron-database.md), it is recommended to run the RxStorage in the main process and the RxDatabase in the renderer processes. With the rxdb electron plugin you can create a remote RxStorage and consume it from the renderer process. [Read more](./electron.md)
 
 
 ## Performance comparison

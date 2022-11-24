@@ -92,6 +92,7 @@ Because of the [flexible storage](https://rxdb.info/rx-storage.html) layer of Rx
 - The [Dexie.js RxStorage](./rx-storage-dexie.md)
 
 It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it has the best performance and is the easiest to set up. However it is part of the [Premium Plugins](./premium.md) which must be purchased, so to try out RxDB with Electron, you might want to use one of the other options. To start with RxDB, I would recommend to use the Dexie.js RxStorage in the renderer processes. Because RxDB is able to broadcast the database state between browser tabs, having multiple renderer processes is not a problem like it would be when you use plain IndexedDB without RxDB.
+In production you would always run the RxStorage in the main process with the [RxStorage Electron IpcRenderer & IpcMain](./electron.md#rxstorage-electron-ipcrenderer--ipcmain) plugins.
 
 First you have to install all dependencies via `npm install rxdb rxjs`.
 Then you can assemble the RxStorage and create a database with it:
