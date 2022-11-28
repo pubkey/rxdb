@@ -93,15 +93,17 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                     useTasks.push(innerTaskWithTime.task);
                 }
 
-                if (useTasks.length === 0) {
-                    state.events.active.down.next(false);
-                    return;
-                }
+                if (useTasks.length === 0) return;
 
                 if (useTasks[0] === 'RESYNC') {
                     return downstreamResyncOnce();
                 } else {
                     return downstreamProcessChanges(useTasks);
+                }
+            }).then(() => {
+                state.events.active.down.next(false);
+                if (!state.firstSyncDone.down.getValue()) {
+                    state.firstSyncDone.down.next(true);
                 }
             });
     }
@@ -169,12 +171,7 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
             }
 
         }
-        return Promise.all(promises)
-            .then(() => {
-                if (!state.firstSyncDone.down.getValue()) {
-                    state.firstSyncDone.down.next(true);
-                }
-            });
+        await Promise.all(promises);
     }
 
 

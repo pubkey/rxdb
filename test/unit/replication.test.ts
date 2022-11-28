@@ -368,15 +368,23 @@ describe('replication.test.js', () => {
                 throw err;
             });
 
-            let wasActive = false;
+            const values: boolean[] = [];
             replicationState.active$.subscribe((active) => {
-                if (active) wasActive = active;
+                values.push(active);
             });
 
             await replicationState.awaitInitialReplication();
             assert.strictEqual(
-                wasActive,
+                values.length > 0,
                 true
+            );
+            assert.strictEqual(
+                values.includes(true),
+                true
+            );
+            assert.strictEqual(
+                values[values.length - 1],
+                false
             );
 
             localCollection.database.destroy();
