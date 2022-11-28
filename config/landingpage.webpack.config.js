@@ -4,7 +4,10 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-    entry: './docs-src/landingpage.ts',
+    entry: {
+        landingpage: './docs-src/landingpage.ts',
+        premium: './docs-src/premium.ts'
+    },
     module: {
         rules: [
             {
@@ -68,7 +71,7 @@ module.exports = {
         extensions: ['.tsx', '.ts', '.js'],
     },
     output: {
-        filename: 'landingpage.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, '../', 'docs')
     },
     devServer: {

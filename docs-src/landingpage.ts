@@ -1,28 +1,16 @@
 import {
     ensureNotFalsy,
-    createRxDatabase,
     RxLocalDocument,
     now,
-    addRxPlugin,
     promiseWait
 } from '../';
-import {
-    getRxStorageDexie
-} from '../plugins/dexie';
-import {
-    RxDBLocalDocumentsPlugin
-} from '../plugins/local-documents';
-addRxPlugin(RxDBLocalDocumentsPlugin);
-import {
-    RxDBLeaderElectionPlugin
-} from '../plugins/leader-election';
-addRxPlugin(RxDBLeaderElectionPlugin);
 import {
     merge,
     fromEvent,
     map,
     distinctUntilChanged
 } from 'rxjs';
+import { getDatabase } from './database';
 
 
 type MousePositionType = {
@@ -37,6 +25,8 @@ type BeatingValuesType = {
     text2: string;
     color: string;
 };
+
+const dbPromise = getDatabase();
 
 
 window.onload = async function () {
@@ -59,11 +49,7 @@ window.onload = async function () {
     }
 
 
-    const database = await createRxDatabase({
-        name: 'rxdb-landingpage',
-        localDocuments: true,
-        storage: getRxStorageDexie()
-    });
+    const database = await dbPromise;
 
 
     // once insert if not exists

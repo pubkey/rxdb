@@ -155,7 +155,7 @@
 
 * [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md)
 
-* [RxDB Premium](./premium.md)
+* [RxDB Premium](./premium.html)
 
 
 * Tutorials
