@@ -237,44 +237,308 @@
             <h2>Estimated Price <b class="underline">Calculator</b></h2>
 
 
-            <div class="price-calculator bg-gradient-left-top">
+            <div class="price-calculator">
                 <div class="price-calculator-inner">
 
+                    <form id="price-calculator-form">
 
-                    <label for="developer-count">Amount of Developers</label>
-                    <input
-                        type="number"
-                        name="developer-count"
-                    />
-                    <br />
 
-                    <label for="home-country">Company Home Country</label>
-                    <input
-                        list="home-country"
-                        name="home-country"
+
+                        <div class="field">
+                            <label for="developer-count">Team Size:</label>
+                            <div class="input">
+                                <input
+                                    type="number"
+                                    name="developer-count"
+                                    min="1"
+                                    max="100"
+                                    required
+                                />
+                                <div class="suffix">Developer(s)</div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="home-country">Company Home Country:</label>
+                            <div class="input">
+                                <input
+                                    list="home-country"
+                                    name="home-country"
+                                    pattern="[A-Za-z]{2}"
+                                    required
+                                    style="width: 100%; max-width: 240px;"
+                                >
+                                <datalist id="home-country">
+                                    <!-- filled by premium.ts -->
+                                </datalist>
+                            </div>
+                        </div>
+
+
+                        <div class="field">
+                            <label for="company-age">Company Age:</label>
+                            <div class="input">
+                                <select
+                                    name="company-age"
+                                    id="company-age"
+                                    required
+                                >
+                                    <option
+                                        value=""
+                                        selected="true"
+                                        disabled="disabled"
+                                    ></option>
+                                    <option value="more-than-3">Older</option>
+                                    <option value="less-than-3">Younger</option>
+                                </select>
+                                <div class="suffix">than 3 Years</div>
+                            </div>
+                        </div>
+
+                        <div class="packages">
+                            <div class="package bg-gradient-left-top">
+                                <div class="package-inner">
+                                    <input
+                                        name="package-browser"
+                                        type="checkbox"
+                                        class="package-checkbox"
+                                        checked
+                                    >
+                                    <h4>Browser Package</h4>
+                                    <ul>
+                                        <li>
+                                            <a
+                                                href="./rx-storage-indexeddb.html"
+                                                target="_blank"
+                                            >RxStorage IndexedDB</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="package bg-gradient-left-top">
+                                <div class="package-inner">
+                                    <input
+                                        name="package-native"
+                                        type="checkbox"
+                                        class="package-checkbox"
+                                        checked
+                                    >
+                                    <h4>Native Package</h4>
+                                    <ul>
+                                        <li>
+                                            <a
+                                                href="./rx-storage-sqlite.html"
+                                                target="_blank"
+                                            >RxStorage SQLite</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="package bg-gradient-left-top">
+                                <div class="package-inner">
+                                    <input
+                                        name="package-performance"
+                                        type="checkbox"
+                                        class="package-checkbox"
+                                        checked
+                                    >
+                                    <h4>Performance Package</h4>
+                                    <ul>
+                                        <li>
+                                            <a
+                                                href="./rx-storage-sharding.html"
+                                                target="_blank"
+                                            >RxStorage Sharding</a>
+                                        </li>
+                                        <li>
+                                            <a
+                                                href="./rx-storage-memory-synced.html"
+                                                target="_blank"
+                                            >RxStorage Memory Synced</a>
+                                        </li>
+                                        <li>
+                                            <a
+                                                href="./query-optimizer.html"
+                                                target="_blank"
+                                            >Query Optimizer</a>
+                                        </li>
+                                        <li>
+                                            <a
+                                                href="./rx-storage-localstorage-meta-optimizer.html"
+                                                target="_blank"
+                                            >RxStorage Localstorage Meta Optimizer</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="package bg-gradient-left-top">
+                                <div class="package-inner">
+                                    <input
+                                        name="package-utilities"
+                                        type="checkbox"
+                                        class="package-checkbox"
+                                        checked
+                                        disabled
+                                    >
+                                    <h4>Utilities Package <b>always included</b></h4>
+                                    <ul>
+                                        <li>
+                                            <a
+                                                href="./storage-migration.html"
+                                                target="_blank"
+                                            >Storage migration</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="button"
+                            id="price-calculator-submit"
+                        >Estimate Price</div>
+                    </form>
+
+                    <div
+                        id="price-calculator-result"
+                        style="display: none;"
                     >
-                    <datalist id="home-country">
-                        <option value="TODO">
-                        <option value="Firefox">
-                        <option value="Chrome">
-                        <option value="Opera">
-                        <option value="Safari">
-                    </datalist>
+                        <hr />
+                        <h4>Estimated Price:</h4>
+                        <table>
+                            <tr>
+                                <th>Estimated Price Per Developer per Month</th>
+                                <td id="total-per-developer-per-month">50 €</td>
+                            </tr>
+                            <tr>
+                                <th>Estimated Total Price per Year</th>
+                                <td id="total-per-year">1500 €</td>
+                            </tr>
+                        </table>
+                        <div class="proceed-hint">
+                            Fill out 
+                            <a href="#request-premium-form"><b>this form</b></a>
+                            to proceed.
+                        </span>
+                    </div>
 
-                    <label for="company-age">Company Age</label>
-                    <select
-                        name="company-age"
-                        id="company-age"
-                    >
-                        <option value="more-than-3">More than 3 Year</option>
-                        <option value="less-than-3">Less than 3 Years</option>
-                    </select>
-
-                    <div class="button">Estimate Price</div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="block">
+        <div class="content centered premium-faq">
+            <h2>F.A.Q. <b>(click to toggle)</b></h2>
+            <details>
+                <summary>
+                    Do I need the Premium Plugins?
+                </summary>
+                When you start using RxDB, you do not need access to the premium plugins. Most use cases can be
+                implemented with the Open Core part of RxDB. There are many <a
+                    href="./rx-storage.html"
+                    target="_blank"
+                >RxStorage</a>
+                options and all core plugins that are required for replication, schema validation, encryption and so on,
+                are totally free. As soon as your application is more then a side project, it is pretty easy to switch
+                to RxDB Premium Plugins by just changing a few lines of configuration.<br />
+                The main benefit of the Premium Plugins is <b>performance</b>. The Premium RxStorage implementations
+                have a better performance
+                so reading and writing data is much faster especially on low-end devices. You can find a performance
+                comparison <a
+                    href="./rx-storage.html#performance-comparison"
+                    target="_blank"
+                >here</a>.
+                Also there are additional Premium Plugins that can be used to further optimize the performance of your
+                application like the <a
+                    href="./query-optimizer.html"
+                    target="_blank"
+                >Query Optimizer</a> or the <a
+                    href="./rx-storage-sharding.html"
+                    target="_blank"
+                >Sharding</a> plugin.
+            </details>
+
+            <details>
+                <summary>
+                    Why is it not for free?
+                </summary>
+                The development of RxDB started in 2016 and after all these years it became clear that big
+                implementation and improvement steps will not be done by the RxDB community. While the community submits
+                valuable pull requests, they are mostly small improvements or bugfixes for specific edge case. Big
+                rewrites and optimizations that require a big effort have only be done by the RxDB maintainer.<br />
+                Selling RxDB Premium ensures that there will be always an incentive for someone to add features, keep
+                everything up to date and to further improve and optimize the codebase. This gives the user the
+                confidence that RxDB is a <b>future proof</b> tech stack to build on which lets RxDB stand out compared
+                to similar technologies.
+            </details>
+
+            <details>
+                <summary>
+                    Why is there no free trial period?
+                </summary>
+                <ul>
+                    <li>
+                        RxDB is written in JavaScript and the code of the Premium Plugins does not contain any tracking
+                        or measurement code. As soon as someone has the code on his computer, the maintainer has no
+                        chance to really ensure that after a free trial period the code is no longer used and deleted.
+                    </li>
+                    <li>
+                        Before you can use the Premium Plugins you have to debate and sign a license agreement with the
+                        maintainer. This is a sophisticated process that creates overhead which distracts the maintainer
+                        from writing RxDB code. So handling trial period users is just not manageable. For this reason
+                        there is also no monthly subscriptions. Premium access must be paid <b>per year</b>.
+                    </li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>
+                    Why is it not cheaper?
+                </summary>
+                The price of the Premium Plugins is chosen in way that ensures that there can be always one person that
+                develops RxDB <b>full time</b>.
+                Compared to other JavaScript frameworks and developer tools, RxDB satisfies an edge use case for people
+                that want to store data inside of their application on the users device. Most web developers do not need
+                to do that and rely on the traditional client-server stack. So RxDB cannot be sold to that many people
+                which increases the price.
+            </details>
+
+            <details>
+                <summary>
+                    Can I install/build the premium plugins in my CI?
+                </summary>
+                <b>Yes</b> you can safely install and use the Premium Plugins in your CI without additional payment.
+            </details>
+
+            <details>
+                <summary>
+                    Can I get a discount?
+                </summary>
+                Discounts are provided for people that have made a significant contribution to RxDB or one of RxDB's
+                dependencies or to the Open Source Community overall.
+            </details>
+        </div>
+    </div>
+
+    <div class="block dark">
+        <div class="content centered premium-request">
+            <h2>Request Premium <b class="underline">Form</b></h2>
+
+            <iframe
+            id="request-premium-form"
+                src="https://webforms.pipedrive.com/f/6N6ueXRs8M85r1N4MlKvI1iBNbGAjfIrhrC1PfEfTnXroZJuTkTF3yw1D9vLIWf9GX"
+                style="width:700px; height:1800px; border:none; margin:0; padding:0; overflow:hidden;"
+            >
+                Your browser doesn't support iframes
+            </iframe>
+        </div>
+    </div>
+
+    <script
+        src="premium.js"
+        defer
+    ></script>
 
 </body>
 
