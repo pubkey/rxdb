@@ -3,7 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD [electron ipcRenderer plugin](./docs-src/electron.md) which can be used in Electron.js to run the RxStorage in the main process and the RxDatabase in the renderer processes.
-- Removed the electron-remove example because `@electron/remote` is deprecated.
+- Removed the electron-remote example because `@electron/remote` is deprecated.
 - FIX emit false on active$ after replication is done [#4136](https://github.com/pubkey/rxdb/pull/4136) Thanks [@maxnowack](https://github.com/maxnowack)
 
 <!-- ADD new changes here! -->
