@@ -151,10 +151,15 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
     }
   };
   _proto2.conflictResultionTasks = function conflictResultionTasks() {
-    return new _rxjs.Subject();
+    return this.conflicts$;
   };
-  _proto2.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
-    return Promise.resolve();
+  _proto2.resolveConflictResultionTask = function resolveConflictResultionTask(taskSolution) {
+    try {
+      var _this8 = this;
+      return Promise.resolve(_this8.internals.worker.resolveConflictResultionTask(_this8.internals.instanceId, taskSolution)).then(function () {});
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
   return RxStorageInstanceWorker;
 }();

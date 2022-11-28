@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","names":[],"sources":["../../../../src/plugins/electron/index.ts"],"sourcesContent":["export * from './rx-storage-ipc-renderer';\nexport * from './rx-storage-ipc-main';\n"],"mappings":"AAAA,cAAc,2BAA2B;AACzC,cAAc,uBAAuB"}

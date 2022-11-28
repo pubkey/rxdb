@@ -39,7 +39,7 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
     count(preparedQuery: any): Promise<RxStorageCountResult>;
     getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
     getChangedDocumentsSince(limit: number, checkpoint?: any): Promise<{
-        documents: RxDocumentData<RxDocType>[];
+        documents: any[];
         checkpoint: any;
     }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>>;
@@ -47,7 +47,7 @@ export declare class RxStorageInstanceWorker<RxDocType> implements RxStorageInst
     close(): Promise<void>;
     remove(): Promise<void>;
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
+    resolveConflictResultionTask(taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
 export declare function getRxStorageWorker(settings: RxStorageWorkerSettings): RxStorageWorker;
 /**

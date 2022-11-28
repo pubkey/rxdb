@@ -110,6 +110,7 @@ a:visited {
 
 
 .button {
+    cursor: pointer;
     background-color: var(--color-top);
     border-radius: 8px;
     min-width: 3rem;
@@ -1072,11 +1073,13 @@ header .logo img {
         width: 70%;
     }
 }
+
 @media (max-width: 600px) {
     .samp-wrapper {
         width: 90%;
     }
 }
+
 @media (max-width: 480px) {
     .samp-wrapper {
         width: 93%;
@@ -1245,5 +1248,297 @@ samp .cm-comment {
 
     100% {
         transform: scale(1);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * premium.html
+ */
+
+.premium-blocks {
+    width: 80%;
+    margin-top: 30px;
+
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 1fr;
+    grid-column-gap: 10px;
+    grid-row-gap: 10px;
+}
+
+@media (max-width: 1200px) {
+    .premium-blocks {
+        width: 90%;
+    }
+}
+
+
+@media (max-width: 1100px) {
+    .premium-blocks {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1000px) {
+    .premium-blocks {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 800px) {
+    .premium-blocks {
+        width: 100%;
+    }
+}
+
+@media (max-width: 700px) {
+    .premium-blocks {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.premium-blocks .premium-block {
+    color: white;
+    border-radius: 6px;
+    padding: 3px;
+}
+
+.premium-blocks .premium-block-inner {
+    min-height: 243px;
+    background-color: var(--bg-color-dark);
+    padding: 10px;
+    border-radius: 4px;
+    position: relative;
+    color: white;
+}
+
+.premium-blocks p {
+    font-size: 93%;
+}
+
+.price-calculator {
+    border-radius: 6px;
+    padding: 3px;
+    width: 80%;
+    margin-top: 50px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    font-size: 120%;
+
+    background-color: var(--bg-color);
+    box-shadow: 0px 0px 12px 8px var(--bg-color);
+
+    margin-bottom: 90px;
+}
+
+@media (max-width: 800px) {
+    .price-calculator {
+        width: 96%;
+    }
+}
+
+.price-calculator-inner {
+    padding: 40px;
+}
+
+.package {
+    border-radius: 6px;
+    padding: 3px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.package-inner {
+    background-color: var(--bg-color);
+    padding: 10px;
+    border-radius: 4px;
+    position: relative;
+}
+
+.package a {
+    color: white;
+}
+
+.package a:hover {
+    text-decoration: underline;
+}
+
+.price-calculator h4 {
+    margin-top: 0px;
+}
+
+.price-calculator .field {
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.price-calculator .field label {
+    vertical-align: top;
+    width: 48%;
+    text-align: right;
+    display: inline-block;
+    font-size: 120%;
+    margin-top: 4px;
+}
+
+.price-calculator .field .input {
+    width: 48%;
+    text-align: left;
+    float: right;
+}
+
+@media (max-width: 800px) {
+    .price-calculator .field label {
+        width: 30%;
+    }
+
+    .price-calculator .field .input {
+        width: 65%;
+    }
+}
+
+
+.price-calculator .field .suffix {
+    float: left;
+    margin-top: 4px;
+    margin-left: 10px;
+    font-size: 120%;
+}
+
+.price-calculator input,
+.price-calculator select {
+    padding: 3px;
+    border-radius: 3px;
+    background-color: white;
+    color: black;
+    font-size: 120%;
+    float: left;
+}
+
+.price-calculator hr {
+    margin-top: 50px;
+    margin-bottom: 30px;
+    height: 1px;
+}
+
+.price-calculator .packages {
+    margin-top: 60px;
+}
+
+.price-calculator .package-checkbox {
+    width: 50px;
+    height: 50px;
+    float: right;
+    border-radius: 5px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.price-calculator .package ul li {
+    line-height: 150%;
+}
+
+.price-calculator #price-calculator-submit {
+    margin-right: 0px;
+}
+
+.price-calculator input:invalid:required,
+.price-calculator select:invalid:required {
+    border-style: solid;
+    border-width: 2px;
+    border-color: red;
+}
+
+#price-calculator-result {
+    font-size: 120%;
+}
+
+#price-calculator-result table {
+    width: 100%;
+    border-spacing: 30px;
+}
+
+#price-calculator-result table th {
+    text-align: right;
+}
+
+#price-calculator-result #total-per-year {
+    font-weight: bold;
+    border-bottom: double 3px;
+}
+
+#price-calculator-result .proceed-hint {
+    width: 100%;
+    text-align: right;
+}
+
+#price-calculator-result a {
+    color: white;
+}
+
+.premium-faq h2 {
+    padding-bottom: 40px;
+}
+
+.premium-faq details {
+    text-align: left;
+    width: 60%;
+    padding-bottom: 25px;
+    font-size: 120%;
+    text-align: justify;
+}
+
+@media (max-width: 1050px) {
+    .premium-faq details {
+        width: 80%;
+    }
+}
+
+@media (max-width: 800px) {
+    .premium-faq details {
+        width: 90%;
+    }
+}
+
+.premium-faq details[open] {
+    padding-bottom: 25px;
+}
+
+.premium-faq summary {
+    padding-bottom: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.premium-request iframe {
+    width: 700px;
+    height: 1800px;
+    border: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+
+    box-shadow: 0px 0px 12px 8px var(--bg-color);
+    border-color: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+}
+
+@media (max-width: 800px) {
+    .premium-request iframe {
+        width: 100%;
     }
 }

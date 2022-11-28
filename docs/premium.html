@@ -1,2391 +1,585 @@
-
-<!DOCTYPE HTML>
-<html lang="" >
-    <head>
-        <meta charset="UTF-8">
-        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxDB Premium · RxDB - Documentation</title>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="description" content="">
-        <meta name="generator" content="GitBook 3.2.3">
-        
-        
-        
-    
-    <link rel="stylesheet" href="gitbook/style.css">
-
-    
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-expandable-chapters/expandable-chapters.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
-                
-            
-        
-
-    
-
-    
-        
-        <link rel="stylesheet" href="styles/website.css">
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-
-        
-    
-    
-    <meta name="HandheldFriendly" content="true"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
-    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
-
-    
-    
-    <link rel="prev" href="transactions-conflicts-revisions.html" />
-    
-
-    </head>
-    <body>
-        
-<div class="book">
-    <div class="book-summary">
-        
-            
-<div id="book-search-input" role="search">
-    <input type="text" placeholder="Type to search" />
-</div>
-
-            
-                <nav role="navigation">
-                
-
-
-<ul class="summary">
-    
-    
-    
-        
-        <li>
-            <a href="/" target="_blank" class="custom-link">&#x2190; Home </a>
-        </li>
-    
-        
-        <li>
-            <a href="https://twitter.com/intent/user?screen_name=rxdbjs" target="_blank" class="custom-link">Follow @twitter </a>
-        </li>
-    
-        
-        <li>
-            <a href="https://discord.gg/tqt9ZttJfD" target="_blank" class="custom-link">Chat @discord </a>
-        </li>
-    
-        
-        <li>
-            <a href="https://github.com/pubkey/rxdb" target="_blank" class="custom-link">Star @github </a>
-        </li>
-    
-        
-        <li>
-            <a href="https://github.com/sponsors/pubkey" target="_blank" class="custom-link">Donate @github </a>
-        </li>
-    
-    
-
-    
-    <li class="divider"></li>
-    
-
-    
-        
-        
-    
-        <li class="chapter " data-level="1.1" data-path="./">
-            
-                <a href="./">
-            
-                    
-                    Introduction
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.2" data-path="quickstart.html">
-            
-                <a href="quickstart.html">
-            
-                    
-                    Quickstart
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3" data-path="install.html">
-            
-                <a href="install.html">
-            
-                    
-                    Install
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.3.1" data-path="install.html">
-            
-                <a href="install.html#npm">
-            
-                    
-                    npm
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.3.2" data-path="install.html">
-            
-                <a href="install.html#import">
-            
-                    
-                    import
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="1.4" data-path="dev-mode.html">
-            
-                <a href="dev-mode.html">
-            
-                    
-                    Dev Mode
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5" data-path="rx-database.html">
-            
-                <a href="rx-database.html">
-            
-                    
-                    RxDatabase
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.5.1" data-path="rx-database.html">
-            
-                <a href="rx-database.html#creation">
-            
-                    
-                    Creation
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.5.1.1" data-path="rx-database.html">
-            
-                <a href="rx-database.html#name">
-            
-                    
-                    name
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.1.2" data-path="rx-database.html">
-            
-                <a href="rx-database.html#adapter">
-            
-                    
-                    adapter
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.1.3" data-path="rx-database.html">
-            
-                <a href="rx-database.html#password">
-            
-                    
-                    password
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.1.4" data-path="rx-database.html">
-            
-                <a href="rx-database.html#multiinstance">
-            
-                    
-                    multiInstance
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.1.5" data-path="rx-database.html">
-            
-                <a href="rx-database.html#eventreduce">
-            
-                    
-                    eventReduce
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.1.6" data-path="rx-database.html">
-            
-                <a href="rx-database.html#ignoreduplicate">
-            
-                    
-                    ignoreDuplicate
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.1.7" data-path="rx-database.html">
-            
-                <a href="rx-database.html#pouchSettings">
-            
-                    
-                    pouchSettings
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.2" data-path="rx-database.html">
-            
-                <a href="rx-database.html#functions">
-            
-                    
-                    Functions
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.5.2.1" data-path="rx-database.html">
-            
-                <a href="rx-database.html#observe-with-">
-            
-                    
-                    $
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.2.2" data-path="rx-database.html">
-            
-                <a href="rx-database.html#dump">
-            
-                    
-                    exportJSON()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.2.3" data-path="rx-database.html">
-            
-                <a href="rx-database.html#importdump">
-            
-                    
-                    importJSON()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.2.4" data-path="rx-database.html">
-            
-                <a href="rx-database.html#server">
-            
-                    
-                    server()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.2.5" data-path="rx-database.html">
-            
-                <a href="rx-database.html#waitforleadership">
-            
-                    
-                    waitForLeadership()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.2.6" data-path="rx-database.html">
-            
-                <a href="rx-database.html#requestidlepromise">
-            
-                    
-                    requestIdlePromise()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.2.7" data-path="rx-database.html">
-            
-                <a href="rx-database.html#destroy">
-            
-                    
-                    destroy()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.2.8" data-path="rx-database.html">
-            
-                <a href="rx-database.html#remove">
-            
-                    
-                    remove()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.2.9" data-path="rx-database.html">
-            
-                <a href="rx-database.html#checkadapter">
-            
-                    
-                    checkAdapter()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.5.2.10" data-path="rx-database.html">
-            
-                <a href="rx-database.html#isrxdatabase">
-            
-                    
-                    isRxDatabase()
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6" data-path="rx-schema.html">
-            
-                <a href="rx-schema.html">
-            
-                    
-                    RxSchema
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.6.1" data-path="rx-schema.html">
-            
-                <a href="rx-schema.html#example">
-            
-                    
-                    Example
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.2" data-path="rx-schema.html">
-            
-                <a href="rx-schema.html#create-a-collection-with-the-schema">
-            
-                    
-                    Create a collection with the schema
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.3" data-path="rx-schema.html">
-            
-                <a href="rx-schema.html#version">
-            
-                    
-                    version
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.4" data-path="rx-schema.html">
-            
-                <a href="rx-schema.html#keycompression">
-            
-                    
-                    keyCompression
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.5" data-path="rx-schema.html">
-            
-                <a href="rx-schema.html#indexes">
-            
-                    
-                    indexes
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.6" data-path="rx-schema.html">
-            
-                <a href="rx-schema.html#attachments">
-            
-                    
-                    attachments
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.7" data-path="rx-schema.html">
-            
-                <a href="rx-schema.html#default">
-            
-                    
-                    default
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.8" data-path="rx-schema.html">
-            
-                <a href="rx-schema.html#final">
-            
-                    
-                    final
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="1.7" data-path="schema-validation.html">
-            
-                <a href="schema-validation.html">
-            
-                    
-                    Schema Validation
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html">
-            
-                    
-                    RxCollection
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.8.1" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#creating-a-collection">
-            
-                    
-                    Creation
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.8.1.1" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#name">
-            
-                    
-                    name
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.1.2" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#schema">
-            
-                    
-                    schema
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.1.3" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#pouchSettings">
-            
-                    
-                    pouchSettings
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.1.4" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#orm-functions">
-            
-                    
-                    ORM-functions
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.1.5" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#Migration">
-            
-                    
-                    Migration
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#functions">
-            
-                    
-                    Functions
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.8.2.1" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#observe-">
-            
-                    
-                    $
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.2" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#insert">
-            
-                    
-                    insert()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.3" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#bulkinsert">
-            
-                    
-                    bulkInsert()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.4" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#bulkremove">
-            
-                    
-                    bulkRemove()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.5" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#upsert">
-            
-                    
-                    upsert()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.6" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#atomicupsert">
-            
-                    
-                    atomicUpsert()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.7" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#find">
-            
-                    
-                    find()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.8" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#findone">
-            
-                    
-                    findOne()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.9" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#findbyids">
-            
-                    
-                    findByIds()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.10" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#findbyids$">
-            
-                    
-                    findByIds$()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.11" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#dump">
-            
-                    
-                    exportJSON()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.12" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#importdump">
-            
-                    
-                    importJSON()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.13" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#synccouchdb">
-            
-                    
-                    syncCouchDB()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.14" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#syncgraphql">
-            
-                    
-                    syncGraphQL()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.15" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#remove">
-            
-                    
-                    remove()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.16" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#destroy">
-            
-                    
-                    destroy()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.8.2.17" data-path="rx-collection.html">
-            
-                <a href="rx-collection.html#isrxcollection">
-            
-                    
-                    isRxCollection()
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9" data-path="rx-document.html">
-            
-                <a href="rx-document.html">
-            
-                    
-                    RxDocument
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.9.1" data-path="rx-document.html">
-            
-                <a href="rx-document.html#insert">
-            
-                    
-                    Insert
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.2" data-path="rx-document.html">
-            
-                <a href="rx-document.html#find">
-            
-                    
-                    Find
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3" data-path="rx-document.html">
-            
-                <a href="rx-document.html#functions">
-            
-                    
-                    Functions
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.9.3.1" data-path="rx-document.html">
-            
-                <a href="rx-document.html#get">
-            
-                    
-                    get()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.2" data-path="rx-document.html">
-            
-                <a href="rx-document.html#get$">
-            
-                    
-                    get$()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.3" data-path="rx-document.html">
-            
-                <a href="rx-document.html#proxy-get">
-            
-                    
-                    proxy-get
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.4" data-path="rx-document.html">
-            
-                <a href="rx-document.html#update">
-            
-                    
-                    update()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.5" data-path="rx-document.html">
-            
-                <a href="rx-document.html#atomicupdate">
-            
-                    
-                    atomicUpdate()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.6" data-path="rx-document.html">
-            
-                <a href="rx-document.html#atomicpatch">
-            
-                    
-                    atomicPatch()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.7" data-path="rx-document.html">
-            
-                <a href="rx-document.html#observe-">
-            
-                    
-                    $
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.8" data-path="rx-document.html">
-            
-                <a href="rx-document.html#remove">
-            
-                    
-                    remove()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.9" data-path="rx-document.html">
-            
-                <a href="rx-document.html#deleted$">
-            
-                    
-                    deleted$
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.10" data-path="rx-document.html">
-            
-                <a href="rx-document.html#tojson">
-            
-                    
-                    toJSON()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.11" data-path="rx-document.html">
-            
-                <a href="rx-document.html#set">
-            
-                    
-                    set()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.12" data-path="rx-document.html">
-            
-                <a href="rx-document.html#save">
-            
-                    
-                    save()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.9.3.13" data-path="rx-document.html">
-            
-                <a href="rx-document.html#isrxdocument">
-            
-                    
-                    isRxDocument()
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="1.10" data-path="rx-query.html">
-            
-                <a href="rx-query.html">
-            
-                    
-                    RxQuery
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.10.1" data-path="rx-query.html">
-            
-                <a href="rx-query.html#find">
-            
-                    
-                    find()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.10.2" data-path="rx-query.html">
-            
-                <a href="rx-query.html#findOne">
-            
-                    
-                    findOne()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.10.3" data-path="rx-query.html">
-            
-                <a href="rx-query.html#exec">
-            
-                    
-                    exec()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.10.4" data-path="rx-query.html">
-            
-                <a href="rx-query.html#observe-">
-            
-                    
-                    $
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.10.5" data-path="rx-query.html">
-            
-                <a href="rx-query.html#update">
-            
-                    
-                    update()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.10.6" data-path="rx-query.html">
-            
-                <a href="rx-query.html#remove">
-            
-                    
-                    remove()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.10.7" data-path="rx-query.html">
-            
-                <a href="rx-query.html#doesDocumentDataMatch">
-            
-                    
-                    doesDocumentDataMatch()
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.10.8" data-path="rx-query.html">
-            
-                <a href="rx-query.html#setting-a-specific-index">
-            
-                    
-                    Specific Index
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.10.9" data-path="rx-query.html">
-            
-                <a href="rx-query.html#examples">
-            
-                    
-                    Examples
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.10.10" data-path="rx-query.html">
-            
-                <a href="rx-query.html#isrxquery">
-            
-                    
-                    isRxQuery()
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="1.11" data-path="rx-attachment.html">
-            
-                <a href="rx-attachment.html">
-            
-                    
-                    RxAttachment
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.12" data-path="middleware.html">
-            
-                <a href="middleware.html">
-            
-                    
-                    Middleware-hooks
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.13" data-path="orm.html">
-            
-                <a href="orm.html">
-            
-                    
-                    ORM/DRM
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.14" data-path="population.html">
-            
-                <a href="population.html">
-            
-                    
-                    Population
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.15" data-path="encryption.html">
-            
-                <a href="encryption.html">
-            
-                    
-                    Encryption
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.16" data-path="key-compression.html">
-            
-                <a href="key-compression.html">
-            
-                    
-                    Key Compression
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.17" data-path="data-migration.html">
-            
-                <a href="data-migration.html">
-            
-                    
-                    DataMigration
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.18" data-path="leader-election.html">
-            
-                <a href="leader-election.html">
-            
-                    
-                    LeaderElection
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19" data-path="rx-storage.html">
-            
-                <a href="rx-storage.html">
-            
-                    
-                    RxStorage
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.19.1" data-path="rx-storage-pouchdb.html">
-            
-                <a href="rx-storage-pouchdb.html">
-            
-                    
-                    RxStorage PouchDB
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.2" data-path="adapters.html">
-            
-                <a href="adapters.html">
-            
-                    
-                    PouchDB Adapters
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.3" data-path="rx-storage-dexie.html">
-            
-                <a href="rx-storage-dexie.html">
-            
-                    
-                    RxStorage Dexie.js
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.4" data-path="rx-storage-lokijs.html">
-            
-                <a href="rx-storage-lokijs.html">
-            
-                    
-                    RxStorage LokiJS
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.5" data-path="rx-storage-memory.html">
-            
-                <a href="rx-storage-memory.html">
-            
-                    
-                    RxStorage Memory
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.6" data-path="rx-storage-indexeddb.html">
-            
-                <a href="rx-storage-indexeddb.html">
-            
-                    
-                    RxStorage IndexedDB
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.7" data-path="rx-storage-sqlite.html">
-            
-                <a href="rx-storage-sqlite.html">
-            
-                    
-                    RxStorage SQLite
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.8" data-path="rx-storage-foundationdb.html">
-            
-                <a href="rx-storage-foundationdb.html">
-            
-                    
-                    RxStorage FoundationDB
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.9" data-path="rx-storage-worker.html">
-            
-                <a href="rx-storage-worker.html">
-            
-                    
-                    RxStorage Worker
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.10" data-path="rx-storage-memory-synced.html">
-            
-                <a href="rx-storage-memory-synced.html">
-            
-                    
-                    RxStorage Memory Synced
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.11" data-path="rx-storage-sharding.html">
-            
-                <a href="rx-storage-sharding.html">
-            
-                    
-                    RxStorage Sharding
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.12" data-path="rx-storage-localstorage-meta-optimizer.html">
-            
-                <a href="rx-storage-localstorage-meta-optimizer.html">
-            
-                    
-                    RxStorage Localstorage Meta Optimizer
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="1.20" data-path="replication.html">
-            
-                <a href="replication.html">
-            
-                    
-                    Replication
-            
-                </a>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="1.20.1" data-path="replication-graphql.html">
-            
-                <a href="replication-graphql.html">
-            
-                    
-                    Replication GraphQL
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.20.2" data-path="replication-websocket.html">
-            
-                <a href="replication-websocket.html">
-            
-                    
-                    Replication Websocket
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.20.3" data-path="replication-couchdb-new.html">
-            
-                <a href="replication-couchdb-new.html">
-            
-                    
-                    Replication CouchDB (new)
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.20.4" data-path="replication-p2p.html">
-            
-                <a href="replication-p2p.html">
-            
-                    
-                    Replication P2P
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.20.5" data-path="replication-couchdb.html">
-            
-                <a href="replication-couchdb.html">
-            
-                    
-                    Replication CouchDB/PouchDB
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="1.21" data-path="cleanup.html">
-            
-                <a href="cleanup.html">
-            
-                    
-                    Cleanup
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.22" data-path="backup.html">
-            
-                <a href="backup.html">
-            
-                    
-                    Backup
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.23" data-path="query-cache.html">
-            
-                <a href="query-cache.html">
-            
-                    
-                    QueryCache
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.24" data-path="rx-local-document.html">
-            
-                <a href="rx-local-document.html">
-            
-                    
-                    LocalDocuments
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.25" data-path="crdt.html">
-            
-                <a href="crdt.html">
-            
-                    
-                    CRDT
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.26" data-path="third-party-plugins.html">
-            
-                <a href="third-party-plugins.html">
-            
-                    
-                    Third Party Plugins
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.27" data-path="plugins.html">
-            
-                <a href="plugins.html">
-            
-                    
-                    Creating Plugins
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.28" data-path="query-optimizer.html">
-            
-                <a href="query-optimizer.html">
-            
-                    
-                    Query Optimizer
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.29" data-path="storage-migration.html">
-            
-                <a href="storage-migration.html">
-            
-                    
-                    Storage Migration
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.30" data-path="transactions-conflicts-revisions.html">
-            
-                <a href="transactions-conflicts-revisions.html">
-            
-                    
-                    Transactions, Conflicts and Revisions
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter active" data-level="1.31" data-path="premium.html">
-            
-                <a href="premium.html">
-            
-                    
-                    RxDB Premium
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-    
-        
-        <li class="divider"></li>
-        
-        
-    
-        <li class="chapter " data-level="2.1" >
-            
-                <span>
-            
-                    
-                    Tutorials
-            
-                </span>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="2.1.1" data-path="tutorials/typescript.html">
-            
-                <a href="tutorials/typescript.html">
-            
-                    
-                    Use RxDB with Typescript
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.1.2" data-path="tutorials/server-couchdb.html">
-            
-                <a href="tutorials/server-couchdb.html">
-            
-                    
-                    Using the CouchDB Server Plugin
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="2.2" >
-            
-                <span>
-            
-                    
-                    Opinions
-            
-                </span>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="2.2.1" data-path="offline-first.html">
-            
-                <a href="offline-first.html">
-            
-                    
-                    About Offline First
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.2.2" data-path="downsides-of-offline-first.html">
-            
-                <a href="downsides-of-offline-first.html">
-            
-                    
-                    Downsides of Offline First
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.2.3" data-path="slow-indexeddb.html">
-            
-                <a href="slow-indexeddb.html">
-            
-                    
-                    Slow IndexedDB
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.2.4" data-path="why-nosql.html">
-            
-                <a href="why-nosql.html">
-            
-                    
-                    Why NoSQL
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.2.5" data-path="alternatives.html">
-            
-                <a href="alternatives.html">
-            
-                    
-                    Alternatives
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.2.6" data-path="react-native-database.html">
-            
-                <a href="react-native-database.html">
-            
-                    
-                    React Native Database
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.2.7" data-path="capacitor-database.html">
-            
-                <a href="capacitor-database.html">
-            
-                    
-                    Capacitor Database
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.2.8" data-path="electron-database.html">
-            
-                <a href="electron-database.html">
-            
-                    
-                    Electron Database
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-        <li class="chapter " data-level="2.3" data-path="questions-answers.html">
-            
-                <a href="questions-answers.html">
-            
-                    
-                    Questions & Answers
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.4" data-path="contribute.html">
-            
-                <a href="contribute.html">
-            
-                    
-                    Contribute
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.5" >
-            
-                <span>
-            
-                    
-                    Release Notes
-            
-                </span>
-            
-
-            
-            <ul class="articles">
-                
-    
-        <li class="chapter " data-level="2.5.1" >
-            
-                <a target="_blank" href="https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md">
-            
-                    
-                    CHANGELOG
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.5.2" data-path="releases/13.0.0.html">
-            
-                <a href="releases/13.0.0.html">
-            
-                    
-                    13.0.0
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.5.3" data-path="releases/12.0.0.html">
-            
-                <a href="releases/12.0.0.html">
-            
-                    
-                    12.0.0
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.5.4" data-path="releases/11.0.0.html">
-            
-                <a href="releases/11.0.0.html">
-            
-                    
-                    11.0.0
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.5.5" data-path="releases/10.0.0.html">
-            
-                <a href="releases/10.0.0.html">
-            
-                    
-                    10.0.0
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.5.6" data-path="releases/9.0.0.html">
-            
-                <a href="releases/9.0.0.html">
-            
-                    
-                    9.0.0
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.5.7" data-path="releases/8.0.0.html">
-            
-                <a href="releases/8.0.0.html">
-            
-                    
-                    8.0.0
-            
-                </a>
-            
-
-            
-        </li>
-    
-
-            </ul>
-            
-        </li>
-    
-
-    
-
-    <li class="divider"></li>
-
-    <li>
-        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
-            Published with GitBook
+<!DOCTYPE html>
+<html
+    lang="en"
+    prefix="og: https://ogp.me/ns#"
+>
+
+<head>
+    <meta charset="utf-8">
+    <title>RxDB - Premium Plugins</title>
+    <link
+        rel="canonical"
+        href="https://rxdb.info/premium.html"
+    />
+    <meta
+        name="description"
+        content="RxDB plugins for professionals. FAQ, pricing and license."
+    />
+    <meta
+        property="og:title"
+        content="RxDB - A client side, offline-first, reactive database for JavaScript Applications"
+    />
+    <meta
+        name="theme-color"
+        content="#e6008d"
+    />
+    <meta
+        name="twitter:site"
+        content="@rxdbjs"
+    />
+    <meta
+        name="viewport"
+        content="width=device-width,initial-scale=1.0"
+    />
+    <link
+        rel="stylesheet"
+        href="styles/variables.css"
+    />
+    <link
+        rel="stylesheet"
+        href="styles/landingpage.css"
+    />
+    <link
+        rel="icon"
+        href="./files/logo/logo.svg"
+        sizes="any"
+        type="image/svg+xml"
+    />
+    <link
+        rel="apple-touch-icon"
+        href="./files/logo/icon.png"
+    />
+    <script
+        src="analytics.js"
+        defer
+    ></script>
+</head>
+
+<body>
+    <header>
+        <a href="/">
+            <div class="logo">
+                <img
+                    src="./files/logo/logo.svg"
+                    alt="RxDB"
+                    width="60"
+                    height="60"
+                />
+                <div class="text">RxDB</div>
+            </div>
         </a>
-    </li>
-</ul>
 
-
-                </nav>
-            
-        
-    </div>
-
-    <div class="book-body">
-        
-            <div class="body-inner">
-                
-                    
-
-<div class="book-header" role="navigation">
-    
-
-    <!-- Title -->
-    <h1>
-        <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxDB Premium</a>
-    </h1>
-</div>
-
-
-
-
-                    <div class="page-wrapper" tabindex="-1" role="main">
-                        <div class="page-inner">
-                            
-<div id="book-search-results">
-    <div class="search-noresults">
-    
-                                <section class="normal markdown-section">
-                                
-                                <h1 id="rxdb-premium">RxDB Premium</h1>
-<p>To make RxDB a sustainable Project, some plugins are not part of the RxDB open source project. Instead they are part of the <b>rxdb-premium</b> package which must be purchased.</p>
-<h2 id="premium-plugins">Premium plugins</h2>
-<ul>
-<li><a href="rx-storage-indexeddb.html">RxStorage IndexedDB</a> a really fast <a href="rx-storage.html">RxStorage</a> implementation based on <strong>IndexedDB</strong>. Made to be used in browsers.</li>
-<li><a href="rx-storage-sqlite.html">RxStorage SQLite</a> a really fast <a href="rx-storage.html">RxStorage</a> implementation based on <strong>SQLite</strong>. Made to be used on <strong>Node.js</strong>, <strong>Electron</strong>, <strong>React Native</strong>, <strong>Cordova</strong> or <strong>Capacitor</strong>.</li>
-<li><a href="rx-storage-sharding.html">RxStorage Sharding</a> a wrapper around any other <a href="rx-storage.html">RxStorage</a> that improves performance by applying the sharding technique.</li>
-<li><a href="storage-migration.html">Storage migration</a> A plugins that migrates data from one storage to another. Use this when you want to change the used RxStorage or to migrate data from an older RxDB major version.</li>
-<li><a href="rx-storage-memory-synced.html">RxStorage Memory Synced</a> is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
-The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications.</li>
-<li><a href="query-optimizer.html">Query Optimizer</a> A tool to find the best index for a given query. You can use this during build time to find the best index and then use that index during runtime.</li>
-<li><a href="rx-storage-localstorage-meta-optimizer.html">RxStorage Localstorage Meta Optimizer</a> is a wrapper around any other RxStorage. The wrapper uses the original RxStorage for normal collection documents. But to optimize the initial page load time, it uses localstorage to store the plain key-value metadata that RxDB needs to create databases and collections. This plugin can only be used in browsers.</li>
-</ul>
-<h2 id="premium-faq-click-to-toggle">Premium FAQ (click to toggle)</h2>
-<details>
-<summary>
-    Do I need the Premium Plugins?
-</summary>
-    When you start using RxDB, you do not need access to the premium plugins. Most use cases can be implemented with the Open Core part of RxDB. There are many <a href="rx-storage.html">RxStorage</a> options and all core plugins that are required for replication, schema validation, encryption and so on, are totally free. As soon as your application is more then a side project, it is pretty easy to switch to RxDB Premium Plugins by just changing a few lines of configuration.<br>
-    The main benefit of the Premium Plugins is <b>performance</b>. The Premium RxStorage implementations have a better performance
-    so reading and writing data is much faster especially on low-end devices. You can find a performance comparison <a href="rx-storage.html#performance-comparison">here</a>.
-    Also there are additional Premium Plugins that can be used to further optimize the performance of your application like the <a href="query-optimizer.html">Query Optimizer</a> or the <a href="rx-storage-sharding.html">Sharding</a> plugin.
-</details>
-
-<details>
-<summary>
-    Why is it not for free?
-</summary>
-    The development of RxDB started in 2016 and after all these years it became clear that big implementation and improvement steps will not be done by the RxDB community. While the community submits valuable pull requests, they are mostly small improvements or bugfixes for specific edge case. Big rewrites and optimizations that require a big effort have only be done by the RxDB maintainer.<br>
-    Selling RxDB Premium ensures that there will be always an incentive for someone to add features, keep everything up to date and to further improve and optimize the codebase. This gives the user the confidence that RxDB is a <b>future proof</b> tech stack to build on which lets RxDB stand out compared to similar technologies.
-</details>
-
-<details>
-<summary>
-    Why is there no free trial period?
-</summary>
-    <ul>
-        <li>
-            RxDB is written in JavaScript and the code of the Premium Plugins does not contain any tracking or measurement code. As soon as someone has the code on his computer, the maintainer has no chance to really ensure that after a free trial period the code is no longer used and deleted.
-        </li>
-        <li>
-            Before you can use the Premium Plugins you have to debate and sign a license agreement with the maintainer. This is a sophisticated process that creates overhead which distracts the maintainer from writing RxDB code. So handling trial period users is just not manageable. For this reason there is also no monthly subscriptions. Premium access must be paid <b>per year</b>.
-        </li>
-    </ul>
-</details>
-
-<details>
-<summary>
-    Why is it not cheaper?
-</summary>
-    The price of the Premium Plugins is chosen in way that ensures that there can be always one person that develops RxDB <b>full time</b>.
-    Compared to other JavaScript frameworks and developer tools, RxDB satisfies an edge use case for people that want to store data inside of their application on the users device. Most web developers do not need to do that and rely on the traditional client-server stack. So RxDB cannot be sold to that many people which increases the price.
-</details>
-
-<details>
-<summary>
-    Can I install/build the premium plugins in my CI?
-</summary>
-    <b>Yes</b> you can safely install and use the Premium Plugins in your CI without additional payment.
-</details>
-
-
-<!-- 
-<details>
-<summary>
-</summary>
-</details>
--->
-<h2 id="get-premium">Get Premium</h2>
-<h3 id="as-a-company">As a company</h3>
-<p>If you use RxDB in your company project, you can purchase access by filling out this form:</p>
-<center>
-    <a href="form-premium.html" onclick="window.trigger(&apos;premium_request&apos;, 1)" target="_blank" style="
-            background-color: #e6008d;
-            color: white;
-            padding: 10px;
-            padding-left: 38px;
-            padding-right: 38px;
-            border-radius: 10px;
-            font-size: 37px;
-            text-align: center;
-            font-weight: bold;
-            user-select: none;
-            vertical-align: middle;
-        ">Request RxDB Premium Form</a>
-</center>
-
-<h3 id="for-your-side-project">For your side project</h3>
-<p>If you are a <strong>single developer</strong> and you use RxDB in your <strong>side project</strong>, you can get 3 years access to the premium package by solving one Task of the <a href="https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md" target="_blank">Premium Tasks</a> list.</p>
-<p><strong>Notice:</strong> It is not possible to get premium access via github sponsorships.</p>
-
-                                
-                                </section>
-                            
-    </div>
-    <div class="search-results">
-        <div class="has-results">
-            
-            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
-            <ul class="search-results-list"></ul>
-            
+        <div class="right">
+            <a
+                href="/quickstart.html"
+                target="_blank"
+                class="text"
+                onclick="window.trigger('goto_docs', 0.20)"
+            >Docs</a>
+            <a
+                href="https://github.com/pubkey/rxdb"
+                rel="noopener"
+                target="_blank"
+                class="text"
+                onclick="window.trigger('goto_code', 0.20)"
+            >Code</a>
+            <a
+                href="https://discord.gg/tqt9ZttJfD"
+                rel="noopener"
+                target="_blank"
+                class="text"
+                onclick="window.trigger('join_chat', 0.20)"
+            >Chat</a>
+            <a
+                href="https://github.com/pubkey/rxdb"
+                rel="noopener"
+                target="_blank"
+                onclick="window.trigger('goto_code', 0.20)"
+            >
+                <div class="star-at-github bg-gradient-right-bottom">
+                    <div class="star-at-github-inner">
+                        <img src="./files/icons/github-star.svg" />
+                        <div class="star-at-github-text">at GitHub</div>
+                    </div>
+                </div>
+            </a>
+            <div class="clear"></div>
         </div>
-        <div class="no-results">
-            
-            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
-            
-        </div>
-    </div>
-</div>
+        <div class="clear"></div>
+    </header>
 
+    <div class="header-space"></div>
+
+
+    <div class="block first">
+        <div class="content centered">
+            <h2><b class="underline">RxDB</b> Premium Plugins</h2>
+            <p style="width: 80%;">
+                To make RxDB a sustainable project, some plugins are not part of the RxDB open source project.
+                Instead they are part of the <b>rxdb-premium</b> package which must be purchased.<br />
+                Professional developers use these to get the best <b>performance</b> and the most out of RxDB.
+            </p>
+
+            <div class="premium-blocks">
+
+                <a
+                    href="./rx-storage-indexeddb.html"
+                    target="_blank"
+                >
+                    <div class="premium-block hover-shaddow-middle bg-gradient-left-top">
+                        <div class="premium-block-inner">
+                            <h4>RxStorage IndexedDB</h4>
+                            <p>A really fast storage based on <b>IndexedDB</b>. Made to be used in browsers.</p>
                         </div>
                     </div>
-                
+                </a>
+
+
+
+                <a
+                    href="./rx-storage-sqlite.html"
+                    target="_blank"
+                >
+                    <div class="premium-block hover-shaddow-middle bg-gradient-right-bottom">
+                        <div class="premium-block-inner">
+                            <h4>RxStorage SQLite</h4>
+                            <p>
+                                A really fast storage based on <b>SQLite</b>.
+                                Used with <b>Node.js</b>, <b>Electron</b>, <b>React Native</b>, <b>Cordova</b>
+                                or <b>Capacitor</b>.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+
+                <a
+                    href="./rx-storage-sharding.html"
+                    target="_blank"
+                >
+                    <div class="premium-block hover-shaddow-middle bg-gradient-left-top">
+                        <div class="premium-block-inner">
+                            <h4>RxStorage Sharding</h4>
+                            <p>
+                                A wrapper around any other storage that improves performance by applying the sharding
+                                technique.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+
+
+                <a
+                    href="./storage-migration.html"
+                    target="_blank"
+                >
+                    <div class="premium-block hover-shaddow-middle bg-gradient-right-bottom">
+                        <div class="premium-block-inner">
+                            <h4>Storage migration</h4>
+                            <p>
+                                A plugins that migrates data from one storage to another. Use this when you want to
+                                change the used RxStorage or to migrate data from an older RxDB major version.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+
+                <a
+                    href="./rx-storage-memory-synced.html"
+                    target="_blank"
+                >
+                    <div class="premium-block hover-shaddow-middle bg-gradient-left-top">
+                        <div class="premium-block-inner">
+                            <h4>RxStorage Memory Synced</h4>
+                            <p>
+                                A wrapper around any other storage that creates a synced in-memory copy
+                                which improves performance for the initial page load time and write&read operations.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+
+                <a
+                    href="./query-optimizer.html"
+                    target="_blank"
+                >
+                    <div class="premium-block hover-shaddow-middle bg-gradient-right-bottom">
+                        <div class="premium-block-inner">
+                            <h4>Query Optimizer</h4>
+                            <p>
+                                A tool to find the best index for a given query. You can use this during build time to
+                                find the best index and then use that index during runtime.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+
+                <a
+                    href="./rx-storage-localstorage-meta-optimizer.html"
+                    target="_blank"
+                >
+                    <div class="premium-block hover-shaddow-middle bg-gradient-left-top">
+                        <div class="premium-block-inner">
+                            <h4>RxStorage Localstorage Meta Optimizer</h4>
+                            <p>
+                                A wrapper around any other storage which optimizes the initial page load one
+                                by using localstorage for meta key-value document. Only works in <b>browsers</b>.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+                <div class="clear"></div>
             </div>
 
-            
-                
-                <a href="transactions-conflicts-revisions.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Transactions, Conflicts and Revisions">
-                    <i class="fa fa-angle-left"></i>
-                </a>
-                
-                
-            
-        
+        </div>
     </div>
 
-    <script>
-        var gitbook = gitbook || [];
-        gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDB Premium","level":"1.31","depth":1,"next":{"title":"Tutorials","level":"2.1","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"2.1.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},{"title":"Using the CouchDB Server Plugin","level":"2.1.2","depth":2,"path":"tutorials/server-couchdb.md","ref":"./tutorials/server-couchdb.md","articles":[]}]},"previous":{"title":"Transactions, Conflicts and Revisions","level":"1.30","depth":1,"path":"transactions-conflicts-revisions.md","ref":"./transactions-conflicts-revisions.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"&#x2190; Home ":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"premium.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
-        });
-    </script>
-</div>
+    <div class="block dark">
+        <div class="content centered">
+            <h2>Estimated Price <b class="underline">Calculator</b></h2>
 
-        
-    <script src="gitbook/gitbook.js"></script>
-    <script src="gitbook/theme.js"></script>
-    
-        
-        <script src="gitbook/gitbook-plugin-edit-link/plugin.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-github/plugin.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-expandable-chapters/expandable-chapters.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-scripts/28fd35f20e40e37a9994a4812fc3c7cc-analytics.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-scripts/9bc541ba5d318730a5b44c9770ae18fc-next-button.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
-        
-    
 
-    </body>
+            <div class="price-calculator">
+                <div class="price-calculator-inner">
+
+                    <form id="price-calculator-form">
+
+
+
+                        <div class="field">
+                            <label for="developer-count">Team Size:</label>
+                            <div class="input">
+                                <input
+                                    type="number"
+                                    name="developer-count"
+                                    min="1"
+                                    max="100"
+                                    required
+                                />
+                                <div class="suffix">Developer(s)</div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="home-country">Company Home Country:</label>
+                            <div class="input">
+                                <input
+                                    list="home-country"
+                                    name="home-country"
+                                    pattern="[A-Za-z]{2}"
+                                    required
+                                    style="width: 100%; max-width: 240px;"
+                                >
+                                <datalist id="home-country">
+                                    <!-- filled by premium.ts -->
+                                </datalist>
+                            </div>
+                        </div>
+
+
+                        <div class="field">
+                            <label for="company-age">Company Age:</label>
+                            <div class="input">
+                                <select
+                                    name="company-age"
+                                    id="company-age"
+                                    required
+                                >
+                                    <option
+                                        value=""
+                                        selected="true"
+                                        disabled="disabled"
+                                    ></option>
+                                    <option value="more-than-3">Older</option>
+                                    <option value="less-than-3">Younger</option>
+                                </select>
+                                <div class="suffix">than 3 Years</div>
+                            </div>
+                        </div>
+
+                        <div class="packages">
+                            <div class="package bg-gradient-left-top">
+                                <div class="package-inner">
+                                    <input
+                                        name="package-browser"
+                                        type="checkbox"
+                                        class="package-checkbox"
+                                        checked
+                                    >
+                                    <h4>Browser Package</h4>
+                                    <ul>
+                                        <li>
+                                            <a
+                                                href="./rx-storage-indexeddb.html"
+                                                target="_blank"
+                                            >RxStorage IndexedDB</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="package bg-gradient-left-top">
+                                <div class="package-inner">
+                                    <input
+                                        name="package-native"
+                                        type="checkbox"
+                                        class="package-checkbox"
+                                        checked
+                                    >
+                                    <h4>Native Package</h4>
+                                    <ul>
+                                        <li>
+                                            <a
+                                                href="./rx-storage-sqlite.html"
+                                                target="_blank"
+                                            >RxStorage SQLite</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="package bg-gradient-left-top">
+                                <div class="package-inner">
+                                    <input
+                                        name="package-performance"
+                                        type="checkbox"
+                                        class="package-checkbox"
+                                        checked
+                                    >
+                                    <h4>Performance Package</h4>
+                                    <ul>
+                                        <li>
+                                            <a
+                                                href="./rx-storage-sharding.html"
+                                                target="_blank"
+                                            >RxStorage Sharding</a>
+                                        </li>
+                                        <li>
+                                            <a
+                                                href="./rx-storage-memory-synced.html"
+                                                target="_blank"
+                                            >RxStorage Memory Synced</a>
+                                        </li>
+                                        <li>
+                                            <a
+                                                href="./query-optimizer.html"
+                                                target="_blank"
+                                            >Query Optimizer</a>
+                                        </li>
+                                        <li>
+                                            <a
+                                                href="./rx-storage-localstorage-meta-optimizer.html"
+                                                target="_blank"
+                                            >RxStorage Localstorage Meta Optimizer</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="package bg-gradient-left-top">
+                                <div class="package-inner">
+                                    <input
+                                        name="package-utilities"
+                                        type="checkbox"
+                                        class="package-checkbox"
+                                        checked
+                                        disabled
+                                    >
+                                    <h4>Utilities Package <b>always included</b></h4>
+                                    <ul>
+                                        <li>
+                                            <a
+                                                href="./storage-migration.html"
+                                                target="_blank"
+                                            >Storage migration</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="button"
+                            id="price-calculator-submit"
+                        >Estimate Price</div>
+                    </form>
+
+                    <div
+                        id="price-calculator-result"
+                        style="display: none;"
+                    >
+                        <hr />
+                        <h4>Estimated Price:</h4>
+                        <table>
+                            <tr>
+                                <th>Estimated Price Per Developer per Month</th>
+                                <td>
+                                    <a
+                                        id="total-per-developer-per-month"
+                                        target="_blank"
+                                        rel="nofollow noopener noreferrer"
+                                        title="Click to convert to other currency"
+                                        href="#"
+                                    >XX €</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Estimated Total Price per Year</th>
+                                <td>
+                                    <a
+                                        id="total-per-year"
+                                        target="_blank"
+                                        rel="nofollow noopener noreferrer"
+                                        title="Click to convert to other currency"
+                                        href="#"
+                                    >XX €</a>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="proceed-hint">
+                            Fill out
+                            <a href="#premium-request-form-block"><b>this form</b></a>
+                            to proceed.
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="block">
+            <div class="content centered premium-faq">
+                <h2>F.A.Q. <b>(click to toggle)</b></h2>
+                <details>
+                    <summary>
+                        Do I need the Premium Plugins?
+                    </summary>
+                    When you start using RxDB, you do not need access to the premium plugins. Most use cases can be
+                    implemented with the Open Core part of RxDB. There are many <a
+                        href="./rx-storage.html"
+                        target="_blank"
+                    >RxStorage</a>
+                    options and all core plugins that are required for replication, schema validation, encryption and so
+                    on,
+                    are totally free. As soon as your application is more then a side project, it is pretty easy to
+                    switch
+                    to RxDB Premium Plugins by just changing a few lines of configuration.<br />
+                    The main benefit of the Premium Plugins is <b>performance</b>. The Premium RxStorage implementations
+                    have a better performance
+                    so reading and writing data is much faster especially on low-end devices. You can find a performance
+                    comparison <a
+                        href="./rx-storage.html#performance-comparison"
+                        target="_blank"
+                    >here</a>.
+                    Also there are additional Premium Plugins that can be used to further optimize the performance of
+                    your
+                    application like the <a
+                        href="./query-optimizer.html"
+                        target="_blank"
+                    >Query Optimizer</a> or the <a
+                        href="./rx-storage-sharding.html"
+                        target="_blank"
+                    >Sharding</a> plugin.
+                </details>
+
+                <details>
+                    <summary>
+                        Why is it not for free?
+                    </summary>
+                    The development of RxDB started in 2016 and after all these years it became clear that big
+                    implementation and improvement steps will not be done by the RxDB community. While the community
+                    submits
+                    valuable pull requests, they are mostly small improvements or bugfixes for specific edge case. Big
+                    rewrites and optimizations that require a big effort have only be done by the RxDB maintainer.<br />
+                    Selling RxDB Premium ensures that there will be always an incentive for someone to add features,
+                    keep
+                    everything up to date and to further improve and optimize the codebase. This gives the user the
+                    confidence that RxDB is a <b>future proof</b> tech stack to build on which lets RxDB stand out
+                    compared
+                    to similar technologies.
+                </details>
+
+                <details>
+                    <summary>
+                        Why is there no free trial period?
+                    </summary>
+                    <ul>
+                        <li>
+                            RxDB is written in JavaScript and the code of the Premium Plugins does not contain any
+                            tracking or measurement code that would send information from your application
+                            to our servers in production mode. As soon as someone has the code on his computer,
+                            the maintainer has no chance to really ensure that after a free trial period the code is
+                            no longer used and deleted.
+                        </li>
+                        <li>
+                            Before you can use the Premium Plugins you have to debate and sign a license agreement with
+                            the
+                            maintainer. This is a sophisticated process that creates overhead which distracts the
+                            maintainer
+                            from writing RxDB code. So handling trial period users is just not manageable. For this
+                            reason
+                            there is also no monthly subscriptions. Premium access must be paid <b>per year</b>.
+                        </li>
+                    </ul>
+                </details>
+
+                <details>
+                    <summary>
+                        Why is it not cheaper?
+                    </summary>
+                    The price of the Premium Plugins is chosen in way that ensures that there can be always one person
+                    that
+                    develops RxDB <b>full time</b>.
+                    Compared to other JavaScript frameworks and developer tools, RxDB satisfies an edge use case for
+                    people
+                    that want to store data inside of their application on the users device. Most web developers do not
+                    need
+                    to do that and rely on the traditional client-server stack. So RxDB cannot be sold to that many
+                    people
+                    which increases the price.
+                </details>
+
+                <details>
+                    <summary>
+                        Can I install/build the premium plugins in my CI?
+                    </summary>
+                    <b>Yes</b> you can safely install and use the Premium Plugins in your CI without additional payment.
+                </details>
+
+                <details>
+                    <summary>
+                        Can I get a discount?
+                    </summary>
+                    Discounts are provided for people that have made a significant contribution to RxDB or one of RxDB's
+                    dependencies or to the Open Source Community overall.
+                    Also for private personal projects there is the option to solve one of the
+                    <a href="https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md" target="_blank">Premium Tasks</a>
+                    to get 3 years access to the Premium Plugins.
+                </details>
+            </div>
+        </div>
+
+        <div
+            class="block dark"
+            id="premium-request-form-block"
+        >
+            <div class="content centered premium-request">
+                <h2>Request Premium <b class="underline">Form</b></h2>
+
+                <iframe
+                    id="request-premium-form"
+                    src="https://webforms.pipedrive.com/f/6rAw4GGXeleL4JGz2Vn0kv0gbALmQXruUXRjUOlDqG3lB9UZ8n4OOSmHBNDJ187e5t"
+                >
+                    Your browser doesn't support iframes, <a
+                        href="https://webforms.pipedrive.com/f/6rAw4GGXeleL4JGz2Vn0kv0gbALmQXruUXRjUOlDqG3lB9UZ8n4OOSmHBNDJ187e5t"
+                        rel="nofollow"
+                    >go here</a>
+                </iframe>
+            </div>
+        </div>
+
+        <script
+            src="premium.js"
+            defer
+        ></script>
+
+</body>
+
 </html>
-
