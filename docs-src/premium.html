@@ -103,6 +103,7 @@
                     </div>
                 </div>
             </a>
+            <div class="clear"></div>
         </div>
         <div class="clear"></div>
     </header>
@@ -408,16 +409,32 @@
                         <table>
                             <tr>
                                 <th>Estimated Price Per Developer per Month</th>
-                                <td id="total-per-developer-per-month">50 €</td>
+                                <td>
+                                    <a
+                                        id="total-per-developer-per-month"
+                                        target="_blank"
+                                        rel="nofollow noopener noreferrer"
+                                        title="Click to convert to other currency"
+                                        href=""
+                                    >XX €</a>
+                                </td>
                             </tr>
                             <tr>
                                 <th>Estimated Total Price per Year</th>
-                                <td id="total-per-year">1500 €</td>
+                                <td>
+                                    <a
+                                        id="total-per-year"
+                                        target="_blank"
+                                        rel="nofollow noopener noreferrer"
+                                        title="Click to convert to other currency"
+                                        href=""
+                                    >XX €</a>
+                                </td>
                             </tr>
                         </table>
                         <div class="proceed-hint">
                             Fill out
-                            <a href="#request-premium-form"><b>this form</b></a>
+                            <a href="#premium-request-form-block"><b>this form</b></a>
                             to proceed.
                             </span>
                         </div>
@@ -486,10 +503,10 @@
                     <ul>
                         <li>
                             RxDB is written in JavaScript and the code of the Premium Plugins does not contain any
-                            tracking
-                            or measurement code. As soon as someone has the code on his computer, the maintainer has no
-                            chance to really ensure that after a free trial period the code is no longer used and
-                            deleted.
+                            tracking or measurement code that would send information from your application
+                            to our servers in production mode. As soon as someone has the code on his computer,
+                            the maintainer has no chance to really ensure that after a free trial period the code is
+                            no longer used and deleted.
                         </li>
                         <li>
                             Before you can use the Premium Plugins you have to debate and sign a license agreement with
@@ -536,7 +553,10 @@
             </div>
         </div>
 
-        <div class="block dark">
+        <div
+            class="block dark"
+            id="premium-request-form-block"
+        >
             <div class="content centered premium-request">
                 <h2>Request Premium <b class="underline">Form</b></h2>
 
