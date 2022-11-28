@@ -99,3 +99,7 @@ If multiple atomic updates are run on the same document at the same time, we sho
 
 ## Add enum-compression to the key-compressio plugin
 - Also rename the key-compression plugin to be just called 'compression'
+
+## Fix migration+replication
+When the schema is changed a migration runs, the replication plugins will replicate the migrated data. This is mostly not wanted by the user. We should
+add an option to let the user define what should happen after the migration.
