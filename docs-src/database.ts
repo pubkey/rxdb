@@ -2,12 +2,8 @@ import {
     getRxStorageDexie
 } from '../plugins/dexie';
 import {
-    ensureNotFalsy,
     createRxDatabase,
-    RxLocalDocument,
-    now,
-    addRxPlugin,
-    promiseWait
+    addRxPlugin
 } from '../';
 import {
     RxDBLocalDocumentsPlugin
