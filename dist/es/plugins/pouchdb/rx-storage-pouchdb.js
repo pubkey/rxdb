@@ -156,6 +156,11 @@ export function getPouchDBOfRxCollection(collection) {
   return pouch;
 }
 var addedRxDBPouchPlugins = false;
+
+/**
+ * @deprecated PouchDB RxStorage is deprecated, see
+ * @link https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated
+ */
 export function getRxStoragePouch(adapter, pouchSettings) {
   if (!addedRxDBPouchPlugins) {
     addedRxDBPouchPlugins = true;

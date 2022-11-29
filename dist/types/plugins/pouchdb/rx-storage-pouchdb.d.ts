@@ -30,4 +30,8 @@ export declare function createIndexesOnPouch(pouch: PouchDBInstance, schema: RxJ
  */
 export declare function getPouchLocation(dbName: string, collectionName: string, schemaVersion: number): string;
 export declare function getPouchDBOfRxCollection(collection: RxCollection<any>): PouchDBInstance;
+/**
+ * @deprecated PouchDB RxStorage is deprecated, see
+ * @link https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated
+ */
 export declare function getRxStoragePouch(adapter: any, pouchSettings?: PouchSettings): RxStoragePouch;

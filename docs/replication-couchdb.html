@@ -2218,6 +2218,8 @@
                                 <h1 id="couchdb-replication">CouchDB Replication</h1>
 <p>With the CouchDB replication you can replicate data in both directions with any CouchDB- or PouchDB compliant endpoint.
 It works with remote endpoints and also with local pouchdb instances or <code>RxCollection</code> that is created with the pouchdb storage.</p>
+<h2 id="important-deprecated">IMPORTANT: Deprecated!</h2>
+<p>The CouchDB Replication <a href="https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated" target="_blank">is deprecated</a> and should no longer be used in new projects. Use the <a href="replication-couchdb-new.html">new CouchDB Replication Plugin</a> with any non-PouchDB <a href="rx-storage.html">RxStorage</a> instead.</p>
 <h3 id="add-the-couchdb-replication-plugin">Add the CouchDB replication plugin</h3>
 <p>To enable the CouchDB replication, you have to add the <code>replication-couchdb</code> plugin.</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> { addRxPlugin } from <span class="hljs-string">&apos;rxdb&apos;</span>;

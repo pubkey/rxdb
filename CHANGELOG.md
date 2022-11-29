@@ -2,16 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [electron ipcRenderer plugin](./docs-src/electron.md) which can be used in Electron.js to run the RxStorage in the main process and the RxDatabase in the renderer processes.
-- Removed the electron-remote example because `@electron/remote` is deprecated.
-- FIX emit false on active$ after replication is done [#4136](https://github.com/pubkey/rxdb/pull/4136) Thanks [@maxnowack](https://github.com/maxnowack)
-- Deprecated the PouchDB RxStorage, [read this](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.12.0 (29 November 2022)
+
+- ADD [electron ipcRenderer plugin](./docs-src/electron.md) which can be used in Electron.js to run the RxStorage in the main process and the RxDatabase in the renderer processes.
+- Removed the electron-remote example because `@electron/remote` is deprecated.
+- FIX emit false on active$ after replication is done [#4136](https://github.com/pubkey/rxdb/pull/4136) Thanks [@maxnowack](https://github.com/maxnowack)
+- Deprecated the PouchDB RxStorage, [read this](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated)
 
 ### 13.11.1 (23 November 2022)
 

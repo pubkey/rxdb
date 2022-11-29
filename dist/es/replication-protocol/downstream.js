@@ -175,11 +175,7 @@ export function startReplicationDownstream(state) {
       return Promise.resolve(state.checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
         function _temp2() {
-          return Promise.all(promises).then(function () {
-            if (!state.firstSyncDone.down.getValue()) {
-              state.firstSyncDone.down.next(true);
-            }
-          });
+          return Promise.resolve(Promise.all(promises)).then(function () {});
         }
         var promises = [];
         var _temp = _for(function () {
@@ -245,14 +241,16 @@ export function startReplicationDownstream(state) {
         }
         useTasks.push(innerTaskWithTime.task);
       }
-      if (useTasks.length === 0) {
-        state.events.active.down.next(false);
-        return;
-      }
+      if (useTasks.length === 0) return;
       if (useTasks[0] === 'RESYNC') {
         return downstreamResyncOnce();
       } else {
         return downstreamProcessChanges(useTasks);
+      }
+    }).then(function () {
+      state.events.active.down.next(false);
+      if (!state.firstSyncDone.down.getValue()) {
+        state.firstSyncDone.down.next(true);
       }
     });
   }

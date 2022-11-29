@@ -2221,8 +2221,6 @@
 <h3 id="dexiejs">Dexie.js</h3>
 <p>The Dexie.js based storage is based on the <a href="https://github.com/dexie/Dexie.js" target="_blank">Dexie.js</a> IndexedDB wrapper.
 It stores the data inside of a browsers IndexedDB database and has a very small bundle size. <strong>If you are new to RxDB, you should start with the Dexie.js RxStorage</strong>. <a href="rx-storage-dexie.html">Read more</a></p>
-<h3 id="pouchdb">PouchDB</h3>
-<p>The PouchDB RxStorage is based on the <a href="https://github.com/pouchdb/pouchdb" target="_blank">PouchDB</a> database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. <a href="rx-storage-pouchdb.html">Read more</a></p>
 <h3 id="lokijs">LokiJS</h3>
 <p>The LokiJS based storage is based on the <a href="https://github.com/techfort/LokiJS" target="_blank">LokiJS</a> database.
 It has the special behavior of loading all data into memory at app start and therefore has the best performance when running operations over a small to mid sized dataset. <a href="rx-storage-lokijs.html">Read more</a></p>
@@ -2234,6 +2232,8 @@ It has the special behavior of loading all data into memory at app start and the
 <p>The SQLite storage has the best performance when RxDB is used on <strong>Node.js</strong>, <strong>Electron</strong>, <strong>React Native</strong>, <strong>Cordova</strong> or <strong>Capacitor</strong>. <a href="rx-storage-sqlite.html">Read more</a></p>
 <h3 id="foundationdb">FoundationDB</h3>
 <p>To use RxDB on the server side, the FoundationDB RxStorage provides a way of having a secure, fault-tolerant and performant storage. <a href="rx-storage-foundationdb.html">Read more</a></p>
+<h3 id="pouchdb-deprecated">PouchDB <a href="https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated" target="_blank">[deprecated]</a></h3>
+<p>The PouchDB RxStorage is based on the <a href="https://github.com/pouchdb/pouchdb" target="_blank">PouchDB</a> database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. Since version <code>13.12.0</code> the PouchDB RxStorage is <a href="https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated" target="_blank">deprecated</a> and should no longer be used.<a href="rx-storage-pouchdb.html">Read more about the PouchDB RxStorage</a></p>
 <h3 id="worker">Worker</h3>
 <p>The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in Node.js). By doing so, you can take CPU load from the main process and move it into the worker&apos;s process which can improve the perceived performance of your application. <a href="rx-storage-worker.html">Read more</a></p>
 <h3 id="sharding-premium">Sharding [<a href="premium.md">premium</a>]</h3>

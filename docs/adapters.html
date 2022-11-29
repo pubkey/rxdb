@@ -2220,6 +2220,8 @@
 Depending on which environment you work in, you can choose between different adapters. For example, in the browser you want to store the data inside of IndexedDB but on NodeJS you want to store the data on the filesystem.</p>
 <p>This page is an overview over the different adapters with recommendations on what to use where.</p>
 <p><strong>Please always ensure that your pouchdb adapter-version is the same as <code>pouchdb-core</code> in the <a href="https://github.com/pubkey/rxdb/blob/master/package.json" target="_blank">rxdb package.json</a>. Otherwise, you might have strange problems</strong></p>
+<h2 id="important">IMPORTANT:</h2>
+<p>The PouchDB RxStorage <a href="https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated" target="_blank">is deprecated</a> and should no longer be used in new projects.</p>
 <h1 id="any-environment">Any environment</h1>
 <h2 id="memory">Memory</h2>
 <p>In any environment, you can use the memory-adapter. It stores the data in the javascript runtime memory. This means it is not persistent and the data is lost when the process terminates.</p>
