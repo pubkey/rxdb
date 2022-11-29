@@ -1,6 +1,9 @@
 # RxStorage PouchDB
 
-The PouchDB RxStorage is based on the [PouchDB](https://github.com/pouchdb/pouchdb) database. It is the most battle proven RxStorage and has a big ecosystem of adapters. It is the only RxStorage that allows to do replication with a CouchDB endpoint. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest.
+The PouchDB RxStorage is based on the [PouchDB](https://github.com/pouchdb/pouchdb) database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest.
+
+## IMPORTANT:
+The PouchDB RxStorage [is deprecated](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated) and should no longer be used in new projects.
 
 ## Pros 
   - Most battle proven RxStorage

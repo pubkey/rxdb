@@ -3,6 +3,8 @@
 With the CouchDB replication you can replicate data in both directions with any CouchDB- or PouchDB compliant endpoint.
 It works with remote endpoints and also with local pouchdb instances or `RxCollection` that is created with the pouchdb storage.
 
+## IMPORTANT: Deprecated!
+The CouchDB Replication [is deprecated](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated) and should no longer be used in new projects. Use the [new CouchDB Replication Plugin](./replication-couchdb-new.md) with any non-PouchDB [RxStorage](./rx-storage.md) instead.
 
 ### Add the CouchDB replication plugin
 

@@ -10,10 +10,6 @@ RxDB is not a self contained database. Instead the data is stored in an implemen
 The Dexie.js based storage is based on the [Dexie.js](https://github.com/dexie/Dexie.js) IndexedDB wrapper.
 It stores the data inside of a browsers IndexedDB database and has a very small bundle size. **If you are new to RxDB, you should start with the Dexie.js RxStorage**. [Read more](./rx-storage-dexie.md)
 
-### PouchDB
-
-The PouchDB RxStorage is based on the [PouchDB](https://github.com/pouchdb/pouchdb) database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. [Read more](./rx-storage-pouchdb.md)
-
 ### LokiJS
 
 The LokiJS based storage is based on the [LokiJS](https://github.com/techfort/LokiJS) database.
@@ -35,6 +31,12 @@ The SQLite storage has the best performance when RxDB is used on **Node.js**, **
 ### FoundationDB
 
 To use RxDB on the server side, the FoundationDB RxStorage provides a way of having a secure, fault-tolerant and performant storage. [Read more](./rx-storage-foundationdb.md)
+
+
+### PouchDB [[deprecated]](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated)
+
+The PouchDB RxStorage is based on the [PouchDB](https://github.com/pouchdb/pouchdb) database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. Since version `13.12.0` the PouchDB RxStorage is [deprecated](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated) and should no longer be used.[Read more about the PouchDB RxStorage](./rx-storage-pouchdb.md)
+
 
 ### Worker
 
