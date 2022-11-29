@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config from './config';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { waitUntil } from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
@@ -485,7 +485,7 @@ config.parallel('data-migration.test.ts', () => {
                     );
                     await col.database.destroy();
                 });
-                it('should emit status for every handled document', async () => {
+                it('should emit a status for every handled document', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
                         3: async (doc: any) => {
                             await promiseWait(10);
@@ -496,21 +496,18 @@ config.parallel('data-migration.test.ts', () => {
                     const oldCollections = await _getOldCollections(col.getDataMigrator());
                     const oldCol = lastOfArray(oldCollections);
 
-                    const pw8 = AsyncTestUtil.waitResolveable(1000);
-
                     // batchSize is doc.length / 2 to make sure it takes a bit
                     const state$ = migrateOldCollection(oldCol as any, 5);
                     const states = [];
-                    state$.subscribe((state: any) => {
+                    const sub = state$.subscribe((state: any) => {
                         assert.strictEqual(state.type, 'success');
                         assert.ok(state.doc.passportId);
                         states.push(state);
-                    }, () => {
-                        throw new Error('this test should not call error');
-                    }, () => pw8.resolve());
+                    });
 
-                    await pw8.promise;
-                    assert.strictEqual(states.length, 10);
+                    await waitUntil(() => states.length === 10);
+                    sub.unsubscribe();
+
                     await Promise.all(
                         oldCollections.map(c => c.storageInstance.close().catch(() => { }))
                     );
