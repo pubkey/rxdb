@@ -44,10 +44,10 @@ CouchDB server, was only possible with PouchDB. But this has also changed. RxDB 
 to replicate clients with any CouchDB server by using the RxDB replication protocol. This plugins work with any RxStorage so that it is not necessary to use the PouchDB storage.
 Removing PouchDB allows RxDB to add many awaited features like filtered change streams for easier replication and permission handling. It will also free up development time.
 
-If you are currently using the PouchDB RxStorage, you have 3 options:
+If you are currently using the PouchDB RxStorage, you have these options:
 
 - Migrate to another [RxStorage](./rx-storage.md) (recommended)
-- Never update RxDB to the next major version (stay on <13.0.0)
+- Never update RxDB to the next major version (stay on <14.0.0)
 - Fork the [PouchDB RxStorage](./rx-storage-pouchdb.md) and maintain the plugin by yourself.
 - Fix all the [PouchDB problems](https://github.com/pouchdb/pouchdb/issues?q=author%3Apubkey) so that we can add PouchDB to the RxDB Core again.
 
