@@ -1,0 +1,8 @@
+{
+  "name": "rxdb-plugin-replication-firestore",
+  "main": "../../dist/lib/plugins/replication-firestore/index.js",
+  "jsnext:main": "../../dist/es/plugins/replication-firestore/index.js",
+  "module": "../../dist/es/plugins/replication-firestore/index.js",
+  "types": "../../dist/types/plugins/replication-firestore/index.d.ts",
+  "sideEffects": false
+}

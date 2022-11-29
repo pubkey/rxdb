@@ -117,6 +117,7 @@ import {
     throwIfIsStorageWriteError
 } from './rx-storage-helper';
 import { defaultConflictHandler } from './replication-protocol';
+import type { SyncOptionsFirestore } from './plugins/replication-firestore/firestore-types';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -778,6 +779,9 @@ export class RxCollectionBase<
 
     syncP2P(_syncOptions: SyncOptionsP2P<RxDocumentType>): RxP2PReplicationPool<RxDocumentType> {
         throw pluginMissing('replication-p2p');
+    }
+    syncFirestore(_syncOptions: SyncOptionsFirestore<RxDocumentType>): RxFirestoreReplicationState<RxDocumentType> {
+        throw pluginMissing('replication-firestore');
     }
 
 
