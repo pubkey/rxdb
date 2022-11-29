@@ -73,28 +73,45 @@ export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (
     data: RxDocumentType,
     instance: RxDocument<RxDocumentType, OrmMethods>
 ) => void | any;
-export type RxCollectionHookNoInstanceCallback<
+export type RxPreInsertHookCallback<
     RxDocumentType,
-    OrmMethods
+    OrmMethods,
+    InsertMiddlewareInput
 > = (
-    data: RxDocumentType,
-    instance: RxCollection<RxDocumentType, OrmMethods>
-) => Promise<void> | void | any;
+    inputData: InsertMiddlewareInput,
+    collection: RxCollection<RxDocumentType, OrmMethods>
+) => Promise<RxDocumentType> | RxDocumentType;
+
+export type RxPreSaveHookCallback<
+    RxDocumentType,
+    OrmMethods,
+    SaveMiddlewareInput
+> = (
+    inputData: SaveMiddlewareInput,
+    existingDocument: RxDocument<RxDocumentType, OrmMethods>
+) => Promise<RxDocumentType> | RxDocumentType;
 
 export type RxCollection<
     RxDocumentType = any,
     OrmMethods = {},
     StaticMethods = {},
-    InstanceCreationOptions = {}
+    InstanceCreationOptions = {},
+    InsertMiddlewareInput = RxDocumentType,
+    SaveMiddlewareInput = RxDocumentType
 > = StaticMethods &
-RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods> &
-RxCollectionGenerated<RxDocumentType, OrmMethods>;
+    RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods> &
+    RxCollectionGenerated<RxDocumentType, OrmMethods, InsertMiddlewareInput, SaveMiddlewareInput>;
 
-export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods>> {
+export interface RxCollectionGenerated<
+    RxDocumentType = any,
+    OrmMethods = {},
+    InsertMiddlewareInput = RxDocumentType,
+    SaveMiddlewareInput = RxDocumentType
+> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods>> {
 
     // HOOKS
-    preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
-    preSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    preInsert(fun: RxPreInsertHookCallback<RxDocumentType, OrmMethods, InsertMiddlewareInput>, parallel: boolean): void;
+    preSave(fun: RxPreSaveHookCallback<RxDocumentType, OrmMethods, SaveMiddlewareInput>, parallel: boolean): void;
     preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
