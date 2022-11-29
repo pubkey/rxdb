@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config from './config';
-import AsyncTestUtil, { waitUntil } from 'async-test-util';
+import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
@@ -508,9 +508,6 @@ config.parallel('data-migration.test.ts', () => {
                     await waitUntil(() => states.length === 10);
                     sub.unsubscribe();
 
-                    await Promise.all(
-                        oldCollections.map(c => c.storageInstance.close().catch(() => { }))
-                    );
                     await col.database.destroy();
                 });
 
