@@ -36,17 +36,17 @@ these issues for RxDB users. Many these patches decreased performance even furth
 and hard to debug.
 
 In version [10.0.0](./releases/10.0.0.md) RxDB introduced the [RxStorage](./rx-storage.md) layer which
-allows users to swap out the underlaying storage engine where RxDB stores and queries documents from.
+allows users to swap out the underlying storage engine where RxDB stores and queries documents from.
 This allowed to use alternatives from PouchDB, for example the [Dexie RxStorage](./rx-storage-dexie.md) in browsers
 or even the [FoundationDB RxStorage](./rx-storage-foundationdb.md) on the server side.
 There where not many use cases left where it was a good choice to use the PouchDB RxStorage. Only replicating with a
 CouchDB server, was only possible with PouchDB. But this has also changed. RxDB has [a plugin](./replication-couchdb-new.md) that allows
 to replicate clients with any CouchDB server by using the RxDB replication protocol. This plugins work with any RxStorage so that it is not necessary to use the PouchDB storage.
-Removing PouchDB allows RxDB to add many awaited features like filtered change streams for easier replication and permission handling. It will also free up developement time.
+Removing PouchDB allows RxDB to add many awaited features like filtered change streams for easier replication and permission handling. It will also free up development time.
 
 If you are currently using the PouchDB RxStorage, you have 3 options:
 
-- Migrate to another [RxStorage](./rx-storage.md) (recommened)
+- Migrate to another [RxStorage](./rx-storage.md) (recommended)
 - Never update RxDB to the next major version (stay on <13.0.0)
 - Fork the [PouchDB RxStorage](./rx-storage-pouchdb.md) and maintain the plugin by yourself.
 - Fix all the [PouchDB problems](https://github.com/pouchdb/pouchdb/issues?q=author%3Apubkey) so that we can add PouchDB to the RxDB Core again.
