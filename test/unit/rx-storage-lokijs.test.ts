@@ -2,6 +2,7 @@ import assert from 'assert';
 
 import config from './config';
 import {
+    addRxPlugin,
     ensureNotFalsy,
     fillWithDefaultSettings,
     getPseudoSchemaForVersion,
@@ -24,6 +25,8 @@ import * as fs from 'fs';
 import { LeaderElector } from 'broadcast-channel';
 import { HumanDocumentType } from '../helper/schemas';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election';
+import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents';
 
 /**
  * RxStorageLokiJS specific tests
@@ -32,6 +35,8 @@ describe('rx-storage-lokijs.test.js', () => {
     if (config.storage.name !== 'lokijs') {
         return;
     }
+    addRxPlugin(RxDBLeaderElectionPlugin);
+    addRxPlugin(RxDBLocalDocumentsPlugin);
     config.parallel('RxDatabase', () => {
         it('create/write/remove', async () => {
             const collection = await humansCollections.create(

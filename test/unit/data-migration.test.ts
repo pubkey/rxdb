@@ -19,7 +19,8 @@ import {
     normalizeMangoQuery,
     RxStorageInstance,
     now,
-    defaultHashFunction
+    defaultHashFunction,
+    addRxPlugin
 } from '../../';
 
 import {
@@ -43,20 +44,33 @@ import {
 import { HumanDocumentType } from '../helper/schemas';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
+import { RxDBMigrationPlugin } from '../../plugins/migration';
+import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
+
+
 config.parallel('data-migration.test.ts', () => {
 
-    /**
-     * TODO these tests do not run with the lokijs storage (and others)
-     * because on closing the in-memory database, all data is lost.
-     * So our config.storage should include a method getPersistentStorage()
-     * which returns a storage that saves the data and still has it when opening
-     * the database again.
-     */
-    if (
-        !config.storage.name.includes('pouchdb')
-    ) {
+    if (!config.storage.hasPersistence) {
         return;
     }
+    addRxPlugin(RxDBMigrationPlugin);
+
+    if (config.storage.hasAttachments) {
+        addRxPlugin(RxDBAttachmentsPlugin);
+    }
+
+    // /**
+    //  * TODO these tests do not run with the lokijs storage (and others)
+    //  * because on closing the in-memory database, all data is lost.
+    //  * So our config.storage should include a method getPersistentStorage()
+    //  * which returns a storage that saves the data and still has it when opening
+    //  * the database again.
+    //  */
+    // if (
+    //     !config.storage.name.includes('pouchdb')
+    // ) {
+    //     return;
+    // }
 
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
@@ -749,12 +763,12 @@ config.parallel('data-migration.test.ts', () => {
             it('should auto-run on creation (async)', async () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
-                        3: (doc: any) => {
-                            promiseWait(10);
-                            doc.age = parseInt(doc.age, 10);
-                            return doc;
-                        }
-                    },
+                    3: (doc: any) => {
+                        promiseWait(10);
+                        doc.age = parseInt(doc.age, 10);
+                        return doc;
+                    }
+                },
                     randomCouchString(10),
                     true
                 );
@@ -1086,6 +1100,9 @@ config.parallel('data-migration.test.ts', () => {
             });
         });
         it('#3460 migrate attachments', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
             const attachmentData = AsyncTestUtil.randomString(20);
             const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
                 attachmentData,

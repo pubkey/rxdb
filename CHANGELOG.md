@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX run the unit tests for the migration plugin on all storages.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
