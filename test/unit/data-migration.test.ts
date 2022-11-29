@@ -14,12 +14,9 @@ import {
     getHeightOfRevision,
     blobBufferUtil,
     lastOfArray,
-    RxCollection,
-    createRevision,
     normalizeMangoQuery,
     RxStorageInstance,
     now,
-    defaultHashFunction,
     addRxPlugin
 } from '../../';
 
@@ -37,10 +34,6 @@ import {
     migrateOldCollection,
     migratePromise
 } from '../../plugins/migration';
-import {
-    SimpleHumanV3DocumentType,
-    simpleHumanV3
-} from '../helper/schema-objects';
 import { HumanDocumentType } from '../helper/schemas';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
@@ -762,13 +755,14 @@ config.parallel('data-migration.test.ts', () => {
 
             it('should auto-run on creation (async)', async () => {
                 const col = await humansCollection.createMigrationCollection(
-                    10, {
-                    3: (doc: any) => {
-                        promiseWait(10);
-                        doc.age = parseInt(doc.age, 10);
-                        return doc;
-                    }
-                },
+                    10,
+                    {
+                        3: (doc: any) => {
+                            promiseWait(10);
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        }
+                    },
                     randomCouchString(10),
                     true
                 );
