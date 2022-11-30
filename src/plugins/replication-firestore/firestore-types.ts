@@ -1,8 +1,7 @@
 import {
     ReplicationOptions,
     ReplicationPullOptions,
-    ReplicationPushOptions,
-    StringKeys
+    ReplicationPushOptions
 } from '../../types';
 
 import {

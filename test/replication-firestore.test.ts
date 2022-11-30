@@ -5,7 +5,6 @@
  * Run 'npm run couch:start' to spawn a docker-container
  */
 import assert from 'assert';
-import { wait, waitUntil } from 'async-test-util';
 
 import {
     randomCouchString,
@@ -21,17 +20,11 @@ import * as schemaObjects from './helper/schema-objects';
 
 import config from './unit/config';
 
-import type {
-    FirebaseOptions
-} from 'firebase/app';
 import {
-    Firestore,
     CollectionReference,
     getFirestore,
-    enableMultiTabIndexedDbPersistence,
     collection as getFirestoreCollection,
     connectFirestoreEmulator,
-    disableNetwork,
     getDocs,
     query,
     doc as DocRef,
@@ -39,14 +32,13 @@ import {
     serverTimestamp,
     where,
     orderBy,
-    limit,
-    Timestamp
-} from 'firebase/firestore';
+    limit} from 'firebase/firestore';
 import {
     FirestoreOptions,
     RxDBReplicationFirestorePlugin,
     RxFirestoreReplicationState
 } from '../plugins/replication-firestore';
+import { ensureCollectionsHaveEqualState } from './helper/test-util';
 
 addRxPlugin(RxDBReplicationFirestorePlugin);
 
@@ -56,6 +48,11 @@ addRxPlugin(RxDBReplicationFirestorePlugin);
  * because it is too slow to setup the firstore backend emulators.
  */
 describe('replication-firstore.test.js', () => {
+    /**
+     * Use a low batchSize in all tests
+     * to make it easier to test boundaries.
+     */
+    const batchSize = 5;
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
     async function getAllDocsOfFirestore(firestore: FirestoreOptions<TestDocType>): Promise<TestDocType[]> {
         const result = await getDocs(query(firestore.collection));
@@ -77,7 +74,7 @@ describe('replication-firstore.test.js', () => {
             database
         };
     }
-    function ensureReplicationHasNoErrors(replicationState: RxFirestoreReplicationState<TestDocType>) {
+    function ensureReplicationHasNoErrors(replicationState: RxFirestoreReplicationState<any>) {
         /**
          * We do not have to unsubscribe because the observable will cancel anyway.
          */
@@ -90,29 +87,21 @@ describe('replication-firstore.test.js', () => {
             throw err;
         });
     }
-    async function ensureCollectionsHaveEqualState<RxDocType>(
-        c1: RxCollection<RxDocType>,
-        c2: RxCollection<RxDocType>
-    ) {
-        const getJson = async (collection: RxCollection<RxDocType>) => {
-            const docs = await collection.find().exec();
-            return docs.map(d => d.toJSON());
-        };
-        const json1 = await getJson(c1);
-        const json2 = await getJson(c2);
-        try {
-            assert.deepStrictEqual(
-                json1,
-                json2
-            );
-        } catch (err) {
-            console.error('ensureCollectionsHaveEqualState() states not equal:');
-            console.dir({
-                [c1.name]: json1,
-                [c2.name]: json2
-            });
-            throw err;
-        }
+    function syncFirestore<RxDocType = TestDocType>(
+        collection: RxCollection<RxDocType>,
+        firestoreState: FirestoreOptions<RxDocType>
+    ): RxFirestoreReplicationState<RxDocType> {
+        const replicationState = collection.syncFirestore({
+            firestore: firestoreState,
+            pull: {
+                batchSize
+            },
+            push: {
+                batchSize
+            }
+        });
+        ensureReplicationHasNoErrors(replicationState);
+        return replicationState;
     }
     it('log some stuff', () => {
         console.log('STORAGE: ' + config.storage.name);
@@ -130,22 +119,14 @@ describe('replication-firstore.test.js', () => {
             serverTimestamp: serverTimestamp()
         } as any);
         const docsOnServer = await getAllDocsOfFirestore(firestoreState);
-        console.log('docsOnServer:');
-        console.dir(docsOnServer);
         const olderDoc = ensureNotFalsy(docsOnServer.find(d => d.id === 'older'));
-
-        console.dir(olderDoc);
-
         const queryTimestamp = (olderDoc as any).serverTimestamp.toDate();
-        console.log('queryTimestamp:');
-        console.dir((olderDoc as any).serverTimestamp.toDate());
         const newerQuery = query(firestoreState.collection,
             where('serverTimestamp', '>', queryTimestamp),
             orderBy('serverTimestamp', 'asc'),
             limit(10)
         );
         const queryResult = await getDocs<TestDocType>(newerQuery as any);
-        console.dir(queryResult.docs.map(d => d.data()));
         assert.strictEqual(queryResult.docs.length, 1);
         assert.strictEqual(
             ensureNotFalsy(queryResult.docs[0]).data().id,
@@ -157,11 +138,7 @@ describe('replication-firstore.test.js', () => {
 
         const firestoreState = await getFirestoreState();
 
-        const replicationState = collection.syncFirestore({
-            firestore: firestoreState,
-            pull: {},
-            push: {}
-        });
+        const replicationState = syncFirestore(collection, firestoreState);
         ensureReplicationHasNoErrors(replicationState);
         await replicationState.awaitInitialReplication();
 
@@ -192,7 +169,6 @@ describe('replication-firstore.test.js', () => {
         assert.strictEqual(docsOnServer.length, 3);
         assert.ok(docsOnServer.find(d => (d as any)._deleted));
 
-
         collection.database.destroy();
     });
     it('two collections', async () => {
@@ -200,54 +176,54 @@ describe('replication-firstore.test.js', () => {
         const collectionB = await humansCollection.createHumanWithTimestamp(1, undefined, false);
 
         const firestoreState = await getFirestoreState();
-        const replicationStateA = collectionA.syncFirestore({
-            firestore: firestoreState,
-            pull: {},
-            push: {}
-        });
+        const replicationStateA = syncFirestore(collectionA, firestoreState);
+
         ensureReplicationHasNoErrors(replicationStateA);
         await replicationStateA.awaitInitialReplication();
 
-        console.log('----------------- 111');
 
-        const replicationStateB = collectionB.syncFirestore({
-            firestore: firestoreState,
-            pull: {},
-            push: {}
-        });
+        const replicationStateB = syncFirestore(collectionB, firestoreState);
         ensureReplicationHasNoErrors(replicationStateB);
         await replicationStateB.awaitInitialReplication();
 
-
-        await replicationStateA.reSync();
         await replicationStateA.awaitInSync();
 
-        console.log('_____________ 1');
         await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
         // insert one
-        console.log('_____________ 2');
         await collectionA.insert(schemaObjects.humanWithTimestamp({ id: 'insert', name: 'InsertName' }));
         await replicationStateA.awaitInSync();
 
-        const docsOnServer = await getAllDocsOfFirestore(firestoreState);
-        console.log('docs on server:');
-        console.dir(docsOnServer);
-
-        replicationStateB.reSync();
         await replicationStateB.awaitInSync();
         await ensureCollectionsHaveEqualState(collectionA, collectionB);
-
-        console.log('_____________ 3');
 
         // delete one
         await collectionB.findOne().remove();
         await replicationStateB.awaitInSync();
-        replicationStateA.reSync();
         await replicationStateA.awaitInSync();
         await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
-        console.log('_____________ 4');
+        // insert many
+        await collectionA.bulkInsert(
+            new Array(10)
+                .fill(0)
+                .map(() => schemaObjects.humanWithTimestamp({ name: 'insert-many' }))
+        );
+        await replicationStateA.awaitInSync();
+
+        await replicationStateB.awaitInSync();
+        await ensureCollectionsHaveEqualState(collectionA, collectionB);
+
+        // insert at both collections at the same time
+        await Promise.all([
+            collectionA.insert(schemaObjects.humanWithTimestamp({ name: 'insert-parallel-A' })),
+            collectionB.insert(schemaObjects.humanWithTimestamp({ name: 'insert-parallel-B' }))
+        ]);
+        await replicationStateA.awaitInSync();
+        await replicationStateB.awaitInSync();
+        await replicationStateA.awaitInSync();
+        await replicationStateB.awaitInSync();
+        await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
         collectionA.database.destroy();
         collectionB.database.destroy();

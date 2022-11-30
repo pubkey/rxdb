@@ -21,7 +21,7 @@ import {
     writeBatch,
     serverTimestamp,
     QueryDocumentSnapshot,
-    Timestamp
+    waitForPendingWrites
 } from 'firebase/firestore';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -87,6 +87,7 @@ export function syncFirestore<RxDocType>(
     const collection = this;
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, FirestoreCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, FirestoreCheckpointType> | undefined;
+    options.live = typeof options.live === 'undefined' ? true : options.live;
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
     const serverTimestampField = typeof options.serverTimestampField === 'undefined' ? 'serverTimestamp' : options.serverTimestampField;
     options.serverTimestampField = serverTimestampField;
@@ -113,10 +114,6 @@ export function syncFirestore<RxDocType>(
                 lastPulledCheckpoint: FirestoreCheckpointType,
                 batchSize: number
             ) {
-
-                console.log('PULL !! ' + serverTimestampField);
-                console.dir(lastPulledCheckpoint);
-
                 let newerQuery: ReturnType<typeof query>;
                 let sameTimeQuery: ReturnType<typeof query> | undefined;
 
@@ -141,22 +138,44 @@ export function syncFirestore<RxDocType>(
                     );
                 }
 
-                const [
-                    newerQueryResult,
-                    sameTimeQueryResult
-                ] = await Promise.all([
-                    getDocs(newerQuery),
-                    sameTimeQuery ? getDocs(sameTimeQuery) : undefined
-                ]);
-
+                let mustsReRun = true;
                 let useDocs: QueryDocumentSnapshot<RxDocType>[] = [];
-                if (sameTimeQuery) {
-                    useDocs = ensureNotFalsy(sameTimeQueryResult).docs as any;
-                }
-                const missingAmount = batchSize - useDocs.length;
-                if (missingAmount > 0) {
-                    const additonalDocs = newerQueryResult.docs.slice(0, missingAmount).filter(x => !!x);
-                    useDocs = useDocs.concat(additonalDocs as any);
+                while (mustsReRun) {
+                    /**
+                     * Local writes that have not been persisted to the server
+                     * are in pending state and do not have a correct serverTimestamp set.
+                     * We have to ensure we only use document states that are in sync with the server.
+                     * @link https://medium.com/firebase-developers/the-secrets-of-firestore-fieldvalue-servertimestamp-revealed-29dd7a38a82b
+                     */
+                    await waitForPendingWrites(options.firestore.database);
+                    await runTransaction(options.firestore.database, async (_tx) => {
+                        useDocs = [];
+                        const [
+                            newerQueryResult,
+                            sameTimeQueryResult
+                        ] = await Promise.all([
+                            getDocs(newerQuery),
+                            sameTimeQuery ? getDocs(sameTimeQuery) : undefined
+                        ]);
+
+                        if (
+                            newerQueryResult.metadata.hasPendingWrites ||
+                            (sameTimeQuery && ensureNotFalsy(sameTimeQueryResult).metadata.hasPendingWrites)
+                        ) {
+                            return;
+                        } else {
+                            mustsReRun = false;
+
+                            if (sameTimeQuery) {
+                                useDocs = ensureNotFalsy(sameTimeQueryResult).docs as any;
+                            }
+                            const missingAmount = batchSize - useDocs.length;
+                            if (missingAmount > 0) {
+                                const additonalDocs = newerQueryResult.docs.slice(0, missingAmount).filter(x => !!x);
+                                useDocs = useDocs.concat(additonalDocs as any);
+                            }
+                        }
+                    });
                 }
 
                 if (useDocs.length === 0) {
@@ -165,18 +184,16 @@ export function syncFirestore<RxDocType>(
                         documents: []
                     };
                 }
+
                 const lastDoc = ensureNotFalsy(lastOfArray(useDocs)).data();
+
                 const documents: WithDeleted<RxDocType>[] = useDocs
                     .map(row => stripServerTimestampField(serverTimestampField, row.data())) as any;
-
 
                 const newCheckpoint: FirestoreCheckpointType = {
                     id: (lastDoc as any)[primaryPath],
                     serverTimestamp: serverTimestampToIsoString(serverTimestampField, lastDoc)
                 };
-                console.log('newCheckpoint: ');
-                console.dir(newCheckpoint);
-
                 const ret = {
                     documents: documents,
                     checkpoint: newCheckpoint
@@ -201,6 +218,7 @@ export function syncFirestore<RxDocType>(
                     writeRowsById[docId] = row;
                     return docId;
                 });
+                await waitForPendingWrites(options.firestore.database);
                 let conflicts: WithDeleted<RxDocType>[] = [];
 
                 /**
@@ -232,8 +250,6 @@ export function syncFirestore<RxDocType>(
                      */
                     const batch = writeBatch(options.firestore.database);
                     let hasWrite = false;
-
-                    console.log('PUSH !!');
                     await Promise.all(
                         Object.entries(writeRowsById).map(async ([docId, writeRow]) => {
                             const docInDb: RxDocType | undefined = docsInDbById[docId];
@@ -272,6 +288,7 @@ export function syncFirestore<RxDocType>(
                         await batch.commit();
                     }
                 });
+                await waitForPendingWrites(options.firestore.database);
                 return conflicts;
             },
             batchSize: options.push.batchSize,
@@ -305,11 +322,9 @@ export function syncFirestore<RxDocType>(
             );
             const unsubscribe = onSnapshot(
                 lastChangeQuery,
-                (querySnapshot) => {
-                    console.log('FIRESTORE: GOT CHANGE');
-                    console.dir(querySnapshot);
+                (_querySnapshot) => {
                     /**
-                     * There is no way to observe the event stream in firestore.
+                     * There is no good way to observe the event stream in firestore.
                      * So instead we listen to any write to the collection
                      * and then emit a 'RESYNC' flag.
                      */

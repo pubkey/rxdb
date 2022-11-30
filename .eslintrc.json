@@ -33,7 +33,7 @@
         "accessibility": "explicit"
       }
     ],
-    "@typescript-eslint/indent": "error",
+    "@typescript-eslint/indent": "off",
     "@typescript-eslint/member-delimiter-style": [
       "error",
       {
