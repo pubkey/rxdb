@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase/firestore';
 import { flatClone, now } from '../../util';
 
 export const FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-firestore-';
@@ -15,4 +16,16 @@ export function stripServerTimestampField<RxDocType>(
     const data = flatClone(docData);
     delete (data as any)[serverTimestampField];
     return data;
+}
+
+
+export function serverTimestampToIsoString(serverTimestampField: string, docData: any): string {
+    const timestamp = (docData as any)[serverTimestampField];
+    const date: Date = timestamp.toDate();
+    return date.toISOString();
+}
+
+export function isoStringToServerTimestamp(isoString: string): Timestamp {
+    const date = new Date(isoString);
+    return Timestamp.fromDate(date);
 }

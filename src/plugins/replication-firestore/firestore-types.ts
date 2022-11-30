@@ -12,6 +12,16 @@ import {
 
 export type FirestoreCheckpointType = {
     id: string;
+    /**
+     * Firestore internally sets the time to an object like
+     * {
+     *       "seconds": 1669807105,
+     *       "nanoseconds": 476000000
+     * }
+     * But to be able to query that, we have to use a date string
+     * like '2022-11-30T11:18:25.141Z'
+     * so we store that string instead.
+     */
     serverTimestamp: string;
 };
 export type FirestoreCollection<RxDocType> = CollectionReference<RxDocType>;

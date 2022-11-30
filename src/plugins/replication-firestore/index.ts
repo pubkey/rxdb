@@ -19,7 +19,9 @@ import {
     onSnapshot,
     runTransaction,
     writeBatch,
-    serverTimestamp
+    serverTimestamp,
+    QueryDocumentSnapshot,
+    Timestamp
 } from 'firebase/firestore';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -48,7 +50,7 @@ import type {
     SyncOptionsFirestore
 } from './firestore-types';
 import { Subject } from 'rxjs';
-import { FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX, stripServerTimestampField } from './firestore-helper';
+import { FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX, isoStringToServerTimestamp, serverTimestampToIsoString, stripServerTimestampField } from './firestore-helper';
 
 export * from './firestore-helper';
 export * from './firestore-types';
@@ -112,29 +114,72 @@ export function syncFirestore<RxDocType>(
                 batchSize: number
             ) {
 
-                const lastServerTimestamp = lastPulledCheckpoint ? lastPulledCheckpoint.serverTimestamp : 0;
-                const changesQuery = query(options.firestore.collection,
-                    where(serverTimestampField, '>', lastServerTimestamp),
-                    orderBy(serverTimestampField, 'asc'),
-                    limit(batchSize)
-                );
-                const queryResult = await getDocs(changesQuery);
-                if (queryResult.size === 0) {
+                console.log('PULL !! ' + serverTimestampField);
+                console.dir(lastPulledCheckpoint);
+
+                let newerQuery: ReturnType<typeof query>;
+                let sameTimeQuery: ReturnType<typeof query> | undefined;
+
+                if (lastPulledCheckpoint) {
+                    const lastServerTimestamp = isoStringToServerTimestamp(lastPulledCheckpoint.serverTimestamp);
+                    newerQuery = query(options.firestore.collection,
+                        where(serverTimestampField, '>', lastServerTimestamp),
+                        orderBy(serverTimestampField, 'asc'),
+                        limit(batchSize)
+                    );
+                    sameTimeQuery = query(options.firestore.collection,
+                        where(serverTimestampField, '==', lastServerTimestamp),
+                        where(primaryPath, '>', lastPulledCheckpoint.id),
+                        orderBy(primaryPath, 'asc'),
+                        orderBy(serverTimestampField, 'asc'),
+                        limit(batchSize)
+                    );
+                } else {
+                    newerQuery = query(options.firestore.collection,
+                        orderBy(serverTimestampField, 'asc'),
+                        limit(batchSize)
+                    );
+                }
+
+                const [
+                    newerQueryResult,
+                    sameTimeQueryResult
+                ] = await Promise.all([
+                    getDocs(newerQuery),
+                    sameTimeQuery ? getDocs(sameTimeQuery) : undefined
+                ]);
+
+                let useDocs: QueryDocumentSnapshot<RxDocType>[] = [];
+                if (sameTimeQuery) {
+                    useDocs = ensureNotFalsy(sameTimeQueryResult).docs as any;
+                }
+                const missingAmount = batchSize - useDocs.length;
+                if (missingAmount > 0) {
+                    const additonalDocs = newerQueryResult.docs.slice(0, missingAmount).filter(x => !!x);
+                    useDocs = useDocs.concat(additonalDocs as any);
+                }
+
+                if (useDocs.length === 0) {
                     return {
                         checkpoint: lastPulledCheckpoint,
                         documents: []
                     };
                 }
-                const lastDoc = ensureNotFalsy(lastOfArray(queryResult.docs)).data();
-                const documents: WithDeleted<RxDocType>[] = queryResult.docs
+                const lastDoc = ensureNotFalsy(lastOfArray(useDocs)).data();
+                const documents: WithDeleted<RxDocType>[] = useDocs
                     .map(row => stripServerTimestampField(serverTimestampField, row.data())) as any;
+
+
+                const newCheckpoint: FirestoreCheckpointType = {
+                    id: (lastDoc as any)[primaryPath],
+                    serverTimestamp: serverTimestampToIsoString(serverTimestampField, lastDoc)
+                };
+                console.log('newCheckpoint: ');
+                console.dir(newCheckpoint);
 
                 const ret = {
                     documents: documents,
-                    checkpoint: {
-                        id: (lastDoc as any)[primaryPath],
-                        serverTimestamp: (lastDoc as any)[serverTimestampField] as any
-                    }
+                    checkpoint: newCheckpoint
                 };
                 return ret;
             },
@@ -255,7 +300,7 @@ export function syncFirestore<RxDocType>(
         replicationState.start = () => {
             const lastChangeQuery = query(
                 options.firestore.collection,
-                orderBy(options.updateSortField, 'desc'),
+                orderBy(serverTimestampField, 'desc'),
                 limit(1)
             );
             const unsubscribe = onSnapshot(
