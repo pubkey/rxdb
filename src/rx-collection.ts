@@ -103,6 +103,10 @@ import type {
     SyncOptionsP2P,
     RxP2PReplicationPool
 } from './plugins/replication-p2p';
+import type {
+    RxFirestoreReplicationState,
+    SyncOptionsFirestore
+} from './plugins/replication-firestore';
 
 import {
     RxSchema
@@ -117,7 +121,6 @@ import {
     throwIfIsStorageWriteError
 } from './rx-storage-helper';
 import { defaultConflictHandler } from './replication-protocol';
-import type { SyncOptionsFirestore } from './plugins/replication-firestore/firestore-types';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -185,9 +188,7 @@ export class RxCollectionBase<
     } = {} as any;
     public _subs: Subscription[] = [];
 
-    public _docCache: DocCache<
-    RxDocument<RxDocumentType, OrmMethods>
-    > = new DocCache();
+    public _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>> = new DocCache();
 
     public _queryCache: QueryCache = createQueryCache();
     public $: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
@@ -316,9 +317,9 @@ export class RxCollectionBase<
     async bulkInsert(
         docsData: RxDocumentType[]
     ): Promise<{
-            success: RxDocument<RxDocumentType, OrmMethods>[];
-            error: RxStorageBulkWriteError<RxDocumentType>[];
-        }> {
+        success: RxDocument<RxDocumentType, OrmMethods>[];
+        error: RxStorageBulkWriteError<RxDocumentType>[];
+    }> {
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -389,9 +390,9 @@ export class RxCollectionBase<
     async bulkRemove(
         ids: string[]
     ): Promise<{
-            success: RxDocument<RxDocumentType, OrmMethods>[];
-            error: RxStorageBulkWriteError<RxDocumentType>[];
-        }> {
+        success: RxDocument<RxDocumentType, OrmMethods>[];
+        error: RxStorageBulkWriteError<RxDocumentType>[];
+    }> {
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -529,8 +530,8 @@ export class RxCollectionBase<
     }
 
     find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<
-    RxDocumentType,
-    RxDocument<RxDocumentType, OrmMethods>[]
+        RxDocumentType,
+        RxDocument<RxDocumentType, OrmMethods>[]
     > {
         if (typeof queryObj === 'string') {
             throw newRxError('COL5', {
@@ -546,10 +547,11 @@ export class RxCollectionBase<
         return query as any;
     }
 
-    findOne(queryObj?: MangoQueryNoLimit<RxDocumentType> | string): RxQuery<
-    RxDocumentType,
-    RxDocument<RxDocumentType, OrmMethods>
-    | null
+    findOne(
+        queryObj?: MangoQueryNoLimit<RxDocumentType> | string
+    ): RxQuery<
+        RxDocumentType,
+        RxDocument<RxDocumentType, OrmMethods> | null
     > {
         let query;
 
@@ -587,8 +589,8 @@ export class RxCollectionBase<
     }
 
     count(queryObj?: MangoQuerySelectorAndIndex<RxDocumentType>): RxQuery<
-    RxDocumentType,
-    number
+        RxDocumentType,
+        number
     > {
         if (!queryObj) {
             queryObj = _getDefaultQuery();
@@ -1002,7 +1004,7 @@ function _atomicUpsertEnsureRxDocumentExists(
         doc: RxDocument;
         inserted: boolean;
     }
-    > {
+> {
     /**
      * Optimisation shortcut,
      * first try to find the document in the doc-cache

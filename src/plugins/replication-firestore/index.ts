@@ -105,14 +105,15 @@ export function syncFirestore<RxDocType>(
                     };
                 }
                 const lastDoc = ensureNotFalsy(lastOfArray(queryResult.docs));
-                const documents: WithDeleted<RxDocType>[] = queryResult.docs.map(row => row.data());
+                const documents: WithDeleted<RxDocType>[] = queryResult.docs.map(row => row.data()) as any;
 
-                return {
-                    documents,
+                const ret = {
+                    documents: documents,
                     checkpoint: {
-                        updateSortValue: (lastDoc as any)[options.updateSortField]
+                        updateSortValue: (lastDoc as any)[options.updateSortField] as any
                     }
-                };
+                } as any; // TODO why any?
+                return ret;
             },
             batchSize: ensureNotFalsy(options.pull).batchSize,
             modifier: ensureNotFalsy(options.pull).modifier,
@@ -127,6 +128,12 @@ export function syncFirestore<RxDocType>(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
                 const primaryPath = collection.schema.primaryPath;
+                const writeRowsById: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
+                const docIds: string[] = rows.map(row => {
+                    const docId = (row.newDocumentState as any)[primaryPath];
+                    writeRowsById[docId] = row;
+                    return docId;
+                });
                 let conflicts: WithDeleted<RxDocType>[] = [];
 
                 /**
@@ -135,14 +142,8 @@ export function syncFirestore<RxDocType>(
                  * @link https://firebase.google.com/docs/firestore/manage-data/transactions#transaction_failure
                  * @link https://firebase.google.com/docs/firestore/manage-data/transactions
                  */
-                await runTransaction(options.firestore.database, async (tx) => {
+                await runTransaction(options.firestore.database, async (_tx) => {
                     conflicts = []; // reset in case the tx has re-run.
-                    const writeRowsById: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
-                    const docIds: string[] = rows.map(row => {
-                        const docId = (row.newDocumentState as any)[primaryPath];
-                        writeRowsById[docId] = row;
-                        return docId;
-                    });
                     /**
                      * @link https://stackoverflow.com/a/48423626/3443137
                      */
@@ -175,7 +176,7 @@ export function syncFirestore<RxDocType>(
                             )
                         ) {
                             // conflict
-                            conflicts.push(docInDb);
+                            conflicts.push(docInDb as any);
                         } else {
                             // no conflict
                             hasWrite = true;
@@ -185,7 +186,7 @@ export function syncFirestore<RxDocType>(
                                 batch.set(docRef, writeRow.newDocumentState);
                             } else {
                                 // update
-                                batch.update(docRef, writeRow.newDocumentState);
+                                batch.update(docRef, writeRow.newDocumentState as any);
                             }
                         }
                     });

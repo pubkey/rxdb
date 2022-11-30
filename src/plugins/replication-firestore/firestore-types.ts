@@ -1,5 +1,4 @@
 import {
-    ById,
     ReplicationOptions,
     ReplicationPullOptions,
     ReplicationPushOptions,
@@ -8,8 +7,7 @@ import {
 
 import {
     CollectionReference,
-    Firestore,
-    getFirestore
+    Firestore
 } from 'firebase/firestore';
 
 export type FirestoreCheckpointType = {

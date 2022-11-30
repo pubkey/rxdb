@@ -271,6 +271,8 @@ jobs:
         with:
           run: npm run test:browser:ci:dexie
 
+      - run: npm run test:firestore-replication
+
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
         with:
