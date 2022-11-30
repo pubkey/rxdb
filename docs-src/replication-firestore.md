@@ -1,14 +1,14 @@
 # Replication with Firestore from Firebase
 
 With the `replication-firestore` plugin you can do a two-way realtime replication
-between your client side [RxDB](./) Database and a [Cloud Firestore](https://firebase.google.com/docs/firestore) database that is hosted on the Firebase platform.
+between your client side [RxDB](./) Database and a [Cloud Firestore](https://firebase.google.com/docs/firestore) database that is hosted on the Firebase platform. It will use the [RxDB Replication Protocol](./replication.md) to manage the replication streams, error- and conflict handling.
 
 <p align="center">
   <img src="./files/alternatives/firebase.svg" alt="Firebase" height="40" />
 </p>
 
 
-This can bring multiple benefits:
+Replicating your Firestore state to RxDB can bring multiple benefits compared to using the Firestore directly:
 - It can reduce your cloud fees because your queries run against the local state of the documents without touching a server and writes can be batched up locally and send to the backend in bulks. This is mostly the case for read heave applications.
 - You can run complex NoSQL queries on your documents because you are not bound to the [Firestore Query](https://firebase.google.com/docs/firestore/query-data/queries) handling. You can also use local indexes, [compression](./key-compression.md) and [encryption](./encryption.md) and do things like fulltext search, fully locally.
 - Your application can be truly [Offline-First](./offline-first.md) because your data is stored in a client side database. In contrast Firestore by itself only provides options to support [offline also](https://cloud.google.com/firestore/docs/manage-data/enable-offline) which more works like a cache and requires the user to be online at application start to run authentication.
@@ -41,7 +41,8 @@ import {
 const projectId = 'my-project-id';
 const app = firebase.initializeApp({
     projectId,
-    databaseURL: 'http://localhost:8080?ns=' + projectId
+    databaseURL: 'http://localhost:8080?ns=' + projectId,
+    /* ... */
 });
 const firestoreDatabase = getFirestore(app);
 const firestoreCollection = collection(firestoreDatabase, 'my-collection-name');
@@ -49,7 +50,7 @@ const firestoreCollection = collection(firestoreDatabase, 'my-collection-name');
 
 Then you can start the replication by calling `syncFirestore()` on your [RxCollection](./rx-collection.md).
 ```ts
-const replicationState = collection.syncFirestore({
+const replicationState = myRxCollection.syncFirestore({
     firestore: {
         projectId,
         database: firestoreDatabase,
