@@ -2,7 +2,7 @@ import type {
     ServerOptions,
     ClientOptions,
     WebSocketServer
-} from 'isomorphic-ws';
+} from 'ws';
 import type {
     RxCollection,
     RxDatabase,
