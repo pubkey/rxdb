@@ -164,7 +164,7 @@
     "graphql-ws": "5.11.2",
     "is-electron": "2.2.0",
     "is-my-json-valid": "2.20.6",
-    "isomorphic-ws": "4.0.1",
+    "isomorphic-ws": "5.0.0",
     "js-base64": "3.7.3",
     "jsonschema-key-compression": "1.6.1",
     "lokijs": "1.5.12",
