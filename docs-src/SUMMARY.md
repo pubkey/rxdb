@@ -133,6 +133,7 @@
     * [Replication Websocket](./replication-websocket.md)
     * [Replication CouchDB (new)](./replication-couchdb-new.md)
     * [Replication P2P](./replication-p2p.md)
+    * [Replication Firestore](./replication-firestore.md)
     * [Replication CouchDB/PouchDB](./replication-couchdb.md)
 
 * [Cleanup](./cleanup.md)

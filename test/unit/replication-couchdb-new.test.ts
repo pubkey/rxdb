@@ -24,6 +24,7 @@ import {
 import { PouchAllDocsResponse } from '../../src/types';
 import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
+import { ensureCollectionsHaveEqualState } from '../helper/test-util';
 
 describe('replication-couchdb-new.test.ts', () => {
     if (
@@ -74,31 +75,6 @@ describe('replication-couchdb-new.test.ts', () => {
         await syncOnce(c1, server);
         await syncOnce(c2, server);
         await syncOnce(c1, server);
-    }
-
-    async function ensureCollectionsHaveEqualState<RxDocType>(
-        c1: RxCollection<RxDocType>,
-        c2: RxCollection<RxDocType>
-    ) {
-        const getJson = async (collection: RxCollection<RxDocType>) => {
-            const docs = await collection.find().exec();
-            return docs.map(d => d.toJSON());
-        };
-        const json1 = await getJson(c1);
-        const json2 = await getJson(c2);
-        try {
-            assert.deepStrictEqual(
-                json1,
-                json2
-            );
-        } catch (err) {
-            console.error('ensureCollectionsHaveEqualState() states not equal:');
-            console.dir({
-                [c1.name]: json1,
-                [c2.name]: json2
-            });
-            throw err;
-        }
     }
 
     describe('live:false', () => {

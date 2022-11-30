@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD [Firestore Replication Plugin](https://rxdb.info/replication-firestore.html)
 - FIX run the unit tests for the migration plugin on all storages.
 <!-- ADD new changes here! -->
 
