@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- UPDATE `isomorphic-ws` to `5.0.0`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
