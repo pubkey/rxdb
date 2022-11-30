@@ -7,6 +7,7 @@ import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOpt
 import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
 import type { RxCouchDBNewReplicationState, SyncOptionsCouchDBNew } from './plugins/replication-couchdb-new';
 import type { SyncOptionsP2P, RxP2PReplicationPool } from './plugins/replication-p2p';
+import type { RxFirestoreReplicationState, SyncOptionsFirestore } from './plugins/replication-firestore';
 import { RxSchema } from './rx-schema';
 declare const HOOKS_WHEN: readonly ["pre", "post"];
 declare type HookWhenType = typeof HOOKS_WHEN[number];
@@ -121,6 +122,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     syncGraphQL<CheckpointType = any>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType, CheckpointType>;
     syncCouchDBNew(_syncOptions: SyncOptionsCouchDBNew<RxDocumentType>): RxCouchDBNewReplicationState<RxDocumentType>;
     syncP2P(_syncOptions: SyncOptionsP2P<RxDocumentType>): RxP2PReplicationPool<RxDocumentType>;
+    syncFirestore(_syncOptions: SyncOptionsFirestore<RxDocumentType>): RxFirestoreReplicationState<RxDocumentType>;
     /**
      * HOOKS
      */

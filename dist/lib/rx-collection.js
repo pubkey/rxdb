@@ -599,6 +599,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
   };
   _proto.syncP2P = function syncP2P(_syncOptions) {
     throw (0, _util.pluginMissing)('replication-p2p');
+  };
+  _proto.syncFirestore = function syncFirestore(_syncOptions) {
+    throw (0, _util.pluginMissing)('replication-firestore');
   }
 
   /**

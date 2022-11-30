@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [Firestore Replication Plugin](https://rxdb.info/replication-firestore.html)
-- FIX run the unit tests for the migration plugin on all storages.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.13.0 (30 November 2022)
+
+- ADD [Firestore Replication Plugin](https://rxdb.info/replication-firestore.html)
+- FIX run the unit tests for the migration plugin on all storages.
 
 ### 13.12.0 (29 November 2022)
 
