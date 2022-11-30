@@ -5,6 +5,7 @@
 import {
     ensureNotFalsy,
     fastUnsecureHash,
+    flatClone,
     lastOfArray
 } from '../../util';
 
@@ -17,7 +18,8 @@ import {
     getDocs,
     onSnapshot,
     runTransaction,
-    writeBatch
+    writeBatch,
+    serverTimestamp
 } from 'firebase/firestore';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -35,9 +37,10 @@ import {
 import {
     addRxPlugin,
     ById,
+    getSchemaByObjectPath,
     newRxError,
     WithDeleted
-} from '../../index';
+} from '../../';
 
 import type {
     FirestoreCheckpointType,
@@ -45,7 +48,7 @@ import type {
     SyncOptionsFirestore
 } from './firestore-types';
 import { Subject } from 'rxjs';
-import { FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX } from './firestore-helper';
+import { FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX, stripServerTimestampField } from './firestore-helper';
 
 export * from './firestore-helper';
 export * from './firestore-types';
@@ -83,18 +86,36 @@ export function syncFirestore<RxDocType>(
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, FirestoreCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, FirestoreCheckpointType> | undefined;
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
+    const serverTimestampField = typeof options.serverTimestampField === 'undefined' ? 'serverTimestamp' : options.serverTimestampField;
+    options.serverTimestampField = serverTimestampField;
+    const primaryPath = collection.schema.primaryPath;
+
+    /**
+     * The serverTimestampField MUST NOT be part of the collections RxJsonSchema.
+     */
+    const schemaPart = getSchemaByObjectPath(this.schema.jsonSchema, serverTimestampField);
+    if (
+        schemaPart ||
+        // also must not be nested.
+        serverTimestampField.includes('.')
+    ) {
+        throw newRxError('RC6', {
+            field: serverTimestampField,
+            schema: this.schema.jsonSchema
+        });
+    }
 
     if (options.pull) {
         replicationPrimitivesPull = {
             async handler(
-                lastPulledCheckpoint: FirestoreCheckpointType | undefined,
+                lastPulledCheckpoint: FirestoreCheckpointType,
                 batchSize: number
             ) {
 
-                const lastUpdateSortValue = lastPulledCheckpoint ? lastPulledCheckpoint.updateSortValue : '';
+                const lastServerTimestamp = lastPulledCheckpoint ? lastPulledCheckpoint.serverTimestamp : 0;
                 const changesQuery = query(options.firestore.collection,
-                    where(options.updateSortField, '>', lastUpdateSortValue),
-                    orderBy(options.updateSortField, 'asc'),
+                    where(serverTimestampField, '>', lastServerTimestamp),
+                    orderBy(serverTimestampField, 'asc'),
                     limit(batchSize)
                 );
                 const queryResult = await getDocs(changesQuery);
@@ -104,15 +125,17 @@ export function syncFirestore<RxDocType>(
                         documents: []
                     };
                 }
-                const lastDoc = ensureNotFalsy(lastOfArray(queryResult.docs));
-                const documents: WithDeleted<RxDocType>[] = queryResult.docs.map(row => row.data()) as any;
+                const lastDoc = ensureNotFalsy(lastOfArray(queryResult.docs)).data();
+                const documents: WithDeleted<RxDocType>[] = queryResult.docs
+                    .map(row => stripServerTimestampField(serverTimestampField, row.data())) as any;
 
                 const ret = {
                     documents: documents,
                     checkpoint: {
-                        updateSortValue: (lastDoc as any)[options.updateSortField] as any
+                        id: (lastDoc as any)[primaryPath],
+                        serverTimestamp: (lastDoc as any)[serverTimestampField] as any
                     }
-                } as any; // TODO why any?
+                };
                 return ret;
             },
             batchSize: ensureNotFalsy(options.pull).batchSize,
@@ -127,7 +150,6 @@ export function syncFirestore<RxDocType>(
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
-                const primaryPath = collection.schema.primaryPath;
                 const writeRowsById: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
                 const docIds: string[] = rows.map(row => {
                     const docId = (row.newDocumentState as any)[primaryPath];
@@ -155,7 +177,7 @@ export function syncFirestore<RxDocType>(
                     );
                     const docsInDbById: ById<RxDocType> = {};
                     docsInDbResult.docs.forEach(row => {
-                        const docDataInDb = row.data();
+                        const docDataInDb = stripServerTimestampField(serverTimestampField, row.data());
                         const docId = (docDataInDb as any)[primaryPath];
                         docsInDbById[docId] = docDataInDb;
                     });
@@ -165,31 +187,41 @@ export function syncFirestore<RxDocType>(
                      */
                     const batch = writeBatch(options.firestore.database);
                     let hasWrite = false;
-                    Object.entries(writeRowsById).forEach(([docId, writeRow]) => {
-                        const docInDb: RxDocType | undefined = docsInDbById[docId];
 
-                        if (
-                            (!writeRow.assumedMasterState && docInDb) ||
-                            (
-                                writeRow.assumedMasterState &&
-                                writeRow.assumedMasterState[options.updateSortField] !== docInDb[options.updateSortField]
-                            )
-                        ) {
-                            // conflict
-                            conflicts.push(docInDb as any);
-                        } else {
-                            // no conflict
-                            hasWrite = true;
-                            const docRef = doc(options.firestore.collection, docId);
-                            if (!docInDb) {
-                                // insert
-                                batch.set(docRef, writeRow.newDocumentState);
+                    console.log('PUSH !!');
+                    await Promise.all(
+                        Object.entries(writeRowsById).map(async ([docId, writeRow]) => {
+                            const docInDb: RxDocType | undefined = docsInDbById[docId];
+
+                            if (
+                                docInDb &&
+                                (
+                                    !writeRow.assumedMasterState ||
+                                    (await collection.conflictHandler({
+                                        newDocumentState: docInDb as any,
+                                        realMasterState: writeRow.assumedMasterState
+                                    }, 'replication-firestore-push')).isEqual === false
+                                )
+                            ) {
+                                // conflict
+                                conflicts.push(docInDb as any);
                             } else {
-                                // update
-                                batch.update(docRef, writeRow.newDocumentState as any);
+                                // no conflict
+                                hasWrite = true;
+                                const docRef = doc(options.firestore.collection, docId);
+                                const writeDocData = flatClone(writeRow.newDocumentState);
+                                (writeDocData as any)[serverTimestampField] = serverTimestamp();
+                                if (!docInDb) {
+                                    // insert
+                                    batch.set(docRef, writeDocData);
+                                } else {
+                                    // update
+                                    batch.update(docRef, writeDocData as any);
+                                }
                             }
-                        }
-                    });
+                        })
+                    );
+
 
                     if (hasWrite) {
                         await batch.commit();

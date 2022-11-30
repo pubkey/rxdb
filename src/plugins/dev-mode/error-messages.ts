@@ -146,6 +146,7 @@ export const ERROR_MESSAGES = {
     RC3: 'RxCollection.syncCouchDB() Do not use a collection\'s pouchdb as remote, use the collection instead',
     RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication when live: true',
     RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication if multiInstance because the replication might run on another instance',
+    RC6: 'syncFirestore() serverTimestampField MUST NOT be part of the collections schema and MUST NOT be nested.',
     RC_PULL: 'RxReplication pull handler threw an error - see .errors for more details',
     RC_STREAM: 'RxReplication pull stream$ threw an error - see .errors for more details',
     RC_PUSH: 'RxReplication push handler threw an error - see .errors for more details',

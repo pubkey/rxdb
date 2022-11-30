@@ -1,4 +1,4 @@
-import { now } from '../../util';
+import { flatClone, now } from '../../util';
 
 export const FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-firestore-';
 
@@ -6,4 +6,13 @@ export const FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-fi
 export function getFirestoreSortFieldValue(docData: any, primaryKey: string): string {
     const timeString = now() + '';
     return 'rxdb-' + timeString.padStart(15, '0') + '-' + docData[primaryKey];
+}
+
+export function stripServerTimestampField<RxDocType>(
+    serverTimestampField: string,
+    docData: RxDocType
+): RxDocType {
+    const data = flatClone(docData);
+    delete (data as any)[serverTimestampField];
+    return data;
 }

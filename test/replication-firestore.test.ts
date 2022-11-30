@@ -10,7 +10,8 @@ import { waitUntil } from 'async-test-util';
 import {
     randomCouchString,
     addRxPlugin,
-    RxCollection
+    RxCollection,
+    ensureNotFalsy
 } from '../';
 
 import * as firebase from 'firebase/app';
@@ -28,7 +29,7 @@ import {
     CollectionReference,
     getFirestore,
     enableMultiTabIndexedDbPersistence,
-    collection,
+    collection as getFirestoreCollection,
     connectFirestoreEmulator,
     disableNetwork,
     getDocs,
@@ -48,14 +49,11 @@ addRxPlugin(RxDBReplicationFirestorePlugin);
  */
 describe('replication-firstore.test.js', () => {
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
-    async function getTestCollection(docsAmount: number = 0): Promise<RxCollection<TestDocType>> {
-        const collection = await humansCollection.createHumanWithTimestamp(docsAmount.local, undefined, false);
-    }
-    async function getAllDocsOfFirestore<RxDocType>(firestore: FirestoreOptions<RxDocType>): Promise<RxDocType[]> {
+    async function getAllDocsOfFirestore(firestore: FirestoreOptions<TestDocType>): Promise<TestDocType[]> {
         const result = await getDocs(query(firestore.collection));
         return result.docs.map(d => d.data()) as any;
     }
-    function getFirestoreStuff(): FirestoreOptions<TestDocType> {
+    function getFirestoreState(): FirestoreOptions<TestDocType> {
         const projectId = randomCouchString(10);
         const credentials: FirebaseOptions = {
             projectId,
@@ -65,7 +63,7 @@ describe('replication-firstore.test.js', () => {
         const app = firebase.initializeApp(credentials);
         const database = getFirestore(app);
         connectFirestoreEmulator(database, 'localhost', 8080);
-        const useCollection = collection(database, randomCouchString(10));
+        const useCollection: CollectionReference<TestDocType> = getFirestoreCollection(database, randomCouchString(10)) as any;
         return {
             projectId,
             collection: useCollection,
@@ -75,20 +73,51 @@ describe('replication-firstore.test.js', () => {
     it('log some stuff', () => {
         console.log('STORAGE: ' + config.storage.name);
     });
-    it('push replication', async () => {
+    it('push replication to client-server', async () => {
         const collection = await humansCollection.createHumanWithTimestamp(2, undefined, false);
-        const firestore = await getFirestoreStuff();
+
+        const firestoreState = await getFirestoreState();
 
         const replicationState = collection.syncFirestore({
-            firestore,
+            firestore: firestoreState,
             updateSortField: 'updatedAt',
             pull: {},
             push: {}
         });
         await replicationState.awaitInitialReplication();
 
-        const docsOnServer = await getAllDocsOfFirestore(firestore);
+        let docsOnServer = await getAllDocsOfFirestore(firestoreState);
+        assert.strictEqual(docsOnServer.length, 2);
         console.dir(docsOnServer);
+
+        // insert another one
+        await collection.insert(schemaObjects.humanWithTimestamp());
+        await replicationState.awaitInSync();
+
+        docsOnServer = await getAllDocsOfFirestore(firestoreState);
+        assert.strictEqual(docsOnServer.length, 3);
+        console.dir(docsOnServer);
+
+        // update one
+        const doc = await collection.findOne().exec(true);
+        console.log('###########################################');
+        console.log('###########################################');
+        console.log('###########################################');
+        await doc.atomicPatch({ age: 100 });
+        await replicationState.awaitInSync();
+        docsOnServer = await getAllDocsOfFirestore(firestoreState);
+        assert.strictEqual(docsOnServer.length, 3);
+        const serverDoc = ensureNotFalsy(docsOnServer.find(d => d.id === doc.primary));
+        assert.strictEqual(serverDoc.age, 100);
+        console.dir(docsOnServer);
+
+        // delete one
+        await doc.remove();
+        await replicationState.awaitInSync();
+        docsOnServer = await getAllDocsOfFirestore(firestoreState);
+        // must still have 3 because there are no hard deletes
+        assert.strictEqual(docsOnServer.length, 3);
+        assert.ok(docsOnServer.find(d => (d as any)._deleted));
 
 
         collection.database.destroy();

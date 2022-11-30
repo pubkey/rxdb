@@ -11,7 +11,8 @@ import {
 } from 'firebase/firestore';
 
 export type FirestoreCheckpointType = {
-    updateSortValue: string;
+    id: string;
+    serverTimestamp: string;
 };
 export type FirestoreCollection<RxDocType> = CollectionReference<RxDocType>;
 
@@ -32,10 +33,12 @@ export type SyncOptionsFirestore<RxDocType> = Omit<
      * Even if we could read it out, it is not indexed which
      * is required for fetch 'changes-since-x'.
      * So instead we have to rely on a custom user defined field
-     * that is a compound string of [unix-timetamp]+[document.primary]
+     * that contains the server time which is set by firestore via serverTimestamp()
+     * IMPORTANT: The serverTimestampField MUST NOT be part of the collections RxJsonSchema!
+     * [default='serverTimestamp']
      * @link https://groups.google.com/g/firebase-talk/c/tAmPzPei-mE
      */
-    updateSortField: StringKeys<RxDocType>;
+    serverTimestampField?: string;
     pull?: Omit<ReplicationPullOptions<RxDocType, FirestoreCheckpointType>, 'handler' | 'stream$'> & {
         /**
          * Heartbeat time in milliseconds
