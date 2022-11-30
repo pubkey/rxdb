@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- UPDATE `isomorphic-ws` to `5.0.0`
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.13.1 (30 November 2022)
+
+- UPDATE `isomorphic-ws` to `5.0.0`
 
 ### 13.13.0 (30 November 2022)
 

@@ -2241,7 +2241,7 @@
 <li>At the moment it is not possible to use regex queries with the SQLite RxStorage.</li>
 <li>Requires at least SQLite version <code>3.38.0</code> (2022-02-22).</li>
 </ul>
-<h2 id="usage-with-nodejs-sqlite">Usage (with Node.js SQLite)</h2>
+<h2 id="usage-with-nodejs-sqlite">Usage with <strong>Node.js SQLite</strong></h2>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
     createRxDatabase
 } from <span class="hljs-string">&apos;rxdb&apos;</span>;
@@ -2271,9 +2271,31 @@
     })
 });
 </code></pre>
-<h2 id="usage-with-sqlite-capacitor">Usage (with SQLite Capacitor)</h2>
+<h2 id="usage-with-react-native">Usage with <strong>React Native</strong></h2>
 <ol>
-<li>Install the <a href="https://github.com/capacitor-community/sqlite" target="_blank">sqlite capacitor plugin</a></li>
+<li>Install the <a href="https://www.npmjs.com/package/react-native-quick-sqlite" target="_blank">react-native-quick-sqlite npm module</a></li>
+<li>Import <code>getSQLiteBasicsQuickSQLite</code> from the SQLite plugin and use it to create a <a href="rx-database.html">RxDatabase</a>:</li>
+</ol>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    createRxDatabase
+} from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> {
+    getRxStorageSQLite,
+    getSQLiteBasicsQuickSQLite
+} from <span class="hljs-string">&apos;rxdb-premium/plugins/sqlite&apos;</span>;
+<span class="hljs-keyword">import</span> { openDatabase } from <span class="hljs-string">&apos;react-native-quick-sqlite&apos;</span>;
+
+<span class="hljs-comment">// create database</span>
+<span class="hljs-keyword">const</span> myRxDatabase = await createRxDatabase({
+    name: <span class="hljs-string">&apos;exampledb&apos;</span>,
+    storage: getRxStorageSQLite({
+        sqliteBasics: getSQLiteBasicsQuickSQLite(openDatabase)
+    })
+});
+</code></pre>
+<h2 id="usage-with-sqlite-capacitor">Usage with <strong>SQLite Capacitor</strong></h2>
+<ol>
+<li>Install the <a href="https://github.com/capacitor-community/sqlite" target="_blank">sqlite capacitor npm module</a></li>
 <li>Add the iOS database location to your capacitor config</li>
 </ol>
 <pre><code class="lang-json">{
@@ -2320,6 +2342,10 @@
     })
 });
 </code></pre>
+<h2 id="related">Related</h2>
+<ul>
+<li><a href="react-native-database.html">React Native Databases</a></li>
+</ul>
 
                                 
                                 </section>
