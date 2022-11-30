@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 13.13.2 (30 November 2022)
+
 ### 13.13.1 (30 November 2022)
 
 - UPDATE `isomorphic-ws` to `5.0.0`

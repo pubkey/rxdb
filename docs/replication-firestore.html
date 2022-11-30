@@ -2305,7 +2305,7 @@ addRxPlugin(RxDBReplicationFirestorePlugin);
 <p>Firestore has the <code>enableIndexedDbPersistence()</code> feature which caches document states locally to IndexedDB. This is not needed when you replicate your Firestore with RxDB because RxDB itself will store the data locally already.</p>
 <h2 id="using-the-replication-with-an-already-existing-firestore-database-state">Using the replication with an already existing Firestore Database State</h2>
 <p>If you have not used RxDB before and you already have documents inside of your Firestore database, you have
-to manually set the <code>_deleted</code> field to <code>true</code> and the <code>serverTimestamp</code> to all existing documents.</p>
+to manually set the <code>_deleted</code> field to <code>false</code> and the <code>serverTimestamp</code> to all existing documents.</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
     getDocs,
     query,

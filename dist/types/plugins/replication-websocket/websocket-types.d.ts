@@ -1,4 +1,4 @@
-import type { ServerOptions, ClientOptions, WebSocketServer } from 'isomorphic-ws';
+import type { ServerOptions, ClientOptions, WebSocketServer } from 'ws';
 import type { RxCollection, RxDatabase, RxReplicationHandler, StringKeys } from '../../types';
 export declare type WebsocketServerOptions = {
     database: RxDatabase<any, any, any>;
