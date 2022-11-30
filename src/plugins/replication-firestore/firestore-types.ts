@@ -48,12 +48,6 @@ export type SyncOptionsFirestore<RxDocType> = Omit<
      * @link https://groups.google.com/g/firebase-talk/c/tAmPzPei-mE
      */
     serverTimestampField?: string;
-    pull?: Omit<ReplicationPullOptions<RxDocType, FirestoreCheckpointType>, 'handler' | 'stream$'> & {
-        /**
-         * Heartbeat time in milliseconds
-         * for the long polling of the changestream.
-         */
-        heartbeat?: number;
-    };
+    pull?: Omit<ReplicationPullOptions<RxDocType, FirestoreCheckpointType>, 'handler' | 'stream$'>;
     push?: Omit<ReplicationPushOptions<RxDocType>, 'handler'>;
 };

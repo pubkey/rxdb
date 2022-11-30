@@ -18,7 +18,6 @@ import * as firebase from 'firebase/app';
 import * as humansCollection from './helper/humans-collection';
 import * as schemaObjects from './helper/schema-objects';
 
-import config from './unit/config';
 
 import {
     CollectionReference,
