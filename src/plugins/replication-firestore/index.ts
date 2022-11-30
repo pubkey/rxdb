@@ -21,7 +21,8 @@ import {
     writeBatch,
     serverTimestamp,
     QueryDocumentSnapshot,
-    waitForPendingWrites
+    waitForPendingWrites,
+    documentId
 } from 'firebase/firestore';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -34,7 +35,8 @@ import type {
     RxReplicationPullStreamItem
 } from '../../types';
 import {
-    RxReplicationState, startReplicationOnLeaderShip
+    RxReplicationState,
+    startReplicationOnLeaderShip
 } from '../replication';
 import {
     addRxPlugin,
@@ -50,7 +52,14 @@ import type {
     SyncOptionsFirestore
 } from './firestore-types';
 import { Subject } from 'rxjs';
-import { FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX, isoStringToServerTimestamp, serverTimestampToIsoString, stripServerTimestampField } from './firestore-helper';
+import {
+    firestoreRowToDocData,
+    FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX,
+    isoStringToServerTimestamp,
+    serverTimestampToIsoString,
+    stripPrimaryKey,
+    stripServerTimestampField
+} from './firestore-helper';
 
 export * from './firestore-helper';
 export * from './firestore-types';
@@ -78,7 +87,6 @@ export class RxFirestoreReplicationState<RxDocType> extends RxReplicationState<R
         );
     }
 }
-
 
 export function syncFirestore<RxDocType>(
     this: RxCollection<RxDocType>,
@@ -184,15 +192,16 @@ export function syncFirestore<RxDocType>(
                         documents: []
                     };
                 }
-
-                const lastDoc = ensureNotFalsy(lastOfArray(useDocs)).data();
-
+                const lastDoc = ensureNotFalsy(lastOfArray(useDocs));
                 const documents: WithDeleted<RxDocType>[] = useDocs
-                    .map(row => stripServerTimestampField(serverTimestampField, row.data())) as any;
-
+                    .map(row => firestoreRowToDocData(
+                        serverTimestampField,
+                        primaryPath,
+                        row
+                    ));
                 const newCheckpoint: FirestoreCheckpointType = {
-                    id: (lastDoc as any)[primaryPath],
-                    serverTimestamp: serverTimestampToIsoString(serverTimestampField, lastDoc)
+                    id: lastDoc.id,
+                    serverTimestamp: serverTimestampToIsoString(serverTimestampField, lastDoc.data())
                 };
                 const ret = {
                     documents: documents,
@@ -235,13 +244,14 @@ export function syncFirestore<RxDocType>(
                     const docsInDbResult = await getDocs(
                         query(
                             options.firestore.collection,
-                            where(primaryPath, 'in', docIds)
+                            where(documentId(), 'in', docIds)
                         )
                     );
                     const docsInDbById: ById<RxDocType> = {};
                     docsInDbResult.docs.forEach(row => {
                         const docDataInDb = stripServerTimestampField(serverTimestampField, row.data());
-                        const docId = (docDataInDb as any)[primaryPath];
+                        const docId = row.id;
+                        (docDataInDb as any)[primaryPath] = docId;
                         docsInDbById[docId] = docDataInDb;
                     });
 
@@ -274,15 +284,14 @@ export function syncFirestore<RxDocType>(
                                 (writeDocData as any)[serverTimestampField] = serverTimestamp();
                                 if (!docInDb) {
                                     // insert
-                                    batch.set(docRef, writeDocData);
+                                    batch.set(docRef, stripPrimaryKey(primaryPath, writeDocData));
                                 } else {
                                     // update
-                                    batch.update(docRef, writeDocData as any);
+                                    batch.update(docRef, stripPrimaryKey(primaryPath, writeDocData));
                                 }
                             }
                         })
                     );
-
 
                     if (hasWrite) {
                         await batch.commit();

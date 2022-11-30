@@ -56,7 +56,11 @@ describe('replication-firstore.test.js', () => {
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
     async function getAllDocsOfFirestore(firestore: FirestoreOptions<TestDocType>): Promise<TestDocType[]> {
         const result = await getDocs(query(firestore.collection));
-        return result.docs.map(d => d.data()) as any;
+        return result.docs.map(d => {
+            const docData = d.data();
+            (docData as any).id = d.id;
+            return docData;
+        }) as any;
     }
     const projectId = randomCouchString(10);
     const app = firebase.initializeApp({

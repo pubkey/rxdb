@@ -1,4 +1,10 @@
-import { Timestamp } from 'firebase/firestore';
+import {
+    QueryDocumentSnapshot,
+    Timestamp
+} from 'firebase/firestore';
+import type {
+    WithDeleted
+} from '../../types';
 import { flatClone, now } from '../../util';
 
 export const FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-firestore-';
@@ -12,10 +18,10 @@ export function getFirestoreSortFieldValue(docData: any, primaryKey: string): st
 export function stripServerTimestampField<RxDocType>(
     serverTimestampField: string,
     docData: RxDocType
-): RxDocType {
+): WithDeleted<RxDocType> {
     const data = flatClone(docData);
     delete (data as any)[serverTimestampField];
-    return data;
+    return data as any;
 }
 
 
@@ -28,4 +34,26 @@ export function serverTimestampToIsoString(serverTimestampField: string, docData
 export function isoStringToServerTimestamp(isoString: string): Timestamp {
     const date = new Date(isoString);
     return Timestamp.fromDate(date);
+}
+
+export function firestoreRowToDocData<RxDocType>(
+    serverTimestampField: string,
+    primaryPath: string,
+    row: QueryDocumentSnapshot<RxDocType>
+): WithDeleted<RxDocType> {
+    const docData = stripServerTimestampField(
+        serverTimestampField,
+        row.data()
+    );
+    (docData as any)[primaryPath] = row.id;
+    return docData;
+}
+
+export function stripPrimaryKey(
+    primaryPath: string,
+    docData: any
+): any {
+    docData = flatClone(docData);
+    delete (docData as any)[primaryPath];
+    return docData;
 }
