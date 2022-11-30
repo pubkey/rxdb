@@ -93,7 +93,7 @@ Firestore has the `enableIndexedDbPersistence()` feature which caches document s
 ## Using the replication with an already existing Firestore Database State
 
 If you have not used RxDB before and you already have documents inside of your Firestore database, you have
-to manually set the `_deleted` field to `true` and the `serverTimestamp` to all existing documents.
+to manually set the `_deleted` field to `false` and the `serverTimestamp` to all existing documents.
 
 ```ts
 import {
