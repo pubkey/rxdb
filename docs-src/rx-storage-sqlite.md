@@ -14,7 +14,7 @@ This storage is based on [SQLite](https://www.sqlite.org/index.html) and is made
 - At the moment it is not possible to use regex queries with the SQLite RxStorage.
 - Requires at least SQLite version `3.38.0` (2022-02-22).
 
-## Usage (with Node.js SQLite)
+## Usage with **Node.js SQLite**
 
 ```ts
 import {
@@ -47,11 +47,34 @@ const myRxDatabase = await createRxDatabase({
 });
 ```
 
+## Usage with **React Native**
+
+1. Install the [react-native-quick-sqlite npm module](https://www.npmjs.com/package/react-native-quick-sqlite)
+2. Import `getSQLiteBasicsQuickSQLite` from the SQLite plugin and use it to create a [RxDatabase](./rx-database.md):
+
+```ts
+import {
+    createRxDatabase
+} from 'rxdb';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsQuickSQLite
+} from 'rxdb-premium/plugins/sqlite';
+import { openDatabase } from 'react-native-quick-sqlite';
+
+// create database
+const myRxDatabase = await createRxDatabase({
+    name: 'exampledb',
+    storage: getRxStorageSQLite({
+        sqliteBasics: getSQLiteBasicsQuickSQLite(openDatabase)
+    })
+});
+```
 
 
-## Usage (with SQLite Capacitor)
+## Usage with **SQLite Capacitor**
 
-1. Install the [sqlite capacitor plugin](https://github.com/capacitor-community/sqlite)
+1. Install the [sqlite capacitor npm module](https://github.com/capacitor-community/sqlite)
 2. Add the iOS database location to your capacitor config
 
 ```json
@@ -103,3 +126,6 @@ const myRxDatabase = await createRxDatabase({
 ```
 
 
+
+## Related
+- [React Native Databases](./react-native-database.md)
