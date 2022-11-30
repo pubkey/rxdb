@@ -1,6 +1,7 @@
 import type { Func } from 'mocha';
 import assert from 'assert';
 import { RxCollection } from '../../';
+import { RxReplicationState } from '../../plugins/replication';
 
 export function testMultipleTimes(times: number, title: string, test: Func) {
     new Array(times).fill(0).forEach(() => {
@@ -31,4 +32,18 @@ export async function ensureCollectionsHaveEqualState<RxDocType>(
         });
         throw err;
     }
+}
+
+export function ensureReplicationHasNoErrors(replicationState: RxReplicationState<any, any>) {
+    /**
+     * We do not have to unsubscribe because the observable will cancel anyway.
+     */
+    replicationState.error$.subscribe(err => {
+        console.error('ensureReplicationHasNoErrors() has error:');
+        console.log(err);
+        if (err?.parameters?.errors) {
+            throw err.parameters.errors[0];
+        }
+        throw err;
+    });
 }
