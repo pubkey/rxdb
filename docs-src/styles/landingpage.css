@@ -305,7 +305,6 @@ header .logo img {
 .device.tablet {
     width: 200px;
     height: 200px;
-    margin-left: -100px;
     background-image: url(../files/smartphone/tablet_white.svg);
 }
 
@@ -327,7 +326,7 @@ header .logo img {
 .device.desktop {
     width: 350px;
     height: 350px;
-    margin-left: -175px;
+    margin-left: 152px;
     background-image: url(../files/smartphone/desktop_white.svg);
 }
 
@@ -431,41 +430,61 @@ header .logo img {
 
 
 
-.block.second .content-canvas {
-    width: 80%;
-    margin-left: 10%;
-    margin-top: 0px;
-    height: 380px;
+.block.second .inner {
+    margin-top: 70px;
+    display: flex;
 }
 
-@media (max-width: 800px) {
+.block.second .content-canvas {
+    width: 100%;
+    height: 100%;
+    transform: scale(1);
+}
+
+@media (max-width: 1400px) {
     .block.second .content-canvas {
         width: 90%;
-        margin-left: 5%;
-    }
-}
-
-@media (max-width: 670px) {
-    .block.second .content-canvas {
         transform: scale(0.8);
-        margin-top: 0px;
-        height: 300px;
     }
 }
 
-@media (max-width: 543px) {
+@media (max-width: 1300px) {
     .block.second .content-canvas {
+        width: 90%;
+        transform: scale(0.7);
+    }
+}
+
+@media (max-width: 1150px) {
+    .block.second .content-canvas {
+        width: 90%;
         transform: scale(0.6);
-        margin-top: 0px;
-        height: 300px;
     }
 }
 
-@media (max-width: 430px) {
+@media (max-width: 1050px) {
     .block.second .content-canvas {
-        transform: scale(0.4);
-        margin-top: 0px;
+        width: 65%;
+        transform: scale(0.5);
+    }
+}
+
+@media (max-width: 1000px) {
+    .block.second .content-canvas {
+        width: 50%;
+        margin-left: 5%;
+        transform: scale(0.5);
+    }
+}
+
+@media (max-width: 900px) {
+    .block.second .content-canvas {
         height: 200px;
+        width: 0%;
+    }
+
+    .block.second .inner {
+        flex-direction: column;
     }
 }
 
@@ -1072,8 +1091,7 @@ header .logo img {
     display: inline-block;
     background-color: var(--bg-color);
     text-align: left;
-
-    width: 50%;
+    width: calc(100% - 26px);
 }
 
 @media (max-width: 830px) {

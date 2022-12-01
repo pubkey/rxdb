@@ -174,63 +174,61 @@
                 changes, your UI
                 reflects the new state.
             </p>
-            <br />
+            <div class="inner">
 
-            <!-- 
+
+                <!-- 
                 Use https://www.programiz.com/html/online-compiler/
                 to craft html from code. (inspect the element)
             -->
-            <div class="code">
-                <fieldset
-                    class="samp-wrapper"
-                    style="background-color: var(--bg-color);"
-                >
-                    <legend>Write</legend>
-                    <samp>
-                        <span class="cm-keyword">await</span>
-                        <span class="cm-variable">collection</span>.<span class="cm-method">upsert</span>({<br />
-                        <span class="cm-property">&nbsp; id</span>:
-                        <span class="cm-string">'foobar'</span>,<br />
-                        <span class="cm-property">&nbsp; color</span>:
-                        <span class="cm-string">'<span
-                                class="beating-color-string beating-color">#e6008d</span>'</span><br />
-                        });
-                    </samp>
-                </fieldset>
-                <br />
-                <br />
-                <fieldset
-                    class="samp-wrapper"
-                    style="background-color: var(--bg-color);"
-                >
-                    <legend>Observe</legend>
-                    <samp style="background-color: var(--bg-color);">
-                        <span class="cm-keyword">await</span>
-                        <span class="cm-variable">collection</span>.<span class="cm-method">findOne(<span
-                                class="cm-string"
-                            >'foobar'</span>)</span><br />
-                        &nbsp;.<span class="cm-property">$</span><span class="cm-comment"> // get
-                            observable</span><br />
-                        &nbsp;.<span class="cm-method">subscribe</span>(<span class="cm-def">d</span>
-                        <span class="cm-operator">=&gt;</span> {<br />
-                        <span class="cm-variable">&nbsp;&nbsp; screen</span>.<span
-                            class="cm-property">backgroundColor</span>
-                        <span class="cm-operator">=</span>
-                        <span class="cm-variable">d</span>.<span class="cm-property beating-color">color</span>;<br />
-                        &nbsp;});
-                    </samp>
-                </fieldset>
-            </div>
-            <br />
+                <div class="code half">
+                    <fieldset
+                        class="samp-wrapper"
+                        style="background-color: var(--bg-color);"
+                    >
+                        <legend>Write</legend>
+                        <samp>
+                            <span class="cm-keyword">await</span>
+                            <span class="cm-variable">collection</span>.<span class="cm-method">upsert</span>({<br />
+                            <span class="cm-property">&nbsp; id</span>:
+                            <span class="cm-string">'foobar'</span>,<br />
+                            <span class="cm-property">&nbsp; color</span>:
+                            <span class="cm-string">'<span
+                                    class="beating-color-string beating-color">#e6008d</span>'</span><br />
+                            });
+                        </samp>
+                    </fieldset>
+                    <br />
+                    <br />
+                    <fieldset
+                        class="samp-wrapper"
+                        style="background-color: var(--bg-color);"
+                    >
+                        <legend>Observe</legend>
+                        <samp style="background-color: var(--bg-color);">
+                            <span class="cm-keyword">await</span>
+                            <span class="cm-variable">collection</span>.<span class="cm-method">findOne(<span
+                                    class="cm-string"
+                                >'foobar'</span>)</span><br />
+                            &nbsp;.<span class="cm-property">$</span><span class="cm-comment"> // get
+                                observable</span><br />
+                            &nbsp;.<span class="cm-method">subscribe</span>(<span class="cm-def">d</span>
+                            <span class="cm-operator">=&gt;</span> {<br />
+                            <span class="cm-variable">&nbsp;&nbsp; screen</span>.<span
+                                class="cm-property">backgroundColor</span>
+                            <span class="cm-operator">=</span>
+                            <span class="cm-variable">d</span>.<span
+                                class="cm-property beating-color">color</span>;<br />
+                            &nbsp;});
+                        </samp>
+                    </fieldset>
+                </div>
 
-            <div class="content-canvas">
-                <div
-                    class="full-width"
-                    class="centered"
-                >
+                <div class="half">
+                    <div class="content-canvas">
                     <div
                         class="device tablet"
-                        style="left: 50%; margin-left: 153px; margin-top: 117px;"
+                        style="margin-left: 481px; margin-top: 117px;"
                     >
                         <div class="beating-color">
                             <img
@@ -243,7 +241,7 @@
 
                     <div
                         class="device desktop"
-                        style="left: 50%; margin-top: 0%;"
+                        style="margin-top: 0%;"
                     >
                         <div class="beating-color">
                             <img
@@ -256,7 +254,7 @@
 
                     <div
                         class="device server"
-                        style="left: 50%; margin-left: -322px; margin-top: 168px;"
+                        style="margin-left: 0px; margin-top: 168px;"
                     >
                         <div class="beating-color one">
                         </div>
@@ -293,7 +291,7 @@
                             <div class="smartphone-color beating-color"></div>
                         </div>
                     </div> -->
-                    <div class="clear"></div>
+                </div>
                 </div>
             </div>
         </div>
@@ -492,8 +490,8 @@
                 </div>
             </a>
             <div
-                class="neumorphism-circle-m circle centered enlarge-on-mouse"
-                style="top: 19%; left: 79%; margin-left: -35px;"
+                class="neumorphism-circle-s circle centered enlarge-on-mouse"
+                style="top: 15%; left: 90%; margin-left: -35px;"
             >
                 <img
                     src="./files/icons/svelte.svg"
@@ -835,7 +833,6 @@
                                     I will answer all your questions, give proposals for your use case and we
                                     can even do a pair programming session if you have a specific problem in your
                                     source code.
-                                    <br />
                                     <br />
                                     You can book this by doing a one-time donation via github sponsors.
                                 </p>
