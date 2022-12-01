@@ -393,14 +393,14 @@ header .logo img {
     padding-top: 50px;
 }
 
-.block.first .content {
-}
+.block.first .content {}
 
 
 .block.first .inner {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 .block.first .inner h2 {
@@ -417,6 +417,7 @@ header .logo img {
         padding-top: 0px;
 
     }
+
     .block.first .inner {
         width: 89%;
         flex-direction: column-reverse;
@@ -425,7 +426,7 @@ header .logo img {
     .block.first img {
         max-height: 200px;
     }
-    
+
 }
 
 
