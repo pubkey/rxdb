@@ -27,6 +27,7 @@ a:visited {
 }
 
 .half {
+    flex: 1;
     width: calc(50% - 20px);
     padding-left: 10px;
     padding-right: 10px;
@@ -35,7 +36,6 @@ a:visited {
 @media (max-width: 900px) {
     .half {
         width: calc(100% - 20px);
-        text-align: center;
     }
 }
 
@@ -261,19 +261,27 @@ header .logo img {
 
 
 .content {
-    width: 98%;
-    padding-left: 1%;
-    padding-right: 1%;
+    width: 96%;
+    padding-left: 2%;
+    padding-right: 2%;
     max-width: 1248px;
     margin-left: auto;
     margin-right: auto;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1350px) {
     .content {
         width: 94%;
         padding-left: 3%;
         padding-right: 3%;
+    }
+}
+
+@media (max-width: 800px) {
+    .content {
+        width: 92%;
+        padding-left: 4%;
+        padding-right: 4%;
     }
 }
 
@@ -297,7 +305,6 @@ header .logo img {
 .device.tablet {
     width: 200px;
     height: 200px;
-    margin-left: -100px;
     background-image: url(../files/smartphone/tablet_white.svg);
 }
 
@@ -319,7 +326,7 @@ header .logo img {
 .device.desktop {
     width: 350px;
     height: 350px;
-    margin-left: -175px;
+    margin-left: 152px;
     background-image: url(../files/smartphone/desktop_white.svg);
 }
 
@@ -381,83 +388,103 @@ header .logo img {
 
 
 .block.first {
-    padding-bottom: 140px;
+    padding-bottom: 120px;
+    padding-top: 50px;
 }
+
+.block.first .content {}
+
 
 .block.first .inner {
-    width: 60%;
-    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
-@media (max-width: 900px) {
-    .block.first .inner {
-        width: 89%;
-    }
-}
-
-.block.first .text {
-    font-size: var(--fontSizes-6xl);
-    font-weight: 600;
-    text-align: right;
-    margin-right: 13px;
-}
-
-@media (max-width: 900px) {
-    .block.first .text {
-        text-align: center;
-        margin-right: 0px;
-    }
+.block.first .inner h2 {
+    padding-left: 25px;
 }
 
 .block.first img {
-    width: 307px;
-    margin-left: 35px;
-    margin-top: 8px;
+    width: 60%;
+    margin: 35px;
 }
 
 @media (max-width: 900px) {
-    .block.first img {
-        margin-left: 0px;
-        margin-top: 46px;
+    .block.first {
+        padding-top: 0px;
+
     }
+
+    .block.first .inner {
+        width: 89%;
+        flex-direction: column-reverse;
+    }
+
+    .block.first img {
+        max-height: 200px;
+    }
+
 }
 
+
+
+.block.second .inner {
+    margin-top: 70px;
+    display: flex;
+}
 
 .block.second .content-canvas {
-    width: 80%;
-    margin-left: 10%;
-    margin-top: 0px;
-    height: 380px;
+    width: 100%;
+    height: 100%;
+    transform: scale(1);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1400px) {
     .block.second .content-canvas {
         width: 90%;
-        margin-left: 5%;
-    }
-}
-
-@media (max-width: 670px) {
-    .block.second .content-canvas {
         transform: scale(0.8);
-        margin-top: 0px;
-        height: 300px;
     }
 }
 
-@media (max-width: 543px) {
+@media (max-width: 1300px) {
     .block.second .content-canvas {
+        width: 90%;
+        transform: scale(0.7);
+    }
+}
+
+@media (max-width: 1150px) {
+    .block.second .content-canvas {
+        width: 90%;
         transform: scale(0.6);
-        margin-top: 0px;
-        height: 300px;
     }
 }
 
-@media (max-width: 430px) {
+@media (max-width: 1050px) {
     .block.second .content-canvas {
-        transform: scale(0.4);
-        margin-top: 0px;
+        width: 65%;
+        transform: scale(0.5);
+    }
+}
+
+@media (max-width: 1000px) {
+    .block.second .content-canvas {
+        width: 50%;
+        margin-left: 5%;
+        transform: scale(0.5);
+    }
+}
+
+@media (max-width: 900px) {
+    .block.second .content-canvas {
         height: 200px;
+        width: 0%;
+    }
+
+    .block.second .inner {
+        flex-direction: column;
     }
 }
 
@@ -1064,8 +1091,7 @@ header .logo img {
     display: inline-block;
     background-color: var(--bg-color);
     text-align: left;
-
-    width: 50%;
+    width: calc(100% - 26px);
 }
 
 @media (max-width: 830px) {

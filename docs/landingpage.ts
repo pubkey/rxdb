@@ -135,8 +135,8 @@ window.onload = async function () {
     const $$beatingColor: any[] = document.getElementsByClassName('beating-color') as any;
     const $$beatingColorString: any[] = document.getElementsByClassName('beating-color-string') as any;
 
-    const $swapOutFirst = ensureNotFalsy(document.getElementById('swap-out-first'));
-    const $swapOutSecond = ensureNotFalsy(document.getElementById('swap-out-second'));
+    // const $swapOutFirst = ensureNotFalsy(document.getElementById('swap-out-first'));
+    // const $swapOutSecond = ensureNotFalsy(document.getElementById('swap-out-second'));
 
 
     const heartbeatListeners: any[] = [];
@@ -160,8 +160,8 @@ window.onload = async function () {
             heartbeatIndex = heartbeatIndex + 1;
 
 
-            $swapOutFirst.innerHTML = beatingValuesDocInner.text1;
-            $swapOutSecond.innerHTML = beatingValuesDocInner.text2;
+            // $swapOutFirst.innerHTML = beatingValuesDocInner.text1;
+            // $swapOutSecond.innerHTML = beatingValuesDocInner.text2;
 
             const color = beatingValuesDocInner.color;
             Array.from($$beatingColor).forEach(function (element) {
