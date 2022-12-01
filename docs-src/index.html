@@ -125,9 +125,20 @@
 
 
     <div class="block first centered">
-        <div class="content centered">
-            <div class="inner">
-                <div class="left half full-height">
+        <div class="content inner">
+            <div class="half">
+                <h2>
+                    The perfect <b class="underline">Database</b> for <b class="underline">JavaScript</b>
+                    applications
+                </h2>
+                <ul class="checked">
+                    <li>Realtime Queries</li>
+                    <li>Realtime Replication</li>
+                    <li>Works Offline</li>
+                    <li>Great performance</li>
+                    <li>Supports all major JavaScript runtimes</li>
+                </ul>
+                <!-- 
                     <div class="text">
                         The
                         </br />
@@ -137,16 +148,18 @@
                         </br />
                         <b id="swap-out-second">you deserve</b>
                     </div>
-                </div>
-                <div class="right half full-height">
-                    <img
-                        src="./files/logo/logo_text.svg"
-                        class="tilt-to-mouse"
-                        id="heartbeat-logo"
-                        alt="RxDB"
-                    />
-                </div>
-                <div class="clear"></div>
+                -->
+            </div>
+            <div
+                class="half"
+                style="text-align: center;"
+            >
+                <img
+                    src="./files/logo/logo_text.svg"
+                    class="tilt-to-mouse"
+                    id="heartbeat-logo"
+                    alt="RxDB"
+                />
             </div>
         </div>
     </div>
@@ -310,10 +323,13 @@
                     <a
                         href="/replication-websocket.html"
                         target="_blank"
-                    >Websocket</a> or <a
+                    >Websocket</a>, <a
                         href="/replication-p2p.html"
                         target="_blank"
-                    >p2p</a>.
+                    >p2p</a> or <a
+                        href="/replication-firestore.html"
+                        target="_blank"
+                    >Firestore</a>.
                 </p>
             </div>
 
@@ -490,7 +506,7 @@
             <br />
             <br />
             <br />
-            <h2>Flexible</h2>
+            <h2>Flexible <b class="underline">storage layer</b></h2>
             <p>
                 RxDB is based on a storage interface that enables you to swap out the underlying storage engine.
                 This increases code reuse because the same database code can be used in <b>any JavaScript runtime</b>
