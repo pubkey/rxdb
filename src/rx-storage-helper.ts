@@ -136,6 +136,12 @@ export function throwIfIsStorageWriteError<RxDocType>(
 }
 
 
+/**
+ * From a list of documents,
+ * it will return the document that has the 'newest' state
+ * which must be used to create the correct checkpoint
+ * for the whole list.
+ */
 export function getNewestOfDocumentStates<RxDocType>(
     primaryPath: string,
     docs: RxDocumentData<RxDocType>[]
