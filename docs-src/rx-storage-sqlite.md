@@ -14,6 +14,10 @@ This storage is based on [SQLite](https://www.sqlite.org/index.html) and is made
 - At the moment it is not possible to use regex queries with the SQLite RxStorage.
 - Requires at least SQLite version `3.38.0` (2022-02-22).
 
+### Requirements
+
+The SQlite RxStorage works on SQLite libraries that use SQLite in version `3.38.0` or higher, because it uses the [SQLite JSON](https://www.sqlite.org/json1.html) methods like `JSON_EXTRACT`. If you get an error like `[Error: no such function: JSON_EXTRACT (code 1 SQLITE_ERROR[1])`, you might have a too old version of SQLite.
+
 ## Usage with **Node.js SQLite**
 
 ```ts
