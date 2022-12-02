@@ -1,5 +1,5 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb';
-
+import fetch from 'cross-fetch';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
@@ -60,15 +60,18 @@ const initialize = async () => {
         console.log('Start sync...');
         const replicationState = db[HeroesCollectionName].syncCouchDBNew({
             url: `${syncURL}/${HeroesCollectionName}/`,
+            fetch: fetch,
             pull: {},
             push: {}
         });
 
-        replicationState.change$.subscribe((v) => {
-            console.log('Replication change$:', v)
+        console.dir(replicationState);
+
+        replicationState.active$.subscribe((v) => {
+            console.log('Replication active$:', v)
         })
-        replicationState.complete$.subscribe((v) => {
-            console.log('Replication complete$:', v)
+        replicationState.canceled$.subscribe((v) => {
+            console.log('Replication canceled$:', v)
         })
         replicationState.error$.subscribe(async error => {
             console.error('Replication error$:',error)
