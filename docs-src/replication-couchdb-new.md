@@ -134,6 +134,8 @@ replicationState.fetch = newCustomFetchMethod;
 
 ## Known problems
 
+### Database missing
+
 In contrast to PouchDB, this plugin **does NOT** automatically create missing CouchDB databases.
 If your CouchDB server does not have a database yet, you have to create it by yourself by running a `PUT` request to the database `name` url:
 
@@ -146,4 +148,18 @@ await fetch(
         method: 'PUT'
     }
 );
+```
+
+## React Native
+
+React Native does not have a global `fetch` method. You have to import fetch method with the [cross-fetch](https://www.npmjs.com/package/cross-fetch) package:
+
+```ts
+import crossFetch from 'cross-fetch';
+const replicationState = collection.syncCouchDBNew({
+    url: 'http://example.com/db/humans',
+    fetch: crossFetch,
+    pull: {},
+    push: {}
+});
 ```
