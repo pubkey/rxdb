@@ -47,4 +47,15 @@ Object.keys(_dexieQuery).forEach(function (key) {
     }
   });
 });
+var _dexieStatics = require("./dexie-statics");
+Object.keys(_dexieStatics).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _dexieStatics[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _dexieStatics[key];
+    }
+  });
+});
 //# sourceMappingURL=index.js.map

@@ -1,5 +1,5 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
+import { RxStorageDexieStatics } from '../dexie/dexie-statics';
 import { createFoundationDBStorageInstance } from './rx-storage-instance-foundationdb';
 var versionSet;
 export function getRxStorageFoundationDB(settings) {

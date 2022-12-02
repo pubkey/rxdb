@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 13.13.4 (2 December 2022)
+
 ### 13.13.3 (2 December 2022)
 
 ### 13.13.2 (30 November 2022)
