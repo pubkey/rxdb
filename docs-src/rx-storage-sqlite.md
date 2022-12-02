@@ -130,6 +130,10 @@ const myRxDatabase = await createRxDatabase({
 ```
 
 
+## Known Problems
+
+- [expo-sqlite](https://www.npmjs.com/package/expo-sqlite) cannot be used on android (but it works on iOS) because it uses and [outdated SQLite version](https://expo.canny.io/feature-requests/p/expo-sqlite-ship-newer-sqlite3-version-on-android)
+
 
 ## Related
 - [React Native Databases](./react-native-database.md)
