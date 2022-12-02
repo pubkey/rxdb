@@ -1,6 +1,6 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 import { flatClone } from '../../util';
-import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
+import { RxStorageDexieStatics } from '../dexie/dexie-statics';
 import { createMemoryStorageInstance } from './rx-storage-instance-memory';
 export function getRxStorageMemory() {
   var settings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};

@@ -1,5 +1,5 @@
 import { dexieReplaceIfStartsWithPipe, DEXIE_DOCS_TABLE_NAME, fromDexieToStorage } from './dexie-helper';
-import { RxStorageDexieStatics } from './rx-storage-dexie';
+import { RxStorageDexieStatics } from './dexie-statics';
 export var dexieCount = function dexieCount(instance, preparedQuery) {
   try {
     return Promise.resolve(instance.internals).then(function (state) {

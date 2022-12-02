@@ -4,7 +4,7 @@ import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { getFromMapOrThrow, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM } from '../../util';
-import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
+import { RxStorageDexieStatics } from '../dexie/dexie-statics';
 import { boundGE, boundGT, boundLE } from './binary-search-bounds';
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
 import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';

@@ -2328,6 +2328,7 @@ Then you can assemble the RxStorage and create a database with it:</p>
 <span class="hljs-comment">// create database</span>
 <span class="hljs-keyword">const</span> myRxDatabase = await createRxDatabase({
     name: <span class="hljs-string">&apos;exampledb&apos;</span>,
+    multiInstance: <span class="hljs-literal">false</span>, <span class="hljs-comment">// &lt;- Set this to false when using RxDB in React Native</span>
     storage: getRxStorageSQLite({
         sqliteBasics: getSQLiteBasicsQuickSQLite(openDatabase)
     })

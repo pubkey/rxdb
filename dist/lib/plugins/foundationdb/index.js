@@ -8,7 +8,7 @@ var _exportNames = {
 };
 exports.getRxStorageFoundationDB = getRxStorageFoundationDB;
 var _rxStorageHelper = require("../../rx-storage-helper");
-var _rxStorageDexie = require("../dexie/rx-storage-dexie");
+var _dexieStatics = require("../dexie/dexie-statics");
 var _rxStorageInstanceFoundationdb = require("./rx-storage-instance-foundationdb");
 var _foundationdbTypes = require("./foundationdb-types");
 Object.keys(_foundationdbTypes).forEach(function (key) {
@@ -46,7 +46,7 @@ function getRxStorageFoundationDB(settings) {
   }
   var storage = {
     name: 'foundationdb',
-    statics: _rxStorageDexie.RxStorageDexieStatics,
+    statics: _dexieStatics.RxStorageDexieStatics,
     createStorageInstance: function createStorageInstance(params) {
       (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
       var useSettings = Object.assign({}, settings, params.options);

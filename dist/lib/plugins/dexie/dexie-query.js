@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.dexieQuery = exports.dexieCount = void 0;
 exports.getKeyRangeByQueryPlan = getKeyRangeByQueryPlan;
 var _dexieHelper = require("./dexie-helper");
-var _rxStorageDexie = require("./rx-storage-dexie");
+var _dexieStatics = require("./dexie-statics");
 var dexieCount = function dexieCount(instance, preparedQuery) {
   try {
     return Promise.resolve(instance.internals).then(function (state) {
@@ -68,7 +68,7 @@ var dexieQuery = function dexieQuery(instance, preparedQuery) {
       var queryPlan = preparedQuery.queryPlan;
       var queryMatcher = false;
       if (!queryPlan.selectorSatisfiedByIndex) {
-        queryMatcher = _rxStorageDexie.RxStorageDexieStatics.getQueryMatcher(instance.schema, preparedQuery);
+        queryMatcher = _dexieStatics.RxStorageDexieStatics.getQueryMatcher(instance.schema, preparedQuery);
       }
       var keyRange = getKeyRangeByQueryPlan(queryPlan, state.dexieDb._options.IDBKeyRange);
       var queryPlanFields = queryPlan.index;
@@ -134,7 +134,7 @@ var dexieQuery = function dexieQuery(instance, preparedQuery) {
         }
       })).then(function () {
         if (!queryPlan.sortFieldsSameAsIndexFields) {
-          var sortComparator = _rxStorageDexie.RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
+          var sortComparator = _dexieStatics.RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
           rows = rows.sort(sortComparator);
         }
 

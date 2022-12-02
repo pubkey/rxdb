@@ -1,15 +1,13 @@
-import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import type { RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics, FilledMangoQuery } from '../../types';
+import type { RxStorage, RxStorageInstanceCreationParams } from '../../types';
 import type { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie';
 import { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
-export declare const RxStorageDexieStatics: RxStorageStatics;
 export declare class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSettings> {
     settings: DexieSettings;
     name: string;
     statics: Readonly<{
-        prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: FilledMangoQuery<RxDocType>): any;
-        getSortComparator<RxDocType_1>(schema: RxJsonSchema<RxDocumentData<RxDocType_1>>, preparedQuery: any): DeterministicSortComparator<RxDocType_1>;
-        getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<RxDocumentData<RxDocType_2>>, preparedQuery: any): QueryMatcher<RxDocumentData<RxDocType_2>>;
+        prepareQuery<RxDocType>(schema: import("../../types").RxJsonSchema<import("../../types").RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
+        getSortComparator<RxDocType_1>(schema: import("../../types").RxJsonSchema<import("../../types").RxDocumentData<RxDocType_1>>, preparedQuery: any): import("event-reduce-js").DeterministicSortComparator<RxDocType_1>;
+        getQueryMatcher<RxDocType_2>(schema: import("../../types").RxJsonSchema<import("../../types").RxDocumentData<RxDocType_2>>, preparedQuery: any): import("event-reduce-js").QueryMatcher<import("../../types").RxDocumentData<RxDocType_2>>;
         checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema<any>>;
     }>;
     constructor(settings: DexieSettings);
