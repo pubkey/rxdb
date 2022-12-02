@@ -2,7 +2,7 @@
     "gitbook": "3.2.3",
     "root": ".",
     "output": "./docs",
-    "title": "RxDB - Documentation",
+    "title": "RxDB - JavaScript Database",
     "plugins": [
         "edit-link",
         "github",
