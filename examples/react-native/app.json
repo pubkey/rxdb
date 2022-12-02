@@ -3,7 +3,6 @@
     "name": "RxDB React-Native Example",
     "slug": "foo",
     "privacy": "public",
-    "sdkVersion": "43.0.0",
     "platforms": [
       "ios",
       "android"
