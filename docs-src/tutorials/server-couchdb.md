@@ -42,6 +42,7 @@ Now we can create a database and a collection.
 
 ```typescript
 import { createRxDatabase, getRxStoragePouch } from 'rxdb';
+
 // create database
 const db = await createRxDatabase({
     name: 'mydb',

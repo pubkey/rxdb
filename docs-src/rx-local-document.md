@@ -31,7 +31,7 @@ Instead you have to set `localDocuments: true` when you want to store local docu
 // activate local documents on a RxDatabase
 const myDatabase = await createRxDatabase({
     name: 'mydatabase',
-    storage: getRxStoragePouch('memory'),
+    storage: getRxStorageDexie(),
     localDocuments: true // <- activate this to store local documents in the database
 });
 

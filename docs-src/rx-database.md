@@ -31,23 +31,13 @@ Depending on the storage or adapter this can also be used to define the filesyst
 RxDB works on top of an implementation of the [RxStorage](./rx-storage.md) interface. This interface is an abstraction that allows you to use different underlying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
 
 There are many `RxStorage` implementations that can be used depending on the JavaScript environment and performance requirements.
-For example you can use the PouchDB storage with an IndexedDB adapter in the browser. Or use the LokiJS storage with the filesystem adapter in Node.js.
+For example you can use the [Dexie RxStorage](./rx-storage-dexie.md) in the browser or use the LokiJS storage with the filesystem adapter in Node.js.
 
 - [List of RxStorage implementations](./rx-storage.md)
 
 ```javascript
 
-// use the PouchDB storage with indexeddb adapter...
-import { getRxStoragePouch, addPouchPlugin } from 'rxdb/plugins/pouchdb';
-addPouchPlugin(require('pouchdb-adapter-idb'));
-
-const dbPouch = await createRxDatabase({
-  name: 'mydatabase',
-  storage: getRxStoragePouch('idb')
-});
-
-
-// ...or use the Dexie.js RxStorage that stores data in IndexedDB.
+// use the Dexie.js RxStorage that stores data in IndexedDB.
 import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 const dbDexie = await createRxDatabase({
@@ -94,12 +84,12 @@ In some rare cases like unit-tests, you want to do this intentional by setting `
 ```js
 const db1 = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStoragePouch('idb'),
+  storage: getRxStorageDexie(),
   ignoreDuplicate: true
 });
 const db2 = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStoragePouch('idb'),
+  storage: getRxStorageDexie(),
   ignoreDuplicate: true // this create-call will not throw because you explicitly allow it
 });
 ```
