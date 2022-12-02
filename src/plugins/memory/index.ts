@@ -1,7 +1,7 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 import type { RxStorageInstanceCreationParams } from '../../types';
 import { flatClone } from '../../util';
-import { RxStorageDexieStatics } from '../dexie/rx-storage-dexie';
+import { RxStorageDexieStatics } from '../dexie/dexie-statics';
 import type {
     RxStorageMemory,
     RxStorageMemoryInstanceCreationOptions,

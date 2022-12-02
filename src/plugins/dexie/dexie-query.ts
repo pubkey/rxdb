@@ -10,7 +10,7 @@ import {
     DEXIE_DOCS_TABLE_NAME,
     fromDexieToStorage
 } from './dexie-helper';
-import { RxStorageDexieStatics } from './rx-storage-dexie';
+import { RxStorageDexieStatics } from './dexie-statics';
 import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 
 
