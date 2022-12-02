@@ -840,15 +840,14 @@ config.parallel('data-migration.test.ts', () => {
                  * If document data was not changed by migration, it should have kept the same revision
                  */
                 const revAfterMigration = (await col2.findOne(nonChangedKey).exec(true)).toJSON(true)._rev;
-                assert.strictEqual(EXAMPLE_REVISION_1, revAfterMigration);
+                assert.strictEqual(getHeightOfRevision(revAfterMigration), 1);
 
                 /**
                  * If document was changed, we should have an increased revision height
                  * to ensure that replicated instances use our new data.
                  */
                 const revChangedAfterMigration = (await col2.findOne(changedKey).exec(true)).toJSON(true)._rev;
-                const afterHeight = getHeightOfRevision(revChangedAfterMigration);
-                assert.strictEqual(afterHeight, 2);
+                assert.strictEqual(getHeightOfRevision(revChangedAfterMigration), 2);
 
                 db2.destroy();
             });
