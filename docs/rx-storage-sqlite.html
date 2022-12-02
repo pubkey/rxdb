@@ -2239,8 +2239,9 @@
 <ul>
 <li>It is part of <a href="premium.md">RxDB Premium</a></li>
 <li>At the moment it is not possible to use regex queries with the SQLite RxStorage.</li>
-<li>Requires at least SQLite version <code>3.38.0</code> (2022-02-22).</li>
 </ul>
+<h3 id="requirements">Requirements</h3>
+<p>The SQlite RxStorage works on SQLite libraries that use SQLite in version <code>3.38.0</code> or higher, because it uses the <a href="https://www.sqlite.org/json1.html" target="_blank">SQLite JSON</a> methods like <code>JSON_EXTRACT</code>. If you get an error like <code>[Error: no such function: JSON_EXTRACT (code 1 SQLITE_ERROR[1])</code>, you might have a too old version of SQLite.</p>
 <h2 id="usage-with-nodejs-sqlite">Usage with <strong>Node.js SQLite</strong></h2>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
     createRxDatabase
@@ -2343,6 +2344,10 @@
     })
 });
 </code></pre>
+<h2 id="known-problems">Known Problems</h2>
+<ul>
+<li><a href="https://www.npmjs.com/package/expo-sqlite" target="_blank">expo-sqlite</a> cannot be used on android (but it works on iOS) because it uses and <a href="https://expo.canny.io/feature-requests/p/expo-sqlite-ship-newer-sqlite3-version-on-android" target="_blank">outdated SQLite version</a></li>
+</ul>
 <h2 id="related">Related</h2>
 <ul>
 <li><a href="react-native-database.html">React Native Databases</a></li>

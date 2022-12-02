@@ -2341,6 +2341,7 @@ addRxPlugin(RxDBReplicationCouchDBNewPlugin);
 <pre><code class="lang-ts">replicationState.fetch = newCustomFetchMethod;
 </code></pre>
 <h2 id="known-problems">Known problems</h2>
+<h3 id="database-missing">Database missing</h3>
 <p>In contrast to PouchDB, this plugin <strong>does NOT</strong> automatically create missing CouchDB databases.
 If your CouchDB server does not have a database yet, you have to create it by yourself by running a <code>PUT</code> request to the database <code>name</code> url:</p>
 <pre><code class="lang-ts"><span class="hljs-comment">// create a &apos;humans&apos; CouchDB database on the server</span>
@@ -2351,6 +2352,16 @@ await fetch(
         method: <span class="hljs-string">&apos;PUT&apos;</span>
     }
 );
+</code></pre>
+<h2 id="react-native">React Native</h2>
+<p>React Native does not have a global <code>fetch</code> method. You have to import fetch method with the <a href="https://www.npmjs.com/package/cross-fetch" target="_blank">cross-fetch</a> package:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> crossFetch from <span class="hljs-string">&apos;cross-fetch&apos;</span>;
+<span class="hljs-keyword">const</span> replicationState = collection.syncCouchDBNew({
+    url: <span class="hljs-string">&apos;http://example.com/db/humans&apos;</span>,
+    fetch: crossFetch,
+    pull: {},
+    push: {}
+});
 </code></pre>
 
                                 
