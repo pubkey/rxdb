@@ -2250,7 +2250,7 @@ If you disagree with anything or think that something is missing, make a pull re
 <p>The firebase realtime database was the first database in firestore. It has to be mentioned that in this context, &quot;realtime&quot; means <strong>&quot;realtime replication&quot;</strong>, not &quot;realtime computing&quot;. The firebase realtime database stores data as a big unstructured JSON tree that is replicated between clients and the backend.</p>
 <h4 id="firebase---cloud-firestore">Firebase - Cloud Firestore</h4>
 <p>The firestore is the successor to the realtime database. The big difference is that it behaves more like a &apos;normal&apos; database that stores data as documents inside of collections. The conflict resolution strategy of firestore is always <em>last-write-wins</em> which might or might not be suitable for your use case.</p>
-<p>The biggest difference to RxDB is that firebase products are only able to replicate with the firebase cloud hosted backend, which creates a vendor lock-in. RxDB can replicate with any self hosted CouchDB server or custom GraphQL endpoints.</p>
+<p>The biggest difference to RxDB is that firebase products are only able to be used on top of the Firebase cloud hosted backend, which creates a vendor lock-in. RxDB can replicate with any self hosted CouchDB server or custom GraphQL endpoints. You can even replicate Firestore to RxDB with the <a href="replication-firestore.html">Firestore Replication Plugin</a>.</p>
 <h3 id="meteor">Meteor</h3>
 <p align="center">
   <img src="files/alternatives/meteor_text.svg" alt="MeteorJS alternative" class="img-padding" height="60">

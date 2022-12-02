@@ -30,6 +30,10 @@ img {
     background-color: white;
 }
 
+.book-summary {
+    overflow-x: hidden;
+}
+
 .book-summary img {
     background-color: transparent;
     width: 90%;
