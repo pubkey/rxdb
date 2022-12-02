@@ -38,7 +38,7 @@ The firebase realtime database was the first database in firestore. It has to be
 
 The firestore is the successor to the realtime database. The big difference is that it behaves more like a 'normal' database that stores data as documents inside of collections. The conflict resolution strategy of firestore is always *last-write-wins* which might or might not be suitable for your use case.
 
-The biggest difference to RxDB is that firebase products are only able to replicate with the firebase cloud hosted backend, which creates a vendor lock-in. RxDB can replicate with any self hosted CouchDB server or custom GraphQL endpoints.
+The biggest difference to RxDB is that firebase products are only able to be used on top of the Firebase cloud hosted backend, which creates a vendor lock-in. RxDB can replicate with any self hosted CouchDB server or custom GraphQL endpoints. You can even replicate Firestore to RxDB with the [Firestore Replication Plugin](./replication-firestore.md).
 
 ### Meteor
 
