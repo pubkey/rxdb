@@ -30,6 +30,23 @@ img {
     background-color: white;
 }
 
+.book-summary img {
+    background-color: transparent;
+    width: 90%;
+}
+
+.book-summary .custom-link[href="/"] {
+    background-image: url(/files/logo/logo_text.svg);
+    background-size: contain;
+    display: inline-block;
+    height: 120px;
+    width: 90%;
+    margin-left: 30px;
+    margin-bottom: 10px;
+    background-repeat: no-repeat;
+    font-size: 0;
+}
+
 .img-padding {
     padding: 7px;
 }
