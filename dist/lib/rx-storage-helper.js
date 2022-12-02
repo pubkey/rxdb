@@ -105,6 +105,13 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
     }
   }
 }
+
+/**
+ * From a list of documents,
+ * it will return the document that has the 'newest' state
+ * which must be used to create the correct checkpoint
+ * for the whole list.
+ */
 function getNewestOfDocumentStates(primaryPath, docs) {
   var ret = null;
   docs.forEach(function (doc) {
