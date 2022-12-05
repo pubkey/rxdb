@@ -30,11 +30,13 @@ import type {
     RxStorageStatics
 } from './types';
 import {
+    ensureNotFalsy,
     PROMISE_RESOLVE_VOID,
     randomCouchString
 } from './util';
 
 export type RxStorageMessageFromRemote = {
+    instanceId: string;
     answerTo: string; // id of the request
     method: keyof RxStorageInstance<any, any, any>;
     error?: any;
@@ -42,6 +44,7 @@ export type RxStorageMessageFromRemote = {
 };
 
 export type RxStorageMessageToRemote = {
+    instanceId: string;
     /**
      * Unique ID of the request
      */
@@ -51,6 +54,7 @@ export type RxStorageMessageToRemote = {
 };
 
 export type RxStorageMessageChannelInternals = {
+    params: RxStorageInstanceCreationParams<any, any>;
     /**
      * The one of the 2 message ports where we send data to.
      * The other port is send to the remote.
@@ -59,7 +63,10 @@ export type RxStorageMessageChannelInternals = {
     messages$: Subject<RxStorageMessageFromRemote>;
 };
 
-export type CreateRemoteRxStorageMethod = (port: MessagePort, params: RxStorageInstanceCreationParams<any, any>) => void;
+export type CreateRemoteRxStorageMethod = (
+    port: MessagePort,
+    params: RxStorageInstanceCreationParams<any, any>
+) => void;
 
 declare type RxStorageMessageChannelSettings = {
     name: string;
@@ -70,6 +77,7 @@ declare type RxStorageMessageChannelSettings = {
 export class RxStorageMessageChannel implements RxStorage<RxStorageMessageChannelInternals, any> {
     public readonly statics: RxStorageStatics;
     public readonly name: string;
+    public readonly messageChannelByPort = new WeakMap<MessagePort, MessageChannel>();
     constructor(
         public readonly settings: RxStorageMessageChannelSettings
     ) {
@@ -81,25 +89,30 @@ export class RxStorageMessageChannel implements RxStorage<RxStorageMessageChanne
         params: RxStorageInstanceCreationParams<RxDocType, any>
     ): Promise<RxStorageInstanceMessageChannel<RxDocType>> {
         const messageChannel = new MessageChannel();
+        this.messageChannelByPort.set(messageChannel.port1, messageChannel);
+        this.messageChannelByPort.set(messageChannel.port2, messageChannel);
         const port = messageChannel.port1;
         const messages$ = new Subject<RxStorageMessageFromRemote>();
-        const instanceIdPromise = firstValueFrom(messages$);
+        const waitForOkPromise = firstValueFrom(messages$);
         port.onmessage = msg => {
             messages$.next(msg.data);
         };
-        this.settings.createRemoteStorage(messageChannel.port2, params);
+        this.settings.createRemoteStorage(
+            messageChannel.port2,
+            params
+        );
 
-        const instanceIdResult = await instanceIdPromise;
-        if (instanceIdResult.error) {
-            throw new Error('could not create instance ' + instanceIdResult.error.toString());
+        const waitForOkResult = await waitForOkPromise;
+        if (waitForOkResult.error) {
+            throw new Error('could not create instance ' + waitForOkResult.error.toString());
         }
-
         return new RxStorageInstanceMessageChannel(
             this,
             params.databaseName,
             params.collectionName,
             params.schema,
             {
+                params,
                 port,
                 messages$
             },
@@ -149,6 +162,7 @@ export class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInst
             )
         );
         const message: RxStorageMessageToRemote = {
+            instanceId: this.internals.params.databaseInstanceToken,
             requestId,
             method: methodName,
             params
@@ -221,4 +235,168 @@ export class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInst
 
 export function getRxStorageMessageChannel(settings: RxStorageMessageChannelSettings) {
     return new RxStorageMessageChannel(settings);
+}
+
+
+export type RxMessageChannelExposeSettings = {
+    onCreateRemoteStorage$: Subject<{
+        port: MessagePort;
+        params: RxStorageInstanceCreationParams<any, any>;
+    }>;
+    /**
+     * The original storage
+     * which actually stores the data.
+     */
+    storage: RxStorage<any, any>;
+};
+
+/**
+ * Run this on the 'remote' part,
+ * so that RxStorageMessageChannel can connect to it.
+ */
+export function exposeRxStorageMessageChannel(settings: RxMessageChannelExposeSettings) {
+    type InstanceState = {
+        storageInstance: RxStorageInstance<any, any, any>;
+        ports: MessagePort[];
+        params: RxStorageInstanceCreationParams<any, any>;
+    };
+    const instanceByFullName: Map<string, InstanceState> = new Map();
+    const stateByPort: Map<MessagePort, {
+        subs: Subscription[];
+        state: InstanceState;
+    }> = new Map();
+
+
+    /**
+     * Create new RxStorageInstances
+     * on request.
+     */
+    settings.onCreateRemoteStorage$.subscribe(async (data) => {
+        const params = data.params;
+        const port = data.port;
+        /**
+         * We de-duplicate the storage instances.
+         * This makes sense in many environments like
+         * electron where on main process contains the storage
+         * for multiple renderer processes. Same goes for SharedWorkers etc.
+         */
+        const fullName = [
+            params.databaseName,
+            params.collectionName,
+            params.schema.version
+        ].join('|');
+
+        let state = instanceByFullName.get(fullName);
+        if (!state) {
+            try {
+                const newRxStorageInstance = await settings.storage.createStorageInstance(params);
+                state = {
+                    storageInstance: newRxStorageInstance,
+                    ports: [port],
+                    params
+                };
+                instanceByFullName.set(fullName, state);
+                port.postMessage({ key: 'ok' });
+            } catch (err) {
+                port.postMessage({
+                    key: 'error',
+                    error: 'could not call createStorageInstance'
+                });
+                return;
+            }
+        }
+
+        const subs: Subscription[] = [];
+        stateByPort.set(port, {
+            state,
+            subs
+        });
+
+        /**
+         * Automatically subscribe to the streams$
+         * because we always need them.
+         */
+        subs.push(
+            state.storageInstance.changeStream().subscribe(changes => {
+                const message: RxStorageMessageFromRemote = {
+                    instanceId: params.databaseInstanceToken,
+                    answerTo: 'changestream',
+                    method: 'changeStream',
+                    return: changes
+                };
+                port.postMessage(message);
+            })
+        );
+        subs.push(
+            state.storageInstance.conflictResultionTasks().subscribe(conflicts => {
+                const message: RxStorageMessageFromRemote = {
+                    instanceId: params.databaseInstanceToken,
+                    answerTo: 'conflictResultionTasks',
+                    method: 'conflictResultionTasks',
+                    return: conflicts
+                };
+                port.postMessage(message);
+            })
+        );
+
+
+        port.addEventListener('message', async (plainMessage) => {
+            const message: RxStorageMessageToRemote = plainMessage.data;
+            let result;
+            try {
+                /**
+                 * On calls to 'close()',
+                 * we only close the main instance if there are no other
+                 * ports connected.
+                 */
+                if (
+                    message.method === 'close' &&
+                    ensureNotFalsy(state).ports.length > 1
+                ) {
+                    const closeBreakResponse: RxStorageMessageFromRemote = {
+                        instanceId: params.databaseInstanceToken,
+                        answerTo: message.requestId,
+                        method: message.method,
+                        return: null
+                    };
+                    port.postMessage(closeBreakResponse);
+                    return;
+                }
+
+                result = await (ensureNotFalsy(state).storageInstance as any)[message.method](...message.params);
+                if (
+                    message.method === 'close' ||
+                    message.method === 'remove'
+                ) {
+                    subs.forEach(sub => sub.unsubscribe());
+                    ensureNotFalsy(state).ports = ensureNotFalsy(state).ports.filter(p => p !== port);
+                    instanceByFullName.delete(fullName);
+                    stateByPort.delete(port);
+                    /**
+                     * TODO how to notify the other ports on remove() ?
+                     */
+                }
+                const response: RxStorageMessageFromRemote = {
+                    instanceId: params.databaseInstanceToken,
+                    answerTo: message.requestId,
+                    method: message.method,
+                    return: result
+                };
+                port.postMessage(response);
+            } catch (err) {
+                const errorResponse: RxStorageMessageFromRemote = {
+                    instanceId: params.databaseInstanceToken,
+                    answerTo: message.requestId,
+                    method: message.method,
+                    error: (err as any).toString()
+                };
+                port.postMessage(errorResponse);
+            }
+        });
+    });
+
+    return {
+        instanceByFullName,
+        stateByPort
+    };
 }
