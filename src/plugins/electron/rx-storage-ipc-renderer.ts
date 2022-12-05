@@ -5,6 +5,10 @@ import {
     Subject,
     Subscription
 } from 'rxjs';
+import {
+    getRxStorageMessageChannel,
+    RxStorageMessageChannel
+} from '../../rx-storage-message-channel';
 import type {
     BulkWriteRow,
     EventBulk,
@@ -13,12 +17,10 @@ import type {
     RxDocumentData,
     RxDocumentDataById,
     RxJsonSchema,
-    RxStorage,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
     RxStorageInstance,
-    RxStorageInstanceCreationParams,
     RxStorageQueryResult,
     RxStorageStatics
 } from '../../types';
@@ -49,81 +51,7 @@ declare type RxStorageIpcRendererSettings = {
 };
 
 
-export class RxStorageIpcRenderer implements RxStorage<RxStorageIpcRendererInternals, any> {
-    public name = 'ipc-renderer';
-
-    constructor(
-        public readonly settings: RxStorageIpcRendererSettings,
-        public readonly statics: RxStorageStatics
-    ) { }
-
-    public async invoke<T>(eventName: string, args?: any): Promise<T> {
-        const result = await this.settings.ipcRenderer.invoke(
-            [
-                IPC_RENDERER_KEY_PREFIX,
-                'invoke',
-                this.settings.key,
-                eventName
-            ].join('|'),
-            args
-        );
-        if (result.error) {
-            throw new Error(result.error);
-        } else {
-            return result.value;
-        }
-    }
-
-    public postMessage(eventName: string, args?: any): MessagePort {
-        const messageChannel = new MessageChannel();
-        this.settings.ipcRenderer.postMessage(
-            [
-                IPC_RENDERER_KEY_PREFIX,
-                'postMessage',
-                this.settings.key,
-                eventName
-            ].join('|'),
-            args,
-            [messageChannel.port2]
-        );
-        return messageChannel.port1;
-    }
-
-    async createStorageInstance<RxDocType>(
-        params: RxStorageInstanceCreationParams<RxDocType, any>
-    ): Promise<RxStorageInstanceIpcRenderer<RxDocType>> {
-        const messages$ = new Subject<IpcMessageFromMain>();
-        const instanceIdPromise = firstValueFrom(messages$);
-        const channelId = randomCouchString(10);
-        const port = this.postMessage(
-            'createStorageInstance',
-            Object.assign({}, params, { channelId }));
-        port.onmessage = msg => {
-            messages$.next(msg.data);
-        };
-        const instanceIdResult = await instanceIdPromise;
-        if (instanceIdResult.error) {
-            throw new Error('could not create instance ' + instanceIdResult.error.toString());
-        }
-        const instanceId: string = instanceIdResult.return;
-        return new RxStorageInstanceIpcRenderer(
-            this,
-            params.databaseName,
-            params.collectionName,
-            params.schema,
-            {
-                channelId,
-                instanceId,
-                port,
-                messages$,
-                rxStorage: this,
-                ipcRenderer: this.settings.ipcRenderer
-            },
-            params.options
-        );
-    }
-}
-
+export type RxStorageIpcRenderer = RxStorageMessageChannel;
 
 export class RxStorageInstanceIpcRenderer<RxDocType> implements RxStorageInstance<RxDocType, RxStorageIpcRendererInternals, any, any> {
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>> = new Subject();
@@ -246,6 +174,22 @@ export class RxStorageInstanceIpcRenderer<RxDocType> implements RxStorageInstanc
 export function getRxStorageIpcRenderer(
     settings: RxStorageIpcRendererSettings
 ): RxStorageIpcRenderer {
-    const storage = new RxStorageIpcRenderer(settings, settings.statics);
+
+    const storage = getRxStorageMessageChannel({
+        name: 'ipc-renderer',
+        statics: settings.statics,
+        createRemoteStorage: (port: MessagePort, params) => {
+            settings.ipcRenderer.postMessage(
+                [
+                    IPC_RENDERER_KEY_PREFIX,
+                    'postMessage',
+                    settings.key,
+                    'createStorageInstance'
+                ].join('|'),
+                params,
+                [port]
+            );
+        }
+    });
     return storage;
 }

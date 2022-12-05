@@ -7,7 +7,10 @@ import type {
     RxStorageInstance,
     RxStorageInstanceCreationParams
 } from '../../types';
-import { ensureNotFalsy, getFromMapOrThrow } from '../../util';
+import {
+    ensureNotFalsy,
+    getFromMapOrThrow
+} from '../../util';
 import { Subscription } from 'rxjs';
 import {
     IpcMessageFromMain,
@@ -150,6 +153,5 @@ export function exposeIpcMainRxStorage<T, D>(
             };
             port.postMessage(errorResponse);
         }
-
     });
 }
