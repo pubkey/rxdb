@@ -3,7 +3,7 @@
 In the past, in this folder was an electron example project that uses the [`remote`](https://github.com/electron/remote) module.
 But with the new RxDB electorn plugin, this is no longer required.
 
-Instead checkl out the [electron example](../electron/).
+Instead check out the [electron example](../electron/).
 
 
 ## Related

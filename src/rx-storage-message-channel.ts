@@ -296,7 +296,6 @@ export function exposeRxStorageMessageChannel(settings: RxMessageChannelExposeSe
                     params
                 };
                 instanceByFullName.set(fullName, state);
-                port.postMessage({ key: 'ok' });
             } catch (err) {
                 port.postMessage({
                     key: 'error',
@@ -305,7 +304,7 @@ export function exposeRxStorageMessageChannel(settings: RxMessageChannelExposeSe
                 return;
             }
         }
-
+        port.postMessage({ key: 'ok' });
         const subs: Subscription[] = [];
         stateByPort.set(port, {
             state,
@@ -340,7 +339,7 @@ export function exposeRxStorageMessageChannel(settings: RxMessageChannelExposeSe
         );
 
 
-        port.addEventListener('message', async (plainMessage) => {
+        port.onmessage = async (plainMessage) => {
             const message: RxStorageMessageToRemote = plainMessage.data;
             let result;
             try {
@@ -392,7 +391,7 @@ export function exposeRxStorageMessageChannel(settings: RxMessageChannelExposeSe
                 };
                 port.postMessage(errorResponse);
             }
-        });
+        };
     });
 
     return {

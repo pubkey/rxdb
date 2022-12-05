@@ -7,6 +7,7 @@ import type {
     RxStorageInstanceCreationParams
 } from '../../types';
 import {
+    ensureNotFalsy,
     getFromMapOrThrow
 } from '../../util';
 import { Subject } from 'rxjs';
@@ -56,9 +57,8 @@ export function exposeIpcMainRxStorage<T, D>(
 
     args.ipcMain.on(IPC_RENDERER_TO_MAIN, (_event: any, message: RxStorageMessageToRemote) => {
         const port = getFromMapOrThrow(portByDatabaseInstanceToken, message.instanceId);
-        const event = new CustomEvent<RxStorageMessageToRemote>('message', {
-            detail: message
+        ensureNotFalsy(port.onmessage as any)({
+            data: message
         });
-        port.dispatchEvent(event);
     });
 }
