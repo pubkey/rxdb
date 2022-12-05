@@ -488,6 +488,15 @@ header .logo img {
     }
 }
 
+@media (max-width: 500px) {
+    .block.second .content-canvas {
+        height: 200px;
+        margin-left: 0%;
+        width: 0%;
+    }
+}
+
+
 
 
 .block.replication .replication-icons {
@@ -629,18 +638,13 @@ header .logo img {
 
 
 
+.block.frameworks {
+    padding-bottom: 20px;
+}
 
 .block.frameworks .content {
     position: relative;
-    height: 530px;
 }
-
-@media (max-width: 600px) {
-    .block.frameworks .content {
-        height: 570px;
-    }
-}
-
 
 .block.frameworks .circle {
     font-size: 85%;
