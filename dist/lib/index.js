@@ -245,6 +245,18 @@ Object.keys(_rxStorageHelper).forEach(function (key) {
     }
   });
 });
+var _rxStorageMessageChannel = require("./rx-storage-message-channel");
+Object.keys(_rxStorageMessageChannel).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxStorageMessageChannel[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _rxStorageMessageChannel[key];
+    }
+  });
+});
 var _index = require("./replication-protocol/index");
 Object.keys(_index).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;

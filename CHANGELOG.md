@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- REFACTOR the remote RxStorage for electron ipcRenderer
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.13.6 (5 December 2022)
+
+- REFACTOR the remote RxStorage for electron ipcRenderer
 
 ### 13.13.5 (2 December 2022)
 

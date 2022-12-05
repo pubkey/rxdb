@@ -21,6 +21,7 @@ export * from './rx-query-helper';
 export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, getPreviousVersions, toTypedRxJsonSchema } from './rx-schema';
 export * from './rx-schema-helper';
 export * from './rx-storage-helper';
+export * from './rx-storage-message-channel';
 export * from './replication-protocol/index';
 export * from './rx-storage-multiinstance';
 export * from './custom-index';
