@@ -1306,7 +1306,7 @@ samp .cm-comment {
     grid-template-columns: repeat(4, 1fr);
     grid-auto-rows: 1fr;
     grid-column-gap: 10px;
-    grid-row-gap: 10px;
+    grid-row-gap: 15px;
 }
 
 @media (max-width: 1200px) {
@@ -1344,10 +1344,11 @@ samp .cm-comment {
     color: white;
     border-radius: 6px;
     padding: 3px;
+    height: 100%;
 }
 
 .premium-blocks .premium-block-inner {
-    min-height: 243px;
+    height: calc(100% - 20px);
     background-color: var(--bg-color-dark);
     padding: 10px;
     border-radius: 4px;
@@ -1382,8 +1383,19 @@ samp .cm-comment {
 }
 
 .price-calculator-inner {
-    padding: 40px;
+    width: 90%;
+    margin-left: 5%;
+    padding-top: 40px;
+    padding-bottom: 40px;
 }
+
+@media (max-width: 800px) {
+    .price-calculator-inner {
+        width: 96%;
+        margin-left: 2%;
+        }
+}
+
 
 .package {
     border-radius: 6px;
@@ -1556,7 +1568,7 @@ samp .cm-comment {
 
 .premium-request iframe {
     width: 700px;
-    height: 1800px;
+    height: 2150px;
     border: none;
     margin: 0;
     padding: 0;
