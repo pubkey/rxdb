@@ -65,6 +65,7 @@ export {
 export * from './rx-schema-helper';
 
 export * from './rx-storage-helper';
+export * from './rx-storage-message-channel';
 export * from './replication-protocol/index';
 export * from './rx-storage-multiinstance';
 export * from './custom-index';
