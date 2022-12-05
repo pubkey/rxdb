@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- REFACTOR the remote RxStorage for electron ipcRenderer
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
