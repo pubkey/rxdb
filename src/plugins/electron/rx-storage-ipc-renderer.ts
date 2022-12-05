@@ -1,4 +1,10 @@
-import { filter, firstValueFrom, Observable, Subject, Subscription } from 'rxjs';
+import {
+    filter,
+    firstValueFrom,
+    Observable,
+    Subject,
+    Subscription
+} from 'rxjs';
 import type {
     BulkWriteRow,
     EventBulk,
@@ -16,14 +22,16 @@ import type {
     RxStorageQueryResult,
     RxStorageStatics
 } from '../../types';
-import { PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
+import {
+    PROMISE_RESOLVE_VOID,
+    randomCouchString
+} from '../../util';
 import {
     IpcMessageFromMain,
     IpcMessageFromRenderer,
     IPC_RENDERER_KEY_PREFIX,
     IPC_RENDERER_TO_MAIN
 } from './electron-helper';
-
 
 export type RxStorageIpcRendererInternals = {
     channelId: string;

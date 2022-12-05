@@ -9,7 +9,12 @@ import type {
 } from '../../types';
 import { ensureNotFalsy, getFromMapOrThrow } from '../../util';
 import { Subscription } from 'rxjs';
-import { IpcMessageFromMain, IpcMessageFromRenderer, IPC_RENDERER_KEY_PREFIX, IPC_RENDERER_TO_MAIN } from './electron-helper';
+import {
+    IpcMessageFromMain,
+    IpcMessageFromRenderer,
+    IPC_RENDERER_KEY_PREFIX,
+    IPC_RENDERER_TO_MAIN
+} from './electron-helper';
 
 export function exposeIpcMainRxStorage<T, D>(
     args: {
@@ -24,8 +29,6 @@ export function exposeIpcMainRxStorage<T, D>(
         params: RxStorageInstanceCreationParams<any, any>;
     };
     const instanceById: Map<string, InstanceState> = new Map();
-
-
     const portStateByChannelId = new Map<string, {
         port: MessagePort;
         state: InstanceState;
