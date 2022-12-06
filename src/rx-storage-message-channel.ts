@@ -393,8 +393,12 @@ export function exposeRxStorageMessageChannel(settings: RxMessageChannelExposeSe
             })
         );
 
+        settings.send({
+            answerTo: msg.requestId,
+            connectionId,
+            method: 'createRxStorageInstance'
+        });
     });
-
 
     return {
         instanceByFullName,

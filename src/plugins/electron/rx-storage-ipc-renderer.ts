@@ -32,20 +32,22 @@ export function getRxStorageIpcRenderer(
         settings.key
     ].join('|');
 
-    const messageChannel = new MessageChannel();
-
     const messages$ = new Subject<RxStorageMessageFromRemote>();
-    messageChannel.port1.onmessage = event => {
-        messages$.next(event.data);
-    };
+    settings.ipcRenderer.on(channelId, (_event: any, message: any) => {
+        messages$.next(message);
+    });
+
+
     settings.ipcRenderer.postMessage(
         channelId,
-        {},
-        [messageChannel.port2]
+        false
     );
 
     const send: RxStorageMessageChannelSettings['send'] = (msg) => {
-        messageChannel.port1.postMessage(msg);
+        settings.ipcRenderer.postMessage(
+            channelId,
+            msg
+        );
     };
     const storage = getRxStorageMessageChannel({
         name: 'ipc-renderer',

@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- REFACTOR the `electron` plugin to improve ipcRenderer communications.
 - REMOVE `is-electron` dependency.
 <!-- ADD new changes here! -->
 
