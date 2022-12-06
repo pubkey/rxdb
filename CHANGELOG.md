@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- REMOVE `is-electron` dependency.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

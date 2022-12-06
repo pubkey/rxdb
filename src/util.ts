@@ -411,11 +411,6 @@ export function firstPropertyValueOfObject<T>(obj: { [k: string]: T; }): T {
     return obj[key];
 }
 
-
-import isElectron from 'is-electron';
-export const isElectronRenderer = isElectron();
-
-
 /**
  * returns a flattened object
  * @link https://gist.github.com/penguinboy/762197
