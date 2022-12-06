@@ -7,6 +7,11 @@ const { exposeIpcMainRxStorage } = require('rxdb/plugins/electron');
 
 const { getDatabase } = require('./shared');
 
+/**
+ * @link https://github.com/electron/electron/issues/19775#issuecomment-834649057
+ */
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
@@ -32,7 +37,7 @@ function createWindow() {
     w.setPosition(x, y);
     windows.push(w);
 
-    // use this to debug
+    // use this to debug by automatically opening the devtools.
     // w.webContents.openDevTools();
 }
 

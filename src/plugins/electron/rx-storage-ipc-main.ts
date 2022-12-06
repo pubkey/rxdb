@@ -3,23 +3,17 @@
  * that is supposed to run inside of the electron main process
  */
 import type {
-    RxStorage,
-    RxStorageInstanceCreationParams
+    RxStorage
 } from '../../types';
-import {
-    ensureNotFalsy,
-    getFromMapOrThrow
-} from '../../util';
 import { Subject } from 'rxjs';
 import {
-    IPC_RENDERER_KEY_PREFIX,
-    IPC_RENDERER_TO_MAIN
+    IPC_RENDERER_KEY_PREFIX
 } from './electron-helper';
 import {
     exposeRxStorageMessageChannel,
+    RxMessageChannelExposeSettings,
     RxStorageMessageToRemote
 } from '../../rx-storage-message-channel';
-
 export function exposeIpcMainRxStorage<T, D>(
     args: {
         key: string;
@@ -27,38 +21,34 @@ export function exposeIpcMainRxStorage<T, D>(
         ipcMain: any;
     }
 ) {
-
-    const onCreateRemoteStorage$ = new Subject<{
-        port: MessagePort;
-        params: RxStorageInstanceCreationParams<any, any>;
-    }>;
-    const portByDatabaseInstanceToken = new Map<string, MessagePort>();
+    const channelId = [
+        IPC_RENDERER_KEY_PREFIX,
+        args.key,
+    ].join('|');
+    const messages$ = new Subject<RxStorageMessageToRemote>();
+    const openRenderers: Set<any> = new Set();
     args.ipcMain.on(
-        [
-            IPC_RENDERER_KEY_PREFIX,
-            'postMessage',
-            args.key,
-            'createStorageInstance'
-        ].join('|'),
-        (event: any, params: RxStorageInstanceCreationParams<any, any>) => {
-            const [port] = event.ports;
-            portByDatabaseInstanceToken.set(params.databaseInstanceToken, port);
-            onCreateRemoteStorage$.next({
-                params,
-                port
-            });
+        channelId,
+        (event: any, message: any) => {
+            openRenderers.add(event.sender);
+            if (message) {
+                messages$.next(message);
+            }
+        }
+    );
+    const send: RxMessageChannelExposeSettings['send'] = (msg) => {
+        /**
+         * TODO we could improve performance
+         * by only sending the message to the 'correct' sender
+         * and removing senders whose browser window is closed.
+         */
+        openRenderers.forEach(sender => {
+            sender.send(channelId, msg);
         });
-
+    };
     exposeRxStorageMessageChannel({
         storage: args.storage,
-        onCreateRemoteStorage$
-    });
-
-
-    args.ipcMain.on(IPC_RENDERER_TO_MAIN, (_event: any, message: RxStorageMessageToRemote) => {
-        const port = getFromMapOrThrow(portByDatabaseInstanceToken, message.instanceId);
-        ensureNotFalsy(port.onmessage as any)({
-            data: message
-        });
+        messages$,
+        send
     });
 }
