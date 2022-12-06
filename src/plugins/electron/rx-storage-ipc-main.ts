@@ -40,7 +40,7 @@ export function exposeIpcMainRxStorage<T, D>(
         /**
          * TODO we could improve performance
          * by only sending the message to the 'correct' sender
-         * and removing senders whoose browser window is closed.
+         * and removing senders whose browser window is closed.
          */
         openRenderers.forEach(sender => {
             sender.send(channelId, msg);
