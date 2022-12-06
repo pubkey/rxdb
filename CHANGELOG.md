@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- REFACTOR the `electron` plugin to improve ipcRenderer communications.
-- REMOVE `is-electron` dependency.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.13.7 (6 December 2022)
+
+- REFACTOR the `electron` plugin to improve ipcRenderer communications.
+- REMOVE `is-electron` dependency.
 
 ### 13.13.6 (5 December 2022)
 

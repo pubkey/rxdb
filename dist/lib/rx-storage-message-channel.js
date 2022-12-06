@@ -28,32 +28,36 @@ function _catch(body, recover) {
 var RxStorageMessageChannel = /*#__PURE__*/function () {
   function RxStorageMessageChannel(settings) {
     this.messageChannelByPort = new WeakMap();
+    this.requestIdSeed = (0, _util.randomCouchString)(10);
+    this.lastRequestId = 0;
     this.settings = settings;
     this.name = settings.name;
     this.statics = settings.statics;
   }
   var _proto = RxStorageMessageChannel.prototype;
+  _proto.getRequestId = function getRequestId() {
+    var newId = this.lastRequestId++;
+    return this.requestIdSeed + '|' + newId;
+  };
   _proto.createStorageInstance = function createStorageInstance(params) {
     try {
       var _this2 = this;
-      var messageChannel = new MessageChannel();
-      _this2.messageChannelByPort.set(messageChannel.port1, messageChannel);
-      _this2.messageChannelByPort.set(messageChannel.port2, messageChannel);
-      var _port = messageChannel.port1;
-      var messages$ = new _rxjs.Subject();
-      var waitForOkPromise = (0, _rxjs.firstValueFrom)(messages$);
-      _port.onmessage = function (msg) {
-        messages$.next(msg.data);
-      };
-      _this2.settings.createRemoteStorage(messageChannel.port2, params);
+      var requestId = _this2.getRequestId();
+      var waitForOkPromise = (0, _rxjs.firstValueFrom)(_this2.settings.messages$.pipe((0, _rxjs.filter)(function (msg) {
+        return msg.answerTo === requestId;
+      })));
+      _this2.settings.send({
+        isCreate: true,
+        requestId: requestId,
+        params: params
+      });
       return Promise.resolve(waitForOkPromise).then(function (waitForOkResult) {
         if (waitForOkResult.error) {
           throw new Error('could not create instance ' + waitForOkResult.error.toString());
         }
         return new RxStorageInstanceMessageChannel(_this2, params.databaseName, params.collectionName, params.schema, {
           params: params,
-          port: _port,
-          messages$: messages$
+          connectionId: (0, _util.ensureNotFalsy)(waitForOkResult.connectionId)
         }, params.options);
       });
     } catch (e) {
@@ -70,15 +74,16 @@ var RxStorageInstanceMessageChannel = /*#__PURE__*/function () {
     this.conflicts$ = new _rxjs.Subject();
     this.subs = [];
     this.closed = false;
-    this.lastRequestId = 0;
-    this.requestIdSeed = (0, _util.randomCouchString)(19);
     this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
     this.schema = schema;
     this.internals = internals;
     this.options = options;
-    this.subs.push(internals.messages$.subscribe(function (msg) {
+    this.messages$ = this.storage.settings.messages$.pipe((0, _rxjs.filter)(function (msg) {
+      return msg.connectionId === _this3.internals.connectionId;
+    }));
+    this.subs.push(this.messages$.subscribe(function (msg) {
       if (msg.method === 'changeStream') {
         _this3.changes$.next(msg["return"]);
       }
@@ -91,18 +96,17 @@ var RxStorageInstanceMessageChannel = /*#__PURE__*/function () {
   _proto2.requestRemote = function requestRemote(methodName, params) {
     try {
       var _this5 = this;
-      var requestIdNr = _this5.lastRequestId++;
-      var requestId = _this5.requestIdSeed + '|' + requestIdNr;
-      var responsePromise = (0, _rxjs.firstValueFrom)(_this5.internals.messages$.pipe((0, _rxjs.filter)(function (msg) {
+      var requestId = _this5.storage.getRequestId();
+      var responsePromise = (0, _rxjs.firstValueFrom)(_this5.messages$.pipe((0, _rxjs.filter)(function (msg) {
         return msg.answerTo === requestId;
       })));
       var message = {
-        instanceId: _this5.internals.params.databaseInstanceToken,
+        connectionId: _this5.internals.connectionId,
         requestId: requestId,
         method: methodName,
         params: params
       };
-      _this5.internals.port.postMessage(message);
+      _this5.storage.settings.send(message);
       return Promise.resolve(responsePromise).then(function (response) {
         if (response.error) {
           throw new Error(response.error);
@@ -149,9 +153,7 @@ var RxStorageInstanceMessageChannel = /*#__PURE__*/function () {
         return sub.unsubscribe();
       });
       _this7.changes$.complete();
-      return Promise.resolve(_this7.requestRemote('close', [])).then(function () {
-        _this7.internals.port.close();
-      });
+      return Promise.resolve(_this7.requestRemote('close', [])).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }
@@ -183,6 +185,7 @@ exports.RxStorageInstanceMessageChannel = RxStorageInstanceMessageChannel;
 function getRxStorageMessageChannel(settings) {
   return new RxStorageMessageChannel(settings);
 }
+
 /**
  * Run this on the 'remote' part,
  * so that RxStorageMessageChannel can connect to it.
@@ -190,49 +193,41 @@ function getRxStorageMessageChannel(settings) {
 function exposeRxStorageMessageChannel(settings) {
   var instanceByFullName = new Map();
   var stateByPort = new Map();
-
-  /**
-   * Create new RxStorageInstances
-   * on request.
-   */
-  settings.onCreateRemoteStorage$.subscribe(function (data) {
+  settings.messages$.pipe((0, _rxjs.filter)(function (msg) {
+    return !!msg.isCreate;
+  })).subscribe(function (plainMsg) {
     try {
       var _temp4 = function _temp4(_result2) {
         if (_exit2) return _result2;
-        _port2.postMessage({
-          key: 'ok'
-        });
+        state.connectionIds.add(connectionId);
         var subs = [];
-        stateByPort.set(_port2, {
-          state: state,
-          subs: subs
-        });
-
         /**
          * Automatically subscribe to the streams$
          * because we always need them.
          */
         subs.push(state.storageInstance.changeStream().subscribe(function (changes) {
           var message = {
-            instanceId: _params.databaseInstanceToken,
+            connectionId: connectionId,
             answerTo: 'changestream',
             method: 'changeStream',
             "return": changes
           };
-          _port2.postMessage(message);
+          settings.send(message);
         }));
         subs.push(state.storageInstance.conflictResultionTasks().subscribe(function (conflicts) {
           var message = {
-            instanceId: _params.databaseInstanceToken,
+            connectionId: connectionId,
             answerTo: 'conflictResultionTasks',
             method: 'conflictResultionTasks',
             "return": conflicts
           };
-          _port2.postMessage(message);
+          settings.send(message);
         }));
-        _port2.onmessage = function (plainMessage) {
+        subs.push(settings.messages$.pipe((0, _rxjs.filter)(function (subMsg) {
+          return subMsg.connectionId === connectionId;
+        })).subscribe(function (plainMessage) {
           try {
-            var message = plainMessage.data;
+            var message = plainMessage;
             var result;
             return Promise.resolve(_catch(function () {
               var _ref;
@@ -241,14 +236,18 @@ function exposeRxStorageMessageChannel(settings) {
                * we only close the main instance if there are no other
                * ports connected.
                */
-              if (message.method === 'close' && (0, _util.ensureNotFalsy)(state).ports.length > 1) {
+              if (message.method === 'close' && (0, _util.ensureNotFalsy)(state).connectionIds.size > 1) {
                 var closeBreakResponse = {
-                  instanceId: _params.databaseInstanceToken,
+                  connectionId: connectionId,
                   answerTo: message.requestId,
                   method: message.method,
                   "return": null
                 };
-                _port2.postMessage(closeBreakResponse);
+                settings.send(closeBreakResponse);
+                (0, _util.ensureNotFalsy)(state).connectionIds["delete"](connectionId);
+                subs.forEach(function (sub) {
+                  return sub.unsubscribe();
+                });
                 return;
               }
               return Promise.resolve((_ref = (0, _util.ensureNotFalsy)(state).storageInstance)[message.method].apply(_ref, message.params)).then(function (_message$method) {
@@ -257,41 +256,44 @@ function exposeRxStorageMessageChannel(settings) {
                   subs.forEach(function (sub) {
                     return sub.unsubscribe();
                   });
-                  (0, _util.ensureNotFalsy)(state).ports = (0, _util.ensureNotFalsy)(state).ports.filter(function (p) {
-                    return p !== _port2;
-                  });
+                  (0, _util.ensureNotFalsy)(state).connectionIds["delete"](connectionId);
                   instanceByFullName["delete"](fullName);
-                  stateByPort["delete"](_port2);
                   /**
                    * TODO how to notify the other ports on remove() ?
                    */
                 }
 
                 var response = {
-                  instanceId: _params.databaseInstanceToken,
+                  connectionId: connectionId,
                   answerTo: message.requestId,
                   method: message.method,
                   "return": result
                 };
-                _port2.postMessage(response);
+                settings.send(response);
               });
             }, function (err) {
               var errorResponse = {
-                instanceId: _params.databaseInstanceToken,
+                connectionId: connectionId,
                 answerTo: message.requestId,
                 method: message.method,
                 error: err.toString()
               };
-              _port2.postMessage(errorResponse);
+              settings.send(errorResponse);
             }));
           } catch (e) {
             return Promise.reject(e);
           }
-        };
+        }));
+        settings.send({
+          answerTo: _msg.requestId,
+          connectionId: connectionId,
+          method: 'createRxStorageInstance'
+        });
       };
       var _exit2 = false;
-      var _params = data.params;
-      var _port2 = data.port;
+      var _msg = plainMsg;
+      var connectionId = (0, _util.randomCouchString)(10);
+      var _params = _msg.params;
       /**
        * We de-duplicate the storage instances.
        * This makes sense in many environments like
@@ -306,15 +308,17 @@ function exposeRxStorageMessageChannel(settings) {
             return Promise.resolve(settings.storage.createStorageInstance(_params)).then(function (newRxStorageInstance) {
               state = {
                 storageInstance: newRxStorageInstance,
-                ports: [_port2],
+                connectionIds: new Set(),
                 params: _params
               };
               instanceByFullName.set(fullName, state);
             });
-          }, function () {
-            _port2.postMessage({
-              key: 'error',
-              error: 'could not call createStorageInstance'
+          }, function (err) {
+            settings.send({
+              answerTo: _msg.requestId,
+              connectionId: connectionId,
+              method: 'createRxStorageInstance',
+              error: err.toString()
             });
             _exit2 = true;
           });

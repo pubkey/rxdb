@@ -4,17 +4,17 @@
  * like electron ipcMain/Renderer, WebWorker and so on
  * where we communicate with the main process with the MessageChannel API.
  */
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, RxStorageStatics } from './types';
 export declare type RxStorageMessageFromRemote = {
-    instanceId: string;
+    connectionId: string;
     answerTo: string;
-    method: keyof RxStorageInstance<any, any, any>;
+    method: keyof RxStorageInstance<any, any, any> | 'createRxStorageInstance';
     error?: any;
     return?: any;
 };
 export declare type RxStorageMessageToRemote = {
-    instanceId: string;
+    connectionId: string;
     /**
      * Unique ID of the request
      */
@@ -22,27 +22,40 @@ export declare type RxStorageMessageToRemote = {
     method: keyof RxStorageInstance<any, any, any>;
     params: any[];
 };
+export declare type RxStorageCreateConnectionMessage = {
+    isCreate: true;
+    requestId: string;
+    params: RxStorageInstanceCreationParams<any, any>;
+};
 export declare type RxStorageMessageChannelInternals = {
     params: RxStorageInstanceCreationParams<any, any>;
-    /**
-     * The one of the 2 message ports where we send data to.
-     * The other port is send to the remote.
-     */
-    port: MessagePort;
-    messages$: Subject<RxStorageMessageFromRemote>;
+    connectionId: string;
 };
 export declare type CreateRemoteRxStorageMethod = (port: MessagePort, params: RxStorageInstanceCreationParams<any, any>) => void;
-declare type RxStorageMessageChannelSettings = {
+export declare type RxStorageMessageChannelSettings = {
     name: string;
     statics: RxStorageStatics;
-    createRemoteStorage: CreateRemoteRxStorageMethod;
+    send(msg: RxStorageMessageToRemote | RxStorageCreateConnectionMessage): void;
+    messages$: Observable<RxStorageMessageFromRemote>;
+};
+export declare type RxMessageChannelExposeSettings = {
+    send(msg: RxStorageMessageFromRemote): void;
+    messages$: Observable<RxStorageMessageToRemote | RxStorageCreateConnectionMessage>;
+    /**
+     * The original storage
+     * which actually stores the data.
+     */
+    storage: RxStorage<any, any>;
 };
 export declare class RxStorageMessageChannel implements RxStorage<RxStorageMessageChannelInternals, any> {
     readonly settings: RxStorageMessageChannelSettings;
     readonly statics: RxStorageStatics;
     readonly name: string;
     readonly messageChannelByPort: WeakMap<MessagePort, MessageChannel>;
+    private requestIdSeed;
+    private lastRequestId;
     constructor(settings: RxStorageMessageChannelSettings);
+    getRequestId(): string;
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<RxStorageInstanceMessageChannel<RxDocType>>;
 }
 export declare class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInstance<RxDocType, RxStorageMessageChannelInternals, any, any> {
@@ -56,8 +69,7 @@ export declare class RxStorageInstanceMessageChannel<RxDocType> implements RxSto
     private conflicts$;
     private subs;
     private closed;
-    private lastRequestId;
-    private requestIdSeed;
+    messages$: Observable<RxStorageMessageFromRemote>;
     constructor(storage: RxStorageMessageChannel, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: RxStorageMessageChannelInternals, options: Readonly<any>);
     private requestRemote;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
@@ -77,17 +89,6 @@ export declare class RxStorageInstanceMessageChannel<RxDocType> implements RxSto
     resolveConflictResultionTask(taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
 export declare function getRxStorageMessageChannel(settings: RxStorageMessageChannelSettings): RxStorageMessageChannel;
-export declare type RxMessageChannelExposeSettings = {
-    onCreateRemoteStorage$: Subject<{
-        port: MessagePort;
-        params: RxStorageInstanceCreationParams<any, any>;
-    }>;
-    /**
-     * The original storage
-     * which actually stores the data.
-     */
-    storage: RxStorage<any, any>;
-};
 /**
  * Run this on the 'remote' part,
  * so that RxStorageMessageChannel can connect to it.
@@ -95,16 +96,15 @@ export declare type RxMessageChannelExposeSettings = {
 export declare function exposeRxStorageMessageChannel(settings: RxMessageChannelExposeSettings): {
     instanceByFullName: Map<string, {
         storageInstance: RxStorageInstance<any, any, any>;
-        ports: MessagePort[];
+        connectionIds: Set<string>;
         params: RxStorageInstanceCreationParams<any, any>;
     }>;
     stateByPort: Map<MessagePort, {
         subs: Subscription[];
         state: {
             storageInstance: RxStorageInstance<any, any, any>;
-            ports: MessagePort[];
+            connectionIds: Set<string>;
             params: RxStorageInstanceCreationParams<any, any>;
         };
     }>;
 };
-export {};

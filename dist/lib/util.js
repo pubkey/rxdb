@@ -29,7 +29,6 @@ exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.getFromObjectOrThrow = getFromObjectOrThrow;
 exports.getHeightOfRevision = getHeightOfRevision;
 exports.getSortDocumentsByLastWriteTimeComparator = getSortDocumentsByLastWriteTimeComparator;
-exports.isElectronRenderer = void 0;
 exports.isFolderPath = isFolderPath;
 exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
 exports.lastOfArray = lastOfArray;
@@ -54,7 +53,6 @@ exports.toPromise = toPromise;
 exports.trimDots = trimDots;
 exports.ucfirst = ucfirst;
 var _clone = _interopRequireDefault(require("clone"));
-var _isElectron = _interopRequireDefault(require("is-electron"));
 var _jsBase = require("js-base64");
 /**
  * Returns an error that indicates that a plugin is missing
@@ -428,13 +426,11 @@ function firstPropertyValueOfObject(obj) {
   var key = Object.keys(obj)[0];
   return obj[key];
 }
-var isElectronRenderer = (0, _isElectron["default"])();
 
 /**
  * returns a flattened object
  * @link https://gist.github.com/penguinboy/762197
  */
-exports.isElectronRenderer = isElectronRenderer;
 function flattenObject(ob) {
   var toReturn = {};
   for (var i in ob) {

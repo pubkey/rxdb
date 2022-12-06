@@ -366,8 +366,6 @@ export function firstPropertyValueOfObject(obj) {
   var key = Object.keys(obj)[0];
   return obj[key];
 }
-import isElectron from 'is-electron';
-export var isElectronRenderer = isElectron();
 
 /**
  * returns a flattened object

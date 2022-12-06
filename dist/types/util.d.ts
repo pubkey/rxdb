@@ -111,7 +111,6 @@ export declare function firstPropertyNameOfObject(obj: any): string;
 export declare function firstPropertyValueOfObject<T>(obj: {
     [k: string]: T;
 }): T;
-export declare const isElectronRenderer: boolean;
 /**
  * returns a flattened object
  * @link https://gist.github.com/penguinboy/762197
