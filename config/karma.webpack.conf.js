@@ -22,7 +22,8 @@ module.exports = {
             express: false,
             'pouchdb-fauxton': false,
             timers: false
-        }
+        },
+        extensions: ['.ts', '.js', '.json']
     },
     plugins: [
         new webpack.ProvidePlugin({
