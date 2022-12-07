@@ -1,0 +1,8 @@
+{
+  "name": "rxdb-plugin-storage-remote",
+  "main": "../../dist/lib/plugins/storage-remote/index.js",
+  "jsnext:main": "../../dist/es/plugins/storage-remote/index.js",
+  "module": "../../dist/es/plugins/storage-remote/index.js",
+  "types": "../../dist/types/plugins/storage-remote/index.d.ts",
+  "sideEffects": false
+}
