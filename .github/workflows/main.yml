@@ -219,6 +219,8 @@ jobs:
       - name: build
         run: npm run build
 
+      - run: npm run test:node:remote
+
       - name: npm run test:browser:remote
         uses: GabrielBB/xvfb-action@v1
         with:

@@ -123,16 +123,12 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                         subs.forEach(sub => sub.unsubscribe());
                         return;
                     }
-
-                    console.log('--------------- 1');
-
                     result = await (ensureNotFalsy(state).storageInstance as any)[message.method](
                         message.params[0],
                         message.params[1],
                         message.params[2],
                         message.params[3]
                     );
-                    console.log('--------------- 2');
                     if (
                         message.method === 'close' ||
                         message.method === 'remove'
@@ -146,9 +142,6 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                     }
                     settings.send(createAnswer(message, result));
                 } catch (err) {
-                    console.log('### Remote Call Error: ');
-                    console.dir(message);
-                    console.dir(err);
                     settings.send(createErrorAnswer(message, 'Remote Call Error: ' + (err as any).toString()));
                 }
             })

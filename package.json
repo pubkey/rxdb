@@ -77,7 +77,7 @@
     "test:browser:memory": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=memory  karma start ./config/karma.conf.js --single-run",
     "test:browser:dexie": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=dexie   karma start ./config/karma.conf.js --single-run",
     "test:browser:remote": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=remote karma start ./config/karma.conf.js --single-run",
-    "test:browser:custom": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=custom   karma start ./config/karma.conf.js --single-run",
+    "test:browser:custom": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=custom  karma start ./config/karma.conf.js --single-run",
     "test:firestore-replication": "npm run transpile && firebase emulators:exec \"cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/replication-firestore.test.js\" --only firestore --project 'rxdb-test'",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
