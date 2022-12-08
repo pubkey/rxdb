@@ -13,7 +13,7 @@ import type {
     RxStorageRemoteExposeSettings,
     RxStorageRemoteExposeType
 } from './storage-remote-types';
-
+import deepEqual from 'fast-deep-equal';
 
 /**
  * Run this on the 'remote' part,
@@ -65,6 +65,11 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
             } catch (err: any) {
                 settings.send(createErrorAnswer(msg, 'OnCreate: ' + err.toString()));
                 return;
+            }
+        } else {
+            // if instance already existed, ensure that the schema is equal
+            if (!deepEqual(params.schema, state.params.schema)) {
+                settings.send(createErrorAnswer(msg, 'Remote storage: schema not equal to existing storage'));
             }
         }
         state.connectionIds.add(msg.connectionId);
