@@ -2814,7 +2814,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 ], testContext);
 
 
+
+
+                console.log('########## REMOVE 1');
                 await storageInstance.remove();
+                console.log('########## REMOVE 2');
                 const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName,

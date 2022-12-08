@@ -136,6 +136,10 @@ export class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInst
         };
         this.storage.settings.send(message);
         const response = await responsePromise;
+
+        console.log('RESPONSE:');
+        console.dir(response);
+
         if (response.error) {
             throw new Error(response.error);
         } else {
@@ -187,7 +191,6 @@ export class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInst
     }
     async remove(): Promise<void> {
         await this.requestRemote('remove', []);
-        return this.close();
     }
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
         return this.conflicts$;

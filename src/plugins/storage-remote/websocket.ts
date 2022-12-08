@@ -36,6 +36,10 @@ export function startRxStorageRemoteWebsocketServer(
         messages$: messages$.asObservable(),
         storage: options.storage,
         send(msg) {
+
+            console.log('send;');
+            console.dir(msg);
+
             const ws = getFromMapOrThrow(websocketByConnectionId, msg.connectionId);
             ws.send(JSON.stringify(msg));
         }
@@ -43,12 +47,15 @@ export function startRxStorageRemoteWebsocketServer(
     const exposeState = exposeRxStorageRemote(exposeSettings);
 
     serverState.onConnection$.subscribe(ws => {
+        console.log('# GOT WS SERVER CONNECTION');
         const onCloseHandlers: Function[] = [];
         ws.onclose = () => {
             onCloseHandlers.map(fn => fn());
         };
         ws.on('message', (messageString: string) => {
             const message: MessageToRemote = JSON.parse(messageString);
+            console.log('# GOT WS SERVER MESSAGE;');
+            console.dir(message);
             const connectionId = message.connectionId;
 
             if (!websocketByConnectionId.has(connectionId)) {

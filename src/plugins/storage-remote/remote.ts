@@ -4,9 +4,9 @@ import type {
     RxStorageInstanceCreationParams
 } from '../../types';
 import {
-    ensureNotFalsy,
-    randomCouchString
+    ensureNotFalsy
 } from '../../util';
+import { createAnswer, createErrorAnswer } from './storage-remote-helpers';
 import type {
     MessageFromRemote,
     MessageToRemote,
@@ -26,18 +26,12 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
         params: RxStorageInstanceCreationParams<any, any>;
     };
     const instanceByFullName: Map<string, InstanceState> = new Map();
-    const stateByPort: Map<MessagePort, {
-        subs: Subscription[];
-        state: InstanceState;
-    }> = new Map();
-
 
 
     settings.messages$.pipe(
         filter(msg => msg.method === 'create')
     ).subscribe(async (msg) => {
-        const connectionId = randomCouchString(10);
-
+        const connectionId = msg.connectionId;
         /**
          * Do an isArray check here
          * for runtime check types to ensure we have
@@ -69,16 +63,11 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                 };
                 instanceByFullName.set(fullName, state);
             } catch (err: any) {
-                settings.send({
-                    answerTo: msg.requestId,
-                    connectionId,
-                    method: 'create',
-                    error: err.toString()
-                });
+                settings.send(createErrorAnswer(msg, 'OnCreate: ' + err.toString()));
                 return;
             }
         }
-        state.connectionIds.add(connectionId);
+        state.connectionIds.add(msg.connectionId);
         const subs: Subscription[] = [];
         /**
          * Automatically subscribe to the streams$
@@ -129,19 +118,21 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                         message.method === 'close' &&
                         ensureNotFalsy(state).connectionIds.size > 1
                     ) {
-                        const closeBreakResponse: MessageFromRemote = {
-                            connectionId,
-                            answerTo: message.requestId,
-                            method: message.method,
-                            return: null
-                        };
-                        settings.send(closeBreakResponse);
+                        settings.send(createAnswer(message, null));
                         ensureNotFalsy(state).connectionIds.delete(connectionId);
                         subs.forEach(sub => sub.unsubscribe());
                         return;
                     }
 
-                    result = await (ensureNotFalsy(state).storageInstance as any)[message.method](...message.params);
+                    console.log('--------------- 1');
+
+                    result = await (ensureNotFalsy(state).storageInstance as any)[message.method](
+                        message.params[0],
+                        message.params[1],
+                        message.params[2],
+                        message.params[3]
+                    );
+                    console.log('--------------- 2');
                     if (
                         message.method === 'close' ||
                         message.method === 'remove'
@@ -153,34 +144,20 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                          * TODO how to notify the other ports on remove() ?
                          */
                     }
-                    const response: MessageFromRemote = {
-                        connectionId,
-                        answerTo: message.requestId,
-                        method: message.method,
-                        return: result
-                    };
-                    settings.send(response);
+                    settings.send(createAnswer(message, result));
                 } catch (err) {
-                    const errorResponse: MessageFromRemote = {
-                        connectionId,
-                        answerTo: message.requestId,
-                        method: message.method,
-                        error: (err as any).toString()
-                    };
-                    settings.send(errorResponse);
+                    console.log('### Remote Call Error: ');
+                    console.dir(message);
+                    console.dir(err);
+                    settings.send(createErrorAnswer(message, 'Remote Call Error: ' + (err as any).toString()));
                 }
             })
         );
 
-        settings.send({
-            answerTo: msg.requestId,
-            connectionId,
-            method: 'create'
-        });
+        settings.send(createAnswer(msg, 'ok'));
     });
 
     return {
-        instanceByFullName,
-        stateByPort
+        instanceByFullName
     };
 }

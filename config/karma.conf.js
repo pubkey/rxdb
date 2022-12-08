@@ -1,54 +1,8 @@
-const path = require('path');
-const fs = require('fs');
-const express = require('express');
-const cors = require('cors');
-const {
-    blobBufferUtil
-} = require('../');
-
-const staticFilesPath = path.join(
-    __dirname,
-    '../',
-    'docs-src',
-    'files'
-);
-console.log('staticFilesPath: ' + staticFilesPath);
 
 
 // while the karma tests run, we need some things which we start here
-const GraphQLServer = require('../test_tmp/helper/graphql-server');
-const SignalingServer = require('../test_tmp/helper/signaling-server');
-function thingsWeNeed() {
-    // we need one graphql server so the browser can sync to it
-    GraphQLServer.spawn([], 18000);
-    SignalingServer.startSignalingServer(18006);
-
-    /**
-     * we need to serve some static files
-     * to run tests for attachments
-     */
-    const fileServerPort = 18001;
-    const app = express();
-    app.use(cors());
-    app.get('/', (req, res) => {
-        res.send('Hello World!');
-    });
-    app.use('/files', express.static(staticFilesPath));
-    app.get('/base64/:filename', async (req, res) => {
-        const filename = req.params.filename;
-        const filePath = path.join(
-            staticFilesPath,
-            filename
-        );
-        const buffer = fs.readFileSync(filePath);
-        const blob = new Blob([buffer]);
-        const base64String = await blobBufferUtil.toBase64String(blob);
-        res.set('Content-Type', 'text/html');
-        res.send(base64String);
-    });
-    app.listen(fileServerPort, () => console.log(`Server listening on port: ${fileServerPort}`));
-}
-thingsWeNeed();
+const { startTestServers } = require('../test_tmp/helper/test-servers');
+startTestServers();
 
 // karma config
 const configuration = {

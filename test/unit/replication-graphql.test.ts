@@ -589,6 +589,9 @@ describe('replication-graphql.test.ts', () => {
                 c.database.destroy();
             });
             it('#4088 should stop retrying when canceled', async () => {
+                if (!config.storage.hasPersistence) {
+                    return;
+                }
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);
 
@@ -596,6 +599,8 @@ describe('replication-graphql.test.ts', () => {
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn(testData)
                 ]);
+
+
 
                 const replicationState = c.syncGraphQL({
                     url: {
@@ -767,8 +772,8 @@ describe('replication-graphql.test.ts', () => {
                         clearTimeout(timeoutId);
                         reject(new Error('Timeout reached'));
                     },
-                    // small buffer until the promise rejects
-                    1000);
+                        // small buffer until the promise rejects
+                        1000);
                 });
 
                 const raceProm = Promise.race([
@@ -948,6 +953,9 @@ describe('replication-graphql.test.ts', () => {
                 db.destroy();
             });
             it('should stop retrying when canceled', async () => {
+                if (!config.storage.hasPersistence) {
+                    return;
+                }
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(batchSize),
                     SpawnServer.spawn()
@@ -980,6 +988,9 @@ describe('replication-graphql.test.ts', () => {
                 ]);
             });
             it('should resend cancelled documents', async () => {
+                if (!config.storage.hasPersistence) {
+                    return;
+                }
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(batchSize),
                     SpawnServer.spawn()
@@ -1674,12 +1685,12 @@ describe('replication-graphql.test.ts', () => {
             it('should create a valid builder', async () => {
                 const builder = pullQueryBuilderFromRxSchema(
                     'human', {
-                        schema: schemas.humanWithTimestamp,
-                        checkpointFields: [
-                            'id',
-                            'updatedAt'
-                        ]
-                    });
+                    schema: schemas.humanWithTimestamp,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ]
+                });
 
                 const output = await builder({
                     id: 'foo',
@@ -1692,12 +1703,12 @@ describe('replication-graphql.test.ts', () => {
             it('builder should work on null-document', async () => {
                 const builder = pullQueryBuilderFromRxSchema(
                     'human', {
-                        schema: schemas.humanWithTimestamp,
-                        checkpointFields: [
-                            'id',
-                            'updatedAt'
-                        ]
-                    });
+                    schema: schemas.humanWithTimestamp,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ]
+                });
 
                 const output = await builder(null, batchSize);
                 const parsed = parseQuery(output.query);
@@ -1708,13 +1719,13 @@ describe('replication-graphql.test.ts', () => {
             it('should create a valid builder', async () => {
                 const builder = pullStreamBuilderFromRxSchema(
                     'human', {
-                        schema: schemas.humanWithTimestamp,
-                        checkpointFields: [
-                            'id',
-                            'updatedAt'
-                        ],
-                        headerFields: ['AUTH_TOKEN']
-                    });
+                    schema: schemas.humanWithTimestamp,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ],
+                    headerFields: ['AUTH_TOKEN']
+                });
 
                 const output = await builder({
                     AUTH_TOKEN: 'foobar'
@@ -1727,12 +1738,12 @@ describe('replication-graphql.test.ts', () => {
             it('builder should work on null-document', async () => {
                 const builder = pullStreamBuilderFromRxSchema(
                     'human', {
-                        schema: schemas.humanWithTimestamp,
-                        checkpointFields: [
-                            'id',
-                            'updatedAt'
-                        ]
-                    });
+                    schema: schemas.humanWithTimestamp,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ]
+                });
 
                 const output = await builder({});
                 const parsed = parseQuery(output.query);
@@ -1743,13 +1754,13 @@ describe('replication-graphql.test.ts', () => {
             it('should create a valid builder', async () => {
                 const builder = pushQueryBuilderFromRxSchema(
                     'human', {
-                        schema: schemas.humanWithTimestamp,
-                        checkpointFields: [
-                            'id',
-                            'updatedAt'
-                        ],
-                        deletedField: 'deleted'
-                    });
+                    schema: schemas.humanWithTimestamp,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ],
+                    deletedField: 'deleted'
+                });
 
                 // build valid output for insert document
                 const output = await builder([{

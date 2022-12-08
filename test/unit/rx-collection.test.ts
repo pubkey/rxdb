@@ -138,11 +138,11 @@ describe('rx-collection.test.ts', () => {
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
                     assert.deepStrictEqual(
                         lastIndexDefFields, [
-                            { 'age': 'asc' },
-                            { '|a': 'asc' },
-                            // the primaryKey index will always be added by RxDB
-                            { _id: 'asc' }
-                        ]
+                        { 'age': 'asc' },
+                        { '|a': 'asc' },
+                        // the primaryKey index will always be added by RxDB
+                        { _id: 'asc' }
+                    ]
                     );
                     db.destroy();
                 });
@@ -1102,7 +1102,8 @@ describe('rx-collection.test.ts', () => {
                          * because there we use the in-memory persistence
                          * which is not really persistent between different writes.
                          */
-                        config.storage.name === 'dexie-worker'
+                        config.storage.name === 'dexie-worker' ||
+                        config.storage.name === 'remote'
                     ) {
                         return;
                     }

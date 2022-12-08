@@ -1,5 +1,5 @@
 import type { ServerOptions, ClientOptions } from 'ws';
-import type { Observable, Subscription } from 'rxjs';
+import type { Observable } from 'rxjs';
 import type {
     RxStorage,
     RxStorageInstance,
@@ -53,10 +53,6 @@ export type RxStorageRemoteExposeSettings = {
 
 export type RxStorageRemoteExposeType = {
     instanceByFullName: Map<string, any>;
-    stateByPort: Map<MessagePort, {
-        subs: Subscription[];
-        state: any;
-    }>;
 };
 
 export type RxStorageRemoteWebsocketServerOptions = ServerOptions & {

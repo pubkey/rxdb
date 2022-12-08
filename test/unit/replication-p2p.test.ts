@@ -42,20 +42,13 @@ describe('replication-p2p.test.ts', () => {
     }
 
     let wrtc: any;
-    let signalingServerUrl: string = 'ws://localhost:18006';
+    const signalingServerUrl: string = 'ws://localhost:18006';
     describe('init', () => {
         it('load wrtc', () => {
             if (!config.platform.isNode()) {
                 return;
             }
             wrtc = require('wrtc');
-        });
-        it('Start WebRTC singaling server', async () => {
-            if (!config.platform.isNode()) {
-                return;
-            }
-            const signalingServerModule = require('../helper/signaling-server');
-            signalingServerUrl = await signalingServerModule.startSignalingServer();
         });
     });
     describe('utils', () => {

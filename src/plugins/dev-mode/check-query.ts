@@ -5,7 +5,8 @@ import type {
     DexiePreparedQuery,
     FilledMangoQuery,
     RxJsonSchema,
-    RxDocumentData
+    RxDocumentData,
+    MangoQuerySelector
 } from '../../types';
 import deepEqual from 'fast-deep-equal';
 import { newRxError, newRxTypeError } from '../../rx-error';
@@ -76,7 +77,7 @@ export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
      * Ensure that all top level fields are included in the schema.
      * TODO this check can be augmented to also check sub-fields.
      */
-    const massagedSelector = massageSelector(args.mangoQuery.selector);
+    const massagedSelector: MangoQuerySelector<any> = massageSelector(args.mangoQuery.selector);
     const schemaTopLevelFields = Object.keys(schema.properties);
     Object.keys(massagedSelector)
         // do not check operators
@@ -92,8 +93,6 @@ export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
                 });
             }
         });
-
-
     /**
      * ensure if custom index is set,
      * it is also defined in the schema

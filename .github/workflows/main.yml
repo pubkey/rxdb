@@ -86,10 +86,10 @@ jobs:
           npm install
           npm run test
 
-      - name: npm run test:browser:ci:pouchdb
+      - name: npm run test:browser:pouchdb
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm run test:browser:ci:pouchdb
+          run: npm run test:browser:pouchdb
 
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
@@ -132,10 +132,10 @@ jobs:
       - name: npm run test:fast:lokijs
         run: npm run test:fast:lokijs
 
-      - name: npm run test:browser:ci:lokijs
+      - name: npm run test:browser:lokijs
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm run test:browser:ci:lokijs
+          run: npm run test:browser:lokijs
 
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
@@ -176,10 +176,10 @@ jobs:
       - name: npm run test:fast:memory
         run: npm run test:fast:memory
 
-      - name: npm run test:browser:ci:memory
+      - name: npm run test:browser:memory
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm run test:browser:ci:memory
+          run: npm run test:browser:memory
 
       - name: npm run test:fast:memory-validation
         run: npm run test:fast:memory-validation
@@ -266,10 +266,10 @@ jobs:
       - name: npm run test:fast:dexie
         run: npm run test:fast:dexie
 
-      - name: npm run test:browser:ci:dexie
+      - name: npm run test:browser:dexie
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm run test:browser:ci:dexie
+          run: npm run test:browser:dexie
 
       - run: npm run test:firestore-replication
 
