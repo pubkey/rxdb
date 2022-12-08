@@ -60,6 +60,11 @@ if (config.platform.name !== 'node') {
 }
 
 
+if (config.platform.name === 'node') {
+    const { startTestServers } = require('../helper/test-servers' + '');
+    startTestServers();
+}
+
 /**
  * MONKEYPATCH console.error on firefox
  * this is needed because core-js has its own non-catched-promise-behavior

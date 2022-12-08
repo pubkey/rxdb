@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD [Remote RxStorage Plugin](https://rxdb.info/rx-storage-remote.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

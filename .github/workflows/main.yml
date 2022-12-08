@@ -86,10 +86,10 @@ jobs:
           npm install
           npm run test
 
-      - name: npm run test:browser:ci:pouchdb
+      - name: npm run test:browser:pouchdb
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm run test:browser:ci:pouchdb
+          run: npm run test:browser:pouchdb
 
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
@@ -132,10 +132,10 @@ jobs:
       - name: npm run test:fast:lokijs
         run: npm run test:fast:lokijs
 
-      - name: npm run test:browser:ci:lokijs
+      - name: npm run test:browser:lokijs
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm run test:browser:ci:lokijs
+          run: npm run test:browser:lokijs
 
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
@@ -176,10 +176,10 @@ jobs:
       - name: npm run test:fast:memory
         run: npm run test:fast:memory
 
-      - name: npm run test:browser:ci:memory
+      - name: npm run test:browser:memory
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm run test:browser:ci:memory
+          run: npm run test:browser:memory
 
       - name: npm run test:fast:memory-validation
         run: npm run test:fast:memory-validation
@@ -190,6 +190,41 @@ jobs:
           run: npm run test:performance:memory:browser
 
       - run: npm run test:performance:memory:node
+
+
+  storage-remote:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-remote-x7-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-remote-x7-
+
+      - name: install npm dependencies
+        run: npm install
+      
+      - name: build
+        run: npm run build
+
+      - run: npm run test:node:remote
+
+      - name: npm run test:browser:remote
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:browser:remote
 
   # run the node tests for the LokiJS RxStorage in a different
   # task to run in parallel.
@@ -266,10 +301,10 @@ jobs:
       - name: npm run test:fast:dexie
         run: npm run test:fast:dexie
 
-      - name: npm run test:browser:ci:dexie
+      - name: npm run test:browser:dexie
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm run test:browser:ci:dexie
+          run: npm run test:browser:dexie
 
       - run: npm run test:firestore-replication
 

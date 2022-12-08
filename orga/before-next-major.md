@@ -106,3 +106,13 @@ add an option to let the user define what should happen after the migration.
 
 ## Prefix storage plugins with `storage-`
 Like the replication plugins, all RxStorage plugins should be prefixed with `storage-` for example `storage-dexie`.
+
+## Require string based `$regex`
+
+Atm people can pass `RegExp` instances to the queries. These cannot be transfered via json for example having a remote storage
+can make problems. We should enforce people using strings as operators instead.
+
+
+## Set `hasPersistence=true` on memory storage
+
+This will make testing easier. The memory storage should keep data in memory, even when the last instance has been closed.

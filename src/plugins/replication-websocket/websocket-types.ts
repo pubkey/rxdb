@@ -1,7 +1,11 @@
 import type {
+    Observable,
+} from 'rxjs';
+import type {
     ServerOptions,
     ClientOptions,
-    WebSocketServer
+    WebSocketServer,
+    WebSocket
 } from 'ws';
 import type {
     RxCollection,
@@ -17,6 +21,7 @@ export type WebsocketServerOptions = {
 export type WebsocketServerState = {
     server: WebSocketServer;
     close: () => Promise<void>;
+    onConnection$: Observable<WebSocket>;
 };
 
 export type WebsocketClientOptions<RxDocType> = {

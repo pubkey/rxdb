@@ -2,8 +2,9 @@ import type {
     RxReplicationHandler
 } from '../../types';
 
-import {
-    WebSocketServer
+import type {
+    WebSocket,
+    ServerOptions
 } from 'isomorphic-ws';
 import type {
     WebsocketMessageResponseType,
@@ -15,8 +16,11 @@ import { rxStorageInstanceToReplicationHandler } from '../../replication-protoco
 import {
     PROMISE_RESOLVE_VOID
 } from '../../util';
+import { Subject } from 'rxjs';
 
-export function startWebsocketServer(options: WebsocketServerOptions): WebsocketServerState {
+
+export function startSocketServer(options: ServerOptions): WebsocketServerState {
+    const { WebSocketServer } = require('isomorphic-ws' + '');
     const wss = new WebSocketServer({
         port: options.port,
         path: options.path
@@ -27,6 +31,7 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
             return PROMISE_RESOLVE_VOID;
         }
         closed = true;
+        onConnection$.complete();
         return new Promise<void>((res, rej) => {
             /**
              * We have to close all client connections,
@@ -36,7 +41,7 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
             for (const ws of wss.clients) {
                 ws.close();
             }
-            wss.close((err) => {
+            wss.close((err: any) => {
                 if (err) {
                     rej(err);
                 } else {
@@ -46,10 +51,23 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
         });
     }
 
+    const onConnection$ = new Subject<WebSocket>();
+    wss.on('connection', (ws: any) => onConnection$.next(ws));
+
+    return {
+        server: wss,
+        close: closeServer,
+        onConnection$: onConnection$.asObservable()
+    };
+}
+
+export function startWebsocketServer(options: WebsocketServerOptions): WebsocketServerState {
+    const serverState = startSocketServer(options);
+
     const database = options.database;
 
     // auto close when the database gets destroyed
-    database.onDestroy.push(() => closeServer());
+    database.onDestroy.push(() => serverState.close());
 
     const replicationHandlerByCollection: Map<string, RxReplicationHandler<any, any>> = new Map();
     function getReplicationHandler(collectionName: string): RxReplicationHandler<any, any> {
@@ -69,7 +87,7 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
         return handler;
     }
 
-    wss.on('connection', function connection(ws) {
+    serverState.onConnection$.subscribe(ws => {
         const onCloseHandlers: Function[] = [];
         ws.onclose = () => {
             onCloseHandlers.map(fn => fn());
@@ -84,7 +102,7 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
              * it means that the client requested the masterChangeStream$
              */
             if (typeof method !== 'function') {
-                const sub = handler.masterChangeStream$.subscribe(ev => {
+                const changeStreamSub = handler.masterChangeStream$.subscribe(ev => {
                     const streamResponse: WebsocketMessageResponseType = {
                         id: 'stream',
                         collection: message.collection,
@@ -92,7 +110,7 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
                     };
                     ws.send(JSON.stringify(streamResponse));
                 });
-                onCloseHandlers.push(() => sub.unsubscribe());
+                onCloseHandlers.push(() => changeStreamSub.unsubscribe());
                 return;
             }
             const result = await (method as any)(...message.params);
@@ -105,8 +123,6 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
         });
     });
 
-    return {
-        server: wss,
-        close: closeServer
-    };
+
+    return serverState;
 }

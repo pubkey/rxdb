@@ -18,6 +18,7 @@ import {
     RxStorageDexieStatics
 } from '../../plugins/dexie';
 import { getRxStorageWorker } from '../../plugins/worker';
+import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote';
 import { getRxStorageMemory } from '../../plugins/memory';
 import { CUSTOM_STORAGE } from './custom-storage';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
@@ -106,7 +107,7 @@ export function setDefaultStorage(storageKey: string) {
     switch (storageKey) {
         case 'pouchdb':
             config.storage = {
-                name: 'pouchdb',
+                name: storageKey,
                 getStorage: () => {
                     if (config.platform.name === 'node') {
                         addPouchPlugin(require('pouchdb-adapter-memory'));
@@ -143,7 +144,7 @@ export function setDefaultStorage(storageKey: string) {
             break;
         case 'memory':
             config.storage = {
-                name: 'memory',
+                name: storageKey,
                 getStorage: () => getRxStorageMemory(),
                 getPerformanceStorage() {
                     return {
@@ -166,7 +167,7 @@ export function setDefaultStorage(storageKey: string) {
          */
         case 'memory-validation':
             config.storage = {
-                name: 'memory-validation',
+                name: storageKey,
                 getStorage: () => getRxStorageMemory(),
                 getPerformanceStorage() {
                     return {
@@ -185,7 +186,7 @@ export function setDefaultStorage(storageKey: string) {
             break;
         case 'lokijs':
             config.storage = {
-                name: 'lokijs',
+                name: storageKey,
                 getStorage: () => getRxStorageLoki(),
                 getPerformanceStorage() {
                     if (config.platform.name === 'node') {
@@ -217,7 +218,7 @@ export function setDefaultStorage(storageKey: string) {
             break;
         case 'dexie':
             config.storage = {
-                name: 'dexie',
+                name: storageKey,
                 getStorage: () => {
                     if (config.platform.name === 'node' || config.isFastMode()) {
                         const { indexedDB, IDBKeyRange } = require('fake-indexeddb');
@@ -260,7 +261,7 @@ export function setDefaultStorage(storageKey: string) {
             );
             console.log('dexieMemoryWorkerPath: ' + dexieMemoryWorkerPath);
             config.storage = {
-                name: 'dexie-worker',
+                name: storageKey,
                 getStorage: () => getRxStorageWorker(
                     {
                         statics: RxStorageDexieStatics,
@@ -285,7 +286,6 @@ export function setDefaultStorage(storageKey: string) {
                 hasRegexSupport: true
             };
             break;
-
         case 'foundationdb':
             const foundationDBAPIVersion = 620;
 
@@ -293,7 +293,7 @@ export function setDefaultStorage(storageKey: string) {
             const { getRxStorageFoundationDB } = require('../../plugins/foundationdb' + '');
 
             config.storage = {
-                name: 'foundationdb',
+                name: storageKey,
                 getStorage: () => {
                     return getRxStorageFoundationDB({
                         apiVersion: foundationDBAPIVersion
@@ -312,6 +312,31 @@ export function setDefaultStorage(storageKey: string) {
                 hasCouchDBReplication: false,
                 hasAttachments: true,
                 hasRegexSupport: true
+            };
+            break;
+        case 'remote':
+            config.storage = {
+                name: storageKey,
+                getStorage: () => {
+                    return getRxStorageRemoteWebsocket({
+                        statics: RxStorageDexieStatics,
+                        url: 'ws://localhost:18007'
+                    });
+                },
+                getPerformanceStorage() {
+                    return {
+                        storage: getRxStorageRemoteWebsocket({
+                            statics: RxStorageDexieStatics,
+                            url: 'ws://localhost:18007'
+                        }),
+                        description: 'remote+dexie+fake-indexeddb'
+                    };
+                },
+                hasPersistence: false,
+                hasMultiInstance: true,
+                hasCouchDBReplication: false,
+                hasAttachments: false,
+                hasRegexSupport: false
             };
             break;
         default:

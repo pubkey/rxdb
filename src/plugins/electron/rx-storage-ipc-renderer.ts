@@ -1,10 +1,10 @@
 import { Subject } from 'rxjs';
 import {
-    getRxStorageMessageChannel,
+    getRxStorageRemote,
     RxStorageMessageChannel,
-    RxStorageMessageChannelSettings,
-    RxStorageMessageFromRemote
-} from '../../rx-storage-message-channel';
+    RxStorageRemoteSettings,
+    MessageFromRemote
+} from '../storage-remote';
 import type {
     RxStorageStatics
 } from '../../types';
@@ -32,7 +32,7 @@ export function getRxStorageIpcRenderer(
         settings.key
     ].join('|');
 
-    const messages$ = new Subject<RxStorageMessageFromRemote>();
+    const messages$ = new Subject<MessageFromRemote>();
     settings.ipcRenderer.on(channelId, (_event: any, message: any) => {
         messages$.next(message);
     });
@@ -43,14 +43,14 @@ export function getRxStorageIpcRenderer(
         false
     );
 
-    const send: RxStorageMessageChannelSettings['send'] = (msg) => {
+    const send: RxStorageRemoteSettings['send'] = (msg) => {
         settings.ipcRenderer.postMessage(
             channelId,
             msg
         );
     };
-    const storage = getRxStorageMessageChannel({
-        name: 'ipc-renderer',
+    const storage = getRxStorageRemote({
+        identifier: 'electron-ipc-renderer',
         statics: settings.statics,
         messages$,
         send

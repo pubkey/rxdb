@@ -114,8 +114,6 @@
 * [LeaderElection](./leader-election.md)
 
 * [RxStorage](./rx-storage.md)
-    * [RxStorage PouchDB](./rx-storage-pouchdb.md)
-    * [PouchDB Adapters](./adapters.md)
     * [RxStorage Dexie.js](./rx-storage-dexie.md)
     * [RxStorage LokiJS](./rx-storage-lokijs.md)
     * [RxStorage Memory](./rx-storage-memory.md)
@@ -123,10 +121,13 @@
     * [RxStorage SQLite](./rx-storage-sqlite.md)
     * [RxStorage FoundationDB](./rx-storage-foundationdb.md)
     * [RxStorage Worker](./rx-storage-worker.md)
+    * [RxStorage Sharding](./rx-storage-remote.md)
     * [RxStorage Memory Synced](./rx-storage-memory-synced.md)
     * [RxStorage Sharding](./rx-storage-sharding.md)
     * [RxStorage Localstorage Meta Optimizer](./rx-storage-localstorage-meta-optimizer.md)
     * [RxStorage Electron IpcRenderer & IpcMain](./electron.md#rxstorage-electron-ipcrenderer--ipcmain)
+    * [RxStorage PouchDB](./rx-storage-pouchdb.md)
+    * [PouchDB Adapters](./adapters.md)
 
 * [Replication](./replication.md)
     * [Replication GraphQL](./replication-graphql.md)

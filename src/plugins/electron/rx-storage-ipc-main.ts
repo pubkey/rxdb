@@ -10,10 +10,10 @@ import {
     IPC_RENDERER_KEY_PREFIX
 } from './electron-helper';
 import {
-    exposeRxStorageMessageChannel,
-    RxMessageChannelExposeSettings,
-    RxStorageMessageToRemote
-} from '../../rx-storage-message-channel';
+    exposeRxStorageRemote,
+    RxStorageRemoteExposeSettings,
+    MessageToRemote
+} from '../storage-remote';
 export function exposeIpcMainRxStorage<T, D>(
     args: {
         key: string;
@@ -25,7 +25,7 @@ export function exposeIpcMainRxStorage<T, D>(
         IPC_RENDERER_KEY_PREFIX,
         args.key,
     ].join('|');
-    const messages$ = new Subject<RxStorageMessageToRemote>();
+    const messages$ = new Subject<MessageToRemote>();
     const openRenderers: Set<any> = new Set();
     args.ipcMain.on(
         channelId,
@@ -36,7 +36,7 @@ export function exposeIpcMainRxStorage<T, D>(
             }
         }
     );
-    const send: RxMessageChannelExposeSettings['send'] = (msg) => {
+    const send: RxStorageRemoteExposeSettings['send'] = (msg) => {
         /**
          * TODO we could improve performance
          * by only sending the message to the 'correct' sender
@@ -46,7 +46,7 @@ export function exposeIpcMainRxStorage<T, D>(
             sender.send(channelId, msg);
         });
     };
-    exposeRxStorageMessageChannel({
+    exposeRxStorageRemote({
         storage: args.storage,
         messages$,
         send
