@@ -33,6 +33,13 @@ const configuration = {
         enabled: true,
         usePhantomJS: false,
         postDetection: function (availableBrowser) {
+            // respect cli args overwrites
+            const indexOfBrowsers = process.argv.indexOf('--browsers');
+            if (indexOfBrowsers) {
+                return [process.argv[indexOfBrowsers + 1]];
+            }
+
+
             // return ['Chrome'];
             // return ['Firefox'];
 

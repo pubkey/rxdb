@@ -2,8 +2,7 @@ import type {
     RxReplicationHandler
 } from '../../types';
 
-import {
-    WebSocketServer,
+import type {
     WebSocket,
     ServerOptions
 } from 'isomorphic-ws';
@@ -21,6 +20,7 @@ import { Subject } from 'rxjs';
 
 
 export function startSocketServer(options: ServerOptions): WebsocketServerState {
+    const { WebSocketServer } = require('isomorphic-ws' + '');
     const wss = new WebSocketServer({
         port: options.port,
         path: options.path
@@ -41,7 +41,7 @@ export function startSocketServer(options: ServerOptions): WebsocketServerState 
             for (const ws of wss.clients) {
                 ws.close();
             }
-            wss.close((err) => {
+            wss.close((err: any) => {
                 if (err) {
                     rej(err);
                 } else {
@@ -52,7 +52,7 @@ export function startSocketServer(options: ServerOptions): WebsocketServerState 
     }
 
     const onConnection$ = new Subject<WebSocket>();
-    wss.on('connection', ws => onConnection$.next(ws));
+    wss.on('connection', (ws: any) => onConnection$.next(ws));
 
     return {
         server: wss,
