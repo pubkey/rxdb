@@ -35,7 +35,7 @@ const configuration = {
         postDetection: function (availableBrowser) {
             // respect cli args overwrites
             const indexOfBrowsers = process.argv.indexOf('--browsers');
-            if (indexOfBrowsers) {
+            if (indexOfBrowsers > 0) {
                 return [process.argv[indexOfBrowsers + 1]];
             }
 
