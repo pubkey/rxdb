@@ -6,8 +6,7 @@ import type {
     RxStorage
 } from '../../types';
 import {
-    getFromMapOrThrow,
-    randomCouchString
+    getFromMapOrThrow
 } from '../../util';
 import {
     getWebSocket,
