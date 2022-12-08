@@ -196,3 +196,7 @@ export class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInst
         await this.requestRemote('resolveConflictResultionTask', [taskSolution]);
     }
 }
+
+export function getRxStorageRemote(settings: RxStorageRemoteSettings): RxStorageMessageChannel {
+    return new RxStorageMessageChannel(settings);
+}

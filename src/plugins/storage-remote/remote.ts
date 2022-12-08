@@ -10,7 +10,8 @@ import {
 import type {
     MessageFromRemote,
     MessageToRemote,
-    RxStorageRemoteExposeSettings
+    RxStorageRemoteExposeSettings,
+    RxStorageRemoteExposeType
 } from './storage-remote-types';
 
 
@@ -18,7 +19,7 @@ import type {
  * Run this on the 'remote' part,
  * so that RxStorageMessageChannel can connect to it.
  */
-export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings) {
+export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): RxStorageRemoteExposeType {
     type InstanceState = {
         storageInstance: RxStorageInstance<any, any, any>;
         connectionIds: Set<string>;
@@ -71,7 +72,7 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings) {
                 settings.send({
                     answerTo: msg.requestId,
                     connectionId,
-                    method: 'createRxStorageInstance',
+                    method: 'create',
                     error: err.toString()
                 });
                 return;
@@ -174,7 +175,7 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings) {
         settings.send({
             answerTo: msg.requestId,
             connectionId,
-            method: 'createRxStorageInstance'
+            method: 'create'
         });
     });
 

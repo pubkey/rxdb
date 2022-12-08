@@ -1,7 +1,6 @@
 import { replicateRxCollection, RxReplicationState } from '../replication';
 import {
     WebsocketClientOptions,
-    WebsocketMessageResponseType,
     WebsocketMessageType
 } from './websocket-types';
 
@@ -31,7 +30,7 @@ export type WebsocketWithRefCount = {
     refCount: number;
     openPromise: Promise<void>;
     connected$: BehaviorSubject<boolean>;
-    message$: Subject<WebsocketMessageResponseType>;
+    message$: Subject<any>;
     error$: Subject<RxError>;
 };
 
@@ -57,14 +56,17 @@ function ensureIsWebsocket(w: typeof IsomorphicWebSocket) {
 export const WEBSOCKET_BY_CACHE_KEY: Map<string, WebsocketWithRefCount> = new Map();
 export async function getWebSocket(
     url: string,
-    database: RxDatabase<any, any, any>
+    /**
+     * The value of RxDatabase.token.
+     */
+    databaseToken: string
 ): Promise<WebsocketWithRefCount> {
     /**
      * Also use the database token as cache-key
      * to make it easier to test and debug
      * multi-instance setups.
      */
-    const cacheKey = url + '|||' + database.token;
+    const cacheKey = url + '|||' + databaseToken;
 
     let has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
     if (!has) {
@@ -88,9 +90,9 @@ export async function getWebSocket(
             connected$.next(false);
         };
 
-        const message$ = new Subject<WebsocketMessageResponseType>();
+        const message$ = new Subject<any>();
         wsClient.onmessage = (messageObj) => {
-            const message: WebsocketMessageResponseType = JSON.parse(messageObj.data);
+            const message = JSON.parse(messageObj.data);
             message$.next(message);
         };
 
@@ -142,7 +144,7 @@ export function removeWebSocketRef(
 export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     options: WebsocketClientOptions<RxDocType>
 ): Promise<RxReplicationState<RxDocType, CheckpointType>> {
-    const socketState = await getWebSocket(options.url, options.collection.database);
+    const socketState = await getWebSocket(options.url, options.collection.database.token);
     const wsClient = socketState.socket;
 
     const messages$ = socketState.message$;
