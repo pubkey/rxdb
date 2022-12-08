@@ -121,6 +121,7 @@
     * [RxStorage SQLite](./rx-storage-sqlite.md)
     * [RxStorage FoundationDB](./rx-storage-foundationdb.md)
     * [RxStorage Worker](./rx-storage-worker.md)
+    * [RxStorage Sharding](./rx-storage-remote.md)
     * [RxStorage Memory Synced](./rx-storage-memory-synced.md)
     * [RxStorage Sharding](./rx-storage-sharding.md)
     * [RxStorage Localstorage Meta Optimizer](./rx-storage-localstorage-meta-optimizer.md)
