@@ -263,7 +263,9 @@ export async function run() {
                 documents: [{
                     id: 'foobar-' + flag,
                     name: 'name-' + flag,
-                    color: 'green'
+                    color: 'green',
+                    updatedAt: flag,
+                    deleted: false
                 }],
                 checkpoint: {
                     id: 'foobar-' + flag,
