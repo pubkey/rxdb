@@ -56,7 +56,7 @@ export function startRxStorageRemoteWebsocketServer(
                  * it is an error.
                  */
                 if (message.method !== 'create') {
-                    ws.send(JSON.stringify(createErrorAnswer(message, 'First call must be a create call')));
+                    ws.send(JSON.stringify(createErrorAnswer(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))));
                     return;
                 }
                 websocketByConnectionId.set(connectionId, ws);

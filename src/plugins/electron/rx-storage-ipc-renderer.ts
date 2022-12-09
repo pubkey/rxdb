@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import {
     getRxStorageRemote,
-    RxStorageMessageChannel,
+    RxStorageRemote,
     RxStorageRemoteSettings,
     MessageFromRemote
 } from '../storage-remote';
@@ -23,7 +23,7 @@ export type RxStorageIpcRendererSettings = {
     ipcRenderer: any;
 };
 
-export type RxStorageIpcRenderer = RxStorageMessageChannel;
+export type RxStorageIpcRenderer = RxStorageRemote;
 export function getRxStorageIpcRenderer(
     settings: RxStorageIpcRendererSettings
 ): RxStorageIpcRenderer {

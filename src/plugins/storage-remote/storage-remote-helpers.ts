@@ -2,6 +2,7 @@ import type {
     RxError,
     RxTypeError
 } from '../../types';
+import { errorToPlainJson } from '../../util';
 import type {
     MessageFromRemote,
     MessageToRemote
@@ -15,7 +16,7 @@ export function createErrorAnswer(
         connectionId: msg.connectionId,
         answerTo: msg.requestId,
         method: msg.method,
-        error
+        error: errorToPlainJson(error)
     };
 }
 
