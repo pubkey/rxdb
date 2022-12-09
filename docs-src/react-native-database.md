@@ -216,5 +216,6 @@ To get started with Firestore in React Native, it is recommended to use the [Rea
 
 ## Follow up
 
+- Check out the [RxDB React Native example](https://github.com/pubkey/rxdb/tree/master/examples/react-native)
 - If you haven't done yet, you should start learning about RxDB with the [Quickstart Tutorial](./quickstart.md).
 - There is a followup list of other [client side database alternatives](./alternatives.md) that might work with React Native.

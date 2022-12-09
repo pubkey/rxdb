@@ -95,13 +95,13 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <img height="13" src="docs-src/files/icons/nodejs.png" />
   <a href="./examples/node">Node.js</a>
   <img height="13" src="docs-src/files/icons/electron.png" />
-  <a href="./examples/electron">Electron</a>
+  <a href="https://rxdb.info/electron-database.html">Electron</a>
   <img height="13" src="docs-src/files/icons/react-native.png" />
-  <a href="./examples/react-native">React Native</a>
+  <a href="https://rxdb.info/react-native-database.html">React Native</a>
   <img height="13" src="docs-src/files/icons/cordova.png" />
   Cordova/Phonegap
   <img height="13" src="docs-src/files/icons/capacitor.svg" />
-  Capacitor
+  <a href="https://rxdb.info/capacitor-database.html">Capacitor</a>
   <img height="13" src="docs-src/files/icons/nativescript.svg" />
   <a href="https://github.com/herefishyfish/rxdb-nativescript">NativeScript</a>
   <img height="13" src="docs-src/files/icons/flutter.svg" />
