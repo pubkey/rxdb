@@ -5,7 +5,7 @@
 
 import { Subject } from 'rxjs';
 import { IPC_RENDERER_KEY_PREFIX } from './electron-helper';
-import { exposeRxStorageMessageChannel } from '../../rx-storage-message-channel';
+import { exposeRxStorageRemote } from '../storage-remote';
 export function exposeIpcMainRxStorage(args) {
   var channelId = [IPC_RENDERER_KEY_PREFIX, args.key].join('|');
   var messages$ = new Subject();
@@ -26,7 +26,7 @@ export function exposeIpcMainRxStorage(args) {
       sender.send(channelId, msg);
     });
   };
-  exposeRxStorageMessageChannel({
+  exposeRxStorageRemote({
     storage: args.storage,
     messages$: messages$,
     send: send

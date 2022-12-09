@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.exposeIpcMainRxStorage = exposeIpcMainRxStorage;
 var _rxjs = require("rxjs");
 var _electronHelper = require("./electron-helper");
-var _rxStorageMessageChannel = require("../../rx-storage-message-channel");
+var _storageRemote = require("../storage-remote");
 /**
  * This file contains everything
  * that is supposed to run inside of the electron main process
@@ -32,7 +32,7 @@ function exposeIpcMainRxStorage(args) {
       sender.send(channelId, msg);
     });
   };
-  (0, _rxStorageMessageChannel.exposeRxStorageMessageChannel)({
+  (0, _storageRemote.exposeRxStorageRemote)({
     storage: args.storage,
     messages$: messages$,
     send: send

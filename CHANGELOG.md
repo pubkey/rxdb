@@ -3,12 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD [Remote RxStorage Plugin](https://rxdb.info/rx-storage-remote.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.14.0 (9 December 2022)
+
+- ADD [Remote RxStorage Plugin](https://rxdb.info/rx-storage-remote.html)
 
 ### 13.13.7 (6 December 2022)
 

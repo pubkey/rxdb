@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getRxStorageIpcRenderer = getRxStorageIpcRenderer;
 var _rxjs = require("rxjs");
-var _rxStorageMessageChannel = require("../../rx-storage-message-channel");
+var _storageRemote = require("../storage-remote");
 var _electronHelper = require("./electron-helper");
 function getRxStorageIpcRenderer(settings) {
   var channelId = [_electronHelper.IPC_RENDERER_KEY_PREFIX, settings.key].join('|');
@@ -17,8 +17,8 @@ function getRxStorageIpcRenderer(settings) {
   var send = function send(msg) {
     settings.ipcRenderer.postMessage(channelId, msg);
   };
-  var storage = (0, _rxStorageMessageChannel.getRxStorageMessageChannel)({
-    name: 'ipc-renderer',
+  var storage = (0, _storageRemote.getRxStorageRemote)({
+    identifier: 'electron-ipc-renderer',
     statics: settings.statics,
     messages$: messages$,
     send: send

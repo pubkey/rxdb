@@ -3,15 +3,18 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.startSocketServer = startSocketServer;
 exports.startWebsocketServer = startWebsocketServer;
-var _isomorphicWs = require("isomorphic-ws");
 var _replicationProtocol = require("../../replication-protocol");
 var _util = require("../../util");
+var _rxjs = require("rxjs");
 function _createForOfIteratorHelperLoose(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (it) return (it = it.call(o)).next.bind(it); if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; return function () { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-function startWebsocketServer(options) {
-  var wss = new _isomorphicWs.WebSocketServer({
+function startSocketServer(options) {
+  var _require = require('isomorphic-ws' + ''),
+    WebSocketServer = _require.WebSocketServer;
+  var wss = new WebSocketServer({
     port: options.port,
     path: options.path
   });
@@ -21,6 +24,7 @@ function startWebsocketServer(options) {
       return _util.PROMISE_RESOLVE_VOID;
     }
     closed = true;
+    onConnection$.complete();
     return new Promise(function (res, rej) {
       /**
        * We have to close all client connections,
@@ -40,11 +44,23 @@ function startWebsocketServer(options) {
       });
     });
   }
+  var onConnection$ = new _rxjs.Subject();
+  wss.on('connection', function (ws) {
+    return onConnection$.next(ws);
+  });
+  return {
+    server: wss,
+    close: closeServer,
+    onConnection$: onConnection$.asObservable()
+  };
+}
+function startWebsocketServer(options) {
+  var serverState = startSocketServer(options);
   var database = options.database;
 
   // auto close when the database gets destroyed
   database.onDestroy.push(function () {
-    return closeServer();
+    return serverState.close();
   });
   var replicationHandlerByCollection = new Map();
   function getReplicationHandler(collectionName) {
@@ -59,7 +75,7 @@ function startWebsocketServer(options) {
     }
     return handler;
   }
-  wss.on('connection', function connection(ws) {
+  serverState.onConnection$.subscribe(function (ws) {
     var onCloseHandlers = [];
     ws.onclose = function () {
       onCloseHandlers.map(function (fn) {
@@ -77,7 +93,7 @@ function startWebsocketServer(options) {
          * it means that the client requested the masterChangeStream$
          */
         if (typeof method !== 'function') {
-          var sub = handler.masterChangeStream$.subscribe(function (ev) {
+          var changeStreamSub = handler.masterChangeStream$.subscribe(function (ev) {
             var streamResponse = {
               id: 'stream',
               collection: message.collection,
@@ -86,7 +102,7 @@ function startWebsocketServer(options) {
             ws.send(JSON.stringify(streamResponse));
           });
           onCloseHandlers.push(function () {
-            return sub.unsubscribe();
+            return changeStreamSub.unsubscribe();
           });
           return Promise.resolve();
         }
@@ -103,9 +119,6 @@ function startWebsocketServer(options) {
       }
     });
   });
-  return {
-    server: wss,
-    close: closeServer
-  };
+  return serverState;
 }
 //# sourceMappingURL=websocket-server.js.map

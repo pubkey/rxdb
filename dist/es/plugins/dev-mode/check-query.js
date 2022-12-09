@@ -66,7 +66,6 @@ export function checkMangoQuery(args) {
       });
     }
   });
-
   /**
    * ensure if custom index is set,
    * it is also defined in the schema

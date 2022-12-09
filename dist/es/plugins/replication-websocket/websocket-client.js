@@ -25,7 +25,7 @@ function ensureIsWebsocket(w) {
 
 export var replicateWithWebsocketServer = function replicateWithWebsocketServer(options) {
   try {
-    return Promise.resolve(getWebSocket(options.url, options.collection.database)).then(function (socketState) {
+    return Promise.resolve(getWebSocket(options.url, options.collection.database.token)).then(function (socketState) {
       var wsClient = socketState.socket;
       var messages$ = socketState.message$;
       var requestCounter = 0;
@@ -118,14 +118,18 @@ export var replicateWithWebsocketServer = function replicateWithWebsocketServer(
     return Promise.reject(e);
   }
 };
-export var getWebSocket = function getWebSocket(url, database) {
+export var getWebSocket = function getWebSocket(url,
+/**
+ * The value of RxDatabase.token.
+ */
+databaseToken) {
   try {
     /**
      * Also use the database token as cache-key
      * to make it easier to test and debug
      * multi-instance setups.
      */
-    var cacheKey = url + '|||' + database.token;
+    var cacheKey = url + '|||' + databaseToken;
     var has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
     if (!has) {
       ensureIsWebsocket(IsomorphicWebSocket);

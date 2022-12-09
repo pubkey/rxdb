@@ -1,4 +1,4 @@
-import { RxStorageMessageChannel } from '../../rx-storage-message-channel';
+import { RxStorageMessageChannel } from '../storage-remote';
 import type { RxStorageStatics } from '../../types';
 export declare type RxStorageIpcRendererSettings = {
     /**

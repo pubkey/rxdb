@@ -63,7 +63,7 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-storage-pouchdb.html" />
+    <link rel="next" href="rx-storage-dexie.html" />
     
     
     <link rel="prev" href="leader-election.html" />
@@ -1465,33 +1465,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.19.1" data-path="rx-storage-pouchdb.html">
-            
-                <a href="rx-storage-pouchdb.html">
-            
-                    
-                    RxStorage PouchDB
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.2" data-path="adapters.html">
-            
-                <a href="adapters.html">
-            
-                    
-                    PouchDB Adapters
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.19.3" data-path="rx-storage-dexie.html">
+        <li class="chapter " data-level="1.19.1" data-path="rx-storage-dexie.html">
             
                 <a href="rx-storage-dexie.html">
             
@@ -1504,7 +1478,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.4" data-path="rx-storage-lokijs.html">
+        <li class="chapter " data-level="1.19.2" data-path="rx-storage-lokijs.html">
             
                 <a href="rx-storage-lokijs.html">
             
@@ -1517,7 +1491,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.5" data-path="rx-storage-memory.html">
+        <li class="chapter " data-level="1.19.3" data-path="rx-storage-memory.html">
             
                 <a href="rx-storage-memory.html">
             
@@ -1530,7 +1504,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.6" data-path="rx-storage-indexeddb.html">
+        <li class="chapter " data-level="1.19.4" data-path="rx-storage-indexeddb.html">
             
                 <a href="rx-storage-indexeddb.html">
             
@@ -1543,7 +1517,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.7" data-path="rx-storage-sqlite.html">
+        <li class="chapter " data-level="1.19.5" data-path="rx-storage-sqlite.html">
             
                 <a href="rx-storage-sqlite.html">
             
@@ -1556,7 +1530,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.8" data-path="rx-storage-foundationdb.html">
+        <li class="chapter " data-level="1.19.6" data-path="rx-storage-foundationdb.html">
             
                 <a href="rx-storage-foundationdb.html">
             
@@ -1569,7 +1543,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.9" data-path="rx-storage-worker.html">
+        <li class="chapter " data-level="1.19.7" data-path="rx-storage-worker.html">
             
                 <a href="rx-storage-worker.html">
             
@@ -1582,7 +1556,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.10" data-path="rx-storage-memory-synced.html">
+        <li class="chapter " data-level="1.19.8" data-path="rx-storage-remote.html">
+            
+                <a href="rx-storage-remote.html">
+            
+                    
+                    RxStorage Sharding
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.19.9" data-path="rx-storage-memory-synced.html">
             
                 <a href="rx-storage-memory-synced.html">
             
@@ -1595,7 +1582,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.11" data-path="rx-storage-sharding.html">
+        <li class="chapter " data-level="1.19.10" data-path="rx-storage-sharding.html">
             
                 <a href="rx-storage-sharding.html">
             
@@ -1608,7 +1595,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.12" data-path="rx-storage-localstorage-meta-optimizer.html">
+        <li class="chapter " data-level="1.19.11" data-path="rx-storage-localstorage-meta-optimizer.html">
             
                 <a href="rx-storage-localstorage-meta-optimizer.html">
             
@@ -1621,12 +1608,38 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.13" data-path="electron.html">
+        <li class="chapter " data-level="1.19.12" data-path="electron.html">
             
                 <a href="electron.html#rxstorage-electron-ipcrenderer--ipcmain">
             
                     
                     RxStorage Electron IpcRenderer & IpcMain
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.19.13" data-path="rx-storage-pouchdb.html">
+            
+                <a href="rx-storage-pouchdb.html">
+            
+                    
+                    RxStorage PouchDB
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.19.14" data-path="adapters.html">
+            
+                <a href="adapters.html">
+            
+                    
+                    PouchDB Adapters
             
                 </a>
             
@@ -2249,6 +2262,8 @@ It has the special behavior of loading all data into memory at app start and the
 <p>The PouchDB RxStorage is based on the <a href="https://github.com/pouchdb/pouchdb" target="_blank">PouchDB</a> database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. Since version <code>13.12.0</code> the PouchDB RxStorage is <a href="https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated" target="_blank">deprecated</a> and should no longer be used.<a href="rx-storage-pouchdb.html">Read more about the PouchDB RxStorage</a></p>
 <h3 id="worker">Worker</h3>
 <p>The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in Node.js). By doing so, you can take CPU load from the main process and move it into the worker&apos;s process which can improve the perceived performance of your application. <a href="rx-storage-worker.html">Read more</a></p>
+<h3 id="remote">Remote</h3>
+<p>The Remote RxStorage is made to use a remote storage and communicate with it over an asynchronous message channel. The remote part could be on another JavaScript process or even on a different host machine. <a href="rx-storage-remote.html">Read more</a></p>
 <h3 id="sharding-premium">Sharding [<a href="premium.md">premium</a>]</h3>
 <p>On some <code>RxStorage</code> implementations (like IndexedDB), a huge performance improvement can be done by sharding the documents into multiple database instances. With the sharding plugin you can wrap any other <code>RxStorage</code> into a sharded storage. <a href="rx-storage-sharding.html">Read more</a></p>
 <h3 id="memory-synced-premium">Memory Synced [<a href="premium.md">premium</a>]</h3>
@@ -2305,7 +2320,7 @@ The main reason to use this is to improve initial page load and query/write time
                 </a>
                 
                 
-                <a href="rx-storage-pouchdb.html" class="navigation navigation-next " aria-label="Next page: RxStorage PouchDB">
+                <a href="rx-storage-dexie.html" class="navigation navigation-next " aria-label="Next page: RxStorage Dexie.js">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2316,7 +2331,7 @@ The main reason to use this is to improve initial page load and query/write time
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxStorage","level":"1.19","depth":1,"next":{"title":"RxStorage PouchDB","level":"1.19.1","depth":2,"path":"rx-storage-pouchdb.md","ref":"./rx-storage-pouchdb.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.18","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage","level":"1.19","depth":1,"next":{"title":"RxStorage Dexie.js","level":"1.19.1","depth":2,"path":"rx-storage-dexie.md","ref":"./rx-storage-dexie.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.18","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
