@@ -59,10 +59,10 @@ import { INDEX_MAX } from '../../query-planner';
 import { attachmentMapKey } from '../memory';
 
 export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstance<
-RxDocType,
-FoundationDBStorageInternals<RxDocType>,
-RxStorageFoundationDBInstanceCreationOptions,
-RxStorageDefaultCheckpoint
+    RxDocType,
+    FoundationDBStorageInternals<RxDocType>,
+    RxStorageFoundationDBInstanceCreationOptions,
+    RxStorageDefaultCheckpoint
 > {
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
@@ -379,10 +379,7 @@ RxStorageDefaultCheckpoint
 
     async close() {
         if (this.closed) {
-            return Promise.reject(newRxError('SNH', {
-                database: this.databaseName,
-                collection: this.collectionName
-            }));
+            return Promise.reject(new Error('already closed'));
         }
         this.closed = true;
         this.changes$.complete();
