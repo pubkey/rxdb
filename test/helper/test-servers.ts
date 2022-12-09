@@ -9,6 +9,7 @@ const { startRemoteStorageServer } = require('./remote-storage-server');
 const {
     blobBufferUtil
 } = require('../../');
+export const TEST_STATIC_FILE_SERVER_PORT = 18001;
 export function startTestServers() {
     const staticFilesPath = path.join(
         __dirname,
@@ -27,7 +28,6 @@ export function startTestServers() {
      * we need to serve some static files
      * to run tests for attachments
      */
-    const fileServerPort = 18001;
     const app = express();
     app.use(cors());
     app.get('/', (_req: any, res: any) => {
@@ -46,5 +46,5 @@ export function startTestServers() {
         res.set('Content-Type', 'text/html');
         res.send(base64String);
     });
-    app.listen(fileServerPort, () => console.log(`Server listening on port: ${fileServerPort}`));
+    app.listen(TEST_STATIC_FILE_SERVER_PORT, () => console.log(`Server listening on port: ${TEST_STATIC_FILE_SERVER_PORT}`));
 }

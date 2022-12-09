@@ -1,7 +1,7 @@
 
 
 // while the karma tests run, we need some things which we start here
-const { startTestServers } = require('../test_tmp/helper/test-servers');
+const { startTestServers, TEST_STATIC_FILE_SERVER_PORT } = require('../test_tmp/helper/test-servers');
 startTestServers();
 
 // karma config
@@ -25,6 +25,14 @@ const configuration = {
     colors: true,
     autoWatch: false,
 
+    /**
+     * Serve these static files from the same port
+     * so we can use it to server web-workers and stuff
+     * and access them with same-origin-restricted code.
+     */
+    proxies: {
+        '/files': 'http://localhost:' + TEST_STATIC_FILE_SERVER_PORT + '/files'
+    },
     /**
      * see
      * @link https://github.com/litixsoft/karma-detect-browsers
