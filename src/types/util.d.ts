@@ -13,9 +13,9 @@ export type PlainSimpleJsonObject = {
  */
 type DeepReadonly<T> =
     T extends (infer R)[] ? DeepReadonlyArray<R> :
-        T extends Function ? T :
-            T extends object ? DeepReadonlyObject<T> :
-                T;
+    T extends Function ? T :
+    T extends object ? DeepReadonlyObject<T> :
+    T;
 
 interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
 
@@ -32,14 +32,14 @@ export type MaybeReadonly<T> = T | Readonly<T>;
  */
 type DeepMutable<T> = (
     T extends object
-        ? {
-            -readonly [K in keyof T]: (
-                T[K] extends object
-                    ? DeepMutable<T[K]>
-                    : T[K]
-            )
-        }
-        : never
+    ? {
+        -readonly [K in keyof T]: (
+            T[K] extends object
+            ? DeepMutable<T[K]>
+            : T[K]
+        )
+    }
+    : never
 );
 
 /**
@@ -100,3 +100,15 @@ export type RxTestStorage = {
 
 
 export type HashFunction = (input: string) => string;
+
+
+/**
+ * Use to have a transferable error object
+ * in plain json instead of a JavaScript Error instance.
+ */
+export type PlainJsonError = {
+    name: string;
+    message: string;
+    stack?: string;
+    rxdb?: true;
+};

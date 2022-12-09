@@ -63,13 +63,13 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                 };
                 instanceByFullName.set(fullName, state);
             } catch (err: any) {
-                settings.send(createErrorAnswer(msg, 'OnCreate: ' + err.toString()));
+                settings.send(createErrorAnswer(msg, err));
                 return;
             }
         } else {
             // if instance already existed, ensure that the schema is equal
             if (!deepEqual(params.schema, state.params.schema)) {
-                settings.send(createErrorAnswer(msg, 'Remote storage: schema not equal to existing storage'));
+                settings.send(createErrorAnswer(msg, new Error('Remote storage: schema not equal to existing storage')));
             }
         }
         state.connectionIds.add(msg.connectionId);
@@ -146,8 +146,8 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                          */
                     }
                     settings.send(createAnswer(message, result));
-                } catch (err) {
-                    settings.send(createErrorAnswer(message, 'Remote Call Error: ' + (err as any).toString()));
+                } catch (err: any) {
+                    settings.send(createErrorAnswer(message, err));
                 }
             })
         );

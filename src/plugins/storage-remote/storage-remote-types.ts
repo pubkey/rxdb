@@ -1,6 +1,7 @@
 import type { ServerOptions, ClientOptions } from 'ws';
 import type { Observable } from 'rxjs';
 import type {
+    PlainJsonError,
     RxStorage,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
@@ -10,11 +11,13 @@ import type {
     WebsocketServerState
 } from '../replication-websocket';
 
+
+
 export type MessageFromRemote = {
     connectionId: string;
     answerTo: string; // id of the request
     method: keyof RxStorageInstance<any, any, any> | 'create';
-    error?: any;
+    error?: PlainJsonError;
     return?: any;
 };
 
@@ -36,7 +39,7 @@ export type RxStorageRemoteSettings = {
     messages$: Observable<MessageFromRemote>;
 };
 
-export type RxStorageMessageChannelInternals = {
+export type RxStorageRemoteInternals = {
     params: RxStorageInstanceCreationParams<any, any>;
     connectionId: string;
 };

@@ -30,17 +30,16 @@ import {
 import type {
     MessageFromRemote,
     MessageToRemote,
-    RxStorageMessageChannelInternals,
+    RxStorageRemoteInternals,
     RxStorageRemoteSettings
 } from './storage-remote-types';
 
 
 
 
-export class RxStorageMessageChannel implements RxStorage<RxStorageMessageChannelInternals, any> {
+export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
     public readonly statics: RxStorageStatics;
     public readonly name: string = 'remote';
-    public readonly messageChannelByPort = new WeakMap<MessagePort, MessageChannel>();
     private requestIdSeed: string = randomCouchString(10);
     private lastRequestId: number = 0;
     constructor(
@@ -56,7 +55,7 @@ export class RxStorageMessageChannel implements RxStorage<RxStorageMessageChanne
 
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, any>
-    ): Promise<RxStorageInstanceMessageChannel<RxDocType>> {
+    ): Promise<RxStorageInstanceRemote<RxDocType>> {
 
         const requestId = this.getRequestId();
         const waitForOkPromise = firstValueFrom(this.settings.messages$.pipe(
@@ -71,9 +70,9 @@ export class RxStorageMessageChannel implements RxStorage<RxStorageMessageChanne
 
         const waitForOkResult = await waitForOkPromise;
         if (waitForOkResult.error) {
-            throw new Error('could not create instance ' + waitForOkResult.error.toString());
+            throw new Error('could not create instance ' + JSON.stringify(waitForOkResult.error));
         }
-        return new RxStorageInstanceMessageChannel(
+        return new RxStorageInstanceRemote(
             this,
             params.databaseName,
             params.collectionName,
@@ -87,7 +86,7 @@ export class RxStorageMessageChannel implements RxStorage<RxStorageMessageChanne
     }
 }
 
-export class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInstance<RxDocType, RxStorageMessageChannelInternals, any, any> {
+export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxDocType, RxStorageRemoteInternals, any, any> {
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>> = new Subject();
     private conflicts$: Subject<RxConflictResultionTask<RxDocType>> = new Subject();
     private subs: Subscription[] = [];
@@ -96,11 +95,11 @@ export class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInst
     messages$: Observable<MessageFromRemote>;
 
     constructor(
-        public readonly storage: RxStorageMessageChannel,
+        public readonly storage: RxStorageRemote,
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
-        public readonly internals: RxStorageMessageChannelInternals,
+        public readonly internals: RxStorageRemoteInternals,
         public readonly options: Readonly<any>
     ) {
         this.messages$ = this.storage.settings.messages$.pipe(
@@ -137,7 +136,7 @@ export class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInst
         this.storage.settings.send(message);
         const response = await responsePromise;
         if (response.error) {
-            throw new Error(response.error);
+            throw new Error('could not requestRemote: ' + JSON.stringify(response.error));
         } else {
             return response.return;
         }
@@ -196,6 +195,6 @@ export class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInst
     }
 }
 
-export function getRxStorageRemote(settings: RxStorageRemoteSettings): RxStorageMessageChannel {
-    return new RxStorageMessageChannel(settings);
+export function getRxStorageRemote(settings: RxStorageRemoteSettings): RxStorageRemote {
+    return new RxStorageRemote(settings);
 }

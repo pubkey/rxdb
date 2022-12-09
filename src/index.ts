@@ -206,5 +206,6 @@ export type {
     WithAttachmentsData,
     RxTestStorage,
     ById,
-    RxQueryPlan
+    RxQueryPlan,
+    PlainJsonError
 } from './types';

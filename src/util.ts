@@ -3,9 +3,12 @@ import type {
     DeepReadonlyObject,
     HashFunction,
     MaybeReadonly,
+    PlainJsonError,
     RxDocumentData,
     RxDocumentMeta,
     RxDocumentWriteData,
+    RxError,
+    RxTypeError,
     StringKeys
 } from './types';
 import {
@@ -852,3 +855,14 @@ export function deepFreeze<T>(o: T): T {
     return o;
 }
 
+
+
+export function errorToPlainJson(err: Error | TypeError | RxError | RxTypeError): PlainJsonError {
+    const ret: PlainJsonError = {
+        name: err.name,
+        message: err.message,
+        stack: err.stack,
+        rxdb: (err as any).rxdb
+    };
+    return ret;
+}
