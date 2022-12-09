@@ -138,5 +138,6 @@ To learn more about using RxDB with Electron, you might want to check out [this 
 
 ## Follow up
 
+- Check out the [RxDB Electron example](https://github.com/pubkey/rxdb/tree/master/examples/electron)
 - If you haven't done yet, you should start learning about RxDB with the [Quickstart Tutorial](./quickstart.md).
 - There is a followup list of other [client side database alternatives](./alternatives.md) that you can try to use with Electron.
