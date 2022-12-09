@@ -1,4 +1,4 @@
-import { RxStorageMessageChannel } from '../storage-remote';
+import { RxStorageRemote } from '../storage-remote';
 import type { RxStorageStatics } from '../../types';
 export declare type RxStorageIpcRendererSettings = {
     /**
@@ -10,5 +10,5 @@ export declare type RxStorageIpcRendererSettings = {
     statics: RxStorageStatics;
     ipcRenderer: any;
 };
-export declare type RxStorageIpcRenderer = RxStorageMessageChannel;
+export declare type RxStorageIpcRenderer = RxStorageRemote;
 export declare function getRxStorageIpcRenderer(settings: RxStorageIpcRendererSettings): RxStorageIpcRenderer;

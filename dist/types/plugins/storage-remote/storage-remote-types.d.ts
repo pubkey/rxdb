@@ -1,12 +1,12 @@
 import type { ServerOptions, ClientOptions } from 'ws';
 import type { Observable } from 'rxjs';
-import type { RxStorage, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
+import type { PlainJsonError, RxStorage, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
 import type { WebsocketServerState } from '../replication-websocket';
 export declare type MessageFromRemote = {
     connectionId: string;
     answerTo: string;
     method: keyof RxStorageInstance<any, any, any> | 'create';
-    error?: any;
+    error?: PlainJsonError;
     return?: any;
 };
 export declare type MessageToRemote = {
@@ -24,7 +24,7 @@ export declare type RxStorageRemoteSettings = {
     send(msg: MessageToRemote): void;
     messages$: Observable<MessageFromRemote>;
 };
-export declare type RxStorageMessageChannelInternals = {
+export declare type RxStorageRemoteInternals = {
     params: RxStorageInstanceCreationParams<any, any>;
     connectionId: string;
 };

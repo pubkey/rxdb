@@ -98,7 +98,7 @@ function exposeRxStorageRemote(settings) {
                 settings.send((0, _storageRemoteHelpers.createAnswer)(message, result));
               });
             }, function (err) {
-              settings.send((0, _storageRemoteHelpers.createErrorAnswer)(message, 'Remote Call Error: ' + err.toString()));
+              settings.send((0, _storageRemoteHelpers.createErrorAnswer)(message, err));
             }));
           } catch (e) {
             return Promise.reject(e);
@@ -137,13 +137,13 @@ function exposeRxStorageRemote(settings) {
               instanceByFullName.set(fullName, state);
             });
           }, function (err) {
-            settings.send((0, _storageRemoteHelpers.createErrorAnswer)(msg, 'OnCreate: ' + err.toString()));
+            settings.send((0, _storageRemoteHelpers.createErrorAnswer)(msg, err));
             _exit2 = true;
           });
           if (_temp6 && _temp6.then) return _temp6.then(function () {});
         } else {
           if (!(0, _fastDeepEqual["default"])(params.schema, state.params.schema)) {
-            settings.send((0, _storageRemoteHelpers.createErrorAnswer)(msg, 'Remote storage: schema not equal to existing storage'));
+            settings.send((0, _storageRemoteHelpers.createErrorAnswer)(msg, new Error('Remote storage: schema not equal to existing storage')));
           }
         }
       }();

@@ -742,4 +742,13 @@ export function deepFreeze(o) {
   });
   return o;
 }
+export function errorToPlainJson(err) {
+  var ret = {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+    rxdb: err.rxdb
+  };
+  return ret;
+}
 //# sourceMappingURL=util.js.map

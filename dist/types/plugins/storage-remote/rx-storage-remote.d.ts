@@ -1,30 +1,29 @@
 import { Observable } from 'rxjs';
 import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, RxStorageStatics } from '../../types';
-import type { MessageFromRemote, RxStorageMessageChannelInternals, RxStorageRemoteSettings } from './storage-remote-types';
-export declare class RxStorageMessageChannel implements RxStorage<RxStorageMessageChannelInternals, any> {
+import type { MessageFromRemote, RxStorageRemoteInternals, RxStorageRemoteSettings } from './storage-remote-types';
+export declare class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
     readonly settings: RxStorageRemoteSettings;
     readonly statics: RxStorageStatics;
     readonly name: string;
-    readonly messageChannelByPort: WeakMap<MessagePort, MessageChannel>;
     private requestIdSeed;
     private lastRequestId;
     constructor(settings: RxStorageRemoteSettings);
     getRequestId(): string;
-    createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<RxStorageInstanceMessageChannel<RxDocType>>;
+    createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<RxStorageInstanceRemote<RxDocType>>;
 }
-export declare class RxStorageInstanceMessageChannel<RxDocType> implements RxStorageInstance<RxDocType, RxStorageMessageChannelInternals, any, any> {
-    readonly storage: RxStorageMessageChannel;
+export declare class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxDocType, RxStorageRemoteInternals, any, any> {
+    readonly storage: RxStorageRemote;
     readonly databaseName: string;
     readonly collectionName: string;
     readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>;
-    readonly internals: RxStorageMessageChannelInternals;
+    readonly internals: RxStorageRemoteInternals;
     readonly options: Readonly<any>;
     private changes$;
     private conflicts$;
     private subs;
     private closed;
     messages$: Observable<MessageFromRemote>;
-    constructor(storage: RxStorageMessageChannel, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: RxStorageMessageChannelInternals, options: Readonly<any>);
+    constructor(storage: RxStorageRemote, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: RxStorageRemoteInternals, options: Readonly<any>);
     private requestRemote;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
@@ -42,4 +41,4 @@ export declare class RxStorageInstanceMessageChannel<RxDocType> implements RxSto
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
     resolveConflictResultionTask(taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
-export declare function getRxStorageRemote(settings: RxStorageRemoteSettings): RxStorageMessageChannel;
+export declare function getRxStorageRemote(settings: RxStorageRemoteSettings): RxStorageRemote;

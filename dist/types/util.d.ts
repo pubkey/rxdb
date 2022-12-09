@@ -1,4 +1,4 @@
-import type { BlobBuffer, DeepReadonlyObject, HashFunction, MaybeReadonly, RxDocumentData, RxDocumentMeta, RxDocumentWriteData, StringKeys } from './types';
+import type { BlobBuffer, DeepReadonlyObject, HashFunction, MaybeReadonly, PlainJsonError, RxDocumentData, RxDocumentMeta, RxDocumentWriteData, RxError, RxTypeError, StringKeys } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -229,4 +229,5 @@ export declare function sortDocumentsByLastWriteTime<RxDocType>(primaryPath: str
 export declare type ObjectPathMonadFunction<T, R = any> = (obj: T) => R;
 export declare function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonadFunction<T, R>;
 export declare function deepFreeze<T>(o: T): T;
+export declare function errorToPlainJson(err: Error | TypeError | RxError | RxTypeError): PlainJsonError;
 export {};

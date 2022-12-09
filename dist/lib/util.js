@@ -18,6 +18,7 @@ exports.deepFreeze = deepFreeze;
 exports.defaultHashFunction = defaultHashFunction;
 exports.ensureInteger = ensureInteger;
 exports.ensureNotFalsy = ensureNotFalsy;
+exports.errorToPlainJson = errorToPlainJson;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
 exports.firstPropertyValueOfObject = firstPropertyValueOfObject;
@@ -803,5 +804,14 @@ function deepFreeze(o) {
     }
   });
   return o;
+}
+function errorToPlainJson(err) {
+  var ret = {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+    rxdb: err.rxdb
+  };
+  return ret;
 }
 //# sourceMappingURL=util.js.map
