@@ -44,7 +44,6 @@ import {
     CLEANUP_INDEX,
     getFoundationDBIndexName
 } from './foundationdb-helpers';
-import { newRxError } from '../../rx-error';
 import {
     getIndexableStringMonad,
     getStartIndexStringFromLowerBound,
