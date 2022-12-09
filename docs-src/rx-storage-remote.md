@@ -1,4 +1,4 @@
-# Remote RxStorage
+# Remote RxStorage (beta)
 
 The Remote [RxStorage](./rx-storage.md) is made to use a remote storage and communicate with it over an asynchronous message channel.
 The remote part could be on another JavaScript process or even on a different host machine.
