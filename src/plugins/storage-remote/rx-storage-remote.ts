@@ -185,6 +185,7 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
         await this.requestRemote('close', []);
     }
     async remove(): Promise<void> {
+        this.closed = true;
         await this.requestRemote('remove', []);
     }
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {

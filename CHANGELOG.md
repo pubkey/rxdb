@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX remote RxStorage: ensure calling `.close()` after `.remove()` works.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

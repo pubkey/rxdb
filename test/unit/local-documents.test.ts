@@ -342,7 +342,7 @@ config.parallel('local-documents.test.js', () => {
             });
 
             await doc1.atomicPatch({ foo: 'bar2' });
-            await AsyncTestUtil.waitUntil(() => {
+            await waitUntil(() => {
                 return ensureNotFalsy(doc2).get('foo') === 'bar2';
             }, 1000, 50);
 

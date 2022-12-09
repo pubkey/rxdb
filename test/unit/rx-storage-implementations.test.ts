@@ -1278,13 +1278,13 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<{ key: string; value: string; }>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
-                    options: {},
-                    multiInstance: false
-                });
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
+                        options: {},
+                        multiInstance: false
+                    });
 
                 const writeData = {
                     key: 'foobar',
@@ -1341,13 +1341,13 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<{ key: string; value: string; }>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema: getTestDataSchema(),
-                    options: {},
-                    multiInstance: false
-                });
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema: getTestDataSchema(),
+                        options: {},
+                        multiInstance: false
+                    });
 
                 await storageInstance.bulkWrite([
                     {
@@ -1435,13 +1435,13 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<RandomDoc>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema,
-                    options: {},
-                    multiInstance: false
-                });
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
 
                 const docData: RxDocumentWriteData<RandomDoc>[] = new Array(6)
                     .fill(0)
@@ -1528,13 +1528,13 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<NestedDoc>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema,
-                    options: {},
-                    multiInstance: false
-                });
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
                 const insertResult = await storageInstance.bulkWrite([
                     {
                         document: {
@@ -1583,13 +1583,13 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema,
-                    options: {},
-                    multiInstance: false
-                });
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
 
                 const amount = 100;
 
@@ -1627,13 +1627,13 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
-                    schema,
-                    options: {},
-                    multiInstance: false
-                });
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false
+                    });
                 const preparedQueryAll = config.storage.getStorage().statics.prepareQuery<TestDocType>(
                     schema,
                     {
@@ -2735,7 +2735,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     multiInstance: false
                 });
 
-
                 let done = false;
                 while (!done) {
                     done = await storageInstance.cleanup(0);
@@ -2826,6 +2825,25 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(Object.keys(docs).length, 0);
 
                 storageInstance2.close();
+            });
+            /**
+             * To make it easier to clean up storages,
+             * calling close() after the storage was removed()
+             * MUST finish properly.
+             * Internally the storage instance should remember that it was removed
+             * and automatically return from the .close() call.
+             */
+            it('should be able to call .close() after .remove()', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false
+                });
+                await storageInstance.remove();
+                await storageInstance.close();
             });
         });
     });
@@ -2929,14 +2947,14 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage()
                 .statics
                 .prepareQuery<TestDocType>(
-                instances.b.schema,
-                {
-                    selector: {},
-                    limit: 1,
-                    sort: [{ key: 'asc' }],
-                    skip: 0
-                }
-            );
+                    instances.b.schema,
+                    {
+                        selector: {},
+                        limit: 1,
+                        sort: [{ key: 'asc' }],
+                        skip: 0
+                    }
+                );
 
             const queryResultBefore = await instances.b.query(preparedQuery);
             assert.ok(queryResultBefore);
