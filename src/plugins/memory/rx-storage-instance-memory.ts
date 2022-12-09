@@ -7,7 +7,6 @@ import {
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
 } from '../../custom-index';
-import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import {
     categorizeBulkWriteRows,

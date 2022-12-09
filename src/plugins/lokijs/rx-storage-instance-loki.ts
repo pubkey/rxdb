@@ -60,10 +60,10 @@ import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } fro
 let instanceId = now();
 
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
-RxDocType,
-LokiStorageInternals,
-LokiSettings,
-RxStorageDefaultCheckpoint
+    RxDocType,
+    LokiStorageInternals,
+    LokiSettings,
+    RxStorageDefaultCheckpoint
 > {
 
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
@@ -144,8 +144,8 @@ RxStorageDefaultCheckpoint
 
         const docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>> = new Map();
         const docsInDbWithLokiKey: Map<
-        RxDocumentData<RxDocType>[StringKeys<RxDocType>],
-        RxDocumentData<RxDocType> & { $loki: number; }
+            RxDocumentData<RxDocType>[StringKeys<RxDocType>],
+            RxDocumentData<RxDocType> & { $loki: number; }
         > = new Map();
         documentWrites.forEach(writeRow => {
             const id = writeRow.document[this.primaryPath];
@@ -266,9 +266,9 @@ RxStorageDefaultCheckpoint
         limit: number,
         checkpoint?: RxStorageDefaultCheckpoint | null
     ): Promise<{
-            documents: RxDocumentData<RxDocType>[];
-            checkpoint: RxStorageDefaultCheckpoint;
-        }> {
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint: RxStorageDefaultCheckpoint;
+    }> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'getChangedDocumentsSince', [limit, checkpoint]);
@@ -339,6 +339,9 @@ RxStorageDefaultCheckpoint
     }
 
     async close(): Promise<void> {
+        if (this.closed) {
+            return Promise.reject(new Error('already closed'));
+        }
         this.closed = true;
         this.changes$.complete();
         OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);

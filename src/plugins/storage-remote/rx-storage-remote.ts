@@ -6,7 +6,6 @@ import {
     Subject,
     Subscription
 } from 'rxjs';
-import { newRxError } from '../../rx-error';
 import type {
     BulkWriteRow,
     EventBulk,
@@ -25,7 +24,6 @@ import type {
     RxStorageStatics
 } from '../../types';
 import {
-    PROMISE_RESOLVE_VOID,
     randomCouchString
 } from '../../util';
 import type {
