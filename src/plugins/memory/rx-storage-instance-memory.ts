@@ -414,10 +414,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
     close(): Promise<void> {
         if (this.closed) {
-            return Promise.reject(newRxError('SNH', {
-                database: this.databaseName,
-                collection: this.collectionName
-            }));
+            return Promise.reject(new Error('already closed'));
         }
         this.closed = true;
         this.changes$.complete();

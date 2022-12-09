@@ -38,6 +38,7 @@ import {
     clone,
     randomString,
     wait,
+    assertThrows,
     waitUntil
 } from 'async-test-util';
 import {
@@ -2827,13 +2828,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 storageInstance2.close();
             });
             /**
-             * To make it easier to clean up storages,
-             * calling close() after the storage was removed()
-             * MUST finish properly.
-             * Internally the storage instance should remember that it was removed
-             * and automatically return from the .close() call.
+             * To ensure the equal behavior across all storages,
+             * the call to close() must throw an error if the storage is already removed.
              */
-            it('should be able to call .close() after .remove()', async () => {
+            it('should throw on call to .close() after .remove()', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -2843,7 +2841,13 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     multiInstance: false
                 });
                 await storageInstance.remove();
-                await storageInstance.close();
+                await assertThrows(
+                    () => storageInstance.close(),
+                    /**
+                     * Yes, this must be an Error. This MUST NOT be a RxError!
+                     */
+                    Error
+                );
             });
         });
     });

@@ -6,6 +6,7 @@ import {
     Subject,
     Subscription
 } from 'rxjs';
+import { newRxError } from '../../rx-error';
 import type {
     BulkWriteRow,
     EventBulk,
@@ -177,7 +178,7 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
     }
     async close(): Promise<void> {
         if (this.closed) {
-            return PROMISE_RESOLVE_VOID;
+            return Promise.reject(new Error('already closed'));
         }
         this.closed = true;
         this.subs.forEach(sub => sub.unsubscribe());
