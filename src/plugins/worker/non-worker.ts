@@ -183,7 +183,7 @@ export class RxStorageInstanceWorker<RxDocType> implements RxStorageInstance<RxD
     }
     async close(): Promise<void> {
         if (this.closed) {
-            return;
+            return Promise.reject(new Error('already closed'));
         }
         this.closed = true;
         this.subs.forEach(sub => sub.unsubscribe());
