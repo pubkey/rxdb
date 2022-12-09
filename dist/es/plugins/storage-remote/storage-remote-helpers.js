@@ -1,9 +1,10 @@
+import { errorToPlainJson } from '../../util';
 export function createErrorAnswer(msg, error) {
   return {
     connectionId: msg.connectionId,
     answerTo: msg.requestId,
     method: msg.method,
-    error: error
+    error: errorToPlainJson(error)
   };
 }
 export function createAnswer(msg, ret) {
