@@ -1,6 +1,5 @@
 import { Subject } from 'rxjs';
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
-import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { getFromMapOrThrow, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM } from '../../util';
@@ -220,10 +219,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
   };
   _proto.close = function close() {
     if (this.closed) {
-      return Promise.reject(newRxError('SNH', {
-        database: this.databaseName,
-        collection: this.collectionName
-      }));
+      return Promise.reject(new Error('already closed'));
     }
     this.closed = true;
     this.changes$.complete();

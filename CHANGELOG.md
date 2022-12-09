@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX Ensure equal behavior across all storages on call to `.close()` after `.remove()`.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.14.3 (9 December 2022)
+
+- FIX Ensure equal behavior across all storages on call to `.close()` after `.remove()`.
 
 ### 13.14.2 (9 December 2022)
 

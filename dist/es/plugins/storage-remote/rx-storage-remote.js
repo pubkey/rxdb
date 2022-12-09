@@ -1,6 +1,6 @@
 import { ensureNotFalsy } from 'event-reduce-js';
 import { firstValueFrom, filter, Subject } from 'rxjs';
-import { PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
+import { randomCouchString } from '../../util';
 export var RxStorageRemote = /*#__PURE__*/function () {
   function RxStorageRemote(settings) {
     this.name = 'remote';
@@ -121,7 +121,7 @@ export var RxStorageInstanceRemote = /*#__PURE__*/function () {
     try {
       var _this7 = this;
       if (_this7.closed) {
-        return Promise.resolve(PROMISE_RESOLVE_VOID);
+        return Promise.reject(new Error('already closed'));
       }
       _this7.closed = true;
       _this7.subs.forEach(function (sub) {
@@ -136,6 +136,7 @@ export var RxStorageInstanceRemote = /*#__PURE__*/function () {
   _proto2.remove = function remove() {
     try {
       var _this9 = this;
+      _this9.closed = true;
       return Promise.resolve(_this9.requestRemote('remove', [])).then(function () {});
     } catch (e) {
       return Promise.reject(e);

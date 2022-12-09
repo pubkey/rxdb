@@ -9,7 +9,6 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 // } from 'foundationdb';
 import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { CLEANUP_INDEX, getFoundationDBIndexName } from './foundationdb-helpers';
-import { newRxError } from '../../rx-error';
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
 import { ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_VOID } from '../../util';
 import { queryFoundationDB } from './foundationdb-query';
@@ -344,10 +343,7 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
     try {
       var _this16 = this;
       if (_this16.closed) {
-        return Promise.reject(newRxError('SNH', {
-          database: _this16.databaseName,
-          collection: _this16.collectionName
-        }));
+        return Promise.reject(new Error('already closed'));
       }
       _this16.closed = true;
       _this16.changes$.complete();
