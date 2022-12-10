@@ -92,7 +92,7 @@ const database = await createRxDatabase({
 
 ## Replication with SharedWorker
 
-When a SharedWorker RxStorage is used, it is recommened to run the replication **inside** of the worker. You can do that by openening another [RxDatabase](./rx-database.md) inside of it and starting the replication there.
+When a SharedWorker RxStorage is used, it is recommended to run the replication **inside** of the worker. You can do that by opening another [RxDatabase](./rx-database.md) inside of it and starting the replication there.
 
 ```ts
 // shared-worker.ts
