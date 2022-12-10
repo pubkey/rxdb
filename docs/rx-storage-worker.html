@@ -63,7 +63,7 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-storage-remote.html" />
+    <link rel="next" href="rx-storage-shared-worker.html" />
     
     
     <link rel="prev" href="rx-storage-foundationdb.html" />
@@ -1556,7 +1556,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.8" data-path="rx-storage-remote.html">
+        <li class="chapter " data-level="1.19.8" data-path="rx-storage-shared-worker.html">
+            
+                <a href="rx-storage-shared-worker.html">
+            
+                    
+                    RxStorage Shared Worker
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.19.9" data-path="rx-storage-remote.html">
             
                 <a href="rx-storage-remote.html">
             
@@ -1569,7 +1582,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.9" data-path="rx-storage-memory-synced.html">
+        <li class="chapter " data-level="1.19.10" data-path="rx-storage-memory-synced.html">
             
                 <a href="rx-storage-memory-synced.html">
             
@@ -1582,7 +1595,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.10" data-path="rx-storage-sharding.html">
+        <li class="chapter " data-level="1.19.11" data-path="rx-storage-sharding.html">
             
                 <a href="rx-storage-sharding.html">
             
@@ -1595,7 +1608,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.11" data-path="rx-storage-localstorage-meta-optimizer.html">
+        <li class="chapter " data-level="1.19.12" data-path="rx-storage-localstorage-meta-optimizer.html">
             
                 <a href="rx-storage-localstorage-meta-optimizer.html">
             
@@ -1608,7 +1621,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.12" data-path="electron.html">
+        <li class="chapter " data-level="1.19.13" data-path="electron.html">
             
                 <a href="electron.html#rxstorage-electron-ipcrenderer--ipcmain">
             
@@ -1621,7 +1634,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.13" data-path="rx-storage-pouchdb.html">
+        <li class="chapter " data-level="1.19.14" data-path="rx-storage-pouchdb.html">
             
                 <a href="rx-storage-pouchdb.html">
             
@@ -1634,7 +1647,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.14" data-path="adapters.html">
+        <li class="chapter " data-level="1.19.15" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -2243,6 +2256,7 @@
                                 
                                 <h1 id="worker-rxstorage">Worker RxStorage</h1>
 <p>With the worker plugin, you can put the <code>RxStorage</code> of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker&apos;s process which can improve the perceived performance of your application. RxDB uses <a href="https://github.com/andywer/threads.js/" target="_blank">threads.js</a> to create the Worker process an to communicate with it.</p>
+<p><strong>NOTICE:</strong> In browsers, it is recommended to use the <a href="rx-storage-shared-worker.html">Shared Worker RxStorage</a> instead because it has better performance benefits.</p>
 <h2 id="on-the-worker-process">On the worker process</h2>
 <pre><code class="lang-ts"><span class="hljs-comment">// worker.ts</span>
 
@@ -2361,7 +2375,7 @@ You can copy them to a location where it can be served from the webserver and th
                 </a>
                 
                 
-                <a href="rx-storage-remote.html" class="navigation navigation-next " aria-label="Next page: RxStorage Sharding">
+                <a href="rx-storage-shared-worker.html" class="navigation navigation-next " aria-label="Next page: RxStorage Shared Worker">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2372,7 +2386,7 @@ You can copy them to a location where it can be served from the webserver and th
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxStorage Worker","level":"1.19.7","depth":2,"next":{"title":"RxStorage Sharding","level":"1.19.8","depth":2,"path":"rx-storage-remote.md","ref":"./rx-storage-remote.md","articles":[]},"previous":{"title":"RxStorage FoundationDB","level":"1.19.6","depth":2,"path":"rx-storage-foundationdb.md","ref":"./rx-storage-foundationdb.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-worker.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage Worker","level":"1.19.7","depth":2,"next":{"title":"RxStorage Shared Worker","level":"1.19.8","depth":2,"path":"rx-storage-shared-worker.md","ref":"./rx-storage-shared-worker.md","articles":[]},"previous":{"title":"RxStorage FoundationDB","level":"1.19.6","depth":2,"path":"rx-storage-foundationdb.md","ref":"./rx-storage-foundationdb.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-worker.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

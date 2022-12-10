@@ -1556,7 +1556,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.8" data-path="rx-storage-remote.html">
+        <li class="chapter " data-level="1.19.8" data-path="rx-storage-shared-worker.html">
+            
+                <a href="rx-storage-shared-worker.html">
+            
+                    
+                    RxStorage Shared Worker
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.19.9" data-path="rx-storage-remote.html">
             
                 <a href="rx-storage-remote.html">
             
@@ -1569,7 +1582,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.9" data-path="rx-storage-memory-synced.html">
+        <li class="chapter " data-level="1.19.10" data-path="rx-storage-memory-synced.html">
             
                 <a href="rx-storage-memory-synced.html">
             
@@ -1582,7 +1595,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.10" data-path="rx-storage-sharding.html">
+        <li class="chapter " data-level="1.19.11" data-path="rx-storage-sharding.html">
             
                 <a href="rx-storage-sharding.html">
             
@@ -1595,7 +1608,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.11" data-path="rx-storage-localstorage-meta-optimizer.html">
+        <li class="chapter " data-level="1.19.12" data-path="rx-storage-localstorage-meta-optimizer.html">
             
                 <a href="rx-storage-localstorage-meta-optimizer.html">
             
@@ -1608,7 +1621,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.12" data-path="electron.html">
+        <li class="chapter " data-level="1.19.13" data-path="electron.html">
             
                 <a href="electron.html#rxstorage-electron-ipcrenderer--ipcmain">
             
@@ -1621,7 +1634,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.13" data-path="rx-storage-pouchdb.html">
+        <li class="chapter " data-level="1.19.14" data-path="rx-storage-pouchdb.html">
             
                 <a href="rx-storage-pouchdb.html">
             
@@ -1634,7 +1647,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.14" data-path="adapters.html">
+        <li class="chapter " data-level="1.19.15" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -2262,6 +2275,8 @@ It has the special behavior of loading all data into memory at app start and the
 <p>The PouchDB RxStorage is based on the <a href="https://github.com/pouchdb/pouchdb" target="_blank">PouchDB</a> database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. Since version <code>13.12.0</code> the PouchDB RxStorage is <a href="https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated" target="_blank">deprecated</a> and should no longer be used.<a href="rx-storage-pouchdb.html">Read more about the PouchDB RxStorage</a></p>
 <h3 id="worker">Worker</h3>
 <p>The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in Node.js). By doing so, you can take CPU load from the main process and move it into the worker&apos;s process which can improve the perceived performance of your application. <a href="rx-storage-worker.html">Read more</a></p>
+<h3 id="sharedworker-premium">SharedWorker [<a href="premium.md">premium</a>]</h3>
+<p>The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a SharedWorker (only in browsers). By doing so, you can take CPU load from the main process and move it into the worker&apos;s process which can improve the perceived performance of your application. <a href="rx-storage-worker.html">Read more</a></p>
 <h3 id="remote">Remote</h3>
 <p>The Remote RxStorage is made to use a remote storage and communicate with it over an asynchronous message channel. The remote part could be on another JavaScript process or even on a different host machine. <a href="rx-storage-remote.html">Read more</a></p>
 <h3 id="sharding-premium">Sharding [<a href="premium.md">premium</a>]</h3>
