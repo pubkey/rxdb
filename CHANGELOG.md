@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD [SharedWorker RxStorage Plugin](https://rxdb.info/rx-storage-shared-worker.html)
 - FIX Ensure equal behavior across all storages on call to `.close()` after `.remove()`.
 <!-- ADD new changes here! -->
 

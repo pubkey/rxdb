@@ -1,5 +1,9 @@
 /**
  */
+
+const { startTestServers, TEST_STATIC_FILE_SERVER_PORT } = require('../test_tmp/helper/test-servers');
+startTestServers();
+
 const configuration = {
     basePath: '',
     frameworks: [
@@ -19,6 +23,15 @@ const configuration = {
     port: 9876,
     colors: true,
     autoWatch: false,
+
+    /**
+     * Serve these static files from the same port
+     * so we can use it to server web-workers and stuff
+     * and access them with same-origin-restricted code.
+     */
+    proxies: {
+        '/files': 'http://localhost:' + TEST_STATIC_FILE_SERVER_PORT + '/files'
+    },
     browserNoActivityTimeout: 1000 * 60 * 3,
     detectBrowsers: {
         enabled: true,
