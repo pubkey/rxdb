@@ -3,8 +3,6 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD [SharedWorker RxStorage Plugin](https://rxdb.info/rx-storage-shared-worker.html)
-
->>>>>>> f0740667ca8b489d312916adaef965d90dab3f70
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
