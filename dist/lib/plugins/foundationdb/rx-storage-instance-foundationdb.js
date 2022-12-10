@@ -9,7 +9,6 @@ var _rxjs = require("rxjs");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _foundationdbHelpers = require("./foundationdb-helpers");
-var _rxError = require("../../rx-error");
 var _customIndex = require("../../custom-index");
 var _util = require("../../util");
 var _foundationdbQuery = require("./foundationdb-query");
@@ -351,10 +350,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
     try {
       var _this16 = this;
       if (_this16.closed) {
-        return Promise.reject((0, _rxError.newRxError)('SNH', {
-          database: _this16.databaseName,
-          collection: _this16.collectionName
-        }));
+        return Promise.reject(new Error('already closed'));
       }
       _this16.closed = true;
       _this16.changes$.complete();

@@ -351,6 +351,9 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
   _proto.close = function close() {
     try {
       var _this15 = this;
+      if (_this15.closed) {
+        return Promise.reject(new Error('already closed'));
+      }
       _this15.closed = true;
       _this15.changes$.complete();
       _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this15);

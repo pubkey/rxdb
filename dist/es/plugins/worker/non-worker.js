@@ -116,7 +116,7 @@ export var RxStorageInstanceWorker = /*#__PURE__*/function () {
     try {
       var _this4 = this;
       if (_this4.closed) {
-        return Promise.resolve();
+        return Promise.reject(new Error('already closed'));
       }
       _this4.closed = true;
       _this4.subs.forEach(function (sub) {

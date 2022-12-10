@@ -3,12 +3,17 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD [SharedWorker RxStorage Plugin](https://rxdb.info/rx-storage-shared-worker.html)
-- FIX Ensure equal behavior across all storages on call to `.close()` after `.remove()`.
+
+>>>>>>> f0740667ca8b489d312916adaef965d90dab3f70
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.14.3 (9 December 2022)
+
+- FIX Ensure equal behavior across all storages on call to `.close()` after `.remove()`.
 
 ### 13.14.2 (9 December 2022)
 
