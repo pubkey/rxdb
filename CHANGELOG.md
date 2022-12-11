@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 13.15.1 (11 December 2022)
+
 ### 13.15.0 (10 December 2022)
 
 - ADD [SharedWorker RxStorage Plugin](https://rxdb.info/rx-storage-shared-worker.html)
