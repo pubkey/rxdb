@@ -2,12 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [SharedWorker RxStorage Plugin](https://rxdb.info/rx-storage-shared-worker.html)
+
+- FIX(SQLite) `getSQLiteBasicsQuickSQLite` must use `executeAsync`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.15.1 (11 December 2022)
+
+### 13.15.0 (10 December 2022)
+
+- ADD [SharedWorker RxStorage Plugin](https://rxdb.info/rx-storage-shared-worker.html)
 
 ### 13.14.3 (9 December 2022)
 

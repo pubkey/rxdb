@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxSchema · RxDB - JavaScript Database</title>
+        <title>RxStorage Shared Worker · RxDB - JavaScript Database</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-schema.html" />
+    <link rel="next" href="rx-storage-remote.html" />
     
     
-    <link rel="prev" href="rx-database.html" />
+    <link rel="prev" href="rx-storage-worker.html" />
     
 
     </head>
@@ -486,7 +486,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.6" data-path="rx-schema.html">
+        <li class="chapter " data-level="1.6" data-path="rx-schema.html">
             
                 <a href="rx-schema.html">
             
@@ -1556,7 +1556,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19.8" data-path="rx-storage-shared-worker.html">
+        <li class="chapter active" data-level="1.19.8" data-path="rx-storage-shared-worker.html">
             
                 <a href="rx-storage-shared-worker.html">
             
@@ -2239,7 +2239,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxSchema</a>
+        <a href="." >RxStorage Shared Worker</a>
     </h1>
 </div>
 
@@ -2254,267 +2254,125 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxschema">RxSchema</h1>
-<p>Schemas define the structure of the documents of a collection. Which field should be used as primary, which fields should be used as indexes and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the <a href="http://json-schema.org/" target="_blank">jsonschema</a>-standard which you might know from other projects.</p>
-<h2 id="example">Example</h2>
-<p>In this example-schema we define a hero-collection with the following settings:</p>
-<ul>
-<li>the version-number of the schema is 0</li>
-<li>the name-property is the <strong>primaryKey</strong>. This means its an unique, indexed, required <code>string</code> which can be used to definitely find a single document.</li>
-<li>the color-field is required for every document</li>
-<li>the healthpoints-field must be a number between 0 and 100</li>
-<li>the secret-field stores an encrypted value</li>
-<li>the birthyear-field is final which means it is required and cannot be changed</li>
-<li>the skills-attribute must be an array with objects which contain the name and the damage-attribute. There is a maximum of 5 skills per hero.</li>
-<li>Allows adding attachments and store them encrypted</li>
-</ul>
-<pre><code class="lang-json">  {
-    <span class="hljs-string">&quot;title&quot;</span>: <span class="hljs-string">&quot;hero schema&quot;</span>,
-    <span class="hljs-string">&quot;version&quot;</span>: <span class="hljs-number">0</span>,
-    <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">&quot;describes a simple hero&quot;</span>,
-    <span class="hljs-string">&quot;primaryKey&quot;</span>: <span class="hljs-string">&quot;name&quot;</span>,
-    <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>,
-    <span class="hljs-string">&quot;properties&quot;</span>: {
-        <span class="hljs-string">&quot;name&quot;</span>: {
-            <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-            <span class="hljs-string">&quot;maxLength&quot;</span>: <span class="hljs-number">100</span> <span class="hljs-comment">// &lt;- the primary key must have set maxLength</span>
-        },
-        <span class="hljs-string">&quot;color&quot;</span>: {
-            <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        },
-        <span class="hljs-string">&quot;healthpoints&quot;</span>: {
-            <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;number&quot;</span>,
-            <span class="hljs-string">&quot;minimum&quot;</span>: <span class="hljs-number">0</span>,
-            <span class="hljs-string">&quot;maximum&quot;</span>: <span class="hljs-number">100</span>
-        },
-        <span class="hljs-string">&quot;secret&quot;</span>: {
-            <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        },
-        <span class="hljs-string">&quot;birthyear&quot;</span>: {
-            <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;number&quot;</span>,
-            <span class="hljs-string">&quot;final&quot;</span>: <span class="hljs-literal">true</span>,
-            <span class="hljs-string">&quot;minimum&quot;</span>: <span class="hljs-number">1900</span>,
-            <span class="hljs-string">&quot;maximum&quot;</span>: <span class="hljs-number">2050</span>
-        },
-        <span class="hljs-string">&quot;skills&quot;</span>: {
-            <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;array&quot;</span>,
-            <span class="hljs-string">&quot;maxItems&quot;</span>: <span class="hljs-number">5</span>,
-            <span class="hljs-string">&quot;uniqueItems&quot;</span>: <span class="hljs-literal">true</span>,
-            <span class="hljs-string">&quot;items&quot;</span>: {
-                <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>,
-                <span class="hljs-string">&quot;properties&quot;</span>: {
-                    <span class="hljs-string">&quot;name&quot;</span>: {
-                        <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-                    },
-                    <span class="hljs-string">&quot;damage&quot;</span>: {
-                        <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;number&quot;</span>
-                    }
-                }
-            }
+                                <h1 id="sharedworker-rxstorage">SharedWorker RxStorage</h1>
+<p>The SharedWorker <a href="rx-storage.html">RxStorage</a> uses the <a href="https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker" target="_blank">SharedWorker API</a> to run the storage inside of a separate JavaScript process <strong>in browsers</strong>. Compared to a normal <a href="rx-storage-worker.html">WebWorker</a>, the SharedWorker is created exactly once, even when there are multiple browser tabs opened. Because of having exactly one worker, multiple performance optimizations can be done because the storage itself does not have to handle multiple opened database connections.</p>
+<p><strong>NOTICE:</strong> This plugin is part of <a href="premium.md">RxDB premium</a>. It is not part of the default RxDB module.</p>
+<h2 id="usage">Usage</h2>
+<h3 id="on-the-sharedworker-process">On the SharedWorker process</h3>
+<p>In the worker process JavaScript file, you have wrap the original RxStorage with <code>getRxStorageIndexedDB()</code>.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">// shared-worker.ts</span>
+
+<span class="hljs-keyword">import</span> { exposeSharedWorkerRxStorage } from <span class="hljs-string">&apos;rxdb-premium/plugins/worker&apos;</span>;
+<span class="hljs-keyword">import</span> { 
+    getRxStorageIndexedDB,
+    RxStorageIndexedDBStatics
+} from <span class="hljs-string">&apos;rxdb-premium/plugins/indexeddb&apos;</span>;
+
+exposeSharedWorkerRxStorage({
+    <span class="hljs-comment">/**
+     * You can wrap any implementation of the RxStorage interface
+     * into a worker.
+     * Here we use the IndexedDB RxStorage.
+     */</span>
+    storage: getRxStorageIndexedDB()
+});
+</code></pre>
+<h3 id="on-the-main-process">On the main process</h3>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    createRxDatabase
+} from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> { getRxStorageSharedWorker } from <span class="hljs-string">&apos;rxdb-premium/plugins/worker&apos;</span>;
+<span class="hljs-keyword">import</span> { getRxStorageIndexedDB } from <span class="hljs-string">&apos;rxdb/plugins/indexeddb&apos;</span>;
+
+
+<span class="hljs-keyword">const</span> database = await createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStorageSharedWorker(
+        {
+            <span class="hljs-comment">/**
+             * The static methods of the RxStorage that is also
+             * used inside of the SharedWorker process.
+             */</span>
+            statics: RxStorageIndexedDBStatics,
+            <span class="hljs-comment">/**
+             * Contains any value that can be used as parameter
+             * to the SharedWorker constructor of thread.js
+             * Most likely you want to put the path to the shared-worker.js file in here.
+             * 
+             * @link https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker?retiredLocale=de
+             */</span>
+            workerInput: <span class="hljs-string">&apos;path/to/shared-worker.js&apos;</span>
         }
-    },
-    <span class="hljs-string">&quot;required&quot;</span>: [
-        <span class="hljs-string">&quot;name&quot;</span>,
-        <span class="hljs-string">&quot;color&quot;</span>
-    ],
-    <span class="hljs-string">&quot;encrypted&quot;</span>: [<span class="hljs-string">&quot;secret&quot;</span>],
-    <span class="hljs-string">&quot;attachments&quot;</span>: {
-        <span class="hljs-string">&quot;encrypted&quot;</span>: <span class="hljs-literal">true</span>
-    }
-  }
-</code></pre>
-<h2 id="create-a-collection-with-the-schema">Create a collection with the schema</h2>
-<pre><code class="lang-javascript"><span class="hljs-keyword">await</span> myDatabase.addCollections({
-    heroes: {
-        schema: myHeroSchema
-    }
+    )
 });
-<span class="hljs-built_in">console</span>.dir(myDatabase.heroes.name);
-<span class="hljs-comment">// heroes</span>
 </code></pre>
-<h2 id="version">version</h2>
-<p>The <code>version</code> field is a number, starting with <code>0</code>.
-When the version is greater than 0, you have to provide the migrationStrategies to create a collection with this schema.</p>
-<h2 id="primarykey">primaryKey</h2>
-<p>The <code>primaryKey</code> field contains the fieldname of the property that will be used as primary key for the whole collection.
-The value of the primary key of the document must be a <code>string</code>, unique, final and is required.</p>
-<h3 id="composite-primary-key">composite primary key</h3>
-<p>You can define a composite primary key which gets composed from multiple properties of the document data.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> mySchema = {
-  keyCompression: <span class="hljs-literal">true</span>, <span class="hljs-comment">// set this to true, to enable the keyCompression</span>
-  version: <span class="hljs-number">0</span>,
-  title: <span class="hljs-string">&apos;human schema with composite primary&apos;</span>,
-  primaryKey: {
-      <span class="hljs-comment">// where should the composed string be stored</span>
-      key: <span class="hljs-string">&apos;id&apos;</span>,
-      <span class="hljs-comment">// fields that will be used to create the composed key</span>
-      fields: [
-          <span class="hljs-string">&apos;firstName&apos;</span>,
-          <span class="hljs-string">&apos;lastName&apos;</span>
-      ],
-      <span class="hljs-comment">// separator which is used to concat the fields values.</span>
-      separator: <span class="hljs-string">&apos;|&apos;</span>
-  }
-  type: <span class="hljs-string">&apos;object&apos;</span>,
-  properties: {
-      id: {
-          type: <span class="hljs-string">&apos;string&apos;</span>,
-          maxLength: <span class="hljs-number">100</span> <span class="hljs-comment">// &lt;- the primary key must have set maxLength</span>
-      },
-      firstName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      lastName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      }
-  },
-  required: [
-    <span class="hljs-string">&apos;id&apos;</span>, 
-    <span class="hljs-string">&apos;firstName&apos;</span>,
-    <span class="hljs-string">&apos;lastName&apos;</span>
-  ]
-};
+<h2 id="pre-build-workers">Pre-build workers</h2>
+<p>The <code>shared-worker.js</code> must be a self containing JavaScript file that contains all dependencies in a bundle.
+To make it easier for you, RxDB ships with pre-bundles worker files that are ready to use.
+You can find them in the folder <code>node_modules/rxdb-premium/dist/workers</code> after you have installed the <a href="premium.html">RxDB Premium Plugin</a>. From there you can copy them to a location where it can be served from the webserver and then use their path to create the <code>RxDatabase</code></p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    createRxDatabase
+} from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> { getRxStorageSharedWorker } from <span class="hljs-string">&apos;rxdb-premium/plugins/worker&apos;</span>;
+<span class="hljs-keyword">import</span> { RxStorageLokiStatics } from <span class="hljs-string">&apos;rxdb/plugins/lokijs&apos;</span>;
+<span class="hljs-keyword">const</span> database = await createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStorageSharedWorker(
+        {
+            statics: RxStorageLokiStatics,
+            <span class="hljs-comment">/**
+             * Path to where the copied file from node_modules/rxdb-premium/dist/workers
+             * is reachable from the webserver.
+             */</span>
+            workerInput: <span class="hljs-string">&apos;/indexeddb.shared-worker.js&apos;</span>
+        }
+    )
+});
 </code></pre>
-<p>You can then find a document by using the relevant parts to create the composite primaryKey:</p>
-<pre><code class="lang-ts">
-<span class="hljs-comment">// inserting with composite primary</span>
-await myRxCollection.insert({
-    <span class="hljs-comment">// id, &lt;- do not set the id, it will be filled by RxDB</span>
-    firstName: <span class="hljs-string">&apos;foo&apos;</span>,
-    lastName: <span class="hljs-string">&apos;bar&apos;</span>
+<h2 id="replication-with-sharedworker">Replication with SharedWorker</h2>
+<p>When a SharedWorker RxStorage is used, it is recommended to run the replication <strong>inside</strong> of the worker. You can do that by opening another <a href="rx-database.html">RxDatabase</a> inside of it and starting the replication there.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">// shared-worker.ts</span>
+
+<span class="hljs-keyword">import</span> { exposeSharedWorkerRxStorage } from <span class="hljs-string">&apos;rxdb-premium/plugins/worker&apos;</span>;
+<span class="hljs-keyword">import</span> { 
+    getRxStorageIndexedDB,
+    RxStorageIndexedDBStatics
+} from <span class="hljs-string">&apos;rxdb-premium/plugins/indexeddb&apos;</span>;
+<span class="hljs-keyword">import</span> {
+    createRxDatabase,
+    addRxPlugin
+} from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> {
+    RxDBReplicationGraphQLPlugin
+} from <span class="hljs-string">&apos;rxdb/plugins/replication-graphql&apos;</span>;
+addRxPlugin(RxDBReplicationGraphQLPlugin);
+
+<span class="hljs-keyword">const</span> baseStorage = getRxStorageIndexedDB();
+
+<span class="hljs-comment">// first expose the RxStorage to the outside</span>
+exposeSharedWorkerRxStorage({
+    storage: baseStorage
 });
 
-<span class="hljs-comment">// find by composite primary</span>
-<span class="hljs-keyword">const</span> id = myRxCollection.schema.getPrimaryOfDocumentData({
-    firstName: <span class="hljs-string">&apos;foo&apos;</span>,
-    lastName: <span class="hljs-string">&apos;bar&apos;</span>
+<span class="hljs-comment">/**
+ * Then create a normal RxDatabase and RxCollections
+ * and start the replication.
+ */</span>
+<span class="hljs-keyword">const</span> database = await createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    <span class="hljs-comment">/**
+     * Important: INSIDE of your SharedWorker, you can
+     * be sure that there is exactly one instance running.
+     * Therefore you MUST set multiInstance=false for better performance.
+     */</span>
+    multiInstance: <span class="hljs-literal">false</span>,
+    storage: baseStorage
 });
-<span class="hljs-keyword">const</span> myRxDocument = myRxCollection.findOne(id).exec();
+await db.addCollections({
+    humans: {<span class="hljs-comment">/* ... */</span>}
+});
+<span class="hljs-keyword">const</span> replicationState = db.humans.syncGraphQL({<span class="hljs-comment">/* ... */</span>});
 </code></pre>
-<h2 id="indexes">Indexes</h2>
-<p>RxDB supports secondary indexes which are defined at the schema-level of the collection.</p>
-<p>Index is only allowed on field types <code>string</code>, <code>integer</code> and <code>number</code>. Some RxStorages allow to use <code>boolean</code> fields as index.</p>
-<p>Depending on the field type, you must have set some meta attributes like <code>maxLength</code> or <code>minimum</code>. This is required so that RxDB
-is able to know the maximum string representation length of a field, which is needed to craft custom indexes on several <code>RxStorage</code> implementations.</p>
-<p><strong>NOTICE:</strong> RxDB will always append the <code>primaryKey</code> to all indexes to ensure a deterministic sort order of query results. You do not have to add the <code>primaryKey</code> to any index.</p>
-<h3 id="index-example">Index-example</h3>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> schemaWithIndexes = {
-  version: <span class="hljs-number">0</span>,
-  title: <span class="hljs-string">&apos;human schema with indexes&apos;</span>,
-  keyCompression: <span class="hljs-literal">true</span>,
-  primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
-  type: <span class="hljs-string">&apos;object&apos;</span>,
-  properties: {
-      id: {
-          type: <span class="hljs-string">&apos;string&apos;</span>,
-          maxLength: <span class="hljs-number">100</span> <span class="hljs-comment">// &lt;- the primary key must have set maxLength</span>
-      },
-      firstName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>,
-          maxLength: <span class="hljs-number">100</span> <span class="hljs-comment">// &lt;- string-fields that are used as an index, must have set maxLength.</span>
-      },
-      lastName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      active: {
-          type: <span class="hljs-string">&apos;boolean&apos;</span>
-      }
-      familyName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      balance: {
-          type: <span class="hljs-string">&apos;number&apos;</span>,
-
-          <span class="hljs-comment">// number fields that are used in an index, must have set minimum, maximum and multipleOf</span>
-          minimum: <span class="hljs-number">0</span>,
-          maximum: <span class="hljs-number">100000</span>,
-          multipleOf: <span class="hljs-string">&apos;0.01&apos;</span>
-      }
-      creditCards: {
-          type: <span class="hljs-string">&apos;array&apos;</span>,
-          items: {
-              type: <span class="hljs-string">&apos;object&apos;</span>,
-              properties: {
-                    cvc: {
-                        type: <span class="hljs-string">&apos;number&apos;</span>
-                    }
-              }
-          }       
-      }
-  },
-  required: [
-      <span class="hljs-string">&apos;id&apos;</span>,
-      <span class="hljs-string">&apos;active&apos;</span> <span class="hljs-comment">// &lt;- boolean fields that are used in an index, must be required. </span>
-  ],
-  indexes: [
-    <span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-comment">// &lt;- this will create a simple index for the `firstName` field</span>
-    [<span class="hljs-string">&apos;active&apos;</span>, <span class="hljs-string">&apos;firstName&apos;</span>], <span class="hljs-comment">// &lt;- this will create a compound-index for these two fields</span>
-    <span class="hljs-string">&apos;active&apos;</span>
-  ]
-};
-</code></pre>
-<h2 id="attachments">attachments</h2>
-<p>To use attachments in the collection, you have to add the <code>attachments</code>-attribute to the schema. <a href="rx-attachment.html">See RxAttachment</a>.</p>
-<h2 id="default">default</h2>
-<p>Default values can only be defined for first-level fields.
-Whenever you insert a document unset fields will be filled with default-values.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> schemaWithDefaultAge = {
-  version: <span class="hljs-number">0</span>,
-  primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
-  type: <span class="hljs-string">&apos;object&apos;</span>,
-  properties: {
-      id: {
-          type: <span class="hljs-string">&apos;string&apos;</span>,
-          maxLength: <span class="hljs-number">100</span> <span class="hljs-comment">// &lt;- the primary key must have set maxLength</span>
-      },
-      firstName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      lastName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      age: {
-          type: <span class="hljs-string">&apos;integer&apos;</span>,
-          <span class="hljs-keyword">default</span>: <span class="hljs-number">20</span>       <span class="hljs-comment">// &lt;- default will be used</span>
-      }
-  },
-  required: [<span class="hljs-string">&apos;id&apos;</span>]
-};
-</code></pre>
-<h2 id="final">final</h2>
-<p>By setting a field to <code>final</code>, you make sure it cannot be modified later. Final fields are always required.
-Final fields cannot be observed because they will not change.</p>
-<p>Advantages:</p>
-<ul>
-<li>With final fields you can ensure that no-one accidentally modifies the data</li>
-<li>When you enable the <code>query-change-detection</code>, some performance-improvements are done</li>
-</ul>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> schemaWithFinalAge = {
-  version: <span class="hljs-number">0</span>,
-  primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
-  type: <span class="hljs-string">&apos;object&apos;</span>,
-  properties: {
-      id: {
-          type: <span class="hljs-string">&apos;string&apos;</span>,
-          maxLength: <span class="hljs-number">100</span> <span class="hljs-comment">// &lt;- the primary key must have set maxLength</span>
-      },
-      firstName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      lastName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      age: {
-          type: <span class="hljs-string">&apos;integer&apos;</span>,
-          final: <span class="hljs-literal">true</span>
-      }
-  },
-  required: [<span class="hljs-string">&apos;id&apos;</span>]
-};
-</code></pre>
-<h2 id="notice-not-everything-within-the-jsonschema-spec-is-allowed">NOTICE: Not everything within the jsonschema-spec is allowed</h2>
-<p>The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of <a href="http://json-schema.org/" target="_blank">json-schema.org</a>.
-For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$</code> and <code>additionalProperties</code> is always set to <code>false</code>. But don&apos;t worry, RxDB will instantly throw an error when you pass an invalid schema into it.</p>
 
                                 
                                 </section>
@@ -2542,12 +2400,12 @@ For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-z
 
             
                 
-                <a href="rx-database.html#isrxdatabase" class="navigation navigation-prev " aria-label="Previous page: isRxDatabase()">
+                <a href="rx-storage-worker.html" class="navigation navigation-prev " aria-label="Previous page: RxStorage Worker">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="rx-schema.html#example" class="navigation navigation-next " aria-label="Next page: Example">
+                <a href="rx-storage-remote.html" class="navigation navigation-next " aria-label="Next page: RxStorage Sharding">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2558,7 +2416,7 @@ For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-z
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxSchema","level":"1.6","depth":1,"next":{"title":"Example","level":"1.6.1","depth":2,"anchor":"#example","path":"rx-schema.md","ref":"./rx-schema.md#example","articles":[]},"previous":{"title":"isRxDatabase()","level":"1.5.2.10","depth":3,"anchor":"#isrxdatabase","path":"rx-database.md","ref":"./rx-database.md#isrxdatabase","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-schema.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage Shared Worker","level":"1.19.8","depth":2,"next":{"title":"RxStorage Sharding","level":"1.19.9","depth":2,"path":"rx-storage-remote.md","ref":"./rx-storage-remote.md","articles":[]},"previous":{"title":"RxStorage Worker","level":"1.19.7","depth":2,"path":"rx-storage-worker.md","ref":"./rx-storage-worker.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-shared-worker.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
