@@ -63,14 +63,14 @@ import {
     getRxStorageSQLite,
     getSQLiteBasicsQuickSQLite
 } from 'rxdb-premium/plugins/sqlite';
-import { openDatabase } from 'react-native-quick-sqlite';
+import { open } from 'react-native-quick-sqlite';
 
 // create database
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
     multiInstance: false, // <- Set multiInstance to false when using RxDB in React Native
     storage: getRxStorageSQLite({
-        sqliteBasics: getSQLiteBasicsQuickSQLite(openDatabase)
+        sqliteBasics: getSQLiteBasicsQuickSQLite(open)
     })
 });
 ```
