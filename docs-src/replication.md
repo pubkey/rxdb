@@ -366,7 +366,7 @@ Depending on your use case, it might be ok to just write the duplicate document 
 But for a more resilient error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-send data.
 
 Also the replication has an `.error$` stream that emits all `RxError` objects that arise during replication.
-Notice that these errors are contain an inner `.parameters.errors` field that contains the original error. Also they contain a `.parameters.direction` field that indicates if the error was thrown during `pull` or `push`. You can use these to properly handle errors. For example when the client is outdated, the server might respond with a `426 Upgrade Required` error code that can then be used to force a page reload.
+Notice that these errors contain an inner `.parameters.errors` field that contains the original error. Also they contain a `.parameters.direction` field that indicates if the error was thrown during `pull` or `push`. You can use these to properly handle errors. For example when the client is outdated, the server might respond with a `426 Upgrade Required` error code that can then be used to force a page reload.
 
 
 ```ts
