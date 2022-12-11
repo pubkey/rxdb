@@ -3,12 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX(SQLite) `getSQLiteBasicsQuickSQLite` must use `executeAsync`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.15.2 (11 December 2022)
+
+- FIX(SQLite) `getSQLiteBasicsQuickSQLite` must use `executeAsync`
 
 ### 13.15.1 (11 December 2022)
 

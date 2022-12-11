@@ -2564,7 +2564,7 @@ The remote instance must be designed to handle this properly and to not crash on
 Depending on your use case, it might be ok to just write the duplicate document data again.
 But for a more resilient error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-send data.</p>
 <p>Also the replication has an <code>.error$</code> stream that emits all <code>RxError</code> objects that arise during replication.
-Notice that these errors are contain an inner <code>.parameters.errors</code> field that contains the original error. Also they contain a <code>.parameters.direction</code> field that indicates if the error was thrown during <code>pull</code> or <code>push</code>. You can use these to properly handle errors. For example when the client is outdated, the server might respond with a <code>426 Upgrade Required</code> error code that can then be used to force a page reload.</p>
+Notice that these errors contain an inner <code>.parameters.errors</code> field that contains the original error. Also they contain a <code>.parameters.direction</code> field that indicates if the error was thrown during <code>pull</code> or <code>push</code>. You can use these to properly handle errors. For example when the client is outdated, the server might respond with a <code>426 Upgrade Required</code> error code that can then be used to force a page reload.</p>
 <pre><code class="lang-ts">replicationState.error$.subscribe((error) =&gt; {
     <span class="hljs-keyword">if</span>(
         error.parameters.errors &amp;&amp;
