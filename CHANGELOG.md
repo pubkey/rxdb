@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX(SQLite) `getSQLiteBasicsQuickSQLite` must use `executeAsync`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
