@@ -122,7 +122,7 @@ There are multiple ways to use RxDB in React Native:
 - Use the [PouchDB RxStorage](./rx-storage-pouchdb.md) with the SQLite plugin mentioned above.
 - Use the [SQLite RxStorage](./rx-storage-sqlite.md) with the [react-native-quick-sqlite](https://github.com/ospfranco/react-native-quick-sqlite) plugin.
 
-It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it has the best performance and is the easiest to set up. However it is part of the [Premium Plugins](./premium.md) which must be purchased, so to try out RxDB with React Native, you might want to use one of the other three options.
+It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it has the best performance and is the easiest to set up. However it is part of the [Premium Plugins](./premium.html) which must be purchased, so to try out RxDB with React Native, you might want to use one of the other three options.
 
 First you have to install all dependencies via `npm install rxdb rxjs rxdb-premium react-native-quick-sqlite`.
 Then you can assemble the RxStorage and create a database with it:

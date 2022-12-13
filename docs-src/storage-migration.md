@@ -7,7 +7,7 @@ The storage migration plugin can be used to migrate all data from one existing R
 
 The storage migration **drops deleted documents** and filters them out during the migration.
 
-**NOTICE:** The storage migration plugin is part of [RxDB premium](./premium.md). It is not part of the default RxDB module.
+**NOTICE:** The storage migration plugin is part of [RxDB premium](./premium.html). It is not part of the default RxDB module.
 
 
 ## Usage
