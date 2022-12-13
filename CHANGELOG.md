@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD `$regex` support to the [SQLite RxStorage](https://rxdb.info/rx-storage-sqlite.html)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.15.3 (13 December 2022)
+
+- ADD `$regex` support to the [SQLite RxStorage](https://rxdb.info/rx-storage-sqlite.html)
 
 ### 13.15.2 (11 December 2022)
 

@@ -2258,7 +2258,7 @@
 <p>With the sharding plugin, you can improve the write and query times of <strong>some</strong> <code>RxStorage</code> implementations.
 For example on <a href="slow-indexeddb.html">slow IndexedDB</a>, a performance gain of <strong>30-50% on reads</strong>, and <strong>25% on writes</strong> can be achieved by using multiple IndexedDB Stores instead of putting all documents into the same store.</p>
 <p>The sharding plugin works as a wrapper around any other <code>RxStorage</code>. The sharding plugin will automatically create multiple shards per storage instance and it will merge and split read and write calls to it.</p>
-<p><strong>NOTICE:</strong> The sharding plugin is part of <a href="premium.md">RxDB premium</a>. It is not part of the default RxDB module.</p>
+<p><strong>NOTICE:</strong> The sharding plugin is part of <a href="premium.html">RxDB premium</a>. It is not part of the default RxDB module.</p>
 <h2 id="using-the-sharding-plugin">Using the sharding plugin</h2>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
     getRxStorageSharding

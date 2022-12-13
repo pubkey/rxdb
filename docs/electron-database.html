@@ -2319,7 +2319,7 @@ db.serialize(() =&gt; {
 <li>The <a href="rx-storage-indexeddb.html">IndexedDB RxStorage</a></li>
 <li>The <a href="rx-storage-dexie.html">Dexie.js RxStorage</a></li>
 </ul>
-<p>It is recommended to use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> because it has the best performance and is the easiest to set up. However it is part of the <a href="premium.md">Premium Plugins</a> which must be purchased, so to try out RxDB with Electron, you might want to use one of the other options. To start with RxDB, I would recommend to use the Dexie.js RxStorage in the renderer processes. Because RxDB is able to broadcast the database state between browser tabs, having multiple renderer processes is not a problem like it would be when you use plain IndexedDB without RxDB.
+<p>It is recommended to use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> because it has the best performance and is the easiest to set up. However it is part of the <a href="premium.html">Premium Plugins</a> which must be purchased, so to try out RxDB with Electron, you might want to use one of the other options. To start with RxDB, I would recommend to use the Dexie.js RxStorage in the renderer processes. Because RxDB is able to broadcast the database state between browser tabs, having multiple renderer processes is not a problem like it would be when you use plain IndexedDB without RxDB.
 In production you would always run the RxStorage in the main process with the <a href="electron.html#rxstorage-electron-ipcrenderer--ipcmain">RxStorage Electron IpcRenderer &amp; IpcMain</a> plugins.</p>
 <p>First you have to install all dependencies via <code>npm install rxdb rxjs</code>.
 Then you can assemble the RxStorage and create a database with it:</p>
