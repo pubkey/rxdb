@@ -11,7 +11,6 @@ This storage is based on [SQLite](https://www.sqlite.org/index.html) and is made
 ### Cons
 
 - It is part of [RxDB Premium](./premium.md)
-- At the moment it is not possible to use regex queries with the SQLite RxStorage.
 
 ### Requirements
 

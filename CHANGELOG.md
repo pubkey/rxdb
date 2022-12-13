@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD `$regex` support to the [SQLite RxStorage](https://rxdb.info/rx-storage-sqlite.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
